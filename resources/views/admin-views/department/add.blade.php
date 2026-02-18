@@ -1,0 +1,75 @@
+@extends('layouts.back-end.app')
+
+@section('title', translate('Add_Department'))
+@push('css_or_js')
+    <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/css/intlTelInput.css') }}">
+@endpush
+@section('content')
+<div class="content container-fluid main-card {{Session::get('direction')}}">
+    <div class="mb-4">
+        <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
+            <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" class="mb-1" alt="">
+            {{ translate('add_new_Department') }}
+        </h2>
+    </div>
+    <form class="user" action="{{route('admin.department.add')}}" method="post" enctype="multipart/form-data" id="add-department-form">
+        @csrf
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" name="status" value="approved">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                    <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" class="mb-1" alt="">
+                    {{ translate('department_information') }}
+                </h5>
+                <div class="row">
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="title-color d-flex">{{translate('Name')}}</label>
+                            <input class="form-control" type="text" name="name"
+                                value=""
+                                placeholder="{{translate('enter_department_name')}}">
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="title-color d-flex">{{translate('Status')}}</label>
+                            <select class="form-control" name="status" id="status">
+                                <option value="1">Active</option>
+                                <option value="0">Block</option>
+                            </select>
+                            
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="title-color d-flex">{{translate('Department_Head')}} </label>
+                            <select id="head_id" name="head_id" class="form-control js-select2-custom">
+                                <option value="0" selected="" disabled="">-- Select employee --</option>
+                                @foreach ($employees as $key => $employee)
+                                    <option value="{{ $employee->id }}">{{ $employee->name}}</option>                                    
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-3 rest-part">
+            <div class="card-footer">
+                <div class="d-flex align-items-center justify-content-end gap-10">
+                    <input type="hidden" name="from_submit" value="admin">
+                    <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
+                    <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-department-form" data-redirect-route="{{route('admin.department.list')}}"
+                            data-message="{{translate('want_to_add_this_department').'?'}}">{{translate('submit')}}</button>
+                </div>
+            </div>
+        </div>
+    </form>    
+</div>
+@endsection
+
+@push('script')
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/country-picker-init.js') }}"></script>
+    <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/department.js')}}"></script>
+@endpush

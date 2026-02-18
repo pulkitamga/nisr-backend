@@ -1,0 +1,170 @@
+@extends('layouts.back-end.app')
+
+@section('title', translate('service_Ticket'))
+
+@section('content')
+
+<div class="content container-fluid">
+    <h2 class="mt-3">{{ translate('ticket_details') }} #{{ $supportTicket->id }}</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+                <div class="card-header">{{ translate('candidate_details') }}</div>
+                <div class="card-body">
+                    <p><strong>{{ translate('name') }}:</strong> {{ $supportTicket->customer->name ?? 'N/A' }}</p>
+                    <p><strong>{{ translate('email') }}:</strong> {{ $supportTicket->customer->email }}</p>
+                    <p><strong>{{ translate('phone') }}:</strong> {{ $supportTicket->customer->phone ?? 'N/A' }}</p>
+                    @if($supportTicket->conversations->whereNotNull('attachment')->count() > 0)
+                    <p><strong>{{ translate('cv') }}:</strong>
+                        @foreach($supportTicket->conversations->whereNotNull('attachment') as $conv)
+                        <a href="{{ $conv->attachment }}" target="_blank">{{ translate('view') }}</a>
+                        @endforeach
+                    </p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+                <div class="card-header">{{ translate('ticket_details') }}</div>
+                <div class="card-body">
+                    <p><strong>{{ translate('subject') }}:</strong> {{ $supportTicket->subject }}</p>
+                    <p><strong>{{ translate('status') }}:</strong> {{ $supportTicket->status_details->name ?? 'N/A' }}</p>
+                    <p><strong>{{ translate('recruiter') }}:</strong> {{ $supportTicket->employee->name ?? 'Unassigned' }}</p>
+                    <p><strong>{{ translate('created_at') }}:</strong> {{ $supportTicket->created_at->format('d-m-Y H:i') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3" >
+        <div class="card-header">
+            <ul class="nav nav-tabs">
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#activity">{{ translate('activity') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#interviews">{{ translate('interviews') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#offers">{{ translate('offers') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rejections">{{ translate('rejections') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#talent-pool">{{ translate('talent_pool') }}</a></li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane active" id="activity">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('Type') }}</th>
+                                <th>{{ translate('Description') }}</th>
+                                <th>{{ translate('Created By') }}</th>
+                                <th>{{ translate('Date') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($supportTicket->careerActivities as $activity)
+                            <tr>
+                                <td>{{ $activity->activity_type }}</td>
+                                <td>{{ $activity->description }}</td>
+                                <td>{{ $activity->createdBy->name ?? 'System' }}</td>
+                                <td>{{ $activity->created_at->format('d-m-Y H:i') }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4">{{ translate('No activities logged') }}</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="interviews">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('scheduled_at') }}</th>
+                                <th>{{ translate('outcome') }}</th>
+                                <th>{{ translate('panel') }}</th>
+                                <th>{{ translate('notes') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($supportTicket->careerInterviews as $interview)
+                            <tr>
+                                <td>{{ $interview->scheduled_at }}</td>
+                                <td>{{ $interview->outcome ?? 'Scheduled' }}</td>
+                                <td>{{ implode(', ', json_decode($interview->panel)) }}</td>
+                                <td>{{ $interview->notes }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="offers">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('status') }}</th>
+                                <th>{{ translate('start_date') }}</th>
+                                <th>{{ translate('attachment') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($supportTicket->careerOffers as $offer)
+                            <tr>
+                                <td>{{ $offer->status }}</td>
+                                <td>{{ $offer->start_date }}</td>
+                                <td><a href="{{ $offer->attachment }}" target="_blank">{{ translate('view') }}</a></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="rejections">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('reason_code') }}</th>
+                                <th>{{ translate('message') }}</th>
+                                <th>{{ translate('date') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($supportTicket->careerRejections as $rejection)
+                            <tr>
+                                <td>{{ $rejection->reason_code }}</td>
+                                <td>{{ $rejection->closure_message }}</td>
+                                <td>{{ $rejection->created_at }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="talent-pool">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('consent') }}</th>
+                                <th>{{ translate('recontact_date') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                            $pool = optional($supportTicket->careerTalentPool)->first();
+                            @endphp
+
+                            @if($pool)
+                            <tr>
+                                <td>{{ $pool->consent ? translate('yes') : translate('no') }}</td>
+                                <td>{{ $pool->recontact_date ?? 'N/A' }}</td>
+                            </tr>
+                            @else
+                            <tr>
+                                <td colspan="2">{{ translate('no_records_found') }}</td>
+                            </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

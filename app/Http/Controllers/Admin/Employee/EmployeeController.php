@@ -1,0 +1,250 @@
+<?php
+
+namespace App\Http\Controllers\Admin\Employee;
+
+use App\Contracts\Repositories\AdminRepositoryInterface;
+use App\Contracts\Repositories\AdminRoleRepositoryInterface;
+use App\Contracts\Repositories\DepartmentRepositoryInterface;
+use App\Contracts\Repositories\BranchRepositoryInterface;
+use App\Enums\ExportFileNames\Admin\Customer as CustomerExport;
+use App\Enums\ViewPaths\Admin\Employee;
+use App\Enums\WebConfigKey;
+use App\Exports\EmployeeListExport;
+use App\Http\Controllers\BaseController;
+use App\Http\Requests\Admin\AdminAddRequest;
+use App\Http\Requests\Admin\AdminUpdateRequest;
+use App\Services\AdminService;
+use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use App\Traits\PaginatorTrait;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+class EmployeeController extends BaseController
+{
+    use PaginatorTrait;
+
+    public function __construct(
+        private readonly AdminRepositoryInterface $adminRepo,
+        private readonly AdminRoleRepositoryInterface $adminRoleRepo,
+        private readonly DepartmentRepositoryInterface $departmentRepo,
+        private readonly BranchRepositoryInterface $branchRepo,
+    ) {}
+
+    /**
+     * @param Request|null $request
+     * @param string|null $type
+     * @return View Index function is the starting point of a controller
+     * Index function is the starting point of a controller
+     */
+    public function index(Request|null $request, string $type = null): View
+    {
+        return $this->getListView($request);
+    }
+
+    public function getListView(Request $request): View
+    {
+        $employee_roles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
+        $employees = $this->adminRepo->getEmployeeListWhere(
+            orderBy: ['id' => 'desc'],
+            searchValue: $request['searchValue'],
+            filters: ['admin_role_id' => $request['admin_role_id'] ?? 'all'],
+            relations: ['role', 'branch', 'department'],
+            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
+        );
+        $departments = $this->departmentRepo->getListWhere(
+            filters: ['status' => 1],
+            dataLimit: 'all'
+        );
+        $branches = $this->branchRepo->getListWhere(
+            filters: ['status' => 1],
+            dataLimit: 'all'
+        );
+        return view(Employee::LIST[VIEW], compact('employees', 'employee_roles', 'departments', 'branches'));
+    }
+
+    public function exportList(Request $request): BinaryFileResponse
+    {
+        $employees = $this->adminRepo->getEmployeeListWhere(
+            searchValue: $request['searchValue'],
+            filters: ['admin_role_id' => $request['role']],
+            relations: ['role'],
+            dataLimit: 'all'
+        );
+        $active = $employees->where('status', 1)->count();
+        $inactive = $employees->where('status', 0)->count();
+
+        $filter = 'all';
+        if ($request->has('role') &&  $request['role'] != 'all') {
+            $filter = $this->adminRoleRepo->getFirstWhere(params: ['id' => $request['role']])['name'];
+        }
+
+        $data = [
+            'employees' => $employees,
+            'search' => $request['searchValue'],
+            'active' => $active,
+            'inactive' => $inactive,
+            'filter' => $filter
+        ];
+
+        return Excel::download(new EmployeeListExport($data), CustomerExport::EMPLOYEES_LIST_XLSX);
+    }
+
+    public function getAddView(): View
+    {
+        $employee_roles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
+        $departments = $this->departmentRepo->getListWhere(
+            filters: ['status' => 1],
+            dataLimit: 'all'
+        );
+        $branches = $this->branchRepo->getListWhere(
+            filters: ['status' => 1],
+            dataLimit: 'all'
+        );
+        return view(Employee::ADD[VIEW], compact('employee_roles', 'departments', 'branches'));
+    }
+
+    public function add(AdminAddRequest $request, AdminService $adminService): RedirectResponse
+    {
+
+        if ($request['role_id'] == 1) {
+            Toastr::warning(translate('access_denied'));
+            return back();
+        }
+
+        $data = [
+            'name' => $request['name'],
+            'phone' => $request['phone'],
+            'email' => $request['email'],
+            'admin_role_id' => $request['role_id'],
+            'branch_id' => json_encode($request['branch_id']),
+            'department_id' => $request['department_id'],
+            'identify_type' => $request['identify_type'],
+            'identify_number' => $request['identify_number'],
+            'identify_image' => $adminService->getIdentityImages(request: $request),
+            'password' => bcrypt($request['password']),
+            'status' => 1,
+            'image' => $adminService->getProceedImage(request: $request),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+
+        $this->adminRepo->add(data: $data);
+        Toastr::success(translate('employee_added_successfully'));
+        return redirect()->route('admin.employee.list');
+    }
+
+
+
+    public function getView(Request $request): View
+    {
+        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['role']);
+        return view(Employee::VIEW[VIEW], compact('employee'));
+    }
+
+    public function getUpdateView($id): View
+    {
+        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $id]);
+        $selectedBranches = is_array($employee->branch_id)
+            ? $employee->branch_id
+            : (json_decode($employee->branch_id, true) ?? []);
+        $adminRoles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
+        $departments = $this->departmentRepo->getListWhere(
+            filters: ['status' => 1],
+            dataLimit: 'all'
+        );
+        $branches = $this->branchRepo->getListWhere(
+            filters: ['status' => 1],
+            dataLimit: 'all'
+        );
+        return view(Employee::UPDATE[VIEW], compact('adminRoles', 'employee', 'departments', 'branches',   'selectedBranches'));
+    }
+
+    public function update(AdminUpdateRequest $request, AdminService $adminService): RedirectResponse
+    {
+        if ($request['role_id'] == 1) {
+            Toastr::warning(translate('access_denied'));
+            return back();
+        }
+        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']]);
+        $identity_image = [];
+        if ($request->file('identity_image')) {
+            $identity_image = $adminService->getIdentityImages(request: $request, oldImages: $employee);
+        }
+
+        $data = [
+            'name' => $request['name'],
+            'phone' => $request['phone'],
+            'email' => $request['email'],
+            'admin_role_id' => $request['role_id'],
+            'branch_id' => $request['branch_id'],
+            'department_id' => $request['department_id'],
+            'password' => $request['password'] ? bcrypt($request['password']) : $employee['password'],
+            'image' => $request->file('image') ? $adminService->getProceedImage(request: $request, oldImage: $employee['image']) : $employee['image'],
+            'identify_image' => $request->file('identity_image') ? $identity_image : $employee['identify_image'],
+            'identify_type' => $request['identify_type'],
+            'identify_number' => $request['identify_number'],
+            'updated_at' => now(),
+        ];
+
+        $this->adminRepo->update(id: $request['id'], data: $data);
+        Toastr::success(translate('employee_updated_successfully'));
+        return redirect()->route('admin.employee.list');
+    }
+
+    public function updateStatus(Request $request): RedirectResponse|JsonResponse
+    {
+        $this->adminRepo->update(id: $request['id'], data: ['status' => $request->get('status', 0)]);
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => translate('Status_Updated'),
+            ]);
+        }
+        Toastr::success(translate('Status_Updated'));
+        return back();
+    }
+
+    public function updateEmployeeBranch(Request $request): RedirectResponse|JsonResponse
+    {
+        // Validate the incoming data (make sure branch_id is an array)
+        $validated = $request->validate([
+            'employee_id' => 'required',  // Assuming admin is the model for employees
+            'branch_id' => 'required|array',  // Ensure branch_id is an array
+            'branch_id.*' => 'exists:branches,id',  // Validate each branch id
+        ]);
+
+        $branchId = json_encode($validated['branch_id']);  // Storing as JSON array
+
+        $this->adminRepo->update(id: $request['employee_id'], data: ['branch_id' => $branchId]);
+
+        // Return response
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => true,
+                'message' => translate('branch_Updated'),
+            ], 200);
+        }
+
+        Toastr::success(translate('branch_Updated'));
+        return back();
+    }
+
+
+    public function updateEmployeeDepartment(Request $request): RedirectResponse|JsonResponse
+    {
+        $this->adminRepo->update(id: $request['employee_id'], data: ['department_id' => $request->get('department_id', 0)]);
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => true,
+                'message' => translate('department_Updated'),
+            ], 200);
+        }
+        Toastr::success(translate('department_Updated'));
+        return back();
+    }
+}

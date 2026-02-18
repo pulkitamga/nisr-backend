@@ -1,0 +1,126 @@
+{{-- @if (count($combinations) > 0) --}}
+@php
+    $showAdjustment = $showAdjustment ?? true;
+@endphp
+
+@if (!empty($combinations) && count($combinations) > 0)
+    <table class="table physical_product_show table-borderless">
+        <thead class="thead-light thead-50 text-capitalize">
+            <tr>
+                <th class="text-center">
+                    <label for="" class="control-label">
+                        {{ translate('SL') }}
+                    </label>
+                </th>
+                <th class="text-center">
+                    <label for="" class="control-label">
+                        {{ translate('attribute_Variation') }}
+                    </label>
+                </th>
+                <th class="text-center">
+                    <label for="" class="control-label">
+                        {{ translate('variation_Wise_Price') }}
+                        ({{ getCurrencySymbol() }})
+                    </label>
+                </th>
+                <th class="text-center">
+                    <label for="" class="control-label">
+                        {{ translate('SKU') }}
+                    </label>
+                </th>
+                <th class="text-center">
+                    <label class="control-label">
+                        {{ translate('current_stock') }}
+                    </label>
+                </th>
+
+                @if ($showAdjustment)
+                    <th class="text-center">
+                        <label class="control-label">
+                            {{ translate('stock_adjustment') }}
+                        </label>
+                    </th>
+                    <th class="text-center">
+                        <label class="control-label">
+                            {{ translate('new_stock') }}
+                        </label>
+                    </th>
+                @endif
+
+
+            </tr>
+        </thead>
+        <tbody>
+
+            @php
+                $serial = 1;
+            @endphp
+
+            @foreach ($combinations as $key => $combination)
+                <tr>
+                    <td class="text-center">
+                        {{ $serial++ }}
+                    </td>
+                    <td>
+                        <label for="" class="control-label">{{ $combination['type'] }}</label>
+                        <input value="{{ $combination['type'] }}" name="type[]" class="d-none">
+                    </td>
+                    <td>
+                        <input type="number" name="price_{{ $combination['type'] }}"
+                            value="{{ $combination['price'] }}" min="0" step="0.01"
+                            class="form-control allow-edit-in-readonly"
+                            required placeholder="{{ translate('ex') . ': 100' }}">
+                    </td>
+                    <td>
+                        <input type="text" name="sku_{{ $combination['type'] }}" value="{{ $combination['sku'] }}"
+                            class="form-control store-keeping-unit allow-edit-in-readonly" required>
+                    </td>
+                    <td>
+                        <input type="number" value="{{ $combination['qty'] }}" min="0" max="100000"
+                            step="1" class="form-control variant-current-stock"
+                            placeholder="{{ translate('ex') }}: {{ translate('5') }}" readonly required>
+                    </td>
+                    @if ($showAdjustment)
+                        <td>
+                            <input type="number" class="form-control variant-stock-adjustment"
+                                placeholder="Enter adjustment (+ / -)" step="1">
+                        </td>
+                        <td>
+                            <input type="number" name="qty_{{ str_replace('.', '_', $combination['type']) }}"
+                                class="form-control variant-new-stock" readonly>
+
+                        </td>
+                    @endif
+
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
+
+@if ($showAdjustment)
+    <script>
+        $(document).on('input', '.variant-stock-adjustment', function() {
+            let $row = $(this).closest('tr');
+            if (!$row.length) return;
+
+            let currentStock = parseInt(
+                $row.find('.variant-current-stock').val()
+            ) || 0;
+
+            let adjustment = parseInt($(this).val()) || 0;
+            let newStock = currentStock + adjustment;
+
+            if (newStock < 0) {
+                $(this).val(-currentStock);
+                newStock = 0;
+            }
+
+            $row.find('.variant-new-stock').val(newStock);
+        });
+        $('.variant-current-stock').each(function() {
+            let $row = $(this).closest('tr');
+            $row.find('.variant-new-stock').val($(this).val());
+        });
+    </script>
+@endif

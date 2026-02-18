@@ -1,0 +1,102 @@
+
+
+.product-box,
+.product-box-sm {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.product-box img,
+.product-box-sm img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
+  border-radius: 12px;
+}
+
+.product-box:hover img,
+.product-box-sm:hover img {
+  transform: scale(1.05);
+}
+
+.product-box::after,
+.product-box-sm::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+  z-index: 1;
+  border-radius: 12px;
+}
+
+.product-caption,
+.product-caption-sm {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  z-index: 2;
+  color: #fff;
+}
+
+.product-caption h5,
+.product-caption-sm h6 {
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-size: 1.25rem;
+}
+
+.product-caption p,
+.product-caption-sm p {
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  color: #f1f1f1;
+}
+
+.product-caption a,
+.product-caption-sm a {
+  text-decoration: underline;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .product-caption,
+  .product-caption-sm {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  text-align: center;
+}
+
+.product-caption h5,
+.product-caption-sm h6 {
+  font-size: 1rem;
+}
+
+.product-caption p,
+.product-caption-sm p,
+.product-caption a,
+.product-caption-sm a {
+  font-size: 0.8rem;
+}
+}
+
+
+.icon-block img {
+filter: grayscale(100%);
+}
+
+.icon-block h6 {
+font-weight: 600;
+}
+
+.icon-block p {
+font-size: 0.85rem;
+color: #666;
+}
+

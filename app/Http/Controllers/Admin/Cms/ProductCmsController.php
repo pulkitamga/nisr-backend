@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Http\Controllers\Admin\Cms;
+
+use App\Http\Controllers\Controller;
+use App\Models\CmsProduct;
+use Illuminate\Http\Request;
+use App\Contracts\Repositories\TranslationRepositoryInterface;
+use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Traits\CommonTrait;
+use App\Traits\PaginatorTrait;
+
+class ProductCmsController extends Controller
+{
+
+
+    use PaginatorTrait;
+    use CommonTrait;
+
+    public function __construct(
+        private readonly ProductRepositoryInterface     $productRepo,
+        private readonly TranslationRepositoryInterface     $translationRepo,
+
+    ) {}
+
+
+    public function index(Request $request)
+    {
+        $products = CmsProduct::orderBy('created_at', 'desc')->get();
+
+        return view('admin-views.content-management.products.index', compact('products'));
+    }
+    public function create()
+    {
+        $categories = ['Technology', 'Food', 'Travel', 'Health', 'Social Media', 'Business'];
+        $blogTypes = ['Featured Posts', 'Latest Blog', 'Trending Blog'];
+
+        return view('admin-views.content-management.blog.create', compact('categories', 'blogTypes'));
+    }
+
+
+
+
+    public function edit($id)
+    {
+
+        $products = CmsProduct::with('translations')->findOrFail($id);
+
+        return view("admin-views.content-management.products.sections.edit.edit", compact('products'));
+    }
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'heading' => 'required|array',
+            'heading.*' => 'nullable|string|max:255',
+            'description' => 'required|array',
+            'description.*' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
+            'lang' => 'required|array',
+            'button_link' => 'required',
+
+
+        ]);
+
+        $cmsProduct = CmsProduct::findOrFail($id);
+
+        $defaultLangIndex = array_search('en', $request->lang);
+        if ($defaultLangIndex !== false) {
+            $cmsProduct->heading = $request->heading[$defaultLangIndex];
+            $cmsProduct->description = $request->description[$defaultLangIndex];
+        }
+
+        if ($request->hasFile('image')) {
+            $cmsProduct->image = $request->file('image')->store('cms-product', 'public');
+        }
+        $cmsProduct->button_link = $request->button_link;
+
+        $cmsProduct->type = $request->type;
+        $cmsProduct->save();
+        $this->translationRepo->update(
+            request: $request,
+            model: CmsProduct::class,
+            id: $id
+        );
+
+
+        return redirect()->route('admin.content-management.products')->with('success', 'Updated successfully!');
+    }
+
+    public function toggleStatus(Request $request)
+    {
+
+        $request->validate([
+            'id' => 'required|integer',
+        ]);
+
+        $id = $request->id;
+
+        $product = CmsProduct::findOrFail($id);
+
+        // Toggle the status
+        $product->is_active = $product->is_active == 1 ? 0 : 1;
+        $product->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product Section status updated successfully!',
+            'new_status' => $product->status
+        ]);
+    }
+}

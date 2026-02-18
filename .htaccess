@@ -1,0 +1,32 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # 🔁 Custom static file rewrites
+    RewriteRule ^assets/js/(.*)$ js/$1 [L]
+    RewriteRule ^assets/css/(.*)$ css/$1 [L]
+    RewriteRule ^assets/uploads/(.*)$ uploads/$1 [L]
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Serve Existing Files/Directories
+    RewriteCond %{REQUEST_FILENAME} -d [OR]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Rewrite storage if used via symlink (optional, keep only if needed)
+    RewriteRule ^storage/(.*)$ public/storage/$1 [L]
+
+    # Handle Front Controller
+    RewriteRule ^ /index.php [L]
+</IfModule>

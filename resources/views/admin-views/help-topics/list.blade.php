@@ -1,0 +1,319 @@
+@php
+use Illuminate\Support\Facades\Session;
+@endphp
+@extends('layouts.back-end.app')
+
+@section('title', translate('FAQ'))
+
+@push('css_or_js')
+<link href="{{dynamicAsset(path: 'public/assets/back-end/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+@endpush
+
+@section('content')
+@php
+$languages = getWebConfig(name: 'pnc_language') ?? null;
+$defaultLanguage = $language[0]['code'] ?? 'en';
+@endphp
+<div class="content container-fluid">
+    <div class="mb-3">
+        <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
+            <img src="{{dynamicAsset(path: 'public/assets/back-end/img/Pages.png')}}" width="20" alt="">
+            {{translate('pages')}}
+        </h2>
+    </div>
+    @include('admin-views.business-settings.pages-inline-menu')
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-capitalize">{{translate('help_topic_table')}} </h5>
+                    <button class="btn btn--primary btn-icon-split for-addFaq" data-toggle="modal"
+                        data-target="#addModal">
+                        <i class="tio-add"></i>
+                        <span class="text">{{translate('add_FAQ')}} </span>
+                    </button>
+                </div>
+                <div class="card-body px-0">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-hover table-borderless table-thead-bordered table-align-middle card-table w-100 text-start"
+                            id="dataTable">
+                            <thead class="thead-light thead-50 text-capitalize">
+                                <tr>
+                                    <th>{{translate('SL')}}</th>
+                                    <th>{{translate('question')}}</th>
+                                    <th class="min-w-200">{{translate('answer')}}</th>
+                                    <th class="text-center">{{translate('ranking')}}</th>
+                                    <th class="text-center">{{translate('status')}} </th>
+                                    <th class="text-center">{{translate('action')}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($helps as $key => $help)
+                                @php
+                                $titleLangMap = [];
+                                $descLangMap = [];
+                                foreach ($languages as $lang) {
+                                $titleLangMap[$lang] = $translations[$help->id][$lang]['question'] ?? '';
+                                $descLangMap[$lang] = $translations[$help->id][$lang]['answer'] ?? '';
+                                }
+                                $titleLangMap[$defaultLanguage] = $help['question'] ?? '';
+                                $descLangMap[$defaultLanguage] = $help['answer'] ?? '';
+                                @endphp
+                                <tr id="data-{{$help->id}}">
+                                    <td>{{ $key + 1 }}</td>
+                                    <td>{{ $help['question'] }}</td>
+                                    <td>{{ $help['answer'] }}</td>
+                                    <td class="text-center">{{ $help['ranking'] }}</td>
+
+                                    <td>
+                                        <form action="{{ route('admin.helpTopic.status', ['id'=>$help['id']])}}"
+                                            method="get" id="help-topic-status{{$help['id']}}-form"
+                                            class="helpTopic_status_form">
+                                            <label class="switcher mx-auto" for="help-topic-status{{$help['id']}}">
+                                                <input type="checkbox" class="switcher_input toggle-switch-message" value="1"
+                                                    id="help-topic-status{{$help['id']}}" {{ $help['status'] == 1 ? 'checked':'' }}
+                                                    data-modal-id="toggle-status-modal"
+                                                    data-toggle-id="help-topic-status{{$help['id']}}"
+                                                    data-on-image="category-status-on.png"
+                                                    data-off-image="category-status-off.png"
+                                                    data-on-title="{{translate('want_to_Turn_ON_This_FAQ').'?'}}"
+                                                    data-off-title="{{translate('want_to_Turn_OFF_This_FAQ').'?'}}"
+                                                    data-on-message="<p>{{translate('if_you_enable_this_FAQ_will_be_shown_in_the_user_app_and_website')}}</p>"
+                                                    data-off-message="<p>{{translate('if_you_disable_this_FAQ_will_not_be_shown_in_the_user_app_and_website')}}</p>">
+                                                <span class="switcher_control"></span>
+                                            </label>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-10">
+                                            <button class="btn btn-outline-primary btn-sm square-btn btn-edit"
+                                                data-rating="{{ $help['ranking'] }}" data-name='@json($titleLangMap)'
+                                                data-review='@json($descLangMap)' data-status="{{ $help['status'] }}" data-id="{{$help['id']}}"> <i
+                                                    class="tio-edit"></i>
+                                            </button>
+                                            <a class="btn btn-outline-danger btn-sm delete-data-without-form"
+                                                title="{{ translate('delete')}}"
+                                                data-action="{{route('admin.helpTopic.delete')}}"
+                                                data-id="{{$help['id']}}">
+                                                <i class="tio-delete"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="addModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{translate('add_Help_Topic')}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <ul class="nav nav-tabs mb-4">
+                    @foreach($languages as $lang)
+                    <li class="nav-item">
+                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            href="javascript:" id="{{ $lang }}-link">
+                            {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
+                        </a>
+                    </li>
+                    @endforeach
+                </ul>
+                <form action="{{ route('admin.helpTopic.add-new') }}" method="post" id="addForm">
+                    @csrf
+                    <div class="modal-body text-start">
+                        @foreach($languages as $lang)
+                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                            id="{{ $lang }}-form">
+
+                            <div class="form-group">
+                                <label>{{translate('question')}} ({{ strtoupper($lang) }})</label>
+                                <input type="text" class="form-control"
+                                    {{ $lang == $defaultLanguage ? 'required' : '' }} name="question[]"
+                                    placeholder="{{translate('type_Question')}}">
+                            </div>
+                            <div class="form-group">
+                                <label>{{translate('answer')}} ({{ strtoupper($lang) }})</label>
+                                <textarea class="form-control"
+                                    {{ $lang == $defaultLanguage ? 'required' : '' }} name="answer[]" cols="5"
+                                    rows="5" placeholder="{{translate('type_Answer')}}"></textarea>
+                            </div>
+                            <input type="hidden" name="lang[]" value="{{ $lang }}">
+
+
+                        </div>
+                        @endforeach
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="control-label">{{translate('status')}}</div>
+                                    <label class="mt-2">
+                                        <input type="checkbox" name="status" id="e_status" value="1"
+                                            class="custom-switch-input">
+                                        <span class="custom-switch-indicator"></span>
+                                        <span
+                                            class="custom-switch-description">{{translate('active')}}</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="ranking">{{translate('ranking')}}</label>
+                                <input type="number" name="ranking" class="form-control">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer bg-whitesmoke br">
+                        <button type="button" class="btn btn-secondary"
+                            data-dismiss="modal">{{translate('close')}}</button>
+                        <button class="btn btn--primary">{{translate('save')}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editReviewModal" tabindex="-1" role="dialog" aria-labelledby="faqAddModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="" method="post" id="update-form-submit" enctype="multipart/form-data">
+                @csrf
+                <input hidden name="type" value="wholesaler_registration">
+                <div class="modal-header">
+                    <h5 class="modal-title flex-grow-1 text-center" id="faqAddModalLabel">{{translate('FAQs')}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <ul class="nav nav-tabs mb-4">
+                    @foreach($languages as $lang)
+                    <li class="nav-item">
+                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            href="javascript:" id="{{ $lang }}-link">
+                            {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
+                        </a>
+                    </li>
+                    @endforeach
+                </ul>
+                <div class="modal-body">
+                    @foreach($languages as $lang)
+                    <input type="hidden" name="lang[]" value="{{ $lang }}">
+
+                    <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                        id="{{ $lang }}-form">
+                        <div class="form-group">
+                            <label class="title-color">{{translate('question')}} ({{ strtoupper($lang) }})</label>
+                            <input type="text" name="question[]" id="edit-question" class="form-control lang-question"
+                                data-lang="{{ $lang }}" id="question-filed" placeholder="{{translate('enter_question')}}" required="">
+                        </div>
+                        <div class="form-group">
+
+                            <label class="title-color">{{translate('answer')}} ({{ strtoupper($lang) }})</label>
+                            <textarea name="answer[]" class="form-control lang-answer" id="edit-answer"
+                                data-lang="{{ $lang }}"
+                                rows="3"
+                                {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                        </div>
+
+
+                    </div>
+                    @endforeach
+                    <div class="form-group">
+                        <label class="title-color">{{translate('priority')}}</label>
+                        <select name="ranking" class="form-control" id="edit-ranking">
+                            @for($index = 1; $index <= 15; $index++)
+                                <option value="{{ $index }}">{{ $index }}</option>
+                                @endfor
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="border rounded p-3 d-flex justify-content-between gap-2 align-items-center">
+                            <div class="text-dark">{{translate('turning_status_off_will_not_show_this_FAQ_in_the_list')}}</div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <span class="fw-semibold text-dark">{{translate('status')}}</span>
+                                <label class="switcher">
+                                    <input type="checkbox" class="switcher_input" id="edit-status" name="status" value="1" checked>
+                                    <span class="switcher_control"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-3 mt-4">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
+                        <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@push('script')
+<script src="{{dynamicAsset(path: 'public/assets/back-end/vendor/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{dynamicAsset(path: 'public/assets/back-end/vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
+<script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/business-setting/business-setting.js')}}"></script>
+
+
+<script>
+    $(document).on('click', '.form-system-language-tab', function() {
+        const lang = $(this).attr('id').replace('-link', '');
+
+        // Deactivate all tabs and content
+        $(this).closest('.nav-tabs').find('.form-system-language-tab').removeClass('active');
+        $(this).closest('.modal-content').find('.form-system-language-form').addClass('d-none');
+
+        // Activate clicked tab and corresponding content
+        $(this).addClass('active');
+        $(this).closest('.modal-content').find(`#${lang}-form`).removeClass('d-none');
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var editButtons = document.querySelectorAll('.btn-edit');
+        var editModal = new bootstrap.Modal(document.getElementById('editReviewModal'));
+
+        editButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                document.getElementById('edit-question').value = this.dataset.name;
+                document.getElementById('edit-answer').value = this.dataset.review;
+                document.getElementById('edit-ranking').value = this.dataset.rating;
+                document.getElementById('edit-status').value = this.dataset.status;
+                const question = JSON.parse(this.dataset.name || '{}');
+                const answer = JSON.parse(this.dataset.review || '{}');
+                const id = this.dataset.id;
+                let updateUrl = "{{ route('admin.helpTopic.update', ['id' => ':id']) }}";
+                updateUrl = updateUrl.replace(':id', id);
+                document.getElementById('update-form-submit').action = updateUrl;
+                document.getElementById('edit-ranking').value = this.dataset.rating;
+                document.getElementById('edit-status').checked = this.dataset.status == "1";
+
+                document.querySelectorAll('.lang-question').forEach(function(input) {
+                    const lang = input.dataset.lang;
+                    input.value = question[lang] || '';
+                });
+
+                document.querySelectorAll('.lang-answer').forEach(function(textarea) {
+                    const lang = textarea.dataset.lang;
+                    textarea.value = answer[lang] || '';
+                });
+                editModal.show();
+            });
+        });
+
+    });
+</script>
+@endpush
