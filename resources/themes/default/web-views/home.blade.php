@@ -339,10 +339,41 @@ if($products->count() < 8) { $slides=$products->concat($products);
         </section>
         @endif
         @if(isset($sectionData['find_perfect_match']) && $sectionData['find_perfect_match']['is_active'] == 1)
-        <section id="parent-bg" aria-label="Find your perfect match section" class="pb-4 pb-md-0">
+        @php
+            $findPerfectMatchRaw = $sectionData['find_perfect_match']['data'] ?? [];
+            $findPerfectMatchFallback = [
+                'section_heading' => translate('find_perfect_match'),
+                'hero_heading' => translate('find_perfect_match'),
+                'hero_description' => translate('shop_by_vehicle_year_make_model'),
+                'filter_title' => translate('filter_options'),
+                'make_label' => translate('make'),
+                'model_label' => translate('model'),
+                'year_label' => translate('model_year'),
+                'make_placeholder' => translate('select_make'),
+                'model_placeholder' => translate('select_model'),
+                'year_placeholder' => translate('select_year'),
+                'apply_button_text' => translate('apply_filters'),
+            ];
+
+            if (is_array($findPerfectMatchRaw) && array_key_exists(0, $findPerfectMatchRaw) && is_array($findPerfectMatchRaw[0])) {
+                $legacyHeading = $findPerfectMatchRaw[0]['heading'] ?? $findPerfectMatchFallback['section_heading'];
+                $legacyParagraph = $findPerfectMatchRaw[0]['paragraph'] ?? $findPerfectMatchFallback['hero_description'];
+                $findPerfectMatchRaw = [
+                    'section_heading' => $legacyHeading,
+                    'hero_heading' => $legacyHeading,
+                    'hero_description' => $legacyParagraph,
+                ];
+            }
+
+            $findPerfectMatch = array_merge(
+                $findPerfectMatchFallback,
+                is_array($findPerfectMatchRaw) ? $findPerfectMatchRaw : []
+            );
+        @endphp
+        <section id="parent-bg" aria-label="{{ $findPerfectMatch['section_heading'] }}" class="pb-4 pb-md-0">
             <div class="container py-lg-5">
                 <h2 class="text-center fw-bold mb-5 display-6 display-md-5 mobile-head">
-                    {{translate('Find Your Perfect Match')}}
+                    {{ $findPerfectMatch['section_heading'] }}
                 </h2>
 
                 <div id="left-bg" class="bg-light p-4 p-md-5 rounded option-bg-img" style=" background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('{{ asset('assets/front-end/img/find-bg-img.jpg') }}');">
@@ -351,10 +382,10 @@ if($products->count() < 8) { $slides=$products->concat($products);
                         <div class="col-md-7 d-flex align-self-sm-center">
                             <div class="content-overlay w-100">
                                 <h2 id="heading-find-match" class="display-4 fw-bold mb-md-4 mb-2 lh-sm mobile-head">
-                                    {{translate('Find Your Perfect Match')}}
+                                    {{ $findPerfectMatch['hero_heading'] }}
                                 </h2>
                                 <p class="fs-4 mb-0 font-size-lg text-find-match text-white mobile-p">
-                                    {{translate('Shop by vehicle year, make, model')}}
+                                    {{ $findPerfectMatch['hero_description'] }}
                                 </p>
                             </div>
                         </div>
@@ -362,14 +393,14 @@ if($products->count() < 8) { $slides=$products->concat($products);
                         <!-- Right Filters -->
                         <aside id="right-filters" class="col-md-5 bg-white p-lg-5 p-3 shadow rounded" role="region" aria-labelledby="heading-filters">
                             <h2 id="heading-filters" class="filter-option text-center fw-bold mb-4 text-shadow mobile-head">
-                                {{translate('Filter Options')}}
+                                {{ $findPerfectMatch['filter_title'] }}
                             </h2>
 
                             <form class="d-grid gap-3" aria-label="Vehicle filter options" action="{{ route('products') }}" method="GET">
                                 <div class="mb-2">
-                                    <label for="make" class="form-label">{{translate('Make')}}</label>
+                                    <label for="make" class="form-label">{{ $findPerfectMatch['make_label'] }}</label>
                                     <select id="make" name="make" class="form-select border my-1">
-                                        <option value="">{{ translate('Select Make') }}</option>
+                                        <option value="">{{ $findPerfectMatch['make_placeholder'] }}</option>
                                         @foreach($makes as $make)
                                         <option value="{{ $make->name }}" data-id="{{ $make->id }}">{{ $make->name }}</option>
                                         @endforeach
@@ -378,17 +409,17 @@ if($products->count() < 8) { $slides=$products->concat($products);
                                 </div>
 
                                 <div class="mb-2">
-                                    <label for="model" class="form-label">{{translate('Model')}}</label>
+                                    <label for="model" class="form-label">{{ $findPerfectMatch['model_label'] }}</label>
                                     <select id="model" name="model" class="form-select border my-1" disabled>
-                                        <option value="">{{ translate('Select Model') }}</option>
+                                        <option value="">{{ $findPerfectMatch['model_placeholder'] }}</option>
                                     </select>
 
                                 </div>
 
                                 <div class="mb-2">
-                                    <label for="year" class="form-label">{{translate('Vehicle Year')}}</label>
+                                    <label for="year" class="form-label">{{ $findPerfectMatch['year_label'] }}</label>
                                     <select id="year" name="year" class="form-select border my-1" disabled>
-                                        <option value="">{{ translate('Select Year') }}</option>
+                                        <option value="">{{ $findPerfectMatch['year_placeholder'] }}</option>
                                         @foreach($years as $year)
                                         <option value="{{ $year }}">{{ $year }}</option>
                                         @endforeach
@@ -396,7 +427,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                                 </div>
 
                                 <button type="submit" class="btn btn-dark w-100">
-                                    {{translate('Apply Filters')}}
+                                    {{ $findPerfectMatch['apply_button_text'] }}
                                 </button>
                             </form>
                         </aside>
@@ -569,7 +600,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                                     </p>
                                 </div>
                                 <a href="{{ route('frontend.blog.details', ['slug' => $post?->slug]) }}" class="small text-primary fw-bold">
-                                    Read More
+                                    {{ translate('Read More') }}
                                 </a>
                             </div>
                         </div>
@@ -584,7 +615,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                         style="background-color: #129d91; transition: background-color 0.3s;"
                         onmouseover="this.style.backgroundColor='#10534d';"
                         onmouseout="this.style.backgroundColor='#129d91';">
-                        Read More
+                        {{ translate('Read More') }}
                     </a>
                 </div>
             </div>
@@ -606,11 +637,19 @@ if($products->count() < 8) { $slides=$products->concat($products);
                 <div class="swiper mySwiperTwo pb-5">
                     <div class="swiper-wrapper">
                         @foreach($sectionData['client_review']['data']['clients'] as $client)
+                        @php
+                        $clientImage = $client['image'] ?? '';
+                        if (\Illuminate\Support\Str::startsWith($clientImage, ['http://', 'https://'])) {
+                        $clientImageSrc = $clientImage;
+                        } else {
+                        $clientImageSrc = asset(ltrim($clientImage, '/'));
+                        }
+                        @endphp
                         <div class="swiper-slide ">
                             <div class="card d-flex flex-row overflow-hidden shadow"
                                 style="width: 100%; height: 300px; background-color: #fff; border-radius: 12px;">
                                 <div class="w-50 p-4 d-flex align-items-center justify-content-center">
-                                    <img src="{{ $client['image'] }}" class="img-fluid h-100 w-100 object-fit-cover"
+                                    <img src="{{ $clientImageSrc }}" class="img-fluid h-100 w-100 object-fit-cover"
                                         style="object-fit: cover; border-radius: 8px;" alt="client-img">
                                 </div>
                                 <div class="w-50 p-4 d-flex flex-column justify-content-center">
@@ -661,6 +700,23 @@ if($products->count() < 8) { $slides=$products->concat($products);
         @php
         $downloadApp = $sectionData['download_app'] ?? null;
         $content = $downloadApp['data']['content'] ?? [];
+
+        $resolveDownloadImage = function (?string $image) {
+        if (empty($image)) {
+        return '';
+        }
+
+        if (\Illuminate\Support\Str::startsWith($image, ['http://', 'https://'])) {
+        return $image;
+        }
+
+        $normalized = ltrim($image, '/');
+        if (\Illuminate\Support\Str::startsWith($normalized, ['storage/', 'uploads/'])) {
+        return asset($normalized);
+        }
+
+        return asset('uploads/' . $normalized);
+        };
         @endphp
 
         @if ($downloadApp && $downloadApp['is_active'] == 1)
@@ -680,14 +736,14 @@ if($products->count() < 8) { $slides=$products->concat($products);
                             <div class="Chat d-flex gap-8 w-75 pt-3 mobile-w-100">
                                 @if (!empty($content['android_button']['image']))
                                 <a href="{{ $web_config['android']['link'] }}" role="button">
-                                    <img src="{{ asset('uploads/' . $content['android_button']['image']) }}"
+                                    <img src="{{ $resolveDownloadImage($content['android_button']['image'] ?? '') }}"
                                         alt="{{ $content['android_button']['alt'] ?? '' }}">
                                 </a>
                                 @endif
 
                                 @if (!empty($content['ios_button']['image']))
                                 <a class="" href="{{ $web_config['ios']['link'] }}" role="button">
-                                    <img src="{{ asset('uploads/' . $content['ios_button']['image']) }}"
+                                    <img src="{{ $resolveDownloadImage($content['ios_button']['image'] ?? '') }}"
                                         alt="{{ $content['ios_button']['alt'] ?? '' }}">
                                 </a>
                                 @endif
@@ -697,7 +753,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                         <!-- Right Image -->
                         <div class="col-md-6 text-end position-relative hidden lg:block img-app-div">
                             @if (!empty($content['mockup_image']['image']))
-                            <img src="{{ asset('uploads/' . $content['mockup_image']['image']) }}"
+                            <img src="{{ $resolveDownloadImage($content['mockup_image']['image'] ?? '') }}"
                                 alt="{{ $content['mockup_image']['alt'] ?? '' }}" class="img-fluid img-app"
                                 style="max-height: 20rem; position: absolute; top: -9rem; right: 5rem; object-fit: contain; z-index: 1;">
                             @endif
@@ -731,10 +787,11 @@ if($products->count() < 8) { $slides=$products->concat($products);
 
         <script>
             const models = @json($models);
+            const modelPlaceholder = @json($findPerfectMatch['model_placeholder'] ?? 'Select Model');
             $('#make').on('change', function() {
                 const makeId = $(this).find('option:selected').data('id');
                 const filteredModels = models.filter(model => model.make_id == makeId);
-                $('#model').empty().prop('disabled', false).append('<option value="">' + "{{ __('Select Model') }}" + '</option>');
+                $('#model').empty().prop('disabled', false).append('<option value="">' + modelPlaceholder + '</option>');
                 filteredModels.forEach(model => {
                     $('#model').append(`<option value="${model.name}">${model.name}</option>`);
                 });

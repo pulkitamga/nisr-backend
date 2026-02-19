@@ -8,7 +8,13 @@
 @endpush
 
 @section('content')
-    @php($shippingAddress = $order['shipping_address_data'] ?? null)
+    @php
+        $shippingAddress = $shippingAddress ?? ($order['shipping_address_data'] ?? null);
+        $confirmedStageDate = $confirmedStageDate ?? ($order->created_at ?? now());
+        $processingStageDate = $processingStageDate ?? $confirmedStageDate;
+        $outForDeliveryStageDate = $outForDeliveryStageDate ?? $processingStageDate;
+        $deliveredStageDate = $deliveredStageDate ?? $outForDeliveryStageDate;
+    @endphp
     <script>
         let branchWiseProductStock = @json($branchWiseProductStock);
     </script>
@@ -58,7 +64,7 @@
                                         </div>
                                     @endif
 
-                                    @if (getWebConfig('map_api_status') == 1 && isset($shippingAddress->latitude) && isset($shippingAddress->longitude))
+                                    @if (getWebConfig('map_api_status') == 1 && isset(($shippingAddress ?? null)->latitude) && isset(($shippingAddress ?? null)->longitude))
                                         <div class="">
                                             <button class="btn btn--primary px-4" data-toggle="modal"
                                                 data-target="#locationModal"><i class="tio-map"></i>
@@ -201,17 +207,17 @@
                                 </thead>
 
                                 <tbody>
-                                    @php($item_price = 0)
-                                    @php($total_price = 0)
-                                    @php($subtotal = 0)
-                                    @php($total = 0)
-                                    @php($discount = 0)
-                                    @php($tax = 0)
-                                    @php($row = 0)
+                                    @php $item_price = 0; @endphp
+                                    @php $total_price = 0; @endphp
+                                    @php $subtotal = 0; @endphp
+                                    @php $total = 0; @endphp
+                                    @php $discount = 0; @endphp
+                                    @php $tax = 0; @endphp
+                                    @php $row = 0; @endphp
 
-                                    @php($selectedBranchId = $order->transfer_from_branch)
+                                    @php $selectedBranchId = $order->transfer_from_branch; @endphp
                                     @foreach ($order->details as $key => $detail)
-                                        @php($productDetails = $detail?->productAllStatus ?? json_decode($detail->product_details))
+                                        @php $productDetails = $detail?->productAllStatus ?? json_decode($detail->product_details); @endphp
                                         @if ($productDetails)
                                             <tr>
                                                 <td>{{ ++$row }}</td>
@@ -283,18 +289,18 @@
                                                 </td>
                                                 <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['discount']), currencyCode: getCurrencyCode()) }}
                                                 </td>
-                                                @php($subtotal = $detail['price'] * $detail['qty'] + $detail['tax'] + $detail['installtion_charges'] * $detail['qty'] - $detail['discount'])
+                                                @php $subtotal = $detail['price'] * $detail['qty'] + $detail['tax'] + $detail['installtion_charges'] * $detail['qty'] - $detail['discount']; @endphp
                                                 <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $subtotal), currencyCode: getCurrencyCode()) }}
                                                 </td>
                                             </tr>
-                                            @php($item_price += $detail['price'] * $detail['qty'])
-                                            @php($discount += $detail['discount'])
-                                            @php($tax += $detail['tax'])
-                                            @php($total += $subtotal)
+                                            @php $item_price += $detail['price'] * $detail['qty']; @endphp
+                                            @php $discount += $detail['discount']; @endphp
+                                            @php $tax += $detail['tax']; @endphp
+                                            @php $total += $subtotal; @endphp
                                         @endif
-                                        @php($sellerId = $detail->seller_id)
+                                        @php $sellerId = $detail->seller_id; @endphp
                                         @if (isset($productDetails->digital_product_type) && $productDetails->digital_product_type == 'ready_after_sell')
-                                            @php($product_details = json_decode($detail->product_details))
+                                            @php $product_details = json_decode($detail->product_details); @endphp
                                             <div class="modal fade" id="fileUploadModal-{{ $detail->id }}" tabindex="-1"
                                                 aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered">
@@ -307,7 +313,7 @@
                                                                 @if ($detail?->digital_file_after_sell_full_url && isset($detail->digital_file_after_sell_full_url['key']))
                                                                     <div class="mb-4">
                                                                         {{ translate('uploaded_file') . ' : ' }}
-                                                                        @php($downloadPathExist = $detail->digital_file_after_sell_full_url['status'])
+                                                                        @php $downloadPathExist = $detail->digital_file_after_sell_full_url['status']; @endphp
                                                                         <span
                                                                             data-file-path="{{ $downloadPathExist ? $detail->digital_file_after_sell_full_url['path'] : 'javascript:' }}"
                                                                             class="getDownloadFileUsingFileUrl btn btn-success btn-sm {{ $downloadPathExist ? '' : 'download-path-not-found' }}"
@@ -319,7 +325,7 @@
                                                                 @elseif($detail->digital_file_after_sell)
                                                                     <div class="mb-4">
                                                                         {{ translate('uploaded_file') . ' : ' }}
-                                                                        @php($downloadPath = dynamicStorage(path: 'storage/app/public/product/digital-product/' . $detail->digital_file_after_sell))
+                                                                        @php $downloadPath = dynamicStorage(path: 'storage/app/public/product/digital-product/' . $detail->digital_file_after_sell); @endphp
                                                                         <span
                                                                             data-file-path="{{ file_exists($downloadPath) ? $downloadPath : 'javascript:' }}"
                                                                             class="getDownloadFileUsingFileUrl btn btn-success btn-sm {{ file_exists($downloadPath) ? $downloadPath : 'download-path-not-found' }}"
@@ -371,7 +377,7 @@
                             </table>
                         </div>
                         <hr />
-                        @php($orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order))
+                        @php $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order); @endphp
 
                         <div class="row justify-content-md-end mb-3">
                             <div class="col-md-9 col-lg-8">
@@ -725,7 +731,7 @@
                 @endif
                 @if ($physicalProduct)
                     <div class="card">
-                        @if ($shippingAddress)
+                        @if ($shippingAddress ?? null)
                             <div class="card-body">
                                 <div class="d-flex gap-2 align-items-center justify-content-between mb-4">
                                     <h4 class="d-flex gap-2">
@@ -793,7 +799,7 @@
                     </div>
                 @endif
                 <div class="card">
-                    @php($billing = $order['billing_address_data'])
+                    @php $billing = $order['billing_address_data']; @endphp
                     @if ($billing)
                         <div class="card-body">
                             <div class="d-flex gap-2 align-items-center justify-content-between mb-4">
@@ -970,7 +976,7 @@
                                         <label for="name"
                                             class="title-color">{{ translate('contact_person_name') }}</label>
                                         <input type="text" name="name" id="name" class="form-control"
-                                            value="{{ $shippingAddress ? $shippingAddress->contact_person_name : '' }}"
+                                            value="{{ ($shippingAddress ?? null) ? $shippingAddress->contact_person_name : '' }}"
                                             placeholder="{{ translate('ex') }}: {{ translate('john_doe') }}" required>
                                     </div>
                                 </div>
@@ -979,11 +985,11 @@
                                         <label for="phone_number"
                                             class="title-color">{{ translate('phone_number') }}</label>
                                         <input class="form-control form-control-user phone-input-with-country-picker"
-                                            type="tel" value="{{ $shippingAddress ? $shippingAddress->phone : '' }}"
+                                            type="tel" value="{{ ($shippingAddress ?? null) ? $shippingAddress->phone : '' }}"
                                             placeholder="{{ translate('ex') . ': 017xxxxxxxx' }}" required>
                                         <div class="">
                                             <input type="text" class="country-picker-phone-number w-50"
-                                                value="{{ $shippingAddress ? $shippingAddress->phone : '' }}"
+                                                value="{{ ($shippingAddress ?? null) ? $shippingAddress->phone : '' }}"
                                                 name="phone_number" hidden readonly>
                                         </div>
                                     </div>
@@ -1050,9 +1056,8 @@
                                             </select>
                                         @else
                                             <input type="text" class="form-control"
-                                                value="{{ $shippingAddress ? $shippingAddress->zip : '' }}"
-                                                id="zip" name="zip" placeholder="{{ translate('ex') }}: 1216"
-                                                {{ $shippingAddress ? '' : '' }}>
+                                                value="{{ ($shippingAddress ?? null) ? $shippingAddress->zip : '' }}"
+                                                id="zip" name="zip" placeholder="{{ translate('ex') }}: 1216">
                                         @endif
                                     </div>
                                 </div>
@@ -1060,15 +1065,15 @@
                                     <div class="form-group">
                                         <label for="address" class="title-color">{{ translate('address') }}</label>
                                         <textarea name="address" id="address" name="address" rows="3" class="form-control"
-                                            placeholder="{{ translate('ex') }} : {{ translate('street_1,_street_2,_street_3,_street_4') }}">{{ $shippingAddress ? $shippingAddress->address : '' }}</textarea>
+                                            placeholder="{{ translate('ex') }} : {{ translate('street_1,_street_2,_street_3,_street_4') }}">{{ ($shippingAddress ?? null) ? $shippingAddress->address : '' }}</textarea>
                                     </div>
                                 </div>
                                 <input type="hidden" id="latitude" name="latitude" class="form-control d-inline"
                                     placeholder="{{ translate('Ex') }} : -94.22213"
-                                    value="{{ $shippingAddress->latitude ?? 0 }}" required readonly>
+                                    value="{{ ($shippingAddress ?? null)->latitude ?? 0 }}" required readonly>
                                 <input type="hidden" name="longitude" class="form-control"
                                     placeholder="{{ translate('Ex') }} : 103.344322" id="longitude"
-                                    value="{{ $shippingAddress->longitude ?? 0 }}" required readonly>
+                                    value="{{ ($shippingAddress ?? null)->longitude ?? 0 }}" required readonly>
                                 @if (getWebConfig('map_api_status') == 1)
                                     <div class="col-12 ">
                                         <input id="pac-input" class="form-control rounded __map-input mt-1"
@@ -1326,7 +1331,7 @@
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-1">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate)) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate ?? ($order->created_at ?? now()))) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1353,7 +1358,7 @@
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime($processingStageDate)) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($processingStageDate ?? ($confirmedStageDate ?? ($order->created_at ?? now())))) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1378,7 +1383,7 @@
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime($outForDeliveryStageDate)) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($outForDeliveryStageDate ?? ($processingStageDate ?? ($confirmedStageDate ?? ($order->created_at ?? now()))))) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1403,7 +1408,7 @@
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime($deliveredStageDate)) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($deliveredStageDate ?? ($outForDeliveryStageDate ?? ($processingStageDate ?? ($confirmedStageDate ?? ($order->created_at ?? now())))))) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1441,7 +1446,7 @@
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate)) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate ?? ($order->created_at ?? now()))) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1469,7 +1474,7 @@
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate)) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate ?? ($order->created_at ?? now()))) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1540,7 +1545,7 @@
                                 <div class="mb-2">
                                     <img src="{{ dynamicAsset('assets/back-end/img/location-blue.png') }}"
                                         alt="">
-                                    <span>{{ $shippingAddress ? $shippingAddress->address : ($billing ? $billing->address : '') }}</span>
+                                    <span>{{ ($shippingAddress ?? null) ? $shippingAddress->address : (($billing ?? null) ? $billing->address : '') }}</span>
                                 </div>
                                 @if (getWebConfig('map_api_status') == 1)
                                     <div class="location-map" id="location-map">
@@ -1678,13 +1683,13 @@
     <span id="add-date-update-url" data-url="{{ route('admin.orders.amount-date-update') }}"></span>
 
     <span id="customer-name"
-        data-text="{{ $order->customer['f_name'] ?? '' }} {{ $order->customer['l_name'] ?? '' }}}"></span>
-    <span id="is-shipping-exist" data-status="{{ $shippingAddress ? 'true' : 'false' }}"></span>
-    <span id="shipping-address" data-text="{{ $shippingAddress->address ?? '' }}"></span>
-    <span id="shipping-latitude" data-latitude="{{ $shippingAddress->latitude ?? '-33.8688' }}"></span>
-    <span id="shipping-longitude" data-longitude="{{ $shippingAddress->longitude ?? '151.2195' }}"></span>
-    <span id="billing-latitude" data-latitude="{{ $billing->latitude ?? '-33.8688' }}"></span>
-    <span id="billing-longitude" data-longitude="{{ $billing->longitude ?? '151.2195' }}"></span>
+        data-text="{{ $order->customer['f_name'] ?? '' }} {{ $order->customer['l_name'] ?? '' }}"></span>
+    <span id="is-shipping-exist" data-status="{{ ($shippingAddress ?? null) ? 'true' : 'false' }}"></span>
+    <span id="shipping-address" data-text="{{ ($shippingAddress ?? null)->address ?? '' }}"></span>
+    <span id="shipping-latitude" data-latitude="{{ ($shippingAddress ?? null)->latitude ?? '-33.8688' }}"></span>
+    <span id="shipping-longitude" data-longitude="{{ ($shippingAddress ?? null)->longitude ?? '151.2195' }}"></span>
+    <span id="billing-latitude" data-latitude="{{ ($billing ?? null)->latitude ?? '-33.8688' }}"></span>
+    <span id="billing-longitude" data-longitude="{{ ($billing ?? null)->longitude ?? '151.2195' }}"></span>
     <span id="location-icon"
         data-path="{{ dynamicAsset(path: 'public/assets/front-end/img/customer_location.png') }}"></span>
     <span id="customer-image"
@@ -1717,10 +1722,10 @@
         const getBillingAreasURL = "{{ route('admin.address.order.get.billing.areas') }}";
 
         $(document).ready(function() {
-            const selectedCountryName = `{{ $shippingAddress->country ?? '' }}`;
-            const selectedStateName = `{{ $shippingAddress->state ?? '' }}`;
-            const selectedCityName = `{{ $shippingAddress->city ?? '' }}`;
-            const selectedAreaName = `{{ $shippingAddress->area ?? '' }}`;
+            const selectedCountryName = `{{ ($shippingAddress ?? null)->country ?? '' }}`;
+            const selectedStateName = `{{ ($shippingAddress ?? null)->state ?? '' }}`;
+            const selectedCityName = `{{ ($shippingAddress ?? null)->city ?? '' }}`;
+            const selectedAreaName = `{{ ($shippingAddress ?? null)->area ?? '' }}`;
 
             $('#country_name').val($('#country option:selected').data('name'));
 

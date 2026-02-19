@@ -3306,6 +3306,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::put('/admin/cards/update', [HomeController::class, 'updateWhyChoose'])->name('why-choose.update');
                 Route::post('why-join-us/update', [HomeController::class, 'updateWhyJoinUs'])->name('why_join_us.update');
                 Route::put('wholesaler-section/update', [HomeController::class, 'updateWholesalerSection'])->name('wholesaler_section.update');
+                Route::put('find-perfect-match/update', [HomeController::class, 'updateFindPerfectMatch'])->name('find_perfect_match.update');
                 Route::post('/faqs/update', [HomeController::class, 'updateFaq'])->name('faqs.update');
                 Route::post('download-app/update', [HomeController::class, 'updateDownloadAppItem'])->name('download-app.update');
                 Route::put('download-app/heading/update', [HomeController::class, 'updateDownloadAppHeading'])->name('download-app.heading.update');

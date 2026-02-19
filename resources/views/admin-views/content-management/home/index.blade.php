@@ -10,6 +10,29 @@
         color: #1455ac;
         border-bottom: 2px solid;
     }
+
+    .cms-modal-close {
+        border: 0;
+        background: transparent;
+        font-size: 1.5rem;
+        line-height: 1;
+        padding: 0.25rem 0.5rem;
+        opacity: 0.75;
+        cursor: pointer;
+    }
+
+    .cms-modal-close:hover {
+        opacity: 1;
+    }
+
+    .cms-image-preview {
+        filter: none !important;
+        mix-blend-mode: normal !important;
+        opacity: 1 !important;
+        background-color: #fff;
+        object-fit: cover;
+        border: 1px solid #e3e9ef;
+    }
 </style>
 <section>
     <div class="content container-fluid">
@@ -22,7 +45,7 @@
                     <li class="me-2 d-inline-block">
                         <a href="{{ route('admin.content-management.home', ['section' => $key]) }}"
                             class="nav-link {{ $currentType == $key ? 'active' : 'text-dark' }}">
-                            {{ $label }}
+                            {{ translate($key) }}
                         </a>
                     </li>
                     @endforeach
@@ -33,7 +56,7 @@
         <div class="card">
             <div class="card-header">
 
-                <h5 class="mb-0 text-capitalize">{{ $typeList[$currentType] ?? $currentType }}</h5>
+                <h5 class="mb-0 text-capitalize">{{ translate($currentType) }}</h5>
 
                 <div class="form-group d-flex align-items-center gap-3">
 
@@ -109,6 +132,22 @@
 
 <script>
     $(document).ready(function () {
+        $(document).on('click', '.cms-modal-close, [data-dismiss="modal"], [data-bs-dismiss="modal"]', function () {
+            const modalElement = this.closest('.modal');
+            if (!modalElement) {
+                return;
+            }
+
+            if (window.bootstrap && window.bootstrap.Modal) {
+                window.bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+                return;
+            }
+
+            if (window.jQuery && typeof $(modalElement).modal === 'function') {
+                $(modalElement).modal('hide');
+            }
+        });
+
         $(document).on('change', '.section-toggle', function () {
             let type = $(this).data('type');
             let status = $(this).is(':checked') ? 1 : 0;

@@ -1,6 +1,23 @@
 @php
 $content = $jsonData['content'] ?? [];
 
+$getDownloadImage = function (?string $image): string {
+    if (empty($image)) {
+        return asset('assets/back-end/img/placeholder.png');
+    }
+
+    if (\Illuminate\Support\Str::startsWith($image, ['http://', 'https://'])) {
+        return $image;
+    }
+
+    $normalized = ltrim($image, '/');
+    if (\Illuminate\Support\Str::startsWith($normalized, ['storage/', 'uploads/'])) {
+        return asset($normalized);
+    }
+
+    return asset('uploads/' . $normalized);
+};
+
 @endphp
 
 @php
@@ -69,14 +86,15 @@ $defaultLanguage = $languages[0] ?? 'en';
             <td>Android</td>
             <td>{{ $content['android_button']['alt'] ?? '' }}</td>
             <td>
-                <img src="{{ asset('uploads/' . $content['android_button']['image']) }}"
+                <img src="{{ $getDownloadImage($content['android_button']['image'] ?? '') }}"
                     alt="{{ $content['android_button']['alt'] ?? '' }}" height="40">
             </td>
             <td class="d-flex justify-content-center">
                 <a href="#" class="btn btn-outline-primary btn-sm square-btn" data-bs-toggle="modal"
                     data-bs-target="#editDownloadModal" data-key="android_button"
                     data-alt="{{ $content['android_button']['alt'] ?? '' }}"
-                    data-image="{{ $content['android_button']['image'] ?? '' }}">
+                    data-image="{{ $content['android_button']['image'] ?? '' }}"
+                    data-image-url="{{ $getDownloadImage($content['android_button']['image'] ?? '') }}">
                     <i class="tio-edit"></i>
                 </a>
 
@@ -91,7 +109,7 @@ $defaultLanguage = $languages[0] ?? 'en';
             <td>iOS</td>
             <td>{{ $content['ios_button']['alt'] ?? '' }}</td>
             <td>
-                <img src="{{ asset('uploads/' . $content['ios_button']['image']) }}"
+                <img src="{{ $getDownloadImage($content['ios_button']['image'] ?? '') }}"
                     alt="{{ $content['ios_button']['alt'] ?? '' }}" height="40">
             </td>
             <td class="d-flex justify-content-center">
@@ -99,7 +117,8 @@ $defaultLanguage = $languages[0] ?? 'en';
                 <a href="#" class="btn btn-outline-primary btn-sm square-btn" data-bs-toggle="modal"
                     data-bs-target="#editDownloadModal" data-key="ios_button"
                     data-alt="{{ $content['ios_button']['alt'] ?? '' }}"
-                    data-image="{{ $content['ios_button']['image'] ?? '' }}">
+                    data-image="{{ $content['ios_button']['image'] ?? '' }}"
+                    data-image-url="{{ $getDownloadImage($content['ios_button']['image'] ?? '') }}">
                     <i class="tio-edit"></i>
                 </a>
                 
@@ -113,14 +132,15 @@ $defaultLanguage = $languages[0] ?? 'en';
             <td>Mockup</td>
             <td>{{ $content['mockup_image']['alt'] ?? '' }}</td>
             <td>
-                <img src="{{ asset('uploads/' . $content['mockup_image']['image']) }}"
+                <img src="{{ $getDownloadImage($content['mockup_image']['image'] ?? '') }}"
                     alt="{{ $content['mockup_image']['alt'] ?? '' }}" height="40">
             </td>
             <td class="d-flex justify-content-center">
                 <a href="#" class="btn btn-outline-primary btn-sm square-btn" data-bs-toggle="modal"
                     data-bs-target="#editDownloadModal" data-key="mockup_image"
                     data-alt="{{ $content['mockup_image']['alt'] ?? '' }}"
-                    data-image="{{ $content['mockup_image']['image'] ?? '' }}">
+                    data-image="{{ $content['mockup_image']['image'] ?? '' }}"
+                    data-image-url="{{ $getDownloadImage($content['mockup_image']['image'] ?? '') }}">
                     <i class="tio-edit"></i>
                 </a>
                 
@@ -134,14 +154,15 @@ $defaultLanguage = $languages[0] ?? 'en';
             <td>App Logo</td>
             <td>{{ $content['app_logo']['alt'] ?? '' }}</td>
             <td>
-                <img src="{{ asset('uploads/' . $content['app_logo']['image']) }}"
+                <img src="{{ $getDownloadImage($content['app_logo']['image'] ?? '') }}"
                     alt="{{ $content['app_logo']['alt'] ?? '' }}" height="40">
             </td>
             <td class="d-flex justify-content-center">
                 <a href="#" class="btn btn-outline-primary btn-sm square-btn" data-bs-toggle="modal"
                     data-bs-target="#editDownloadModal" data-key="app_logo"
                     data-alt="{{ $content['app_logo']['alt'] ?? '' }}"
-                    data-image="{{ $content['app_logo']['image'] ?? '' }}">
+                    data-image="{{ $content['app_logo']['image'] ?? '' }}"
+                    data-image-url="{{ $getDownloadImage($content['app_logo']['image'] ?? '') }}">
                     <i class="tio-edit"></i>
                 </a>
              
@@ -159,12 +180,13 @@ $defaultLanguage = $languages[0] ?? 'en';
             @csrf
             <input type="hidden" name="type" value="download_app">
             <input type="hidden" name="key" id="edit-key">
+            <input type="hidden" name="remove_image" id="edit-download-remove-image" value="0">
 
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editModalLabel">{{translate('Edit Download App Item')}}</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
 
@@ -176,16 +198,31 @@ $defaultLanguage = $languages[0] ?? 'en';
 
                     <div class="mb-3">
                         <label for="edit-image" class="form-label">{{translate('Image ')}}(optional)</label>
-                        <input type="file" class="form-control" name="image" id="edit-image" accept="image/*">
-                        <div class="mt-2">
-                            <img id="current-image" src="" alt="" height="50">
+                        <div class="mt-2" style="max-width:220px;">
+                            <div class="custom_upload_input position-relative border-dashed-2">
+                                <input type="file" class="custom-upload-input-file" name="image" id="edit-image"
+                                    data-imgpreview="current-image" accept=".jpg, .png, .jpeg, .webp|image/*">
+                                <span id="edit-download-image-clear" class="delete_file_input btn btn-outline-danger btn-sm square-btn d-none">
+                                    <i class="tio-delete"></i>
+                                </span>
+                                <div class="img_area_with_preview position-absolute z-index-2">
+                                    <img id="current-image" src="" alt="{{ translate('Image Preview') }}"
+                                        class="h-auto bg-white d-none cms-image-preview">
+                                </div>
+                                <div class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
+                                    <div class="d-flex flex-column justify-content-center align-items-center">
+                                        <img alt="" class="w-75" src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
+                                        <h3 class="text-muted text-capitalize">{{ translate('Upload Image') }}</h3>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">{{translate('Update')}}</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{translate('Cancel')}}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">{{translate('Cancel')}}</button>
                 </div>
             </div>
         </form>
@@ -197,23 +234,85 @@ $defaultLanguage = $languages[0] ?? 'en';
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-    const editButtons = document.querySelectorAll('[data-bs-target="#editDownloadModal"]');
-    editButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('edit-key').value = btn.getAttribute('data-key');
-            document.getElementById('edit-alt').value = btn.getAttribute('data-alt');
-            const imagePath = btn.getAttribute('data-image');
-            const currentImage = document.getElementById('current-image');
+        const editButtons = document.querySelectorAll('[data-bs-target="#editDownloadModal"]');
+        const modalElement = document.getElementById('editDownloadModal');
+        const editForm = modalElement?.querySelector('form');
+        const imageInput = document.getElementById('edit-image');
+        const imagePreview = document.getElementById('current-image');
+        const clearButton = document.getElementById('edit-download-image-clear');
+        const removeImageInput = document.getElementById('edit-download-remove-image');
+        let currentImage = '';
 
-            if (imagePath) {
-                currentImage.src = `/uploads/${imagePath}`;
-                currentImage.style.display = 'block';
-            } else {
-                currentImage.src = '';
-                currentImage.style.display = 'none';
+        const clearFileInput = () => {
+            if (imageInput) {
+                imageInput.value = '';
             }
+        };
+
+        const setPreview = (src) => {
+            if (src) {
+                imagePreview.src = src;
+                imagePreview.classList.remove('d-none');
+                clearButton.classList.remove('d-none');
+                clearButton.classList.add('d-flex');
+                return;
+            }
+
+            imagePreview.src = '';
+            imagePreview.classList.add('d-none');
+            clearButton.classList.add('d-none');
+            clearButton.classList.remove('d-flex');
+        };
+
+        imageInput.addEventListener('change', function () {
+            const file = imageInput.files?.[0];
+            if (!file) {
+                if (removeImageInput.value === '1') {
+                    setPreview('');
+                    return;
+                }
+                setPreview(currentImage);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                removeImageInput.value = '0';
+                setPreview(e.target.result || '');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        clearButton.addEventListener('click', function () {
+            clearFileInput();
+            currentImage = '';
+            removeImageInput.value = '1';
+            setPreview('');
+        });
+
+        editButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('edit-key').value = btn.getAttribute('data-key');
+                document.getElementById('edit-alt').value = btn.getAttribute('data-alt');
+                const imagePath = btn.getAttribute('data-image');
+                const imageUrl = btn.getAttribute('data-image-url');
+
+                currentImage = imagePath ? imageUrl : '';
+                removeImageInput.value = '0';
+                clearFileInput();
+                setPreview(currentImage);
+            });
+        });
+
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            if (editForm) {
+                editForm.reset();
+            }
+            clearFileInput();
+            currentImage = '';
+            removeImageInput.value = '0';
+            setPreview('');
         });
     });
-});
 
 </script>

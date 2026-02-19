@@ -1,6 +1,6 @@
 @php
-$languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0]['code'] ?? 'en';
+$languages = getWebConfig(name: 'pnc_language') ?? ['en'];
+$defaultLanguage = $languages[0] ?? 'en';
 @endphp
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -50,7 +50,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="index" value="{{ $index }}">
-                    <button type="submit" class="btn btn-outline-danger btn-sm square-btn ">
+                    <button type="submit" class="btn btn-outline-danger btn-sm square-btn delete-review-btn">
                         <i class="tio-delete"></i>
                     </button>
                 </form>
@@ -66,16 +66,15 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 <!-- Add Review Modal -->
 <div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content"> <!-- This was missing -->
-
-            <form action="{{ route('admin.content-management.client-review.store') }}" method="POST"
-                enctype="multipart/form-data" class="modal-content">
-                @csrf
+        <form action="{{ route('admin.content-management.client-review.store') }}" method="POST"
+            enctype="multipart/form-data">
+            @csrf
+            <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addReviewModalLabel">{{ translate('Add New Review') }}</h5>
 
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <ul class="nav nav-tabs mb-4">
@@ -122,8 +121,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 <div class="modal-footer">
                     <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 
 </div>
@@ -138,8 +137,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             <input type="hidden" name="index" id="edit-index">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
 
@@ -191,19 +190,13 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Save changes</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
 
-
-<!-- jQuery (required for $('#modal').modal('show')) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Bootstrap JS (v4 or v5 as per your version) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     $(document).on('click', '.delete-review-btn', function(e) {

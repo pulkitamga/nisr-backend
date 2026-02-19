@@ -9,6 +9,7 @@ use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Utils\ImageManager;
 
 class BlogController extends Controller
 {
@@ -79,8 +80,8 @@ class BlogController extends Controller
         ]);
 
 
-        // Store image
-        $imagePath = $request->file('image')->store('blog', 'public');
+        $imageName = ImageManager::upload('blog/', 'webp', $request->file('image'));
+        $imagePath = 'blog/' . $imageName;
 
         // ✅ Default language ka index nikaalo
         $defaultLangIndex = array_search(config('app.locale'), $request->lang);
@@ -126,6 +127,10 @@ class BlogController extends Controller
     {
         $blog = Blog::findOrFail($id);
 
+        if (!empty($blog->image)) {
+            ImageManager::delete($blog->image);
+        }
+
         // Delete the blog
         $blog->delete();
 
@@ -158,10 +163,11 @@ class BlogController extends Controller
 
         // Image handling
         if ($request->hasFile('image')) {
-            if ($blog->image && \Storage::disk('public')->exists($blog->image)) {
-                \Storage::disk('public')->delete($blog->image);
+            if (!empty($blog->image)) {
+                ImageManager::delete($blog->image);
             }
-            $blog->image = $request->file('image')->store('blog', 'public');
+            $imageName = ImageManager::upload('blog/', 'webp', $request->file('image'));
+            $blog->image = 'blog/' . $imageName;
         }
 
         $blog->save();

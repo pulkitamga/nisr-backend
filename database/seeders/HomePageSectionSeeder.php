@@ -23,6 +23,7 @@ class HomePageSectionSeeder extends Seeder
             ['type' => 'blog', 'name' => 'Blog'],
             ['type' => 'client_review', 'name' => 'Client Review'],
             ['type' => 'wholesaler_section', 'name' => 'Wholesaler Section'],
+            ['type' => 'find_perfect_match', 'name' => 'Find Perfect Match'],
             ['type' => 'faq', 'name' => 'FAQ Asked Questions'],
             ['type' => 'download_app', 'name' => 'Download Mobile App'],
         ];

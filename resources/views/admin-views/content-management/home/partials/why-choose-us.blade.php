@@ -124,8 +124,8 @@ $content = $jsonData['section'] ?? [];
                 <input type="hidden" name="index" id="edit-card-index">
 
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <ul class="nav nav-tabs mb-4">
@@ -179,7 +179,7 @@ $content = $jsonData['section'] ?? [];
 
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">{{translate('Save changes')}}</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Cancel')}}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">{{translate('Cancel')}}</button>
                 </div>
             </form>
         </div>

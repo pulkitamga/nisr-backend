@@ -12,6 +12,7 @@ use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Utils\ImageManager;
 
 class CareerController extends Controller
 {
@@ -100,16 +101,12 @@ class CareerController extends Controller
             $data['description'] = $request->description[$defaultLangIndex] ?? null;
         }
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('career', 'public');
+            $imageName = ImageManager::upload('career/', 'webp', $request->file('image'));
+            $data['image'] = 'career/' . $imageName;
         }
 
         if ($request->has('buttonText')) {
             $data['button_text'] = $request->buttonText[$defaultLangIndex] ?? null;
-        }
-
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('career', 'public');
-            $data['image'] = $path;
         }
 
         $model = new $modelClass;
@@ -139,6 +136,9 @@ class CareerController extends Controller
         }
 
         $model = $modelMap[$section]::findOrFail($id);
+        if (!empty($model->image)) {
+            ImageManager::delete($model->image);
+        }
         $model->delete();
 
         return redirect()->route('admin.content-management.career.pages', ['section' => $section])
@@ -216,7 +216,11 @@ class CareerController extends Controller
             $data['location'] = $request->location[$defaultLangIndex];
         }
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('career', 'public');
+            if (!empty($model->image)) {
+                ImageManager::delete($model->image);
+            }
+            $imageName = ImageManager::upload('career/', 'webp', $request->file('image'));
+            $data['image'] = 'career/' . $imageName;
         }
 
         $model->fill($data);

@@ -50,8 +50,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Add FAQ</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -81,8 +81,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit FAQ</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">

@@ -1,10 +1,10 @@
 @php
-$languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0]['code'] ?? 'en';
+$languages = getWebConfig(name: 'pnc_language') ?? ['en'];
+$defaultLanguage = $languages[0] ?? 'en';
 
 @endphp
 <div class="d-flex justify-content-end my-3">
-    <button class="btn btn-primary" data-toggle="modal" data-target="#addBannerModal">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBannerModal" data-toggle="modal" data-target="#addBannerModal">
         {{ translate('Add Banner') }}
     </button>
 </div>
@@ -108,8 +108,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('Edit Banner') }}</h5>
-                    <button type="button" class="close custom-close" data-dismiss="modal" aria-label="Close">
-                        &times;
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <ul class="nav nav-tabs mb-4">
@@ -157,10 +157,29 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                         placeholder="{{ translate('Button Link') }}">
 
                     <label>{{ translate('Image') }}</label>
-                    <input type="file" name="image" class="form-control mb-2">
-                    <img src="" width="150" class="img-thumbnail mb-2">
+                    <input type="hidden" name="remove_image" id="editBannerRemoveImage" value="0">
+                    <div class="mt-2 mb-1" style="max-width:220px;">
+                        <div class="custom_upload_input position-relative border-dashed-2">
+                            <input type="file" name="image" id="editBannerImageInput"
+                                class="custom-upload-input-file" data-imgpreview="editBannerImagePreview"
+                                accept=".jpg, .png, .jpeg, .webp|image/*">
+                            <span id="editBannerImageClear" class="delete_file_input btn btn-outline-danger btn-sm square-btn d-none">
+                                <i class="tio-delete"></i>
+                            </span>
+                            <div class="img_area_with_preview position-absolute z-index-2">
+                                <img id="editBannerImagePreview" class="h-auto bg-white d-none cms-image-preview" alt="{{ translate('Image Preview') }}" src="">
+                            </div>
+                            <div class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
+                                <div class="d-flex flex-column justify-content-center align-items-center">
+                                    <img alt="" class="w-75" src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
+                                    <h3 class="text-muted text-capitalize">{{ translate('Upload Image') }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">{{ translate('Cancel') }}</button>
                     <button class="btn btn-primary" type="submit">{{ translate('Update') }}</button>
                 </div>
             </div>
@@ -180,8 +199,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 
                 <input type="hidden" name="section" value="{{ $currentType }}">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <ul class="nav nav-tabs mb-4">
@@ -230,9 +249,26 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 
                     <div class="form-group col-md-6">
                         <label>{{ translate('Image') }}</label>
-                        <input type="file" name="image" class="form-control-file" onchange="previewImage(this)">
-                        <img id="imagePreview" src="#" alt="{{ translate('Image Preview') }}" class="mt-2"
-                            style="display:none; max-width: 150px;">
+                        <div class="mt-2 mb-1" style="max-width:220px;">
+                            <div class="custom_upload_input position-relative border-dashed-2">
+                                <input type="file" name="image" id="addBannerImageInput"
+                                    class="custom-upload-input-file" data-imgpreview="imagePreview"
+                                    accept=".jpg, .png, .jpeg, .webp|image/*" required>
+                                <span id="addBannerImageClear" class="delete_file_input btn btn-outline-danger btn-sm square-btn d-none">
+                                    <i class="tio-delete"></i>
+                                </span>
+                                <div class="img_area_with_preview position-absolute z-index-2">
+                                    <img id="imagePreview" src="" alt="{{ translate('Image Preview') }}"
+                                        class="h-auto bg-white d-none cms-image-preview">
+                                </div>
+                                <div class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
+                                    <div class="d-flex flex-column justify-content-center align-items-center">
+                                        <img alt="" class="w-75" src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
+                                        <h3 class="text-muted text-capitalize">{{ translate('Upload Image') }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group col-md-6">
@@ -244,7 +280,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel')
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">{{ translate('Cancel')
                         }}</button>
                     <button type="submit" class="btn btn-primary">{{ translate('Save Banner') }}</button>
                 </div>
@@ -256,16 +292,6 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 
 
 <script>
-    function previewImage(input) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.getElementById('imagePreview');
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-
     function confirmAndDelete(button) {
         const url = button.dataset.url;
         const index = button.dataset.index;
@@ -298,7 +324,99 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 
     document.addEventListener('DOMContentLoaded', function() {
         const editButtons = document.querySelectorAll('.edit-banner-btn');
-        const modal = new bootstrap.Modal(document.getElementById('editModal'));
+        const editModalElement = document.getElementById('editModal');
+        const addModalElement = document.getElementById('addBannerModal');
+        const modal = new bootstrap.Modal(editModalElement);
+        const addForm = document.getElementById('bannerForm');
+        const addImageInput = document.getElementById('addBannerImageInput');
+        const addImagePreview = document.getElementById('imagePreview');
+        const addImageClear = document.getElementById('addBannerImageClear');
+        const editImageInput = document.getElementById('editBannerImageInput');
+        const editImagePreview = document.getElementById('editBannerImagePreview');
+        const editImageClear = document.getElementById('editBannerImageClear');
+        const editRemoveImageInput = document.getElementById('editBannerRemoveImage');
+        let currentEditImage = '';
+
+        const clearFileInput = (input) => {
+            if (input) {
+                input.value = '';
+            }
+        };
+
+        const updateAddPreview = (src) => {
+            if (src) {
+                addImagePreview.src = src;
+                addImagePreview.classList.remove('d-none');
+                addImageClear.classList.remove('d-none');
+                addImageClear.classList.add('d-flex');
+                return;
+            }
+
+            addImagePreview.src = '';
+            addImagePreview.classList.add('d-none');
+            addImageClear.classList.add('d-none');
+            addImageClear.classList.remove('d-flex');
+        };
+
+        const updateEditPreview = (src) => {
+            if (src) {
+                editImagePreview.src = src;
+                editImagePreview.classList.remove('d-none');
+                editImageClear.classList.remove('d-none');
+                editImageClear.classList.add('d-flex');
+                return;
+            }
+
+            editImagePreview.src = '';
+            editImagePreview.classList.add('d-none');
+            editImageClear.classList.add('d-none');
+            editImageClear.classList.remove('d-flex');
+        };
+
+        const previewFromFileInput = (input, callback) => {
+            const file = input && input.files ? input.files[0] : null;
+            if (!file) {
+                callback('');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                callback(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        };
+
+        addImageInput.addEventListener('change', function() {
+            previewFromFileInput(addImageInput, updateAddPreview);
+        });
+
+        editImageInput.addEventListener('change', function() {
+            previewFromFileInput(editImageInput, function(previewUrl) {
+                if (previewUrl) {
+                    editRemoveImageInput.value = '0';
+                    updateEditPreview(previewUrl);
+                    return;
+                }
+                if (editRemoveImageInput.value === '1') {
+                    updateEditPreview('');
+                    return;
+                }
+                updateEditPreview(currentEditImage);
+            });
+        });
+
+        addImageClear.addEventListener('click', function() {
+            clearFileInput(addImageInput);
+            updateAddPreview('');
+        });
+
+        editImageClear.addEventListener('click', function() {
+            clearFileInput(editImageInput);
+            currentEditImage = '';
+            editRemoveImageInput.value = '1';
+            updateEditPreview('');
+        });
 
         editButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -308,7 +426,6 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 const buttonText = JSON.parse(this.dataset.buttontext || '{}');
                 const buttonLink = this.dataset.buttonlink || '';
                 const image = this.dataset.image || '';
-                const isActive = this.dataset.status === '1';
 
                 // Set index hidden field
                 document.getElementById('editIndex').value = index;
@@ -333,20 +450,29 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 document.getElementById('editButtonLink').value = buttonLink;
 
                 // Image preview
-                const preview = document.querySelector('#editModal img.img-thumbnail');
-                if (image) {
-                    preview.src = image.startsWith('http') ? image : `{{ asset('') }}` + image;
-                    preview.style.display = 'block';
-                } else {
-                    preview.style.display = 'none';
-                }
-
-
+                currentEditImage = image
+                    ? (image.startsWith('http') ? image : `{{ asset('') }}` + image.replace(/^\/+/, ''))
+                    : '';
+                editRemoveImageInput.value = '0';
+                clearFileInput(editImageInput);
+                updateEditPreview(currentEditImage);
 
                 modal.show();
             });
         });
 
+        editModalElement.addEventListener('hidden.bs.modal', function() {
+            clearFileInput(editImageInput);
+            currentEditImage = '';
+            editRemoveImageInput.value = '0';
+            updateEditPreview('');
+        });
+
+        addModalElement.addEventListener('hidden.bs.modal', function() {
+            addForm.reset();
+            clearFileInput(addImageInput);
+            updateAddPreview('');
+        });
 
 
     });

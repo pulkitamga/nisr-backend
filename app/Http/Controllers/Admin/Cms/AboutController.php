@@ -15,7 +15,7 @@ use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
-use Illuminate\Support\Facades\Storage;
+use App\Utils\ImageManager;
 
 class AboutController extends Controller
 {
@@ -100,7 +100,8 @@ class AboutController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $input['image'] = $request->file('image')->store('about', 'public');
+            $imageName = ImageManager::upload('about/', 'webp', $request->file('image'));
+            $input['image'] = 'about/' . $imageName;
         }
 
         $model = new $modelClass;
@@ -129,6 +130,9 @@ class AboutController extends Controller
                 ->withErrors(['Invalid section']);
         }
         $model = $modelMap[$section]::findOrFail($id);
+        if (!empty($model->image)) {
+            ImageManager::delete($model->image);
+        }
         $model->delete();
 
         return redirect()->route('admin.content-management.about-us.pages', ['section' => $section])
@@ -206,14 +210,18 @@ class AboutController extends Controller
 
         if ($request->remove_image == 1) {
             if ($model->image) {
-                Storage::disk('public')->delete($model->image);
+                ImageManager::delete($model->image);
             }
 
             $data['image'] = null; // set column to null
         }
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('about', 'public');
+            if (!empty($model->image)) {
+                ImageManager::delete($model->image);
+            }
+            $imageName = ImageManager::upload('about/', 'webp', $request->file('image'));
+            $data['image'] = 'about/' . $imageName;
         }
 
         $model->fill($data);

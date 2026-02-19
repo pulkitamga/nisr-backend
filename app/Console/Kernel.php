@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         \App\Console\Commands\AutoExpireWarranties::class,
         \App\Console\Commands\InventoryReconcileCommand::class,
+        \App\Console\Commands\SeedUiTranslationEntries::class,
     ];
 
     /**

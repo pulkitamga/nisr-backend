@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin\Cms;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\HomePageSection;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Utils\ImageManager;
 use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 
 
@@ -23,6 +26,61 @@ class HomeController extends Controller
         private readonly TranslationRepositoryInterface     $translationRepo,
 
     ) {}
+
+    private function storeOptimizedImage(UploadedFile $image, string $directory): string
+    {
+        $normalizedDirectory = trim($directory, '/') . '/';
+        $fileName = ImageManager::upload($normalizedDirectory, 'webp', $image);
+
+        return 'storage/' . $normalizedDirectory . $fileName;
+    }
+
+    private function deleteImageIfExists(?string $path): void
+    {
+        if (empty($path)) {
+            return;
+        }
+
+        $candidatePath = $path;
+        if (filter_var($candidatePath, FILTER_VALIDATE_URL)) {
+            $candidatePath = parse_url($candidatePath, PHP_URL_PATH) ?? '';
+        }
+
+        $candidatePath = ltrim((string)$candidatePath, '/');
+        if ($candidatePath === '') {
+            return;
+        }
+
+        $diskCandidates = [];
+        if (str_starts_with($candidatePath, 'storage/')) {
+            $diskCandidates[] = substr($candidatePath, strlen('storage/'));
+        }
+        $diskCandidates[] = $candidatePath;
+        if (!str_contains($candidatePath, '/')) {
+            $diskCandidates[] = 'uploads/' . $candidatePath;
+        }
+
+        foreach (array_unique($diskCandidates) as $diskPath) {
+            if ($diskPath !== '' && Storage::disk('public')->exists($diskPath)) {
+                Storage::disk('public')->delete($diskPath);
+                return;
+            }
+        }
+
+        $publicCandidates = [$candidatePath];
+        if (!str_contains($candidatePath, '/')) {
+            $publicCandidates[] = 'uploads/' . $candidatePath;
+        }
+
+        foreach (array_unique($publicCandidates) as $publicPath) {
+            $absolutePath = public_path($publicPath);
+            if (file_exists($absolutePath)) {
+                @unlink($absolutePath);
+                return;
+            }
+        }
+    }
+
     public function index(Request $request)
     {
 
@@ -40,31 +98,30 @@ class HomeController extends Controller
 
         $translations = [];
 
-        foreach ($currentSection->translations as $trans) {
-            $locale = $trans->locale;
-            $key = $trans->key;
-            $value = $trans->value;
-            $index = $trans->item_index;
+        if ($currentSection) {
+            foreach ($currentSection->translations as $trans) {
+                $locale = $trans->locale;
+                $key = $trans->key;
+                $value = $trans->value;
+                $index = $trans->item_index;
 
-            if (!isset($translations[$locale])) {
-                $translations[$locale] = [];
-            }
+                if (!isset($translations[$locale])) {
+                    $translations[$locale] = [];
+                }
 
-            if ($index === '-1') {
-                // 🔹 Section-level title/subtitle
-                if (!isset($translations[$locale]['section'])) {
-                    $translations[$locale]['section'] = [];
+                if ($index === '-1') {
+                    if (!isset($translations[$locale]['section'])) {
+                        $translations[$locale]['section'] = [];
+                    }
+                    $translations[$locale]['section'][$key] = $value;
+                } elseif (is_numeric($index) && (int)$index >= 0) {
+                    if (!isset($translations[$locale]['cards'][$index])) {
+                        $translations[$locale]['cards'][$index] = [];
+                    }
+                    $translations[$locale]['cards'][$index][$key] = $value;
+                } else {
+                    $translations[$locale][$key] = $value;
                 }
-                $translations[$locale]['section'][$key] = $value;
-            } elseif (is_numeric($index) && (int)$index >= 0) {
-                // 🔸 Card-level translations
-                if (!isset($translations[$locale]['cards'][$index])) {
-                    $translations[$locale]['cards'][$index] = [];
-                }
-                $translations[$locale]['cards'][$index][$key] = $value;
-            } else {
-                // 🟡 Fallback (rare)
-                $translations[$locale][$key] = $value;
             }
         }
 
@@ -156,8 +213,10 @@ class HomeController extends Controller
 
         $defaultLangIndex = array_search(config('app.locale'), $request->lang);
 
-        $imagePath = $request->file('image')->store('public/reviews');
-        $imageUrl = asset(str_replace('public/', 'storage/', $imagePath));
+        $imageUrl = $this->storeOptimizedImage(
+            image: $request->file('image'),
+            directory: 'reviews'
+        );
 
         $section = HomePageSection::where('type', 'client_review')->first();
         $data = json_decode($section->value ?? '{}', true);
@@ -207,10 +266,13 @@ class HomeController extends Controller
         }
 
         if ($request->hasFile('image_file') && $request->file('image_file')->isValid()) {
-            $path = $request->file('image_file')->store('reviews', 'public');
-            $imageUrl = asset('storage/' . $path);
+            $this->deleteImageIfExists($data['clients'][$validated['index']]['image'] ?? null);
+            $imageUrl = $this->storeOptimizedImage(
+                image: $request->file('image_file'),
+                directory: 'reviews'
+            );
         } else {
-            $imageUrl = $request->input('image_url', '');
+            $imageUrl = $request->input('image_url', $data['clients'][$validated['index']]['image'] ?? '');
         }
 
         $data['clients'][$validated['index']] = [
@@ -240,6 +302,7 @@ class HomeController extends Controller
         if (!isset($data['clients'][$validated['index']])) {
             return redirect()->back()->withErrors('Review not found.');
         }
+        $this->deleteImageIfExists($data['clients'][$validated['index']]['image'] ?? null);
         array_splice($data['clients'], $validated['index'], 1);
         $section->value = json_encode($data);
         $section->save();
@@ -343,8 +406,11 @@ class HomeController extends Controller
 
         foreach ($request->cards as $index => $cardInput) {
             if ($request->hasFile("cards.$index.image")) {
-                $imagePath = $request->file("cards.$index.image")->store('uploads/why_join_us', 'public');
-                $data['section']['cards'][$index]['image'] = 'storage/' . $imagePath;
+                $this->deleteImageIfExists($cardInput['existing_image'] ?? null);
+                $data['section']['cards'][$index]['image'] = $this->storeOptimizedImage(
+                    image: $request->file("cards.$index.image"),
+                    directory: 'uploads/why_join_us'
+                );
             } else {
                 $data['section']['cards'][$index]['image'] = $cardInput['existing_image'] ?? '';
             }
@@ -433,11 +499,11 @@ class HomeController extends Controller
         $data['button']['link'] = $validated['button_link'] ?? '';
 
         if ($request->hasFile('image')) {
-            if (!empty($data['image']) && file_exists(public_path($data['image']))) {
-                unlink(public_path($data['image']));
-            }
-            $path = $request->file('image')->store('uploads/wholesaler_section', 'public');
-            $data['image'] = 'storage/' . $path;
+            $this->deleteImageIfExists($data['image'] ?? null);
+            $data['image'] = $this->storeOptimizedImage(
+                image: $request->file('image'),
+                directory: 'uploads/wholesaler_section'
+            );
         } else {
             $data['image'] = $data['image'] ?? '';
         }
@@ -447,6 +513,71 @@ class HomeController extends Controller
         $this->translationRepo->update($request, HomePageSection::class, $section->id);
 
         return redirect()->back()->with('success', 'Wholesaler Section updated successfully.');
+    }
+
+    public function updateFindPerfectMatch(Request $request)
+    {
+        $validated = $request->validate([
+            'lang' => 'required|array',
+            'section_heading' => 'required|array',
+            'hero_heading' => 'required|array',
+            'hero_description' => 'required|array',
+            'filter_title' => 'required|array',
+            'make_label' => 'required|array',
+            'model_label' => 'required|array',
+            'year_label' => 'required|array',
+            'make_placeholder' => 'required|array',
+            'model_placeholder' => 'required|array',
+            'year_placeholder' => 'required|array',
+            'apply_button_text' => 'required|array',
+        ]);
+
+        $section = HomePageSection::firstOrCreate(
+            ['type' => 'find_perfect_match'],
+            [
+                'name' => 'Find Perfect Match',
+                'value' => json_encode([]),
+                'is_active' => 1,
+            ]
+        );
+
+        $defaultLangIndex = array_search(config('app.locale'), $request->lang, true);
+        if ($defaultLangIndex === false) {
+            $defaultLangIndex = 0;
+        }
+
+        $decoded = json_decode($section->value ?? '', true);
+        $isList = is_array($decoded) && $decoded !== [] && array_keys($decoded) === range(0, count($decoded) - 1);
+        $data = is_array($decoded) && !$isList ? $decoded : [];
+
+        $fields = [
+            'section_heading',
+            'hero_heading',
+            'hero_description',
+            'filter_title',
+            'make_label',
+            'model_label',
+            'year_label',
+            'make_placeholder',
+            'model_placeholder',
+            'year_placeholder',
+            'apply_button_text',
+        ];
+
+        foreach ($fields as $field) {
+            $data[$field] = $validated[$field][$defaultLangIndex] ?? ($data[$field] ?? '');
+        }
+
+        $section->value = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $section->save();
+
+        $this->translationRepo->update(
+            request: $request,
+            model: HomePageSection::class,
+            id: $section->id
+        );
+
+        return redirect()->back()->with('success', 'Find Perfect Match section updated successfully.');
     }
 
 
@@ -526,6 +657,7 @@ class HomeController extends Controller
             'key' => 'required|string',
             'alt' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'remove_image' => 'nullable|in:0,1',
         ]);
 
         if ($validated['type'] !== 'download_app') {
@@ -541,23 +673,26 @@ class HomeController extends Controller
         $data = json_decode($section->value, true);
 
         $key = $validated['key'];
+        $removeImage = (int) $request->input('remove_image', 0) === 1;
 
         if (!isset($data['content'][$key])) {
             return redirect()->back()->withErrors('Invalid key.');
         }
 
         $data['content'][$key]['alt'] = $validated['alt'];
+        $existingImage = $data['content'][$key]['image'] ?? null;
+
+        if ($removeImage && !$request->hasFile('image')) {
+            $this->deleteImageIfExists($existingImage);
+            $data['content'][$key]['image'] = '';
+        }
 
         if ($request->hasFile('image')) {
-            if (!empty($data['content'][$key]['image']) && file_exists(public_path('uploads/' . $data['content'][$key]['image']))) {
-                @unlink(public_path('uploads/' . $data['content'][$key]['image']));
-            }
-
-            $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads'), $filename);
-
-            $data['content'][$key]['image'] = $filename;
+            $this->deleteImageIfExists($existingImage);
+            $data['content'][$key]['image'] = $this->storeOptimizedImage(
+                image: $request->file('image'),
+                directory: 'uploads'
+            );
         }
 
         $section->value = json_encode($data);
@@ -771,7 +906,10 @@ class HomeController extends Controller
         $data = json_decode($section->value, true) ?? [];
         $defaultLangIndex = array_search(config('app.locale'), $request->lang);
 
-        $imagePath = $request->file('image')->store('banners', 'public');
+        $imagePath = $this->storeOptimizedImage(
+            image: $request->file('image'),
+            directory: 'banners'
+        );
 
         $index = count($data); // This is the correct index for new entry
 
@@ -780,7 +918,7 @@ class HomeController extends Controller
             'paragraph' => $request->paragraph[$defaultLangIndex],
             'buttonText' => $request->buttonText[$defaultLangIndex],
             'buttonLink' => $request->buttonLink,
-            'image' => 'storage/' . $imagePath,
+            'image' => $imagePath,
             'is_active' => $request->has('is_active') ? true : false,
         ];
 
@@ -806,6 +944,7 @@ class HomeController extends Controller
         $request->validate([
             'index' => 'required|integer',
             'section' => 'required|string',
+            'remove_image' => 'nullable|in:0,1',
         ]);
 
         $section = HomePageSection::where('type', $request->section)->firstOrFail();
@@ -814,13 +953,24 @@ class HomeController extends Controller
 
 
         $item = &$data[$request->index];
+        $removeImage = (int) $request->input('remove_image', 0) === 1;
+        $existingImage = $item['image'] ?? null;
         $item['heading'] = $request->heading[$defaultLangIndex];
         $item['paragraph'] = $request->paragraph[$defaultLangIndex];
         $item['buttonText'] = $request->buttonText[$defaultLangIndex];
         $item['buttonLink'] = $request->buttonLink;
 
+        if ($removeImage && !$request->hasFile('image')) {
+            $this->deleteImageIfExists($existingImage);
+            $item['image'] = '';
+        }
+
         if ($request->hasFile('image')) {
-            $item['image'] = 'storage/' . $request->file('image')->store('banners', 'public');
+            $this->deleteImageIfExists($existingImage);
+            $item['image'] = $this->storeOptimizedImage(
+                image: $request->file('image'),
+                directory: 'banners'
+            );
         }
 
         $section->value = json_encode($data);
@@ -845,6 +995,7 @@ class HomeController extends Controller
 
         $section = HomePageSection::where('type', $request->section)->firstOrFail();
         $data = json_decode($section->value, true);
+        $this->deleteImageIfExists($data[$request->index]['image'] ?? null);
         array_splice($data, $request->index, 1);
 
         $section->value = json_encode($data);

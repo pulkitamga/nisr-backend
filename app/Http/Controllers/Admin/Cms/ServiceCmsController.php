@@ -9,6 +9,7 @@ use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Utils\ImageManager;
 
 class ServiceCmsController extends Controller
 {
@@ -64,7 +65,11 @@ class ServiceCmsController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $cmsProduct->image = $request->file('image')->store('cms-service', 'public');
+            if (!empty($cmsProduct->image)) {
+                ImageManager::delete($cmsProduct->image);
+            }
+            $imageName = ImageManager::upload('cms-service/', 'webp', $request->file('image'));
+            $cmsProduct->image = 'cms-service/' . $imageName;
         }
          $cmsProduct->button_link = $request->button_link;
 
