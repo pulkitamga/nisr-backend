@@ -141,36 +141,20 @@
                             
                             <!-- Variation Buttons -->
                             <div class="variation-buttons-container">
-                                <div class="variation-title">L/R :</div>
+                                <div class="variation-title">{{ translate('variation') }} :</div>
                                 <div class="variation-buttons" id="variation-buttons">
                                     @foreach($variationsWithRanges as $index => $variationData)
                                         @php
                                             $wp = $variationData['wholesaleProduct'];
                                             $range = $variationData['filteredRange'];
-                                            $variationValues = explode('|', $wp->variation_key);
-                                            $displayText = '';
-                                            $cleanVariant = '';
-                                            
-                                            // Extract clean display text (like "left" or "right")
-                                            foreach ($variationValues as $value) {
-                                                $value = trim($value);
-                                                if (strpos(strtolower($value), 'l/r:') !== false || strpos(strtolower($value), 'l/r :') !== false) {
-                                                    $parts = explode(':', $value);
-                                                    $displayText = trim(end($parts));
-                                                    $cleanVariant = $displayText;
-                                                    break;
-                                                }
-                                            }
-                                            
-                                            if (empty($displayText)) {
-                                                $displayText = trim(end($variationValues));
-                                                $cleanVariant = $displayText;
-                                            }
+                                            $resolvedVariationKey = $wp->resolved_variation_key ?? $wp->variation_key ?? '__default__';
+                                            $displayText = $wp->resolved_variation_display ?? $wp->variation_type ?? 'Default';
+                                            $cleanVariant = $wp->resolved_variation_type ?? $displayText;
                                         @endphp
                                         <button type="button" 
                                                 class="variation-btn {{ $index == 0 ? 'active' : '' }}" 
                                                 data-index="{{ $index }}"
-                                                data-variation-key="{{ $wp->variation_key }}"
+                                                data-variation-key="{{ $resolvedVariationKey }}"
                                                 data-display-text="{{ $displayText }}"
                                                 data-clean-variant="{{ $cleanVariant }}"
                                                 data-price="{{ $range->price_per_piece }}"
@@ -193,22 +177,8 @@
                                         $firstVariation = $variationsWithRanges[0] ?? null;
                                         $firstRange = $firstVariation['filteredRange'] ?? null;
                                         $firstWp = $firstVariation['wholesaleProduct'] ?? null;
-                                        $firstCleanVariant = '';
-                                        
-                                        if ($firstWp) {
-                                            $firstVariationValues = explode('|', $firstWp->variation_key);
-                                            foreach ($firstVariationValues as $value) {
-                                                $value = trim($value);
-                                                if (strpos(strtolower($value), 'l/r:') !== false || strpos(strtolower($value), 'l/r :') !== false) {
-                                                    $parts = explode(':', $value);
-                                                    $firstCleanVariant = trim(end($parts));
-                                                    break;
-                                                }
-                                            }
-                                            if (empty($firstCleanVariant)) {
-                                                $firstCleanVariant = trim(end($firstVariationValues));
-                                            }
-                                        }
+                                        $firstCleanVariant = $firstWp ? ($firstWp->resolved_variation_display ?? $firstWp->variation_type ?? '') : '';
+                                        $firstResolvedVariationKey = $firstWp ? ($firstWp->resolved_variation_key ?? $firstWp->variation_key ?? '__default__') : '__default__';
                                     @endphp
                                     
                                     @if($firstRange)
@@ -295,11 +265,11 @@
                                 <form action="{{ route('web.addwholesale') }}" method="POST" id="add-to-cart-form">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $baseProduct->id }}" id="product-id">
-                                    <input type="hidden" name="seller_id" value="{{ $baseProduct->added_by == 'admin' ? 1 : $product->user_id }}">
+                                    <input type="hidden" name="seller_id" value="{{ $baseProduct->added_by == 'admin' ? 1 : $baseProduct->user_id }}">
                                     <input type="hidden" name="name" value="{{ $baseProduct->name }}">
                                     
                                     <!-- VARIANT: Full variation key for processing -->
-                                    <input type="hidden" name="variant" value="{{ $firstWp->variation_key ?? '' }}" id="variant-input">
+                                    <input type="hidden" name="variant" value="{{ $firstResolvedVariationKey }}" id="variant-input">
                                     
                                     <input type="hidden" name="tax" value="{{ $baseProduct->tax }}">
                                     <input type="hidden" name="tax_model" value="{{ $baseProduct->tax_model }}">
@@ -486,7 +456,10 @@ function selectVariation(button) {
                 const variationKey = firstBtn.getAttribute('data-variation-key');
                 const cleanVariant = firstBtn.getAttribute('data-clean-variant');
                 variantInput.value = variationKey;
-                document.getElementById('clean-variant-input').value = cleanVariant;
+                const cleanVariantInput = document.getElementById('clean-variant-input');
+                if (cleanVariantInput) {
+                    cleanVariantInput.value = cleanVariant;
+                }
             }
         }
     });

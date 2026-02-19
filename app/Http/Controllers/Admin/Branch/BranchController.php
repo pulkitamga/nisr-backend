@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Branch;
 
 use App\Models\Admin;
 use App\Models\State;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\WebConfigKey;
 use App\Traits\CommonTrait;
 use Illuminate\Support\Str;
@@ -190,20 +191,10 @@ class BranchController extends BaseController
             $productId = $request->product_id;
             $branchId = $request->branch_id;
             $variationType = $request->variation_type; // Pass this from JS
+            $variantMatcher = app(VariantMatcher::class);
 
             // Replicate the logic from fGetBranchesStockList
             $history = \App\Models\StockRequestProduct::where('product_id', $productId)
-                ->where(function ($q) use ($variationType) {
-                    if ($variationType === 'No Variation' || empty($variationType) || $variationType === 'null') {
-                        $q->where(function ($qq) {
-                            $qq->whereNull('variation_type')
-                                ->orWhere('variation_type', '')
-                                ->orWhere('variation_type', 'No Variation');
-                        });
-                    } else {
-                        $q->where('variation_type', 'like', '%' . $variationType . '%');
-                    }
-                })
                 ->whereIn('status', ['transferred', 'pending', 'approved'])
                 ->where(function ($q) use ($branchId) {
                     $q->where('received_from_branch', $branchId)
@@ -213,7 +204,15 @@ class BranchController extends BaseController
                 })
                 ->with('stockRequest')
                 ->latest()
-                ->get();
+                ->get()
+                ->filter(function ($row) use ($variationType, $variantMatcher) {
+                    if ($variationType === 'No Variation' || empty($variationType) || $variationType === 'null') {
+                        return $variantMatcher->isDefault($row->variation_type);
+                    }
+
+                    return $variantMatcher->matches($variationType, $row->variation_type);
+                })
+                ->values();
 
             return Excel::download(new \App\Exports\BranchStockHistoryExport(['history' => $history]), 'stock-history.xlsx');
         }
@@ -524,13 +523,24 @@ class BranchController extends BaseController
      * ----------------------------- */
         $transactionLogs = ProductStockTransaction::with(['fromBranch', 'toBranch'])
             ->whereIn('product_stock_id', function ($q) use ($stock) {
+                $variantMatcher = app(VariantMatcher::class);
+                $matchingStockIds = \App\Models\ProductStock::query()
+                    ->where('product_id', $stock->product_id)
+                    ->get()
+                    ->filter(function ($productStock) use ($stock, $variantMatcher) {
+                        if ($variantMatcher->isDefault($stock->variation_key) || $variantMatcher->isDefault($stock->variation_type)) {
+                            return $variantMatcher->isDefault($productStock->variant);
+                        }
+
+                        return $variantMatcher->matches($productStock->variant, $stock->variation_key)
+                            || $variantMatcher->matches($productStock->variant, $stock->variation_type);
+                    })
+                    ->pluck('id')
+                    ->all();
+
                 $q->select('id')
                     ->from('product_stocks')
-                    ->where('product_id', $stock->product_id)
-                    ->where(function ($qq) use ($stock) {
-                        $qq->where('variant', $stock->variation_key)
-                            ->orWhere('variant', $stock->variation_type);
-                    });
+                    ->whereIn('id', $matchingStockIds);
             })
             /* Filter to show only logs for the specific branch being viewed */
             ->where(function ($q) use ($stock) {

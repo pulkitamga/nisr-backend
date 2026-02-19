@@ -569,6 +569,8 @@ function posUpdateQuantityFunctionality() {
 }
 
 function getPOSUpdateQuantity(key, qty, e, variant = null) {
+    const branch_id = $('#branch_id').data('branch') || '';
+
     if (qty !== "") {
         $.post(
             $("#route-admin-pos-update-quantity").data("url"),
@@ -577,6 +579,7 @@ function getPOSUpdateQuantity(key, qty, e, variant = null) {
                 key: key,
                 quantity: qty,
                 variant: variant,
+                branch_id: branch_id,
             },
             function (data) {
                 updateQuantityResponseProcess(data);
@@ -592,6 +595,7 @@ function getPOSUpdateQuantity(key, qty, e, variant = null) {
                 key: key,
                 quantity: minValue,
                 variant: variant,
+                branch_id: branch_id,
             },
             function (data) {
                 updateQuantityResponseProcess(data);
@@ -1164,5 +1168,4 @@ function setProductData(parentClass, price, tax, discount) {
 $('.close-alert--message-for-pos').on('click', function () {
     $('.alert--message-for-pos').removeClass('active');
 })
-
 

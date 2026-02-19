@@ -54,7 +54,10 @@ class ManageBranchProductStock extends Model
     {
         return $query->where('branch_id', $branchId)
                      ->where('product_id', $productId)
-                     ->where('variation_key', $variationKey);
+                     ->where(function ($variationQuery) use ($variationKey) {
+                         $variationQuery->where('variation_key', $variationKey)
+                             ->orWhere('variation_type', $variationKey);
+                     });
     }
 
     // Scope: Find default stock (no variation)
@@ -62,6 +65,14 @@ class ManageBranchProductStock extends Model
     {
         return $query->where('branch_id', $branchId)
                      ->where('product_id', $productId)
-                     ->whereNull('variation_key');
+                     ->where(function ($variationQuery) {
+                         $variationQuery->where(function ($keyQuery) {
+                             $keyQuery->whereNull('variation_key')
+                                 ->orWhere('variation_key', '');
+                         })->where(function ($typeQuery) {
+                             $typeQuery->whereNull('variation_type')
+                                 ->orWhere('variation_type', '');
+                         });
+                     });
     }
 }

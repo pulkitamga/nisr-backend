@@ -287,21 +287,6 @@
                                                                 @endif
                                                             </button>
                                                             @endif
-                                                            @if(
-                                                            $order->order_status == 'delivered' &&
-                                                            $detail->delivery_status == 'delivered'&& $detail->warranty_status !=1 &&
-                                                            $detail->product->is_warranty &&
-                                                            $deliveredDays <= $warrantyActivationDays && !\App\Models\Warranty::where('product_id', $detail->product_id)
-                                                                ->where('final_user_id', auth()->id())
-                                                                ->exists()
-                                                                )
-                                                                <button class="btn btn-sm btn-outline-success activate-warranty-btn"
-                                                                    data-toggle="modal"
-                                                                    data-target="#activateWarrantyModal"
-                                                                    data-detail-id="{{ $detail->id }}">
-                                                                    {{ translate('Activate Warranty') }}
-                                                                </button>
-                                                                @endif
                                                                 @if($detail->refund_request !=0)
                                                                 <button type="button"
                                                                     class="btn btn-sm rounded btn--primary action-get-refund-details"
@@ -487,19 +472,6 @@
                                     @endif
 
 
-                                    @if(
-                                    $order->order_status == 'delivered' &&
-                                    $detail->delivery_status == 'delivered' &&
-                                    $detail->product->is_warranty &&
-                                    $deliveredDays <= $warrantyActivationDays
-                                        )
-                                        <button class="btn btn-sm btn-outline-success activate-warranty-btn"
-                                        data-toggle="modal"
-                                        data-target="#activateWarrantyModal"
-                                        data-detail-id="{{ $detail->id }}">
-                                        {{ translate('Activate Warranty') }}
-                                        </button>
-                                        @endif
                             </div>
                         </div>
                         @endif

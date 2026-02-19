@@ -46,6 +46,8 @@ class OrderSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'guest_checkout', value: $request->get('guest_checkout', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'free_delivery_over_amount_seller', value: currencyConverter(amount: $request['free_delivery_over_amount_seller']) ?? 0);
         $this->businessSettingRepo->updateOrInsert(type: 'stock_check', value: $request->get('stock_check', 0));
+        $this->businessSettingRepo->updateOrInsert(type: 'stock_validation_refactor_enabled', value: $request->get('stock_validation_refactor_enabled', 1));
+        $this->businessSettingRepo->updateOrInsert(type: 'stock_validation_refactor_mirror_mode', value: $request->get('stock_validation_refactor_mirror_mode', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'character_trigger_limit_for_autosearch', value: $request->get('character_trigger_limit_for_autosearch', 0));
         clearWebConfigCacheKeys();
         Toastr::success(translate('successfully_updated'));

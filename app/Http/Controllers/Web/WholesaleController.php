@@ -25,6 +25,7 @@ use App\Models\QuotationMeta;
 use Illuminate\Support\Facades\Auth;
 use App\Models\WholesaleProductPriceRange;
 use App\Models\WholesaleConfirmOrderItem;
+use App\Domain\Stock\Support\VariantMatcher;
 use Illuminate\Support\Str;
 use App\Utils\Helpers;
 use Illuminate\Support\Facades\Log;
@@ -114,8 +115,9 @@ class WholesaleController extends Controller
                 $variationsWithRanges[] = [
                     'wholesaleProduct' => $wp,
                     'filteredRange' => $filteredRange,
-                    'variation_key' => $wp->variation_key,
-                    'variation_type' => $wp->variation_type,
+                    'variation_key' => $wp->resolved_variation_key,
+                    'variation_type' => $wp->resolved_variation_type,
+                    'variation_display' => $wp->resolved_variation_display,
                 ];
             }
         }
@@ -308,9 +310,11 @@ class WholesaleController extends Controller
                 $variationData = $this->extractVariationDataFromCart($cartItem);
 
                 // Get wholesale product using variation key from cart
-                $wholesaleProduct = WholeSaleProducts::where('product_id', $cartItem->product_id)
-                    ->where('variation_key', $variationData['variation_key'])
-                    ->first();
+                $wholesaleProduct = $this->findWholesaleProductByVariation(
+                    productId: $cartItem->product_id,
+                    variationInput: $variationData['variation_key'] ?? null,
+                    variationType: $variationData['variation_type'] ?? null
+                );
 
                 if (!$wholesaleProduct) {
                     Log::warning('Wholesale product not found', [
@@ -350,7 +354,7 @@ class WholesaleController extends Controller
                 $item = WholesalePurchaseOrderItem::create([
                     'wholesale_order_id' => $order->id,
                     'product_id'         => $cartItem->product_id,
-                    'product_variation_type' => $variationData['variant'], // This will be "Left" or "Right"
+                    'product_variation_type' => $variationData['variation_type'] ?? $variationData['variant'],
                     'product_quantity'   => $cartItem->quantity,
                     'tax'                => $cartItem->tax,
                     'base_price'         => $pricePerUnit,
@@ -362,7 +366,7 @@ class WholesaleController extends Controller
 
                 Log::info('Order item created', [
                     'item_id' => $item->id,
-                    'product_variation_type' => $variationData['variant']
+                    'product_variation_type' => $variationData['variation_type'] ?? $variationData['variant']
                 ]);
             } catch (\Exception $e) {
                 Log::error('Item save failed', [
@@ -414,7 +418,8 @@ class WholesaleController extends Controller
     private function extractVariationDataFromCart($cartItem)
     {
         $variationKey = '';
-        $variant = $cartItem->variant; // This should be "Left" or "Right"
+        $variant = trim((string)($cartItem->variant ?? ''));
+        $variationType = $variant !== '' ? $variant : null;
 
         // Try to get original variation key from choices column
         if ($cartItem->choices) {
@@ -424,17 +429,18 @@ class WholesaleController extends Controller
             }
         }
 
-        // If not found in choices, try to reconstruct from variations column
+        // If not found in choices, reconstruct from variations column
         if (empty($variationKey) && $cartItem->variations) {
             $variations = json_decode($cartItem->variations, true);
             $parts = [];
+            foreach (($variations ?? []) as $key => $value) {
+                $normalizedKey = $this->normalizeVariationSegmentKey($key);
+                $normalizedValue = trim((string)$value);
+                if ($normalizedValue === '') {
+                    continue;
+                }
 
-            if (isset($variations['color'])) {
-                $parts[] = 'unknown:' . $variations['color'];
-            }
-
-            if (isset($variations['L/R'])) {
-                $parts[] = 'l/r:' . strtolower($variations['L/R']); // Convert to lowercase for key
+                $parts[] = "{$normalizedKey}:{$normalizedValue}";
             }
 
             if (!empty($parts)) {
@@ -442,9 +448,16 @@ class WholesaleController extends Controller
             }
         }
 
+        if ($variationType === null && !empty($variationKey)) {
+            $variationType = WholeSaleProducts::extractTypeFromVariationKey($variationKey);
+        }
+
+        $variationKey = WholeSaleProducts::normalizeVariationKey($variationType, $variationKey);
+
         return [
             'variation_key' => $variationKey,
-            'variant' => $variant, // "Left" or "Right"
+            'variation_type' => $variationType,
+            'variant' => $variationType ?? $variant,
         ];
     }
 
@@ -500,12 +513,13 @@ class WholesaleController extends Controller
     {
         $userId = ($user == null || !empty($user->guest_id)) ? 'guest' : $user->id;
 
-        if (session()->has('cart_group_id')) {
-            return session('cart_group_id');
+        $sessionGroupId = session('wholesale_cart_group_id');
+        if (is_string($sessionGroupId) && preg_match('/^(WH-|wholesale_)/i', $sessionGroupId)) {
+            return $sessionGroupId;
         }
 
-        $groupId = 'wholesale_' . $userId . '-' . Str::random(5) . '-' . time();
-        session()->put('cart_group_id', $groupId);
+        $groupId = 'WH-' . $userId . '-' . Str::random(6) . '-' . time();
+        session()->put('wholesale_cart_group_id', $groupId);
 
         return $groupId;
     }
@@ -704,9 +718,12 @@ class WholesaleController extends Controller
         $product = Product::findOrFail($validated['product_id']);
 
         // Get wholesale product for variations
-        $wholesaleProduct = WholeSaleProducts::where('product_id', $product->id)
-            ->where('variation_key', $validated['variant'])
-            ->first();
+        $resolvedType = WholeSaleProducts::extractTypeFromVariationKey($validated['variant']);
+        $wholesaleProduct = $this->findWholesaleProductByVariation(
+            productId: $product->id,
+            variationInput: $validated['variant'],
+            variationType: $resolvedType
+        );
 
         if (!$wholesaleProduct) {
             Toastr::error(translate('Wholesale product not found.'));
@@ -716,55 +733,25 @@ class WholesaleController extends Controller
         // Get cart group ID
         $cartGroupId = $this->getOrCreateCartGroupId($user);
 
-        // Step 1: Extract data for variations column: {"color":"Yellow","L\/R":"left"}
-        $variationsArray = [];
-        $variantForColumn = ''; // For variant column: "Left"
-        $choicesArray = []; // For choices column: {"choice_7":"left"}
-
-        // Parse the variation key: e.g., "unknown:Yellow | l/r:left"
-        $variationKey = $validated['variant'];
-        $pairs = explode('|', $variationKey);
-
-        foreach ($pairs as $pair) {
-            $pair = trim($pair);
-            if (strpos($pair, ':') !== false) {
-                list($key, $value) = explode(':', $pair, 2);
-                $key = trim($key);
-                $value = trim($value);
-
-                // FIX: Map keys to correct format
-                if (strtolower($key) === 'unknown') {
-                    $key = 'color'; // Change "unknown" to "color"
-                    $color = $value;
-                } elseif (strtolower($key) === 'l/r' || strtolower($key) === 'l / r') {
-                    $key = 'L/R'; // Standardize to "L/R" with uppercase L and R
-
-                    // Step 3: For variant column - Capitalize first letter
-                    $variantForColumn = ucfirst($value); // "left" becomes "Left"
-
-                    // Step 2: For choices column
-                    $choicesArray = ['choice_7' => $value]; // Keep value as is for choices
-                }
-
-                // Add to variations array with corrected keys
-                $variationsArray[$key] = $value;
-            }
+        $variationKey = trim((string)($wholesaleProduct->resolved_variation_key ?? $validated['variant']));
+        $variationsArray = $this->parseVariationKeyPairs($variationKey);
+        $variantForColumn = trim((string)($wholesaleProduct->resolved_variation_type ?? ''));
+        if ($variantForColumn === '') {
+            $variantForColumn = trim((string)$this->extractVariantFromKey($variationKey));
+        }
+        if ($variantForColumn === '') {
+            $variantForColumn = 'Standard';
         }
 
-        // If we couldn't determine the variant, use a default
-        if (empty($variantForColumn)) {
-            // Extract from variations array or use a default
-            if (isset($variationsArray['L/R'])) {
-                $variantForColumn = ucfirst($variationsArray['L/R']);
-            } elseif (isset($variationsArray['l/r'])) {
-                $variantForColumn = ucfirst($variationsArray['l/r']);
-            } else {
-                $variantForColumn = 'Standard';
-            }
+        $choicesArray = $this->buildChoicePayloadFromVariationPairs(
+            $variationsArray,
+            json_decode($product->choice_options ?? '[]', true) ?: []
+        );
+        if ($variationKey !== '') {
+            $choicesArray['original_variation_key'] = $variationKey;
         }
 
-        // Get color for color column
-        $color = $variationsArray['color'] ?? $variationsArray['Color'] ?? $variationsArray['COLOR'] ?? null;
+        $color = $this->extractColorValueFromPairs($variationsArray);
 
         // Get seller info
         $sellerId = ($product->added_by == 'admin') ? 1 : $product->user_id;
@@ -775,7 +762,7 @@ class WholesaleController extends Controller
         $slug = $product->slug . '-' . Str::random(8);
 
         // Get the original variation key (for reference if needed)
-        $originalVariationKey = $validated['variant'];
+        $originalVariationKey = $variationKey;
 
         // Create NEW cart item - ALWAYS create new entry
         $cart = new Cart();
@@ -787,14 +774,10 @@ class WholesaleController extends Controller
         $cart->digital_product_type = null;
         $cart->color = $color;
 
-        // IMPORTANT: choices column should have EXACTLY: {"choice_7":"left"}
         $cart->choices = !empty($choicesArray) ? json_encode($choicesArray, JSON_UNESCAPED_SLASHES) : null;
 
-        // IMPORTANT: variations column should have EXACTLY: {"color":"Yellow","L\/R":"left"}
-        // Note: JSON_UNESCAPED_SLASHES to avoid escaping forward slashes
         $cart->variations = !empty($variationsArray) ? json_encode($variationsArray, JSON_UNESCAPED_SLASHES) : null;
 
-        // IMPORTANT: variant column should have EXACTLY: "Left" (capital L)
         $cart->variant = $variantForColumn;
 
         $cart->quantity = $validated['quantity'];
@@ -837,52 +820,221 @@ class WholesaleController extends Controller
     // Helper function to extract variant from key
     private function extractVariantFromKey($variationKey)
     {
-        // If it's already a clean variant, return as is with first letter capitalized
-        if (strpos($variationKey, '|') === false && strpos($variationKey, ':') === false) {
-            return ucfirst(trim($variationKey));
+        $normalizedKey = trim((string)$variationKey);
+        if ($normalizedKey === '') {
+            return '';
         }
 
-        // Try to extract L/R value from full variation key
-        $pairs = explode('|', $variationKey);
-        foreach ($pairs as $pair) {
-            $pair = trim($pair);
-            if (strpos($pair, ':') !== false) {
-                list($key, $value) = explode(':', $pair, 2);
-                $key = trim($key);
-                $value = trim($value);
+        $resolved = trim((string)(WholeSaleProducts::extractTypeFromVariationKey($normalizedKey) ?? ''));
+        if ($resolved !== '') {
+            return $resolved;
+        }
 
-                if (strtolower($key) === 'l/r' || strtolower($key) === 'l / r') {
-                    return ucfirst($value);
+        if (!str_contains($normalizedKey, '|') && !str_contains($normalizedKey, ':')) {
+            return $normalizedKey;
+        }
+
+        $pairs = $this->parseVariationKeyPairs($normalizedKey);
+        if (!empty($pairs)) {
+            return (string)end($pairs);
+        }
+
+        return $normalizedKey;
+    }
+
+    private function parseVariationKeyPairs(string $variationKey): array
+    {
+        $normalizedInput = trim($variationKey);
+        if ($normalizedInput === '') {
+            return [];
+        }
+
+        $pairs = [];
+        $segments = preg_split('/\|/', $normalizedInput) ?: [];
+        foreach ($segments as $segment) {
+            $segment = trim((string)$segment);
+            if ($segment === '') {
+                continue;
+            }
+
+            if (str_contains($segment, ':')) {
+                [$rawKey, $rawValue] = array_map('trim', explode(':', $segment, 2));
+                $key = $this->normalizeVariationSegmentKey($rawKey);
+                $value = trim((string)$rawValue);
+                if ($key === '' || $value === '') {
+                    continue;
                 }
+
+                $pairs[$key] = $value;
+                continue;
+            }
+
+            $pairs['variant'] = $segment;
+        }
+
+        return $pairs;
+    }
+
+    private function buildChoicePayloadFromVariationPairs(array $variationPairs, array $choiceOptions): array
+    {
+        $choices = [];
+        foreach ($choiceOptions as $choice) {
+            $choiceName = trim((string)($choice['name'] ?? ''));
+            if ($choiceName === '') {
+                continue;
+            }
+
+            $choiceTitle = $this->normalizeVariationSegmentKey($choice['title'] ?? '');
+            if ($choiceTitle === '') {
+                continue;
+            }
+
+            if (array_key_exists($choiceTitle, $variationPairs)) {
+                $choices[$choiceName] = $variationPairs[$choiceTitle];
             }
         }
 
-        // If no L/R found, get last value and capitalize first letter
-        $lastPart = end($pairs);
-        $lastPart = trim($lastPart);
+        return $choices;
+    }
 
-        if (strpos($lastPart, ':') !== false) {
-            $subParts = explode(':', $lastPart);
-            return ucfirst(trim(end($subParts)));
+    private function extractColorValueFromPairs(array $variationPairs): ?string
+    {
+        foreach ($variationPairs as $key => $value) {
+            if ($this->normalizeVariationSegmentKey($key) === 'color') {
+                $normalizedValue = trim((string)$value);
+                return $normalizedValue !== '' ? $normalizedValue : null;
+            }
         }
 
-        return ucfirst($lastPart);
+        return null;
+    }
+
+    private function normalizeVariationSegmentKey(mixed $key): string
+    {
+        $normalized = strtolower(trim((string)$key));
+        $normalized = preg_replace('/\s+/', ' ', $normalized);
+        return str_replace(' ', '_', $normalized);
+    }
+
+    private function findWholesaleProductByVariation(int $productId, ?string $variationInput, ?string $variationType = null): ?WholeSaleProducts
+    {
+        $normalizedInput = trim((string)($variationInput ?? ''));
+        if (in_array(strtolower($normalizedInput), ['default', '__default__', 'no variation'], true)) {
+            $normalizedInput = '';
+        }
+        $normalizedType = trim((string)($variationType ?? ''));
+
+        if ($normalizedType === '' && $normalizedInput !== '') {
+            $normalizedType = trim((string)(WholeSaleProducts::extractTypeFromVariationKey($normalizedInput) ?? ''));
+        }
+
+        $normalizedKey = WholeSaleProducts::normalizeVariationKey(
+            $normalizedType !== '' ? $normalizedType : null,
+            $normalizedInput !== '' ? $normalizedInput : null
+        );
+
+        if ($normalizedInput === '' && $normalizedType === '' && empty($normalizedKey)) {
+            return WholeSaleProducts::where('product_id', $productId)
+                ->where(function ($query) {
+                    $query->whereNull('variation_type')->orWhere('variation_type', '');
+                })
+                ->first();
+        }
+
+        $variantMatcher = app(VariantMatcher::class);
+
+        $exactMatch = WholeSaleProducts::where('product_id', $productId)
+            ->get()
+            ->first(function (WholeSaleProducts $candidate) use ($normalizedInput, $normalizedKey, $normalizedType, $variantMatcher) {
+                $candidateType = trim((string)($candidate->resolved_variation_type ?? ''));
+                $candidateKey = trim((string)($candidate->resolved_variation_key ?? ''));
+
+                if ($normalizedInput !== '' && (
+                    $variantMatcher->matches($normalizedInput, $candidateKey)
+                    || $variantMatcher->matches($normalizedInput, $candidateType)
+                )) {
+                    return true;
+                }
+
+                if (!empty($normalizedKey) && (
+                    $variantMatcher->matches($normalizedKey, $candidateKey)
+                    || $variantMatcher->matches($normalizedKey, $candidateType)
+                )) {
+                    return true;
+                }
+
+                if ($normalizedType !== '' && (
+                    $variantMatcher->matches($normalizedType, $candidateType)
+                    || $variantMatcher->matches($normalizedType, $candidateKey)
+                )) {
+                    return true;
+                }
+
+                return false;
+            });
+
+        if ($exactMatch) {
+            return $exactMatch;
+        }
+
+        $normalizedInputKey = WholeSaleProducts::normalizeVariationKey(null, $normalizedInput);
+
+        return WholeSaleProducts::where('product_id', $productId)
+            ->get()
+            ->first(function (WholeSaleProducts $candidate) use ($normalizedKey, $normalizedInputKey, $normalizedType, $variantMatcher) {
+                $candidateType = trim((string)($candidate->resolved_variation_type ?? ''));
+                $candidateKey = trim((string)($candidate->resolved_variation_key ?? ''));
+
+                if ($normalizedKey && (
+                    $variantMatcher->matches($candidateKey, $normalizedKey)
+                    || $variantMatcher->matches($candidateType, $normalizedKey)
+                )) {
+                    return true;
+                }
+
+                if ($normalizedInputKey && (
+                    $variantMatcher->matches($candidateKey, $normalizedInputKey)
+                    || $variantMatcher->matches($candidateType, $normalizedInputKey)
+                )) {
+                    return true;
+                }
+
+                if ($normalizedType !== '' && (
+                    $variantMatcher->matches($candidateType, $normalizedType)
+                    || $variantMatcher->matches($candidateKey, $normalizedType)
+                )) {
+                    return true;
+                }
+
+                return false;
+            });
     }
 
     private function getOrCreateCartGroupId($user)
     {
         $userId = $user->id;
-
-        // Check if user has any cart items
-        $existingCart = Cart::where('customer_id', $userId)
-            ->where('is_guest', 0)
-            ->first();
-
-        if ($existingCart && $existingCart->cart_group_id) {
-            return $existingCart->cart_group_id;
+        $sessionGroupId = session('wholesale_cart_group_id');
+        if (is_string($sessionGroupId) && preg_match('/^(WH-|wholesale_)/i', $sessionGroupId)) {
+            return $sessionGroupId;
         }
 
-        // Create unique group ID with timestamp
-        return 'WH-' . $userId . '-' . Str::random(6) . '-' . time();
+        $existingWholesaleGroup = (string)(Cart::query()
+            ->where('customer_id', $userId)
+            ->where('is_guest', 0)
+            ->where(function ($query) {
+                $query->where('cart_group_id', 'like', 'WH-%')
+                    ->orWhere('cart_group_id', 'like', 'wholesale_%');
+            })
+            ->orderByDesc('id')
+            ->value('cart_group_id') ?? '');
+
+        if ($existingWholesaleGroup !== '') {
+            session()->put('wholesale_cart_group_id', $existingWholesaleGroup);
+            return $existingWholesaleGroup;
+        }
+
+        $groupId = 'WH-' . $userId . '-' . Str::random(6) . '-' . time();
+        session()->put('wholesale_cart_group_id', $groupId);
+        return $groupId;
     }
 }

@@ -385,58 +385,139 @@ class WarrantyActivationController extends Controller
 
     public function activateFromOrder(Request $request)
     {
+        if (!is_array($request->input('serial_no'))) {
+            $request->merge([
+                'serial_no' => [$request->input('serial_no')]
+            ]);
+        }
+
         $request->validate([
             'order_detail_id' => 'required|exists:order_details,id',
-            'serial_no' => 'required|string|max:255',
+            'serial_no' => 'required|array',
+            'serial_no.*' => 'nullable|string|max:255',
             'agree_terms' => 'required|accepted',
         ]);
 
-        $warranty = Warranty::where('serial_number', $request->serial_no)
-            ->whereIn('status', ['preactivated', 'cancelled'])
-            ->first();
+        $detail = OrderDetail::with(['product', 'order'])->find($request->order_detail_id);
+        if (!$detail || !$detail->order || (int)$detail->order->customer_id !== (int)auth('customer')->id()) {
+            Toastr::error(translate('invalid_order'));
+            return back();
+        }
 
-        if (!$warranty) {
-            Toastr::error(translate('Invalid serial number or status not eligible for activation.'));
+        $activatedCount = Warranty::where('invoice_number', $detail->order_id)
+            ->where('product_id', $detail->product_id)
+            ->where('final_user_id', auth('customer')->id())
+            ->where('activation_method', 'order_activation')
+            ->whereNotNull('activation_date')
+            ->count();
+
+        $remainingQty = max(0, (int)$detail->qty - $activatedCount);
+        if ($remainingQty <= 0) {
+            Toastr::warning(translate('all_warranty_units_for_this_item_are_already_activated'));
+            return back();
+        }
+
+        $serialNumbers = collect($request->input('serial_no', []))
+            ->map(fn($serial) => trim((string)$serial))
+            ->filter(fn($serial) => $serial !== '')
+            ->unique()
+            ->values();
+
+        if ($serialNumbers->isEmpty()) {
+            Toastr::error(translate('please_enter_at_least_one_serial_number'));
             return back()->withInput();
         }
 
-        if (Warranty::where('serial_number', $request->serial_no)
-            ->where('status', 'active')
-            ->where('end_date', '>', now())
-            ->exists()
-        ) {
-            Toastr::error(translate('Warranty already activated.'));
+        if ($serialNumbers->count() > $remainingQty) {
+            Toastr::error(translate('you_can_activate_up_to') . ' ' . $remainingQty . ' ' . translate('serial_numbers_for_this_item'));
             return back()->withInput();
         }
 
-        if (Blacklist::where('serial_number', $request->serial_no)->exists()) {
-            Toastr::error(translate('This serial number is blacklisted and cannot be activated.'));
-            return back()->withInput();
+        $defaultDuration = (int)($this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? 12);
+        $start = $detail->updated_at ?? now();
+        $end = Carbon::parse($start)->copy()->addMonths($defaultDuration);
+
+        $activatedSerials = [];
+        $failedSerials = [];
+
+        foreach ($serialNumbers as $serialNumber) {
+            $warranty = Warranty::where('serial_number', $serialNumber)
+                ->whereIn('status', ['preactivated', 'cancelled'])
+                ->first();
+
+            if (!$warranty) {
+                $failedSerials[] = $serialNumber;
+                continue;
+            }
+
+            if ((int)$warranty->product_id !== (int)$detail->product_id) {
+                $failedSerials[] = $serialNumber;
+                continue;
+            }
+
+            if (Warranty::where('serial_number', $serialNumber)
+                ->where('status', 'active')
+                ->where('end_date', '>', now())
+                ->exists()
+            ) {
+                $failedSerials[] = $serialNumber;
+                continue;
+            }
+
+            if (Blacklist::where('serial_number', $serialNumber)->exists()) {
+                $failedSerials[] = $serialNumber;
+                continue;
+            }
+
+            $warranty->update([
+                'status' => 'active',
+                'activation_date' => now(),
+                'start_date' => $start,
+                'end_date' => $end,
+                'purchase_date' => $detail->updated_at,
+                'invoice_number' => $detail->order_id,
+                'final_user_id' => auth('customer')->id(),
+                'activation_method' => 'order_activation',
+                'consent_checked' => true,
+                'consent_timestamp' => now(),
+                'consent_ip' => $request->ip(),
+                'policy_version' => Policy::published()->orderByDesc('published_at')->first()->version ?? null,
+            ]);
+
+            WarrantyTimelineEvent::create([
+                'warranty_id' => $warranty->id,
+                'event_type' => 'activated',
+                'description' => 'Activated via order details',
+                'timestamp' => now(),
+                'user_id' => auth('customer')->id(),
+            ]);
+
+            $activatedSerials[] = $serialNumber;
         }
 
-        $detail = OrderDetail::with('product')->find($request->order_detail_id);
-        $defaultDuration = $this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? '12';
-        $start = $detail->updated_at;
-        $end = now()->copy()->addMonths($defaultDuration);
+        if (!empty($activatedSerials)) {
+            $detail->warranty_status = ($activatedCount + count($activatedSerials)) >= (int)$detail->qty ? 1 : 0;
+            $detail->save();
+        }
 
-        $warranty->update([
-            'status' => 'active',
-            'activation_date' => now(),
-            'start_date' => $start,
-            'end_date' => $end,
-            'purchase_date' => $detail->updated_at,
-            'invoice_number' => $detail->order_id,
-            'final_user_id' => auth('customer')->id(),
-            'activation_method' => 'order_activation',
-            'consent_checked' => true,
-            'consent_timestamp' => now(),
-            'consent_ip' => $request->ip(),
-            'policy_version' => Policy::published()->orderByDesc('published_at')->first()->version ?? null,
-        ]);
-        $detail->warranty_status = 1;
-        $detail->save();
+        if (!empty($activatedSerials) && !empty($failedSerials)) {
+            $failedPreview = implode(', ', array_slice($failedSerials, 0, 5));
+            if (count($failedSerials) > 5) {
+                $failedPreview .= '...';
+            }
+            Toastr::warning(
+                translate('warranty_activated_for') . ' ' . count($activatedSerials) . ' ' . translate('serial_numbers') .
+                '. ' . translate('some_serial_numbers_failed') . ': ' . $failedPreview
+            );
+            return back();
+        }
 
-        Toastr::success(translate('Warranty activated successfully.'));
+        if (!empty($activatedSerials)) {
+            Toastr::success(translate('warranty_activated_for') . ' ' . count($activatedSerials) . ' ' . translate('serial_numbers'));
+            return back();
+        }
+
+        Toastr::error(translate('no_serial_number_could_be_activated'));
         return back();
     }
 }

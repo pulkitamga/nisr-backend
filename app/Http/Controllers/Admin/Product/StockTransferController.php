@@ -28,6 +28,7 @@ use App\Services\InventoryMutationService;
 use Illuminate\Http\RedirectResponse;
 use App\Services\StockTransferService;
 use App\Models\ProductStockTransaction;
+use App\Domain\Stock\Support\VariantMatcher;
 use illuminate\Support\Facades\Storage;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\ProductAddRequest;
@@ -106,6 +107,7 @@ class StockTransferController extends BaseController
         private readonly StockTransferRepositoryInterface             $stockTransferRepo,
         private readonly StockTransferService                         $stockTransferService,
         private readonly InventoryMutationService                     $inventoryMutationService,
+        private readonly VariantMatcher                               $variantMatcher,
 
     ) {}
 
@@ -176,18 +178,26 @@ class StockTransferController extends BaseController
     }
   public function getStock(Request $request)
 {
-    $stock = ManageBranchProductStock::where('branch_id', $request->branch_id)
+    $query = ManageBranchProductStock::where('branch_id', $request->branch_id)
         ->where('product_id', $request->product_id)
-        ->when($request->filled('variation_type'), function ($q) use ($request) {
-            // Sirf tab filter lagega jab variation_type present aur non-empty ho
-            return $q->where('variation_type', $request->variation_type);
-        }, function ($q) {
-            // Agar variation_type nahi hai ya empty → sirf non-variation wala stock
-            return $q->whereNull('variation_type');
-        })
-        ->value('current_stock');
+        ->when(!$request->filled('variation_type'), function ($q) {
+            return $q->where(function ($defaultQuery) {
+                $defaultQuery->whereNull('variation_type')->orWhere('variation_type', '');
+            });
+        });
 
-    return response()->json(['stock' => $stock ?? 0]);
+    $stock = 0;
+    if ($request->filled('variation_type')) {
+        $entry = $query->get()->first(function ($row) use ($request) {
+            return $this->variantMatcher->matches($request->variation_type, $row->variation_type)
+                || $this->variantMatcher->matches($request->variation_type, $row->variation_key);
+        });
+        $stock = (int)($entry->current_stock ?? 0);
+    } else {
+        $stock = (int)($query->value('current_stock') ?? 0);
+    }
+
+    return response()->json(['stock' => $stock]);
 }
     public function addStockTransferListView(Request $request): View|RedirectResponse
     {
@@ -488,9 +498,12 @@ class StockTransferController extends BaseController
                 throw new \Exception("Row " . ($index + 1) . ": Please select a variation.");
             }
 
-            $selectedVariation = collect($variations)->firstWhere('type', $variationType) ?? [];
+            $selectedVariation = collect($variations)->first(
+                fn($row) => $this->variantMatcher->matches($variationType, $row['type'] ?? null)
+            ) ?? [];
             $variationKey      = $selectedVariation['variation_key'] ?? null;
             $attributes        = $selectedVariation['attributes'] ?? null;
+            $variationType     = $selectedVariation['type'] ?? $variationType;
 
             // Handle CSV/warranty
             $csvFile = $request->file("products.{$index}.serial_csv");

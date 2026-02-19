@@ -79,12 +79,33 @@ class WholeSaleProductController extends BaseController
             'status'     => 0
         ]);
 
-        if ($dataArray['variation_type']) {
-            $existsQuery->where('variation_type', $dataArray['variation_type'])
-                ->where('variation_key', $dataArray['variation_key']);
+        $variationType = trim((string)($dataArray['variation_type'] ?? ''));
+        $variationKey = trim((string)($dataArray['variation_key'] ?? ''));
+
+        if ($variationType !== '' || $variationKey !== '') {
+            $existsQuery->where(function ($query) use ($variationType, $variationKey) {
+                if ($variationType !== '') {
+                    $query->where('variation_type', $variationType);
+                } else {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereNull('variation_type')->orWhere('variation_type', '');
+                    });
+                }
+
+                if ($variationKey !== '') {
+                    $query->where('variation_key', $variationKey);
+                } else {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereNull('variation_key')->orWhere('variation_key', '');
+                    });
+                }
+            });
         } else {
-            $existsQuery->whereNull('variation_type')
-                ->whereNull('variation_key');
+            $existsQuery->where(function ($query) {
+                $query->whereNull('variation_type')->orWhere('variation_type', '');
+            })->where(function ($query) {
+                $query->whereNull('variation_key')->orWhere('variation_key', '');
+            });
         }
 
         if ($existsQuery->exists()) {
@@ -322,8 +343,8 @@ class WholeSaleProductController extends BaseController
 
             $keyParts = [];
 
-            foreach ($parts as $part) {
-                $title = $titleMap[$part] ?? 'unknown';
+            foreach ($parts as $partIndex => $part) {
+                $title = $titleMap[$part] ?? ('option_' . ($partIndex + 1));
                 $keyParts[] = "{$title}:{$part}";
             }
 

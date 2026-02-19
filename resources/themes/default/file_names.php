@@ -32,6 +32,7 @@ return [
     'seller_info' => 'web-views.users-profile.account-details.seller-info',
     'delivery_man_info' => 'web-views.users-profile.account-details.delivery-man-info',
     'order_details_review' => 'web-views.users-profile.account-details.reviews',
+    'order_details_warranty_support' => 'web-views.users-profile.account-details.warranty-support',
     'track_order_wise_result' => 'web-views.users-profile.account-details.track-order',
     'business_profile' => 'web-views.users-profile.business-profile',
     'account_wishlist' => 'web-views.users-profile.account-wishlist',

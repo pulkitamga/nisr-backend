@@ -25,6 +25,7 @@ use App\Models\Review;
 use App\Models\Seller;
 use App\Models\ShippingAddress;
 use App\Models\SupportTicket;
+use App\Models\Warranty;
 use App\Models\Wishlist;
 use App\Models\SupportTicketDepartmentEmployee;
 use App\Models\SupportTicketNotification;
@@ -452,6 +453,62 @@ class UserProfileController extends Controller
         return redirect()->route('account-oder');
     }
 
+    public function account_order_details_warranty_support(Request $request): View|RedirectResponse
+    {
+        $order = $this->order->with(['deliveryManReview', 'customer', 'offlinePayments', 'details.productAllStatus', 'details.product'])
+            ->where(['id' => $request['id'], 'customer_id' => auth('customer')->id(), 'is_guest' => '0'])
+            ->first();
+
+        if (!$order) {
+            Toastr::warning(translate('invalid_order'));
+            return redirect()->route('account-oder');
+        }
+
+        $productIds = $order->details->pluck('product_id')->filter()->unique()->values()->toArray();
+        $warrantiesByProduct = [];
+        if (!empty($productIds)) {
+            $warrantiesByProduct = Warranty::where('final_user_id', auth('customer')->id())
+                ->where('invoice_number', $order->id)
+                ->whereIn('product_id', $productIds)
+                ->where('activation_method', 'order_activation')
+                ->whereNotNull('activation_date')
+                ->orderBy('activation_date')
+                ->get()
+                ->groupBy('product_id');
+        }
+
+        $consumedWarrantyCountByProduct = [];
+        $orderDetailWarrantyMap = [];
+        foreach ($order->details as $detail) {
+            $productId = (int)$detail->product_id;
+            $detailQty = max(0, (int)$detail->qty);
+            $productWarranties = collect($warrantiesByProduct[$productId] ?? [])->values();
+            $offset = $consumedWarrantyCountByProduct[$productId] ?? 0;
+
+            $detailWarranties = $productWarranties->slice($offset, $detailQty)->values();
+            $consumedWarrantyCountByProduct[$productId] = $offset + $detailWarranties->count();
+
+            $activatedCount = $detailWarranties->count();
+            $remainingCount = max(0, $detailQty - $activatedCount);
+
+            $orderDetailWarrantyMap[$detail->id] = [
+                'items' => $detailWarranties,
+                'first' => $detailWarranties->first(),
+                'activated_count' => $activatedCount,
+                'remaining_count' => $remainingCount,
+            ];
+        }
+
+        return view(VIEW_FILE_NAMES['order_details_warranty_support'] ?? 'web-views.users-profile.account-details.warranty-support', [
+            'order' => $order,
+            'orderDetailWarrantyMap' => $orderDetailWarrantyMap,
+            'refund_day_limit' => getWebConfig(name: 'refund_day_limit'),
+            'current_date' => Carbon::now(),
+            'warrantyActivationDays' => (int)(getWebConfig('warranty_activation_days') ?? 7),
+            'deliveredDays' => Carbon::parse($order->updated_at)->diffInDays(now()),
+        ]);
+    }
+
     public function account_order_details_seller_info(Request $request)
     {
         $order = $this->order->with(['seller.shop'])->find($request->id);
@@ -613,6 +670,64 @@ class UserProfileController extends Controller
 
 
         return back();
+    }
+
+    public function storeOrderItemSupportTicket(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'order_id' => 'required|integer|exists:orders,id',
+            'order_detail_id' => 'required|integer|exists:order_details,id',
+            'ticket_type' => 'required|in:support,complaint,service,retail,wholesale',
+            'ticket_description' => 'nullable|string|max:2000',
+        ]);
+
+        $order = $this->order->with(['details.productAllStatus'])
+            ->where([
+                'id' => $request->order_id,
+                'customer_id' => auth('customer')->id(),
+                'is_guest' => '0',
+            ])
+            ->first();
+
+        if (!$order) {
+            Toastr::error(translate('invalid_order'));
+            return redirect()->route('account-oder');
+        }
+
+        $orderDetail = $order->details->firstWhere('id', (int)$request->order_detail_id);
+        if (!$orderDetail) {
+            Toastr::error(translate('invalid_order'));
+            return back();
+        }
+
+        $productDetails = json_decode($orderDetail->product_details, true);
+        $productName = $productDetails['name'] ?? $orderDetail?->productAllStatus?->name ?? translate('product');
+
+        $descriptionLines = [
+            'Order ID: #' . $order->id,
+            'Order Detail ID: ' . $orderDetail->id,
+            'Product: ' . $productName,
+            'Quantity: ' . $orderDetail->qty,
+        ];
+
+        if (!empty($request->ticket_description)) {
+            $descriptionLines[] = 'Customer Message: ' . trim((string)$request->ticket_description);
+        }
+
+        $ticket = SupportTicket::create([
+            'subject' => 'Order #' . $order->id . ' - ' . $productName,
+            'description' => implode(PHP_EOL, $descriptionLines),
+            'customer_id' => auth('customer')->id(),
+            'department_id' => 1,
+            'priority' => 'low',
+            'type' => $request->ticket_type,
+            'sub_type' => 'order_item_support',
+            'status' => $this->getSupportTicketStatusByType($request->ticket_type),
+            'source_id' => $orderDetail->id,
+        ]);
+
+        Toastr::success(translate('support_ticket_created_successfully') . ' #' . $ticket->id);
+        return redirect()->route('account-order-details-warranty-support', ['id' => $order->id]);
     }
 
     public function single_ticket(Request $request)
@@ -1110,5 +1225,18 @@ class UserProfileController extends Controller
 
         Toastr::success(translate('product_restock_request_removed_successfully'));
         return redirect()->route('user-restock-requests');
+    }
+
+    private function getSupportTicketStatusByType(string $ticketType): int
+    {
+        $statusMap = [
+            'support' => 1,
+            'complaint' => 36,
+            'service' => 20,
+            'retail' => 43,
+            'wholesale' => 56,
+        ];
+
+        return $statusMap[$ticketType] ?? 1;
     }
 }

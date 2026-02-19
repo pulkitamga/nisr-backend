@@ -217,15 +217,16 @@
                 <div class="mx-auto mw-1000">
                     <h2 class="text-center text-capitalize font-bold fs-25">{{ translate('track_order')}}</h2>
 
-                    <form action="{{route('track-order.result')}}" type="submit" method="post" class="p-3">
+                    <form id="track-order-form" action="{{route('track-order.result')}}" type="submit" method="post" class="p-3">
                         @csrf
+                        <input type="hidden" name="open_order_details" id="open-order-details-flag" value="0">
                         <div class="row g-3">
                             <div class="col-md-4 col-sm-6">
-                                <input class="form-control form-control-sm prepended-form-control" type="text" name="order_id"
+                                <input id="track-order-id-input" class="form-control form-control-sm prepended-form-control" type="text" name="order_id"
                                        placeholder="{{translate('order_id')}}" value="{{$orderDetails->id}}" required>
                             </div>
                             <div class="col-md-4 col-sm-6">
-                                <input class="form-control form-control-sm prepended-form-control" type="tel"
+                                <input id="track-order-phone-input" class="form-control form-control-sm prepended-form-control" type="tel"
                                        placeholder="{{translate('your_phone_number')}}" value="{{ $user_phone }}" name="phone_number"
                                        required>
                             </div>
@@ -517,8 +518,9 @@
 
                 </ul>
                 <div class="text-center pt-4">
-                    <a class="btn btn--primary btn-sm text-capitalize" href="#order-details"
-                       data-toggle="modal">{{ translate('view_order_details')}}</a>
+                    <button id="open-order-details-btn" class="btn btn--primary btn-sm text-capitalize" type="button">
+                        {{ translate('view_order_details')}}
+                    </button>
                 </div>
             </div>
         </div>
@@ -548,4 +550,28 @@
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/tracking.js') }}"></script>
     <script src="{{ theme_asset(path: 'public/assets/front-end/plugin/intl-tel-input/js/intlTelInput.js') }}"></script>
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/country-picker-init.js') }}"></script>
+    <script>
+        "use strict";
+
+        $(function () {
+            const trackedOrderId = "{{ (string) $orderDetails->id }}";
+            const shouldOpenOrderDetails = "{{ request('open_order_details') }}" === "1";
+
+            if (shouldOpenOrderDetails) {
+                $('#order-details').modal('show');
+            }
+
+            $('#open-order-details-btn').on('click', function () {
+                const enteredOrderId = $.trim($('#track-order-id-input').val());
+
+                if (enteredOrderId && enteredOrderId !== trackedOrderId) {
+                    $('#open-order-details-flag').val('1');
+                    $('#track-order-form').trigger('submit');
+                    return;
+                }
+
+                $('#order-details').modal('show');
+            });
+        });
+    </script>
 @endpush

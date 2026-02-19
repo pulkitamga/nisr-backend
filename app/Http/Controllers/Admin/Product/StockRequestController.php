@@ -30,6 +30,7 @@ use App\Services\StockRequestService;
 use App\Services\InventoryMutationService;
 use Illuminate\Http\RedirectResponse;
 use App\Models\ProductStockTransaction;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\ProductAddRequest;
 use App\Models\ManageBranchProductStock;
@@ -107,6 +108,7 @@ class StockRequestController extends BaseController
         private readonly StockRequestRepositoryInterface             $stockRequestRepo,
         private readonly StockRequestService                         $stockRequestService,
         private readonly InventoryMutationService                    $inventoryMutationService,
+        private readonly VariantMatcher                              $variantMatcher,
 
     ) {}
 
@@ -364,16 +366,25 @@ class StockRequestController extends BaseController
             ->where('branch_id', '!=', $toBranchId);
 
         if ($hasVariation) {
-            $query->where('variation_type', $variationType);
+            $stockEntries = $query->get()->filter(function ($entry) use ($variationType, $variationKey) {
+                $typeMatches = $this->variantMatcher->matches($variationType, $entry->variation_type)
+                    || $this->variantMatcher->matches($variationType, $entry->variation_key);
+                if (!$typeMatches) {
+                    return false;
+                }
 
-            if ($variationKey) {
-                $query->where('variation_key', $variationKey);
-            }
+                if (!$variationKey) {
+                    return true;
+                }
+
+                return $this->variantMatcher->matches($variationKey, $entry->variation_key)
+                    || $this->variantMatcher->matches($variationKey, $entry->variation_type);
+            })->values();
         } else {
-            $query->whereNull('variation_type');
+            $stockEntries = $query->where(function ($defaultQuery) {
+                $defaultQuery->whereNull('variation_type')->orWhere('variation_type', '');
+            })->get();
         }
-
-        $stockEntries = $query->get();
 
         $branchesStock = $stockEntries->map(function ($entry) {
             $branch = Branch::find($entry->branch_id);
@@ -442,8 +453,13 @@ class StockRequestController extends BaseController
 
         // Get the ProductStock row for this product and variation
         $productStock = ProductStock::where('product_id', $realProductId)
-            ->when($variationType, fn($q) => $q->where('variant', $variationType))
-            ->first();
+            ->get()
+            ->first(function ($row) use ($variationType) {
+                if (!$variationType) {
+                    return is_null($row->variant) || $row->variant === '';
+                }
+                return $this->variantMatcher->matches($variationType, $row->variant);
+            });
 
         if (!$productStock) {
             Log::warning("ProductStock not found for product {$realProductId} variation {$variationType}");
@@ -529,17 +545,29 @@ class StockRequestController extends BaseController
             foreach ($selectedBranches as $fromBranchId) {
                 if ($remainingQty <= 0) break;
 
-                $fromStock = ManageBranchProductStock::where('branch_id', $fromBranchId)
+                $fromStockQuery = ManageBranchProductStock::where('branch_id', $fromBranchId)
                     ->where('product_id', $realProductId)
-                    ->when($variationType, function ($q) use ($variationType, $variationKey) {
-                        $q->where('variation_type', $variationType);
-                        if ($variationKey) {
-                            $q->where('variation_key', $variationKey);
+                    ->when(!$variationType, function ($q) {
+                        $q->where(function ($defaultQuery) {
+                            $defaultQuery->whereNull('variation_type')->orWhere('variation_type', '');
+                        });
+                    });
+
+                $fromStock = $variationType
+                    ? $fromStockQuery->get()->first(function ($row) use ($variationType, $variationKey) {
+                        $typeMatches = $this->variantMatcher->matches($variationType, $row->variation_type)
+                            || $this->variantMatcher->matches($variationType, $row->variation_key);
+                        if (!$typeMatches) {
+                            return false;
                         }
-                    }, function ($q) {
-                        $q->whereNull('variation_type');
+                        if (!$variationKey) {
+                            return true;
+                        }
+
+                        return $this->variantMatcher->matches($variationKey, $row->variation_key)
+                            || $this->variantMatcher->matches($variationKey, $row->variation_type);
                     })
-                    ->first();
+                    : $fromStockQuery->first();
 
                 if (!$fromStock) {
                     continue;

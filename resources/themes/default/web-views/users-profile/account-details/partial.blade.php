@@ -66,6 +66,8 @@
         @endif
         <button data-link="{{ route('account-order-details-reviews', ['id'=>$order->id]) }}"
                 class="get-view-by-onclick {{Request::is('account-order-details-reviews')  ? 'active' :''}}">{{translate('reviews')}}</button>
+        <button data-link="{{ route('account-order-details-warranty-support', ['id'=>$order->id]) }}"
+                class="get-view-by-onclick {{Request::is('account-order-details-warranty-support')  ? 'active' :''}}">{{translate('warranty_and_support')}}</button>
     <button data-link="{{ route('track-order.order-wise-result-view',['order_id'=>$order['id']])}}"
             class="get-view-by-onclick {{Request::is('track-order/order-wise-result-view*')  ? 'active' :''}}">{{translate('track_order')}}</button>
     @endif

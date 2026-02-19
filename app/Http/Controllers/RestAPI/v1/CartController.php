@@ -5,6 +5,7 @@ namespace App\Http\Controllers\RestAPI\v1;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Contracts\Repositories\RestockProductCustomerRepositoryInterface;
 use App\Contracts\Repositories\RestockProductRepositoryInterface;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Events\RequestProductRestockEvent;
 use App\Http\Controllers\Controller;
 use App\Models\State;
@@ -62,7 +63,8 @@ class CartController extends Controller
                 }
             }
 
-            $cart->map(function ($data) use ($request) {
+            $variantMatcher = new VariantMatcher();
+            $cart->map(function ($data) use ($request, $variantMatcher) {
 
                 $product = Product::with([
                     'category.extraCharges' => function ($query) {
@@ -112,7 +114,7 @@ class CartController extends Controller
 
                 if (!empty($product->variation)) {
                     foreach (json_decode($product->variation) as $var) {
-                        if ($data['variant'] == $var->type) {
+                        if ($variantMatcher->matches($data['variant'] ?? null, $var->type ?? null)) {
                             $data['product']['total_current_stock'] = $var->qty;
                         }
                     }

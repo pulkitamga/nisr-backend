@@ -803,7 +803,7 @@ class WebController extends Controller
 
         $deliveryType = data_get($request, 'delivery_type', session('delivery_type'));
         $productStockCheck = $deliveryType === 'pickup'
-            ? CartManager::product_stock_check_by_branch($carts, CartManager::resolveFulfillmentBranchId($request))
+            ? CartManager::product_stock_check_by_branch($carts, CartManager::resolvePickupBranchIdForStockCheck($request))
             : CartManager::product_stock_check($carts);
         if (!$productStockCheck) {
             if ($request->ajax()) {
@@ -944,7 +944,7 @@ class WebController extends Controller
 
         $deliveryType = data_get($request, 'delivery_type', session('delivery_type'));
         $productStockCheck = $deliveryType === 'pickup'
-            ? CartManager::product_stock_check_by_branch($carts, CartManager::resolveFulfillmentBranchId($request))
+            ? CartManager::product_stock_check_by_branch($carts, CartManager::resolvePickupBranchIdForStockCheck($request))
             : CartManager::product_stock_check($carts);
         if (!$productStockCheck) {
             Toastr::error(translate('the_following_items_in_your_cart_are_currently_out_of_stock'));
@@ -1048,7 +1048,7 @@ class WebController extends Controller
 
             $deliveryType = data_get($request, 'delivery_type', session('delivery_type'));
             $productStockCheck = $deliveryType === 'pickup'
-                ? CartManager::product_stock_check_by_branch($carts, CartManager::resolveFulfillmentBranchId($request))
+                ? CartManager::product_stock_check_by_branch($carts, CartManager::resolvePickupBranchIdForStockCheck($request))
                 : CartManager::product_stock_check($carts);
             if (!$productStockCheck) {
                 Toastr::error(translate('the_following_items_in_your_cart_are_currently_out_of_stock'));
@@ -1662,7 +1662,7 @@ class WebController extends Controller
 
             $cartList = CartManager::getCartListQuery(groupId: $groupId, type: 'checked');
             if ($shouldCheckBranchStock) {
-                $branchId = CartManager::resolveFulfillmentBranchId($request);
+                $branchId = CartManager::resolvePickupBranchIdForStockCheck($request);
                 $productStockCheck = CartManager::product_stock_check_by_branch($cartList, $branchId);
             } else {
                 $productStockCheck = CartManager::product_stock_check($cartList);

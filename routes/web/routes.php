@@ -275,6 +275,8 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
         Route::get('account-payment', 'account_payment')->name('account-payment');
         Route::get('account-oder', 'account_order')->name('account-oder')->middleware('customer');
         Route::get('account-order-details', 'account_order_details')->name('account-order-details')->middleware('customer');
+        Route::get('account-order-details-warranty-support', 'account_order_details_warranty_support')->name('account-order-details-warranty-support')->middleware('customer');
+        Route::post('account-order-details-warranty-support/support-ticket', 'storeOrderItemSupportTicket')->name('account-order-details-warranty-support.support-ticket.store')->middleware('customer');
         Route::get('account-order-details-vendor-info', 'account_order_details_seller_info')->name('account-order-details-vendor-info')->middleware('customer');
         Route::get('account-order-details-delivery-man-info', 'account_order_details_delivery_man_info')->name('account-order-details-delivery-man-info')->middleware('customer');
         Route::get('account-order-details-reviews', 'getAccountOrderDetailsReviewsView')->name('account-order-details-reviews')->middleware('customer');

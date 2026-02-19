@@ -200,7 +200,20 @@ $(".exchange-status").on('click', function (e) {
     })
 });
 $("#order_status").on('change', function (e) {
-    let value = $(this).val();
+    const $statusSelect = $(this);
+    const previousStatus = $statusSelect.data('current-status');
+    let value = $statusSelect.val();
+    const $branchSelect = $("#order_delivered_from_branch");
+    const requiresDeliveredBranch = ['out_for_delivery', 'delivered'].includes(value);
+
+    if (requiresDeliveredBranch && $branchSelect.length && !$branchSelect.val()) {
+        const branchRequiredMessage = $("#message-branch-required-before-delivery-status-text").data('text') || "Branch is required!";
+        toastr.warning(branchRequiredMessage);
+        if (previousStatus) {
+            $statusSelect.val(previousStatus);
+        }
+        return;
+    }
 
     Swal.fire({
         title: $("#message-status-title-text").data('text'),
@@ -223,7 +236,7 @@ $("#order_status").on('change', function (e) {
                 url: $("#order-status-url").data('url'),
                 method: 'POST',
                 data: {
-                    "id": $(this).data('id'),
+                    "id": $statusSelect.data('id'),
                     "order_status": value
                 },
 
@@ -248,9 +261,14 @@ $("#order_status").on('change', function (e) {
                 },
 
                 error: function (xhr, status, error) {
+                    if (previousStatus) {
+                        $statusSelect.val(previousStatus);
+                    }
                     toastr.error("Something went wrong!");
                 }
             });
+        } else if (previousStatus) {
+            $statusSelect.val(previousStatus);
         }
     });
 });

@@ -79,7 +79,7 @@ class PaymentController extends Controller
         }
 
         $deliveryType = data_get($request, 'delivery_type');
-        $branchId = CartManager::resolveFulfillmentBranchId($request);
+        $branchId = CartManager::resolvePickupBranchIdForStockCheck($request);
         $productStockCheck = $deliveryType === 'pickup'
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);

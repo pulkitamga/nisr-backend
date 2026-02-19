@@ -51,6 +51,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Exports\WholesalerQuotationExport;
 use App\Models\WholesaleProductPriceRange;
 use App\Exports\ProductListWithPriceRangeExport;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Http\Requests\Admin\WholeSalerAddRequrest;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Contracts\Repositories\ProductRepositoryInterface;
@@ -76,6 +77,7 @@ class WholeSalerController extends BaseController
         private readonly BusinessSettingRepositoryInterface $businessSettingRepo,
         private readonly AdminNotificationRepositoryInterface   $notificationRepo,
         private readonly InventoryMutationService           $inventoryMutationService,
+        private readonly VariantMatcher                     $variantMatcher,
     ) {}
 
     /**
@@ -1522,11 +1524,14 @@ class WholeSalerController extends BaseController
         $stockQuery = ManageBranchProductStock::where('branch_id', $branchId)
             ->where('product_id', $productId);
 
-        if ($variationType) {
-            $stockQuery->where('variation_type', $variationType);
-        }
-
-        $stock = $stockQuery->first();
+        $stock = $variationType
+            ? $stockQuery->get()->first(function ($row) use ($variationType) {
+                return $this->variantMatcher->matches($variationType, $row->variation_type)
+                    || $this->variantMatcher->matches($variationType, $row->variation_key);
+            })
+            : $stockQuery->where(function ($query) {
+                $query->whereNull('variation_type')->orWhere('variation_type', '');
+            })->first();
 
         return response()->json(['stock' => $stock ? $stock->current_stock : 0]);
     }
@@ -1553,10 +1558,18 @@ class WholeSalerController extends BaseController
         DB::beginTransaction();
         try {
             // 1️⃣ Find confirm order item
-            $confirmItem = WholesaleConfirmOrderItem::where('confirmed_order_id', $request->confirmed_order_id)
-                ->where('product_id', $request->product_id)
-                ->when($variationRequested, fn($q) => $q->where('product_variation_type', $variationRequested))
-                ->firstOrFail();
+            $confirmItemQuery = WholesaleConfirmOrderItem::where('confirmed_order_id', $request->confirmed_order_id)
+                ->where('product_id', $request->product_id);
+
+            $confirmItem = $variationRequested
+                ? $confirmItemQuery->get()->first(function ($item) use ($variationRequested) {
+                    return $this->variantMatcher->matches($variationRequested, $item->product_variation_type);
+                })
+                : $confirmItemQuery->first();
+
+            if (!$confirmItem) {
+                throw new \Exception('Requested order item/variation not found.');
+            }
 
             $confirmOrder = $confirmItem->confirmOrder;
 

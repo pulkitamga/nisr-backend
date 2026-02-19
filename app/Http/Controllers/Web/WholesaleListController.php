@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Models\Author;
 use App\Models\BusinessSetting;
 use App\Models\PublishingHouse;
@@ -103,6 +104,7 @@ class WholesaleListController extends Controller
         }
 
         if ($isWholesaler) {
+            $variantMatcher = new VariantMatcher();
             foreach ($products as $product) {
                 $wholesale = $product->wholesaleProducts()->first();
 
@@ -110,15 +112,18 @@ class WholesaleListController extends Controller
                     $originalPrice = $product->unit_price;
                 } else {
 
-                    if (empty(trim($wholesale->variation_type))) {
+                    $variationType = trim((string)($wholesale->resolved_variation_type ?? ''));
+                    if ($variationType === '') {
                         $originalPrice = $product->unit_price;
                     } else {
-                        $variationType = trim($wholesale->variation_type);
                         $variations = json_decode($product->variation ?? '[]', true);
 
                         $matchedPrice = null;
                         foreach ($variations as $var) {
-                            if (isset($var['type']) && trim($var['type']) === $variationType && isset($var['price'])) {
+                            if (
+                                isset($var['price'])
+                                && $variantMatcher->matches($var['type'] ?? null, $variationType)
+                            ) {
                                 $matchedPrice = (float)$var['price'];
                                 break;
                             }

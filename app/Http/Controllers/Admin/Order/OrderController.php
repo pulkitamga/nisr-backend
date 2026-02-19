@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Order;
 
 use Carbon\Carbon;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\WebConfigKey;
 use App\Exports\OrderExport;
 use App\Traits\PdfGenerator;
@@ -292,6 +293,7 @@ class OrderController extends BaseController
             foreach ($activeBranches as $branch) {
                 $hasStock = false;
                 $totalBranchStock = 0;
+                $variantMatcher = app(VariantMatcher::class);
 
                 foreach ($order->details as $detail) {
 
@@ -312,18 +314,22 @@ class OrderController extends BaseController
                     // ---------------- STOCK CHECK ----------------
 
                     if ($variantString !== "") {
-
-                        // exact match
                         $stockRecord = ManageBranchProductStock::where('branch_id', $branch->id)
                             ->where('product_id', $productId)
-                            ->where('variation_type', $variantString)
-                            ->first();
+                            ->get()
+                            ->first(function ($row) use ($variantString, $variantMatcher) {
+                                return $variantMatcher->matches($variantString, $row->variation_type)
+                                    || $variantMatcher->matches($variantString, $row->variation_key);
+                            });
 
-                        $stock = $stockRecord->current_stock ?? 0;
+                        $stock = (int)($stockRecord->current_stock ?? 0);
                     } else {
-                        $stock = ManageBranchProductStock::where('branch_id', $branch->id)
+                        $stock = (int)(ManageBranchProductStock::where('branch_id', $branch->id)
                             ->where('product_id', $productId)
-                            ->value('current_stock') ?? 0;
+                            ->where(function ($query) {
+                                $query->whereNull('variation_type')->orWhere('variation_type', '');
+                            })
+                            ->value('current_stock') ?? 0);
                     }
 
                     // save
@@ -406,6 +412,22 @@ class OrderController extends BaseController
         if (!$order['is_guest'] && !isset($order['customer'])) {
             return response()->json(['customer_status' => 0], 200);
         }
+
+        $requestedStatus = strtolower((string)$request['order_status']);
+        if (in_array($requestedStatus, ['out_for_delivery', 'delivered'], true)) {
+            $transferBranchId = (int)($order['transfer_from_branch'] ?? 0);
+            $transferBranch = $transferBranchId > 0
+                ? $this->branchRepo->getFirstWhere(params: ['id' => $transferBranchId])
+                : null;
+
+            if (!$transferBranch) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => translate('Branch is required!'),
+                ]);
+            }
+        }
+
         $stockUpdated = $this->orderRepo->updateStockOnOrderStatusChange($request['id'], $request['order_status']);
         if (!$stockUpdated) {
             return response()->json([
@@ -543,6 +565,7 @@ class OrderController extends BaseController
             ]);
         }
         $selectedBranchId = $request->branch_id;
+        $variantMatcher = app(VariantMatcher::class);
 
         foreach ($order->details as $detail) {
 
@@ -561,16 +584,22 @@ class OrderController extends BaseController
 
 
             if ($variantString !== "") {
-
                 $stock = ManageBranchProductStock::where('branch_id', $selectedBranchId)
                     ->where('product_id', $productId)
-                    ->where('variation_type', $variantString)
-                    ->value('current_stock') ?? 0;
+                    ->get()
+                    ->first(function ($row) use ($variantString, $variantMatcher) {
+                        return $variantMatcher->matches($variantString, $row->variation_type)
+                            || $variantMatcher->matches($variantString, $row->variation_key);
+                    });
+                $stock = (int)($stock->current_stock ?? 0);
             } else {
 
-                $stock = ManageBranchProductStock::where('branch_id', $selectedBranchId)
+                $stock = (int)(ManageBranchProductStock::where('branch_id', $selectedBranchId)
                     ->where('product_id', $productId)
-                    ->value('current_stock') ?? 0;
+                    ->where(function ($query) {
+                        $query->whereNull('variation_type')->orWhere('variation_type', '');
+                    })
+                    ->value('current_stock') ?? 0);
             }
 
 

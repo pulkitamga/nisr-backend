@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Contracts\Repositories\RestockProductCustomerRepositoryInterface;
 use App\Contracts\Repositories\RestockProductRepositoryInterface;
@@ -45,6 +46,9 @@ class CartController extends Controller
 
     public function getVariantPrice(Request $request): array
     {
+        $variantMatcher = new VariantMatcher();
+        $variantsMatch = fn($left, $right) => $variantMatcher->matches($left, $right);
+
         $string = '';
         $quantity = 0;
         $price = 0;
@@ -64,11 +68,34 @@ class CartController extends Controller
             $string = Color::where('code', $request['color'])->first()->name;
         }
 
-        foreach (json_decode(Product::find($request->id)->choice_options) as $key => $choice) {
-            if ($string != null) {
-                $string .= '-' . str_replace(' ', '', $request[$choice->name]);
+        $choiceOptions = json_decode(Product::find($request->id)->choice_options);
+        foreach ($choiceOptions as $key => $choice) {
+            $choiceValue = $request->input($choice->name);
+            if (($choiceValue === null || $choiceValue === '') && !empty($choice->title)) {
+                $title = strtolower(trim((string)$choice->title));
+                $aliases = array_filter([
+                    $title,
+                    str_replace(' ', '_', $title),
+                    preg_replace('/[^a-z0-9]+/', '_', $title),
+                    preg_replace('/[^a-z0-9]+/', '', $title),
+                ]);
+
+                foreach (array_values(array_unique($aliases)) as $alias) {
+                    $choiceValue = $request->input($alias);
+                    if ($choiceValue !== null && $choiceValue !== '') {
+                        break;
+                    }
+                }
+            }
+
+            if ($choiceValue === null || $choiceValue === '') {
+                continue;
+            }
+
+            if ($string != null && $string !== '') {
+                $string .= '-' . str_replace(' ', '', (string)$choiceValue);
             } else {
-                $string .= str_replace(' ', '', $request[$choice->name]);
+                $string .= str_replace(' ', '', (string)$choiceValue);
             }
         }
 
@@ -77,7 +104,7 @@ class CartController extends Controller
         $inCartExistKey = null;
         $getCartList = CartManager::getCartListQuery();
         foreach ($getCartList as $cartItem) {
-            if ($cartItem['product_id'] == $product['id'] && $cartItem['variant'] == $string) {
+            if ($cartItem['product_id'] == $product['id'] && $variantsMatch($cartItem['variant'] ?? null, $string)) {
                 $inCartExistStatus = 1;
                 $inCartExistKey = $cartItem['id'];
                 $requestQuantity = $productVariationCode == $string ? $request['quantity'] : $cartItem['quantity'];
@@ -93,7 +120,8 @@ class CartController extends Controller
         if ($string != null) {
             $count = count(json_decode($product->variation));
             for ($i = 0; $i < $count; $i++) {
-                if (json_decode($product->variation)[$i]->type == $string) {
+                $variationType = json_decode($product->variation)[$i]->type ?? null;
+                if ($variantsMatch($variationType, $string)) {
                     $tax = $product->tax_model == 'exclude' ? Helpers::tax_calculation(product: $product, price: json_decode($product->variation)[$i]->price, tax: $product['tax'], tax_type: $product['tax_type']) : 0;
                     $update_tax = $tax * $requestQuantity;
                     $discount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: json_decode($product->variation)[$i]->price);
@@ -485,6 +513,7 @@ class CartController extends Controller
     function addToCartPhysicalProduct($request, $product)
     {
         $user = Helpers::getCustomerInformation($request);
+        $variantMatcher = new VariantMatcher();
         $str = '';
         $variations = [];
         $price = 0;
@@ -509,7 +538,8 @@ class CartController extends Controller
         if ($str != null) {
             $count = count(json_decode($product->variation));
             for ($i = 0; $i < $count; $i++) {
-                if (json_decode($product->variation)[$i]->type == $str) {
+                $variationType = json_decode($product->variation)[$i]->type ?? null;
+                if ($variantMatcher->matches($variationType, $str)) {
                     $tax = $product->tax_model == 'exclude' ? Helpers::tax_calculation(product: $product, price: json_decode($product->variation)[$i]->price, tax: $product['tax'], tax_type: $product['tax_type']) : 0;
                     $discount = Helpers::getProductDiscount($product, json_decode($product->variation)[$i]->price);
                     $price = json_decode($product->variation)[$i]->price - $discount + $tax;
@@ -542,7 +572,8 @@ class CartController extends Controller
             if ($str != null) {
                 $count = count(json_decode($product->variation));
                 for ($i = 0; $i < $count; $i++) {
-                    if (json_decode($product->variation)[$i]->type == $str) {
+                    $variationType = json_decode($product->variation)[$i]->type ?? null;
+                    if ($variantMatcher->matches($variationType, $str)) {
                         $price = json_decode($product->variation)[$i]->price;
                         if (json_decode($product->variation)[$i]->qty < $request['quantity']) {
                             return [

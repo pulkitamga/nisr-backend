@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\Order;
 use App\Models\Branch;
 use App\Models\Product;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\StockReason;
 use App\Models\OrderDetail;
 use App\Models\ProductStock;
@@ -288,24 +289,30 @@ class BranchChartController extends Controller
         if ($productId) {
             $branches = Branch::where('status', 'active')->get();
             $branchData = [];
+            $variantMatcher = app(VariantMatcher::class);
 
             foreach ($branches as $branch) {
-                // 🔥 REAL branch stock (already includes transfers correctly)
-                $branchStock = ManageBranchProductStock::where('branch_id', $branch->id)
+                $branchStockRows = ManageBranchProductStock::where('branch_id', $branch->id)
                     ->where('product_id', $productId)
-                    ->when(
-                        $variationType,
-                        fn($q) => $q->where('variation_type', $variationType)
-                    )
-                    ->sum('current_stock');
+                    ->get();
+
+                if ($variationType) {
+                    $branchStockRows = $branchStockRows->filter(function ($row) use ($variationType, $variantMatcher) {
+                        return $variantMatcher->matches($variationType, $row->variation_type)
+                            || $variantMatcher->matches($variationType, $row->variation_key);
+                    })->values();
+                } else {
+                    $branchStockRows = $branchStockRows->filter(function ($row) use ($variantMatcher) {
+                        return $variantMatcher->isDefault($row->variation_type)
+                            || $variantMatcher->isDefault($row->variation_key);
+                    })->values();
+                }
+
+                $branchStock = (int)$branchStockRows->sum('current_stock');
 
                 if ($branchStock <= 0) continue;
 
-                // Get the latest updated_at from ManageBranchProductStock
-                $lastUpdated = ManageBranchProductStock::where('branch_id', $branch->id)
-                    ->where('product_id', $productId)
-                    ->when($variationType, fn($q) => $q->where('variation_type', $variationType))
-                    ->max('updated_at');
+                $lastUpdated = optional($branchStockRows->sortByDesc('updated_at')->first())->updated_at;
 
                 $branchData[] = [
                     'branch_id'     => $branch->id,

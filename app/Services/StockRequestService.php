@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Traits\FileManagerTrait;
 use Illuminate\Support\Str;
 
 class StockRequestService
 {
     use FileManagerTrait;
+
+    public function __construct(private readonly VariantMatcher $variantMatcher) {}
     /**
      * @param string $email
      * @param string $password
@@ -75,9 +78,10 @@ class StockRequestService
         $attributes = null;
 
         if ($variationType && is_array($variations)) {
-            $selected = collect($variations)->firstWhere('type', $variationType);
+            $selected = collect($variations)->first(fn($row) => $this->variantMatcher->matches($variationType, $row['type'] ?? null));
             $variationKey = $selected['variation_key'] ?? null;
             $attributes = $selected['attributes'] ?? null;
+            $variationType = $selected['type'] ?? $variationType;
         }
 
         $processedProducts[] = [

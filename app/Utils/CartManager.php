@@ -2,6 +2,10 @@
 
 namespace App\Utils;
 
+use App\Domain\Stock\DTO\StockValidationContext;
+use App\Domain\Stock\Enums\StockChannel;
+use App\Domain\Stock\StockAvailabilityService;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Models\DigitalProductVariation;
 use App\Models\ShippingMethod;
 use App\Utils\Helpers;
@@ -9,10 +13,12 @@ use App\Models\Cart;
 use App\Models\CartShipping;
 use App\Models\CategoryShippingCost;
 use App\Models\Color;
-use App\Models\ManageBranchProductStock;
 use App\Models\Product;
 use App\Models\ShippingType;
 use App\Models\Shop;
+use App\Models\ManageBranchProductStock;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CartManager
@@ -679,8 +685,16 @@ class CartManager
         $guestId = session('guest_id') ?? ($request->guest_id ?? 0);
 
         $stockCheckStatus = getWebConfig(name: 'stock_check');
-        // dd($stockCheckStatus);
-        if (($stockCheckStatus == 1) && ($product['product_type'] == 'physical') && ($product['current_stock'] < $request['quantity'])) {
+        $productVariations = json_decode($product->variation ?? '[]');
+        $variationCount = count($productVariations ?? []);
+        $hasProductVariations = $variationCount > 0;
+
+        if (
+            ($stockCheckStatus == 1) &&
+            ($product['product_type'] == 'physical') &&
+            !$hasProductVariations &&
+            ((int)$product['current_stock'] < (int)$request['quantity'])
+        ) {
             return ['status' => 0, 'message' => translate('out_of_stock!')];
         }
 
@@ -728,16 +742,27 @@ class CartManager
             'variant' => $string,
         ];
 
-        // Check the string and decreases quantity for the stock
-        if (($stockCheckStatus == 1) && $string != null) {
-            $count = count(json_decode($product->variation));
-            for ($i = 0; $i < $count; $i++) {
-                if (json_decode($product->variation)[$i]->type == $string) {
-                    $price = json_decode($product->variation)[$i]->price;
-                    if (json_decode($product->variation)[$i]->qty < $request['quantity']) {
-                        return ['status' => 0, 'message' => translate('out_of_stock!')];
-                    }
+        // For variant products, validate availability against selected variant stock.
+        if ($hasProductVariations && $string != null && trim((string)$string) !== '') {
+            $matchedVariation = null;
+            $variantMatcher = new VariantMatcher();
+            foreach ($productVariations as $variationRow) {
+                if ($variantMatcher->matches($variationRow->type ?? null, $string)) {
+                    $matchedVariation = $variationRow;
+                    break;
                 }
+            }
+
+            if ($matchedVariation) {
+                $price = (float)$matchedVariation->price;
+                if (($stockCheckStatus == 1) && ((int)$matchedVariation->qty < (int)$request['quantity'])) {
+                    return ['status' => 0, 'message' => translate('out_of_stock!')];
+                }
+            } else {
+                if ($stockCheckStatus == 1) {
+                    return ['status' => 0, 'message' => translate('out_of_stock!')];
+                }
+                $price = $product->unit_price;
             }
         } else {
             $price = $product->unit_price;
@@ -1335,95 +1360,21 @@ class CartManager
 
     public static function product_stock_check($carts): bool
     {
-        $status = true;
-        $stockCheckStatus = getWebConfig(name: 'stock_check');
-        foreach ($carts as $cart) {
-            if ($cart->product) {
-                $product = $cart->product;
-                $count = count(json_decode($product->variation, true) ?? []);
-                if ($count) {
-                    for ($i = 0; $i < $count; $i++) {
-                        if (json_decode($product->variation)[$i]->type == $cart['variant']) {
-                            if ($stockCheckStatus == 1 && json_decode($product->variation)[$i]->qty < $cart->quantity) {
-                                $status = false;
-                            }
-                        }
-                    }
-                } else if ($stockCheckStatus == 1 && ($product['product_type'] == 'physical') && $product['current_stock'] < $cart->quantity) {
-                    $status = false;
-                }
-            } else {
-                $status = false;
-            }
-        }
-        return $status;
+        $context = new StockValidationContext(
+            channel: StockChannel::RETAIL,
+            deliveryType: 'delivery',
+        );
+        return self::validateStockWithFeatureFlag($carts, $context);
     }
 
     public static function product_stock_check_by_branch($carts, ?int $branchId): bool
     {
-        $stockCheckStatus = getWebConfig(name: 'stock_check');
-        if ($stockCheckStatus != 1) {
-            return true;
-        }
-
-        $branchId = (int)$branchId;
-        if ($branchId <= 0) {
-            $branchId = self::resolveFulfillmentBranchId();
-        }
-
-        if ($branchId <= 0) {
-            return false;
-        }
-
-        $requiredStock = [];
-        foreach ($carts as $cart) {
-            if (!$cart->product) {
-                return false;
-            }
-
-            if ($cart->product_type !== 'physical') {
-                continue;
-            }
-
-            $variantType = self::normalizeVariantType($cart['variant'] ?? null);
-            $key = $cart['product_id'] . '|' . ($variantType ?? '__default__');
-
-            if (!isset($requiredStock[$key])) {
-                $requiredStock[$key] = [
-                    'product_id' => (int)$cart['product_id'],
-                    'variant_type' => $variantType,
-                    'qty' => 0,
-                ];
-            }
-            $requiredStock[$key]['qty'] += (int)$cart['quantity'];
-        }
-
-        foreach ($requiredStock as $requiredRow) {
-            $stockQuery = ManageBranchProductStock::query()
-                ->where('branch_id', $branchId)
-                ->where('product_id', $requiredRow['product_id']);
-
-            if (!is_null($requiredRow['variant_type'])) {
-                $variantType = $requiredRow['variant_type'];
-                $stockQuery->where(function ($query) use ($variantType) {
-                    $query->where('variation_type', $variantType)
-                        ->orWhere('variation_key', $variantType);
-                });
-            } else {
-                $stockQuery->where(function ($query) {
-                    $query->whereNull('variation_type')
-                        ->orWhere('variation_type', '')
-                        ->orWhere('variation_type', 'No Variation');
-                });
-            }
-
-            $availableQty = (int)$stockQuery->sum('current_stock');
-            if ($availableQty < (int)$requiredRow['qty']) {
-                return false;
-            }
-        }
-
-        return true;
+        $context = new StockValidationContext(
+            channel: StockChannel::RETAIL,
+            deliveryType: 'pickup',
+            branchId: (int)$branchId,
+        );
+        return self::validateStockWithFeatureFlag($carts, $context);
     }
 
     public static function resolveFulfillmentBranchId($request = null): int
@@ -1460,30 +1411,205 @@ class CartManager
         return 1;
     }
 
-    private static function normalizeVariantType(mixed $variant): ?string
+    public static function resolvePickupBranchIdForStockCheck($request = null): int
     {
-        if (is_null($variant)) {
-            return null;
+        $pickupBranchId = (int)($request ? ($request['pickup_branch_id'] ?? null) : 0);
+        if ($pickupBranchId <= 0) {
+            $pickupBranchId = (int)(session('pickup_branch_id') ?? 0);
         }
 
-        if (is_array($variant)) {
-            $value = trim((string)($variant['type'] ?? ''));
-            return $value !== '' ? $value : null;
+        return $pickupBranchId > 0 ? $pickupBranchId : 0;
+    }
+
+    private static function validateStockWithFeatureFlag($carts, StockValidationContext $context): bool
+    {
+        $refactorEnabled = self::isStockValidationRefactorEnabled();
+        $mirrorModeEnabled = self::isStockValidationMirrorModeEnabled();
+
+        if ($mirrorModeEnabled) {
+            $service = new StockAvailabilityService();
+            $refactorResult = $service->validate($carts, $context)->passed();
+            $legacyResult = self::legacyProductStockCheck($carts, $context);
+
+            if ($refactorResult !== $legacyResult) {
+                self::incrementMetricCounter('stock_check_mirror_mismatch_total');
+                Log::warning('stock_check_mirror_mismatch', [
+                    'channel' => $context->channel->value,
+                    'delivery_type' => $context->deliveryType,
+                    'branch_id' => $context->branchId,
+                    'legacy_result' => $legacyResult,
+                    'refactor_result' => $refactorResult,
+                ]);
+            }
+
+            // Mirror mode enforces legacy result while comparing against refactor checker.
+            return $legacyResult;
         }
 
-        $variantString = trim((string)$variant);
-        if ($variantString === '' || strtolower($variantString) === 'null') {
-            return null;
+        if ($refactorEnabled) {
+            $service = new StockAvailabilityService();
+            return $service->validate($carts, $context)->passed();
         }
 
-        if (str_starts_with($variantString, '{')) {
-            $decoded = json_decode($variantString, true);
-            if (is_array($decoded)) {
-                $decodedType = trim((string)($decoded['type'] ?? ''));
-                return $decodedType !== '' ? $decodedType : null;
+        return self::legacyProductStockCheck($carts, $context);
+    }
+
+    private static function isStockValidationRefactorEnabled(): bool
+    {
+        $raw = getWebConfig(name: 'stock_validation_refactor_enabled');
+        if (is_null($raw) || $raw === '') {
+            return true;
+        }
+
+        return (int)$raw === 1;
+    }
+
+    private static function isStockValidationMirrorModeEnabled(): bool
+    {
+        $raw = getWebConfig(name: 'stock_validation_refactor_mirror_mode');
+        if (is_null($raw) || $raw === '') {
+            return false;
+        }
+
+        return (int)$raw === 1;
+    }
+
+    private static function legacyProductStockCheck($carts, StockValidationContext $context): bool
+    {
+        if ((int)getWebConfig(name: 'stock_check') !== 1) {
+            return true;
+        }
+
+        foreach ($carts as $cart) {
+            if (self::isWholesaleCartGroup($cart)) {
+                continue;
+            }
+
+            $product = $cart->product ?? Product::find($cart->product_id ?? 0);
+            if (!$product || $product->product_type !== 'physical') {
+                continue;
+            }
+
+            $requiredQty = max(0, (int)($cart->quantity ?? 0));
+            if ($requiredQty <= 0) {
+                continue;
+            }
+
+            $variant = self::extractVariantFromCart($cart);
+            $availableQty = $context->deliveryType === 'pickup'
+                ? self::legacyAvailableBranchQty(
+                    productId: (int)$product->id,
+                    branchId: (int)($context->branchId ?? 0),
+                    variant: $variant
+                )
+                : self::legacyAvailableGlobalQty($product, $variant);
+
+            if ($availableQty < $requiredQty) {
+                return false;
             }
         }
 
-        return $variantString;
+        return true;
     }
+
+    private static function legacyAvailableGlobalQty(Product $product, ?string $variant): int
+    {
+        $variationRows = json_decode((string)($product->variation ?? '[]'), true);
+        $hasVariationRows = is_array($variationRows) && count($variationRows) > 0;
+
+        if ($hasVariationRows && !is_null($variant)) {
+            foreach ($variationRows as $variationRow) {
+                if (trim((string)($variationRow['type'] ?? '')) === $variant) {
+                    return max(0, (int)($variationRow['qty'] ?? 0));
+                }
+            }
+            return 0;
+        }
+
+        return max(0, (int)($product->current_stock ?? 0));
+    }
+
+    private static function legacyAvailableBranchQty(int $productId, int $branchId, ?string $variant): int
+    {
+        if ($branchId <= 0) {
+            return 0;
+        }
+
+        $query = ManageBranchProductStock::query()
+            ->where('branch_id', $branchId)
+            ->where('product_id', $productId);
+
+        if (!is_null($variant)) {
+            $query->where(function ($stockQuery) use ($variant) {
+                $stockQuery->where('variation_type', $variant)
+                    ->orWhere('variation_key', $variant);
+            });
+        } else {
+            $query->where(function ($stockQuery) {
+                $stockQuery->whereNull('variation_type')->orWhere('variation_type', '');
+            });
+        }
+
+        return max(0, (int)($query->value('current_stock') ?? 0));
+    }
+
+    private static function extractVariantFromCart(mixed $cart): ?string
+    {
+        $rawVariant = null;
+        if (is_array($cart)) {
+            $rawVariant = $cart['variant'] ?? null;
+        } elseif (is_object($cart)) {
+            $rawVariant = $cart->variant ?? null;
+        }
+
+        $variant = trim((string)($rawVariant ?? ''));
+        if ($variant === '') {
+            return null;
+        }
+
+        if (str_starts_with($variant, '{')) {
+            $decoded = json_decode($variant, true);
+            $type = trim((string)($decoded['type'] ?? ''));
+            return $type !== '' ? $type : null;
+        }
+
+        return $variant;
+    }
+
+    private static function isWholesaleCartGroup(mixed $cart): bool
+    {
+        $cartGroupId = '';
+        if (is_array($cart)) {
+            $cartGroupId = (string)($cart['cart_group_id'] ?? '');
+        } elseif (is_object($cart)) {
+            $cartGroupId = (string)($cart->cart_group_id ?? '');
+        }
+
+        if ($cartGroupId === '') {
+            return false;
+        }
+
+        $cartGroupId = strtolower(trim($cartGroupId));
+        return str_starts_with($cartGroupId, 'wh-') || str_starts_with($cartGroupId, 'wholesale_');
+    }
+
+    private static function incrementMetricCounter(string $metricKey, int $amount = 1): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        try {
+            if (!Cache::has($metricKey)) {
+                Cache::forever($metricKey, 0);
+            }
+            Cache::increment($metricKey, $amount);
+        } catch (\Throwable $exception) {
+            Log::debug('stock_metric_increment_failed', [
+                'metric_key' => $metricKey,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
 }

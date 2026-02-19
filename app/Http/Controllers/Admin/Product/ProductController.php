@@ -28,6 +28,7 @@ use App\Services\VehicleModelService;
 use Illuminate\Http\RedirectResponse;
 use App\Enums\ViewPaths\Admin\Product;
 use App\Models\ProductStockTransaction;
+use App\Models\WholeSaleProducts;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\ProductAddRequest;
 use App\Models\ManageBranchProductStock;
@@ -1122,6 +1123,10 @@ class ProductController extends BaseController
             $this->wishlistRepo->delete(params: ['product_id' => $id]);
             $this->flashDealProductRepo->delete(params: ['product_id' => $id]);
             $this->dealOfTheDayRepo->delete(params: ['product_id' => $id]);
+            ProductStockTransaction::where('product_id', $id)->delete();
+            ProductStock::where('product_id', $id)->delete();
+            ManageBranchProductStock::where('product_id', $id)->delete();
+            WholeSaleProducts::where('product_id', $id)->delete();
 
             $service->deleteImages(product: $product);
 

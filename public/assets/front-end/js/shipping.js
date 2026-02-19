@@ -696,7 +696,45 @@ function togglePickupBranchVisibility() {
     const areaAddressDiv = document.getElementById('deliver-area');
     const cAddressDiv = document.getElementById('deliver-country');
     const locationMap = document.getElementById('location_map_canvas');
+    const locationMapArea = document.getElementById('location_map_canvas_area');
     const pickupBranchSelect = document.getElementById('pickup_branch_id');
+    const sameAsShippingAddressWrapper = document.getElementById('same_as_shipping_address_wrapper');
+    const saveAddressLabel = document.getElementById('save_address_label');
+    const sameAsShippingAddress = document.getElementById('same_as_shipping_address');
+    const hideBillingAddress = document.getElementById('hide_billing_address');
+    const updateAddressCheckbox = document.getElementById('update_address');
+    const saveAddressCheckbox = document.getElementById('save_address');
+    const setElementVisibility = (element, shouldShow) => {
+        if (!element) return;
+        if (shouldShow) {
+            element.style.removeProperty('display');
+        } else {
+            element.style.setProperty('display', 'none', 'important');
+        }
+    };
+
+    if (!selectedValue) {
+        pickupBranchDiv?.classList.add('d-none');
+        pickupBranchAddressDiv?.classList.add('d-none');
+        deliveryAddressTypeDiv?.classList.add('d-none');
+        addressAddressDiv?.classList.add('d-none');
+        addressType?.classList.add('d-none');
+        cityAddressDiv?.classList.add('d-none');
+        stateAddressDiv?.classList.add('d-none');
+        areaAddressDiv?.classList.add('d-none');
+        cAddressDiv?.classList.add('d-none');
+        locationMap?.classList.add('d-none');
+        locationMapArea?.classList.add('d-none');
+        setElementVisibility(sameAsShippingAddressWrapper, false);
+        setElementVisibility(saveAddressLabel, false);
+        if (sameAsShippingAddress) {
+            sameAsShippingAddress.checked = false;
+        }
+        if (hideBillingAddress) {
+            hideBillingAddress.style.display = '';
+        }
+        return;
+    }
 
     if (selectedValue === 'pickup') {
         pickupBranchDiv?.classList.remove('d-none');
@@ -709,6 +747,21 @@ function togglePickupBranchVisibility() {
         areaAddressDiv?.classList.add('d-none');
         cAddressDiv?.classList.add('d-none');
         locationMap?.classList.add('d-none');
+        locationMapArea?.classList.add('d-none');
+        setElementVisibility(sameAsShippingAddressWrapper, false);
+        setElementVisibility(saveAddressLabel, false);
+        if (sameAsShippingAddress) {
+            sameAsShippingAddress.checked = false;
+        }
+        if (hideBillingAddress) {
+            hideBillingAddress.style.display = '';
+        }
+        if (updateAddressCheckbox) {
+            updateAddressCheckbox.checked = false;
+        }
+        if (saveAddressCheckbox) {
+            saveAddressCheckbox.checked = false;
+        }
     } else {
         pickupBranchDiv?.classList.add('d-none');
         pickupBranchAddressDiv?.classList.add('d-none');
@@ -719,7 +772,10 @@ function togglePickupBranchVisibility() {
         areaAddressDiv?.classList.remove('d-none');
         cAddressDiv?.classList.remove('d-none');
         locationMap?.classList.remove('d-none');
+        locationMapArea?.classList.remove('d-none');
         addressType?.classList.remove('d-none');
+        setElementVisibility(sameAsShippingAddressWrapper, true);
+        setElementVisibility(saveAddressLabel, true);
 
     }
 }
@@ -749,6 +805,7 @@ $(document).on('change', 'input[name="delivery_type"]', function () {
 
 
 $(document).ready(function () {
+    togglePickupBranchVisibility();
 
 
     $('#country').change(function () {

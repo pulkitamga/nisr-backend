@@ -212,8 +212,13 @@ class WarrantyViewController extends Controller
             ->where('expires_at', '>', now())
             ->first();
 
-        $isOwner = auth()->check() && Warranty::where('warranty_public_id', $warranty_public_id)
-            ->where('final_user_id', auth()->id())
+        $ownerId = auth()->id();
+        if (auth('customer')->check()) {
+            $ownerId = auth('customer')->id();
+        }
+
+        $isOwner = !empty($ownerId) && Warranty::where('warranty_public_id', $warranty_public_id)
+            ->where('final_user_id', $ownerId)
             ->exists();
 
         if (!$token && !$isOwner) {

@@ -83,7 +83,12 @@ class CartController extends BaseController
             $product = $this->productRepo->getFirstWhere(params: ['id' => $request['key']], relations: ['clearanceSale' => function ($query) {
                 return $query->active();
             }]);
-            $quantity = $this->cartService->getQuantityAndUpdateTime(request: $request, product: $product);
+            $quantity = $this->cartService->getQuantityAndUpdateTime(
+                request: $request,
+                product: $product,
+                branchId: (int)($request['branch_id'] ?? 0),
+                sellerId: (int)auth('seller')->id(),
+            );
             $cartItems = $this->getCartData(cartName: $cartId);
             if ($product['product_type'] == 'physical' && $quantity < 0) {
                 return response()->json([
@@ -152,7 +157,17 @@ class CartController extends BaseController
                             }
                         }
                     }
-                    $currentQty = $this->cartService->checkCurrentStock(variant: $variant, variation: json_decode($product['variation']), productQty: $product['current_stock'], quantity: $request['quantity_in_cart']);
+                    $currentQty = $this->cartService->checkCurrentStock(
+                        variant: $variant,
+                        variation: (array)json_decode($product['variation'] ?? '[]'),
+                        productQty: (int)$product['current_stock'],
+                        quantity: (int)$request['quantity_in_cart'],
+                        branchId: (int)($request['branch_id'] ?? 0),
+                        productId: (int)$product['id'],
+                        productType: (string)$product['product_type'],
+                        sellerId: (int)auth('seller')->id(),
+                        productBranchId: (int)($product['branch_id'] ?? 0),
+                    );
                     if ($product['product_type'] == 'physical' && $currentQty < 0) {
                         $cartItems = $this->getCartData(cartName: $cartId);
                         return response()->json([
@@ -198,7 +213,17 @@ class CartController extends BaseController
             }
         }
 
-        $currentQty = $this->cartService->checkCurrentStock(variant: $variant, variation: json_decode($product['variation']), productQty: $product['current_stock'], quantity: $request['quantity']);
+        $currentQty = $this->cartService->checkCurrentStock(
+            variant: $variant,
+            variation: (array)json_decode($product['variation'] ?? '[]'),
+            productQty: (int)$product['current_stock'],
+            quantity: (int)$request['quantity'],
+            branchId: (int)($request['branch_id'] ?? 0),
+            productId: (int)$product['id'],
+            productType: (string)$product['product_type'],
+            sellerId: (int)auth('seller')->id(),
+            productBranchId: (int)($product['branch_id'] ?? 0),
+        );
         if ($product['product_type'] == 'physical' && $currentQty < 0) {
             $cartItems = $this->getCartData(cartName: $cartId);
             return response()->json([

@@ -294,13 +294,13 @@
                                                 </div>
                                             </div>
                                             @if(getWebConfig('map_api_status') ==1 )
-                                            <div class="form-group location-map-canvas-area map-area-alert-border">
+                                            <div class="form-group location-map-canvas-area map-area-alert-border d-none" id="location_map_canvas_area">
                                                 <!-- <input id="pac-input" class="controls rounded __inline-46 location-search-input-field" title="{{translate('search_your_location_here')}}" type="text" placeholder="{{translate('search_here')}}"/> -->
                                                 <div class="__h-200px" id="location_map_canvas"></div>
                                             </div>
                                             @endif
                                             <div class="d-flex gap-3 align-items-center">
-                                                <label class="form-check-label d-flex gap-2 align-items-center" id="save_address_label">
+                                                <label class="form-check-label d-flex gap-2 align-items-center d-none" id="save_address_label">
                                                     <input type="hidden" name="shipping_method_id" id="shipping_method_id" value="0">
                                                     @if(auth('customer')->check())
                                                     <input type="checkbox" name="save_address" id="save_address">
@@ -377,7 +377,7 @@
 
                         @php($billingAddresses=\App\Models\ShippingAddress::where(['customer_id'=>auth('customer')->id(), 'is_guest'=>'0'])->get())
                         @if($physical_product_view)
-                        <div class="form-check d-flex gap-3 align-items-center">
+                        <div class="form-check d-flex gap-3 align-items-center" id="same_as_shipping_address_wrapper">
                             <input type="checkbox" id="same_as_shipping_address" name="same_as_shipping_address"
                                 class="form-check-input action-hide-billing-address mt-0" {{$billingInputByCustomer==1?'':'checked'}}>
                             <label class="form-check-label user-select-none" for="same_as_shipping_address">

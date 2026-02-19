@@ -141,6 +141,8 @@ if (!function_exists('getWebConfigCacheKeys')) {
             'pagination_limit',
             'company_phone',
             'stock_limit',
+            'stock_validation_refactor_enabled',
+            'stock_validation_refactor_mirror_mode',
         ];
     }
 }

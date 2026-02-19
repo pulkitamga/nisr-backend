@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\SessionKey;
+use App\Models\Branch;
+use App\Models\ManageBranchProductStock;
 use App\Traits\CalculatorTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -12,6 +15,8 @@ use Psr\Container\NotFoundExceptionInterface;
 class CartService
 {
     use CalculatorTrait;
+
+    private ?VariantMatcher $variantMatcher = null;
 
     /**
      * @param object $request
@@ -37,11 +42,13 @@ class CartService
         if ($variation != null) {
             $count = count(json_decode($product->variation));
             for ($i = 0; $i < $count; $i++) {
-                if (json_decode($product->variation)[$i]->type == $variation) {
-                    $discount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: json_decode($product->variation)[$i]->price, from: 'panel');
-                    $tax = $product->tax_model == 'exclude' ? $this->getTaxAmount(price: json_decode($product->variation)[$i]->price, tax: $product['tax']) : 0;
-                    $price = json_decode($product->variation)[$i]->price - $discount + $tax;
-                    $unitPrice = json_decode($product->variation)[$i]->price;
+                $variationType = json_decode($product->variation)[$i]->type ?? null;
+                if ($this->variantsMatch($variationType, $variation)) {
+                    $variationPrice = json_decode($product->variation)[$i]->price;
+                    $discount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: $variationPrice, from: 'panel');
+                    $tax = $product->tax_model == 'exclude' ? $this->getTaxAmount(price: $variationPrice, tax: $product['tax']) : 0;
+                    $price = $variationPrice - $discount + $tax;
+                    $unitPrice = $variationPrice;
                     $quantity = json_decode($product->variation)[$i]->qty;
                 }
             }
@@ -78,7 +85,7 @@ class CartService
         }
 
         foreach ($cartData as $cart) {
-            if (is_array($cart) && $cart['id'] == $product['id'] && $cart['variant'] == $variation) {
+            if (is_array($cart) && $cart['id'] == $product['id'] && $this->variantsMatch($cart['variant'] ?? null, $variation)) {
                 $inCartStatus = 1;
                 $cartDiscount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: $cart['price'], from: 'panel');
                 $price = ($cart['price'] - $cartDiscount + $tax);
@@ -118,10 +125,16 @@ class CartService
             $variation = $colorName;
         }
         foreach ($choiceOptions as $key => $choice) {
-            if ($variation != null) {
-                $variation .= '-' . str_replace(' ', '', $request[$choice->name]);
+            $choiceValue = $this->resolveChoiceValue($request, $choice);
+            if ($choiceValue === null || $choiceValue === '') {
+                continue;
+            }
+
+            $normalizedChoiceValue = str_replace(' ', '', (string)$choiceValue);
+            if ($variation != null && $variation !== '') {
+                $variation .= '-' . $normalizedChoiceValue;
             } else {
-                $variation .= str_replace(' ', '', $request[$choice->name]);
+                $variation .= $normalizedChoiceValue;
             }
         }
         return $variation;
@@ -175,7 +188,8 @@ class CartService
         $count = count($variation);
         $price = 0;
         for ($i = 0; $i < $count; $i++) {
-            if ($variation[$i]->type == $variant) {
+            $variationType = $variation[$i]->type ?? null;
+            if ($this->variantsMatch($variationType, $variant)) {
                 $price = $variation[$i]->price;
             }
         }
@@ -187,7 +201,8 @@ class CartService
         $count = count($variation);
         $productQuantity = 0;
         for ($i = 0; $i < $count; $i++) {
-            if ($variation[$i]->type == $variant) {
+            $variationType = $variation[$i]->type ?? null;
+            if ($this->variantsMatch($variationType, $variant)) {
                 $productQuantity = $variation[$i]->qty;
             }
         }
@@ -238,45 +253,45 @@ class CartService
         return $sessionData;
     }
 
-    public function getQuantityAndUpdateTime(object $request, object $product): int
+    public function getQuantityAndUpdateTime(object $request, object $product, ?int $branchId = null, ?int $sellerId = null): int
     {
         $quantity = 0;
         $cartId = session(SessionKey::CURRENT_USER);
         $cart = session($cartId);
         $keeper = [];
+        $requestedVariant = trim((string)($request['variant'] ?? ''));
+        $requestedQuantity = (int)$request['quantity'];
 
         foreach ($cart as $item) {
             if (is_array($item)) {
-                $variantCheck = false;
-                if (!empty($item['variant']) && ($item['variant'] == $request['variant']) && ($item['id'] == $request['key'])) {
-                    $variantCheck = true;
-                } elseif (empty($request['variant']) && $item['id'] == $request['key']) {
-                    $variantCheck = true;
-                }
+                $sameProduct = (int)($item['id'] ?? 0) === (int)$request['key'];
+                $itemVariant = trim((string)($item['variant'] ?? ''));
+                $variantCheck = $requestedVariant !== ''
+                    ? $this->variantsMatch($itemVariant, $requestedVariant)
+                    : $this->normalizeVariantToken($itemVariant) === null;
 
-                if ($variantCheck) {
-                    $variant = '';
-                    if ($item['variations']) {
-                        foreach ($item['variations'] as $value) {
-                            if ($variant != null) {
-                                $variant .= '-' . str_replace(' ', '', $value);
-                            } else {
-                                $variant .= str_replace(' ', '', $value);
-                            }
-                        }
+                if ($sameProduct && $variantCheck) {
+                    $resolvedBranchId = (int)($branchId ?? 0);
+                    if ($resolvedBranchId <= 0 && isset($item['branch_id'])) {
+                        $resolvedBranchId = (int)$item['branch_id'];
                     }
 
-                    if ($variant != null) {
-                        $productQuantity = $this->getVariationQuantity(json_decode($product['variation']), $variant);
-                    } else {
-                        $productQuantity = $product['current_stock'];
-                    }
+                    $quantity = $this->checkCurrentStock(
+                        variant: $itemVariant !== '' ? $itemVariant : null,
+                        variation: json_decode($product['variation']),
+                        productQty: (int)$product['current_stock'],
+                        quantity: $requestedQuantity,
+                        branchId: $resolvedBranchId > 0 ? $resolvedBranchId : null,
+                        productId: (int)$product['id'],
+                        productType: (string)$product['product_type'],
+                        sellerId: $sellerId,
+                        productBranchId: (int)($product['branch_id'] ?? 0),
+                    );
 
-                    $quantity = $productQuantity - $request['quantity'];
                     if ($product['product_type'] == 'physical' && $quantity < 0) {
                         return $quantity;
                     }
-                    $item['quantity'] = $request['quantity'];
+                    $item['quantity'] = $requestedQuantity;
                 }
                 $keeper[] = $item;
             }
@@ -350,14 +365,40 @@ class CartService
         session()->put(session(SessionKey::CURRENT_USER), $cartKeeper);
     }
 
-    public function checkCurrentStock(string $variant, array $variation, int $productQty, int $quantity): int
+    public function checkCurrentStock(
+        ?string $variant,
+        array $variation,
+        int $productQty,
+        int $quantity,
+        ?int $branchId = null,
+        ?int $productId = null,
+        string $productType = 'physical',
+        ?int $sellerId = null,
+        ?int $productBranchId = null
+    ): int
     {
-        if ($variant != null) {
-            $currentQty = $this->getCurrentQuantity(variation: $variation, variant: $variant, quantity: $quantity);
-        } else {
-            $currentQty = $productQty - $quantity;
+        if ($productType === 'physical' && (int)($productId ?? 0) > 0) {
+            $resolvedBranchId = $this->resolvePosBranchId(
+                branchId: $branchId,
+                productBranchId: $productBranchId,
+                sellerId: $sellerId
+            );
+
+            if ($resolvedBranchId > 0) {
+                $availableQuantity = $this->getBranchStockQuantity(
+                    branchId: $resolvedBranchId,
+                    productId: (int)$productId,
+                    variant: $variant
+                );
+                return $availableQuantity - $quantity;
+            }
         }
-        return $currentQty;
+
+        if ($variant !== null && trim((string)$variant) !== '') {
+            return $this->getCurrentQuantity(variation: $variation, variant: $variant, quantity: $quantity);
+        }
+
+        return $productQty - $quantity;
     }
 
     public function checkProductTypeDigital(string|int $cartId): bool
@@ -387,5 +428,146 @@ class CartService
             'customerName' => $customerName,
             'customerPhone' => $customerPhone
         ];
+    }
+
+    private function resolveChoiceValue(object $request, mixed $choice): ?string
+    {
+        $choiceName = (string)($choice->name ?? $choice['name'] ?? '');
+        $choiceTitle = (string)($choice->title ?? $choice['title'] ?? '');
+        $value = $this->getRequestValue($request, $choiceName);
+
+        if ($value === null || $value === '') {
+            $titleLower = strtolower(trim($choiceTitle));
+            $aliases = array_filter([
+                $titleLower,
+                str_replace(' ', '_', $titleLower),
+                preg_replace('/[^a-z0-9]+/', '_', $titleLower),
+                preg_replace('/[^a-z0-9]+/', '', $titleLower),
+            ]);
+
+            foreach (array_values(array_unique($aliases)) as $alias) {
+                $value = $this->getRequestValue($request, (string)$alias);
+                if ($value !== null && $value !== '') {
+                    break;
+                }
+            }
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        return trim((string)$value);
+    }
+
+    private function getRequestValue(object $request, string $key): mixed
+    {
+        if ($key === '') {
+            return null;
+        }
+
+        if (method_exists($request, 'input')) {
+            $value = $request->input($key);
+            if (!is_null($value)) {
+                return $value;
+            }
+        }
+
+        if (isset($request[$key])) {
+            return $request[$key];
+        }
+
+        if (isset($request->$key)) {
+            return $request->$key;
+        }
+
+        return null;
+    }
+
+    private function variantsMatch(mixed $left, mixed $right): bool
+    {
+        return $this->getVariantMatcher()->matches($left, $right);
+    }
+
+    private function normalizeVariantToken(string $variant): ?string
+    {
+        return $this->getVariantMatcher()->canonical($variant);
+    }
+
+    private function resolvePosBranchId(?int $branchId = null, ?int $productBranchId = null, ?int $sellerId = null): int
+    {
+        $providedBranchId = (int)($branchId ?? 0);
+        if ($providedBranchId > 0) {
+            return $providedBranchId;
+        }
+
+        $productBranchId = (int)($productBranchId ?? 0);
+        if ($productBranchId > 0) {
+            return $productBranchId;
+        }
+
+        $sellerId = (int)($sellerId ?? 0);
+        if ($sellerId > 0) {
+            $sellerBranchId = (int)(Branch::query()
+                ->where('vendor_id', $sellerId)
+                ->where('status', 'active')
+                ->orderBy('id')
+                ->value('id') ?? 0);
+
+            if ($sellerBranchId > 0) {
+                return $sellerBranchId;
+            }
+        }
+
+        return 1;
+    }
+
+    private function getBranchStockQuantity(int $branchId, int $productId, ?string $variant): int
+    {
+        $branchStocks = ManageBranchProductStock::query()
+            ->where('branch_id', $branchId)
+            ->where('product_id', $productId)
+            ->get(['variation_type', 'variation_key', 'current_stock']);
+
+        if ($branchStocks->isEmpty()) {
+            return 0;
+        }
+
+        $normalizedVariant = $this->normalizeVariantToken(trim((string)($variant ?? '')));
+        if ($normalizedVariant === null) {
+            return (int)$branchStocks->filter(function ($stockRow) {
+                return $this->isDefaultVariationValue($stockRow->variation_type ?? null)
+                    || $this->isDefaultVariationValue($stockRow->variation_key ?? null);
+            })->sum('current_stock');
+        }
+
+        return (int)$branchStocks->filter(function ($stockRow) use ($variant, $normalizedVariant) {
+            $variationType = trim((string)($stockRow->variation_type ?? ''));
+            $variationKey = trim((string)($stockRow->variation_key ?? ''));
+
+            return $this->variantsMatch($variationType, $normalizedVariant)
+                || $this->variantsMatch($variationKey, $normalizedVariant)
+                || $this->variantsMatch($variationType, $variant)
+                || $this->variantsMatch($variationKey, $variant);
+        })->sum('current_stock');
+    }
+
+    private function isDefaultVariationValue(mixed $value): bool
+    {
+        $raw = trim((string)($value ?? ''));
+        if ($raw === '') {
+            return true;
+        }
+
+        return $this->normalizeVariantToken($raw) === null;
+    }
+
+    private function getVariantMatcher(): VariantMatcher
+    {
+        if (is_null($this->variantMatcher)) {
+            $this->variantMatcher = new VariantMatcher();
+        }
+
+        return $this->variantMatcher;
     }
 }

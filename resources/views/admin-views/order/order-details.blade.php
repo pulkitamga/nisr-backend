@@ -485,10 +485,12 @@
                             <select name="order_delivered_from_branch" id="order_delivered_from_branch"
                                 class="status form-control js-select2-custom" data-id="{{ $order['id'] }}" required>
 
-                                <option value="" selected disabled>--- Select Branch ---</option>
+                                <option value="" {{ (int) ($order->transfer_from_branch ?? 0) <= 0 ? 'selected' : '' }}
+                                    disabled>--- Select Branch ---</option>
 
                                 @foreach ($branches as $branch)
-                                    <option value="{{ $branch->id }}">
+                                    <option value="{{ $branch->id }}"
+                                        {{ (int) ($order->transfer_from_branch ?? 0) === (int) $branch->id ? 'selected' : '' }}>
                                         {{ translate($branch->branch_name) }}
                                     </option>
                                 @endforeach
@@ -498,7 +500,7 @@
                             <label
                                 class="font-weight-bold title-color fz-14">{{ translate('change_order_status') }}</label>
                             <select name="order_status" id="order_status" class="status form-control"
-                                data-id="{{ $order['id'] }}">
+                                data-id="{{ $order['id'] }}" data-current-status="{{ $order->order_status }}">
 
                                 <option value="pending" {{ $order->order_status == 'pending' ? 'selected' : '' }}>
                                     {{ translate('pending') }}</option>
@@ -1292,6 +1294,17 @@
                                         </div>
                                     </li>
 
+                                    @php
+                                        $confirmedStatusAt = \App\Utils\order_status_history($order['id'], 'confirmed');
+                                        $processingStatusAt = \App\Utils\order_status_history($order['id'], 'processing');
+                                        $outForDeliveryStatusAt = \App\Utils\order_status_history($order['id'], 'out_for_delivery');
+                                        $deliveredStatusAt = \App\Utils\order_status_history($order['id'], 'delivered');
+
+                                        $confirmedStageDate = $confirmedStatusAt ?: ($processingStatusAt ?: ($outForDeliveryStatusAt ?: ($deliveredStatusAt ?: $order->created_at)));
+                                        $processingStageDate = $processingStatusAt ?: ($outForDeliveryStatusAt ?: ($deliveredStatusAt ?: $confirmedStageDate));
+                                        $outForDeliveryStageDate = $outForDeliveryStatusAt ?: ($deliveredStatusAt ?: $processingStageDate);
+                                        $deliveredStageDate = $deliveredStatusAt ?: $outForDeliveryStageDate;
+                                    @endphp
 
                                     @if ($order['order_status'] != 'returned' && $order['order_status'] != 'failed' && $order['order_status'] != 'canceled')
                                         @if (!$isOrderOnlyDigital)
@@ -1309,16 +1322,11 @@
                                                                     class="media-tab-title text-nowrap mb-0 text-capitalize fs-14">
                                                                     {{ translate('order_confirmed') }}</h6>
                                                             </div>
-                                                            @if (
-                                                                $order['order_status'] == 'confirmed' ||
-                                                                    $order['order_status'] == 'processing' ||
-                                                                    $order['order_status'] == 'processed' ||
-                                                                    $order['order_status'] == 'out_for_delivery' ||
-                                                                    ($order['order_status'] == 'delivered' && \App\Utils\order_status_history($order['id'], 'confirmed')))
+                                                            @if (in_array($order['order_status'], ['confirmed', 'processing', 'processed', 'out_for_delivery', 'delivered']))
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-1">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($order['id'], 'confirmed'))) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate)) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1341,15 +1349,11 @@
                                                                     {{ translate('preparing_shipment') }}
                                                                 </h6>
                                                             </div>
-                                                            @if (
-                                                                $order['order_status'] == 'processing' ||
-                                                                    $order['order_status'] == 'processed' ||
-                                                                    $order['order_status'] == 'out_for_delivery' ||
-                                                                    ($order['order_status'] == 'delivered' && \App\Utils\order_status_history($order['id'], 'processing')))
+                                                            @if (in_array($order['order_status'], ['processing', 'processed', 'out_for_delivery', 'delivered']))
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($order['id'], 'processing'))) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($processingStageDate)) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1370,13 +1374,11 @@
                                                                 <h6 class="media-tab-title text-nowrap mb-0 fs-14">
                                                                     {{ translate('order_is_on_the_way') }}</h6>
                                                             </div>
-                                                            @if (
-                                                                $order['order_status'] == 'out_for_delivery' ||
-                                                                    ($order['order_status'] == 'delivered' && \App\Utils\order_status_history($order['id'], 'out_for_delivery')))
+                                                            @if (in_array($order['order_status'], ['out_for_delivery', 'delivered']))
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($order['id'], 'out_for_delivery'))) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($outForDeliveryStageDate)) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1397,11 +1399,11 @@
                                                                 <h6 class="media-tab-title text-nowrap mb-0 fs-14">
                                                                     {{ translate('order_Shipped') }}</h6>
                                                             </div>
-                                                            @if ($order['order_status'] == 'delivered' && \App\Utils\order_status_history($order['id'], 'delivered'))
+                                                            @if ($order['order_status'] == 'delivered')
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($order['id'], 'delivered'))) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($deliveredStageDate)) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1435,11 +1437,11 @@
                                                                     {{ translate('processing') }}
                                                                 </h6>
                                                             </div>
-                                                            @if ($order['order_status'] == 'confirmed' && \App\Utils\order_status_history($order['id'], 'confirmed'))
+                                                            @if ($order['order_status'] == 'confirmed')
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($order['id'], 'confirmed'))) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate)) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1463,12 +1465,11 @@
 
                                                             @if (
                                                                 $order['order_status'] == 'confirmed' &&
-                                                                    $digitalProductProcessComplete &&
-                                                                    \App\Utils\order_status_history($order['id'], 'confirmed'))
+                                                                    $digitalProductProcessComplete)
                                                                 <div
                                                                     class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">
                                                                     <span class="text-muted fs-12">
-                                                                        {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($order['id'], 'confirmed'))) }}
+                                                                        {{ date('h:i A, d M Y', strtotime($confirmedStageDate)) }}
                                                                     </span>
                                                                 </div>
                                                             @endif
@@ -1653,6 +1654,8 @@
         data-text="{{ translate('transfer_branch_change_successfully') }}!"></span>
     <span id="message-order-status-paid-first-text"
         data-text="{{ translate('before_delivered_you_need_to_make_payment_status_paid') }}!"></span>
+    <span id="message-branch-required-before-delivery-status-text"
+        data-text="{{ translate('Branch is required!') }}"></span>
     <span id="order-status-url" data-url="{{ route('admin.orders.status') }}"></span>
     <span id="order-transfer-delivery-branch-url"
         data-url="{{ route('admin.orders.transfer-delivered-branch') }}"></span>

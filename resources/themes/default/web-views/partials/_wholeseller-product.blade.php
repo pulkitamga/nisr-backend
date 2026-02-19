@@ -22,6 +22,8 @@ $userTier = strtolower(trim(auth()->guard('customer')->user()->tier ?? ''));
                 $product = $item->product;
                 $priceRanges = $item->price_list;
                 $image = $product->thumbnail ?? null;
+                $resolvedVariationType = $item->resolved_variation_type;
+                $resolvedVariationKey = $item->resolved_variation_key;
 
                 $filteredRanges = collect($priceRanges)->filter(function ($range) use ($userTier) {
                 return strtolower(trim($range->tier)) === $userTier;
@@ -38,7 +40,7 @@ $userTier = strtolower(trim(auth()->guard('customer')->user()->tier ?? ''));
                             <div class="w-100 w-lg-50 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('web.product.view', [
                                     $product->slug,
-                                    'variant' => $item->variation_key
+                                    'variant' => $resolvedVariationKey
                                 ]) }}" class="text-center w-100">
                                     <img class="" style="height: 190px; object-fit: cover;"
                                         src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}"
@@ -59,8 +61,8 @@ $userTier = strtolower(trim(auth()->guard('customer')->user()->tier ?? ''));
                                     @php
                                     $displayPrice = $product->unit_price;
 
-                                    if ($item->variation_type && $item->variation_key) {
-                                    $displayPrice = $product->getVariationPrice($item->variation_type, $item->variation_key);
+                                    if ($resolvedVariationType) {
+                                    $displayPrice = $product->getVariationPrice($resolvedVariationType, $resolvedVariationKey);
                                     }
                                     @endphp
 
@@ -73,10 +75,10 @@ $userTier = strtolower(trim(auth()->guard('customer')->user()->tier ?? ''));
                                     </li>
 
                                     <!-- Variation Label (sirf agar variation hai tab dikhao) -->
-                                    @if($item->variation_type && $item->variation_key)
+                                    @if($resolvedVariationType)
                                     <li class="text-center mb-2">
                                         <span class="badge badge-soft-info fw-medium">
-                                            {{ str_replace([':', '|'], [' : ', ' • '], $item->variation_key) }}
+                                            {{ $item->resolved_variation_display }}
                                         </span>
                                     </li>
                                     @endif
@@ -117,7 +119,7 @@ $userTier = strtolower(trim(auth()->guard('customer')->user()->tier ?? ''));
                                 <div class="mt-1 text-center">
                                    <a href="{{ route('web.product.view', [
                                         $product->slug,
-                                        'variant' => $item->variation_key
+                                        'variant' => $resolvedVariationKey
                                     ]) }}" class="btn btn-sm btn-outline-primary">
 
                                         {{ translate('Add To Purchase Order') }}

@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Models\DigitalProductVariation;
 use App\Traits\PdfGenerator;
 use App\Models\Storage;
@@ -1181,8 +1182,9 @@ class OrderManager
             if ($c['variant'] != null) {
                 $type = $c['variant'];
                 $var_store = [];
+                $variantMatcher = app(VariantMatcher::class);
                 foreach (json_decode($product['variation'], true) as $var) {
-                    if ($type == $var['type']) {
+                    if ($variantMatcher->matches($type, $var['type'] ?? null)) {
                         $var['qty'] -= $c['quantity'];
                     }
                     $var_store[] = $var;
@@ -1309,11 +1311,13 @@ class OrderManager
 
                     $price = 0;
                     if (json_decode($product->variation)) {
-                        $count = count(json_decode($product->variation));
+                        $variationRows = json_decode($product->variation);
+                        $count = count($variationRows);
+                        $variantMatcher = app(VariantMatcher::class);
                         for ($i = 0; $i < $count; $i++) {
-                            if (json_decode($product->variation)[$i]->type == $orderProduct->variant) {
-                                $price = json_decode($product->variation)[$i]->price;
-                                if (json_decode($product->variation)[$i]->qty < $orderProduct->qty) {
+                            if ($variantMatcher->matches($variationRows[$i]->type ?? null, $orderProduct->variant)) {
+                                $price = $variationRows[$i]->price;
+                                if ($variationRows[$i]->qty < $orderProduct->qty) {
                                     $productValid = false;
                                 }
                             }

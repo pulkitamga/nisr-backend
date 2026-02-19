@@ -256,6 +256,57 @@
                             </label>
                         </div>
                     </div>
+                    @php($stockValidationRefactorEnabled = getWebConfig('stock_validation_refactor_enabled'))
+                    <div class="col-xl-4 col-md-6">
+                        <div class="d-flex justify-content-between align-items-center gap-10 form-control form-group">
+                            <span class="title-color d-flex align-items-center gap-1">
+                                {{translate('stock_validation_refactor')}}
+                                <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top"
+                                    title="{{translate('if_enabled_stock_validation_uses_the_new_policy_and_variant_matching_service')}}">
+                                    <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
+                                </span>
+                            </span>
+                            <label class="switcher" for="stock_validation_refactor_enabled">
+                                <input type="checkbox" value="1" class="switcher_input toggle-switch-message" name="stock_validation_refactor_enabled"
+                                    id="stock_validation_refactor_enabled" {{ is_null($stockValidationRefactorEnabled) || (int)$stockValidationRefactorEnabled === 1 ? 'checked' : '' }}
+                                    data-modal-id="toggle-modal"
+                                    data-toggle-id="stock_validation_refactor_enabled"
+                                    data-on-image="guest-checkout-on.png"
+                                    data-off-image="guest-checkout-off.png"
+                                    data-on-title="{{translate('by_turning_on_stock_validation_refactor')}}"
+                                    data-off-title="{{translate('by_turning_off_stock_validation_refactor')}}"
+                                    data-on-message="<p>{{translate('new_stock_policy_and_variant_matching_will_be_enforced')}}</p>"
+                                    data-off-message="<p>{{translate('legacy_stock_validation_logic_will_be_enforced')}}</p>">
+                                <span class="switcher_control"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    @php($stockValidationMirrorMode = getWebConfig('stock_validation_refactor_mirror_mode'))
+                    <div class="col-xl-4 col-md-6">
+                        <div class="d-flex justify-content-between align-items-center gap-10 form-control form-group">
+                            <span class="title-color d-flex align-items-center gap-1">
+                                {{translate('stock_validation_mirror_mode')}}
+                                <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top"
+                                    title="{{translate('if_enabled_system_compares_refactor_and_legacy_results_but_enforces_legacy_result')}}">
+                                    <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
+                                </span>
+                            </span>
+                            <label class="switcher" for="stock_validation_refactor_mirror_mode">
+                                <input type="checkbox" value="1" class="switcher_input toggle-switch-message" name="stock_validation_refactor_mirror_mode"
+                                    id="stock_validation_refactor_mirror_mode" {{ (int)$stockValidationMirrorMode === 1 ? 'checked' : '' }}
+                                    data-modal-id="toggle-modal"
+                                    data-toggle-id="stock_validation_refactor_mirror_mode"
+                                    data-on-image="guest-checkout-on.png"
+                                    data-off-image="guest-checkout-off.png"
+                                    data-on-title="{{translate('by_turning_on_stock_validation_mirror_mode')}}"
+                                    data-off-title="{{translate('by_turning_off_stock_validation_mirror_mode')}}"
+                                    data-on-message="<p>{{translate('legacy_checker_is_enforced_while_mismatches_are_logged')}}</p>"
+                                    data-off-message="<p>{{translate('mirror_comparison_is_disabled')}}</p>">
+                                <span class="switcher_control"></span>
+                            </label>
+                        </div>
+                    </div>
 
                     @php($autoSearchLimit=getWebConfig('character_trigger_limit_for_autosearch'))
                     <div class="col-xl-4 col-md-6">

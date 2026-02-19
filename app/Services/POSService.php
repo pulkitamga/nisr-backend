@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\SessionKey;
 use App\Traits\CalculatorTrait;
 use Brian2694\Toastr\Facades\Toastr;
@@ -10,6 +11,8 @@ use Illuminate\Support\Str;
 class POSService
 {
     use CalculatorTrait;
+
+    public function __construct(private readonly VariantMatcher $variantMatcher) {}
 
     public function getTotalHoldOrders(): int
     {
@@ -124,7 +127,7 @@ class POSService
     {
         $variationData = [];
         foreach ($variation as $variant) {
-            if ($type == $variant['type']) {
+            if ($this->variantMatcher->matches($type, $variant['type'] ?? null)) {
                 $variant['qty'] -= $quantity;
             }
             $variationData[] = $variant;

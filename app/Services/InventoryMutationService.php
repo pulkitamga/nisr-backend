@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\StockReason;
 use App\Models\Branch;
 use App\Models\ManageBranchProductStock;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryMutationService
 {
+    private ?VariantMatcher $variantMatcher = null;
+
     public function decreaseForPosLine(
         int $productId,
         int $qty,
@@ -171,7 +174,7 @@ class InventoryMutationService
 
                 $systemBranchId = 1;
                 if ($delta > 0) {
-                    $resolvedBranchId = $systemBranchId;
+                    $resolvedBranchId = $branchId > 0 ? $branchId : $systemBranchId;
                 } else {
                     if ($branchId <= 0) {
                         return ['status' => false, 'message' => 'Deduction branch is required for negative manual adjustment'];
@@ -455,51 +458,27 @@ class InventoryMutationService
 
     private function normalizeVariantType(mixed $variant): ?string
     {
-        if (is_null($variant)) {
-            return null;
-        }
-
-        if (is_array($variant)) {
-            $value = trim((string)($variant['type'] ?? ''));
-            return $value !== '' ? $value : null;
-        }
-
-        $variantString = trim((string)$variant);
-        if ($variantString === '' || strtolower($variantString) === 'null') {
-            return null;
-        }
-
-        if (str_starts_with($variantString, '{')) {
-            $decoded = json_decode($variantString, true);
-            if (is_array($decoded)) {
-                $type = trim((string)($decoded['type'] ?? ''));
-                return $type !== '' ? $type : null;
-            }
-        }
-
-        return $variantString;
+        return $this->getVariantMatcher()->canonical($variant);
     }
 
     private function getBranchStockRow(int $branchId, int $productId, ?string $variantType, bool $createIfMissing = false): ?ManageBranchProductStock
     {
-        $query = ManageBranchProductStock::query()
+        $stockRows = ManageBranchProductStock::query()
             ->where('branch_id', $branchId)
-            ->where('product_id', $productId);
+            ->where('product_id', $productId)
+            ->lockForUpdate()
+            ->get();
 
-        if ($variantType !== null) {
-            $query->where(function ($subQuery) use ($variantType) {
-                $subQuery->where('variation_type', $variantType)
-                    ->orWhere('variation_key', $variantType);
-            });
-        } else {
-            $query->where(function ($subQuery) {
-                $subQuery->whereNull('variation_type')
-                    ->orWhere('variation_type', '')
-                    ->orWhere('variation_type', 'No Variation');
-            });
-        }
+        $stock = $stockRows->first(function (ManageBranchProductStock $row) use ($variantType) {
+            if (is_null($variantType)) {
+                return $this->getVariantMatcher()->isDefault($row->variation_type ?? null)
+                    || $this->getVariantMatcher()->isDefault($row->variation_key ?? null);
+            }
 
-        $stock = $query->lockForUpdate()->first();
+            return $this->getVariantMatcher()->matches($row->variation_type ?? null, $variantType)
+                || $this->getVariantMatcher()->matches($row->variation_key ?? null, $variantType);
+        });
+
         if ($stock || !$createIfMissing) {
             return $stock;
         }
@@ -515,16 +494,18 @@ class InventoryMutationService
 
     private function getOrCreateProductStockRow(Product $product, ?string $variantType): ProductStock
     {
-        $query = ProductStock::query()->where('product_id', $product->id);
-        if ($variantType !== null) {
-            $query->where('variant', $variantType);
-        } else {
-            $query->where(function ($subQuery) {
-                $subQuery->whereNull('variant')->orWhere('variant', '');
-            });
-        }
+        $productStocks = ProductStock::query()
+            ->where('product_id', $product->id)
+            ->lockForUpdate()
+            ->get();
 
-        $productStock = $query->lockForUpdate()->first();
+        $productStock = $productStocks->first(function (ProductStock $row) use ($variantType) {
+            if (is_null($variantType)) {
+                return $this->getVariantMatcher()->isDefault($row->variant ?? null);
+            }
+
+            return $this->getVariantMatcher()->matches($row->variant ?? null, $variantType);
+        });
         if ($productStock) {
             return $productStock;
         }
@@ -550,8 +531,8 @@ class InventoryMutationService
         }
 
         foreach ($variations as $variation) {
-            $type = trim((string)($variation['type'] ?? ''));
-            if ($type === $variantType) {
+            $type = $variation['type'] ?? null;
+            if ($this->getVariantMatcher()->matches($type, $variantType)) {
                 return max(0, (int)($variation['qty'] ?? 0));
             }
         }
@@ -571,8 +552,8 @@ class InventoryMutationService
         }
 
         foreach ($variations as $variation) {
-            $type = trim((string)($variation['type'] ?? ''));
-            if ($type !== $variantType) {
+            $type = $variation['type'] ?? null;
+            if (!$this->getVariantMatcher()->matches($type, $variantType)) {
                 continue;
             }
 
@@ -596,8 +577,8 @@ class InventoryMutationService
 
         $updated = false;
         foreach ($variations as &$variation) {
-            $type = trim((string)($variation['type'] ?? ''));
-            if ($type !== $variantType) {
+            $type = $variation['type'] ?? null;
+            if (!$this->getVariantMatcher()->matches($type, $variantType)) {
                 continue;
             }
 
@@ -617,6 +598,15 @@ class InventoryMutationService
         }
 
         return true;
+    }
+
+    private function getVariantMatcher(): VariantMatcher
+    {
+        if (is_null($this->variantMatcher)) {
+            $this->variantMatcher = new VariantMatcher();
+        }
+
+        return $this->variantMatcher;
     }
 
     private function resolveStockReason(string $status, int $delta): string

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Traits\FileManagerTrait;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Models\WholeSaleProducts;
 
 
 class WholeSaleProductsService
@@ -26,12 +27,24 @@ class WholeSaleProductsService
 
   public function getAddData(object $request): array
 {
+    $variationType = trim((string)($request->variation_type ?? ''));
+    $variationKey = trim((string)($request->variation_key ?? ''));
+
+    if ($variationType === '') {
+        $variationType = WholeSaleProducts::extractTypeFromVariationKey($variationKey) ?? '';
+    }
+
+    $normalizedVariationKey = WholeSaleProducts::normalizeVariationKey(
+        $variationType !== '' ? $variationType : null,
+        $variationKey !== '' ? $variationKey : null
+    );
+
     return [
         'category_id'       => $request->category_id,
         'sub_category_id'   => $request->sub_category_id,
         'product_id'        => $request->product_id,
-        'variation_type'    => $request->variation_type ?? null,
-        'variation_key'     => $request->variation_key ?? null,
+        'variation_type'    => $variationType !== '' ? $variationType : null,
+        'variation_key'     => $normalizedVariationKey,
     ];
 }
     public function addProductRangePrices(array $min_qty, int $product_id): array

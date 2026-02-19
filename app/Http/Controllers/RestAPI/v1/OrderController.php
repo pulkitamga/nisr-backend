@@ -108,7 +108,9 @@ class OrderController extends Controller
             return response()->json(['message' => 'No checked cart items found'], 403);
         }
 
-        $branchId = $pickupBranchId ?: CartManager::resolveFulfillmentBranchId($request);
+        $branchId = $deliveryType === 'pickup'
+            ? CartManager::resolvePickupBranchIdForStockCheck($request)
+            : CartManager::resolveFulfillmentBranchId($request);
         $productStockCheck = $deliveryType === 'pickup'
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);
@@ -279,7 +281,9 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             return response()->json(['message' => 'No checked cart items found'], 403);
         }
 
-        $branchId = $pickupBranchId ?: CartManager::resolveFulfillmentBranchId($request);
+        $branchId = $deliveryType === 'pickup'
+            ? CartManager::resolvePickupBranchIdForStockCheck($request)
+            : CartManager::resolveFulfillmentBranchId($request);
         $productStockCheck = $deliveryType === 'pickup'
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);
@@ -439,7 +443,9 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             return response()->json(['message' => 'No checked cart items found'], 403);
         }
 
-        $branchId = $pickupBranchId ?: CartManager::resolveFulfillmentBranchId($request);
+        $branchId = $deliveryType === 'pickup'
+            ? CartManager::resolvePickupBranchIdForStockCheck($request)
+            : CartManager::resolveFulfillmentBranchId($request);
         $product_stock = $deliveryType === 'pickup'
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);
