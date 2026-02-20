@@ -11768,4 +11768,12 @@ Request ServiceFlat tyre or dead battery? We’re just a call away. Our on-the-g
 	"no_camera_found" => "No camera found",
 	"unable_to_start_camera_scanner" => "Unable to start camera scanner",
 	"all_warranty_units_for_this_item_are_already_activated" => "All warranty units for this item are already activated",
+	"find_perfect_match" => "Find perfect match",
+	"shop_by_vehicle_year_make_model" => "Shop by vehicle year make model",
+	"model_year" => "Model year",
+	"select_make" => "Select make",
+	"select_model" => "Select model",
+	"select_year" => "Select year",
+	"apply_filters" => "Apply filters",
+	"Read More" => "Read More",
 ];

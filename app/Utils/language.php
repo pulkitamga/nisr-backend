@@ -17,81 +17,36 @@ if (!function_exists('translate')) {
             // }
         }
 
-        App::setLocale(getLanguageCode(country_code: $local));
+        App::setLocale(resolveAppLocale($local));
         return $local == 'en' ? ucfirst($key) : $key;
     }
 
     function getOrPutTranslateMessageValueByKey(string $local, string $key): array|string|null
     {
-        static $defaultLocaleMessages = null;
-        static $localizedMessages = [];
-        static $translationSettingId = null;
-
         try {
+            $translatedMessagesArray = include(base_path('resources/lang/' . $local . '/messages.php'));
+            $newMessagesArray = include(base_path('resources/lang/' . $local . '/new-messages.php'));
             $key = str_replace('"', '', $key);
             $processedKey = ucfirst(str_replace('_', ' ', removeSpecialCharacters($key)));
 
-            if ($defaultLocaleMessages === null) {
-                $setting = \App\Models\BusinessSetting::firstOrCreate(
-                    ['type' => 'ui_translation_messages'],
-                    ['value' => json_encode([], JSON_UNESCAPED_UNICODE)]
-                );
+            if (!array_key_exists($key, $translatedMessagesArray) && !array_key_exists($key, $newMessagesArray)) {
+                $newMessagesArray[$key] = $processedKey;
 
-                $translationSettingId = $setting->id;
-                $decoded = json_decode($setting->value ?? '', true);
-                $defaultLocaleMessages = is_array($decoded) ? $decoded : [];
-            }
-
-            if (!array_key_exists($key, $defaultLocaleMessages)) {
-                $defaultLocaleMessages[$key] = $processedKey;
-
-                if ($translationSettingId) {
-                    \App\Models\BusinessSetting::where('id', $translationSettingId)->update([
-                        'value' => json_encode($defaultLocaleMessages, JSON_UNESCAPED_UNICODE),
-                    ]);
+                $languageFileContents = "<?php\n\nreturn [\n";
+                foreach ($newMessagesArray as $languageKey => $value) {
+                    $languageFileContents .= "\t\"" . $languageKey . "\" => \"" . $value . "\",\n";
                 }
-            }
+                $languageFileContents .= "];\n";
 
-            $message = $defaultLocaleMessages[$key] ?? $processedKey;
-
-            if (
-                $translationSettingId &&
-                $local !== config('app.locale') &&
-                $local !== 'en'
-            ) {
-                if (!array_key_exists($local, $localizedMessages)) {
-                    $localizedMessages[$local] = \App\Models\Translation::where('translationable_type', \App\Models\BusinessSetting::class)
-                        ->where('translationable_id', $translationSettingId)
-                        ->where('locale', $local)
-                        ->pluck('value', 'key')
-                        ->toArray();
-                }
-
-                if (!array_key_exists($key, $localizedMessages[$local])) {
-                    $fallbackLocalizedMessage = getFallbackTranslationFromLegacyFiles(local: $local, key: $key);
-
-                    if (!empty($fallbackLocalizedMessage)) {
-                        try {
-                            \App\Models\Translation::updateOrCreate(
-                                [
-                                    'translationable_type' => \App\Models\BusinessSetting::class,
-                                    'translationable_id' => $translationSettingId,
-                                    'locale' => $local,
-                                    'key' => $key,
-                                ],
-                                [
-                                    'value' => $fallbackLocalizedMessage,
-                                ]
-                            );
-
-                            $localizedMessages[$local][$key] = $fallbackLocalizedMessage;
-                        } catch (\Throwable $exception) {
-                            // Silent fallback to default locale message if DB write fails.
-                        }
-                    }
-                }
-
-                $message = $localizedMessages[$local][$key] ?? $message;
+                $targetPath = base_path('resources/lang/' . $local . '/new-messages.php');
+                file_put_contents($targetPath, $languageFileContents);
+                $message = $processedKey;
+            } elseif (array_key_exists($key, $translatedMessagesArray)) {
+                $message = __('messages.' . $key);
+            } elseif (array_key_exists($key, $newMessagesArray)) {
+                $message = __('new-messages.' . $key);
+            } else {
+                $message = __('messages.' . $key);
             }
         } catch (\Exception $exception) {
             $message = ucfirst(str_replace('_', ' ', removeSpecialCharacters(str_replace("\'", "'", $key))));
@@ -112,65 +67,6 @@ if (!function_exists('getDirectoriesByGivenPath')) {
                 $directories[] = $item;
         }
         return $directories;
-    }
-}
-
-if (!function_exists('getFallbackTranslationFromLegacyFiles')) {
-    function getFallbackTranslationFromLegacyFiles(string $local, string $key): ?string
-    {
-        static $languageFileCache = [];
-
-        $local = strtolower(trim($local));
-        $key = trim(str_replace('"', '', $key));
-
-        if ($local === '' || $key === '' || $local === 'en') {
-            return null;
-        }
-
-        if (!array_key_exists($local, $languageFileCache)) {
-            $merged = [];
-            $files = ['new-messages.php', 'messages.php', 'message.php'];
-
-            foreach ($files as $file) {
-                $path = base_path("resources/lang/{$local}/{$file}");
-                if (file_exists($path)) {
-                    $data = include $path;
-                    if (is_array($data)) {
-                        $merged = array_merge($merged, $data);
-                    }
-                }
-            }
-
-            $languageFileCache[$local] = $merged;
-        }
-
-        $dictionary = $languageFileCache[$local] ?? [];
-        if (empty($dictionary)) {
-            return null;
-        }
-
-        $candidates = [
-            $key,
-            ucfirst($key),
-            str_replace('_', ' ', $key),
-            ucfirst(str_replace('_', ' ', $key)),
-            ucwords(str_replace('_', ' ', $key)),
-        ];
-
-        foreach ($candidates as $candidate) {
-            if (!is_string($candidate) || $candidate === '') {
-                continue;
-            }
-
-            if (array_key_exists($candidate, $dictionary)) {
-                $value = $dictionary[$candidate];
-                if (is_string($value) && trim($value) !== '') {
-                    return $value;
-                }
-            }
-        }
-
-        return null;
     }
 }
 if (!function_exists('getTranslation')) {
@@ -199,15 +95,9 @@ if (!function_exists('getDefaultLanguage')) {
             $lang = session('local');
         } else {
             $data = getWebConfig('language');
-            if (!is_array($data)) {
-                $data = [];
-            }
             $code = 'en';
             $direction = 'ltr';
             foreach ($data as $ln) {
-                if (!is_array($ln)) {
-                    continue;
-                }
                 if (array_key_exists('default', $ln) && $ln['default']) {
                     $code = $ln['code'];
                     if (array_key_exists('direction', $ln)) {
@@ -227,11 +117,8 @@ if (!function_exists('getLanguageName')) {
     function getLanguageName(string $key): string
     {
         $values = getWebConfig('language');
-        if (!is_array($values)) {
-            return $key;
-        }
         foreach ($values as $value) {
-            if (is_array($value) && array_key_exists('code', $value) && $value['code'] == $key && array_key_exists('name', $value)) {
+            if ($value['code'] == $key) {
                 $key = $value['name'];
             }
         }
@@ -242,21 +129,6 @@ if (!function_exists('getLanguageName')) {
 if (!function_exists('getLanguageCode')) {
     function getLanguageCode(string $country_code): string
     {
-        $normalizedInput = strtolower(trim($country_code));
-        if ($normalizedInput === '') {
-            return 'en';
-        }
-
-        // If caller already provided locale code (e.g. en, ar, fr), use it directly.
-        if (is_dir(base_path('resources/lang/' . $normalizedInput))) {
-            return $normalizedInput;
-        }
-
-        // If caller provided locale tag (e.g. en-US), return language segment.
-        if (str_contains($normalizedInput, '-')) {
-            return explode('-', $normalizedInput)[0];
-        }
-
         $locales = array(
             'af-ZA',
             'am-ET',
@@ -418,6 +290,34 @@ if (!function_exists('getLanguageCode')) {
         return "en";
     }
 }
+
+if (!function_exists('resolveAppLocale')) {
+    function resolveAppLocale(string|null $locale): string
+    {
+        $normalizedLocale = strtolower(trim((string)$locale));
+        if ($normalizedLocale === '') {
+            return 'en';
+        }
+
+        if (is_dir(base_path('resources/lang/' . $normalizedLocale))) {
+            return $normalizedLocale;
+        }
+
+        $mappedLanguageCode = getLanguageCode(country_code: $normalizedLocale);
+        if (is_dir(base_path('resources/lang/' . $mappedLanguageCode))) {
+            return $mappedLanguageCode;
+        }
+
+        if (str_contains($normalizedLocale, '-')) {
+            $languagePart = explode('-', $normalizedLocale)[0];
+            if (is_dir(base_path('resources/lang/' . $languagePart))) {
+                return $languagePart;
+            }
+        }
+
+        return 'en';
+    }
+}
 if (!function_exists('autoTranslator')) {
     function autoTranslator($q, $sl, $tl): array|string
     {
@@ -497,3 +397,4 @@ if (!function_exists('getBusinessSettingTranslation')) {
 }
 
 }
+

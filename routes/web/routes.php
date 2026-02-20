@@ -60,6 +60,7 @@ use App\Http\Controllers\Payment_Methods\PaystackController;
 use App\Http\Controllers\Web\WholesaleController;
 use App\Http\Controllers\Web\WarrantyClaimController;
 use App\Http\Controllers\Web\BlogController;
+use App\Http\Controllers\UcmWebhookController;
 use VentureDrake\LaravelCrm\LaravelCrm;
 
 
@@ -77,6 +78,10 @@ use VentureDrake\LaravelCrm\LaravelCrm;
 Route::get('/test', function () {
     return view('admin-views.deal.clearance-sale.priority-setup');
 });
+
+Route::post('/ucm/webhook', [UcmWebhookController::class, 'handle'])
+    ->middleware('throttle:global')
+    ->name('ucm.webhook');
 
 Route::controller(WebController::class)->group(function () {
     Route::get('maintenance-mode', 'maintenance_mode')->name('maintenance-mode');

@@ -10773,6 +10773,7 @@ return [
 	"selected_pickup_branch" => "Selected pickup branch",
 	"Check_Branch_inventory" => "Check Branch inventory",
 	"street_1,_street_2,_street_3,_street_4" => "Street 1  street 2  street 3  street 4",
+
 	" Delete" => "حذف",
 	" Submit" => "إرسال",
 	"--Select City--" => "اختر المدينة",
@@ -11019,12 +11020,4 @@ return [
 	"wholesaler_Login" => "تسجيل دخول الموزع",
 	"your_pixel_id_will_then_be_generated,_and_you_can_copy_it_from_the_interface." => "سيتم بعد ذلك إنشاء معرف البكسل الخاص بك ويمكنك نسخه من الواجهة.",
 	"z_to_a_Order" => "ترتيب من الألف إلى الياء",
-	"find_perfect_match" => "Find perfect match",
-	"shop_by_vehicle_year_make_model" => "Shop by vehicle year make model",
-	"model_year" => "Model year",
-	"select_make" => "Select make",
-	"select_model" => "Select model",
-	"select_year" => "Select year",
-	"apply_filters" => "Apply filters",
-	"Read More" => "Read More",
 ];

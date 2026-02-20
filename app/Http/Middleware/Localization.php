@@ -16,9 +16,22 @@ class Localization
      */
     public function handle($request, Closure $next)
     {
-        if (session()->has('locale')) {
-            App::setLocale(session()->get('locale'));
+        $sessionLocale = null;
+
+        if (session()->has('local')) {
+            $sessionLocale = session()->get('local');
+        } elseif (session()->has('locale')) {
+            $sessionLocale = session()->get('locale');
         }
+
+        if (!empty($sessionLocale)) {
+            $resolvedLocale = function_exists('resolveAppLocale')
+                ? resolveAppLocale((string)$sessionLocale)
+                : strtolower((string)$sessionLocale);
+
+            App::setLocale($resolvedLocale);
+        }
+
         return $next($request);
     }
 }

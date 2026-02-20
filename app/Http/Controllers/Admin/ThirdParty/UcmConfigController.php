@@ -44,6 +44,11 @@ class UcmConfigController extends BaseController
         $data = $request->validated();
         $data['status'] = $data['status'] ?? 0;
         $data['digest'] = $data['digest'] ?? 0;
+        $data['verify_tls'] = $data['verify_tls'] ?? 0;
+        $data['api_version'] = $data['api_version'] ?? '1.0';
+        $data['report_url'] = $data['report_url'] ?? '';
+        $data['webhook_token'] = $data['webhook_token'] ?? '';
+        $data['ca_path'] = $data['ca_path'] ?? '';
 
         \App\Models\BusinessSetting::updateOrCreate(
             ['type' => 'ucm_api_config'],

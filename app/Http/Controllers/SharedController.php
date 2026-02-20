@@ -5,27 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\Currency;
 use App\Http\Requests\Request;
 use App\Utils\Helpers;
-use App\Models\BusinessSetting;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
 
 class SharedController extends Controller
 {
     public function changeLanguage(Request $request): JsonResponse
     {
+        $languageCode = strtolower(trim((string)$request->input('language_code')));
+        if ($languageCode === '') {
+            return response()->json(['message' => translate('language_code_is_required')], 422);
+        }
+
         $direction = 'ltr';
-        $language = getWebConfig('language');
-        foreach ($language as $data) {
-            if ($data['code'] == $request['language_code']) {
-                $direction = $data['direction'] ?? 'ltr';
+        $languageList = getWebConfig('language');
+        $isValidLanguage = false;
+        if (is_array($languageList)) {
+            foreach ($languageList as $languageData) {
+                if (
+                    is_array($languageData)
+                    && strtolower((string)($languageData['code'] ?? '')) === $languageCode
+                ) {
+                    $direction = $languageData['direction'] ?? 'ltr';
+                    $isValidLanguage = true;
+                    break;
+                }
             }
         }
+
+        if (!$isValidLanguage) {
+            return response()->json(['message' => translate('Invalid_language_code')], 422);
+        }
+
         session()->forget('language_settings');
         Helpers::language_load();
-        session()->put('local', $request['language_code']);
+        session()->put('local', $languageCode);
+        session()->put('locale', $languageCode);
         Session::put('direction', $direction);
+        App::setLocale(function_exists('resolveAppLocale') ? resolveAppLocale($languageCode) : $languageCode);
 
         $currencyCode = session('currency_code');
         if ($currencyCode) {
@@ -42,8 +60,6 @@ class SharedController extends Controller
                 }
             }
         }
-
-        Artisan::call('cache:clear');
         return response()->json(['message' => translate('language_change_successfully') . '.']);
     }
 
