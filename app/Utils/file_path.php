@@ -121,11 +121,18 @@ if (!function_exists('dynamicAsset')) {
 if (!function_exists('dynamicStorage')) {
     function dynamicStorage(string $path): string
     {
+        // Ensure the path starts with storage/app/public for proper URL generation
+        if (strpos($path, 'storage/app/public') !== 0 && strpos($path, 'public/') !== 0) {
+            $path = 'storage/app/public/' . ltrim($path, '/');
+        }
+
         if (DOMAIN_POINTED_DIRECTORY == 'public') {
             $result = str_replace('storage/app/public', 'storage', $path);
         } else {
             $result = $path;
         }
+
+        // Ensure proper URL generation with asset() function
         return asset($result);
     }
 }

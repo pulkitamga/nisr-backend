@@ -19,12 +19,12 @@ trait StorageTrait
         if (is_array($data)) {
             $data = implode(',', $data);  // or any other logic to handle arrays
         }
-    
+
         // Similarly handle the path
         if (is_array($path)) {
             $path = implode('/', $path);
         }
-    
+
         // S3 handling
         if ($type == 's3' && $this->storageConnectionCheck() == 's3') {
             $fullPath = ltrim($path . '/' . $data, '/');
@@ -45,21 +45,51 @@ trait StorageTrait
                 ];
             }
         }
-    
+
         return [
             'key' => $data,
             'path' => null,
             'status' => 404,
         ];
     }
-    
+
 
     private function fileCheck($disk, $path): bool
     {
         try{
             return Storage::disk($disk)->exists($path);
         }catch (\Exception $exception){
+            // Log the error for debugging but return false for normal operation
+            \Log::error('Storage file check failed: ' . $exception->getMessage(), [
+                'disk' => $disk,
+                'path' => $path,
+                'exception' => $exception
+            ]);
             return false;
+        }
+    }
+
+    /**
+     * Get file URL with error handling and fallback
+     * @param string $path
+     * @param string|null $fallback
+     * @return string
+     */
+    protected function getFileUrl(string $path, ?string $fallback = null): string
+    {
+        try {
+            if ($this->fileCheck(disk: 'public', path: $path)) {
+                return dynamicStorage('storage/app/public/' . $path);
+            }
+
+            // Return fallback if provided, otherwise use default placeholder
+            return $fallback ?? dynamicStorage('public/assets/front-end/img/placeholder/placeholder-2-1.png');
+        } catch (\Exception $exception) {
+            \Log::error('File URL generation failed: ' . $exception->getMessage(), [
+                'path' => $path,
+                'exception' => $exception
+            ]);
+            return $fallback ?? dynamicStorage('public/assets/front-end/img/placeholder/placeholder-2-1.png');
         }
     }
 

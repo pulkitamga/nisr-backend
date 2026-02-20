@@ -209,6 +209,15 @@ class ProductService
         return Str::slug($request['name'][array_search('en', $request['lang'])], '-') . '-' . Str::random(6);
     }
 
+    private function normalizeDelimitedOptionInput(mixed $value): string
+    {
+        if (is_array($value)) {
+            return implode('|', $value);
+        }
+
+        return (string)($value ?? '');
+    }
+
     public function getChoiceOptions(object $request): array
     {
         $choice_options = [];
@@ -217,7 +226,7 @@ class ProductService
                 $str = 'choice_options_' . $no;
                 $item['name'] = 'choice_' . $no;
                 $item['title'] = $request->choice[$key];
-                $item['options'] = explode(',', implode('|', $request[$str]));
+                $item['options'] = explode(',', $this->normalizeDelimitedOptionInput($request[$str] ?? null));
                 $choice_options[] = $item;
             }
         }
@@ -233,7 +242,7 @@ class ProductService
         if ($request->has('choice_no')) {
             foreach ($request->choice_no as $no) {
                 $name = 'choice_options_' . $no;
-                $myString = implode('|', $request[$name]);
+                $myString = $this->normalizeDelimitedOptionInput($request[$name] ?? null);
                 $optionArray = array_filter(explode(',', $myString), function ($value) {
                     return $value !== '';
                 });
@@ -931,7 +940,7 @@ class ProductService
         if ($request->has('extensions_type')) {
             foreach ($request->extensions_type as $type) {
                 $name = 'extensions_options_' . $type;
-                $my_str = implode('|', $request[$name]);
+                $my_str = $this->normalizeDelimitedOptionInput($request[$name] ?? null);
                 $optionsArray = [];
                 foreach (explode(',', $my_str) as $option) {
                     $optionsArray[] = str_replace('.', '_', removeSpecialCharacters($option));
