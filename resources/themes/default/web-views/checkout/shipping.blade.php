@@ -335,7 +335,7 @@
                         <div class="d-flex align-items-center flex-wrap justify-content-between gap-3">
                             <div class="min-h-45 form-check d-flex gap-3 align-items-center cursor-pointer user-select-none">
                                 <input type="checkbox" id="is_check_create_account" name="is_check_create_account" class="form-check-input mt-0" value="1">
-                                <label class="form-check-label font-weight-bold fs-13" for="is_check_create_account">
+                                <label class="form-check-label font-weight-bold fs-13 create-account-info-label" for="is_check_create_account">
                                     {{translate('Create_an_account_with_the_above_info')}}
                                 </label>
                             </div>
@@ -605,7 +605,7 @@
                         <div class="d-flex align-items-center flex-wrap justify-content-between gap-3">
                             <div class="min-h-45 form-check d-flex gap-3 align-items-center cursor-pointer user-select-none">
                                 <input type="checkbox" id="is_check_create_account" name="is_check_create_account" class="form-check-input mt-0" value="1">
-                                <label class="form-check-label font-weight-bold fs-13" for="is_check_create_account">
+                                <label class="form-check-label font-weight-bold fs-13 create-account-info-label" for="is_check_create_account">
                                     {{translate('Create_an_account_with_the_above_info')}}
                                 </label>
                             </div>
@@ -646,6 +646,8 @@
 </div>
 
 <span id="message-update-this-address" data-text="{{ translate('Update_this_Address') }}"></span>
+<span id="message-create-account-above-info" data-text="{{ translate('Create_an_account_with_the_above_info') }}"></span>
+<span id="message-create-account-below-info" data-text="Create an account with the below info"></span>
 <span id="route-fetch-area-branch" data-url="fetch-area"></span>
 <span id="route-customer-choose-shipping-address-other" data-url="{{ route('customer.choose-shipping-address-other') }}"></span>
 <span id="default-latitude-address" data-value="{{ $defaultLocation ? $defaultLocation['lat']:'26.774645719165914' }}"></span>

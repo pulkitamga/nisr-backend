@@ -700,10 +700,13 @@ function togglePickupBranchVisibility() {
     const pickupBranchSelect = document.getElementById('pickup_branch_id');
     const sameAsShippingAddressWrapper = document.getElementById('same_as_shipping_address_wrapper');
     const saveAddressLabel = document.getElementById('save_address_label');
-    const sameAsShippingAddress = document.getElementById('same_as_shipping_address');
-    const hideBillingAddress = document.getElementById('hide_billing_address');
+    const sameAsShippingAddress = document.getElementById('same_as_shipping_address') || document.getElementById('same-as-shipping-address');
+    const hideBillingAddress = document.getElementById('hide_billing_address') || document.getElementById('hide-billing-address');
     const updateAddressCheckbox = document.getElementById('update_address');
     const saveAddressCheckbox = document.getElementById('save_address');
+    const createAccountInfoLabels = document.querySelectorAll('.create-account-info-label');
+    const createAccountAboveInfoText = document.getElementById('message-create-account-above-info')?.dataset?.text || 'Create an account with the above info';
+    const createAccountBelowInfoText = document.getElementById('message-create-account-below-info')?.dataset?.text || 'Create an account with the below info';
     const setElementVisibility = (element, shouldShow) => {
         if (!element) return;
         if (shouldShow) {
@@ -711,6 +714,11 @@ function togglePickupBranchVisibility() {
         } else {
             element.style.setProperty('display', 'none', 'important');
         }
+    };
+    const setCreateAccountLabelText = (text) => {
+        createAccountInfoLabels.forEach((label) => {
+            label.textContent = text;
+        });
     };
 
     if (!selectedValue) {
@@ -733,10 +741,12 @@ function togglePickupBranchVisibility() {
         if (hideBillingAddress) {
             hideBillingAddress.style.display = '';
         }
+        setCreateAccountLabelText(createAccountAboveInfoText);
         return;
     }
 
     if (selectedValue === 'pickup') {
+        setCreateAccountLabelText(createAccountBelowInfoText);
         pickupBranchDiv?.classList.remove('d-none');
         pickupBranchAddressDiv?.classList.remove('d-none');
         deliveryAddressTypeDiv?.classList.remove('d-none');
@@ -763,6 +773,7 @@ function togglePickupBranchVisibility() {
             saveAddressCheckbox.checked = false;
         }
     } else {
+        setCreateAccountLabelText(createAccountAboveInfoText);
         pickupBranchDiv?.classList.add('d-none');
         pickupBranchAddressDiv?.classList.add('d-none');
         addressAddressDiv?.classList.remove('d-none');
@@ -776,6 +787,12 @@ function togglePickupBranchVisibility() {
         addressType?.classList.remove('d-none');
         setElementVisibility(sameAsShippingAddressWrapper, true);
         setElementVisibility(saveAddressLabel, true);
+        if (sameAsShippingAddress) {
+            sameAsShippingAddress.checked = true;
+        }
+        if (hideBillingAddress) {
+            hideBillingAddress.style.display = 'none';
+        }
 
     }
 }

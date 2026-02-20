@@ -10,6 +10,9 @@
     </div>
 
     <div class="pos-product-item_content clickable">
+        @php
+            $resolvedBranchId = (int)($branch->id ?? 1);
+        @endphp
         <div class="pos-product-item_title">
             {{ $product['name'] }}
         </div>
@@ -20,11 +23,11 @@
             <div class="d-flex flex-wrap gap-2">
                 <span class="fz-22 text-capitalize">
                     @if ($product['product_type'] == 'physical')
-                    @if ($branch->id == 1)
+                    @if ($resolvedBranchId === 1)
                     {{ $product['current_stock'] > 0 ? $product['current_stock'].' '.$product['unit'].($product['current_stock']>1 ? 's' : '') : translate('out_of_stock').'.' }}
                     @else
                     @php
-                    $branchStock = \App\Models\ManageBranchProductStock::where('branch_id', $branch->id)
+                    $branchStock = \App\Models\ManageBranchProductStock::where('branch_id', $resolvedBranchId)
                     ->where('product_id', $product->id)
                     ->value('current_stock');
                     @endphp
