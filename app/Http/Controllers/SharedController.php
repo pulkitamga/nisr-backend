@@ -7,6 +7,7 @@ use App\Http\Requests\Request;
 use App\Utils\Helpers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Session;
 
 class SharedController extends Controller
@@ -42,6 +43,9 @@ class SharedController extends Controller
         Helpers::language_load();
         session()->put('local', $languageCode);
         session()->put('locale', $languageCode);
+        $localeCookieLifetimeInMinutes = 60 * 24 * 365; // 1 year
+        Cookie::queue('local', $languageCode, $localeCookieLifetimeInMinutes);
+        Cookie::queue('locale', $languageCode, $localeCookieLifetimeInMinutes);
         Session::put('direction', $direction);
         App::setLocale(function_exists('resolveAppLocale') ? resolveAppLocale($languageCode) : $languageCode);
 

@@ -16,12 +16,15 @@ class Localization
      */
     public function handle($request, Closure $next)
     {
-        $sessionLocale = null;
+        $sessionLocale = session('local', session('locale'));
 
-        if (session()->has('local')) {
-            $sessionLocale = session()->get('local');
-        } elseif (session()->has('locale')) {
-            $sessionLocale = session()->get('locale');
+        if (empty($sessionLocale)) {
+            $cookieLocale = strtolower(trim((string)($request->cookie('local') ?? $request->cookie('locale') ?? '')));
+            if ($cookieLocale !== '') {
+                $sessionLocale = $cookieLocale;
+                session()->put('local', $cookieLocale);
+                session()->put('locale', $cookieLocale);
+            }
         }
 
         if (!empty($sessionLocale)) {

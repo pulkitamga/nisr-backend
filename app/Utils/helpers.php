@@ -153,25 +153,41 @@ class helpers
 
         public static function default_lang()
     {
-        if (strpos(url()->current(), '/api')) {
-            $lang = App::getLocale();
-        } elseif (session()->has('local')) {
-            $lang = session('local');
-        } else {
-            $data = getWebConfig(name: 'language');
-            $code = 'en';
-            $direction = 'ltr';
-            foreach ($data as $ln) {
-                if (array_key_exists('default', $ln) && $ln['default']) {
-                    $code = $ln['code'];
-                    if (array_key_exists('direction', $ln)) {
-                        $direction = $ln['direction'];
-                    }
+        $data = getWebConfig(name: 'language');
+        $data = is_array($data) ? $data : [];
+        $defaultCode = 'en';
+        $direction = 'ltr';
+        foreach ($data as $ln) {
+            if (is_array($ln) && array_key_exists('default', $ln) && $ln['default']) {
+                $defaultCode = $ln['code'];
+                if (array_key_exists('direction', $ln)) {
+                    $direction = $ln['direction'];
                 }
             }
-            session()->put('local', $code);
+        }
+
+        if (strpos(url()->current(), '/api')) {
+            $lang = App::getLocale();
+        } elseif (session()->has('local') || session()->has('locale')) {
+            $lang = session('local', session('locale'));
+            session()->put('local', $lang);
+            session()->put('locale', $lang);
+        } elseif (($cookieLocale = strtolower(trim((string)(request()->cookie('local') ?? request()->cookie('locale') ?? '')))) !== '') {
+            $lang = $cookieLocale;
+            foreach ($data as $ln) {
+                if (is_array($ln) && strtolower((string)($ln['code'] ?? '')) === $lang) {
+                    $direction = $ln['direction'] ?? $direction;
+                    break;
+                }
+            }
+            session()->put('local', $lang);
+            session()->put('locale', $lang);
             Session::put('direction', $direction);
-            $lang = $code;
+        } else {
+            session()->put('local', $defaultCode);
+            session()->put('locale', $defaultCode);
+            Session::put('direction', $direction);
+            $lang = $defaultCode;
         }
         return $lang;
     }
