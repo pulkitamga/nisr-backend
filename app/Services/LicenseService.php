@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 
 class LicenseService
 {
-    protected const PUBLIC_KEY = 'UmhAfG92j2btS9EkxE93gcc9FYVAhCg+KcuNIsXsumY=';
+    protected const PUBLIC_KEY = 'LX1NbEQaG3YPrqbV5T0BFbksCwSoMYpCvqCVk6pBWUI=';
 
     public function validate(): bool
     {

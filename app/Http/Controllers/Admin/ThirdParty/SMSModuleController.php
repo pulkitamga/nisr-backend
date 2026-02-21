@@ -77,7 +77,7 @@ class SMSModuleController extends BaseController
         ]);
 
         if ($request['status'] == 1) {
-            foreach (['releans', 'twilio', 'nexmo', '2factor', 'msg91', 'hubtel', 'paradox', 'signal_wire', '019_sms', 'viatech', 'global_sms', 'akandit_sms', 'sms_to', 'alphanet_sms', 'sms_com_eg'] as $gateway) {
+            foreach (GlobalConstant::DEFAULT_SMS_GATEWAYS as $gateway) {
                 $keep = $this->settingRepo->getFirstWhere(params: ['key_name' => $gateway, 'settings_type' => 'sms_config']);
                 if (isset($keep)) {
                     $hold = $keep['live_values'];
@@ -118,34 +118,6 @@ class SMSModuleController extends BaseController
                 'api_secret' => '',
                 'token' => '',
                 'from' => '',
-                'otp_template' => '',
-            ],
-            '2factor' => [
-                'gateway' => '2factor',
-                'mode' => 'live',
-                'status' => 0,
-                'api_key' => '',
-            ],
-            'msg91' => [
-                'gateway' => 'msg91',
-                'mode' => 'live',
-                'status' => 0,
-                'template_id' => '',
-                'auth_key' => '',
-            ],
-            'releans' => [
-                'gateway' => 'releans',
-                'mode' => 'live',
-                'status' => 0,
-                'api_key' => '',
-                'from' => '',
-                'otp_template' => '',
-            ],
-            'alphanet_sms' => [
-                'gateway' => 'alphanet_sms',
-                'mode' => 'live',
-                'status' => 0,
-                'api_key' => '',
                 'otp_template' => '',
             ],
             'sms_com_eg' => [

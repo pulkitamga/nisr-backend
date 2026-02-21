@@ -429,19 +429,8 @@ class helpers
     public static function getDefaultPaymentGateways(): array
     {
         return [
-            'ssl_commerz',
-            'paypal',
-            'stripe',
-            'razor_pay',
-            'paystack',
-            'senang_pay',
             'paymob_accept',
-            'flutterwave',
-            'paytm',
             'paytabs',
-            'liqpay',
-            'mercadopago',
-            'bkash'
         ];
     }
 
@@ -450,9 +439,6 @@ class helpers
         return [
             'twilio',
             'nexmo',
-            '2factor',
-            'msg91',
-            'releans',
             'sms_com_eg',
         ];
     }

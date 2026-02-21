@@ -21,9 +21,12 @@ class Localization
         if (empty($sessionLocale)) {
             $cookieLocale = strtolower(trim((string)($request->cookie('local') ?? $request->cookie('locale') ?? '')));
             if ($cookieLocale !== '') {
-                $sessionLocale = $cookieLocale;
-                session()->put('local', $cookieLocale);
-                session()->put('locale', $cookieLocale);
+                // Validate locale format - prevent license keys or other invalid values
+                if (preg_match('/^[a-z]{2,3}(_[a-z]{2,3})?$/', $cookieLocale)) {
+                    $sessionLocale = $cookieLocale;
+                    session()->put('local', $cookieLocale);
+                    session()->put('locale', $cookieLocale);
+                }
             }
         }
 

@@ -42,33 +42,11 @@ trait Payment
         $payment->payment_platform = $payment_info->getPaymentPlatForm();
         $payment->save();
 
-        if ($payment->payment_method == 'ssl_commerz') {
-            return url("payment/sslcommerz/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'stripe'){
-            return url("payment/stripe/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'paymob_accept'){
+        if ($payment->payment_method == 'paymob_accept') {
             return url("payment/paymob/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'flutterwave'){
-            return url("payment/flutterwave-v3/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'paytm'){
-            return url("payment/paytm/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'paypal'){
-            return url("payment/paypal/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'paytabs'){
+        } else if ($payment->payment_method == 'paytabs') {
             return url("payment/paytabs/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'liqpay'){
-            return url("payment/liqpay/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'razor_pay'){
-            return url("payment/razor-pay/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'senang_pay'){
-            return url("payment/senang-pay/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'mercadopago'){
-            return url("payment/mercadopago/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'bkash'){
-            return url("payment/bkash/make-payment/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'paystack'){
-            return url("payment/paystack/pay/?payment_id={$payment->id}");
-        }else if($payment->payment_method == 'fatoorah'){
+        } else if ($payment->payment_method == 'fatoorah') {
             return url("payment/fatoorah/pay/?payment_id={$payment->id}");
         }else if($payment->payment_method == 'xendit'){
             return url("payment/xendit/pay/?payment_id={$payment->id}");
