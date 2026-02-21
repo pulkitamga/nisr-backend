@@ -1190,6 +1190,7 @@ enum GlobalConstant
         'msg91',
         'releans',
         'alphanet_sms',
+        'sms_com_eg',
     ];
 
 

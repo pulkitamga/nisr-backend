@@ -38,7 +38,7 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="card mt-3">
-                            @php($ucm = getWebConfig(name: 'ucm_api_config')) @endphp
+                            @php $ucm = getWebConfig(name: 'ucm_api_config'); @endphp
                             <form action="{{route('admin.business-settings.ucm.update')}}" method="post">
                                 @csrf
                                 <div class="card-header">

@@ -453,6 +453,7 @@ class helpers
             '2factor',
             'msg91',
             'releans',
+            'sms_com_eg',
         ];
     }
 

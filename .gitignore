@@ -3,6 +3,7 @@
 /public/storage
 /public/themes
 /storage/*.key
+/storage/framework/.license
 /storage/app/*
 /vendor
 .vscode
@@ -22,3 +23,5 @@ composer-setup.php
 AGENTS.md
 *.zip
 *.md
+generate_license.php
+generate_keys.php

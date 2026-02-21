@@ -48,6 +48,11 @@ class SMSModule
             return self::alphanet_sms($receiver, $otp);
         }
 
+        $config = self::get_settings('sms_com_eg');
+        if (isset($config) && $config['status'] == 1) {
+            return self::sms_com_eg($receiver, $otp);
+        }
+
         return 'not_found';
     }
 
@@ -223,6 +228,46 @@ class SMSModule
             ));
 
             $response = curl_exec($curl);
+            $err = curl_error($curl);
+            curl_close($curl);
+
+            if (!$err) {
+                $response = 'success';
+            } else {
+                $response = 'error';
+            }
+        }
+        return $response;
+    }
+
+    public static function sms_com_eg($receiver, $otp): string
+    {
+        $config = self::get_settings('sms_com_eg');
+        $response = 'error';
+        if (isset($config) && $config['status'] == 1) {
+            $receiver = str_replace("+", "", $receiver);
+            $message = str_replace("#OTP#", $otp, $config['otp_template']);
+            $payload = [
+                'username' => $config['username'],
+                'password' => $config['password'],
+                'sender' => $config['sender'],
+                'mobile' => $receiver,
+                'language' => $config['language'] ?? '2',
+                'message' => $message,
+            ];
+
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://smsmisr.com/api/webapi/',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => http_build_query($payload),
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/x-www-form-urlencoded',
+                ),
+            ));
+
+            curl_exec($curl);
             $err = curl_error($curl);
             curl_close($curl);
 

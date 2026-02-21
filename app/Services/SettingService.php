@@ -22,7 +22,7 @@ class SettingService
     {
         collect(['status'])->each(fn($item, $key) => $request[$item] = $request->has($item) ? (int)$request[$item] : 0);
         $validation = [
-            'gateway' => 'required|in:releans,twilio,nexmo,2factor,msg91,hubtel,paradox,signal_wire,019_sms,viatech,global_sms,akandit_sms,sms_to,alphanet_sms',
+            'gateway' => 'required|in:releans,twilio,nexmo,2factor,msg91,hubtel,paradox,signal_wire,019_sms,viatech,global_sms,akandit_sms,sms_to,alphanet_sms,sms_com_eg',
             'mode' => 'required|in:live,test'
         ];
         $additional_data = [];
@@ -128,6 +128,15 @@ class SettingService
             $additional_data = [
                 'status' => 'required|in:1,0',
                 'api_key' => 'required',
+                'otp_template' => 'required',
+            ];
+        } elseif ($request['gateway'] == 'sms_com_eg') {
+            $additional_data = [
+                'status' => 'required|in:1,0',
+                'username' => 'required',
+                'password' => 'required',
+                'sender' => 'required',
+                'language' => 'required|in:1,2',
                 'otp_template' => 'required',
             ];
         }
