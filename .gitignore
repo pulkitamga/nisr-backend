@@ -20,3 +20,5 @@ composer-setup.php
 /- private/
 /docs/
 AGENTS.md
+*.zip
+*.md
