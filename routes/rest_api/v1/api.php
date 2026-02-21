@@ -26,6 +26,9 @@ use App\Http\Controllers\RestAPI\v1\auth\CustomerAPIAuthController;
 use App\Http\Controllers\RestAPI\v1\auth\EmailVerificationController;
 use App\Http\Controllers\RestAPI\v1\auth\PhoneVerificationController;
 use App\Http\Controllers\RestAPI\v1\CustomerRestockRequestController;
+use App\Http\Controllers\RestAPI\v1\WarrantyClaimController;
+use App\Http\Controllers\RestAPI\v1\WarrantyViewController;
+use App\Http\Controllers\RestAPI\v1\WarrantyActivationApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -431,6 +434,22 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
         Route::get('distance-api', 'MapApiController@distance_api');
         Route::get('place-api-details', 'MapApiController@place_api_details');
         Route::get('geocode-api', 'MapApiController@geocode_api');
+    });
+
+       // warranty 
+    Route::prefix('warranty')->controller(WarrantyActivationApiController::class)->group(function () {
+        Route::post('initiate', 'initiate');
+        Route::post('verify', 'verify');
+        Route::post('resend-otp', 'resendOtp');
+        Route::get('branches',  'getBranches');
+    });
+
+    Route::post('warranty/claim', [WarrantyClaimController::class, 'store']);
+    Route::prefix('warranty')->controller(WarrantyViewController::class)->group(function () {
+        Route::get('start',  'lookupStart');
+        Route::post('lookup',  'lookupSubmit');
+        Route::post('lookup/verify', 'lookupVerify');
+        Route::get('view/{warranty_public_id}', 'view')->name('api.warranty.view');
     });
 
     Route::post('contact-us', 'GeneralController@contact_store');
