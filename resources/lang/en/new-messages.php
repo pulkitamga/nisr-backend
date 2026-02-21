@@ -11776,4 +11776,13 @@ Request ServiceFlat tyre or dead battery? We’re just a call away. Our on-the-g
 	"select_year" => "Select year",
 	"apply_filters" => "Apply filters",
 	"Read More" => "Read More",
+	"customer_overview" => "Customer overview",
+	"crm" => "Crm",
+	"calls" => "Calls",
+	"warranty_claims" => "Warranty claims",
+	"warranties" => "Warranties",
+	"search_by_order_id_customer_phone_or_email" => "Search by order id customer phone or email",
+	"Received At" => "Received At",
+	"retail_Deal_View" => "Retail Deal View",
+	"Customer Information" => "Customer Information",
 ];

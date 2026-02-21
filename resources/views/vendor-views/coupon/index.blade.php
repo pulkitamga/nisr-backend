@@ -85,7 +85,7 @@
                                 </div>
                                 <div class="col-md-6 col-lg-4 form-group">
                                     <label for="name"
-                                           class="title-color font-weight-medium d-flex">{{translate('minimum_purchase')}} ($)</label>
+                                           class="title-color font-weight-medium d-flex">{{translate('minimum_purchase')}} ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})</label>
                                     <input type="number" min="1" max="1000000" name="min_purchase"
                                            value="{{ old('min_purchase') }}" class="form-control"
                                            id="minimum purchase"
@@ -93,7 +93,7 @@
                                 </div>
                                 <div class="col-md-6 col-lg-4 form-group free_delivery" id="max-discount">
                                     <label for="name"
-                                           class="title-color font-weight-medium d-flex">{{translate('maximum_discount')}} ($)</label>
+                                           class="title-color font-weight-medium d-flex">{{translate('maximum_discount')}} ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})</label>
                                     <input type="number" min="1" max="1000000" name="max_discount"
                                            value="{{ old('max_discount') }}"
                                            class="form-control" id="maximum discount"
