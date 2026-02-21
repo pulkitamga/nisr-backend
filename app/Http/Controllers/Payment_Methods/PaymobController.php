@@ -10,10 +10,36 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 class PaymobController extends Controller
 {
     use Processor;
+
+    private const DEFAULT_BASE_URL = 'https://accept.paymob.com';
+
+    private const CALLBACK_HMAC_FIELDS = [
+        'amount_cents',
+        'created_at',
+        'currency',
+        'error_occured',
+        'has_parent_transaction',
+        'id',
+        'integration_id',
+        'is_3d_secure',
+        'is_auth',
+        'is_capture',
+        'is_refunded',
+        'is_standalone_payment',
+        'is_voided',
+        'order',
+        'owner',
+        'pending',
+        'source_data_pan',
+        'source_data_sub_type',
+        'source_data_type',
+        'success',
+    ];
 
     private $config_values;
 
@@ -32,48 +58,37 @@ class PaymobController extends Controller
         $this->user = $user;
     }
 
-    protected function cURL($url, $json)
+    protected function cURL(string $url, array $json, array $extraHeaders = []): array
     {
-        // Create curl resource
         $ch = curl_init($url);
-
-        // Request headers
-        $headers = array();
-        $headers[] = 'Content-Type: application/json';
-
-        // Return the transfer as a string
+        $headers = array_merge(['Content-Type: application/json'], $extraHeaders);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        // $output contains the output string
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         $output = curl_exec($ch);
+        $statusCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        // Close curl resource to free up system resources
+        if ($output === false) {
+            $errorMessage = curl_error($ch);
+            curl_close($ch);
+            throw new \RuntimeException('Paymob request failed: ' . $errorMessage);
+        }
+
         curl_close($ch);
-        return json_decode($output);
-    }
 
-    protected function GETcURL($url)
-    {
-        // Create curl resource
-        $ch = curl_init($url);
+        $decodedResponse = json_decode($output, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException('Invalid Paymob response payload');
+        }
 
-        // Request headers
-        $headers = array();
-        $headers[] = 'Content-Type: application/json';
+        if ($statusCode >= 400) {
+            throw new \RuntimeException('Paymob request failed with status: ' . $statusCode);
+        }
 
-        // Return the transfer as a string
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        // $output contains the output string
-        $output = curl_exec($ch);
-
-        // Close curl resource to free up system resources
-        curl_close($ch);
-        return json_decode($output);
+        return $decodedResponse;
     }
 
     public function credit(Request $request)
@@ -104,25 +119,34 @@ class PaymobController extends Controller
 
         try {
             $token = $this->getToken();
-            $order = $this->createOrder($token, $data, $business_name);
+            $order = $this->createOrder($token, $data, $business_name, (string)$data->id);
+            if (isset($order['id'])) {
+                $data->update(['transaction_id' => (string)$order['id']]);
+            }
             $paymentToken = $this->getPaymentToken($order, $token, $data, $payer);
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             return response()->json($this->response_formatter(GATEWAYS_DEFAULT_404), 200);
         }
-        return Redirect::away('https://accept.paymobsolutions.com/api/acceptance/iframes/' . $this->config_values->iframe_id . '?payment_token=' . $paymentToken);
+        $baseUrl = rtrim((string)($this->config_values->base_url ?? self::DEFAULT_BASE_URL), '/');
+
+        return Redirect::away($baseUrl . '/api/acceptance/iframes/' . $this->config_values->iframe_id . '?payment_token=' . $paymentToken);
     }
 
-    public function getToken()
+    public function getToken(): string
     {
         $response = $this->cURL(
             'https://accept.paymob.com/api/auth/tokens',
             ['api_key' => $this->config_values->api_key]
         );
 
-        return $response->token;
+        if (!isset($response['token'])) {
+            throw new \RuntimeException('Missing Paymob auth token');
+        }
+
+        return (string)$response['token'];
     }
 
-    public function createOrder($token, $payment_data, $business_name)
+    public function createOrder(string $token, PaymentRequest $payment_data, string $business_name, string $merchantOrderId): array
     {
         $items[] = [
             'name' => $business_name,
@@ -137,17 +161,16 @@ class PaymobController extends Controller
             "amount_cents" => round($payment_data->payment_amount * 100),
             "currency" => $payment_data->currency_code,
             "items" => $items,
-
+            "merchant_order_id" => $merchantOrderId,
         ];
-        $response = $this->cURL(
+
+        return $this->cURL(
             'https://accept.paymob.com/api/ecommerce/orders',
             $data
         );
-
-        return $response;
     }
 
-    public function getPaymentToken($order, $token, $payment_data, $payer)
+    public function getPaymentToken(array $order, string $token, PaymentRequest $payment_data, object $payer): string
     {
         $value = $payment_data->payment_amount;
         $billingData = [
@@ -170,75 +193,217 @@ class PaymobController extends Controller
             "auth_token" => $token,
             "amount_cents" => round($value * 100),
             "expiration" => 3600,
-            "order_id" => $order->id,
+            "order_id" => $order['id'] ?? null,
             "billing_data" => $billingData,
             "currency" => $payment_data->currency_code,
             "integration_id" => $this->config_values->integration_id
         ];
+
+        if (!$data['order_id']) {
+            throw new \RuntimeException('Missing Paymob order id');
+        }
 
         $response = $this->cURL(
             'https://accept.paymob.com/api/acceptance/payment_keys',
             $data
         );
 
-        return $response->token;
+        if (!isset($response['token'])) {
+            throw new \RuntimeException('Missing Paymob payment token');
+        }
+
+        return (string)$response['token'];
     }
 
     public function callback(Request $request)
     {
-        $data = $request->all();
-        ksort($data);
-        $hmac = $data['hmac'];
-        $array = [
-            'amount_cents',
-            'created_at',
-            'currency',
-            'error_occured',
-            'has_parent_transaction',
-            'id',
-            'integration_id',
-            'is_3d_secure',
-            'is_auth',
-            'is_capture',
-            'is_refunded',
-            'is_standalone_payment',
-            'is_voided',
-            'order',
-            'owner',
-            'pending',
-            'source_data_pan',
-            'source_data_sub_type',
-            'source_data_type',
-            'success',
+        $callbackData = $this->extractCallbackData($request);
+        $paymentData = $this->resolvePaymentRequest($callbackData, $request);
+        $calculatedHmac = $this->generateHmac($callbackData['fields']);
+        $receivedHmac = (string)($callbackData['hmac'] ?? '');
+        $isValidHmac = $receivedHmac !== '' && hash_equals(strtolower($calculatedHmac), strtolower($receivedHmac));
+        $isSuccessfulPayment = $this->parseBoolean($callbackData['success'] ?? false);
+        $isPending = $this->parseBoolean($callbackData['pending'] ?? false);
+
+        if ($isValidHmac && $isSuccessfulPayment && $paymentData) {
+            if ((int)$paymentData->is_paid !== 1) {
+                $paymentData->update([
+                    'payment_method' => 'paymob_accept',
+                    'is_paid' => 1,
+                    'transaction_id' => (string)($callbackData['transaction_id'] ?? $paymentData->transaction_id ?? $paymentData->id),
+                ]);
+                $paymentData->refresh();
+                if (isset($paymentData) && function_exists($paymentData->success_hook)) {
+                    call_user_func($paymentData->success_hook, $paymentData);
+                }
+            }
+
+            return $this->buildCallbackResponse($request, $paymentData, 'success', 200);
+        }
+
+        if ($paymentData && $isValidHmac && !$isPending && function_exists($paymentData->failure_hook)) {
+            call_user_func($paymentData->failure_hook, $paymentData);
+        }
+
+        return $this->buildCallbackResponse($request, $paymentData, 'fail', $isValidHmac ? 200 : 400);
+    }
+
+    private function extractCallbackData(Request $request): array
+    {
+        $allData = $request->all();
+        $processedTransactionObject = $request->input('obj');
+
+        if (is_array($processedTransactionObject)) {
+            $orderId = data_get($processedTransactionObject, 'order.id');
+
+            return [
+                'hmac' => $request->input('hmac') ?? $request->query('hmac'),
+                'success' => data_get($processedTransactionObject, 'success'),
+                'pending' => data_get($processedTransactionObject, 'pending'),
+                'order_id' => $orderId,
+                'merchant_order_id' => data_get($processedTransactionObject, 'order.merchant_order_id')
+                    ?? data_get($processedTransactionObject, 'merchant_order_id')
+                    ?? data_get($processedTransactionObject, 'payment_key_claims.extra.payment_id'),
+                'transaction_id' => data_get($processedTransactionObject, 'id'),
+                'fields' => [
+                    'amount_cents' => data_get($processedTransactionObject, 'amount_cents'),
+                    'created_at' => data_get($processedTransactionObject, 'created_at'),
+                    'currency' => data_get($processedTransactionObject, 'currency'),
+                    'error_occured' => data_get($processedTransactionObject, 'error_occured'),
+                    'has_parent_transaction' => data_get($processedTransactionObject, 'has_parent_transaction'),
+                    'id' => data_get($processedTransactionObject, 'id'),
+                    'integration_id' => data_get($processedTransactionObject, 'integration_id'),
+                    'is_3d_secure' => data_get($processedTransactionObject, 'is_3d_secure'),
+                    'is_auth' => data_get($processedTransactionObject, 'is_auth'),
+                    'is_capture' => data_get($processedTransactionObject, 'is_capture'),
+                    'is_refunded' => data_get($processedTransactionObject, 'is_refunded'),
+                    'is_standalone_payment' => data_get($processedTransactionObject, 'is_standalone_payment'),
+                    'is_voided' => data_get($processedTransactionObject, 'is_voided'),
+                    'order' => $orderId,
+                    'owner' => data_get($processedTransactionObject, 'owner'),
+                    'pending' => data_get($processedTransactionObject, 'pending'),
+                    'source_data_pan' => data_get($processedTransactionObject, 'source_data.pan'),
+                    'source_data_sub_type' => data_get($processedTransactionObject, 'source_data.sub_type'),
+                    'source_data_type' => data_get($processedTransactionObject, 'source_data.type'),
+                    'success' => data_get($processedTransactionObject, 'success'),
+                ],
+            ];
+        }
+
+        $orderId = data_get($allData, 'order') ?? data_get($allData, 'order_id');
+
+        return [
+            'hmac' => data_get($allData, 'hmac'),
+            'success' => data_get($allData, 'success'),
+            'pending' => data_get($allData, 'pending'),
+            'order_id' => $orderId,
+            'merchant_order_id' => data_get($allData, 'merchant_order_id')
+                ?? data_get($allData, 'special_reference')
+                ?? data_get($allData, 'payment_id'),
+            'transaction_id' => data_get($allData, 'id'),
+            'fields' => [
+                'amount_cents' => data_get($allData, 'amount_cents'),
+                'created_at' => data_get($allData, 'created_at'),
+                'currency' => data_get($allData, 'currency'),
+                'error_occured' => data_get($allData, 'error_occured'),
+                'has_parent_transaction' => data_get($allData, 'has_parent_transaction'),
+                'id' => data_get($allData, 'id'),
+                'integration_id' => data_get($allData, 'integration_id'),
+                'is_3d_secure' => data_get($allData, 'is_3d_secure'),
+                'is_auth' => data_get($allData, 'is_auth'),
+                'is_capture' => data_get($allData, 'is_capture'),
+                'is_refunded' => data_get($allData, 'is_refunded'),
+                'is_standalone_payment' => data_get($allData, 'is_standalone_payment'),
+                'is_voided' => data_get($allData, 'is_voided'),
+                'order' => $orderId,
+                'owner' => data_get($allData, 'owner'),
+                'pending' => data_get($allData, 'pending'),
+                'source_data_pan' => data_get($allData, 'source_data_pan') ?? data_get($allData, 'source_data.pan'),
+                'source_data_sub_type' => data_get($allData, 'source_data_sub_type') ?? data_get($allData, 'source_data.sub_type'),
+                'source_data_type' => data_get($allData, 'source_data_type') ?? data_get($allData, 'source_data.type'),
+                'success' => data_get($allData, 'success'),
+            ],
         ];
+    }
+
+    private function resolvePaymentRequest(array $callbackData, Request $request): ?PaymentRequest
+    {
+        $candidatePaymentIds = array_filter([
+            data_get($callbackData, 'merchant_order_id'),
+            $request->query('payment_id'),
+            session('payment_id'),
+        ], fn($value) => !is_null($value) && $value !== '');
+
+        foreach ($candidatePaymentIds as $paymentId) {
+            $paymentData = $this->payment::where('id', (string)$paymentId)->first();
+            if ($paymentData) {
+                return $paymentData;
+            }
+        }
+
+        $orderId = data_get($callbackData, 'order_id');
+        if ($orderId) {
+            return $this->payment::where('transaction_id', (string)$orderId)
+                ->latest('created_at')
+                ->first();
+        }
+
+        return null;
+    }
+
+    private function generateHmac(array $callbackFields): string
+    {
         $connectedString = '';
-        foreach ($data as $key => $element) {
-            if (in_array($key, $array)) {
-                $connectedString .= $element;
-            }
+        foreach (self::CALLBACK_HMAC_FIELDS as $field) {
+            $connectedString .= $this->normalizeHmacValue($callbackFields[$field] ?? null);
         }
-        $secret = $this->config_values->hmac;
-        $hased = hash_hmac('sha512', $connectedString, $secret);
 
-        if ($hased == $hmac && $data['success'] === "true") {
+        $secret = (string)($this->config_values->hmac ?? '');
+        return hash_hmac('sha512', $connectedString, $secret);
+    }
 
-            $this->payment::where(['id' => session('payment_id')])->update([
-                'payment_method' => 'paymob_accept',
-                'is_paid' => 1,
-                'transaction_id' => session('payment_id'),
-            ]);
-
-            $payment_data = $this->payment::where(['id' => session('payment_id')])->first();
-
-            if (isset($payment_data) && function_exists($payment_data->success_hook)) {
-                call_user_func($payment_data->success_hook, $payment_data);
-            }
-            return $this->payment_response($payment_data,'success');
+    private function normalizeHmacValue(mixed $value): string
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
         }
-        $payment_data = $this->payment::where(['id' => session('payment_id')])->first();
-        if (isset($payment_data) && function_exists($payment_data->failure_hook)) {
-            call_user_func($payment_data->failure_hook, $payment_data);
+
+        if (is_null($value)) {
+            return '';
         }
-        return $this->payment_response($payment_data,'fail');
+
+        if (is_scalar($value)) {
+            return (string)$value;
+        }
+
+        return '';
+    }
+
+    private function parseBoolean(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return (int)$value === 1;
+        }
+
+        return in_array(strtolower((string)$value), ['true', '1', 'yes'], true);
+    }
+
+    private function buildCallbackResponse(Request $request, ?PaymentRequest $paymentData, string $paymentStatus, int $statusCode)
+    {
+        // Processed callbacks are server-to-server POST requests from Paymob and should return JSON.
+        if ($request->isMethod('post') || is_array($request->input('obj'))) {
+            return response()->json(['status' => $paymentStatus], $statusCode);
+        }
+
+        if ($paymentData) {
+            session()->forget('payment_id');
+            return $this->payment_response($paymentData, $paymentStatus);
+        }
+
+        return redirect()->route('payment-fail');
     }
 }

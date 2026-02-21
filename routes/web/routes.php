@@ -592,7 +592,8 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
             //PAYMOB
             Route::group(['prefix' => 'paymob', 'as' => 'paymob.'], function () {
                 Route::any('pay', [PaymobController::class, 'credit'])->name('pay');
-                Route::any('callback', [PaymobController::class, 'callback'])->name('callback');
+                Route::any('callback', [PaymobController::class, 'callback'])->name('callback')
+                    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
             });
 
             //PAYTABS
