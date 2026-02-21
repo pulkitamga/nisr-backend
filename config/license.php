@@ -1,7 +1,33 @@
 <?php
 
 return [
-    'key'  => env('APP_LICENSE_KEY', 'DEV-UNLICENSED'),
-    'mode' => env('APP_LICENSE_MODE', 'development'), // development | production
-    'domain' => env('APP_LICENSE_DOMAIN', null),
+
+    'product' => 'alnisr2',
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Time (seconds)
+    |--------------------------------------------------------------------------
+    */
+    'cache_ttl' => 600,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grace Period After Expiration (seconds)
+    |--------------------------------------------------------------------------
+    */
+    'grace_seconds' => 0,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Allowed Artisan Commands Without License
+    |--------------------------------------------------------------------------
+    */
+    'console_allow' => [
+        'config:cache',
+        'optimize:clear',
+        'cache:clear',
+        'route:cache',
+        'view:cache',
+    ],
+
 ];
