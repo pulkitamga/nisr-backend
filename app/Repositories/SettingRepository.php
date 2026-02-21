@@ -99,17 +99,17 @@ class SettingRepository implements SettingRepositoryInterface
 
     public function update(string $id, array $data): bool
     {
-        return $this->setting->where('id', $id)->update($data);
+        return $this->setting->where('id', $id)->update($this->normalizeJsonColumns($data));
     }
 
     public function updateWhere(array $params, array $data): bool
     {
-        return $this->setting->where($params)->update($data);
+        return $this->setting->where($params)->update($this->normalizeJsonColumns($data));
     }
 
     public function updateOrInsert(array $params, array $data): bool
     {
-        $this->setting->updateOrInsert($params, $data);
+        $this->setting->updateOrInsert($params, $this->normalizeJsonColumns($data));
         return true;
     }
 
@@ -117,5 +117,16 @@ class SettingRepository implements SettingRepositoryInterface
     {
         $this->setting->where($params)->delete();
         return true;
+    }
+
+    private function normalizeJsonColumns(array $data): array
+    {
+        foreach (['live_values', 'test_values', 'additional_data'] as $column) {
+            if (array_key_exists($column, $data) && is_array($data[$column])) {
+                $data[$column] = json_encode($data[$column]);
+            }
+        }
+
+        return $data;
     }
 }
