@@ -130,4 +130,14 @@ class WarrantyClaim extends Model
     {
         return $query->whereNotIn('status', ['closed', 'rejected']);
     }
+     public function product()
+    {
+        return $this->hasOneThrough(
+            Product::class,
+            Warranty::class,
+            'id',       
+            'id',        
+            'product_id'  
+        );
+    }
 }

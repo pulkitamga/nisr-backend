@@ -1832,7 +1832,15 @@
                                     </li>
                                 </ul>
                             </li>
-
+                              <li class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
+                                <a class="nav-link" title="{{ translate('warranty_claims_chart') }}"
+                                href="{{ route('admin.warranty.claim.chart') }}">
+                                    <i class="tio-chart-bar-1 nav-icon"></i>
+                                    <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                        {{ translate('warranty_claims_chart') }}
+                                    </span>
+                                </a>
+                            </li>
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/messages*') ? 'active' : '' }}">
                                 <a class="nav-link" title="{{ translate('chat_Box') }}"
