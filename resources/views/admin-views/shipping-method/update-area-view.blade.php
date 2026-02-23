@@ -99,7 +99,7 @@
                                             <input type="number" min="0" max="1000000" name="cost"
                                                 value="{{usdToDefaultCurrency(amount: $method['cost'])}}"
                                                 class="form-control"
-                                                placeholder="{{translate('ex').' '.':'.' '.translate('10')}}$">
+                                                placeholder="{{translate('ex').' '.':'.' '.setCurrencySymbol(amount: usdToDefaultCurrency(amount: 10), currencyCode: getCurrencyCode())}}">
                                         </div>
                                     </div>
                                 </div>

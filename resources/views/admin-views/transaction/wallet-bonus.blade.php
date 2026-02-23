@@ -167,7 +167,7 @@
                             <td>21423355</td>
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
-                            <td>$ 687.93</td>
+                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
                             <td>Free Delivery</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
@@ -182,7 +182,7 @@
                             <td>21423355</td>
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
-                            <td>$ 687.93</td>
+                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
                             <td>Free Delivery</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
@@ -197,7 +197,7 @@
                             <td>21423355</td>
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
-                            <td>$ 687.93</td>
+                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
                             <td>Free Delivery</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
@@ -212,7 +212,7 @@
                             <td>21423355</td>
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
-                            <td>$ 687.93</td>
+                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
                             <td>Free Delivery</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
@@ -227,7 +227,7 @@
                             <td>21423355</td>
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
-                            <td>$ 687.93</td>
+                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
                             <td>Free Delivery</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">

@@ -407,7 +407,7 @@
                                     <div class="input-group-append">
                                         <select name="discount_type" id="discount_type" class="form-control js-select2-custom">
                                             <option value="percentage">%</option>
-                                            <option value="flat">$</option>
+                                            <option value="flat">{{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}</option>
                                         </select>
                                     </div>
                                 </div>

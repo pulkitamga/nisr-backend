@@ -11,16 +11,35 @@ class CrmCall extends Model
 
      protected $table = 'crm_calls';
 
+    protected $casts = [
+        'call_date' => 'datetime',
+        'started_at' => 'datetime',
+        'answered_at' => 'datetime',
+        'ended_at' => 'datetime',
+        'call_duration' => 'integer',
+        'raw_payload' => 'array',
+    ];
+
     /**
      * Mass assignable attributes.
      */
     protected $fillable = [
         'call_id',
+        'ucm_channel',
+        'ucm_peer_channel',
+        'ucm_uniqueid',
+        'ucm_bridge_id',
+        'src_number',
+        'dst_number',
         'customer_id',
         'agent_id',
         'call_date',
+        'started_at',
+        'answered_at',
+        'ended_at',
         'call_duration',
         'call_notes',
+        'raw_payload',
         'direction',
         'status',
     ];
@@ -48,6 +67,6 @@ class CrmCall extends Model
 
     public function setCallNotesAttribute($value)
     {
-        $this->attributes['call_notes'] = trim($value);
+        $this->attributes['call_notes'] = is_null($value) ? null : trim((string)$value);
     }
 }

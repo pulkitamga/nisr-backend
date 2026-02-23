@@ -594,15 +594,12 @@ trait UpdateClass
     private function sms_gateway_data_update()
     {
         try {
-            $gateway = array_merge(Helpers::getDefaultSMSGateways(), [
+            $gateways = array_merge(Helpers::getDefaultSMSGateways(), [
                 'twilio_sms',
                 'nexmo_sms',
-                '2factor_sms',
-                'msg91_sms',
-                'releans_sms',
             ]);
 
-            $data = BusinessSetting::whereIn('type', $gateway)->pluck('value', 'type')->toArray();
+            $data = BusinessSetting::whereIn('type', $gateways)->pluck('value', 'type')->toArray();
 
             if ($data) {
                 foreach ($data as $key => $value) {
@@ -610,6 +607,7 @@ trait UpdateClass
                     $decoded_value = json_decode($value, true);
 
                     $gateway = $key;
+                    $additional_data = [];
                     if ($key == 'twilio_sms') {
                         $gateway = 'twilio';
                         $additional_data = [
@@ -627,24 +625,8 @@ trait UpdateClass
                             'from' => $decoded_value['from'],
                             'otp_template' => $decoded_value['otp_template'],
                         ];
-                    } elseif ($key == '2factor_sms') {
-                        $gateway = '2factor';
-                        $additional_data = [
-                            'api_key' => $decoded_value['api_key'],
-                        ];
-                    } elseif ($key == 'msg91_sms') {
-                        $gateway = 'msg91';
-                        $additional_data = [
-                            'template_id' => $decoded_value['template_id'],
-                            'authkey' => $decoded_value['authkey'] ?? '',
-                        ];
-                    } elseif ($key == 'releans_sms') {
-                        $gateway = 'releans';
-                        $additional_data = [
-                            'api_key' => $decoded_value['api_key'],
-                            'from' => $decoded_value['from'],
-                            'otp_template' => $decoded_value['otp_template'],
-                        ];
+                    } elseif (is_array($decoded_value)) {
+                        $additional_data = $decoded_value;
                     }
 
                     $default_data = [
@@ -672,7 +654,7 @@ trait UpdateClass
 
 
                 }
-                BusinessSetting::whereIn('type', $gateway)->delete();
+                BusinessSetting::whereIn('type', $gateways)->delete();
             }
         } catch (\Exception $exception) {
 
@@ -684,16 +666,11 @@ trait UpdateClass
     private function paymentGatewayDataUpdate(): void
     {
         try {
-            $gateway[] = ['ssl_commerz_payment'];
-
             $data = BusinessSetting::whereIn('type', GlobalConstant::DEFAULT_PAYMENT_GATEWAYS)->pluck('value', 'type')->toArray();
 
             if ($data) {
                 foreach ($data as $key => $value) {
                     $gateway = $key;
-                    if ($key == 'ssl_commerz_payment') {
-                        $gateway = 'ssl_commerz';
-                    }
 
                     $decoded_value = json_decode($value, true);
                     $data = [
@@ -701,51 +678,12 @@ trait UpdateClass
                         'mode' => isset($decoded_value['status']) == 1 ? 'live' : 'test'
                     ];
 
-                    if ($gateway == 'ssl_commerz') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'store_id' => $decoded_value['store_id'],
-                            'store_password' => $decoded_value['store_password'],
-                        ];
-                    } elseif ($gateway == 'paypal') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'client_id' => $decoded_value['paypal_client_id'],
-                            'client_secret' => $decoded_value['paypal_secret'],
-                        ];
-                    } elseif ($gateway == 'stripe') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'api_key' => $decoded_value['api_key'],
-                            'published_key' => $decoded_value['published_key'],
-                        ];
-                    } elseif ($gateway == 'razor_pay') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'api_key' => $decoded_value['razor_key'],
-                            'api_secret' => $decoded_value['razor_secret'],
-                        ];
-                    } elseif ($gateway == 'senang_pay') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'callback_url' => null,
-                            'secret_key' => $decoded_value['secret_key'],
-                            'merchant_id' => $decoded_value['merchant_id'],
-                        ];
-                    } elseif ($gateway == 'paytabs') {
+                    if ($gateway == 'paytabs') {
                         $additional_data = [
                             'status' => $decoded_value['status'],
                             'profile_id' => $decoded_value['profile_id'],
                             'server_key' => $decoded_value['server_key'],
                             'base_url' => $decoded_value['base_url'],
-                        ];
-                    } elseif ($gateway == 'paystack') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'callback_url' => $decoded_value['paymentUrl'],
-                            'public_key' => $decoded_value['publicKey'],
-                            'secret_key' => $decoded_value['secretKey'],
-                            'merchant_email' => $decoded_value['merchantEmail'],
                         ];
                     } elseif ($gateway == 'paymob_accept') {
                         $additional_data = [
@@ -756,40 +694,8 @@ trait UpdateClass
                             'integration_id' => $decoded_value['integration_id'],
                             'hmac' => $decoded_value['hmac'],
                         ];
-                    } elseif ($gateway == 'mercadopago') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'access_token' => $decoded_value['access_token'],
-                            'public_key' => $decoded_value['public_key'],
-                        ];
-                    } elseif ($gateway == 'liqpay') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'private_key' => $decoded_value['public_key'],
-                            'public_key' => $decoded_value['private_key'],
-                        ];
-                    } elseif ($gateway == 'flutterwave') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'secret_key' => $decoded_value['secret_key'],
-                            'public_key' => $decoded_value['public_key'],
-                            'hash' => $decoded_value['hash'],
-                        ];
-                    } elseif ($gateway == 'paytm') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'merchant_key' => $decoded_value['paytm_merchant_key'],
-                            'merchant_id' => $decoded_value['paytm_merchant_mid'],
-                            'merchant_website_link' => $decoded_value['paytm_merchant_website'],
-                        ];
-                    } elseif ($gateway == 'bkash') {
-                        $additional_data = [
-                            'status' => $decoded_value['status'],
-                            'app_key' => $decoded_value['api_key'],
-                            'app_secret' => $decoded_value['api_secret'],
-                            'username' => $decoded_value['username'],
-                            'password' => $decoded_value['password'],
-                        ];
+                    } else {
+                        continue;
                     }
 
                     $credentials = json_encode(array_merge($data, $additional_data));

@@ -146,31 +146,6 @@ class CurrencyController extends BaseController
     public function update(Request $request, $id): RedirectResponse
     {
         $currency = $this->currencyRepo->getFirstWhere(params: ['id' => $id]);
-        if ($currency['code'] == 'BDT' && $request['code'] != 'BDT') {
-            $config = $this->settingRepo->getFirstWhere(params: ['key_name'=>'ssl_commerz']);
-            if ($config['is_active']) {
-                Toastr::warning(translate('Before_update_BDT') . ", " . translate('disable_the_SSLCOMMERZ_payment_gateway.'));
-                return back();
-            }
-        } elseif ($currency['code'] == 'INR' && $request['code'] != 'INR') {
-            $config = $this->settingRepo->getFirstWhere(params: ['key_name'=>'razor_pay']);
-            if ($config['is_active']) {
-                Toastr::warning(translate('Before_update_INR') . ", " . translate('disable_the_RAZOR_PAY_payment_gateway.'));
-                return back();
-            }
-        } elseif ($currency['code'] == 'MYR' && $request['code'] != 'MYR') {
-            $config = $this->settingRepo->getFirstWhere(params: ['key_name'=>'senang_pay']);
-            if ($config['is_active']) {
-                Toastr::warning(translate('Before_update_MYR') . ", " . translate('disable_the_SENANG_PAY_payment_gateway.'));
-                return back();
-            }
-        } elseif ($currency['code'] == 'ZAR' && $request['code'] != 'ZAR') {
-            $config = $this->settingRepo->getFirstWhere(params: ['key_name'=>'paystack']);
-            if ($config['is_active']) {
-                Toastr::warning(translate('Before_update_ZAR') . ", " . translate('disable_the_PAYSTACK_payment_gateway.'));
-                return back();
-            }
-        }
 
         $translatableData = $this->getCurrencyTranslatableData(request: $request);
         if (!filled($translatableData['name']) || !filled($translatableData['symbol'])) {

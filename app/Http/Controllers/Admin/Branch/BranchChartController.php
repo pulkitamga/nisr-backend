@@ -18,14 +18,14 @@ use Illuminate\Http\JsonResponse;
 use App\Exports\BranchStockExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\BaseAdminController;
 use App\Models\StockTransferProduct;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\ProductStockTransaction;
 use App\Models\ManageBranchProductStock;
 use Illuminate\Support\Facades\Validator;
 
-class BranchChartController extends Controller
+class BranchChartController extends BaseAdminController
 {
 
     public function index()

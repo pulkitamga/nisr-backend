@@ -71,34 +71,39 @@ class POSController extends BaseController
         $categories = $this->categoryRepo->getListWhere(orderBy: ['id' => 'desc'], filters: ['position' => 0]);
 
         $searchValue = $request['searchValue'] ?? null;
+        $dataLimit = getWebConfig('pagination_limit') ?? 10;
+
+        $productFilters = [
+            'added_by' => 'in_house',
+            'category_id' => $categoryId,
+            'code' => $searchValue,
+            'product_type' => 'physical',
+            'status' => 1,
+        ];
+
+        if ((int)$branchId !== 1 && !empty($branchId)) {
+            $availableProductIds = ManageBranchProductStock::query()
+                ->where('branch_id', (int)$branchId)
+                ->whereNotNull('product_id')
+                ->groupBy('product_id')
+                ->havingRaw('SUM(current_stock) > 0')
+                ->pluck('product_id')
+                ->toArray();
+
+            $productFilters['productIds'] = $availableProductIds;
+        }
 
         $products = $this->productRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $searchValue,
-            filters: [
-                'added_by' => 'in_house',
-                'category_id' => $categoryId,
-                'code' => $searchValue,
-                'product_type' => 'physical',
-                'status' => 1,
-            ],
+            filters: $productFilters,
             relations: ['clearanceSale' => function ($query) {
                 return $query->active();
             }],
-            dataLimit: getWebConfig('pagination_limit'),
+            dataLimit: 'all',
         );
 
-        $dataLimit = getWebConfig('pagination_limit') ?? 10;
-        if ($branchId != 1) {
-            $availableProductIds = ManageBranchProductStock::where('branch_id', $branchId)
-                ->where('current_stock', '>', 0)
-                ->pluck('product_id')
-                ->toArray();
-
-            $products = $products->filter(function ($product) use ($availableProductIds) {
-                return in_array($product->id, $availableProductIds);
-            })->values();
-        } else {
+        if ((int)$branchId === 1 || empty($branchId)) {
             $products = $products->filter(function ($product) {
                 return $product->current_stock > 0;
             })->values();
@@ -106,10 +111,11 @@ class POSController extends BaseController
 
 
         $page = request()->get('page', 1);
+        $totalProducts = $products->count();
 
         $products = new LengthAwarePaginator(
-            $products->forPage($page, $dataLimit),
-            $products->count(),
+            $products->forPage($page, $dataLimit)->values(),
+            $totalProducts,
             $dataLimit,
             $page,
             ['path' => request()->url(), 'query' => request()->query()]

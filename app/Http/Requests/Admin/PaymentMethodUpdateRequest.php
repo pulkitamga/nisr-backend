@@ -27,7 +27,7 @@ class PaymentMethodUpdateRequest extends FormRequest
     public function rules(): array
     {
         $validationRules = [
-            'gateway' => 'required', Rule::in(['ssl_commerz', 'sixcash', 'worldpay', 'payfast', 'swish', 'esewa', 'maxicash', 'hubtel', 'viva_wallet', 'tap', 'thawani', 'moncash', 'pvit', 'ccavenue', 'foloosi', 'iyzi_pay', 'xendit', 'fatoorah', 'hyper_pay', 'amazon_pay', 'paypal', 'stripe', 'razor_pay', 'senang_pay', 'paytabs','paystack', 'paymob_accept', 'paytm', 'flutterwave', 'liqpay', 'bkash', 'mercadopago', 'cash_after_service', 'digital_payment', 'momo']),
+            'gateway' => 'required', Rule::in(['sixcash', 'worldpay', 'payfast', 'swish', 'esewa', 'maxicash', 'hubtel', 'viva_wallet', 'tap', 'thawani', 'moncash', 'pvit', 'ccavenue', 'foloosi', 'iyzi_pay', 'xendit', 'fatoorah', 'hyper_pay', 'amazon_pay', 'paytabs', 'paymob_accept', 'cash_after_service', 'digital_payment', 'momo']),
             'mode' => 'required|in:live,test',
         ];
         $additionalDataRules = $this->getAdditionalDataRules();
@@ -50,50 +50,12 @@ class PaymentMethodUpdateRequest extends FormRequest
         $additionalDataImage = $settings['additional_data'] != null ? json_decode($settings['additional_data']) : null;
 
         $additionalDataRules = [];
-        if ($this['gateway'] == 'ssl_commerz') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'store_id' => 'required',
-                'store_password' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'paypal') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'client_id' => 'required',
-                'client_secret' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'stripe') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'api_key' => 'required',
-                'published_key' => 'required',
-            ];
-        } elseif ($this['gateway'] == 'razor_pay') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'api_key' => 'required',
-                'api_secret' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'senang_pay') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'callback_url' => 'required',
-                'secret_key' => 'required',
-                'merchant_id' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'paytabs') {
+        if ($this['gateway'] == 'paytabs') {
             $additionalDataRules = [
                 'status' => 'required|in:1,0',
                 'profile_id' => 'required',
                 'server_key' => 'required',
                 'base_url' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'paystack') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'public_key' => 'required',
-                'secret_key' => 'required',
-                'merchant_email' => 'required'
             ];
         } elseif ($this['gateway'] == 'paymob_accept') {
             $additionalDataRules = [
@@ -103,40 +65,6 @@ class PaymentMethodUpdateRequest extends FormRequest
                 'iframe_id' => 'required',
                 'integration_id' => 'required',
                 'hmac' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'mercadopago') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'access_token' => 'required',
-                'public_key' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'liqpay') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'private_key' => 'required',
-                'public_key' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'flutterwave') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'secret_key' => 'required',
-                'public_key' => 'required',
-                'hash' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'paytm') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'merchant_key' => 'required',
-                'merchant_id' => 'required',
-                'merchant_website_link' => 'required'
-            ];
-        } elseif ($this['gateway'] == 'bkash') {
-            $additionalDataRules = [
-                'status' => 'required|in:1,0',
-                'app_key' => 'required',
-                'app_secret' => 'required',
-                'username' => 'required',
-                'password' => 'required',
             ];
         } elseif ($this['gateway'] == 'cash_after_service') {
             $additionalDataRules = [

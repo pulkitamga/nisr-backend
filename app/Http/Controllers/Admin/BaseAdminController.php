@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Services\LicenseService;
 
-class BaseAdminController extends Controller
+abstract class BaseAdminController extends BaseController
 {
-    public function __construct()
+    protected $licenseService;
+
+    public function __construct(LicenseService $licenseService)
     {
-        if (!app()->runningInConsole() && !app()->environment('local')) {
-            app(LicenseService::class)->ensureValid();
-        }
+        $this->licenseService = $licenseService;
+
+        // Validate license on every request to protected controllers
+        $this->licenseService->validate();
     }
 }
