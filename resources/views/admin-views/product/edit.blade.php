@@ -314,7 +314,7 @@
                                 <select name="match_makes[]" class="form-control js-select2-custom" multiple>
                                     @foreach ($makes as $make)
                                         <option value="{{ $make->name }}"
-                                            {{ in_array($make->name, $product->match_makes ?? []) ? 'selected' : '' }}>
+                                            {{ in_array($make->name, (array) $product->match_makes) ? 'selected' : '' }}
                                             {{ $make->name }}
                                         </option>
                                     @endforeach
