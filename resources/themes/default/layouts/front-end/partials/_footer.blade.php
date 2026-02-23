@@ -240,6 +240,11 @@
                                             {{ translate('warranty')}}
                                         </a>
                                     </li>
+                                     <li class="widget-list-item">
+                                        <a class="widget-list-link" href="{{ route('our-policies') }}">
+                                            {{ translate('our_policies') }}
+                                        </a>
+                                    </li>
                                     @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link"
