@@ -187,7 +187,7 @@
                                             {{ translate('our_policies') }}
                                         </a>
                                     </li>
-{{-- 
+
                                     @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link" href="{{route('refund-policy')}}">
@@ -218,7 +218,7 @@
                                             {{ translate('Shipping_Policy')}}
                                         </a>
                                     </li>
-                                    @endif --}}
+                                    @endif
                                 </ul>
                                 @else
                                 <ul class="widget-list __pb-10px">
@@ -245,7 +245,7 @@
                                             {{ translate('our_policies') }}
                                         </a>
                                     </li>
-                                    {{-- @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
+                                    @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link"
                                             href="{{route('refund-policy')}}">{{ translate('refund_policy')}}</a>
@@ -264,14 +264,14 @@
                                         <a class="widget-list-link"
                                             href="{{route('cancellation-policy')}}">{{ translate('cancellation_policy')}}</a>
                                     </li>
-                                    @endif --}}
+                                    @endif
 
-                                    {{-- @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
+                                    @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link" href="{{route('shipping-policy')}}">
                                             {{ translate('shipping_Policy')}}
                                         </a>
-                                    </li> --}}
+                                    </li>
                                     @endif
                                 </ul>
                                 @endif
