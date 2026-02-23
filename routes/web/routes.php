@@ -145,6 +145,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
     });
 
     Route::controller(PageController::class)->group(function () {
+        Route::get('our-policies', 'getOurPoliciesView')->name('our-policies');
         Route::get(Pages::ABOUT_US[URI], 'getAboutUsView')->name('about-us');
         Route::get(Pages::CONTACTS[URI], 'getContactView')->name('contacts');
         Route::get(Pages::HELP_TOPIC[URI], 'getHelpTopicView')->name('helpTopic');

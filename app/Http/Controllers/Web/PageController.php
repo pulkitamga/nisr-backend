@@ -22,7 +22,7 @@ use App\Models\Branch;
 use App\Models\Product;
 use App\Models\CmsService;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\CmsProduct;
 
 class PageController extends Controller
@@ -257,5 +257,80 @@ class PageController extends Controller
             'theme_fashion' => view('theme_fashion.web-views.pages.career', compact('careerSection', 'careerJobs', 'careerCards', 'careerBenefits')),
             default => abort(404),
         };
+    }
+
+        public function getOurPoliciesView(): View
+    {
+        $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'our-policies']);
+        if (!$robotsMetaContentData) {
+            $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
+        }
+
+        // JSON array policies
+        $refund_policy = getWebConfig(name: 'refund-policy');
+        $return_policy = $this->normalizePolicyStatus(getWebConfig(name: 'return-policy'));
+        $cancellation_policy = getWebConfig(name: 'cancellation-policy');
+        $shipping_policy = $this->normalizeShippingPolicy(getWebConfig(name: 'shipping-policy'));
+
+        // String content policies - convert to array
+        $privacy_policy = $this->createPolicyFromString('privacy_policy');
+        $service_policy = $this->createPolicyFromString('service_policy');
+
+        return view('web-views.pages.our-policies', compact(
+            'robotsMetaContentData',
+            'refund_policy',
+            'return_policy',
+            'cancellation_policy',
+            'shipping_policy',
+            'service_policy',
+            'privacy_policy'
+        ));
+    }
+
+    /**
+     * Convert string status to integer
+     */
+    private function normalizePolicyStatus($policy)
+    {
+        if (isset($policy['status'])) {
+            $policy['status'] = (int) $policy['status'];
+        }
+        return $policy;
+    }
+
+    /**
+     * Special handling for shipping policy
+     */
+    private function normalizeShippingPolicy($policy)
+    {
+        if (!$policy) return null;
+
+        $record = DB::table('business_settings')
+            ->where('type', 'shipping-policy')
+            ->first();
+
+        if ($record && $record->is_active == 1 && isset($policy['status'])) {
+            $policy['status'] = 1;
+        }
+
+        return $this->normalizePolicyStatus($policy);
+    }
+
+    /**
+     * Create policy array from string content
+     */
+    private function createPolicyFromString($type)
+    {
+        $content = getWebConfig(name: $type);
+        if (empty($content)) return null;
+
+        $record = DB::table('business_settings')
+            ->where('type', $type)
+            ->first();
+
+        return [
+            'status' => $record->is_active ?? 1,
+            'content' => $content
+        ];
     }
 }
