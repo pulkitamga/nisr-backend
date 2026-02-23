@@ -67,79 +67,89 @@ class WarrantyViewController extends Controller
     //     // Rest of your method remains the same...
     // }
 
-    public function lookupSubmit(Request $request)
+     public function lookupSubmit(Request $request)
     {
-        // 1. Validation (Always return JSON on failure via API middleware)
+        // 1. Validation
         $request->validate([
             'serial_number' => 'required|string|exists:warranties,serial_number',
             'contact' => 'required|string',
-            'recaptcha_response' => 'nullable|string',
         ]);
-
-        // 2. Verify reCAPTCHA
-        $recaptcha = getWebConfig(name: 'recaptcha');
-        if (isset($recaptcha) && $recaptcha['status'] == 1) {
-            if ($request->recaptcha_response === 'test_token') {
-                goto skip_recaptcha;
-            }
-            $url = 'https://www.google.com/recaptcha/api/siteverify?secret=' . $recaptcha['secret_key'] . '&response=' . $request->recaptcha_response;
-            $verifyResponse = json_decode(file_get_contents($url));
-
-            if (!$verifyResponse->success) {
-                return response()->json(['status' => 'error', 'message' => translate('reCAPTCHA verification failed')], 422);
-            }
-        }
-
-        skip_recaptcha:
-
-        // 3. Warranty Checks
+ 
+        // 2. Warranty Checks
         $warranty = Warranty::where('serial_number', $request->serial_number)->first();
+ 
         if ($warranty->status == 'preactivated') {
-            return response()->json(['status' => 'error', 'message' => translate('Warranty not found')], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => translate('Warranty not found')
+            ], 404);
         }
-
-        $oldPhone = $warranty->final_user_id ? $warranty->user?->phone : $warranty->activated_by_phone;
+ 
+        $oldPhone = $warranty->final_user_id
+            ? $warranty->user?->phone
+            : $warranty->activated_by_phone;
+ 
         if ($oldPhone && $oldPhone != $request->contact) {
-            return response()->json(['status' => 'error', 'message' => translate('Phone number mismatch')], 400);
+            return response()->json([
+                'status' => 'error',
+                'message' => translate('Phone number mismatch')
+            ], 400);
         }
-
-        // 4. OTP Logic (Stateless)
-        $otpRequire = $this->businessSettingRepo->getFirstWhere(['type' => 'warranty_require_otp'])['value'] ?? '0';
-
+ 
+        // 3. OTP Logic (Stateless)
+        $otpRequire = $this->businessSettingRepo
+            ->getFirstWhere(['type' => 'warranty_require_otp'])['value'] ?? '0';
+ 
         if ($otpRequire == '1') {
+ 
             $firebaseOtpSetting = getWebConfig('firebase_otp_verification');
-            $otpMethod = ($firebaseOtpSetting && $firebaseOtpSetting['status'] == 1) ? 'firebase' : 'manual';
-
+            $otpMethod = ($firebaseOtpSetting && $firebaseOtpSetting['status'] == 1)
+                ? 'firebase'
+                : 'manual';
+ 
             $sessionData = [
                 'warranty_id' => $warranty->id,
                 'contact' => $request->contact,
                 'otp_method' => $otpMethod,
             ];
-
+ 
             if ($otpMethod === 'firebase') {
+ 
                 $response = $this->firebaseService->sendOtp($request->contact);
+ 
                 if ($response && $response['status'] === 'success') {
                     $sessionData['otp_session'] = $response['sessionInfo'];
                 } else {
-                    return response()->json(['status' => 'error', 'message' => 'Firebase OTP failed'], 500);
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Firebase OTP failed'
+                    ], 500);
                 }
             } else {
+ 
                 $otp = rand(1000, 9999);
-                // Store in Cache for 5 mins instead of Session
-                Cache::put('otp_' . $request->contact, $otp, now()->addMinutes(5));
-                // Log or Send SMS here
+ 
+                Cache::put(
+                    'otp_' . $request->contact,
+                    $otp,
+                    now()->addMinutes(5)
+                );
+ 
+                // Send SMS here if needed
             }
-
+ 
             return response()->json([
+                'warranty_id' => $warranty->id,
                 'status' => 'otp_required',
                 'otp_method' => $otpMethod,
-                'temp_token' => encrypt($sessionData), // Send encrypted data back to Flutter
+                'temp_token' => encrypt($sessionData),
                 'message' => translate('OTP sent successfully')
             ]);
         }
-
-        // 5. Direct Success (Generate your view token)
-        $viewToken = $this->generateViewToken($warranty); // Create a helper to just return the token string
+ 
+        // 4. Direct Success (No OTP Required)
+        $viewToken = $this->generateViewToken($warranty);
+ 
         return response()->json([
             'status' => 'success',
             'view_token' => $viewToken,
