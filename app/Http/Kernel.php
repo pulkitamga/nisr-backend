@@ -2,7 +2,7 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\CheckLicense;
+// use App\Http\Middleware\CheckLicense;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\DeliveryManAuth;
 use App\Http\Middleware\GuestMiddleware;
@@ -36,7 +36,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         DatabaseRefreshMiddleware::class,
-        \App\Http\Middleware\CheckLicense::class,
+        // \App\Http\Middleware\CheckLicense::class,
     ];
 
     /**
@@ -126,6 +126,6 @@ class Kernel extends HttpKernel
             foreach ($entities as $entity) {
                 $slaService->checkForBreaches($entity);
             }
-        })->everyFiveMinutes(); 
+        })->everyFiveMinutes();
     }
 }

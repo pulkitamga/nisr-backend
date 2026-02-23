@@ -153,6 +153,10 @@ class helpers
 
         public static function default_lang()
     {
+        if (function_exists('getDefaultLanguage')) {
+            return getDefaultLanguage();
+        }
+
         $data = getWebConfig(name: 'language');
         $data = is_array($data) ? $data : [];
         $defaultCode = 'en';

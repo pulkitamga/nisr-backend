@@ -3,8 +3,7 @@ $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = $languages[0] ?? 'en';
 @endphp
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0"></h5>
+<div class="d-flex justify-content-end mb-3">
     <button class="btn btn--primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
         {{ translate('Add Review') }}
     </button>
@@ -137,6 +136,7 @@ $defaultLanguage = $languages[0] ?? 'en';
             <input type="hidden" name="index" id="edit-index">
             <div class="modal-content">
                 <div class="modal-header">
+                    <h5 class="modal-title" id="editReviewLabel">{{ translate('Edit Review') }}</h5>
                     <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

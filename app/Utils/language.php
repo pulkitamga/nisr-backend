@@ -7,18 +7,19 @@ if (!function_exists('translate')) {
     function translate($key = null): string|null
     {
         $local = getDefaultLanguage();
+        $resolvedLocale = resolveAppLocale($local);
 
         if ($key) {
-            App::setLocale($local);
-            $key = getOrPutTranslateMessageValueByKey(local: $local, key: $key);
+            App::setLocale($resolvedLocale);
+            $key = getOrPutTranslateMessageValueByKey(local: $resolvedLocale, key: $key);
 
             // if ($key && !\App\Utils\Helpers::isTranslated($key, $local)) {
             //     $key = autoTranslator($key, 'en', $local); // assuming 'en' is source
             // }
         }
 
-        App::setLocale(resolveAppLocale($local));
-        return $local == 'en' ? ucfirst($key) : $key;
+        App::setLocale($resolvedLocale);
+        return $resolvedLocale == 'en' ? ucfirst($key) : $key;
     }
 
     function getOrPutTranslateMessageValueByKey(string $local, string $key): array|string|null
@@ -93,6 +94,20 @@ if (!function_exists('getDefaultLanguage')) {
         $data = is_array($data) ? $data : [];
         $defaultCode = 'en';
         $direction = 'ltr';
+
+        $normalizeLocale = static function (string|null $locale, string $fallback = 'en'): string {
+            $normalizedLocale = strtolower(trim((string) $locale));
+
+            if (
+                $normalizedLocale === ''
+                || !preg_match('/^[a-z]{2,3}(?:[_-][a-z]{2,3})?$/', $normalizedLocale)
+            ) {
+                return $fallback;
+            }
+
+            return resolveAppLocale($normalizedLocale);
+        };
+
         foreach ($data as $ln) {
             if (is_array($ln) && array_key_exists('default', $ln) && $ln['default']) {
                 $defaultCode = $ln['code'];
@@ -101,30 +116,28 @@ if (!function_exists('getDefaultLanguage')) {
                 }
             }
         }
+        $defaultCode = $normalizeLocale($defaultCode, 'en');
 
         if (strpos(url()->current(), '/api')) {
-            $lang = App::getLocale();
+            $lang = $normalizeLocale(App::getLocale(), $defaultCode);
         } elseif (session()->has('local') || session()->has('locale')) {
-            $lang = session('local', session('locale'));
-            session()->put('local', $lang);
-            session()->put('locale', $lang);
+            $lang = $normalizeLocale((string) session('local', session('locale')), $defaultCode);
         } elseif (($cookieLocale = strtolower(trim((string)(request()->cookie('local') ?? request()->cookie('locale') ?? '')))) !== '') {
-            $lang = $cookieLocale;
+            $lang = $normalizeLocale($cookieLocale, $defaultCode);
             foreach ($data as $ln) {
                 if (is_array($ln) && strtolower((string)($ln['code'] ?? '')) === $lang) {
                     $direction = $ln['direction'] ?? $direction;
                     break;
                 }
             }
-            session()->put('local', $lang);
-            session()->put('locale', $lang);
-            Session::put('direction', $direction);
         } else {
-            session()->put('local', $defaultCode);
-            session()->put('locale', $defaultCode);
-            Session::put('direction', $direction);
             $lang = $defaultCode;
         }
+
+        session()->put('local', $lang);
+        session()->put('locale', $lang);
+        Session::put('direction', $direction);
+
         return $lang;
     }
 }
