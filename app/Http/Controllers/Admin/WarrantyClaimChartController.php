@@ -63,8 +63,8 @@ class WarrantyClaimChartController extends Controller
 
         $query = $this->getFilteredQuery($start, $end, $request);
         $claims = $query->paginate(15);
-
         $formattedClaims = $claims->map(function ($claim) {
+            $branchName = $claim->branch?->branch_name ?? '-';
             return [
                 'id'            => $claim->id,
                 'claim_number'  => $claim->claim_number,
@@ -75,6 +75,7 @@ class WarrantyClaimChartController extends Controller
                 'resolution_due' => $claim->resolution_due?->format('Y-m-d H:i A') ?? '-',
                 'view_url'      => route('admin.warranty.claim.view', $claim->id),
                 'product_name'  => $claim->warranty?->product?->name ?? '-',
+                'branch_name' => $branchName,
             ];
         });
 
@@ -126,7 +127,7 @@ class WarrantyClaimChartController extends Controller
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
                     $q->where('claim_number', 'like', "%{$search}%")
-                      ->orWhere('serial_number', 'like', "%{$search}%");
+                        ->orWhere('serial_number', 'like', "%{$search}%");
                 });
             }
         }

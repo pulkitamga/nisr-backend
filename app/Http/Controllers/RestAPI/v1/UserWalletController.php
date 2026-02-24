@@ -40,7 +40,12 @@ class UserWalletController extends Controller
                 'offset'=>(integer)$request->offset,
                 'total_wallet_balance'=>$total_wallet_balance,
                 'total_wallet_transactio'=>$wallet_transactio_list->total(),
-                'wallet_transactio_list'=>$wallet_transactio_list->items()
+                'wallet_transactio_list'=>$wallet_transactio_list->items(),
+                 'total_size' => $wallet_transactio_list->total(),
+                'total_wallet_balance' => $total_wallet_balance,
+                'total_wallet_transactio' => $wallet_transactio_list->total(),
+                'wallet_transactio_list' => $wallet_transactio_list->items()
+ 
             ],200);
 
         }else{

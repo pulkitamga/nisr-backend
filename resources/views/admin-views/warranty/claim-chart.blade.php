@@ -107,6 +107,7 @@
                     </div>
                 </div>
 
+<<<<<<< Updated upstream
                 <div class="col-md-4">
                     <label class="form-label">{{ translate('branch') }}</label>
                     <select class="form-control" name="branch_id" id="branchFilter">
@@ -115,6 +116,196 @@
                             <option value="{{ $branch->id }}" {{ request('branch_id') == $branch->id ? 'selected' : '' }}>
                                 {{ $branch->name }}
                             </option>
+=======
+                <div class="row g-3 mt-2">
+                    <div class="col-md-4">
+                        <label class="form-label">{{ translate('search') }}</label>
+                        <input type="text" name="search" id="searchInput" class="form-control"
+                            placeholder="{{ translate('claim_or_serial') }}" value="{{ request('search') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ translate('product') }}</label>
+                        <select class="form-control" name="product_id" id="productFilter">
+                            <option value="">{{ translate('all_products') }}</option>
+                            @foreach ($products as $product)
+                                <option value="{{ $product->id }}"
+                                    {{ request('product_id') == $product->id ? 'selected' : '' }}>
+                                    {{ $product->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label d-none d-md-block">&nbsp;</label>
+                        <button type="submit" class="btn btn--primary btn-block">
+                            <i class="tio-filter"></i> {{ translate('apply') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="row mb-4" id="summaryCards">
+            <div class="col-md-2 col-sm-4">
+                <div class="stat-card" style="border-left: 4px solid #3498db;">
+                    <div class="stat-number text-primary" id="card-total">{{ $cards['total'] }}</div>
+                    <div class="stat-label">{{ translate('total_claims') }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+                <div class="stat-card" style="border-left: 4px solid #f39c12;">
+                    <div class="stat-number text-warning" id="card-new">{{ $cards['new'] }}</div>
+                    <div class="stat-label">{{ translate('new') }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+                <div class="stat-card" style="border-left: 4px solid #2ecc71;">
+                    <div class="stat-number text-success" id="card-approved">{{ $cards['approved'] }}</div>
+                    <div class="stat-label">{{ translate('approved') }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+                <div class="stat-card" style="border-left: 4px solid #e74c3c;">
+                    <div class="stat-number text-danger" id="card-rejected">{{ $cards['rejected'] }}</div>
+                    <div class="stat-label">{{ translate('rejected') }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+                <div class="stat-card" style="border-left: 4px solid #9b59b6;">
+                    <div class="stat-number text-info" id="card-pending">{{ $cards['pending'] }}</div>
+                    <div class="stat-label">{{ translate('pending') }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+                <div class="stat-card" style="border-left: 4px solid #34495e;">
+                    <div class="stat-number text-dark" id="card-resolved">{{ $cards['resolved'] }}</div>
+                    <div class="stat-label">{{ translate('resolved') }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">{{ translate('claims_by_day') }} ({{ translate('stacked') }})</h4>
+                <span class="badge badge-soft-primary" id="dateRangeLabel">
+                    {{ $startDate->format('d M') }} - {{ $endDate->format('d M') }}
+                </span>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mb-3">
+                <a href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
+                    class="btn btn-success">
+                    <i class="tio-file-excel"></i> {{ translate('export_excel') }}
+                </a>
+                <a href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
+                    class="btn btn-danger">
+                    <i class="tio-file-pdf"></i> {{ translate('export_pdf') }}
+                </a>
+            </div>
+            <div style="position: relative; height: 350px; width: 100%;">
+                <canvas id="claimsChart" style="height: 100%; width: 100%;"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ translate('claims_list') }} <span class="badge badge-soft-dark"
+                        id="claimsTotal">{{ $claims->total() }}</span></h5>
+            </div>
+            <div class="table-responsive datatable-custom">
+                <table
+                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+                    <thead class="thead-light thead-50 text-capitalize">
+                        <tr>
+                            <th>{{ translate('SL') }}</th>
+                            <th>{{ translate('claim_number') }}</th>
+                            <th>{{ translate('serial') }}</th>
+                            <th>{{ translate('product') }}</th>
+                            <th>{{ translate('warranty_months') }}</th>
+                            <th>{{ translate('warranty_end_date') }}</th>
+                            <th>{{ translate('remaining') }}</th>
+                            <th>{{ translate('status') }}</th>
+                            <th>{{ translate('customer') }}</th>
+                            <th>{{ translate('branch') }}</th>
+                            <th>{{ translate('submitted_at') }}</th>
+                            <th>{{ translate('sla_due') }}</th>
+                            <th class="text-center">{{ translate('action') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="claimTableBody">
+                        @foreach ($claims as $key => $claim)
+                            @php
+                                $badge = match ($claim->status) {
+                                    'new', 'waiting_customer', 'waiting_parts', 'waiting_payment' => 'warning',
+                                    'rejected', 'closed' => 'danger',
+                                    default => 'success',
+                                };
+
+                                $warranty = $claim->warranty;
+                                $productName = $warranty?->product?->name ?? '-';
+                                $warrantyMonths = $warranty?->warranty_months ?? '-';
+                                $endDate = $warranty?->end_date ? $warranty->end_date->format('Y-m-d') : '-';
+
+                                // Corrected remaining calculation
+                                if ($warranty && $warranty->end_date) {
+                                    $now = now()->startOfDay();
+                                    $end = $warranty->end_date->startOfDay();
+                                    if ($now > $end) {
+                                        $remaining =
+                                            '<span class="badge badge-soft-danger">' . translate('expired') . '</span>';
+                                    } else {
+                                        $months = $now->diffInMonths($end);
+                                        $days = $now->copy()->addMonths($months)->diffInDays($end);
+                                        if ($months > 0 && $days > 0) {
+                                            $remaining =
+                                                $months .
+                                                ' ' .
+                                                translate('months') .
+                                                ' ' .
+                                                $days .
+                                                ' ' .
+                                                translate('days');
+                                        } elseif ($months > 0) {
+                                            $remaining = $months . ' ' . translate('months');
+                                        } else {
+                                            $remaining = $days . ' ' . translate('days');
+                                        }
+                                    }
+                                } else {
+                                    $remaining = '-';
+                                }
+                            @endphp
+                            <tr>
+                                <td>{{ $claims->firstItem() + $key }}</td>
+                                <td>{{ $claim->claim_number }}</td>
+                                <td>{{ $claim->serial_number }}</td>
+                                <td>{{ $productName }}</td>
+                                <td>{{ $warrantyMonths }}</td>
+                                <td>{{ $endDate }}</td>
+                                <td>{!! $remaining !!}</td>
+                                <td>
+                                    <span class="badge badge-soft-{{ $badge }} fz-12">
+                                        {{ translate($claim->status) }}
+                                    </span>
+                                </td>
+                                <td>{{ $claim->warranty?->user?->name ?? ($claim->warranty?->activated_by_name ?? '') }}
+                                </td>
+                                <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
+                                <td>{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</td>
+                                <td>{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</td>
+                                <td class="text-center">
+                                    <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
+                                        class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>
+                                </td>
+                            </tr>
+>>>>>>> Stashed changes
                         @endforeach
                     </select>
                 </div>
