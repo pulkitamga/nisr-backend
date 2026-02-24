@@ -20,6 +20,13 @@ use App\Exports\SubscriberListExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\CustomerRequest;
 use App\Http\Requests\Admin\CustomerUpdateSettingsRequest;
+use App\Models\CrmCall;
+use App\Models\Deal;
+use App\Models\InboxMessage;
+use App\Models\Lead;
+use App\Models\Order;
+use App\Models\Warranty;
+use App\Models\WarrantyClaim;
 use App\Repositories\ShippingAddressRepository;
 use App\Services\CustomerService;
 use App\Services\PasswordResetService;
@@ -28,9 +35,11 @@ use App\Traits\EmailTemplateTrait;
 use App\Traits\PaginatorTrait;
 use Brian2694\Toastr\Facades\Toastr;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Contracts\View\View;
@@ -134,7 +143,7 @@ class CustomerController extends BaseController
     {
         $customer = $this->customerRepo->getFirstWhere(params: ['id' => $id], relations: ['addresses']);
         if (isset($customer)) {
-            $orders = $this->orderRepo->getListWhere(orderBy: ['id' => 'desc'], searchValue: $request['searchValue'], filters: ['customer_id' => $id, 'is_guest' => '0'], dataLimit: 'all');
+            $allOrders = $this->getCustomerOrderQuery(customerId: $id)->get(['id', 'order_status']);
             $orderStatusArray = [
                 'total_order' => 0,
                 'ongoing' => 0,
@@ -144,18 +153,27 @@ class CustomerController extends BaseController
                 'canceled' => 0,
                 'failed' => 0,
             ];
-            $orders?->map(function ($order) use (&$orderStatusArray) {
+            $allOrders->map(function ($order) use (&$orderStatusArray) {
                 if (in_array($order->order_status, ['pending', 'confirmed', 'processing', 'out_for_delivery'])) {
                     $orderStatusArray['ongoing']++;
                 } elseif ($order->order_status == 'delivered') {
                     $orderStatusArray['completed']++;
                 } else {
-                    $orderStatusArray[$order->order_status]++;
+                    if (array_key_exists($order->order_status, $orderStatusArray)) {
+                        $orderStatusArray[$order->order_status]++;
+                    }
                 }
                 $orderStatusArray['total_order']++;
             });
-            $orders = $this->orderRepo->getListWhere(orderBy: ['id' => 'desc'], searchValue: $request['searchValue'], filters: ['customer_id' => $id, 'is_guest' => '0'], dataLimit: getWebConfig('pagination_limit'));
-            return view(Customer::VIEW[VIEW], compact('customer', 'orders', 'orderStatusArray'));
+
+            $searchValue = trim((string)$request->get('searchValue', ''));
+            $orders = $this->getCustomerOrderQuery(customerId: $id, searchValue: $searchValue)
+                ->paginate(getWebConfig(name: WebConfigKey::PAGINATION_LIMIT))
+                ->appends($request->all());
+
+            $integrationData = $this->getCustomerIntegrationData(customerId: (int)$id, email: $customer->email, phone: $customer->phone);
+
+            return view(Customer::VIEW[VIEW], compact('customer', 'orders', 'orderStatusArray', 'integrationData', 'searchValue'));
         }
         Toastr::error(translate('customer_Not_Found'));
         return back();
@@ -164,13 +182,218 @@ class CustomerController extends BaseController
     public function exportOrderList(Request $request, $id): BinaryFileResponse
     {
         $customer = $this->customerRepo->getFirstWhere(params: ['id' => $id]);
-        $orders = $this->orderRepo->getListWhere(orderBy: ['id' => 'desc'], searchValue: $request['searchValue'], filters: ['customer_id' => $id, 'is_guest' => '0'], dataLimit: 'all');
+        $searchValue = trim((string)$request->get('searchValue', ''));
+        $orders = $this->getCustomerOrderQuery(customerId: $id, searchValue: $searchValue)->get();
         $data = [
             'customer' => $customer,
-            'searchValue' => $request->get('searchValue'),
+            'searchValue' => $searchValue,
             'orders' => $orders
         ];
         return Excel::download(new CustomerOrderListExport($data), CustomerExport::CUSTOMER_ORDER_LIST);
+    }
+
+    private function getCustomerOrderQuery(int|string $customerId, string $searchValue = ''): Builder
+    {
+        return Order::query()
+            ->where('customer_id', $customerId)
+            ->where('is_guest', 0)
+            ->when($searchValue !== '', function (Builder $query) use ($searchValue) {
+                $searchWithoutSpaces = preg_replace('/\s+/', '', $searchValue);
+                $normalizedSearch = str_replace('+', '', $searchWithoutSpaces);
+
+                $query->where(function (Builder $searchQuery) use ($searchValue, $normalizedSearch) {
+                    $searchQuery->where('id', 'like', "%{$searchValue}%")
+                        ->orWhereHas('customer', function (Builder $customerQuery) use ($searchValue, $normalizedSearch) {
+                            $customerQuery->where('email', 'like', "%{$searchValue}%")
+                                ->orWhere('phone', 'like', "%{$searchValue}%");
+
+                            if (!empty($normalizedSearch)) {
+                                $customerQuery->orWhereRaw(
+                                    "REPLACE(REPLACE(phone, ' ', ''), '+', '') LIKE ?",
+                                    ['%' . $normalizedSearch . '%']
+                                );
+                            }
+                        });
+                });
+            })
+            ->orderByDesc('id');
+    }
+
+    private function getCustomerIntegrationData(int $customerId, ?string $email = null, ?string $phone = null): array
+    {
+        $email = trim((string)$email);
+        $phone = trim((string)$phone);
+        $normalizedPhone = str_replace([' ', '+'], '', $phone);
+
+        $crmMessagesCount = 0;
+        $leadsCount = 0;
+        $dealsCount = 0;
+        $warrantiesCount = 0;
+        $activeWarrantiesCount = 0;
+        $warrantyClaimsCount = 0;
+        $openWarrantyClaimsCount = 0;
+        $callsCount = 0;
+        $ongoingCallsCount = 0;
+        $completedCallsCount = 0;
+
+        $recentCrmMessages = collect();
+        $recentDeals = collect();
+        $recentWarrantyClaims = collect();
+        $recentCalls = collect();
+
+        if (Schema::hasTable('inbox_messages')) {
+            $crmMessagesQuery = InboxMessage::query()
+                ->where(function (Builder $query) use ($customerId, $email, $phone, $normalizedPhone) {
+                    $query->where('contact_id', $customerId);
+
+                    if ($email !== '') {
+                        $query->orWhere('sender_email', $email);
+                    }
+
+                    if ($phone !== '') {
+                        $query->orWhere('sender_phone', $phone);
+                    }
+
+                    if ($normalizedPhone !== '') {
+                        $query->orWhereRaw(
+                            "REPLACE(REPLACE(sender_phone, ' ', ''), '+', '') = ?",
+                            [$normalizedPhone]
+                        );
+                    }
+                });
+
+            $crmMessagesCount = (clone $crmMessagesQuery)->count();
+            $recentCrmMessages = (clone $crmMessagesQuery)
+                ->latest('id')
+                ->limit(5)
+                ->get(['id', 'subject', 'status', 'message_type', 'created_at']);
+        }
+
+        if (Schema::hasTable('leads')) {
+            $leadQuery = Lead::query()
+                ->where(function (Builder $query) use ($customerId, $email, $phone, $normalizedPhone) {
+                    $query->where('contact_id', $customerId)
+                        ->orWhereHas('inboxMessages', function (Builder $messageQuery) use ($customerId, $email, $phone, $normalizedPhone) {
+                            $messageQuery->where('contact_id', $customerId);
+
+                            if ($email !== '') {
+                                $messageQuery->orWhere('sender_email', $email);
+                            }
+
+                            if ($phone !== '') {
+                                $messageQuery->orWhere('sender_phone', $phone);
+                            }
+
+                            if ($normalizedPhone !== '') {
+                                $messageQuery->orWhereRaw(
+                                    "REPLACE(REPLACE(sender_phone, ' ', ''), '+', '') = ?",
+                                    [$normalizedPhone]
+                                );
+                            }
+                        });
+                });
+            $leadsCount = (clone $leadQuery)->count();
+        }
+
+        if (Schema::hasTable('deals')) {
+            $dealsQuery = Deal::query()
+                ->where('related_party_type', 'contact')
+                ->where(function (Builder $query) use ($customerId, $email, $phone, $normalizedPhone) {
+                    $query->where('contact_id', $customerId)
+                        ->orWhereHas('lead.inboxMessages', function (Builder $messageQuery) use ($customerId, $email, $phone, $normalizedPhone) {
+                            $messageQuery->where('contact_id', $customerId);
+
+                            if ($email !== '') {
+                                $messageQuery->orWhere('sender_email', $email);
+                            }
+
+                            if ($phone !== '') {
+                                $messageQuery->orWhere('sender_phone', $phone);
+                            }
+
+                            if ($normalizedPhone !== '') {
+                                $messageQuery->orWhereRaw(
+                                    "REPLACE(REPLACE(sender_phone, ' ', ''), '+', '') = ?",
+                                    [$normalizedPhone]
+                                );
+                            }
+                        });
+                });
+
+            $dealsCount = (clone $dealsQuery)->count();
+            $recentDeals = (clone $dealsQuery)
+                ->latest('id')
+                ->limit(5)
+                ->get(['id', 'status', 'stage', 'value', 'updated_at']);
+        }
+
+        if (Schema::hasTable('warranties')) {
+            $warrantiesQuery = Warranty::query()->where('final_user_id', $customerId);
+            $warrantiesCount = (clone $warrantiesQuery)->count();
+            $activeWarrantiesCount = (clone $warrantiesQuery)
+                ->where('status', 'active')
+                ->whereDate('end_date', '>=', now())
+                ->count();
+        }
+
+        if (Schema::hasTable('warranty_claims') && Schema::hasTable('warranties')) {
+            $warrantyClaimsQuery = WarrantyClaim::query()
+                ->whereHas('warranty', function (Builder $query) use ($customerId) {
+                    $query->where('final_user_id', $customerId);
+                });
+
+            $warrantyClaimsCount = (clone $warrantyClaimsQuery)->count();
+            $openWarrantyClaimsCount = (clone $warrantyClaimsQuery)
+                ->whereNotIn('status', ['closed', 'rejected', 'resolved'])
+                ->count();
+
+            $recentWarrantyClaims = (clone $warrantyClaimsQuery)
+                ->with(['warranty:id,serial_number,final_user_id'])
+                ->latest('id')
+                ->limit(5)
+                ->get(['id', 'warranty_id', 'claim_number', 'status', 'submitted_at']);
+        }
+
+        if (Schema::hasTable('crm_calls')) {
+            $callsQuery = CrmCall::query()->where('customer_id', $customerId);
+            $callsCount = (clone $callsQuery)->count();
+            $ongoingCallsCount = (clone $callsQuery)->where('status', 'ongoing')->count();
+            $completedCallsCount = (clone $callsQuery)->where('status', 'completed')->count();
+            $recentCalls = (clone $callsQuery)
+                ->latest('call_date')
+                ->limit(5)
+                ->get(['id', 'call_id', 'call_date', 'direction', 'status', 'call_duration']);
+        }
+
+        $crmOverviewCount = $crmMessagesCount + $leadsCount + $dealsCount;
+        $warrantyOverviewCount = $warrantiesCount + $activeWarrantiesCount + $openWarrantyClaimsCount;
+        $callsOverviewCount = $callsCount + $ongoingCallsCount + $completedCallsCount;
+
+        return [
+            'crm' => [
+                'messages_count' => $crmMessagesCount,
+                'leads_count' => $leadsCount,
+                'deals_count' => $dealsCount,
+                'overview_count' => $crmOverviewCount,
+                'recent_messages' => $recentCrmMessages,
+                'recent_deals' => $recentDeals,
+            ],
+            'warranty' => [
+                'warranties_count' => $warrantiesCount,
+                'active_warranties_count' => $activeWarrantiesCount,
+                'claims_count' => $warrantyClaimsCount,
+                'open_claims_count' => $openWarrantyClaimsCount,
+                'overview_count' => $warrantyOverviewCount,
+                'recent_claims' => $recentWarrantyClaims,
+            ],
+            'calls' => [
+                'calls_count' => $callsCount,
+                'ongoing_calls_count' => $ongoingCallsCount,
+                'completed_calls_count' => $completedCallsCount,
+                'overview_count' => $callsOverviewCount,
+                'recent_calls' => $recentCalls,
+            ],
+        ];
     }
 
     /**

@@ -304,6 +304,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::group(['prefix' => 'ucm', 'as' => 'ucm.'], function () {
             Route::get('calls',  'calls')->name('calls');
             Route::post('accept',  'accept')->name('accept');
+            Route::post('reject',  'reject')->name('reject');
             Route::post('end',  'end')->name('end');
         });
     });
@@ -2757,8 +2758,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::post('store', [CategoryShippingCostController::class, 'add'])->name('store');
             });
         });
-        Route::get('business-settings/ucm', [UcmConfigController::class, 'index'])->name('ucm');
-        Route::post('business-settings/ucm/update', [UcmConfigController::class, 'update'])->name('ucm.update');
+        Route::get('ucm', [UcmConfigController::class, 'index'])->name('ucm');
+        Route::post('ucm/update', [UcmConfigController::class, 'update'])->name('ucm.update');
 
         Route::group(['prefix' => 'mail', 'as' => 'mail.', 'middleware' => ['module:system_settings']], function () {
 

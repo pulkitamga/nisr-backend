@@ -38,18 +38,11 @@ class SMSModuleUpdateRequest extends FormRequest
                 collect(['status'])->each(fn($item, $key) => $this[$item] = $this->has($item) ? (int)$this[$item] : 0);
 
                 $validation = [
-                    'gateway' => 'required|in:releans,twilio,nexmo,2factor,msg91,hubtel,paradox,signal_wire,019_sms,viatech,global_sms,akandit_sms,sms_to,alphanet_sms',
+                    'gateway' => 'required|in:twilio,nexmo,sms_com_eg',
                     'mode' => 'required|in:live,test'
                 ];
                 $additionalData = [];
-                if ($this['gateway'] == 'releans') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'api_key' => 'required',
-                        'from' => 'required',
-                        'otp_template' => 'required'
-                    ];
-                } elseif ($this['gateway'] == 'twilio') {
+                if ($this['gateway'] == 'twilio') {
                     $additionalData = [
                         'status' => 'required|in:1,0',
                         'sid' => 'required',
@@ -67,83 +60,13 @@ class SMSModuleUpdateRequest extends FormRequest
                         'from' => 'required',
                         'otp_template' => 'required'
                     ];
-                } elseif ($this['gateway'] == '2factor') {
+                } elseif ($this['gateway'] == 'sms_com_eg') {
                     $additionalData = [
                         'status' => 'required|in:1,0',
-                        'api_key' => 'required'
-                    ];
-                } elseif ($this['gateway'] == 'msg91') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'template_id' => 'required',
-                        'auth_key' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'hubtel') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'sender_id' => 'required',
-                        'client_id' => 'required',
-                        'client_secret' => 'required',
-                        'otp_template' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'paradox') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'api_key' => 'required',
-                        'sender_id' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'signal_wire') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'project_id' => 'required',
-                        'token' => 'required',
-                        'space_url' => 'required',
-                        'from' => 'required',
-                        'otp_template' => 'required',
-                    ];
-                } elseif ($this['gateway'] == '019_sms') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'password' => 'required',
                         'username' => 'required',
-                        'username_for_token' => 'required',
+                        'password' => 'required',
                         'sender' => 'required',
-                        'otp_template' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'viatech') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'api_url' => 'required',
-                        'api_key' => 'required',
-                        'sender_id' => 'required',
-                        'otp_template' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'global_sms') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'user_name' => 'required',
-                        'password' => 'required',
-                        'from' => 'required',
-                        'otp_template' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'akandit_sms') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'username' => 'required',
-                        'password' => 'required',
-                        'otp_template' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'sms_to') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'api_key' => 'required',
-                        'sender_id' => 'required',
-                        'otp_template' => 'required',
-                    ];
-                } elseif ($this['gateway'] == 'alphanet_sms') {
-                    $additionalData = [
-                        'status' => 'required|in:1,0',
-                        'api_key' => 'required',
+                        'language' => 'required|in:1,2',
                         'otp_template' => 'required',
                     ];
                 }

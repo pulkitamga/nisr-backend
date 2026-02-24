@@ -92,6 +92,7 @@ class helpers
     public static function ucmConfig(): array
     {
         $cfg = getWebConfig('ucm_api_config') ?? [];
+        $verifyTlsRaw = $cfg['verify_tls'] ?? false;
         return [
             'host'     => $cfg['host'] ?? '',
             'port'     => (int)($cfg['port'] ?? 8089),
@@ -99,6 +100,11 @@ class helpers
             'password' => $cfg['password'] ?? '',
             'digest'   => !empty($cfg['digest']),
             'status'   => !empty($cfg['status']),
+            'api_version' => $cfg['api_version'] ?? '1.0',
+            'report_url' => $cfg['report_url'] ?? '',
+            'webhook_token' => $cfg['webhook_token'] ?? '',
+            'verify_tls' => in_array($verifyTlsRaw, [1, '1', true, 'true', 'on'], true),
+            'ca_path' => $cfg['ca_path'] ?? '',
         ];
     }
 
@@ -108,6 +114,7 @@ class helpers
         $newMessages = @include(base_path("resources/lang/{$locale}/new-messages.php"));
         return in_array($text, array_merge(array_values($messages ?? []), array_values($newMessages ?? [])));
     }
+
 
 
 
@@ -142,30 +149,75 @@ class helpers
         return $discount;
     }
 
-    public static function default_lang()
+
+
+        public static function default_lang()
     {
-        if (strpos(url()->current(), '/api')) {
-            $lang = App::getLocale();
-        } elseif (session()->has('local')) {
-            $lang = session('local');
-        } else {
-            $data = getWebConfig(name: 'language');
-            $code = 'en';
-            $direction = 'ltr';
-            foreach ($data as $ln) {
-                if (array_key_exists('default', $ln) && $ln['default']) {
-                    $code = $ln['code'];
-                    if (array_key_exists('direction', $ln)) {
-                        $direction = $ln['direction'];
-                    }
+        $data = getWebConfig(name: 'language');
+        $data = is_array($data) ? $data : [];
+        $defaultCode = 'en';
+        $direction = 'ltr';
+        foreach ($data as $ln) {
+            if (is_array($ln) && array_key_exists('default', $ln) && $ln['default']) {
+                $defaultCode = $ln['code'];
+                if (array_key_exists('direction', $ln)) {
+                    $direction = $ln['direction'];
                 }
             }
-            session()->put('local', $code);
+        }
+
+        if (strpos(url()->current(), '/api')) {
+            $lang = App::getLocale();
+        } elseif (session()->has('local') || session()->has('locale')) {
+            $lang = session('local', session('locale'));
+            session()->put('local', $lang);
+            session()->put('locale', $lang);
+        } elseif (($cookieLocale = strtolower(trim((string)(request()->cookie('local') ?? request()->cookie('locale') ?? '')))) !== '') {
+            $lang = $cookieLocale;
+            foreach ($data as $ln) {
+                if (is_array($ln) && strtolower((string)($ln['code'] ?? '')) === $lang) {
+                    $direction = $ln['direction'] ?? $direction;
+                    break;
+                }
+            }
+            session()->put('local', $lang);
+            session()->put('locale', $lang);
             Session::put('direction', $direction);
-            $lang = $code;
+        } else {
+            session()->put('local', $defaultCode);
+            session()->put('locale', $defaultCode);
+            Session::put('direction', $direction);
+            $lang = $defaultCode;
         }
         return $lang;
     }
+
+
+    // public static function default_lang()
+    // {
+    //     if (strpos(url()->current(), '/api')) {
+    //         $lang = App::getLocale();
+    //     } elseif (session()->has('local') || session()->has('locale')) {
+    //         $lang = session('local', session('locale'));
+    //     } else {
+    //         $data = getWebConfig(name: 'language');
+    //         $code = 'en';
+    //         $direction = 'ltr';
+    //         foreach ($data as $ln) {
+    //             if (array_key_exists('default', $ln) && $ln['default']) {
+    //                 $code = $ln['code'];
+    //                 if (array_key_exists('direction', $ln)) {
+    //                     $direction = $ln['direction'];
+    //                 }
+    //             }
+    //         }
+    //         session()->put('local', $code);
+    //         session()->put('locale', $code);
+    //         Session::put('direction', $direction);
+    //         $lang = $code;
+    //     }
+    //     return $lang;
+    // }
 
     public static function get_settings($object, $type)
     {
@@ -377,19 +429,8 @@ class helpers
     public static function getDefaultPaymentGateways(): array
     {
         return [
-            'ssl_commerz',
-            'paypal',
-            'stripe',
-            'razor_pay',
-            'paystack',
-            'senang_pay',
             'paymob_accept',
-            'flutterwave',
-            'paytm',
             'paytabs',
-            'liqpay',
-            'mercadopago',
-            'bkash'
         ];
     }
 
@@ -398,9 +439,7 @@ class helpers
         return [
             'twilio',
             'nexmo',
-            '2factor',
-            'msg91',
-            'releans',
+            'sms_com_eg',
         ];
     }
 

@@ -77,56 +77,18 @@ class PaymentMethodController extends Controller
     {
         collect(['status'])->each(fn($item, $key) => $request[$item] = $request->has($item) ? (int)$request[$item] : 0);
         $validation = [
-            'gateway' => 'required|in:ssl_commerz,sixcash,worldpay,payfast,swish,esewa,maxicash,hubtel,viva_wallet,tap,thawani,moncash,pvit,ccavenue,foloosi,iyzi_pay,xendit,fatoorah,hyper_pay,amazon_pay,paypal,stripe,razor_pay,senang_pay,paytabs,paystack,paymob_accept,paytm,flutterwave,liqpay,bkash,mercadopago,cash_after_service,digital_payment,momo',
+            'gateway' => 'required|in:sixcash,worldpay,payfast,swish,esewa,maxicash,hubtel,viva_wallet,tap,thawani,moncash,pvit,ccavenue,foloosi,iyzi_pay,xendit,fatoorah,hyper_pay,amazon_pay,paytabs,paymob_accept,cash_after_service,digital_payment,momo',
             'mode' => 'required|in:live,test'
         ];
 
         $additional_data = [];
 
-        if ($request['gateway'] == 'ssl_commerz') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'store_id' => 'required',
-                'store_password' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'paypal') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'client_id' => 'required',
-                'client_secret' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'stripe') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'api_key' => 'required',
-                'published_key' => 'required',
-            ];
-        } elseif ($request['gateway'] == 'razor_pay') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'api_key' => 'required',
-                'api_secret' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'senang_pay') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'callback_url' => 'required',
-                'secret_key' => 'required',
-                'merchant_id' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'paytabs') {
+        if ($request['gateway'] == 'paytabs') {
             $additional_data = [
                 'status' => 'required|in:1,0',
                 'profile_id' => 'required',
                 'server_key' => 'required',
                 'base_url' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'paystack') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'public_key' => 'required',
-                'secret_key' => 'required',
-                'merchant_email' => 'required'
             ];
         } elseif ($request['gateway'] == 'paymob_accept') {
             $additional_data = [
@@ -136,40 +98,6 @@ class PaymentMethodController extends Controller
                 'iframe_id' => 'required',
                 'integration_id' => 'required',
                 'hmac' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'mercadopago') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'access_token' => 'required',
-                'public_key' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'liqpay') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'private_key' => 'required',
-                'public_key' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'flutterwave') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'secret_key' => 'required',
-                'public_key' => 'required',
-                'hash' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'paytm') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'merchant_key' => 'required',
-                'merchant_id' => 'required',
-                'merchant_website_link' => 'required'
-            ];
-        } elseif ($request['gateway'] == 'bkash') {
-            $additional_data = [
-                'status' => 'required|in:1,0',
-                'app_key' => 'required',
-                'app_secret' => 'required',
-                'username' => 'required',
-                'password' => 'required',
             ];
         } elseif ($request['gateway'] == 'cash_after_service') {
             $additional_data = [

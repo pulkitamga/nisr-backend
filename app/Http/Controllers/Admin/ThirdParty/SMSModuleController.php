@@ -33,6 +33,24 @@ class SMSModuleController extends BaseController
     {
         $paymentPublishedStatus = config('get_payment_publish_status') ?? 0;
         $paymentGatewayPublishedStatus = isset($paymentPublishedStatus[0]['is_published']) ? $paymentPublishedStatus[0]['is_published'] : 0;
+        foreach (GlobalConstant::DEFAULT_SMS_GATEWAYS as $gateway) {
+            $gatewayConfig = $this->settingRepo->getFirstWhere(params: ['key_name' => $gateway, 'settings_type' => 'sms_config']);
+            if (!$gatewayConfig) {
+                $defaultCredentials = $this->getDefaultSmsGatewayCredentials($gateway);
+                $this->settingRepo->updateOrInsert(
+                    params: ['key_name' => $gateway, 'settings_type' => 'sms_config'],
+                    data: [
+                        'key_name' => $gateway,
+                        'live_values' => $defaultCredentials,
+                        'test_values' => $defaultCredentials,
+                        'settings_type' => 'sms_config',
+                        'mode' => 'live',
+                        'is_active' => 0,
+                    ]
+                );
+            }
+        }
+
         $smsGatewaysList = $this->settingRepo->getListWhereIn(
             whereInFilters: ['settings_type' => ['sms_config'], 'key_name' => GlobalConstant::DEFAULT_SMS_GATEWAYS],
             dataLimit: 'all',
@@ -59,7 +77,7 @@ class SMSModuleController extends BaseController
         ]);
 
         if ($request['status'] == 1) {
-            foreach (['releans', 'twilio', 'nexmo', '2factor', 'msg91', 'hubtel', 'paradox', 'signal_wire', '019_sms', 'viatech', 'global_sms', 'akandit_sms', 'sms_to', 'alphanet_sms'] as $gateway) {
+            foreach (GlobalConstant::DEFAULT_SMS_GATEWAYS as $gateway) {
                 $keep = $this->settingRepo->getFirstWhere(params: ['key_name' => $gateway, 'settings_type' => 'sms_config']);
                 if (isset($keep)) {
                     $hold = $keep['live_values'];
@@ -77,5 +95,46 @@ class SMSModuleController extends BaseController
 
         Toastr::success(GATEWAYS_DEFAULT_UPDATE_200['message']);
         return back();
+    }
+
+    private function getDefaultSmsGatewayCredentials(string $gateway): array
+    {
+        return match ($gateway) {
+            'twilio' => [
+                'gateway' => 'twilio',
+                'mode' => 'live',
+                'status' => 0,
+                'sid' => '',
+                'messaging_service_sid' => '',
+                'token' => '',
+                'from' => '',
+                'otp_template' => '',
+            ],
+            'nexmo' => [
+                'gateway' => 'nexmo',
+                'mode' => 'live',
+                'status' => 0,
+                'api_key' => '',
+                'api_secret' => '',
+                'token' => '',
+                'from' => '',
+                'otp_template' => '',
+            ],
+            'sms_com_eg' => [
+                'gateway' => 'sms_com_eg',
+                'mode' => 'live',
+                'status' => 0,
+                'username' => '',
+                'password' => '',
+                'sender' => '',
+                'language' => '2',
+                'otp_template' => '',
+            ],
+            default => [
+                'gateway' => $gateway,
+                'mode' => 'live',
+                'status' => 0,
+            ],
+        };
     }
 }

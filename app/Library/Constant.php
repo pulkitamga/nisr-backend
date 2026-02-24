@@ -526,19 +526,8 @@ const THEME_RATIO = [
 
 //payment methods
 const GATEWAYS_PAYMENT_METHODS = [
-    ['key' => 'ssl_commerz', 'value' => 'SSLCOMMERZ'],
-    ['key' => 'stripe', 'value' => 'Stripe'],
-    ['key' => 'paypal', 'value' => 'PayPal'],
-    ['key' => 'razor_pay', 'value' => 'Razor Pay'],
-    ['key' => 'paystack', 'value' => 'Paystack'],
-    ['key' => 'senang_pay', 'value' => 'Senang Pay'],
     ['key' => 'paymob_accept', 'value' => 'Paymob Accept'],
-    ['key' => 'flutterwave', 'value' => 'Flutter Wave'],
-    ['key' => 'paytm', 'value' => 'Paytm'],
     ['key' => 'paytabs', 'value' => 'Pay Tabs'],
-    ['key' => 'liqpay', 'value' => 'Liq Pay'],
-    ['key' => 'mercadopago', 'value' => 'Mercadopago'],
-    ['key' => 'bkash', 'value' => 'Bkash'],
     ['key' => 'fatoorah', 'value' => 'Fatoorah'],
     ['key' => 'xendit', 'value' => 'Xendit'],
     ['key' => 'amazon_pay', 'value' => 'Amazon Pay'],
@@ -1203,4 +1192,3 @@ const DEFAULT_STOCK = 50;
 const DEPARTMENT_HEAD_ROLE_ID = 8;
 const DEPARTMENT_EMPLOYEE_ROLE_ID = 9;
 const CACHE_FOR_BUSINESS_PAGES_LIST = 'cache_for_business_page_list';
-

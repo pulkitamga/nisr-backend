@@ -1,33 +1,8 @@
 <?php
 
 return [
-
-    'product' => 'alnisr2',
-    /*
-    |--------------------------------------------------------------------------
-    | Cache Time (seconds)
-    |--------------------------------------------------------------------------
-    */
-    'cache_ttl' => 600,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Grace Period After Expiration (seconds)
-    |--------------------------------------------------------------------------
-    */
-    'grace_seconds' => 0,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Allowed Artisan Commands Without License
-    |--------------------------------------------------------------------------
-    */
-    'console_allow' => [
-        'config:cache',
-        'optimize:clear',
-        'cache:clear',
-        'route:cache',
-        'view:cache',
-    ],
-
+    'mode' => env('APP_LICENSE_MODE', 'development'), // development | production
+    'product' => env('LICENSE_PRODUCT', 'alnisr2'),
+    'file' => env('APP_LICENSE_FILE', storage_path('framework/.license')),
+    'key' => env('APP_LICENSE_KEY', 'DEV-UNLICENSED'), // fallback only
 ];
