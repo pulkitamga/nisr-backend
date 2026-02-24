@@ -246,107 +246,109 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">{{ translate('claims_list') }} <span class="badge badge-soft-dark"
                         id="claimsTotal">{{ $claims->total() }}</span></h5>
-            </div>
-            <div class="table-responsive datatable-custom">
-                <table
-                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
-                    <thead class="thead-light thead-50 text-capitalize">
-                        <tr>
-                            <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('claim_number') }}</th>
-                            <th>{{ translate('serial') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th>{{ translate('warranty_months') }}</th>
-                            <th>{{ translate('warranty_end_date') }}</th>
-                            <th>{{ translate('remaining') }}</th>
-                            <th>{{ translate('status') }}</th>
-                            <th>{{ translate('customer') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th>{{ translate('submitted_at') }}</th>
-                            <th>{{ translate('sla_due') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="claimTableBody">
-                        @foreach ($claims as $key => $claim)
-                            @php
-                                $badge = match ($claim->status) {
-                                    'new', 'waiting_customer', 'waiting_parts', 'waiting_payment' => 'warning',
-                                    'rejected', 'closed' => 'danger',
-                                    default => 'success',
-                                };
-
-                                $warranty = $claim->warranty;
-                                $productName = $warranty?->product?->name ?? '-';
-                                $warrantyMonths = $warranty?->warranty_months ?? '-';
-                                $endDate = $warranty?->end_date ? $warranty->end_date->format('Y-m-d') : '-';
-
-                                // Corrected remaining calculation
-                                if ($warranty && $warranty->end_date) {
-                                    $now = now()->startOfDay();
-                                    $end = $warranty->end_date->startOfDay();
-                                    if ($now > $end) {
-                                        $remaining =
-                                            '<span class="badge badge-soft-danger">' . translate('expired') . '</span>';
-                                    } else {
-                                        $months = $now->diffInMonths($end);
-                                        $days = $now->copy()->addMonths($months)->diffInDays($end);
-                                        if ($months > 0 && $days > 0) {
-                                            $remaining =
-                                                $months .
-                                                ' ' .
-                                                translate('months') .
-                                                ' ' .
-                                                $days .
-                                                ' ' .
-                                                translate('days');
-                                        } elseif ($months > 0) {
-                                            $remaining = $months . ' ' . translate('months');
-                                        } else {
-                                            $remaining = $days . ' ' . translate('days');
-                                        }
-                                    }
-                                } else {
-                                    $remaining = '-';
-                                }
-                            @endphp
+            </div>    
+                <div class="table-responsive datatable-custom">
+                    <table
+                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+                        <thead class="thead-light thead-50 text-capitalize">
                             <tr>
-                                <td>{{ $claims->firstItem() + $key }}</td>
-                                <td>{{ $claim->claim_number }}</td>
-                                <td>{{ $claim->serial_number }}</td>
-                                <td>{{ $productName }}</td>
-                                <td>{{ $warrantyMonths }}</td>
-                                <td>{{ $endDate }}</td>
-                                <td>{!! $remaining !!}</td>
-                                <td>
-                                    <span class="badge badge-soft-{{ $badge }} fz-12">
-                                        {{ translate($claim->status) }}
-                                    </span>
-                                </td>
-                                <td>{{ $claim->warranty?->user?->name ?? ($claim->warranty?->activated_by_name ?? '') }}
-                                </td>
-                                <td>{{ $claim->branch?->name ?? '-' }}</td>
-                                <td>{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</td>
-                                <td>{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</td>
-                                <td class="text-center">
-                                    <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
-                                        class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>
-                                </td>
+                                <th>{{ translate('SL') }}</th>
+                                <th>{{ translate('claim_number') }}</th>
+                                <th>{{ translate('serial') }}</th>
+                                <th>{{ translate('product') }}</th>
+                                <th>{{ translate('warranty_months') }}</th>
+                                <th>{{ translate('warranty_end_date') }}</th>
+                                <th>{{ translate('remaining') }}</th>
+                                <th>{{ translate('status') }}</th>
+                                <th>{{ translate('customer') }}</th>
+                                <th>{{ translate('branch') }}</th>
+                                <th>{{ translate('submitted_at') }}</th>
+                                <th>{{ translate('sla_due') }}</th>
+                                <th class="text-center">{{ translate('action') }}</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                @if ($claims->isEmpty())
-                    @include('layouts.back-end._empty-state', [
-                        'text' => 'no_record_found',
-                        'image' => 'default',
-                    ])
-                @endif
-            </div>
-            <div class="px-4 py-3 d-flex justify-content-end" id="paginationLinks">
-                {{ $claims->appends(request()->query())->links() }}
-            </div>
+                        </thead>
+                        <tbody id="claimTableBody">
+                            @foreach ($claims as $key => $claim)
+                                @php
+                                    $badge = match ($claim->status) {
+                                        'new', 'waiting_customer', 'waiting_parts', 'waiting_payment' => 'warning',
+                                        'rejected', 'closed' => 'danger',
+                                        default => 'success',
+                                    };
 
+                                    $warranty = $claim->warranty;
+                                    $productName = $warranty?->product?->name ?? '-';
+                                    $warrantyMonths = $warranty?->warranty_months ?? '-';
+                                    $endDate = $warranty?->end_date ? $warranty->end_date->format('Y-m-d') : '-';
+
+                                    // Corrected remaining calculation
+                                    if ($warranty && $warranty->end_date) {
+                                        $now = now()->startOfDay();
+                                        $end = $warranty->end_date->startOfDay();
+                                        if ($now > $end) {
+                                            $remaining =
+                                                '<span class="badge badge-soft-danger">' .
+                                                translate('expired') .
+                                                '</span>';
+                                        } else {
+                                            $months = $now->diffInMonths($end);
+                                            $days = $now->copy()->addMonths($months)->diffInDays($end);
+                                            if ($months > 0 && $days > 0) {
+                                                $remaining =
+                                                    $months .
+                                                    ' ' .
+                                                    translate('months') .
+                                                    ' ' .
+                                                    $days .
+                                                    ' ' .
+                                                    translate('days');
+                                            } elseif ($months > 0) {
+                                                $remaining = $months . ' ' . translate('months');
+                                            } else {
+                                                $remaining = $days . ' ' . translate('days');
+                                            }
+                                        }
+                                    } else {
+                                        $remaining = '-';
+                                    }
+                                @endphp
+                                <tr>
+                                    <td>{{ $claims->firstItem() + $key }}</td>
+                                    <td>{{ $claim->claim_number }}</td>
+                                    <td>{{ $claim->serial_number }}</td>
+                                    <td>{{ $productName }}</td>
+                                    <td>{{ $warrantyMonths }}</td>
+                                    <td>{{ $endDate }}</td>
+                                    <td>{!! $remaining !!}</td>
+                                    <td>
+                                        <span class="badge badge-soft-{{ $badge }} fz-12">
+                                            {{ translate($claim->status) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $claim->warranty?->user?->name ?? ($claim->warranty?->activated_by_name ?? '') }}
+                                    </td>
+                                    <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
+                                    <td>{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</td>
+                                    <td>{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
+                                            class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    @if ($claims->isEmpty())
+                        @include('layouts.back-end._empty-state', [
+                            'text' => 'no_record_found',
+                            'image' => 'default',
+                        ])
+                    @endif
+                </div>
+                <div class="px-4 py-3 d-flex justify-content-end" id="paginationLinks">
+                    {{ $claims->appends(request()->query())->links() }}
+                </div>
+            
             <div class="px-4 py-3 d-flex justify-content-end" id="paginationLinks">
                 {{ $claims->appends(request()->query())->links() }}
             </div>
