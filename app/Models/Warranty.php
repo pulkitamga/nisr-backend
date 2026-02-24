@@ -178,4 +178,13 @@ class Warranty extends Model
             }
         });
     }
+
+    public function getReceiptFullUrlAttribute()
+    {
+        if (!$this->receipt_path) {
+            return null;
+        }
+ 
+        return $this->getFileUrl($this->receipt_path);
+    }
 }
