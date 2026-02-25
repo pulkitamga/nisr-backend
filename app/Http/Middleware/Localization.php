@@ -37,15 +37,17 @@ class Localization
             }
         }
 
-        if (!empty($sessionLocale)) {
-            $resolvedLocale = function_exists('resolveAppLocale')
-                ? resolveAppLocale((string)$sessionLocale)
-                : strtolower((string)$sessionLocale);
+        $localeToResolve = !empty($sessionLocale)
+            ? (string)$sessionLocale
+            : ((string)config('app.locale', 'en'));
 
-            App::setLocale($resolvedLocale);
-            session()->put('local', $resolvedLocale);
-            session()->put('locale', $resolvedLocale);
-        }
+        $resolvedLocale = function_exists('resolveAppLocale')
+            ? resolveAppLocale($localeToResolve)
+            : strtolower($localeToResolve);
+
+        App::setLocale($resolvedLocale);
+        session()->put('local', $resolvedLocale);
+        session()->put('locale', $resolvedLocale);
 
         return $next($request);
     }

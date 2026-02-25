@@ -151,7 +151,7 @@ class helpers
 
 
 
-        public static function default_lang()
+    public static function default_lang()
     {
         if (function_exists('getDefaultLanguage')) {
             return getDefaultLanguage();
@@ -161,6 +161,21 @@ class helpers
         $data = is_array($data) ? $data : [];
         $defaultCode = 'en';
         $direction = 'ltr';
+
+        $normalizeLocale = static function (string|null $locale, string $fallback = 'en'): string {
+            $normalizedLocale = strtolower(trim((string)$locale));
+            if (
+                $normalizedLocale === ''
+                || !preg_match('/^[a-z]{2,3}(?:[_-][a-z]{2,3})?$/', $normalizedLocale)
+            ) {
+                return $fallback;
+            }
+
+            return function_exists('resolveAppLocale')
+                ? resolveAppLocale($normalizedLocale)
+                : $normalizedLocale;
+        };
+
         foreach ($data as $ln) {
             if (is_array($ln) && array_key_exists('default', $ln) && $ln['default']) {
                 $defaultCode = $ln['code'];
@@ -169,30 +184,28 @@ class helpers
                 }
             }
         }
+        $defaultCode = $normalizeLocale($defaultCode, 'en');
 
         if (strpos(url()->current(), '/api')) {
-            $lang = App::getLocale();
+            $lang = $normalizeLocale(App::getLocale(), $defaultCode);
         } elseif (session()->has('local') || session()->has('locale')) {
-            $lang = session('local', session('locale'));
-            session()->put('local', $lang);
-            session()->put('locale', $lang);
+            $lang = $normalizeLocale((string)session('local', session('locale')), $defaultCode);
         } elseif (($cookieLocale = strtolower(trim((string)(request()->cookie('local') ?? request()->cookie('locale') ?? '')))) !== '') {
-            $lang = $cookieLocale;
+            $lang = $normalizeLocale($cookieLocale, $defaultCode);
             foreach ($data as $ln) {
                 if (is_array($ln) && strtolower((string)($ln['code'] ?? '')) === $lang) {
                     $direction = $ln['direction'] ?? $direction;
                     break;
                 }
             }
-            session()->put('local', $lang);
-            session()->put('locale', $lang);
-            Session::put('direction', $direction);
         } else {
-            session()->put('local', $defaultCode);
-            session()->put('locale', $defaultCode);
-            Session::put('direction', $direction);
             $lang = $defaultCode;
         }
+
+        session()->put('local', $lang);
+        session()->put('locale', $lang);
+        Session::put('direction', $direction);
+
         return $lang;
     }
 
