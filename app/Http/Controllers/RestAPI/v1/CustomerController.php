@@ -374,11 +374,11 @@ class CustomerController extends Controller
     //     return response()->json(['message' => translate('successfully added!')], 200);
     // }
 
-     public function add_new_address(Request $request)
+    public function add_new_address(Request $request)
     {
         $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
         $zipRule = ($zip_restrict_status == 1) ? 'required' : 'nullable';
- 
+
         $validator = Validator::make($request->all(), [
             'contact_person_name' => 'required',
             'address_type' => 'required',
@@ -393,14 +393,14 @@ class CustomerController extends Controller
             'longitude' => 'required',
             'is_billing' => 'required'
         ]);
- 
+
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
- 
- 
+
+
         // $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
- 
+
         // if ($country_restrict_status && !self::delivery_country_exist_check($request->input('country'))) {
         //     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
         // } elseif ($zip_restrict_status && !self::delivery_zipcode_exist_check($request->input('zip'))) {
@@ -408,38 +408,38 @@ class CustomerController extends Controller
         // }
         $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
         $isBilling = (int) $request->input('is_billing');
- 
+
         // Run restriction ONLY if it is NOT billing address
         if ($isBilling !== 1) {
- 
+
             if (
                 $country_restrict_status
                 && !self::delivery_country_exist_check($request->country)
             ) {
- 
+
                 return response()->json([
                     'message' => translate('Delivery_unavailable_for_this_country')
                 ], 403);
             }
- 
+
             if (
                 $zip_restrict_status
                 && !self::delivery_zipcode_exist_check($request->zip)
             ) {
- 
+
                 return response()->json([
                     'message' => translate('Delivery_unavailable_for_this_zip_code_area')
                 ], 403);
             }
         }
- 
- 
+
+
         // if ($country_restrict_status && self::delivery_country_exist_check($request->input('country'))) {
         //     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
         // }
- 
+
         $user = Helpers::getCustomerInformation($request);
- 
+
         $customer_id = $user == 'offline' ? $request->guest_id : $user->id;
         $address = [
             'customer_id' => $customer_id,
@@ -460,8 +460,8 @@ class CustomerController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ];
- 
- 
+
+
         // 4. ALSO insert into BillingAddress IF is_billing is 1
         if ($request->is_billing == 1) {
             $billing_data = [
@@ -483,7 +483,7 @@ class CustomerController extends Controller
         } else {
             ShippingAddress::insert($address);
         }
- 
+
         return response()->json(['message' => translate('successfully added!')], 200);
     }
 
@@ -643,6 +643,14 @@ class CustomerController extends Controller
                 return $query;
             });
 
+            //Seller image
+            if ($data->seller_is == 'admin') {
+                // For admin orders, use the favicon
+                $data->shop_image = getWebConfig(name: 'company_fav_icon');
+            } else {
+                // For seller orders, get from seller's shop
+                $data->shop_image = $data->seller?->shop?->image_full_url;
+            }
             return $data;
         });
 

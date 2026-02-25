@@ -260,8 +260,18 @@ class ChatController extends Controller
             $chatting->seen_by_admin = $request->id == 0 ? 0 : null;
             $chatting->notification_receiver = $request->id == 0 ? 'admin' : 'seller';
 
-            if ($request->id != 0) {
-                event(new ChattingEvent(key: 'message_from_customer', type: 'seller', userData: $seller, messageForm: $messageForm));
+            // if ($request->id != 0) {
+            //     event(new ChattingEvent(key: 'message_from_customer', type: 'seller', userData: $seller, messageForm: $messageForm));
+            // }
+
+             if ($request->id != 0) {
+                $userData = $seller ?? [];
+                event(new ChattingEvent(
+                    key: 'message_from_customer',
+                    type: 'seller',
+                    userData: $userData,
+                    messageForm: $messageForm
+                ));
             }
         } elseif ($type == 'delivery-man') {
             $chatting->delivery_man_id = $request->id;

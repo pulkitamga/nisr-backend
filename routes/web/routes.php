@@ -64,6 +64,10 @@ use VentureDrake\LaravelCrm\LaravelCrm;
 |
 */
 
+Route::get('/login', function () {
+    abort(404);
+});
+
 Route::get('/test', function () {
     return view('admin-views.deal.clearance-sale.priority-setup');
 });
