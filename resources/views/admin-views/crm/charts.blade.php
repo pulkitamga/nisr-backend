@@ -276,10 +276,10 @@
                 <div class="col-sm mb-2 mb-sm-0">
                     <h1 class="page-header-title">
                         <i class="tio-chart-bar-2 text-primary"></i>
-                        {{ translate('CRM Analytics Dashboard') }}
+                        {{ translate('crm_dashboard') }}
                     </h1>
                     <p class="mb-0 text-muted">
-                        {{ translate('Complete overview of all CRM activities in one chart') }}
+                        {{ translate('crm_overview') }}
                     </p>
                 </div>
             </div>
@@ -292,9 +292,48 @@
         <div class="filter-card">
             <div class="row">
                 <div class="col-lg-3 col-md-6 mb-3">
-                    <label class="form-label">{{ translate('Date Range') }}</label>
+                    <label class="form-label">{{ translate('date_range') }}</label>
                     <input type="text" id="dateRange" class="form-control"
                         value="{{ $start }} - {{ $end }}">
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <label class="form-label">Group By</label>
+                    <select id="groupByFilter" class="form-control">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <label class="form-label">{{ translate('Channel') }}</label>
+                    <select id="pipelineFilter" class="form-control" name="Channel">
+                        <option {{ !request()->has('Channel') ? 'selected' : '' }} disabled>{{ translate('select_Channel') }}
+                        </option>
+                        <option {{ request()->has('Channel') && request('status') == '' ? 'selected' : '' }} value="">
+                            {{ translate('All') }}</option>
+                        <option {{ request('Channel') == 'email' ? 'selected' : '' }} value="email">{{ translate('email') }}
+                        </option>
+                        <option {{ request('Channel') == 'form' ? 'selected' : '' }} value="form">{{ translate('form') }}
+                        </option>
+                        <option {{ request('Channel') == 'chat' ? 'selected' : '' }} value="chat">{{ translate('chat') }}
+                        </option>
+                        <option {{ request('Channel') == 'social' ? 'selected' : '' }} value="social">
+                            {{ translate('social') }}</option>
+                        <option {{ request('Channel') == 'phone' ? 'selected' : '' }} value="phone">{{ translate('phone') }}
+                        </option>
+                    </select>
+                </div>
+                 <div class="col-lg-3 col-md-6 mb-3">
+                    <label class="form-label">{{ translate('message_type') }}</label>
+                    <select id="messageType" class="form-control">
+                        <option value="">{{ translate('All Types') }}</option>
+                        <option value="complaint">{{ translate('Complaint') }}</option>
+                        <option value="support">{{ translate('Support') }}</option>
+                        <option value="career">{{ translate('Career') }}</option>
+                        <option value="service">{{ translate('Service') }}</option>
+                        <option value="retail">{{ translate('Retail') }}</option>
+                        <option value="wholesale">{{ translate('Wholesale') }}</option>
+                    </select>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
                     <label class="form-label">{{ translate('Department') }}</label>
@@ -303,28 +342,6 @@
                         @foreach ($departments as $dept)
                             <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                         @endforeach
-                    </select>
-                </div>
-                   <div class="col-lg-3 col-md-6 mb-3">
-            <label class="form-label">{{ translate('Pipeline') }}</label>
-            <select id="pipelineFilter" class="form-control">
-                <option value="">{{ translate('All Pipelines') }}</option>
-                <option value="form">{{ translate('Form') }}</option>
-                <option value="ticket">{{ translate('Ticket') }}</option>
-                <option value="lead">{{ translate('Lead') }}</option>
-            </select>
-        </div>
-        
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <label class="form-label">{{ translate('Message Type') }}</label>
-                    <select id="messageType" class="form-control">
-                        <option value="">{{ translate('All Types') }}</option>
-                        <option value="complaint">{{ translate('Complaint') }}</option>
-                         <option value="support">{{ translate('Support') }}</option>
-                         <option value="career">{{ translate('Career') }}</option>
-                        <option value="service">{{ translate('Service') }}</option>
-                        <option value="retail">{{ translate('Retail') }}</option>
-                        <option value="wholesale">{{ translate('Wholesale') }}</option>
                     </select>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
@@ -353,32 +370,46 @@
                     </button> --}}
                         <button class="btn btn-outline-success btn-sm active" data-key="assigned"
                             onclick="toggleDataset('assigned')">
-                            <i class="tio-checkbox"></i> Assigned
+                            <i class="tio-checkbox"></i> {{ translate('Assigned') }}
                         </button>
                         <button class="btn btn-outline-warning btn-sm active" data-key="pending"
                             onclick="toggleDataset('pending')">
-                            <i class="tio-checkbox"></i> Pending
+                            <i class="tio-checkbox"></i> {{ translate('pending') }}
                         </button>
                         <button class="btn btn-outline-info btn-sm active" data-key="converted"
                             onclick="toggleDataset('converted')">
-                            <i class="tio-checkbox"></i> Converted
+                            <i class="tio-checkbox"></i>{{ translate('converted') }}
                         </button>
                         <button class="btn btn-outline-danger btn-sm active" data-key="ignored"
                             onclick="toggleDataset('ignored')">
-                            <i class="tio-checkbox"></i> Ignored
+                            <i class="tio-checkbox"></i> {{ translate('ignored') }}
                         </button>
                         <div class="stacked-toggle">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="stackedToggle"
                                     onchange="toggleStackedMode()">
                                 <label class="form-check-label" for="stackedToggle">
-                                    <strong>Stacked Bars</strong>
+                                    <strong>{{ translate('stacked_bars') }}</strong>
                                 </label>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="row mt-3">
+                <div class="col-12 d-flex justify-content-end">
+
+                    <button class="btn btn-sm btn-outline-success mr-2" onclick="exportExcel()">
+                        <i class="tio-file"></i>{{ translate('Excel') }}
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="exportFullPDF()">
+                        <i class="tio-file-text"></i> {{ translate('Download_PDF') }}
+                    </button>
+
+                </div>
+            </div>
+
         </div>
 
         <!-- Summary Stats -->
@@ -400,13 +431,7 @@
                     <button class="btn btn-sm btn-outline-primary ms-2" onclick="exportChart()">
                         <i class="tio-download-to"></i> Export
                     </button>
-                   <button class="btn btn-sm btn-outline-success ms-2" onclick="exportExcel()">
-    <i class="tio-file"></i> Excel
-</button>
 
-<button class="btn btn-sm btn-outline-danger ms-2" onclick="exportFullPDF()">
-    <i class="tio-pdf"></i> PDF
-</button>
                 </div>
             </div>
             <div class="chart-container">
@@ -420,20 +445,22 @@
         <!-- Data Table -->
         <div class="filter-card">
             <h4 class="mb-3">{{ translate('Detailed Data') }}</h4>
+
             <div class="table-responsive">
                 <table class="table table-hover" id="dataTable">
                     <thead>
                         <tr>
                             <th>{{ translate('Date') }}</th>
                             <th>{{ translate('Total') }}</th>
-                            <th>{{ translate('Assigned') }}</th>
+                            <th>{{ translate('assigned') }}</th>
                             <th>{{ translate('Pending') }}</th>
-                            <th>{{ translate('Converted') }}</th>
-                            <th>{{ translate('Ignored') }}</th>
-                            <th>{{ translate('Spam') }}</th>
-                            <th>{{ translate('Assigned %') }}<small title="Assigned messages divided by total messages for that day">
-<i class="tio-info"></i>
-</small></th>
+                            <th>{{ translate('converted') }}</th>
+                            <th>{{ translate('ignored') }}</th>
+                            <th>{{ translate('spam') }}</th>
+                            <th>{{ translate('assignment_rate') }}<small
+                                    title="Assigned messages divided by total messages for that day">
+                                    <i class="tio-info"></i>
+                                </small></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -446,12 +473,12 @@
 @endsection
 
 @push('script')
-<!-- Excel export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- PDF export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
         (function() {
@@ -577,13 +604,13 @@
 
 
     <script>
-         let mainChart = null;
-            let currentData = null;
+        let mainChart = null;
+        let currentData = null;
 
         function initChartPage() {
             'use strict';
 
-           
+
             let visibleDatasets = {
                 'total': true,
                 'assigned': true,
@@ -619,14 +646,14 @@
                 loadChartData();
             });
 
-          $('#chartType').off('change').on('change', function() {
-    const isStacked = $(this).val() === 'stackedBar';
-    $('#stackedToggle').prop('checked', isStacked);
+            $('#chartType').off('change').on('change', function() {
+                const isStacked = $(this).val() === 'stackedBar';
+                $('#stackedToggle').prop('checked', isStacked);
 
-    if (currentData) {
-        renderChart(currentData);
-    }
-});
+                if (currentData) {
+                    renderChart(currentData);
+                }
+            });
 
             function loadChartData() {
 
@@ -635,6 +662,7 @@
                 const messageType = $('#messageType').val();
                 const status = $('#statusFilter').val();
                 const pipeline = $('#pipelineFilter').val();
+                const groupBy = $('#groupByFilter').val();
 
 
                 $('#applyFilter').prop('disabled', true).html('<i class="tio-refresh spinner"></i> Loading...');
@@ -648,7 +676,8 @@
                         department_id: departmentId,
                         message_type: messageType,
                         status: status,
-                        pipeline: pipeline
+                        pipeline: pipeline,
+                        group_by: groupBy,
                     },
                     success: function(response) {
                         if (response.success) {
@@ -942,7 +971,7 @@
 
                         tableRows += `
                     <tr>
-                        <td>${stat.date}</td>
+                       <td>${stat.period}</td>
                         <td><span class="badge bg-primary">${stat.total || 0}</span></td>
                         <td><span class="badge bg-success">${stat.assigned || 0}</span></td>
                         <td><span class="badge bg-warning">${stat.pending || 0}</span></td>
@@ -1020,61 +1049,66 @@
             };
             window.exportPDF = function() {
 
-    const { jsPDF } = window.jspdf;
+                const {
+                    jsPDF
+                } = window.jspdf;
 
-    const element = document.querySelector('.filter-card:nth-of-type(2)'); 
-    // This selects the main chart card
+                const element = document.querySelector('.filter-card:nth-of-type(2)');
+                // This selects the main chart card
 
-    if (!element) return;
+                if (!element) return;
 
-    html2canvas(element, {
-        scale: 2,
-        useCORS: true
-    }).then(canvas => {
+                html2canvas(element, {
+                    scale: 2,
+                    useCORS: true
+                }).then(canvas => {
 
-        const imgData = canvas.toDataURL('image/png');
+                    const imgData = canvas.toDataURL('image/png');
 
-        const pdf = new jsPDF('l', 'mm', 'a4'); // landscape
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const pdf = new jsPDF('l', 'mm', 'a4'); // landscape
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        const imgWidth = pdfWidth - 20;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    const imgWidth = pdfWidth - 20;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        pdf.setFontSize(14);
-        pdf.text("CRM Analytics Report", 10, 10);
+                    pdf.setFontSize(14);
+                    pdf.text("CRM Analytics Report", 10, 10);
 
-        pdf.addImage(imgData, 'PNG', 10, 20, imgWidth, imgHeight);
+                    pdf.addImage(imgData, 'PNG', 10, 20, imgWidth, imgHeight);
 
-        pdf.save("crm-analytics-report.pdf");
-    });
-};
+                    pdf.save("crm-analytics-report.pdf");
+                });
+            };
 
         }
- function getFilters() {
-    const dateRange = $('#dateRange').val().split(' - ');
 
-    return {
-        start_date: dateRange[0],
-        end_date: dateRange[1],
-        department_id: $('#departmentFilter').val(),
-        message_type: $('#messageType').val(),
-        status: $('#statusFilter').val(),
-        pipeline: $('#pipelineFilter').val()
-    };
-}
+        function getFilters() {
+            const dateRange = $('#dateRange').val().split(' - ');
 
-window.exportExcel = function () {
-    const params = new URLSearchParams(getFilters()).toString();
-    window.open(`{{ route('admin.crm.export.excel') }}?${params}`, '_blank');
-};
+            return {
+                start_date: dateRange[0],
+                end_date: dateRange[1],
+                department_id: $('#departmentFilter').val(),
+                message_type: $('#messageType').val(),
+                status: $('#statusFilter').val(),
+                pipeline: $('#pipelineFilter').val(),
+                group_by: $('#groupByFilter').val()
+            };
+        }
 
-window.exportFullPDF = function () {
-    const params = new URLSearchParams(getFilters()).toString();
-    window.open(`{{ route('admin.crm.export.pdf') }}?${params}`, '_blank');
-};
+        window.exportExcel = function() {
+            const params = new URLSearchParams(getFilters()).toString();
+            window.open(`{{ route('admin.crm.export.excel') }}?${params}`, '_blank');
+        };
 
- 
+        window.exportFullPDF = function() {
+            const filters = getFilters();
+            filters.lang = "{{ app()->getLocale() }}";
 
+            const params = new URLSearchParams(filters).toString();
+
+            window.open(`{{ route('admin.crm.export.pdf') }}?${params}`, '_blank');
+        };
     </script>
 @endpush
