@@ -23,7 +23,7 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
         @endif
     </a>
 
-    <div class="dropdown-menu cart-dropdown dropdown-menu-{{ session('direction') === " rtl" ? 'left' : 'right' }} __w-20rem
+    <div class="dropdown-menu cart-dropdown dropdown-menu-{{ session('direction') === "rtl" ? 'left' : 'right' }} __w-20rem
         cart-dropdown py-0 me-5 ">
         <div class="widget widget-cart px-3 pt-2 pb-3">
             <div class="widget-cart-top rounded">
@@ -235,7 +235,7 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
             </div>
             @endif
             <div class="d-flex flex-wrap justify-content-between align-items-center pb-2">
-                <div class="font-size-sm {{Session::get('direction') === " rtl" ? 'ml-2 float-left' : 'mr-2 float-right'
+                <div class="font-size-sm {{Session::get('direction') === "rtl" ? 'ml-2 float-left' : 'mr-2 float-right'
                     }} py-2 ">
                     <span>{{ translate('subtotal') }} :</span>
                     <span class=" text-accent font-size-base cart_total_amount {{Session::get('direction')==="rtl"
@@ -246,12 +246,12 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
 
                 @if($web_config['guest_checkout_status'] || auth('customer')->check())
                 <a class="btn btn-outline-secondary btn-sm" href="{{route('shop-cart') }}">
-                    {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === " rtl"
+                    {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === "rtl"
                         ? 'left mr-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
                 </a>
                 @else
                 <a class="btn btn-outline-secondary btn-sm" href="{{route('customer.auth.login') }}">
-                    {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === " rtl"
+                    {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === "rtl"
                         ? 'left mr-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
                 </a>
                 @endif

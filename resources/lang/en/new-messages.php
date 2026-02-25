@@ -11814,4 +11814,6 @@ Request ServiceFlat tyre or dead battery? We’re just a call away. Our on-the-g
 	"Save_&_Test" => "Save & Test",
 	"Save_settings_here_and_test_with_Send_Test_Call" => "Save settings here and test with Send Test Call",
 	"UCM_API_Configuration_updated_successfully" => "UCM API Configuration updated successfully",
+	"our_policies" => "Our policies",
+	"warranty_claims_chart" => "Warranty claims chart",
 ];

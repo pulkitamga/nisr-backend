@@ -202,6 +202,23 @@ class helpers
             $lang = $defaultCode;
         }
 
+        $langCode = strtolower(trim((string)$lang));
+        $langBaseCode = preg_split('/[_-]/', $langCode)[0] ?? $langCode;
+        foreach ($data as $ln) {
+            if (!is_array($ln)) {
+                continue;
+            }
+
+            $languageCode = strtolower(trim((string)($ln['code'] ?? '')));
+            if ($languageCode !== $langCode && $languageCode !== $langBaseCode) {
+                continue;
+            }
+
+            $matchedDirection = strtolower(trim((string)($ln['direction'] ?? $direction)));
+            $direction = in_array($matchedDirection, ['ltr', 'rtl'], true) ? $matchedDirection : $direction;
+            break;
+        }
+
         session()->put('local', $lang);
         session()->put('locale', $lang);
         Session::put('direction', $direction);

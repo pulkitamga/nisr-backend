@@ -512,7 +512,7 @@
                                 </div>
                             </div>
                         </a>
-                        <div class="dropdown-menu notify dropdown-menu-{{Session::get('direction') === " rtl" ? 'left'
+                        <div class="dropdown-menu notify dropdown-menu-{{Session::get('direction') === "rtl" ? 'left'
                         : 'right' }}" aria-labelledby="dropdownMenuButton">
                             <?php
                             if ($notifications->count() == 0) {
@@ -544,7 +544,7 @@
                 <?php } ?>
                 <!-- end  -->
                 @if(auth('customer')->check())
-                <div class="navbar-tool dropdown  {{Session::get('direction') === " rtl" ? '' : '' }}">
+                <div class="navbar-tool dropdown  {{Session::get('direction') === "rtl" ? '' : '' }}">
                     <a class="navbar-tool-icon-box bg-secondary dropdown-toggle font-bold-on-mobile" href="{{route('wishlists')}}">
                         <span class="navbar-tool-label">
                             <span class="countWishlist">
@@ -572,7 +572,7 @@
                             {{ translate('dashboard')}}
                         </div>
                     </a>
-                    <div class="dropdown-menu __auth-dropdown dropdown-menu-{{Session::get('direction') === " rtl" ? 'left' : 'right'
+                    <div class="dropdown-menu __auth-dropdown dropdown-menu-{{Session::get('direction') === "rtl" ? 'left' : 'right'
                         }}" aria-labelledby="dropdownMenuButton">
                         @if(auth('customer')->check())
                         @if(auth('customer')->user()->wholesaler_status == 1)
@@ -591,7 +591,7 @@
                 </div>
                 @else
                 <div class="dropdown ">
-                    <a class="navbar-tool {{Session::get('direction') === " rtl" ? 'ml-md-2' : '' }}"
+                    <a class="navbar-tool {{Session::get('direction') === "rtl" ? 'ml-md-2' : '' }}"
                         type="button" data-toggle="dropdown" aria-haspopup="true" href="#" rel="nofollow"
                         aria-expanded="false">
                         <div class="navbar-tool-icon-box bg-secondary">

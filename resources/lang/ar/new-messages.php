@@ -11027,4 +11027,13 @@ return [
 	"select_year" => "Select year",
 	"apply_filters" => "Apply filters",
 	"Read More" => "Read More",
+	"our_policies" => "Our policies",
+	"warranty_claims_chart" => "Warranty claims chart",
+	"clear_cache" => "Clear cache",
+	"Clear_cache" => "Clear cache",
+	"if_you_click_clear_button_all_cache_was_clear" => "If you click clear button all cache was clear",
+	"Cache cleared successfully!" => "Cache cleared successfully!",
+	"trusted_by" => "Trusted by",
+	"why_choose_us" => "Why choose us",
+	"client_review" => "Client review",
 ];

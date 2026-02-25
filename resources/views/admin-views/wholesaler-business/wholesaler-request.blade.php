@@ -55,7 +55,7 @@
                 </div>
                 <div class="px-3 py-4">
                     <div class="table-responsive">
-                        <table style="text-align: {{Session::get('direction') === " rtl" ? 'right' : 'left' }};"
+                        <table style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left' }};"
                             class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                             <thead class="thead-light text-capitalize">
                                 <tr>
