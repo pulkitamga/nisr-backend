@@ -124,6 +124,7 @@ $content = $jsonData['section'] ?? [];
                 <input type="hidden" name="index" id="edit-card-index">
 
                 <div class="modal-header">
+                    <h5 class="modal-title" id="editCardLabel">{{ translate('Edit Card') }}</h5>
                     <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -192,6 +193,24 @@ $content = $jsonData['section'] ?? [];
         const editCardModal = new bootstrap.Modal(document.getElementById('editCardModal'));
         const editButtons = document.querySelectorAll('.btn-edit-card');
 
+        function resetEditModalLanguageState() {
+            const $modal = $('#editCardModal');
+            const $tabs = $modal.find('.edit-modal-language-tab');
+            const $forms = $modal.find('.edit-modal-language-form');
+
+            $tabs.removeClass('active');
+            $forms.addClass('d-none');
+
+            const $defaultTab = $tabs.first();
+            if ($defaultTab.length) {
+                $defaultTab.addClass('active');
+                const targetForm = $defaultTab.data('target');
+                if (targetForm) {
+                    $modal.find(targetForm).removeClass('d-none');
+                }
+            }
+        }
+
         editButtons.forEach(function(button) {
             button.addEventListener('click', function() {
                 // set static values
@@ -203,26 +222,25 @@ $content = $jsonData['section'] ?? [];
                 const titles = JSON.parse(this.dataset.title || '{}');
                 const descriptions = JSON.parse(this.dataset.description || '{}');
 
-                console.log("Parsed Titles:", titles);
-                console.log("Parsed Descriptions:", descriptions);
-
-                document.querySelectorAll('.lang-title').forEach(function(input) {
+                document.querySelectorAll('#editCardModal .lang-title').forEach(function(input) {
                     const lang = input.dataset.lang;
                     input.value = titles[lang] || '';
                 });
 
-                document.querySelectorAll('.lang-description').forEach(function(textarea) {
+                document.querySelectorAll('#editCardModal .lang-description').forEach(function(textarea) {
                     const lang = textarea.dataset.lang;
                     textarea.value = descriptions[lang] || '';
                 });
 
+                resetEditModalLanguageState();
                 editCardModal.show();
             });
         });
     });
 
       $(document).ready(function () {
-        $('#editCardModal').on('click', '.edit-modal-language-tab', function () {
+        $('#editCardModal').on('click', '.edit-modal-language-tab', function (e) {
+            e.preventDefault();
             var $this = $(this);
             var targetForm = $this.data('target');
 

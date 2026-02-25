@@ -1265,13 +1265,32 @@ function printDiv(divName) {
 
 $(".form-system-language-tab").on("click", function (e) {
     e.preventDefault();
-    $(".form-system-language-tab").removeClass("active");
-    $(".form-system-language-form").addClass("d-none");
-    $(this).addClass("active");
-    let form_id = this.id;
+
+    let form_id = this.id || "";
+    if (!form_id.includes("-")) {
+        return;
+    }
+
     let lang = form_id.split("-")[0];
-    $("#" + lang + "-form").removeClass("d-none");
-    $("." + lang + "-form").removeClass("d-none");
+    let $tab = $(this);
+    let $scope = $tab.parent();
+
+    while ($scope.length && !$scope.is("body")) {
+        if ($scope.find("#" + lang + "-form, ." + lang + "-form").length) {
+            break;
+        }
+        $scope = $scope.parent();
+    }
+
+    if (!$scope.length || $scope.is("body")) {
+        $scope = $(document);
+    }
+
+    $scope.find(".form-system-language-tab").removeClass("active");
+    $scope.find(".form-system-language-form").addClass("d-none");
+
+    $tab.addClass("active");
+    $scope.find("#" + lang + "-form, ." + lang + "-form").removeClass("d-none");
 });
 
 $(".open-info-web").on("click", function () {

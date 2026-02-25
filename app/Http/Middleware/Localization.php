@@ -16,13 +16,20 @@ class Localization
      */
     public function handle($request, Closure $next)
     {
-        $sessionLocale = session('local', session('locale'));
+        $sessionLocale = strtolower(trim((string)session('local', session('locale'))));
+        if (
+            $sessionLocale !== ''
+            && !preg_match('/^[a-z]{2,3}(?:[_-][a-z]{2,3})?$/', $sessionLocale)
+        ) {
+            $sessionLocale = '';
+            session()->forget(['local', 'locale']);
+        }
 
         if (empty($sessionLocale)) {
             $cookieLocale = strtolower(trim((string)($request->cookie('local') ?? $request->cookie('locale') ?? '')));
             if ($cookieLocale !== '') {
                 // Validate locale format - prevent license keys or other invalid values
-                if (preg_match('/^[a-z]{2,3}(_[a-z]{2,3})?$/', $cookieLocale)) {
+                if (preg_match('/^[a-z]{2,3}(?:[_-][a-z]{2,3})?$/', $cookieLocale)) {
                     $sessionLocale = $cookieLocale;
                     session()->put('local', $cookieLocale);
                     session()->put('locale', $cookieLocale);
@@ -36,6 +43,8 @@ class Localization
                 : strtolower((string)$sessionLocale);
 
             App::setLocale($resolvedLocale);
+            session()->put('local', $resolvedLocale);
+            session()->put('locale', $resolvedLocale);
         }
 
         return $next($request);

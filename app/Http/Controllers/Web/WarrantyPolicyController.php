@@ -20,6 +20,12 @@ class WarrantyPolicyController extends Controller
     public function showVersion(Request $request, $version)
     {
         $locale = $request->query('locale', app()->getLocale());
+
+        // Validate locale format - prevent license keys or other invalid values
+        if (!preg_match('/^[a-z]{2,3}(_[a-z]{2,3})?$/', $locale)) {
+            $locale = app()->getLocale();
+        }
+
         $policy = Policy::where('version', $version)
             ->where('locale', $locale)
             ->firstOrFail();
