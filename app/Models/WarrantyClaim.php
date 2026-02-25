@@ -82,7 +82,7 @@ class WarrantyClaim extends Model
     }
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Branch::class)->withTrashed();
     }
 
     public function technician(): BelongsTo
@@ -129,5 +129,15 @@ class WarrantyClaim extends Model
     public function scopeOpen($query)
     {
         return $query->whereNotIn('status', ['closed', 'rejected']);
+    }
+     public function product()
+    {
+        return $this->hasOneThrough(
+            Product::class,
+            Warranty::class,
+            'id',       
+            'id',        
+            'product_id'  
+        );
     }
 }

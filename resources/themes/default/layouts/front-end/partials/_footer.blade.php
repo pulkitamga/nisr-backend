@@ -182,38 +182,43 @@
                                             {{ translate('warranty')}}
                                         </a>
                                     </li>
+                                    <li class="widget-list-item">
+                                        <a class="widget-list-link" href="{{ route('our-policies') }}">
+                                            {{ translate('our_policies') }}
+                                        </a>
+                                    </li>
 
-                                    @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
+                                    {{-- @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link" href="{{route('refund-policy')}}">
                                             {{ translate('refund_policy')}}
                                         </a>
                                     </li>
-                                    @endif
+                                    @endif --}}
 
-                                    @if(isset($return_policy['status']) && $return_policy['status'] == 1)
+                                    {{-- @if(isset($return_policy['status']) && $return_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link" href="{{route('return-policy')}}">
                                             {{ translate('return_policy')}}
                                         </a>
                                     </li>
-                                    @endif
+                                    @endif --}}
 
-                                    @if(isset($cancellation_policy['status']) && $cancellation_policy['status'] == 1)
+                                    {{-- @if(isset($cancellation_policy['status']) && $cancellation_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link" href="{{route('cancellation-policy')}}">
                                             {{ translate('cancellation_policy')}}
                                         </a>
                                     </li>
-                                    @endif
+                                    @endif --}}
 
-                                    @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
+                                    {{-- @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link" href="{{route('shipping-policy')}}">
                                             {{ translate('Shipping_Policy')}}
                                         </a>
                                     </li>
-                                    @endif
+                                    @endif --}}
                                 </ul>
                                 @else
                                 <ul class="widget-list __pb-10px">
@@ -235,34 +240,43 @@
                                             {{ translate('warranty')}}
                                         </a>
                                     </li>
-                                    @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
+
+                                     <li class="widget-list-item">
+                                        <a class="widget-list-link" href="{{ route('our-policies') }}">
+                                            {{ translate('our_policies') }}
+                                        </a>
+                                    </li>
+
+                                  
+                                    {{-- @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
+
                                     <li class="widget-list-item">
                                         <a class="widget-list-link"
                                             href="{{route('refund-policy')}}">{{ translate('refund_policy')}}</a>
                                     </li>
-                                    @endif
+                                    @endif --}}
 
-                                    @if(isset($return_policy['status']) && $return_policy['status'] == 1)
+                                    {{-- @if(isset($return_policy['status']) && $return_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link"
                                             href="{{route('return-policy')}}">{{ translate('return_policy')}}</a>
                                     </li>
-                                    @endif
+                                    @endif --}}
 
-                                    @if(isset($cancellation_policy['status']) && $cancellation_policy['status'] == 1)
+                                    {{-- @if(isset($cancellation_policy['status']) && $cancellation_policy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link"
                                             href="{{route('cancellation-policy')}}">{{ translate('cancellation_policy')}}</a>
                                     </li>
-                                    @endif
+                                    @endif --}}
 
-                                    @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
+                                    {{-- @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
                                     <li class="widget-list-item">
                                         <a class="widget-list-link" href="{{route('shipping-policy')}}">
                                             {{ translate('shipping_Policy')}}
                                         </a>
                                     </li>
-                                    @endif
+                                    @endif --}}
                                 </ul>
                                 @endif
                             </div>

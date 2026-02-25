@@ -14,6 +14,7 @@ use App\Exports\CRMAnalyticsExport;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 
+
 class DashboardChartController extends Controller
 {
     public function messageStats(Request $request)
@@ -74,7 +75,7 @@ class DashboardChartController extends Controller
         )
             ->leftJoin('departments', 'admins.department_id', '=', 'departments.id')
             ->leftJoin('inbox_messages', function ($join) use ($startDate, $endDate) {
-                $join->on('admins.id', '=', 'inbox_messages.employee_id')
+                $join->on('admins.id', '=', 'inbox_messages.department_id')
                     ->whereBetween('inbox_messages.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
             })
             ->where('admins.role_id', '!=', 1)
@@ -121,152 +122,189 @@ class DashboardChartController extends Controller
         ]);
     }
     public function getChartData(Request $request)
-    {
-        try {
-            $startDate = $request->input('start_date', Carbon::today()->subDay(6)->toDateString());
-            $endDate = $request->input('end_date', Carbon::today()->toDateString());
-            $departmentId = $request->input('department_id');
-            $messageType = $request->input('message_type');
-            $status = $request->input('status');
-           $pipeline = $request->input('pipeline');
-            // Base query
-            $query = InboxMessage::query()
-                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+{
+    try {
 
-            // Apply filters
-            if ($departmentId) {
-                $query->where('department_id', $departmentId);
-            } 
+        $startDate   = $request->input('start_date', Carbon::today()->subDay(6)->toDateString());
+        $endDate     = $request->input('end_date', Carbon::today()->toDateString());
+        $departmentId = $request->input('department_id');
+        $messageType  = $request->input('message_type');
+        $status       = $request->input('status');
+        $pipeline     = $request->input('pipeline');
+        $groupBy      = $request->input('group_by', 'daily');
 
-            if ($messageType) {
-                $query->where('convert_sub_type', $messageType);
-            }
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end   = Carbon::parse($endDate)->endOfDay();
 
-            if ($status) {
-                $query->where('status', $status);
-            }
+        $allData = collect();
 
-            if ($pipeline) {
-    $query->where('pipeline', $pipeline);
-}
+        /*
+        |--------------------------------------------------------------------------
+        | DAILY GROUPING
+        |--------------------------------------------------------------------------
+        */
+        if ($groupBy === 'daily') {
 
-            // Get daily statistics
-            $dailyStats = $query->select(
-                DB::raw('DATE(created_at) as date'),
+            $query = InboxMessage::whereBetween('created_at', [$start, $end]);
+
+            if ($departmentId) $query->where('department_id', $departmentId);
+            if ($messageType)  $query->where('convert_sub_type', $messageType);
+            if ($status)       $query->where('status', $status);
+            if ($pipeline)     $query->where('pipeline', $pipeline);
+
+            $stats = $query->select(
+                DB::raw('DATE(created_at) as period'),
                 DB::raw('COUNT(*) as total'),
-              DB::raw('SUM(CASE WHEN department_id IS NOT NULL AND department_id != 0 THEN 1 ELSE 0 END) as assigned'),
-              DB::raw('SUM(CASE WHEN department_id IS NULL OR department_id = 0 THEN 1 ELSE 0 END) as pending'),
+                DB::raw('SUM(CASE WHEN department_id IS NOT NULL AND department_id != 0 THEN 1 ELSE 0 END) as assigned'),
+                DB::raw('SUM(CASE WHEN department_id IS NULL OR department_id = 0 THEN 1 ELSE 0 END) as pending'),
                 DB::raw('SUM(CASE WHEN status = "converted" THEN 1 ELSE 0 END) as converted'),
                 DB::raw('SUM(CASE WHEN status = "ignored" THEN 1 ELSE 0 END) as ignored'),
                 DB::raw('SUM(CASE WHEN status = "spam" THEN 1 ELSE 0 END) as spam')
             )
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get();
+            ->groupBy('period')
+            ->orderBy('period')
+            ->get();
 
-            // Fill missing dates with zeros
-            $start = Carbon::parse($startDate);
-            $end = Carbon::parse($endDate);
-            $allDates = collect();
+            // Fill missing days
+            for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
 
-            for ($date = $start; $date->lte($end); $date->addDay()) {
                 $dateStr = $date->toDateString();
-                $stat = $dailyStats->firstWhere('date', $dateStr);
+                $row = $stats->firstWhere('period', $dateStr);
 
-                $allDates->push([
-                    'date' => $dateStr,
-                    'total' => $stat->total ?? 0,
-                    'assigned' => $stat->assigned ?? 0,
-                    'pending' => $stat->pending ?? 0,
-                    'converted' => $stat->converted ?? 0,
-                    'ignored' => $stat->ignored ?? 0,
-                    'spam' => $stat->spam ?? 0
+                $allData->push([
+                    'period'    => $dateStr,
+                    'total'     => $row->total ?? 0,
+                    'assigned'  => $row->assigned ?? 0,
+                    'pending'   => $row->pending ?? 0,
+                    'converted' => $row->converted ?? 0,
+                    'ignored'   => $row->ignored ?? 0,
+                    'spam'      => $row->spam ?? 0,
                 ]);
             }
-
-            // Prepare chart labels (dates)
-            $labels = $allDates->pluck('date')->map(function ($date) {
-                return Carbon::parse($date)->format('M d');
-            })->toArray();
-
-            $datasets = [
-                [
-                    'key' => 'total',
-                    'label' => 'Total Messages',
-                    'data' => $allDates->pluck('total')->toArray(),
-                    'backgroundColor' => '#3498db'
-                ],
-                [
-                    'key' => 'assigned',
-                    'label' => 'Assigned',
-                    'data' => $allDates->pluck('assigned')->toArray(),
-                    'backgroundColor' => '#2ecc71'
-                ],
-                [
-                    'key' => 'pending',
-                    'label' => 'Pending',
-                    'data' => $allDates->pluck('pending')->toArray(),
-                    'backgroundColor' => '#f39c12'
-                ],
-                [
-                    'key' => 'converted',
-                    'label' => 'Converted',
-                    'data' => $allDates->pluck('converted')->toArray(),
-                    'backgroundColor' => '#9b59b6'
-                ],
-                [
-                    'key' => 'ignored',
-                    'label' => 'Ignored',
-                    'data' => $allDates->pluck('ignored')->toArray(),
-                    'backgroundColor' => '#e74c3c'
-                ],
-                [
-                    'key' => 'spam',
-                    'label' => 'Spam',
-                    'data' => $allDates->pluck('spam')->toArray(),
-                    'backgroundColor' => '#B2BEB5'
-                ]
-            ];
-
-            // Summary statistics
-            $summary = [
-                'total' => $allDates->sum('total'),
-                'assigned' => $allDates->sum('assigned'),
-                'pending' => $allDates->sum('pending'),
-                'converted' => $allDates->sum('converted'),
-                'ignored' => $allDates->sum('ignored'),
-                'spam' => $allDates->sum('spam')
-            ];
-
-            // Legend data
-            $legend = [
-                ['key' => 'total', 'label' => 'Total Messages', 'color' => '#3498db'],
-                ['key' => 'assigned', 'label' => 'Assigned', 'color' => '#2ecc71'],
-                ['key' => 'pending', 'label' => 'Pending', 'color' => '#f39c12'],
-                ['key' => 'converted', 'label' => 'Converted', 'color' => '#9b59b6'],
-                ['key' => 'ignored', 'label' => 'Ignored', 'color' => '#e74c3c'],
-                ['key' => 'spam', 'label' => 'Spam', 'color' => '#95a5a6']
-
-            ];
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'labels' => $labels,
-                    'datasets' => $datasets,
-                    'summary' => $summary,
-                    'daily_stats' => $allDates,
-                    'legend' => $legend
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Chart data error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error loading chart data'
-            ], 500);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | WEEKLY GROUPING (Week 1, Week 2 inside selected range)
+        |--------------------------------------------------------------------------
+        */
+        elseif ($groupBy === 'weekly') {
+
+            $weekCounter = 1;
+
+            while ($start->lte($end)) {
+
+                $weekStart = $start->copy();
+                $weekEnd   = $start->copy()->addDays(6);
+
+                if ($weekEnd->gt($end)) {
+                    $weekEnd = $end->copy();
+                }
+
+                $query = InboxMessage::whereBetween('created_at', [$weekStart, $weekEnd]);
+
+                if ($departmentId) $query->where('department_id', $departmentId);
+                if ($messageType)  $query->where('convert_sub_type', $messageType);
+                if ($status)       $query->where('status', $status);
+                if ($pipeline)     $query->where('pipeline', $pipeline);
+
+                $stats = $query->selectRaw('
+                    COUNT(*) as total,
+                    SUM(CASE WHEN department_id IS NOT NULL AND department_id != 0 THEN 1 ELSE 0 END) as assigned,
+                    SUM(CASE WHEN department_id IS NULL OR department_id = 0 THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN status = "converted" THEN 1 ELSE 0 END) as converted,
+                    SUM(CASE WHEN status = "ignored" THEN 1 ELSE 0 END) as ignored,
+                    SUM(CASE WHEN status = "spam" THEN 1 ELSE 0 END) as spam
+                ')->first();
+
+                $allData->push([
+                    'period'    => "Week {$weekCounter}",
+                    'total'     => $stats->total ?? 0,
+                    'assigned'  => $stats->assigned ?? 0,
+                    'pending'   => $stats->pending ?? 0,
+                    'converted' => $stats->converted ?? 0,
+                    'ignored'   => $stats->ignored ?? 0,
+                    'spam'      => $stats->spam ?? 0,
+                ]);
+
+                $start->addDays(7);
+                $weekCounter++;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | MONTHLY GROUPING
+        |--------------------------------------------------------------------------
+        */
+        elseif ($groupBy === 'monthly') {
+
+            $query = InboxMessage::whereBetween('created_at', [$start, $end]);
+
+            if ($departmentId) $query->where('department_id', $departmentId);
+            if ($messageType)  $query->where('convert_sub_type', $messageType);
+            if ($status)       $query->where('status', $status);
+            if ($pipeline)     $query->where('pipeline', $pipeline);
+
+            $allData = $query->select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as period'),
+                DB::raw('COUNT(*) as total'),
+                DB::raw('SUM(CASE WHEN department_id IS NOT NULL AND department_id != 0 THEN 1 ELSE 0 END) as assigned'),
+                DB::raw('SUM(CASE WHEN department_id IS NULL OR department_id = 0 THEN 1 ELSE 0 END) as pending'),
+                DB::raw('SUM(CASE WHEN status = "converted" THEN 1 ELSE 0 END) as converted'),
+                DB::raw('SUM(CASE WHEN status = "ignored" THEN 1 ELSE 0 END) as ignored'),
+                DB::raw('SUM(CASE WHEN status = "spam" THEN 1 ELSE 0 END) as spam')
+            )
+            ->groupBy('period')
+            ->orderBy('period')
+            ->get();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | PREPARE RESPONSE
+        |--------------------------------------------------------------------------
+        */
+
+        $labels = $allData->pluck('period')->toArray();
+
+        $datasets = [
+            ['key'=>'total','label'=>'Total','data'=>$allData->pluck('total'),'backgroundColor'=>'#3498db'],
+            ['key'=>'assigned','label'=>'Assigned','data'=>$allData->pluck('assigned'),'backgroundColor'=>'#2ecc71'],
+            ['key'=>'pending','label'=>'Pending','data'=>$allData->pluck('pending'),'backgroundColor'=>'#f39c12'],
+            ['key'=>'converted','label'=>'Converted','data'=>$allData->pluck('converted'),'backgroundColor'=>'#9b59b6'],
+            ['key'=>'ignored','label'=>'Ignored','data'=>$allData->pluck('ignored'),'backgroundColor'=>'#e74c3c'],
+            ['key'=>'spam','label'=>'Spam','data'=>$allData->pluck('spam'),'backgroundColor'=>'#95a5a6'],
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'labels'   => $labels,
+                'datasets' => $datasets,
+                'summary'  => [
+                    'total'     => $allData->sum('total'),
+                    'assigned'  => $allData->sum('assigned'),
+                    'pending'   => $allData->sum('pending'),
+                    'converted' => $allData->sum('converted'),
+                    'ignored'   => $allData->sum('ignored'),
+                    'spam'      => $allData->sum('spam'),
+                ],
+                'daily_stats' => $allData
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+
+        Log::error('Chart data error: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading chart data'
+        ], 500);
     }
+}
+
 
     public function getDashboardStats()
     {
@@ -305,14 +343,61 @@ class DashboardChartController extends Controller
         return view('admin-views.crm.charts', compact('departments'));
     }
     
-    private function baseMessageQuery(Request $request)
+    private function resolveDateRange(Request $request)
 {
-    $startDate = $request->start_date;
-    $endDate   = $request->end_date;
+    $rangeType = $request->input('range_type', null);
+
+    switch ($rangeType) {
+
+        case 'today':
+            $startDate = Carbon::today();
+            $endDate   = Carbon::today();
+            break;
+
+        case 'this_week':
+            $startDate = Carbon::now()->startOfWeek();
+            $endDate   = Carbon::now()->endOfWeek();
+            break;
+
+        case 'this_month':
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate   = Carbon::now()->endOfMonth();
+            break;
+
+        case 'last_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate   = Carbon::now()->subMonth()->endOfMonth();
+            break;
+
+        case 'custom':
+            $startDate = Carbon::parse($request->start_date);
+            $endDate   = Carbon::parse($request->end_date);
+            break;
+
+        default:
+            // fallback to manual dateRange picker
+            $startDate = $request->start_date
+                ? Carbon::parse($request->start_date)
+                : Carbon::today()->subDays(6);
+
+            $endDate = $request->end_date
+                ? Carbon::parse($request->end_date)
+                : Carbon::today();
+    }
+
+    return [
+        'start' => $startDate->startOfDay(),
+        'end'   => $endDate->endOfDay(),
+    ];
+}
+
+private function baseMessageQuery(Request $request)
+{
+    $dates = $this->resolveDateRange($request);
 
     return InboxMessage::whereBetween('created_at', [
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
+            $dates['start'],
+            $dates['end']
         ])
         ->when($request->department_id, fn($q) =>
             $q->where('department_id', $request->department_id)
@@ -327,11 +412,13 @@ class DashboardChartController extends Controller
             $q->where('pipeline', $request->pipeline)
         );
 }
+
+
 public function exportExcel(Request $request)
 {
     $data = $this->baseMessageQuery($request)
         ->selectRaw('
-            DATE(created_at) as date,
+            $groupFormat as period,
             COUNT(*) as total,
             SUM(department_id IS NOT NULL AND department_id != 0) as assigned,
             SUM(department_id IS NULL OR department_id = 0) as pending,
@@ -397,60 +484,52 @@ public function exportExcel(Request $request)
 
 public function exportPdf(Request $request)
 {
-    // Get daily aggregated data
-    $dailyData = $this->baseMessageQuery($request)
-        ->selectRaw('
-            DATE(created_at) as date,
-            COUNT(*) as total,
-            SUM(department_id IS NOT NULL AND department_id != 0) as assigned,
-            SUM(department_id IS NULL OR department_id = 0) as pending,
-            SUM(status = "converted") as converted,
-            SUM(status = "ignored") as ignored,
-            SUM(status = "spam") as spam
-        ')
-        ->groupBy('date')
-        ->orderBy('date')
-        ->get();
+    // ✅ 1. Get language from request
+    $language = $request->get('lang', app()->getLocale());
 
-    // Get detailed messages data (optional)
-    $detailedData = $this->baseMessageQuery($request)
-        ->with('department')
-        ->orderBy('created_at', 'desc')
-        ->limit(100) // Limit to 100 records for PDF
-        ->get();
+    // ✅ 2. Set locale BEFORE anything else
+    app()->setLocale($language);
+    \Carbon\Carbon::setLocale($language);
 
-    // Calculate summary statistics
-    $summary = [
-        'total' => $dailyData->sum('total'),
-        'assigned' => $dailyData->sum('assigned'),
-        'pending' => $dailyData->sum('pending'),
-        'converted' => $dailyData->sum('converted'),
-        'ignored' => $dailyData->sum('ignored'),
-        'spam' => $dailyData->sum('spam')
-    ];
+    // DEBUG (optional – remove later)
+    // dd(app()->getLocale());
 
-    // Resolve department name
-    $departmentName = 'All';
-    if ($request->department_id) {
-        $department = Departments::find($request->department_id);
-        $departmentName = $department ? $department->name : 'All';
+    $startDate = $request->input('start_date');
+    $endDate   = $request->input('end_date');
+    $departmentId = $request->input('department_id');
+    $messageType = $request->input('message_type');
+    $status = $request->input('status');
+    $pipeline = $request->input('pipeline');
+
+    $query = InboxMessage::query()
+        ->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
+
+    if ($departmentId) {
+        $query->where('department_id', $departmentId);
     }
 
-    $filters = [
-        'start_date' => $request->start_date,
-        'end_date' => $request->end_date,
-        'department' => $departmentName,
-        'pipeline' => $request->pipeline ?? 'All',
-        'status' => $request->status ?? 'All',
-        'message_type' => $request->message_type ?? 'All',
-        'generated_at' => now()->format('d M Y h:i A'),
-        'summary' => $summary
-    ];
+    if ($messageType) {
+        $query->where('convert_sub_type', $messageType);
+    }
+
+    if ($status) {
+        $query->where('status', $status);
+    }
+
+    if ($pipeline) {
+        $query->where('pipeline', $pipeline);
+    }
+
+    $dailyData = $query->select(
+        DB::raw('DATE(created_at) as date'),
+        DB::raw('COUNT(*) as total')
+    )
+    ->groupBy('date')
+    ->orderBy('date')
+    ->get();
 
     $pdf = Pdf::loadView('admin-views.crm.export-pdf', [
-        'data' => $dailyData,
-        'detailed_data' => $detailedData, // Optional
-        'filters' => $filters
+        'data' => $dailyData
     ])
     ->setPaper('a4', 'landscape')
     ->setOptions([
@@ -459,15 +538,8 @@ public function exportPdf(Request $request)
         'isRemoteEnabled' => true
     ]);
 
-    // Generate filename with filters
-    $filename = "crm-analytics-{$request->start_date}-to-{$request->end_date}";
-    if ($request->department_id) {
-        $filename .= "-{$departmentName}";
-    }
-    $filename = str_replace(' ', '-', $filename) . '.pdf';
-
-    return $pdf->download($filename);
+    return $pdf->download('crm-report.pdf');
 }
 
-}
 
+}

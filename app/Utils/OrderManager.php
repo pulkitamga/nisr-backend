@@ -459,6 +459,9 @@ class OrderManager
             $coupon_discount = session('coupon_discount');
         } elseif (!empty($req['coupon_discount'])) {
             $coupon_discount = $req['coupon_discount'];
+        }elseif (isset($req['coupon_discount_amount'])) {
+            // This catches it if you send 'discount_amount' from Flutter
+            $coupon_discount = $req['coupon_discount_amount'];
         }
 
         $carts = $req ? CartManager::get_cart_for_api(request: $req) : CartManager::getCartListQuery();

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
+use App\Models\BillingAddress;
 use App\Models\BusinessSetting;
+use App\Models\City;
 use App\Models\DeliveryCountryCode;
 use App\Models\DeliveryZipCode;
 use App\Models\GuestUser;
@@ -11,16 +14,14 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Review;
 use App\Models\ShippingAddress;
+use App\Models\State;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketConv;
-use App\Models\Wishlist;
-use App\Models\State;
-use App\Models\City;
-use App\Models\Area;
-use App\Traits\CommonTrait;
-use App\Traits\PdfGenerator;
-use App\Traits\FileManagerTrait;
 use App\Models\User;
+use App\Models\Wishlist;
+use App\Traits\CommonTrait;
+use App\Traits\FileManagerTrait;
+use App\Traits\PdfGenerator;
 use App\Utils\CustomerManager;
 use App\Utils\Helpers;
 use Illuminate\Http\JsonResponse;
@@ -373,80 +374,82 @@ class CustomerController extends Controller
     //     return response()->json(['message' => translate('successfully added!')], 200);
     // }
 
-    public function add_new_address(Request $request)
+     public function add_new_address(Request $request)
     {
+        $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $zipRule = ($zip_restrict_status == 1) ? 'required' : 'nullable';
+ 
         $validator = Validator::make($request->all(), [
             'contact_person_name' => 'required',
             'address_type' => 'required',
             'address' => 'required',
             'state' => 'required',
             'city' => 'required',
-            // 'area' => 'required',
-            'zip' => 'required',
+            'area' => 'required',
+            'zip'  => $zipRule,
             'country' => 'required',
             'phone' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
             'is_billing' => 'required'
         ]);
-
+ 
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
-
-        $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
+ 
+ 
         // $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
-
+ 
         // if ($country_restrict_status && !self::delivery_country_exist_check($request->input('country'))) {
         //     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
         // } elseif ($zip_restrict_status && !self::delivery_zipcode_exist_check($request->input('zip'))) {
         //     return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
         // }
-
+        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
+        $isBilling = (int) $request->input('is_billing');
+ 
+        // Run restriction ONLY if it is NOT billing address
+        if ($isBilling !== 1) {
+ 
+            if (
+                $country_restrict_status
+                && !self::delivery_country_exist_check($request->country)
+            ) {
+ 
+                return response()->json([
+                    'message' => translate('Delivery_unavailable_for_this_country')
+                ], 403);
+            }
+ 
+            if (
+                $zip_restrict_status
+                && !self::delivery_zipcode_exist_check($request->zip)
+            ) {
+ 
+                return response()->json([
+                    'message' => translate('Delivery_unavailable_for_this_zip_code_area')
+                ], 403);
+            }
+        }
+ 
+ 
         // if ($country_restrict_status && self::delivery_country_exist_check($request->input('country'))) {
         //     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
         // }
-
-        // 2. Country restriction logic removed
-        if ($zip_restrict_status && !self::delivery_zipcode_exist_check($request->input('zip'))) {
-            return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
-        }
-
-
-        // $user = $request->user();
-
-        // new changesh uncomment above line  
-        // 1. Get the user using your preferred helper
+ 
         $user = Helpers::getCustomerInformation($request);
-
-        // 2. Determine the IDs correctly
-        // If $user is NOT 'offline', it means we have a User object
-        if ($user !== 'offline') {
-            $customerId = $user->id;
-            $isGuest = 0;
-        } else {
-            // If $user is 'offline', it's a guest
-            $customerId = $request->guest_id;
-            $isGuest = 1;
-        }
-
-        // 3. Safety check: Ensure we actually have an ID to link the address to
-        if (!$customerId) {
-            return response()->json(['message' => translate('customer_id_or_guest_id_required')], 403);
-        }
-
+ 
+        $customer_id = $user == 'offline' ? $request->guest_id : $user->id;
         $address = [
-            // 'customer_id' => $user ? $user->id : $request->guest_id,
-            // 'is_guest'    => $user ? 0 : 1,
-            'customer_id'         => $customerId,
-            'is_guest'            => $isGuest,
+            'customer_id' => $customer_id,
+            'is_guest' => $user == 'offline' ? 1 : 0,
             'contact_person_name' => $request->contact_person_name,
             'address_type' => $request->address_type,
             'address' => $request->address,
             'state' => $request->state,
             'city' => $request->city,
-            // 'area' => $request->area ?? null,
-            'area' => $request->filled('area') ? $request->area : 'N/A',
+            'area' => $request->area,
             'zip' => $request->zip,
             'country' => $request->country,
             'phone' => $request->phone,
@@ -457,7 +460,30 @@ class CustomerController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ];
-        ShippingAddress::insert($address);
+ 
+ 
+        // 4. ALSO insert into BillingAddress IF is_billing is 1
+        if ($request->is_billing == 1) {
+            $billing_data = [
+                'customer_id'         => $customer_id,
+                'contact_person_name' => $request->contact_person_name,
+                'address_type'        => $request->address_type,
+                'address'             => $request->address,
+                'city'                => $request->city,
+                'zip'                 => $request->zip,
+                'phone'               => $request->phone,
+                'state'               => $request->state,
+                'country'             => $request->country,
+                'latitude'            => $request->latitude,
+                'longitude'           => $request->longitude,
+                'created_at'          => now(),
+                'updated_at'          => now(),
+            ];
+            BillingAddress::insert($billing_data);
+        } else {
+            ShippingAddress::insert($address);
+        }
+ 
         return response()->json(['message' => translate('successfully added!')], 200);
     }
 

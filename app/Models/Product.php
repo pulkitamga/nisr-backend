@@ -611,4 +611,9 @@ class Product extends Model
             }]);
         });
     }
+
+     public function warranties(): HasMany
+    {
+        return $this->hasMany(Warranty::class, 'product_id');
+    }
 }
