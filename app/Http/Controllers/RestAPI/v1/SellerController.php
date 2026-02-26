@@ -24,16 +24,28 @@ class SellerController extends Controller
 
     public function __construct(
         private Seller       $seller,
-    )
-    {
-    }
+    ) {}
 
     public function get_seller_info(Request $request)
     {
         $data = [];
         $sellerId = $request['seller_id'];
-        $seller = $sellerId != 0 ? Seller::with(['shop'])->where(['id' => $request['seller_id']])->first(['id', 'f_name', 'l_name', 'phone', 'image', 'minimum_order_amount']) : null;
+        // $seller = $sellerId != 0 ? Seller::with(['shop'])->where(['id' => $request['seller_id']])->first(['id', 'f_name', 'l_name', 'phone', 'image', 'minimum_order_amount']) : null;
+        if ($sellerId != 0) {
 
+            $seller = Seller::with('shop')
+                ->where('id', $sellerId)
+                ->first(['id', 'f_name', 'l_name', 'phone', 'image', 'minimum_order_amount']);
+        } else {
+
+            // Create real Seller model instance
+            $seller = new Seller();
+            $seller->id = 0;
+            $seller->f_name = 'Admin';
+            $seller->l_name = '';
+            $seller->phone = '';
+            $seller->image = null; // accessor will handle company icon
+        }
         $productIds = Product::active()
             ->when($sellerId == 0, function ($query) {
                 return $query->where(['added_by' => 'admin']);
@@ -92,9 +104,9 @@ class SellerController extends Controller
 
     public function getSellerList(Request $request, $type)
     {
-        $sellers = $this->seller->when($type == 'top', function($query){
-                return $query->whereHas('orders');
-            })
+        $sellers = $this->seller->when($type == 'top', function ($query) {
+            return $query->whereHas('orders');
+        })
             ->approved()->with(['shop', 'orders', 'product.reviews' => function ($query) {
                 $query->active();
             }])
@@ -122,13 +134,13 @@ class SellerController extends Controller
 
                 unset($seller['product']);
                 unset($seller['orders']);
-        });
+            });
 
         $inhouseProducts = Product::active()->with(['reviews', 'rating'])
-        ->withCount(['reviews' => function ($query) {
-            $query->active();
-        }])
-        ->where(['added_by' => 'admin'])->get();
+            ->withCount(['reviews' => function ($query) {
+                $query->active();
+            }])
+            ->where(['added_by' => 'admin'])->get();
         $inhouseProductCount = $inhouseProducts->count();
 
         $inhouseReviewData = Review::active()->whereIn('product_id', $inhouseProducts->pluck('id'));
@@ -177,13 +189,12 @@ class SellerController extends Controller
             'offset' => (int)$request['offset'],
             'sellers' => $sellers->values()
         ];
-
     }
 
     public function more_sellers()
     {
         $topVendorsList = Shop::active()
-            ->whereHas('seller', function($query){
+            ->whereHas('seller', function ($query) {
                 return $query->whereHas('orders');
             })
             ->with(['seller' => function ($query) {
@@ -209,8 +220,8 @@ class SellerController extends Controller
     {
         $user = Helpers::getCustomerInformation($request);
         $featuredProducts = Product::active()->with(['reviews', 'rating', 'clearanceSale' => function ($query) {
-                return $query->active();
-            }])
+            return $query->active();
+        }])
             ->withCount(['wishList' => function ($query) use ($user) {
                 $query->where('customer_id', $user != 'offline' ? $user->id : '0');
             }])
@@ -238,22 +249,22 @@ class SellerController extends Controller
 
     public function get_sellers_recommended_products($seller_id, Request $request)
     {
-        $products = Product::active()->with(['category','reviews'])
-                    ->when($seller_id == '0', function ($query){
-                        return $query->where(['added_by' => 'admin']);
-                    })
-                    ->when($seller_id != '0', function ($query) use ($seller_id) {
-                        return $query->where(['added_by' => 'seller', 'user_id'=>$seller_id]);
-                    })
-                    ->withCount('orderDelivered')
-                    ->withSum('tags', 'visit_count')
-                    ->orderBy('order_delivered_count', 'desc')
-                    ->orderBy('tags_sum_visit_count', 'desc')
-                    ->paginate($request['limit'], ['*'], 'page', $request['offset']);
+        $products = Product::active()->with(['category', 'reviews'])
+            ->when($seller_id == '0', function ($query) {
+                return $query->where(['added_by' => 'admin']);
+            })
+            ->when($seller_id != '0', function ($query) use ($seller_id) {
+                return $query->where(['added_by' => 'seller', 'user_id' => $seller_id]);
+            })
+            ->withCount('orderDelivered')
+            ->withSum('tags', 'visit_count')
+            ->orderBy('order_delivered_count', 'desc')
+            ->orderBy('tags_sum_visit_count', 'desc')
+            ->paginate($request['limit'], ['*'], 'page', $request['offset']);
 
         $products?->map(function ($product) {
             $product['reviews_count'] = $product->reviews->count();
-            $product['rating'] = isset($product?->rating[0]) ?$product->rating[0] : null;
+            $product['rating'] = isset($product?->rating[0]) ? $product->rating[0] : null;
         });
 
 

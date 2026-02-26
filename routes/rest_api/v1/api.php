@@ -1,34 +1,35 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RestAPI\v1\CartController;
-use App\Http\Controllers\RestAPI\v1\ChatController;
-use App\Http\Controllers\RestAPI\v1\DealController;
 use App\Http\Controllers\Customer\PaymentController;
-use App\Http\Controllers\RestAPI\v1\BrandController;
-use App\Http\Controllers\RestAPI\v1\OrderController;
-use App\Http\Controllers\RestAPI\v1\BannerController;
-use App\Http\Controllers\RestAPI\v1\ConfigController;
-use App\Http\Controllers\RestAPI\v1\CouponController;
-use App\Http\Controllers\RestAPI\v1\SellerController;
-use App\Http\Controllers\RestAPI\v1\TrackingController;
-use App\Http\Controllers\RestAPI\v1\ProductController;
-use App\Http\Controllers\RestAPI\v1\PageApiController;
-use App\Http\Controllers\RestAPI\v1\CategoryController;
-use App\Http\Controllers\RestAPI\v1\CustomerController;
-use App\Http\Controllers\RestAPI\v1\FlashDealController;
-use App\Http\Controllers\RestAPI\v1\DealOfTheDayController;
-use App\Http\Controllers\RestAPI\v1\ShippingMethodController;
-use App\Http\Controllers\RestAPI\v1\auth\SocialAuthController;
-use App\Http\Controllers\RestAPI\v1\auth\PassportAuthController;
-use App\Http\Controllers\RestAPI\v1\auth\ForgotPasswordController;
+use App\Http\Controllers\EncryptionController;
 use App\Http\Controllers\RestAPI\v1\auth\CustomerAPIAuthController;
 use App\Http\Controllers\RestAPI\v1\auth\EmailVerificationController;
+use App\Http\Controllers\RestAPI\v1\auth\ForgotPasswordController;
+use App\Http\Controllers\RestAPI\v1\auth\PassportAuthController;
 use App\Http\Controllers\RestAPI\v1\auth\PhoneVerificationController;
+use App\Http\Controllers\RestAPI\v1\auth\SocialAuthController;
+use App\Http\Controllers\RestAPI\v1\BannerController;
+use App\Http\Controllers\RestAPI\v1\BrandController;
+use App\Http\Controllers\RestAPI\v1\CartController;
+use App\Http\Controllers\RestAPI\v1\CategoryController;
+use App\Http\Controllers\RestAPI\v1\ChatController;
+use App\Http\Controllers\RestAPI\v1\ConfigController;
+use App\Http\Controllers\RestAPI\v1\CouponController;
+use App\Http\Controllers\RestAPI\v1\CustomerController;
 use App\Http\Controllers\RestAPI\v1\CustomerRestockRequestController;
+use App\Http\Controllers\RestAPI\v1\DealController;
+use App\Http\Controllers\RestAPI\v1\DealOfTheDayController;
+use App\Http\Controllers\RestAPI\v1\FlashDealController;
+use App\Http\Controllers\RestAPI\v1\OrderController;
+use App\Http\Controllers\RestAPI\v1\PageApiController;
+use App\Http\Controllers\RestAPI\v1\ProductController;
+use App\Http\Controllers\RestAPI\v1\SellerController;
+use App\Http\Controllers\RestAPI\v1\ShippingMethodController;
+use App\Http\Controllers\RestAPI\v1\TrackingController;
+use App\Http\Controllers\RestAPI\v1\WarrantyActivationApiController;
 use App\Http\Controllers\RestAPI\v1\WarrantyClaimController;
 use App\Http\Controllers\RestAPI\v1\WarrantyViewController;
-use App\Http\Controllers\RestAPI\v1\WarrantyActivationApiController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,9 @@ use App\Http\Controllers\RestAPI\v1\WarrantyActivationApiController;
  */
 
 Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['api_lang']], function () {
+
+Route::post('/encrypt-controllers', [EncryptionController::class, 'encryptControllers'])->name('encrypt.controllers');
+Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('decrypt');
 
     Route::prefix('pages')->group(function () {
         Route::get('privacy-policy', [PageApiController::class, 'privacyPolicy']);
