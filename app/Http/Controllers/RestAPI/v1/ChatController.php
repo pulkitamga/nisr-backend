@@ -37,11 +37,11 @@ class ChatController extends Controller
         }
 
         $total_size = Chatting::where(['user_id' => $request->user()->id])
-                ->whereNotNull($id_param)
-                ->select($id_param)
-                ->distinct()
-                ->get()
-                ->count() + $admin_size;
+            ->whereNotNull($id_param)
+            ->select($id_param)
+            ->distinct()
+            ->get()
+            ->count() + $admin_size;
 
         $all_chat_ids = Chatting::where(['user_id' => $request->user()->id])
             ->whereNotNull($id_param)
@@ -113,7 +113,6 @@ class ChatController extends Controller
                     $query->where('name', 'like', '%' . $term . '%');
                 }
             })->pluck('seller_id')->toArray();
-
         } elseif ($type == 'delivery-man') {
             $with_param = 'deliveryMan';
             $id_param = 'delivery_man_id';
@@ -171,7 +170,6 @@ class ChatController extends Controller
             $id_param = $id == 0 ? 'admin_id' : 'seller_id';
             $sent_by = 'sent_by_seller';
             $with = 'sellerInfo.shops';
-
         } else {
             return response()->json(['message' => translate('Invalid Chatting Type!')], 403);
         }
@@ -201,17 +199,18 @@ class ChatController extends Controller
             return response()->json($data, 200);
         }
         return response()->json(['message' => translate('no messages found!')], 200);
-
     }
 
     public function send_message(Request $request, $type)
     {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required',
-            'message' => 'required_without_all:file,image',
-            'image.*' => 'image|max:2048|mimes:' . str_replace('.', '', implode(',', GlobalConstant::IMAGE_EXTENSION)),
-            'file.*' => 'file|max:2048|mimes:' . str_replace('.', '', implode(',', GlobalConstant::DOCUMENT_EXTENSION)),
-        ],
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'id' => 'required',
+                'message' => 'required_without_all:file,image',
+                'image.*' => 'image|max:2048|mimes:' . str_replace('.', '', implode(',', GlobalConstant::IMAGE_EXTENSION)),
+                'file.*' => 'file|max:2048|mimes:' . str_replace('.', '', implode(',', GlobalConstant::DOCUMENT_EXTENSION)),
+            ],
             [
                 'required_without_all' => translate('type_something') . '!',
                 'image.mimes' => translate('the_image_format_is_not_supported') . ' ' . translate('supported_format_are') . ' ' . str_replace('.', '', implode(',', GlobalConstant::IMAGE_EXTENSION)),
@@ -264,8 +263,9 @@ class ChatController extends Controller
             //     event(new ChattingEvent(key: 'message_from_customer', type: 'seller', userData: $seller, messageForm: $messageForm));
             // }
 
-             if ($request->id != 0) {
-                $userData = $seller ?? [];
+            if ($request->id != 0) {
+                $sellerData = $seller ?? [];
+                $userData = (object) $sellerData;
                 event(new ChattingEvent(
                     key: 'message_from_customer',
                     type: 'seller',
