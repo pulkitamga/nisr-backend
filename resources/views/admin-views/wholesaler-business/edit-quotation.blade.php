@@ -43,13 +43,13 @@ $defaultLanguage = $language[0] ?? 'en';
 
       <div class="grid grid-cols-2 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-md font-bold text-gray-700">{{ translate('Wholeseller') }}</label>
+                    <label class="block text-md font-bold text-gray-700">{{ translate('Wholesaler') }}</label>
                     <input type="text" value="{{ $order->wholeseller->name ?? 'N/A' }}"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" readonly>
                 </div>
 
                 <div>
-                    <label class="block text-md font-bold text-gray-700">{{ translate('Wholeseller Tier') }}</label>
+                    <label class="block text-md font-bold text-gray-700">{{ translate('Wholesaler Tier') }}</label>
                     <input type="text" value="{{ $order->wholeseller->tier ?? 'N/A' }}"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" readonly>
                 </div>
@@ -68,7 +68,7 @@ $defaultLanguage = $language[0] ?? 'en';
                     <div>
                         <button id="toggle_product_dropdown" type="button"
                             class="text-indigo-600 hover:underline text-sm">
-                            + {{ translate('Add Product') }}
+                            + {{ translate('Add_Product') }}
                         </button>
                         <div id="product_dropdown_wrapper" class="mt-2 hidden">
                             <select id="product_select" class="js-example-matcher w-64"
@@ -180,8 +180,7 @@ $defaultLanguage = $language[0] ?? 'en';
                     </div>
                     @endforeach
                 </div>
-                <button type="button" onclick="addCharge()" class="text-indigo-600 hover:underline text-sm">{{ translate('Add
-                    Charge') }}</button>
+                <button type="button" onclick="addCharge()" class="text-indigo-600 hover:underline text-sm">{{ translate('Add Charge') }}</button>
             </div>
 
             <div>
@@ -202,8 +201,7 @@ $defaultLanguage = $language[0] ?? 'en';
                     @endforeach
 
                 </div>
-                <button type="button" onclick="addDiscount()" class="text-indigo-600 hover:underline text-sm">{{ translate('Add
-                    Discount') }}</button>
+                <button type="button" onclick="addDiscount()" class="text-indigo-600 hover:underline text-sm">{{ translate('Add Discount') }}</button>
             </div>
             <div class="mt-2">
                 <label class="text-md font-bold text-gray-800 mb-2">{{ translate('Wholesaler Discount') }}</label>
@@ -260,8 +258,7 @@ $defaultLanguage = $language[0] ?? 'en';
             <!-- Actions -->
             <div class="flex justify-end mt-6">
                 <button type="submit" id="submit_btn"
-                    class="bg-green-600 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-700">{{ translate('Update
-                    Quotation') }}</button>
+                    class="bg-green-600 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-700">{{ translate('Update Quotation') }}</button>
             </div>
                     </div>
                     

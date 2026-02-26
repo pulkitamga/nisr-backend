@@ -18,7 +18,7 @@
                                 <option value="received">{{ translate('Received') }}</option>
                             @endif
                             @if($claim && $claim->status === 'waiting_parts')
-                                <option value="repair_pending">{{ translate('Repair Pending') }}</option>
+                                <option value="repair_pending">{{ translate('repair_pending') }}</option>
                             @endif
                             @if($claim && $claim->status === 'waiting_payment')
                                 <option value="diagnosis_pending">{{ translate('Diagnosis Pending') }}</option>
@@ -32,7 +32,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-dismiss="modal">{{ translate('Cancel') }}</button>
-                    <button type="submit" class="btn btn--primary">{{ translate('Resume') }}</button>
+                    <button type="submit" class="btn btn--primary">{{ translate('resume') }}</button>
                 </div>
             </div>
         </form>

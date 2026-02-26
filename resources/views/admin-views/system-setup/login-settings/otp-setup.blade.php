@@ -50,7 +50,7 @@
                                     </i>
                                 </label>
                                 <input type="number" min="0" step="0.01" value="{{$otpResendTime}}"
-                                       name="otp_resend_time" class="form-control"  placeholder="{{translate('ex: 30 ')}}" required>
+                                       name="otp_resend_time" class="form-control"  placeholder="{{translate('ex: 30')}}" required>
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6">

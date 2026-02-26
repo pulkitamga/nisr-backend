@@ -3,7 +3,7 @@
     <div class="model-sm modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
-                <h3>Select Type</h3>
+                <h3>{{ translate('Select Type') }}</h3>
                 <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
                     <i class="tio-clear"></i>
                 </button>
@@ -18,18 +18,18 @@
                             <div class="form-group">
                                 <select class="js-select2-custom form-control" name="message_type" id="type-id">
                                     <option value="" selected disabled>{{ translate('select_type') }}</option>
-                                    <option value="support">Support</option>
-                                    <option value="service">Service</option>
-                                    <option value="career">Career</option>
-                                    <option value="warranty">Warranty</option>
-                                    <option value="contact">Contact</option>
+                                    <option value="support">{{ translate('Support') }}</option>
+                                    <option value="service">{{ translate('Service') }}</option>
+                                    <option value="career">{{ translate('Career') }}</option>
+                                    <option value="warranty">{{ translate('Warranty') }}</option>
+                                    <option value="contact">{{ translate('Contact') }}</option>
 
                                 </select>
                             </div>
                         </div>
                     </div>
                     <div class="text-end mt-2 justify-centent-end">
-                        <button type="submit" class="btn btn-xs btn-primary">Update Type</button>
+                        <button type="submit" class="btn btn-xs btn-primary">{{ translate('Update Type') }}</button>
                     </div>
                 </form>
             </div>

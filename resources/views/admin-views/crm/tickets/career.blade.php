@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('career_Ticket'))
+@section('title', translate('Career Ticket'))
 
 @section('content')
 
@@ -78,7 +78,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
     <div class="card">
         <div class="card-header gap-3 align-items-center">
             <h5 class="mb-0 mr-auto">
-                {{translate('Career_Ticket_List')}}
+                {{translate('Career Ticket List')}}
                 <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $tickets->total() }}</span>
             </h5>
 
@@ -118,8 +118,8 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                         <td>{{ $tickets->firstItem() + $index }}</td>
                         <td>{{ $ticket->subject }}</td>
                         <td>{{ $ticket->relatedInboxMessage->sender_name ?? $ticket->relatedInboxMessage->sender_email }}</td>
-                        <td>{{ $ticket->status_details->name ?? 'N/A' }}</td>
-                        <td>{{ $ticket->employee->name ?? 'Unassigned' }}</td>
+                        <td>{{ $ticket->status_details->name ?? translate('N/A') }}</td>
+                        <td>{{ $ticket->employee->name ?? translate('Unassigned') }}</td>
                         <td>{{ $ticket->created_at->format('d-m-Y H:i') }}</td>
                         @php
                         $pendingInterview = $ticket->careerInterviews->whereNull('scheduled_at')->first();
@@ -244,11 +244,11 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                 <div class="modal-body">
                     <input type="hidden" name="ticket_id" id="screenTicketId">
                     <div class="form-group">
-                        <label>{{ translate('notes') }}</label>
+                        <label>{{ translate('Notes') }}</label>
                         <textarea name="notes" class="form-control" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label>{{ translate('qualified') }}</label>
+                        <label>{{ translate('Qualified') }}</label>
                         <div>
                             <input type="radio" name="qualified" value="1" id="qualifiedYes" required>
                             <label for="qualifiedYes">{{ translate('yes') }}</label>
@@ -281,7 +281,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                 <div class="modal-body">
                     <input type="hidden" name="ticket_id" id="scheduleTicketId">
                     <div class="form-group">
-                        <label>{{ translate('scheduled_at') }}</label>
+                        <label>{{ translate('Scheduled At') }}</label>
                         <input type="datetime-local" name="scheduled_at" class="form-control" required>
                     </div>
                     <div class="form-group">
@@ -295,7 +295,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('close') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('schedule') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Schedule') }}</button>
                 </div>
             </form>
         </div>
@@ -322,7 +322,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>{{ translate('notes') }}</label>
+                        <label>{{ translate('Notes') }}</label>
                         <textarea name="notes" class="form-control" required></textarea>
                     </div>
                 </div>
@@ -573,3 +573,5 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
     });
 </script>
 @endpush
+
+

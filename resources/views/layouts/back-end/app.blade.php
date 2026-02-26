@@ -1,10 +1,11 @@
 @php
 use App\Utils\Helpers;
 use Carbon\Carbon;
+$direction = Session::get('direction') ?? 'ltr';
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{Session::get('direction')}}"
-    style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction }}"
+    style="text-align: {{ $direction === 'rtl' ? 'right' : 'left' }};">
 
 <head>
     <meta charset="utf-8">
@@ -26,7 +27,7 @@ use Carbon\Carbon;
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-solid-rounded/css/uicons-solid-rounded.css">
 
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/toastr.css')}}">
-    @if(Session::get('direction') === "rtl")
+    @if($direction === "rtl")
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/menurtl.css')}}">
     @endif
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/css/lightbox.css')}}">
@@ -227,7 +228,7 @@ use Carbon\Carbon;
                         <span>${note.message}</span>
                     </div>
                     <a href="/admin/crm/deals/wholesale/view/${note.related_id}?notification_id=${note.id}" 
-           class="btn btn-sm btn-info">View</a>
+           class="btn btn-sm btn-info">{{ translate('View') }}</a>
                  </li>`;
                         });
                         $("#leadNotificationList").html(list);

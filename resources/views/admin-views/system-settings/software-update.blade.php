@@ -29,7 +29,7 @@
                               enctype="multipart/form-data" id="software-update-form_">
                             @csrf
                             <div class="progress mb-5 d-none height-30px">
-                                <div class="progress-bar progress-bar-animated">{{translate('0').'%'}}</div>
+                                <div class="progress-bar progress-bar-animated">0%</div>
                             </div>
 
 
@@ -80,3 +80,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/business-setting/business-setting.js')}}"></script>
 @endpush
+

@@ -168,7 +168,6 @@
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
                         <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->name ?? $ticket->status }}</span></td>
-                        <!-- <td>{{ $ticket->source_id ?? translate('N/A') }}</td> -->
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         @php
                         $statusName = strtolower($ticket->status_details?->name);
@@ -356,3 +355,4 @@
     });
 </script>
 @endpush
+

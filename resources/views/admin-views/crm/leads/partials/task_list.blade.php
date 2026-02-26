@@ -12,18 +12,18 @@
                 <th>{{ translate('Status') }}</th>
                 <th>{{ translate('Employee') }}</th>
                 <th>{{ translate('Department') }}</th>
-                <th>{{ translate('Actions') }}</th>
+                <th>{{ translate('Action') }}</th>
             </tr>
         </thead>
         <tbody>
             @endif
             <tr>
                 <td>{{ $task->name }}</td>
-                <td class="text-truncate white-space-initial">{{ $task->description ?? 'N/A' }}</td>
+                <td class="text-truncate white-space-initial">{{ $task->description ?? translate('N/A') }}</td>
                 <td>{{ $task->due_date }}</td>
                 <td>{{ ucfirst($task->status) }}</td>
-                <td>{{ $task->employee->name ?? 'Unassigned' }}</td>
-                <td>{{ $task->department->name ?? 'Unassigned' }}</td>
+                <td>{{ $task->employee->name ?? translate('Unassigned') }}</td>
+                <td>{{ $task->department->name ?? translate('Unassigned') }}</td>
                 <td>
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-primary task-edit-btn"
@@ -53,3 +53,5 @@
 @empty
 @include('layouts.back-end._empty-state',['text'=>'no_record_found'],['image'=>'default'])
 @endforelse
+
+

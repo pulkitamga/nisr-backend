@@ -82,7 +82,7 @@ $defaultLanguage = $language[0] ?? 'en';
                     <div>
                         <button id="toggle_product_dropdown" type="button"
                             class="btn toggle-add-product text-indigo-600 hover:underline text-sm soft-hidden ">
-                            {{ translate('Add Product') }}
+                            {{ translate('Add_Product') }}
                         </button>
                         <div id="product_dropdown_wrapper" class="mt-2 hidden">
                             <select id="product_select" class="js-example-matcher w-64"
@@ -137,15 +137,13 @@ $defaultLanguage = $language[0] ?? 'en';
                     <div class="flex-1">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ translate('Charges') }}</h3>
                         <div id="charges" class="space-y-4"></div>
-                        <button type="button" onclick="addCharge()" class=" btn text-indigo-600 hover:underline text-sm">{{ translate('Add
-            Charge') }}</button>
+                        <button type="button" onclick="addCharge()" class=" btn text-indigo-600 hover:underline text-sm">{{ translate('Add Charge') }}</button>
                     </div>
 
                     <div class="flex-1">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ translate('Discounts') }}</h3>
                         <div id="discounts" class="space-y-4"></div>
-                        <button type="button" onclick="addDiscount()" class="btn text-indigo-600 hover:underline text-sm">{{ translate('Add
-            Discount') }}</button>
+                        <button type="button" onclick="addDiscount()" class="btn text-indigo-600 hover:underline text-sm">{{ translate('Add Discount') }}</button>
                     </div>
                 </div>
 
@@ -184,8 +182,7 @@ $defaultLanguage = $language[0] ?? 'en';
                         id="{{ $lang }}-form">
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
 
-                        <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">{{ translate('Terms and
-                            Conditions') }}({{ strtoupper($lang) }})</label>
+                        <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">{{ translate('Terms and Conditions') }}({{ strtoupper($lang) }})</label>
                         <textarea name="terms_and_conditions[]" id="terms_and_conditions"
                             class="form-control summernote w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm"></textarea>
 
@@ -204,7 +201,7 @@ $defaultLanguage = $language[0] ?? 'en';
 
                         <button type="submit" id="submit_btn"
                             class="btn--primary text-white px-6 py-3 rounded-md shadow-md hover:bg-green-700">
-                            {{ translate(' Submit') }}
+                            {{ translate('Submit') }}
                         </button>
                     </div>
                 </div>

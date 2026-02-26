@@ -577,7 +577,7 @@
                         <span class="font-bold fz-11">{{ translate('customer_Info')}}</span>
                         <div class="">
                             @if($order->is_guest)
-                                <div class="font-normal mt-6px">{{translate('guest_User')}}</div>
+                                <div class="font-normal mt-6px">{{translate('guest_user')}}</div>
                             @else
                                 <div class="font-normal mt-6px">
                                     {{ $order->customer !=null? $order->customer['f_name'].' '.$order->customer['l_name']:translate('name_not_found') }}
@@ -612,7 +612,7 @@
                 <td class="border-bottom" style="padding:23px 8px">
                     <div class="font-normal mb-1 fz-10">{{translate('customer_Name')}}</div>
                     <div
-                        class="font-semibold fz-10">{{ $order->customer !=null? $order->customer['f_name'].' '.$order->customer['l_name']:translate('Name_not_found')}}</div>
+                        class="font-semibold fz-10">{{ $order->customer !=null? $order->customer['f_name'].' '.$order->customer['l_name']:translate('name_not_found')}}</div>
                 </td>
                 <td class="border-bottom" style="padding:23px 8px">
                     <div class="font-normal mb-1 fz-10">{{translate('Phone')}}</div>
@@ -824,3 +824,4 @@
 </div>
 </body>
 </html>
+

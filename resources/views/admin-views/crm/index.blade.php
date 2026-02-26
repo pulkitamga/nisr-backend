@@ -53,7 +53,7 @@
 
                     <div class="col-md-4">
                         <label class="form-label">{{translate('Choose_First')}}</label>
-                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('200')}}" name="choose_first">
+                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{ translate('Ex') }} : 200" name="choose_first">
                     </div>
                     <div class="col-md-8">
                         <label class="d-md-block">&nbsp;</label>
@@ -143,7 +143,7 @@
                         <td>
                             {{$messages->firstItem()+$key}}
                         </td>
-                        <td><a href="">{{ $msg->subject ?? translate('no_Subject') }}</a></td>
+                        <td><a href="">{{ $msg->subject ?? translate('No Subject') }}</a></td>
                         <td>{{ ucfirst($msg->pipeline) }} - {{ $msg->message_type }}</td>
                         <!-- <td>
 
@@ -160,8 +160,8 @@
                             </div>
 
                         </td> -->
-                        <td>{{ $msg->source_id ??  translate('not_Avilable') }}</td>
-                        <td>{{ $msg->sender_name ??  translate('not_Avilable') }}</td>
+                        <td>{{ $msg->source_id ??  translate('Not Available') }}</td>
+                        <td>{{ $msg->sender_name ??  translate('Not Available') }}</td>
 
                         <td>
                             <div class="mb-1">
@@ -171,7 +171,7 @@
                             <a class="title-color hover-c1" href="tel:{{$msg->sender_phone}}">{{$msg->sender_phone}}</a>
 
                         </td>
-                        <td>{{ $msg->owner?->name ?? 'Not Assigned' }}</td>
+                        <td>{{ $msg->owner?->name ?? translate('Not Assigned') }}</td>
                         <td>
                             @php
                             $status = strtolower($msg->status);
@@ -313,3 +313,5 @@
 </script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 @endpush
+
+

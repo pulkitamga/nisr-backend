@@ -20,7 +20,7 @@
                                      src="{{ getStorageImages(path: $item->wholeseller->image_full_url, type:'backend-profile') }}"
                                      alt="wholesaler-img">
                             </div>
-                            <h5 class="mb-0">{{ $item->wholeseller->f_name ?? translate('not_exist') }}</h5>
+                            <h5 class="mb-0">{{ $item->wholeseller->f_name ?? translate('not_found') }}</h5>
                             <div class="orders-count d-flex gap-1">
                                 <div>{{ translate('orders') }} :</div>
                                 <div>{{ $item->count }}</div>

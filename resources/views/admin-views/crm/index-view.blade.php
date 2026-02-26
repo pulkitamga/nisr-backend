@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('Massage Details'))
+@section('title', translate('Message Details'))
 
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/css/tags-input.min.css') }}" rel="stylesheet">
@@ -41,12 +41,12 @@
                     <p><strong>{{ translate('Subject') }}:</strong> {{ $inbox->subject ?? translate('No Subject') }}</p>
                     <p><strong>{{ translate('Body') }}:</strong> {{ $inbox->body ?? translate('No Message') }}</p>
                     <p><strong>{{ translate('Sender Name') }}:</strong> {{ $inbox->sender_name ?? translate('Unassigned') }}</p>
-                    <p><strong>{{ translate('Sender Email') }}:</strong> {{ $inbox->sender_email ?? 'Not Available' }}</p>
-                    <p><strong>{{ translate('Sender Phone') }}:</strong> {{ $inbox->sender_phone ?? 'Not Available' }}</p>
+                    <p><strong>{{ translate('Sender Email') }}:</strong> {{ $inbox->sender_email ?? translate('Not Available') }}</p>
+                    <p><strong>{{ translate('Sender Phone') }}:</strong> {{ $inbox->sender_phone ?? translate('Not Available') }}</p>
                     <p><strong>{{ translate('Pipeline') }}:</strong> {{ $inbox->pipeline ?? '-' }}</p>
                     <p><strong>{{ translate('Message Type') }}:</strong> {{ $inbox->message_type ?? '-' }}</p>
                     <p><strong>{{ translate('Status') }}:</strong> {{ $inbox->status ?? '-' }}</p>
-                    <p><strong>{{ translate('Recevied At') }}:</strong> {{ $inbox->created_at?->format('d M, Y H:i A') }}</p>
+                    <p><strong>{{ translate('Received At') }}:</strong> {{ $inbox->created_at?->format('d M, Y H:i A') }}</p>
                     @if(is_array($inbox->details))
                     <div class="mb-3">
                         <strong>{{ translate('Details') }}:</strong>
@@ -298,3 +298,5 @@
     });
 </script>
 @endpush
+
+

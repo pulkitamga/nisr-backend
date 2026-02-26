@@ -43,8 +43,8 @@
                     @endphp
                     @if($inbox)
                     <p><strong>{{ translate('Subject') }}:</strong> {{ $inbox->subject ?? translate('No Subject') }}</p>
-                    <p><strong>{{ translate('Sender') }}:</strong> {{ $inbox->sender_name ?? translate('Unassigned') }} ({{ $inbox->sender_email ?? 'Not Available' }})</p>
-                    <p><strong>{{ translate('Phone') }}:</strong> {{ $inbox->sender_phone ?? 'Not Available' }}</p>
+                    <p><strong>{{ translate('Sender') }}:</strong> {{ $inbox->sender_name ?? translate('Unassigned') }} ({{ $inbox->sender_email ?? translate('Not Available') }})</p>
+                    <p><strong>{{ translate('Phone') }}:</strong> {{ $inbox->sender_phone ?? translate('Not Available') }}</p>
                     <p><strong>{{ translate('Message') }}:</strong> {{ $inbox->body ?? translate('No Message') }}</p>
                     <p><strong>{{ translate('Received At') }}:</strong> {{ $lead->created_at->format('d M, Y H:i A') }}</p>
                     @if(is_array($inbox->details))
@@ -78,18 +78,18 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
-                            <p><strong>{{ translate('company') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->wholesalerBusiness?->company_name ?? 'Unknown'}}</p>
-                            <p><strong>{{ translate('Email') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->email ?? 'N/A' }}</p>
-                            <p><strong>{{ translate('Phone') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->phone ?? 'N/A' }}</p>
+                            <p><strong>{{ translate('company') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->wholesalerBusiness?->company_name ?? translate('Unknown')}}</p>
+                            <p><strong>{{ translate('Email') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->email ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Phone') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->phone ?? translate('N/A') }}</p>
                         </div>
                         <div class="col-6">
-                            <p><strong>{{ translate('Purchase Order No') }}:</strong> {{ $lead->purchaseOrder->purchase_order_no ?? 'Not Assigned' }}</p>
-                            <p><strong>{{ translate('Status') }}:</strong> {{ $lead->purchaseOrder->status ?? 'N/A' }}</p>
-                            <p><strong>{{ translate('Created_At') }}:</strong> {{ $lead->purchaseOrder->created_at->format('d M, Y H:i A') ?? 'N/A' }}</p>
+                            <p><strong>{{ translate('Purchase Order No') }}:</strong> {{ $lead->purchaseOrder->purchase_order_no ?? translate('Not Assigned') }}</p>
+                            <p><strong>{{ translate('Status') }}:</strong> {{ $lead->purchaseOrder->status ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Created_At') }}:</strong> {{ $lead->purchaseOrder->created_at->format('d M, Y H:i A') ?? translate('N/A') }}</p>
                         </div>
                     </div>
                     @if($lead->purchaseOrder->items && $lead->purchaseOrder->items->count() > 0)
-                    <h6 class="mt-3">{{ translate('Ordered Items') }}</h6>
+                    <h6 class="mt-3">{{ translate('Ordered_Items') }}</h6>
                     <table
                         style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
                         class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
@@ -105,7 +105,7 @@
                         <tbody>
                             @foreach($lead->purchaseOrder->items as $item)
                             <tr>
-                                <td>{{ $item->product->name ?? 'N/A' }}</td>
+                                <td>{{ $item->product->name ?? translate('N/A') }}</td>
                                 <td>{{ $item->product_quantity ?? 0 }}</td>
                                 <td>
                                     {{ setCurrencySymbol(
@@ -367,3 +367,6 @@
     });
 </script>
 @endpush
+
+
+

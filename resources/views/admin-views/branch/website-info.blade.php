@@ -46,9 +46,9 @@
                         @if($businessSetting['maintenance_mode'])
                             <div class="d-flex flex-wrap gap-3 align-items-center">
                                 <p class="mb-0">
-                                    {{ translate('Your maintenance mode is activated ') }}
+                                    {{ translate('Your maintenance mode is activated') }}
                                     @if($selectedMaintenanceDuration['maintenance_duration'] != 'until_change')
-                                        {{ translate('from ') }}<strong>{{ $maintenanceStartDate->format('m/d/Y, h:i A') }}</strong> to <strong>{{ $maintenanceEndDate->format('m/d/Y, h:i A') }}</strong>.
+                                        {{ translate('from') }} <strong>{{ $maintenanceStartDate->format('m/d/Y, h:i A') }}</strong> to <strong>{{ $maintenanceEndDate->format('m/d/Y, h:i A') }}</strong>.
                                     @endif
                                 </p>
                                 <a class="btn btn-outline-primary btn-sm edit square-btn maintenance-mode-show" href="#"><i class="tio-edit"></i></a>

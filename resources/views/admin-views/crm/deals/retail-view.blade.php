@@ -31,15 +31,15 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h4>{{ translate('Customer Information') }}</h4>
-                            <p><strong>{{ translate('Name') }}:</strong> {{ $deal->user->name ?? 'N/A' }}</p>
-                            <p><strong>{{ translate('Email') }}:</strong> {{ $deal->user->email ?? 'N/A' }}</p>
-                            <p><strong>{{ translate('Phone') }}:</strong> {{ $deal->user->phone ?? 'N/A' }}</p>
+                            <p><strong>{{ translate('Name') }}:</strong> {{ $deal->user->name ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Email') }}:</strong> {{ $deal->user->email ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Phone') }}:</strong> {{ $deal->user->phone ?? translate('N/A') }}</p>
                         </div>
                         <div class="col-md-6">
 
                             <h4>{{ translate('Deal Information') }}</h4>
                             <p><strong>{{ translate('Created At') }}:</strong> {{ $deal->created_at->format('d M, Y H:i A') }}</p>
-                            <p><strong>{{ translate('Employee') }}:</strong> {{ $deal->employee->name ?? 'N/A' }}</p>
+                            <p><strong>{{ translate('Employee') }}:</strong> {{ $deal->employee->name ?? translate('N/A') }}</p>
                             <p><strong>{{ translate('Order Status') }}:</strong>
                                 <span class="text-primary bg-soft-dark font-weight-bold px-3 py-1 mb-0 fz-12">{{ ucfirst($deal->order->order_status) }}</span>
                             </p>
@@ -319,3 +319,4 @@
     });
 </script>
 @endpush
+

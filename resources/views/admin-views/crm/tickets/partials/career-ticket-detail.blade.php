@@ -11,9 +11,9 @@
             <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
                 <div class="card-header">{{ translate('candidate_details') }}</div>
                 <div class="card-body">
-                    <p><strong>{{ translate('name') }}:</strong> {{ $supportTicket->customer->name ?? 'N/A' }}</p>
+                    <p><strong>{{ translate('name') }}:</strong> {{ $supportTicket->customer->name ?? translate('N/A') }}</p>
                     <p><strong>{{ translate('email') }}:</strong> {{ $supportTicket->customer->email }}</p>
-                    <p><strong>{{ translate('phone') }}:</strong> {{ $supportTicket->customer->phone ?? 'N/A' }}</p>
+                    <p><strong>{{ translate('phone') }}:</strong> {{ $supportTicket->customer->phone ?? translate('N/A') }}</p>
                     @if($supportTicket->conversations->whereNotNull('attachment')->count() > 0)
                     <p><strong>{{ translate('cv') }}:</strong>
                         @foreach($supportTicket->conversations->whereNotNull('attachment') as $conv)
@@ -29,8 +29,8 @@
                 <div class="card-header">{{ translate('ticket_details') }}</div>
                 <div class="card-body">
                     <p><strong>{{ translate('subject') }}:</strong> {{ $supportTicket->subject }}</p>
-                    <p><strong>{{ translate('status') }}:</strong> {{ $supportTicket->status_details->name ?? 'N/A' }}</p>
-                    <p><strong>{{ translate('recruiter') }}:</strong> {{ $supportTicket->employee->name ?? 'Unassigned' }}</p>
+                    <p><strong>{{ translate('status') }}:</strong> {{ $supportTicket->status_details->name ?? translate('N/A') }}</p>
+                    <p><strong>{{ translate('recruiter') }}:</strong> {{ $supportTicket->employee->name ?? translate('Unassigned') }}</p>
                     <p><strong>{{ translate('created_at') }}:</strong> {{ $supportTicket->created_at->format('d-m-Y H:i') }}</p>
                 </div>
             </div>
@@ -40,7 +40,7 @@
     <div class="card mt-3" >
         <div class="card-header">
             <ul class="nav nav-tabs">
-                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#activity">{{ translate('activity') }}</a></li>
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#activity">{{ translate('Activity') }}</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#interviews">{{ translate('interviews') }}</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#offers">{{ translate('offers') }}</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rejections">{{ translate('rejections') }}</a></li>
@@ -64,12 +64,12 @@
                             <tr>
                                 <td>{{ $activity->activity_type }}</td>
                                 <td>{{ $activity->description }}</td>
-                                <td>{{ $activity->createdBy->name ?? 'System' }}</td>
+                                <td>{{ $activity->createdBy->name ?? translate('System') }}</td>
                                 <td>{{ $activity->created_at->format('d-m-Y H:i') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4">{{ translate('No activities logged') }}</td>
+                                <td colspan="4">{{ translate('no_activity_logged') }}</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -79,17 +79,17 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>{{ translate('scheduled_at') }}</th>
+                                <th>{{ translate('Scheduled At') }}</th>
                                 <th>{{ translate('outcome') }}</th>
                                 <th>{{ translate('panel') }}</th>
-                                <th>{{ translate('notes') }}</th>
+                                <th>{{ translate('Notes') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($supportTicket->careerInterviews as $interview)
                             <tr>
                                 <td>{{ $interview->scheduled_at }}</td>
-                                <td>{{ $interview->outcome ?? 'Scheduled' }}</td>
+                                <td>{{ $interview->outcome ?? translate('Scheduled') }}</td>
                                 <td>{{ implode(', ', json_decode($interview->panel)) }}</td>
                                 <td>{{ $interview->notes }}</td>
                             </tr>
@@ -153,7 +153,7 @@
                             @if($pool)
                             <tr>
                                 <td>{{ $pool->consent ? translate('yes') : translate('no') }}</td>
-                                <td>{{ $pool->recontact_date ?? 'N/A' }}</td>
+                                <td>{{ $pool->recontact_date ?? translate('N/A') }}</td>
                             </tr>
                             @else
                             <tr>
@@ -168,3 +168,6 @@
     </div>
 </div>
 @endsection
+
+
+

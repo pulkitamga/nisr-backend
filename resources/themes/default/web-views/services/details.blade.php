@@ -342,8 +342,8 @@
                                         <div class="custom-control custom-radio mb-3 padd-input-div">
                                             <input type="radio" id="mobile" name="service_option" class="custom-control-input" value="mobile">
                                             <label class="custom-control-label radio-input-label" for="mobile">
-                                                {{ translate('Mobile_within ')}}{{ $product->service->included_km_mobile }}{{ translate('km')}} : <strong>{{ webCurrencyConverter(amount:$product->service->base_price_mobile) }}</strong><br>
-                                                <small class="text-muted">+{{ webCurrencyConverter(amount:$product->service->travel_fee_per_km) }}{{ translate('/km_beyond ')}} {{ $product->service->included_km_mobile }}{{ translate('km')}}</small>
+                                                {{ translate('Mobile_within') }} {{ $product->service->included_km_mobile }}{{ translate('km')}} : <strong>{{ webCurrencyConverter(amount:$product->service->base_price_mobile) }}</strong><br>
+                                                <small class="text-muted">+{{ webCurrencyConverter(amount:$product->service->travel_fee_per_km) }}{{ translate('/km_beyond') }} {{ $product->service->included_km_mobile }}{{ translate('km')}}</small>
                                             </label>
                                         </div>
                                     </div>
@@ -660,7 +660,7 @@
                                             </div>
                                             {{-- Map View --}}
                                             <div class="mt-3">
-                                                <label class="form-label">{{ translate('Live Location') }}</label>
+                                                <label class="form-label">{{ translate('Live') }} {{ translate('Location') }}</label>
                                                 <div id="liveLocationMap" style="max-height: 200px; width: 100%; border: 1px solid #ddd; border-radius: 6px;"></div>
                                                 <input type="hidden" name="latitude" id="latitude">
                                                 <input type="hidden" name="longitude" id="longitude">

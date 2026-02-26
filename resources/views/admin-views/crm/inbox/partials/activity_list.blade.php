@@ -20,8 +20,8 @@
                 <td>{{ $activity->created_at->format('d M, Y ') }}</td>
                 <td>{{ ucfirst($activity->activity_type) }}</td>
                 <td>{{ $activity->title }}</td>
-                <!-- <td>{{ $activity->subject ?? 'N/A' }}</td> -->
-                <td>{{ $activity->employee->name ?? 'Unassigned' }}</td>
+                <!-- <td>{{ $activity->subject ?? translate('N/A') }}</td> -->
+                <td>{{ $activity->employee->name ?? translate('Unassigned') }}</td>
                 <td>
                     <button class="btn btn-sm btn-outline-success view-details" data-bs-toggle="modal" data-bs-target="#activityModal"
                         data-activity='@json($activity)'> <i class="tio-invisible"></i>
@@ -57,6 +57,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const textNA = @json(translate('N/A'));
+        const textUnassigned = @json(translate('Unassigned'));
         const viewButtons = document.querySelectorAll('.view-details');
         viewButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -65,25 +67,25 @@
                 let detailsHtml = `
                 <p><strong>{{ translate('Type') }}:</strong> ${activity.activity_type.charAt(0).toUpperCase() + activity.activity_type.slice(1)}</p>
                 <p><strong>{{ translate('Title') }}:</strong> ${activity.title}</p>
-                <p><strong>{{ translate('Subject') }}:</strong> ${activity.subject || 'N/A'}</p>
+                <p><strong>{{ translate('Subject') }}:</strong> ${activity.subject || textNA}</p>
                 <p><strong>${activity.activity_type === 'task' ? '{{ translate('Due Date') }}' : '{{ translate('Date') }}'}:</strong> 
                     ${activity.note_date ? new Date(activity.note_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : new Date(activity.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-                <p><strong>{{ translate('Employee') }}:</strong> ${activity.employee?.name || 'Unassigned'}</p>
+                <p><strong>{{ translate('Employee') }}:</strong> ${activity.employee?.name || textUnassigned}</p>
             `;
 
                 if (activity.activity_type === 'note') {
-                    detailsHtml += `<p><strong>{{ translate('Content') }}:</strong> ${activity.details?.content || 'N/A'}</p>`;
+                    detailsHtml += `<p><strong>{{ translate('Content') }}:</strong> ${activity.details?.content || textNA}</p>`;
                 } else if (activity.activity_type === 'task') {
-                    detailsHtml += `<p><strong>{{ translate('Task Status') }}:</strong> ${activity.details?.status ? activity.details.status.charAt(0).toUpperCase() + activity.details.status.slice(1) : 'N/A'}</p>`;
+                    detailsHtml += `<p><strong>{{ translate('Task Status') }}:</strong> ${activity.details?.status ? activity.details.status.charAt(0).toUpperCase() + activity.details.status.slice(1) : textNA}</p>`;
                 } else if (activity.activity_type === 'call') {
                     detailsHtml += `
-                    <p><strong>{{ translate('From') }}:</strong> ${activity.details?.from ? new Date(activity.details.from).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
-                    <p><strong>{{ translate('To') }}:</strong> ${activity.details?.to ? new Date(activity.details.to).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
+                    <p><strong>{{ translate('From') }}:</strong> ${activity.details?.from ? new Date(activity.details.from).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : textNA}</p>
+                    <p><strong>{{ translate('To') }}:</strong> ${activity.details?.to ? new Date(activity.details.to).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : textNA}</p>
                 `;
                 } else if (activity.activity_type === 'file') {
-                    let fileUrl = "{{ url('storage') }}/" + activity.details.file_path; // Storage::url ka kaam
+                    let fileUrl = "{{ url('storage') }}/" + activity.details.file_path;
                     detailsHtml += `<p><strong>{{ translate('File') }}:</strong> 
-                    <a href="${fileUrl}" target="_blank">${activity.details?.file_name || 'N/A'}</a></p>`;
+                    <a href="${fileUrl}" target="_blank">${activity.details?.file_name || textNA}</a></p>`;
                 }
 
 
@@ -92,3 +94,4 @@
         });
     });
 </script>
+

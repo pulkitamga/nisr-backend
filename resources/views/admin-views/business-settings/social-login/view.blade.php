@@ -52,7 +52,7 @@
                                     <div class="form-group">
                                         <div class="d-flex mb-2 gap-2 align-items-center">
                                             <label class="title-color font-weight-bold text-capitalize mb-0">{{translate('store_Client_ID')}}</label>
-                                            <span data-toggle="tooltip" data-title="{{translate('add_the_unique_client_ID ')}}">
+                                            <span data-toggle="tooltip" data-title="{{translate('add_the_unique_client_ID')}}">
                                                 <img width="16" class="svg" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" loading="lazy" alt="">
                                             </span>
                                         </div>

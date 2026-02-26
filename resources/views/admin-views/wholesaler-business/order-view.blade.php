@@ -25,15 +25,13 @@ $defaultLanguage = $language[0] ?? 'en';
         <div class="card p-4">
             <div class=" mb-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Purchase Order
-                    No') }}:</label>
+                    <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Purchase Order No') }}:</label>
 
                     <input type="text" name="order_no" value="{{ $order->purchase_order_no }}" readonly
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm">
                 </div>
                 <div>
-                    <label for="quotation_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Quotation
-                        No') }}:</label>
+                    <label for="quotation_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Quotation No') }}:</label>
 
                     <input type="text" name="quotation_no" id="quotation_no_input" oninput="checkQuotationNo(this.value)"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="Enter Quotation No" required>
@@ -45,13 +43,13 @@ $defaultLanguage = $language[0] ?? 'en';
             <!-- Wholesaler Info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-md font-bold text-gray-700 mb-1">{{ translate('Wholeseller') }}</label>
+                    <label class="block text-md font-bold text-gray-700 mb-1">{{ translate('Wholesaler') }}</label>
                     <input type="text" value="{{ $order->wholeseller->name ?? 'N/A' }}"
                         name="wholesaler_"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" readonly>
                 </div>
                 <div>
-                    <label class="block text-md font-bold text-gray-700 mb-1">{{ translate('Wholeseller Tier') }}</label>
+                    <label class="block text-md font-bold text-gray-700 mb-1">{{ translate('Wholesaler Tier') }}</label>
                     <input type="text" value="{{ $order->wholeseller->tier ?? 'N/A' }}"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" readonly>
                 </div>
@@ -66,7 +64,7 @@ $defaultLanguage = $language[0] ?? 'en';
                         <div>
                             <button id="toggle_product_dropdown" type="button"
                                 class="toggle-add-product text-indigo-600 hover:underline text-sm soft-hidden ">
-                                + {{ translate('Add Product') }}
+                                + {{ translate('Add_Product') }}
                             </button>
                             <div id="product_dropdown_wrapper" class="mt-2 hidden">
                                 <select id="product_select" class="js-example-matcher w-64"
@@ -166,15 +164,13 @@ $defaultLanguage = $language[0] ?? 'en';
                         <div>
                             <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ translate('Charges') }}</h3>
                             <div id="charges" class="space-y-4"></div>
-                            <button type="button" onclick="addCharge()" class="text-indigo-600 hover:underline text-sm">+ {{ translate('Add
-                            Charge') }}</button>
+                            <button type="button" onclick="addCharge()" class="text-indigo-600 hover:underline text-sm">+ {{ translate('Add Charge') }}</button>
                         </div>
 
                         <div>
                             <h3 class="text-lg font-semibold text-gray-800  mb-4">{{ translate('Discounts') }}</h3>
                             <div id="discounts" class="space-y-4"></div>
-                            <button type="button" onclick="addDiscount()" class="text-indigo-600 hover:underline text-sm">+ {{ translate('Add
-                            Discount') }}</button>
+                            <button type="button" onclick="addDiscount()" class="text-indigo-600 hover:underline text-sm">+ {{ translate('Add Discount') }}</button>
                         </div>
                     </div>
 
@@ -216,8 +212,7 @@ $defaultLanguage = $language[0] ?? 'en';
                             id="{{ $lang }}-form">
                             <input type="hidden" name="lang[]" value="{{ $lang }}">
 
-                            <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">{{ translate('Terms and
-                            Conditions') }}({{ strtoupper($lang) }})</label>
+                            <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">{{ translate('Terms and Conditions') }}({{ strtoupper($lang) }})</label>
                             <textarea name="terms_and_conditions[]" id="terms_and_conditions"
                                 class="form-control summernote w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm"></textarea>
 

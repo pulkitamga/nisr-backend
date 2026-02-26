@@ -22,13 +22,13 @@
                     <h5 class="mb-0">{{ translate('ticket_information') }}</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>{{ translate('subject') }}:</strong> {{ $ticket->subject ?? 'N/A' }}</p>
+                    <p><strong>{{ translate('subject') }}:</strong> {{ $ticket->subject ?? translate('N/A') }}</p>
                     <p><strong>{{ translate('type') }}:</strong> {{ ucfirst($ticket->type) }}</p>
-                    <p><strong>{{ translate('sub_type') }}:</strong> {{ $ticket->sub_type ? Str::replace('_', ' ', $ticket->sub_type) : 'N/A' }}</p>
+                    <p><strong>{{ translate('sub_type') }}:</strong> {{ $ticket->sub_type ? Str::replace('_', ' ', $ticket->sub_type) : translate('N/A') }}</p>
                     <p><strong>{{ translate('priority') }}:</strong> <span class="badge badge-soft-{{ $ticket->priority == 'low' ? 'primary' : ($ticket->priority == 'medium' ? 'info' : ($ticket->priority == 'high' ? 'warning' : 'danger')) }}">{{ ucfirst($ticket->priority) }}</span></p>
-                    <p><strong>{{ translate('status') }}:</strong> <span class="badge badge-soft-info">{{ $ticket->status_details->name ?? 'N/A' }}</span></p>
-                    <p><strong>{{ translate('department') }}:</strong> {{ $ticket->department->name ?? 'Unassigned' }}</p>
-                    <p><strong>{{ translate('assigned_employee') }}:</strong> {{ $ticket->employee->name ?? 'Unassigned' }}</p>
+                    <p><strong>{{ translate('status') }}:</strong> <span class="badge badge-soft-info">{{ $ticket->status_details->name ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('department') }}:</strong> {{ $ticket->department->name ?? translate('Unassigned') }}</p>
+                    <p><strong>{{ translate('assigned_employee') }}:</strong> {{ $ticket->employee->name ?? translate('Unassigned') }}</p>
                     <p><strong>{{ translate('created_at') }}:</strong> {{ $ticket->created_at->format('d M, Y H:i') }}</p>
                     <p><strong>{{ translate('reopen_count') }}:</strong> {{ $ticket->reopen_count ?? 0 }}</p>
                 </div>
@@ -51,15 +51,15 @@
                     @if($ticket->customer)
                         <p><strong>{{ translate('name') }}:</strong> {{ $ticket->customer->f_name }} {{ $ticket->customer->l_name }}</p>
                         <p><strong>{{ translate('email') }}:</strong> {{ $ticket->customer->email }}</p>
-                        <p><strong>{{ translate('phone') }}:</strong> {{ $ticket->customer->phone ?? 'N/A' }}</p>
+                        <p><strong>{{ translate('phone') }}:</strong> {{ $ticket->customer->phone ?? translate('N/A') }}</p>
                     @elseif($ticket->relatedInboxMessages->isNotEmpty())
                         @php
                             $msg = $ticket->relatedInboxMessages->first();
                         @endphp
-                        <p><strong>{{ translate('sender_name') }}:</strong> {{ $msg->sender_name ?? 'N/A' }}</p>
-                        <p><strong>{{ translate('sender_email') }}:</strong> {{ $msg->sender_email ?? 'N/A' }}</p>
-                        <p><strong>{{ translate('sender_phone') }}:</strong> {{ $msg->sender_phone ?? 'N/A' }}</p>
-                        <p><strong>{{ translate('subject') }}:</strong> {{ $msg->subject ?? 'N/A' }}</p>
+                        <p><strong>{{ translate('Sender Name') }}:</strong> {{ $msg->sender_name ?? translate('N/A') }}</p>
+                        <p><strong>{{ translate('Sender Email') }}:</strong> {{ $msg->sender_email ?? translate('N/A') }}</p>
+                        <p><strong>{{ translate('Sender Phone') }}:</strong> {{ $msg->sender_phone ?? translate('N/A') }}</p>
+                        <p><strong>{{ translate('subject') }}:</strong> {{ $msg->subject ?? translate('N/A') }}</p>
                         <p><strong>{{ translate('message') }}:</strong><br>{{ nl2br(e($msg->message)) }}</p>
 
                         @if($msg->attachment)
@@ -97,7 +97,7 @@
                                 <tr>
                                     <td>{{ $act->title }}</td>
                                     <td>{{ $act->description }}</td>
-                                    <td>{{ $act->employee?->name ?? 'System' }}</td>
+                                    <td>{{ $act->employee?->name ?? translate('System') }}</td>
                                     <td>{{ Carbon::parse($act->noted_at)->format('d M, Y H:i') }}</td>
                                 </tr>
                             @endforeach
@@ -111,3 +111,5 @@
     </div>
 </div>
 @endsection
+
+

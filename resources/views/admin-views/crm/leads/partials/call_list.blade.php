@@ -22,10 +22,10 @@
             <td>{{ $call->title }}</td>
             <td>{{ $call->from->format('d M, Y H:i') }}</td>
             <td>{{ $call->to->format('d M, Y H:i') }}</td>
-            <td>{{ $call->guests ? \App\Models\User::find($call->guests)?->name : 'None' }}</td>
-            <td>{{ $call->location ?? 'N/A' }}</td>
-            <td>{{ $call->employee->name ?? 'Unassigned' }}</td>
-            <td>{{ $call->department->name ?? 'Unassigned' }}</td>
+            <td>{{ $call->guests ? \App\Models\User::find($call->guests)?->name : translate('None') }}</td>
+            <td>{{ $call->location ?? translate('N/A') }}</td>
+            <td>{{ $call->employee->name ?? translate('Unassigned') }}</td>
+            <td>{{ $call->department->name ?? translate('Unassigned') }}</td>
         </tr>
         @if($loop->last)
     </tbody>
@@ -35,3 +35,4 @@
 @empty
 @include('layouts.back-end._empty-state',['text'=>'no_record_found'],['image'=>'default'])
 @endforelse
+

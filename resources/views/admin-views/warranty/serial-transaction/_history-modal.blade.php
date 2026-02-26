@@ -17,7 +17,7 @@
                             @elseif($h->distributor_id)
                                 {{ $h->distributor->company_name ?? 'Wholesaler' }}
                             @else
-                                <em>{{ translate('unknown') }}</em>
+                                <em>{{ translate('Unknown') }}</em>
                             @endif
                         </h6>
                         <div class="d-flex align-items-center gap-2 mt-1">

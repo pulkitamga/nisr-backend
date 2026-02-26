@@ -24,8 +24,8 @@
                             </div>
 
                             <div class="text-center mb-4 pb-2 fs-13 max-w-320 mx-auto text-body">
-                                {{translate('We’ve sent a verification code to ')}} {{ request('identity') }}
-                                {{translate('& your OTP will be expired within 2min.')}}
+                                {{ translate('An_OTP_(One_Time_Password)_has_been_sent_to') }} {{ request('identity') }}
+                                {{ translate('your_OTP_will_be_expired_within') }} 2 {{ translate('min') }}.
                             </div>
 
                             <div class="d-flex gap-2 gap-sm-3 align-items-end justify-content-center forget-password-otp mb-4">

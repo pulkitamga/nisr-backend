@@ -11,9 +11,9 @@
                 <th>
                         {{translate('total_Vendor')}} - {{count($data['vendors'])}}
                     <br>
-                        {{translate('active_Vendors ')}} - {{$data['active']}}
+                        {{translate('active_Vendors')}} - {{$data['active']}}
                     <br>
-                        {{translate('inactive_Vendors ')}} - {{$data['inactive']}}
+                        {{translate('inactive_Vendors')}} - {{$data['inactive']}}
                 </th>
             </tr>
             <tr>

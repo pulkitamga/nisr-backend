@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('all_Pages_Banner '))
+@section('title', translate('all_Pages_Banner'))
 
 @section('content')
 
@@ -40,7 +40,7 @@
                                             <option value="banner_privacy_policy">{{ translate('Privacy_Policy') }}</option>
                                             <option value="banner_refund_policy">{{ translate('Refund_Policy') }}</option>
                                             <option value="banner_return_policy">{{ translate('Return_Policy') }}</option>
-                                            <option value="banner_about_us">{{ translate('About_us') }}</option>
+                                            <option value="banner_about_us">{{ translate('about_Us') }}</option>
                                             <option value="banner_faq_page">{{ translate('FAQ') }}</option>
                                             <option value="banner_terms_conditions">{{ translate('Terms_and_Conditions') }}</option>
                                             <option value="banner_cancellation_policy">{{ translate('Cancellation_Policy') }}</option>

@@ -138,7 +138,7 @@
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="branchSelectModalLabel">Select Branch</h5>
+                                        <h5 class="modal-title" id="branchSelectModalLabel">{{ translate('Select Branch') }}</h5>
                                         <button type="button" class="close custom-close" data-bs-dismiss="modal"
                                             aria-label="Close">
                                             &times;
@@ -148,7 +148,7 @@
                                         @csrf
                                         <div class="modal-body">
                                             <div class="mb-3">
-                                                <label for="posBranchId" class="form-label">Branch</label>
+                                                <label for="posBranchId" class="form-label">{{ translate('Branch') }}</label>
                                                 <select class="js-select2-custom form-control form-select"
                                                     id="posBranchId" name="branch_id" required>
                                                     <option value="0" selected disabled>
@@ -162,7 +162,7 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="submit" class="btn btn-primary w-100">Go to POS</button>
+                                            <button type="submit" class="btn btn-primary w-100">{{ translate('Go to POS') }}</button>
                                         </div>
                                     </form>
                                 </div>

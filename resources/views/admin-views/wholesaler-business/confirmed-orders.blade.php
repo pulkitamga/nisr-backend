@@ -49,7 +49,7 @@
                             {{ translate('Complete') }}
                         </option>
                         <option value="partials" {{ request('delivery_status')=='partials' ? 'selected' : '' }}>
-                            {{ translate('Partials') }}
+                            {{ translate('partials') }}
                         </option>
                         <option value="pending" {{ request('delivery_status')=='pending' ? 'selected' : '' }}>
                             {{ translate('Pending') }}
@@ -69,7 +69,7 @@
                             {{ translate('Unpaid') }}
                         </option>
                         <option value="partials" {{ request('payment_status')=='partials' ? 'selected' : '' }}>
-                            {{ translate('Partials') }}
+                            {{ translate('partials') }}
                         </option>
                     </select>
                 </div>
@@ -250,7 +250,7 @@
                                         @endif
                                         <a class="dropdown-item text-danger py-1 px-2" href="javascript:void(0);"
                                             onclick="confirmAndDelete('{{ route('admin.wholesale.business.confirem.order.delete', $order->id) }}')">
-                                            <i class="tio-delete"></i>{{ translate(' Delete') }}
+                                            <i class="tio-delete"></i>{{ translate('Delete') }}
                                         </a>
                                     </div>
                                 </div>

@@ -39,7 +39,7 @@
                                            id="minimum_order_amount"
                                            name="minimum_order_amount" min="1"
                                            value="{{ usdToDefaultCurrency(amount: $vendor->minimum_order_amount) ?? 0 }}"
-                                           placeholder="{{translate('0.00')}}">
+                                           placeholder="0.00">
                                 </div>
 
                                 <div class="d-flex justify-content-end">

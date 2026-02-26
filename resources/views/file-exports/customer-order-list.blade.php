@@ -2,7 +2,7 @@
 <table>
     <thead>
         <tr>
-            <th style="font-size: 18px">{{translate('customer_Order_List')}}</th>
+            <th style="font-size: 18px">{{ translate('Customer') . ' ' . translate('Order_List') }}</th>
         </tr>
         <tr>
 
@@ -19,7 +19,7 @@
             </th>
         </tr>
         <tr>
-            <th>{{translate('search_Bar_Content'.' - ')}}</th>
+            <th>{{ translate('search_Bar_Content') . ' -' }}</th>
             <th></th>
             <th>
                 {{$data['searchValue'] ?? 'N/A'}}

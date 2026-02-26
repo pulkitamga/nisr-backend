@@ -32,7 +32,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                                     <input id="datatableSearch_" type="search" name="searchValue"
                                         class="form-control"
                                         placeholder="{{ translate('search_ticket_by_subject_or_status').'...' }}"
-                                        aria-label="Search tickets" value="{{ request('searchValue') }}">
+                                        aria-label="{{ translate('search') }}" value="{{ request('searchValue') }}">
                                     <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                 </div>
                             </form>
@@ -133,7 +133,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
                         <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->name ?? $ticket->status }}</span></td>
-                        <td>{{ $service ? $service->title : 'No Service Picked' }}</td>
+                        <td>{{ $service ? $service->title : translate('No Service Picked') }}</td>
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         <td class="text-center">
                             <div class="d-flex flex-wrap gap-2">
@@ -398,7 +398,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                         @endforeach
                     </div>
                     <div class="form-group">
-                        <label>Total</label>
+                        <label>{{ translate('Total') }}</label>
                         <input type="number" id="total" name="total" class="form-control" readonly>
                     </div>
                 </div>
@@ -553,7 +553,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                         <label>{{translate('Customer Signature')}}</label>
                         <input type="hidden" name="customer_signature" id="customer_signature">
                         <canvas id="signatureCanvas" class="form-control" style="border: 1px solid #ccc; height:200px;"></canvas>
-                        <button type="button" class="btn btn-sm btn-danger mt-2" id="clearSignature">Clear Signature</button>
+                        <button type="button" class="btn btn-sm btn-danger mt-2" id="clearSignature">{{ translate('Clear Signature') }}</button>
                     </div>
 
                     <!-- Parts and Labor -->
@@ -1096,12 +1096,12 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 @if(session('force_close_prompt'))
 <script>
     Swal.fire({
-        title: 'Payment is not paid!',
-        text: 'If you agree, you can force close this ticket.',
+        title: '{{ translate('Payment is not paid!') }}',
+        text: '{{ translate('If you agree, you can force close this ticket.') }}',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Force Close',
-        cancelButtonText: 'Cancel'
+        confirmButtonText: '{{ translate('Force Close') }}',
+        cancelButtonText: '{{ translate('Cancel') }}'
     }).then((result) => {
         if (result.isConfirmed) {
             // Submit force close form automatically
@@ -1118,8 +1118,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             const ticket = document.createElement('input');
             ticket.type = 'hidden';
             ticket.name = 'ticket_id';
-            ticket.value = '{{ session('
-            force_close_prompt ') }}';
+            ticket.value = '{{ session('force_close_prompt') }}';
             form.appendChild(ticket);
 
             const force = document.createElement('input');
@@ -1131,7 +1130,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             const notes = document.createElement('input');
             notes.type = 'hidden';
             notes.name = 'qa_notes';
-            notes.value = 'Force closed manually without payment';
+            notes.value = '{{ translate('Force closed manually without payment') }}';
             form.appendChild(notes);
 
             document.body.appendChild(form);
@@ -1152,12 +1151,12 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
         e.preventDefault();
         let form = $(this);
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'This will notify the department and owner.',
+            title: '{{ translate('Are you sure?') }}',
+            text: '{{ translate('This will notify the department and owner.') }}',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes, Escalate',
-            cancelButtonText: 'Cancel'
+            confirmButtonText: '{{ translate('Yes, Escalate') }}',
+            cancelButtonText: '{{ translate('Cancel') }}'
         }).then((result) => {
             if (result.isConfirmed) {
                 form.off('submit').submit(); // Submit without further prevention

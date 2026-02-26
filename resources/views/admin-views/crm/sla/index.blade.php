@@ -97,7 +97,7 @@
                         <th>{{ translate('Response Time') }}</th>
                         <th>{{ translate('Resolution Time') }}</th>
                         <th class="text-center">{{ translate('Active') }}</th>
-                        <th>{{ translate('Actions') }}</th>
+                        <th>{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -199,3 +199,4 @@
     });
 </script>
 @endpush
+

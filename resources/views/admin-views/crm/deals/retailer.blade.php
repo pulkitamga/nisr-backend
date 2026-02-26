@@ -57,7 +57,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">{{translate('Choose_First')}}</label>
-                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('200')}}" name="choose_first">
+                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{ translate('Ex') }} : 200" name="choose_first">
                     </div>
                     <div class="col-md-12">
                         <label class="d-md-block">&nbsp;</label>
@@ -129,19 +129,19 @@
                     <tr>
                         <td>{{ $deal->id }}</td>
                         <td>{{ $deal->created_at->format('d M, Y H:i A') }}</td>
-                        <td>{{ $deal->relatedParty->name ?? 'N/A' }}</td>
+                        <td>{{ $deal->relatedParty->name ?? translate('N/A') }}</td>
                         <td>
                             <a href="mailto:{{ $deal->relatedParty->email ?? '' }}">
-                                {{ $deal->relatedParty->email ?? 'Not Available' }}
+                                {{ $deal->relatedParty->email ?? translate('Not Available') }}
                             </a>
                             <br>
                             <a href="tel:{{ $deal->relatedParty->phone ?? '' }}">
-                                {{ $deal->relatedParty->phone ?? 'Not Available' }}
+                                {{ $deal->relatedParty->phone ?? translate('Not Available') }}
                             </a>
                         </td>
-                        <td>{{ $deal->owner?->name ?? 'No Owner' }}</td>
-                        <td>{{ $deal->department?->name ?? 'No Department' }}</td>
-                        <td>{{ $deal->employee?->name ?? 'No Employee' }}</td>
+                        <td>{{ $deal->owner?->name ?? translate('No Owner') }}</td>
+                        <td>{{ $deal->department?->name ?? translate('No Department') }}</td>
+                        <td>{{ $deal->employee?->name ?? translate('No Employee') }}</td>
 
                         <td>
                             @if($deal->order)
@@ -182,7 +182,7 @@
 
                         <td>
                             <div class="d-flex flex-wrap gap-1">
-                                <a href="{{ route('admin.crm.deals.retail.view', $deal->id) }}" class="btn btn-sm btn-info">View</a>
+                                <a href="{{ route('admin.crm.deals.retail.view', $deal->id) }}" class="btn btn-sm btn-info">{{ translate('View') }}</a>
                                 <!-- @if(auth('admin')->user()->admin_role_id == 1)
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-owner-btn"
@@ -209,8 +209,8 @@
                                 <button type="button" class="btn btn-sm btn-success link-order-btn"
                                     data-deal-id="{{ $deal->id }}"
                                     data-user-id="{{ $deal->related_party_id }}"
-                                    data-user-name="{{ $deal->relatedParty->name ?? 'User' }}">
-                                    Link Order
+                                    data-user-name="{{ $deal->relatedParty->name ?? translate('User') }}">
+                                    {{ translate('Link Order') }}
                                 </button>
                                 @endif
 
@@ -321,7 +321,7 @@
                 if (res.status) {
                     toastr.success(res.message);
                 } else {
-                    toastr.error('Something went wrong');
+                    toastr.error(@json(translate('Something went wrong')));
                 }
             }
         });
@@ -358,6 +358,25 @@
         // Routes from span tags
         const getUserOrdersRoute = $('#getUserOrdersRoute').data('url');
         const linkOrderRoute = $('#linkOrderRoute').data('url');
+        const crmDealText = {
+            noOrdersFound: @json(translate('No orders found for this customer.')),
+            action: @json(translate('Action')),
+            orderId: @json(translate('Order ID')),
+            date: @json(translate('Date')),
+            amount: @json(translate('Amount')),
+            status: @json(translate('Status')),
+            link: @json(translate('Link')),
+            failedOrders: @json(translate('Failed to load orders. Please try again.')),
+            linkOrderTitle: @json(translate('Link Order?')),
+            linkOrderBody: @json(translate('Order will be linked to the selected deal.')),
+            yesLinkIt: @json(translate('Yes, Link it!')),
+            linked: @json(translate('Linked!')),
+            orderLinked: @json(translate('Order linked successfully!')),
+            failed: @json(translate('Failed')),
+            error: @json(translate('Error')),
+            serverError: @json(translate('Server error. Please try again.')),
+            cancel: @json(translate('Cancel')),
+        };
 
         // Open Modal + Load Orders
         $(document).on('click', '.link-order-btn', function() {
@@ -370,13 +389,12 @@
 
             $('#orders-list').html('<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>');
 
-            // AB deal_id bhi bhej rahe hain
             $.get(getUserOrdersRoute, {
                 user_id: userId,
                 deal_id: dealId
             }, function(response) {
                 if (!response.orders || response.orders.length === 0) {
-                    $('#orders-list').html('<p class="text-muted text-center">No orders found for this customer.</p>');
+                    $('#orders-list').html(`<p class="text-muted text-center">${crmDealText.noOrdersFound}</p>`);
                     return;
                 }
 
@@ -385,11 +403,11 @@
                     <table class="table table-bordered table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th width="100">Action</th>
-                                <th>Order ID</th>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Status</th>
+                                <th width="100">${crmDealText.action}</th>
+                                <th>${crmDealText.orderId}</th>
+                                <th>${crmDealText.date}</th>
+                                <th>${crmDealText.amount}</th>
+                                <th>${crmDealText.status}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -420,7 +438,7 @@
                             <button class="btn btn-sm btn-primary link-this-order"
                                     data-deal-id="${dealId}"
                                     data-order-id="${order.id}">
-                                <i class="tio-link"></i> Link
+                                <i class="tio-link"></i> ${crmDealText.link}
                             </button>
                         </td>
                         <td><strong>#${order.id}</strong></td>
@@ -439,7 +457,7 @@
                 $('#orders-list').html(html);
 
             }).fail(function() {
-                $('#orders-list').html('<p class="text-danger text-center">Failed to load orders. Please try again.</p>');
+                $('#orders-list').html(`<p class="text-danger text-center">${crmDealText.failedOrders}</p>`);
             });
 
             $('#linkOrderModal').modal('show');
@@ -451,12 +469,12 @@
             const orderId = $(this).data('order-id');
 
             Swal.fire({
-                title: 'Link Order?',
-                text: `Order #${orderId} will be linked to Deal #${dealId}`,
+                title: crmDealText.linkOrderTitle,
+                text: crmDealText.linkOrderBody,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Yes, Link it!',
-                cancelButtonText: 'Cancel',
+                confirmButtonText: crmDealText.yesLinkIt,
+                cancelButtonText: crmDealText.cancel,
                 confirmButtonColor: '#1e88e5'
             }).then(result => {
                 if (result.isConfirmed) {
@@ -468,19 +486,19 @@
                         if (res.success) {
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Linked!',
-                                text: res.message || 'Order linked successfully!',
+                                title: crmDealText.linked,
+                                text: res.message || crmDealText.orderLinked,
                                 timer: 2000,
                                 showConfirmButton: false
                             }).then(() => {
                                 location.reload();
                             });
                         } else {
-                            Swal.fire('Failed', res.message || 'Something went wrong', 'error');
+                            Swal.fire(crmDealText.failed, res.message || @json(translate('Something went wrong')), 'error');
                         }
-                    }).fail(function() {
-                        console.error(xhr.responseText); // Debug ke liye
-                        Swal.fire('Error', 'Server error. Please try again.', 'error');
+                    }).fail(function(xhr) {
+                        console.error(xhr.responseText);
+                        Swal.fire(crmDealText.error, crmDealText.serverError, 'error');
                     });
                 }
             });
@@ -488,3 +506,5 @@
     });
 </script>
 @endpush
+
+

@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('Massage Details'))
+@section('title', translate('SLA Policy Details'))
 
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/css/tags-input.min.css') }}" rel="stylesheet">
@@ -21,43 +21,43 @@
             <form action="{{ route('admin.sla.update', $policy->id) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="form-group">
-                    <label>Entity Type</label>
+                    <label>{{ translate('Entity Type') }}</label>
                     <select name="entity_type" class="form-control" required>
-                        <option value="inbox_message" {{ $policy->entity_type == 'inbox_message' ? 'selected' : '' }}>Inbox Message</option>
-                        <option value="lead" {{ $policy->entity_type == 'lead' ? 'selected' : '' }}>Lead</option>
-                        <option value="retail_deal" {{ $policy->entity_type == 'retail_deal' ? 'selected' : '' }}>Retail Deal</option>
-                        <option value="wholesale_deal" {{ $policy->entity_type == 'wholesale_deal' ? 'selected' : '' }}>Wholesale Deal</option>
-                        <option value="warranty_claim" {{ $policy->entity_type == 'warranty_claim' ? 'selected' : '' }}>Warranty Claim</option>
-                        <option value="complaint_ticket" {{ $policy->entity_type == 'complaint_ticket' ? 'selected' : '' }}>Complaint Ticket</option>
-                        <option value="service_ticket" {{ $policy->entity_type == 'service_ticket' ? 'selected' : '' }}>Service Ticket</option>
-                        <option value="career_ticket" {{ $policy->entity_type == 'career_ticket' ? 'selected' : '' }}>Career Ticket</option>
-                        <option value="support_ticket" {{ $policy->entity_type == 'support_ticket' ? 'selected' : '' }}>Support Ticket</option>
-                        <option value="retail_ticket" {{ $policy->entity_type == 'retail_ticket' ? 'selected' : '' }}>Retail Ticket</option>
-                        <option value="wholesale_ticket" {{ $policy->entity_type == 'wholesale_ticket' ? 'selected' : '' }}>Wholesale Ticket</option>
+                        <option value="inbox_message" {{ $policy->entity_type == 'inbox_message' ? 'selected' : '' }}>{{ translate('Inbox Message') }}</option>
+                        <option value="lead" {{ $policy->entity_type == 'lead' ? 'selected' : '' }}>{{ translate('Lead') }}</option>
+                        <option value="retail_deal" {{ $policy->entity_type == 'retail_deal' ? 'selected' : '' }}>{{ translate('Retail Deal') }}</option>
+                        <option value="wholesale_deal" {{ $policy->entity_type == 'wholesale_deal' ? 'selected' : '' }}>{{ translate('Wholesale Deal') }}</option>
+                        <option value="warranty_claim" {{ $policy->entity_type == 'warranty_claim' ? 'selected' : '' }}>{{ translate('Warranty Claim') }}</option>
+                        <option value="complaint_ticket" {{ $policy->entity_type == 'complaint_ticket' ? 'selected' : '' }}>{{ translate('Complaint Ticket') }}</option>
+                        <option value="service_ticket" {{ $policy->entity_type == 'service_ticket' ? 'selected' : '' }}>{{ translate('Service Ticket') }}</option>
+                        <option value="career_ticket" {{ $policy->entity_type == 'career_ticket' ? 'selected' : '' }}>{{ translate('Career Ticket') }}</option>
+                        <option value="support_ticket" {{ $policy->entity_type == 'support_ticket' ? 'selected' : '' }}>{{ translate('Support Ticket') }}</option>
+                        <option value="retail_ticket" {{ $policy->entity_type == 'retail_ticket' ? 'selected' : '' }}>{{ translate('Retail Ticket') }}</option>
+                        <option value="wholesale_ticket" {{ $policy->entity_type == 'wholesale_ticket' ? 'selected' : '' }}>{{ translate('Wholesale Ticket') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Priority</label>
+                    <label>{{ translate('Priority') }}</label>
                     <select name="priority" class="form-control" required>
-                        <option value="low" {{ $policy->priority == 'low' ? 'selected' : '' }}>Low</option>
-                        <option value="medium" {{ $policy->priority == 'medium' ? 'selected' : '' }}>Medium</option>
-                        <option value="high" {{ $policy->priority == 'high' ? 'selected' : '' }}>High</option>
-                        <option value="urgent" {{ $policy->priority == 'urgent' ? 'selected' : '' }}>Urgent</option>
+                        <option value="low" {{ $policy->priority == 'low' ? 'selected' : '' }}>{{ translate('low') }}</option>
+                        <option value="medium" {{ $policy->priority == 'medium' ? 'selected' : '' }}>{{ translate('medium') }}</option>
+                        <option value="high" {{ $policy->priority == 'high' ? 'selected' : '' }}>{{ translate('high') }}</option>
+                        <option value="urgent" {{ $policy->priority == 'urgent' ? 'selected' : '' }}>{{ translate('urgent') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Response Time (minutes)</label>
+                    <label>{{ translate('Response Time (minutes)') }}</label>
                     <input type="number" name="response_time_minutes" class="form-control" value="{{ $policy->response_time_minutes }}" required min="1">
                 </div>
                 <div class="form-group">
-                    <label>Resolution Time (minutes)</label>
+                    <label>{{ translate('Resolution Time (minutes)') }}</label>
                     <input type="number" name="resolution_time_minutes" class="form-control" value="{{ $policy->resolution_time_minutes }}" required min="1">
                 </div>
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ translate('Active') }}</label>
                     <input type="checkbox" name="is_active" value="1" {{ $policy->is_active ? 'checked' : '' }}>
                 </div>
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">{{ translate('Update') }}</button>
             </form>
         </div>
     </div>

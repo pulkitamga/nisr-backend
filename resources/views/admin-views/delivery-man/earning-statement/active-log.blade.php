@@ -91,7 +91,7 @@
                                                 </span>
                                                 @elseif($order['order_status']=='failed')
                                                     <span class="badge badge-danger fz-12">
-                                                    {{translate('Failed_To_Deliver')}}
+                                                    {{translate('Failed_to_Deliver')}}
                                                 </span>
                                                 @elseif($order['order_status']=='delivered')
                                                     <span class="badge badge-soft-success fz-12">
@@ -141,3 +141,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deliveryman.js')}}"></script>
 @endpush
+

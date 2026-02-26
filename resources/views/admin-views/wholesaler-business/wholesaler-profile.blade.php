@@ -94,11 +94,11 @@
                                     $business->company_name }}</span></li>
                             <li><strong class="key">{{ translate('Trade Name') }}</strong><span class="mr-3">:</span><span class="value">{{
                                     $business->trade_name }}</span></li>
-                            <li><strong class="key">{{ translate('Reg_No') }}</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">{{ translate('reg._no.') }}</strong><span class="mr-3">:</span><span class="value">{{
                                     $business->registration_number }}</span></li>
-                            <li><strong class="key">{{ translate(' ID') }}</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">{{ translate('ID') }}</strong><span class="mr-3">:</span><span class="value">{{
                                     $business->tax_id }}</span></li>
-                            <li><strong class="key">{{ translate('VAT No') }}</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">{{ translate('VAT No.') }}</strong><span class="mr-3">:</span><span class="value">{{
                                     $business->vat_number }}</span></li>
                         </ul>
                         <div class="mt-3">
@@ -189,7 +189,7 @@
         <div class="col-xl-12 col-xxl-12 col--xxl-12">
             <div class="card mb-4 shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="text-capitalize">{{ translate('Contacts') }}</h5>
+                    <h5 class="text-capitalize">{{ translate('contacts') }}</h5>
                     <div class="dropdown">
                         <a type="button" class="btn btn-outline--primary text-nowrap" data-bs-toggle="modal" data-bs-target="#addContactModal">
                             {{ translate('Add Contact') }}
@@ -236,7 +236,7 @@
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                onclick="return confirm('{{ translate('Are you sure to delete?') }}')">
+                                                onclick="return confirm('{{ translate('Are_you_sure_to_delete_this') }}')">
                                                 <i class="tio-delete"></i>
                                             </button>
                                         </form>

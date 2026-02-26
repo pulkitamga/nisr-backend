@@ -21,7 +21,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>{{ translate('Reason Code') }}</label>
+                    <label>{{ translate('reason_code') }}</label>
                     <select name="reason_code" class="form-control" required>
                         <option value="valid_issue">{{ translate('Valid Issue') }}</option>
                         <option value="invalid_claim">{{ translate('Invalid Claim') }}</option>

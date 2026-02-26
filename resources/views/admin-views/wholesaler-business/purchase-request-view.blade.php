@@ -34,14 +34,14 @@
             <div class="row my-4">
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ translate('Wholeseller') }}</label>
+                    <label class="form-label">{{ translate('Wholesaler') }}</label>
                     <input type="text"
                         value="{{ $order->wholeseller->wholesalerBusiness->company_name ?? 'N/A' }}"
                         name="wholesaler_" class="form-control" readonly>
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ translate('Wholeseller Tier') }}</label>
+                    <label class="form-label">{{ translate('Wholesaler Tier') }}</label>
                     <input type="text" value="{{ $order->wholeseller->tier ?? 'N/A' }}" class="form-control"
                         readonly>
                 </div>

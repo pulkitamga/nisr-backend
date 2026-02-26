@@ -1,9 +1,10 @@
 @php
     use App\Utils\Helpers;
+    $direction = Session::get('direction') ?? 'ltr';
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ Session::get('direction') }}"
-    style="text-align: {{ Session::get('direction') === 'rtl' ? 'right' : 'left' }};">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction }}"
+    style="text-align: {{ $direction === 'rtl' ? 'right' : 'left' }};">
 
 <head>
     <meta charset="utf-8">
@@ -21,7 +22,7 @@
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/theme.minc619.css?v=1.0') }}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/daterangepicker.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/style.css')}}">
-    @if (Session::get('direction') === 'rtl')
+    @if ($direction === 'rtl')
         <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/menurtl.css')}}">
     @endif
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/css/lightbox.css') }}">

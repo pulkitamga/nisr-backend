@@ -197,7 +197,7 @@ $defaultLanguage = $languages[0] ?? 'en';
                     </div>
 
                     <div class="mb-3">
-                        <label for="edit-image" class="form-label">{{translate('Image ')}}(optional)</label>
+                        <label for="edit-image" class="form-label">{{translate('Image')}} (optional)</label>
                         <div class="mt-2" style="max-width:220px;">
                             <div class="custom_upload_input position-relative border-dashed-2">
                                 <input type="file" class="custom-upload-input-file" name="image" id="edit-image"
