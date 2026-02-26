@@ -1,129 +1,147 @@
 'use strict';
 
-$('#submit-create-role').on('submit', function (e) {
-    // Get all checked permissions
-    let fields = $("input[name='permissions[]']:checked");
-
-    if (fields.length === 0) {
-        toastr.warning($('#select-minimum-one-box-message').data('warning'), {
-            CloseButton: true,
-            ProgressBar: true
-        });
-        e.preventDefault();
-        return false;
-    }
-
-    // Get selected modules
-    let selectedModules = new Set();
-    let modulePermissions = {};
-
-    fields.each(function () {
-        let module = $(this).data('module');
-        let perm = $(this).val();
-
-        selectedModules.add(module);
-
-        if (!modulePermissions[module]) {
-            modulePermissions[module] = [];
-        }
-        modulePermissions[module].push(perm);
-    });
-
-    // Set values in hidden inputs
-    $('#selected-modules').val(Array.from(selectedModules));
-    $('#module-permissions-json').val(JSON.stringify(modulePermissions));
-
-    // Allow form submit
-    return true;
-});
-
-
-$("#select-all").on('change', function () {
-    if ($(this).is(":checked") === true) {
-        $(".module-permission").prop("checked", true);
-    } else {
-        $(".module-permission").removeAttr("checked");
-    }
-});
-
 $(document).ready(function () {
-    checkboxSelectionCheck();
-})
+    const form = $('#submit-create-role');
+    const warningMessage = $('#select-minimum-one-box-message').data('warning') || 'Select at least one permission.';
+    function initPermissionTooltips() {
+        const selector = '.permission-tip';
 
-function checkboxSelectionCheck() {
-    let nonEmptyCount = 0;
-    $(".module-permission").each(function () {
-        if ($(this).is(":checked") !== true) {
-            nonEmptyCount++;
+        if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+            document.querySelectorAll(selector).forEach(function (element) {
+                const tipText = (
+                    element.getAttribute('data-tip') ||
+                    element.getAttribute('title') ||
+                    element.getAttribute('aria-label') ||
+                    ''
+                ).trim();
+
+                if (tipText === '') {
+                    return;
+                }
+
+                element.setAttribute('title', tipText);
+                element.setAttribute('data-original-title', tipText);
+
+                const instance = window.bootstrap.Tooltip.getInstance(element);
+                if (instance) {
+                    instance.dispose();
+                }
+
+                new window.bootstrap.Tooltip(element, {
+                    container: 'body',
+                    trigger: 'hover focus',
+                    customClass: 'permission-tip-tooltip',
+                    placement: element.getAttribute('data-placement') || 'right',
+                });
+            });
+            return;
         }
-    });
 
-    let selectAll = $("#select-all");
-    if (nonEmptyCount === 0) {
-        selectAll.prop("checked", true);
-    } else {
-        selectAll.removeAttr("checked");
-    }
-}
-
-$('.module-permission').click(function () {
-    checkboxSelectionCheck();
-});
-
-
-function toggleCrudOptions(module) {
-    const crudOptions = document.getElementById('crud-options-' + module);
-    const moduleCheckbox = document.getElementById(module);
-
-    // Show CRUD options if module checkbox is checked
-    if (moduleCheckbox.checked) {
-        crudOptions.style.display = 'block';
-    } else {
-        crudOptions.style.display = 'none';
-    }
-}
-
-// Optional: Select all modules and show/hide CRUD options accordingly
-document.getElementById('select-all').addEventListener('click', function () {
-    const checkboxes = document.querySelectorAll('.module-permission');
-    checkboxes.forEach(function (checkbox) {
-        checkbox.checked = this.checked;  // Check/uncheck all modules
-        toggleCrudOptions(checkbox.id);  // Toggle CRUD options visibility
-    }.bind(this));  // Use .bind(this) to pass correct context
-});
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('submit-create-role');
-
-    document.querySelectorAll('.permission-checkbox').forEach(function (checkbox) {
-        checkbox.addEventListener('change', function () {
-            const moduleName = this.getAttribute('data-module');
-
-            if (this.checked) {
-                // Agar module name already add nahi hua, to add karo
-                if (!form.querySelector(`input[name="modules[]"][value="${moduleName}"]`)) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'modules[]';
-                    input.value = moduleName;
-                    input.classList.add('dynamic-module');
-                    form.appendChild(input);
+        if (typeof $.fn.tooltip === 'function') {
+            $(selector).each(function () {
+                const tipText = (
+                    $(this).attr('data-tip') ||
+                    $(this).attr('title') ||
+                    $(this).attr('aria-label') ||
+                    ''
+                ).trim();
+                if (tipText !== '') {
+                    $(this).attr('title', tipText).attr('data-original-title', tipText);
                 }
-            } else {
-                const stillChecked = document.querySelectorAll(`.permission-checkbox[data-module="${moduleName}"]:checked`);
-                if (stillChecked.length === 0) {
-                    const hiddenInput = form.querySelector(`input[name="modules[]"][value="${moduleName}"]`);
-                    if (hiddenInput) hiddenInput.remove();
-                }
-            }
+            });
+
+            $(selector).tooltip('dispose').tooltip({
+                container: 'body',
+                trigger: 'hover focus',
+                template: '<div class="tooltip permission-tip-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>',
+            });
+        }
+    }
+
+    function moduleCheckboxes(moduleKey) {
+        return $(`.permission-checkbox[data-module="${moduleKey}"]`);
+    }
+
+    function groupCheckboxes(moduleKey, groupKey) {
+        return $(`.permission-checkbox[data-module="${moduleKey}"][data-group="${groupKey}"]`);
+    }
+
+    function syncGroupMasterCheckbox(moduleKey, groupKey) {
+        const allGroupCheckboxes = groupCheckboxes(moduleKey, groupKey);
+        const groupMaster = $(`.group-master-checkbox[data-module="${moduleKey}"][data-group="${groupKey}"]`);
+
+        if (!allGroupCheckboxes.length) {
+            groupMaster.prop('checked', false);
+            return;
+        }
+
+        groupMaster.prop('checked', allGroupCheckboxes.length === allGroupCheckboxes.filter(':checked').length);
+    }
+
+    function syncModuleMasterCheckbox(moduleKey) {
+        const allModuleCheckboxes = moduleCheckboxes(moduleKey);
+        const moduleMaster = $(`#master_${moduleKey}`);
+
+        if (!allModuleCheckboxes.length) {
+            moduleMaster.prop('checked', false);
+            return;
+        }
+
+        moduleMaster.prop('checked', allModuleCheckboxes.length === allModuleCheckboxes.filter(':checked').length);
+    }
+
+    function syncModuleGroups(moduleKey) {
+        $(`.group-master-checkbox[data-module="${moduleKey}"]`).each(function () {
+            syncGroupMasterCheckbox(moduleKey, $(this).data('group'));
         });
+    }
+
+    $('.module-master-checkbox').on('change', function () {
+        const moduleKey = $(this).data('module');
+        const isChecked = $(this).is(':checked');
+
+        moduleCheckboxes(moduleKey).prop('checked', isChecked);
+        syncModuleGroups(moduleKey);
     });
 
+    $('.group-master-checkbox').on('change', function () {
+        const moduleKey = $(this).data('module');
+        const groupKey = $(this).data('group');
+        const isChecked = $(this).is(':checked');
 
-    
+        groupCheckboxes(moduleKey, groupKey).prop('checked', isChecked);
+        syncModuleMasterCheckbox(moduleKey);
+    });
+
+    $('.permission-checkbox').on('change', function () {
+        const moduleKey = $(this).data('module');
+        const groupKey = $(this).data('group');
+
+        syncGroupMasterCheckbox(moduleKey, groupKey);
+        syncModuleMasterCheckbox(moduleKey);
+    });
+
+    $('.group-master-checkbox').each(function () {
+        syncGroupMasterCheckbox($(this).data('module'), $(this).data('group'));
+    });
+
+    $('.module-master-checkbox').each(function () {
+        syncModuleMasterCheckbox($(this).data('module'));
+    });
+
+    initPermissionTooltips();
+
+    form.on('submit', function (e) {
+        const selected = $("input[name='permissions[]']:checked");
+        if (!selected.length) {
+            toastr.warning(warningMessage, {
+                closeButton: true,
+                progressBar: true,
+            });
+            e.preventDefault();
+            return false;
+        }
+
+        return true;
+    });
 });
-
-
-
-

@@ -1,179 +1,245 @@
 @php
 use Illuminate\Support\Facades\Session;
+
+$permissionGroups = $permissionGroups ?? \App\Support\AdminPermissionRegistry::groupedPermissionsBySection();
+$isRtl = Session::get('direction') === 'rtl';
+$moduleIcons = [
+    'dashboard' => 'bi-speedometer2',
+    'pos_management' => 'bi-printer',
+    'order_management' => 'bi-bag',
+    'product_management' => 'bi-box',
+    'promotion_management' => 'bi-megaphone',
+    'report' => 'bi-bar-chart',
+    'user_section' => 'bi-person',
+    'employee_management' => 'bi-people',
+    'crm_section' => 'bi-people',
+    'wholesaler_section' => 'bi-shop',
+    'system_settings' => 'bi-gear',
+    'branch_management' => 'bi-diagram-3',
+    'cms_section' => 'bi-file-earmark-text',
+    'task_section' => 'bi-list-task',
+    'warranty_section' => 'bi-shield-check',
+    'rbac' => 'bi-shield-lock',
+];
 @endphp
+
 @extends('layouts.back-end.app')
 @section('title', translate('create_Role'))
 @section('content')
 <div class="content container-fluid">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .nav-link.active {
+            background: var(--c1) !important;
+        }
 
-  <style>
-    .nav-link.active {
-      background: var(--c1) !important;
-    }
-  </style>
-  <div class="mb-3">
-    <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2 text-capitalize">
-      <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-      {{translate('employee_role_setup')}}
-    </h2>
-  </div>
-  @php
-  $modules = [
-  ['key' => 'dashboard', 'title_key' => 'dashboard', 'icon' => 'bi-speedometer2'],
-  ['key' => 'pos_management', 'title_key' => 'pos_management', 'icon' => 'bi-printer'],
-  ['key' => 'order_management', 'title_key' => 'order_management', 'icon' => 'bi-bag'],
-  ['key' => 'product_management', 'title_key' => 'product_management', 'icon' => 'bi-box'],
-  ['key' => 'promotion_management', 'title_key' => 'promotion_management', 'icon' => 'bi-megaphone'],
-  ['key' => 'support_section', 'title_key' => 'support_section', 'icon' => 'bi-headset'],
-  ['key' => 'report', 'title_key' => 'report', 'icon' => 'bi-bar-chart'],
-  ['key' => 'user_section', 'title_key' => 'user_section', 'icon' => 'bi-person'],
-  ['key' => 'crm_section', 'title_key' => 'crm_section', 'icon' => 'bi-people'],
-  ['key' => 'wholesaler_section', 'title_key' => 'wholesaler_section', 'icon' => 'bi-shop'],
-  ['key' => 'system_settings', 'title_key' => 'system_settings', 'icon' => 'bi-gear'],
-  ['key' => 'branch_management', 'title_key' => 'branch_management', 'icon' => 'bi-diagram-3'],
-  ['key' => 'cms_management', 'title_key' => 'cms_management', 'icon' => 'bi-file-earmark-text'],
-  ['key' => 'warranty_section', 'title_key' => 'warranty_section', 'icon' => 'bi-file-earmark-text'],
-  ];
+        .permission-label-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-  $permissions = config('role_permissions');
-  @endphp
-  <div class="card">
-    <div class="card-body">
+        .permission-tip {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-      <form id="submit-create-role" method="post" action="{{route('admin.custom-role.store')}}" class="text-start">
-        @csrf
+        .permission-tip:hover {
+            color: #1d4ed8;
+        }
 
-        <input type="hidden" name="modules[]" id="selected-modules">
-        <input type="hidden" name="module_permissions_json" id="module-permissions-json">
+        .permission-tip i {
+            font-size: 14px;
+        }
 
+        .tooltip.permission-tip-tooltip .tooltip-inner {
+            max-width: 320px;
+            text-align: left;
+        }
 
-        <div class="row mt-3">
-          <div class="col-lg-12">
-            <div class="form-group mb-4">
-              <label for="name" class="title-color">{{translate('role_name')}}</label>
-              <input type="text" name="name" class="form-control" id="name"
-                aria-describedby="emailHelp"
-                placeholder="{{translate('ex').':'.translate('store')}}" required>
-            </div>
-          </div>
-          <!-- LEFT SIDE MODULE LIST -->
-          <div class="col-lg-3 mb-3">
-            <div class="card border card-shadow">
-              <h3 class="card-header card-header-tab shadow-none border-bottom">{{translate('Role_Category')}}</h3>
-              <div class="card-body px-3 py-2">
-                <div class="nav flex-column nav-pills" id="role-tabs" role="tablist">
-                  @foreach($modules as $index => $module)
-                  <a class="nav-link mb-2 border-0 align-items-center d-flex gap-2 justify-content-between left-tab {{ $index === 0 ? 'active' : '' }}"
-                    data-toggle="pill"
-                    href="#{{ $module['key'] }}">
-                    <div class="align-items-center d-flex gap-2 role-left-side">
-                      <i class="bi {{ $module['icon'] }} font18"></i> {{ translate($module['title_key']) }}
-                    </div>
-                    <i class="bi bi-arrow-right font18"></i>
-                  </a>
-                  @endforeach
-                </div>
-              </div>
-            </div>
-          </div>
+        html[dir="rtl"] .tooltip.permission-tip-tooltip .tooltip-inner {
+            direction: rtl;
+            text-align: right;
+        }
+    </style>
 
-          <!-- RIGHT SIDE PERMISSIONS TAB -->
-          <div class="col-lg-9">
-            <div class="tab-content">
-              @foreach($modules as $index => $module)
-              <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" id="{{ $module['key'] }}">
-                <div class="card border card-shadow">
-                  <div class="card-header card-header-tab shadow-none border-bottom">
-                    <div class="d-flex justify-content-between align-items-center gap-4">
-                      <h3 class="mb-0">{{ translate($module['title_key']) }}</h3>
-                      <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input module-master-checkbox"
-                          id="master_{{ $module['key'] }}" data-module="{{ $module['key'] }}">
-                        <label class="custom-control-label" for="master_{{ $module['key'] }}"></label>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="row">
-                      @if(isset($permissions[$module['key']]))
-                      @foreach($permissions[$module['key']] as $permission)
-                      <div class="col-md-6 col-lg-4 mb-3">
-                        <div class="switch-card">
-                          <div class="d-flex justify-content-between switch-flex align-items-center">
-                            <label class="mb-0 font18">
-                              @php
-                              $label = str_replace($module['key'] . '.', '', $permission);
-                              $label = str_replace('_', ' ', $label);
-                              $label = ucwords($label);
-                              @endphp
-                              {{ translate($label) }}
-                            </label>
-                            <div class="custom-control custom-switch">
-                              <input type="checkbox"
-                                class="custom-control-input permission-checkbox"
-                                name="permissions[]"
-                                value="{{ $permission }}"
-                                data-module="{{ $module['key'] }}"
-                                id="{{ $permission }}">
-                              <label class="custom-control-label" for="{{ $permission }}"></label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      @endforeach
-                      @else
-                      <div class="col-12">
-                        <p class="text-muted"> {{translate('no_role_permissions_define_for_this_module')}}</p>
-                      </div>
-                      @endif
-                    </div>
-                  </div>
-                </div>
-              </div>
-              @endforeach
-            </div>
-
-            <div class="d-flex justify-content-end mt-3">
-              <button class="btn btn-primary">{{translate('Add_Role')}}</button>
-            </div>
-          </div>
-        </div>
-      </form>
+    <div class="mb-3">
+        <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2 text-capitalize">
+            <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
+            {{translate('employee_role_setup')}}
+        </h2>
     </div>
-  </div>
 
+    <div class="card">
+        <div class="card-body">
+            <form id="submit-create-role" method="post" action="{{route('admin.custom-role.store')}}" class="text-start">
+                @csrf
+
+                <div class="row mt-3">
+                    <div class="col-lg-12">
+                        <div class="form-group mb-4">
+                            <label for="name" class="title-color">{{translate('role_name')}}</label>
+                            <input type="text" name="name" class="form-control" id="name" value="{{ old('name') }}"
+                                   placeholder="{{translate('ex').':'.translate('store')}}" required>
+                            @error('name')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 mb-3">
+                        <div class="card border card-shadow">
+                            <h3 class="card-header card-header-tab shadow-none border-bottom">{{translate('Role_Category')}}</h3>
+                            <div class="card-body px-3 py-2">
+                                <div class="nav flex-column nav-pills" id="role-tabs" role="tablist">
+                                    @foreach($permissionGroups as $module => $moduleSections)
+                                        <a class="nav-link mb-2 border-0 align-items-center d-flex gap-2 justify-content-between left-tab {{ $loop->first ? 'active' : '' }}"
+                                           data-toggle="pill"
+                                           href="#{{ $module }}">
+                                            <div class="align-items-center d-flex gap-2 role-left-side">
+                                                <i class="bi {{ $moduleIcons[$module] ?? 'bi-shield-lock' }} font18"></i>
+                                                {{ \App\Support\AdminPermissionRegistry::moduleDisplayName($module) }}
+                                            </div>
+                                            <i class="bi bi-arrow-right font18"></i>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-9">
+                        <div class="tab-content">
+                            @foreach($permissionGroups as $module => $moduleSections)
+                                <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="{{ $module }}">
+                                    <div class="card border card-shadow">
+                                        <div class="card-header card-header-tab shadow-none border-bottom">
+                                            <div class="d-flex justify-content-between align-items-center gap-4">
+                                                <h3 class="mb-0 permission-label-wrap">
+                                                    <span>{{ \App\Support\AdminPermissionRegistry::moduleDisplayName($module) }}</span>
+                                                    <span class="input-label-secondary permission-tip"
+                                                          tabindex="0"
+                                                          role="button"
+                                                          data-toggle="tooltip"
+                                                          data-bs-toggle="tooltip"
+                                                          data-placement="{{ $isRtl ? 'left' : 'right' }}"
+                                                          data-tip="{{ \App\Support\AdminPermissionRegistry::moduleHint($module) }}"
+                                                          aria-label="{{ \App\Support\AdminPermissionRegistry::moduleHint($module) }}"
+                                                          title="{{ \App\Support\AdminPermissionRegistry::moduleHint($module) }}">
+                                                        <i class="bi bi-info-circle"></i>
+                                                    </span>
+                                                </h3>
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input module-master-checkbox"
+                                                           id="master_{{ $module }}" data-module="{{ $module }}">
+                                                    <label class="custom-control-label" for="master_{{ $module }}"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            @foreach($moduleSections as $groupKey => $groupPermissions)
+                                                @php
+                                                    $groupId = str_replace(['.', ' '], '_', $module . '_' . $groupKey);
+                                                @endphp
+                                                <div class="card border mb-3">
+                                                    <div class="card-header bg-transparent py-2">
+                                                        <div class="d-flex justify-content-between align-items-center gap-3">
+                                                            <h5 class="mb-0 permission-label-wrap">
+                                                                <span>{{ \App\Support\AdminPermissionRegistry::groupDisplayName($groupKey) }}</span>
+                                                                <span class="input-label-secondary permission-tip"
+                                                                      tabindex="0"
+                                                                      role="button"
+                                                                      data-toggle="tooltip"
+                                                                      data-bs-toggle="tooltip"
+                                                                      data-placement="{{ $isRtl ? 'left' : 'right' }}"
+                                                                      data-tip="{{ \App\Support\AdminPermissionRegistry::groupHint($module, $groupKey) }}"
+                                                                      aria-label="{{ \App\Support\AdminPermissionRegistry::groupHint($module, $groupKey) }}"
+                                                                      title="{{ \App\Support\AdminPermissionRegistry::groupHint($module, $groupKey) }}">
+                                                                    <i class="bi bi-info-circle"></i>
+                                                                </span>
+                                                            </h5>
+                                                            <div class="custom-control custom-switch">
+                                                                <input type="checkbox"
+                                                                       class="custom-control-input group-master-checkbox"
+                                                                       id="group_master_{{ $groupId }}"
+                                                                       data-module="{{ $module }}"
+                                                                       data-group="{{ $groupKey }}">
+                                                                <label class="custom-control-label" for="group_master_{{ $groupId }}"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body pt-3 pb-2">
+                                                        <div class="row">
+                                                            @foreach($groupPermissions as $permission)
+                                                                @php
+                                                                    $label = \App\Support\AdminPermissionRegistry::permissionDisplayName($permission);
+                                                                    $hint = \App\Support\AdminPermissionRegistry::permissionHint($permission);
+                                                                @endphp
+                                                                <div class="col-md-6 col-lg-4 mb-3">
+                                                                    <div class="switch-card">
+                                                                        <div class="d-flex justify-content-between switch-flex align-items-center">
+                                                                            <label class="mb-0 font18 permission-label-wrap">
+                                                                                <span>{{ $label }}</span>
+                                                                                <span class="input-label-secondary permission-tip"
+                                                                                      tabindex="0"
+                                                                                      role="button"
+                                                                                      data-toggle="tooltip"
+                                                                                      data-bs-toggle="tooltip"
+                                                                                      data-placement="{{ $isRtl ? 'left' : 'right' }}"
+                                                                                      data-tip="{{ $hint }}"
+                                                                                      aria-label="{{ $hint }}"
+                                                                                      title="{{ $hint }}">
+                                                                                    <i class="bi bi-info-circle"></i>
+                                                                                </span>
+                                                                            </label>
+                                                                            <div class="custom-control custom-switch">
+                                                                                <input type="checkbox"
+                                                                                       class="custom-control-input permission-checkbox"
+                                                                                       name="permissions[]"
+                                                                                       value="{{ $permission }}"
+                                                                                       data-module="{{ $module }}"
+                                                                                       data-group="{{ $groupKey }}"
+                                                                                       id="{{ str_replace('.', '_', $permission) }}"
+                                                                                       {{ in_array($permission, old('permissions', []), true) ? 'checked' : '' }}>
+                                                                                <label class="custom-control-label" for="{{ str_replace('.', '_', $permission) }}"></label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @error('permissions')
+                        <small class="text-danger d-block mt-2">{{ $message }}</small>
+                        @enderror
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <button class="btn btn-primary">{{translate('Add_Role')}}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
-
-
+<span id="select-minimum-one-box-message" data-warning="{{ translate('select_minimum_one_permission') }}"></span>
 @endsection
 
 @push('script')
-<script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/custom-role.js')}}"></script>
-<script>
-  $(document).ready(function() {
-    // When the master switch for a module is toggled
-    $('.module-master-checkbox').on('change', function() {
-      var moduleKey = $(this).data('module');
-      var isChecked = $(this).is(':checked');
-
-      // Find all permission checkboxes for this module
-      $('.permission-checkbox[data-module="' + moduleKey + '"]').prop('checked', isChecked);
-    });
-
-    // Optional: Auto-check master switch if all individual toggles are checked manually
-    $('.permission-checkbox').on('change', function() {
-      var moduleKey = $(this).data('module');
-      var allModuleCheckboxes = $('.permission-checkbox[data-module="' + moduleKey + '"]');
-      var masterCheckbox = $('#master_' + moduleKey);
-
-      if (allModuleCheckboxes.length === allModuleCheckboxes.filter(':checked').length) {
-        masterCheckbox.prop('checked', true);
-      } else {
-        masterCheckbox.prop('checked', false);
-      }
-    });
-  });
-</script>
+<script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/custom-role.js')}}?v={{ filemtime(base_path('public/assets/back-end/js/admin/custom-role.js')) }}"></script>
 @endpush

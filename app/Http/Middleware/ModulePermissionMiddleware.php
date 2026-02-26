@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Utils\Helpers;
+use App\Support\AdminPermissionRegistry;
 use Brian2694\Toastr\Facades\Toastr;
 use Closure;
 
@@ -17,30 +17,29 @@ class ModulePermissionMiddleware
      */
     public function handle($request, Closure $next, $module, $crud = null)
     {
-        // Get current admin user role
-        $user_role = auth('admin')->user()->role;
-
-        if ($user_role->status != 1) {
-            Toastr::error(translate('access_Denied') . '!');
-            return back();
-        }
-
-        if (auth('admin')->user()->admin_role_id == 1) {
-            return $next($request);
-        }
-
-        $module_permissions = json_decode($user_role->module_access, true); // array
-
-        if (!$module_permissions || !isset($module_permissions[$module])) {
+        $admin = auth('admin')->user();
+        if (!$admin) {
             Toastr::error(translate('access_Denied') . '!');
             return back();
         }
 
         if ($crud === null) {
-            return $next($request);
+            $module = trim((string)$module);
+            $module = AdminPermissionRegistry::moduleAliases()[$module] ?? $module;
+            $moduleActions = AdminPermissionRegistry::modules()[$module] ?? null;
+            if (is_array($moduleActions) && count($moduleActions) > 0) {
+                $permissions = array_map(
+                    static fn(string $moduleAction) => sprintf('%s.%s', $module, $moduleAction),
+                    $moduleActions
+                );
+                if ($admin->canAny($permissions)) {
+                    return $next($request);
+                }
+            }
         }
 
-        if (in_array($crud, $module_permissions[$module])) {
+        $permission = AdminPermissionRegistry::fromModuleAction((string)$module, $crud);
+        if ($permission !== null && $admin->can($permission)) {
             return $next($request);
         }
 

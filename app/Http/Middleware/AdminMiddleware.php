@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Utils\Helpers;
 use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
@@ -17,10 +16,14 @@ class AdminMiddleware
      */
     public function handle($request, Closure $next)
     {
+        // Ensure Gate/Blade authorization directives resolve against the admin guard
+        // for the full lifetime of admin-panel requests.
+        Auth::shouldUse('admin');
+
         if (Auth::guard('admin')->check()) {
             return $next($request);
-        }else{
-            abort(404);
         }
+
+        abort(404);
     }
 }

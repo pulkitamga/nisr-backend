@@ -30,6 +30,7 @@ $direction = Session::get('direction') ?? 'ltr';
     @if($direction === "rtl")
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/menurtl.css')}}">
     @endif
+    <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/admin-modern-phase1.css') }}?v={{ @filemtime(public_path('assets/back-end/css/admin-modern-phase1.css')) }}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/css/lightbox.css')}}">
     @stack('css_or_js')
     <script
@@ -54,7 +55,7 @@ $direction = Session::get('direction') ?? 'ltr';
     @endif
 </head>
 
-<body class="footer-offset">
+<body class="footer-offset admin-modern-phase1">
 
     @include('layouts.back-end.partials._front-settings')
     <span class="d-none" id="placeholderImg" data-img="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img3.png')}}"></span>
@@ -140,7 +141,7 @@ $direction = Session::get('direction') ?? 'ltr';
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/moment.min.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/daterangepicker.min.js')}}"></script>
 
-    <script src="{{dynamicAsset(path: 'public/assets/back-end/js/custom.js')}}"></script>
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/custom.js') }}?v={{ @filemtime(public_path('assets/back-end/js/custom.js')) }}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/app-script.js')}}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/backend/admin/js/common/custom-modal-plugin.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/libs/bootstrap-5/bootstrap.bundle.min.js') }}"></script>

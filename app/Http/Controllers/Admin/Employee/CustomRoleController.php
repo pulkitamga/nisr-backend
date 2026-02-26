@@ -2,30 +2,30 @@
 
 namespace App\Http\Controllers\Admin\Employee;
 
-use App\Contracts\Repositories\AdminRepositoryInterface;
-use App\Contracts\Repositories\AdminRoleRepositoryInterface;
 use App\Enums\ExportFileNames\Admin\Employee;
 use App\Enums\ViewPaths\Admin\CustomRole;
 use App\Exports\EmployeeRoleListExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\CustomRoleRequest;
+use App\Models\Admin;
+use App\Models\AdminRole;
+use App\Support\AdminPermissionRegistry;
 use App\Traits\PaginatorTrait;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class CustomRoleController extends BaseController
 {
     use PaginatorTrait;
-
-    public function __construct(
-        private readonly AdminRepositoryInterface $adminRepo,
-        private readonly AdminRoleRepositoryInterface $adminRoleRepo,
-    ) {}
 
     /**
      * @param Request|null $request
@@ -40,76 +40,86 @@ class CustomRoleController extends BaseController
 
     public function getAddView(Request $request): View
     {
-        $roles = $this->adminRoleRepo->getEmployeeRoleList(
-            orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
-            filters: ['admin_role_id' => $request['role']],
-            dataLimit: 'all'
-        );
-        return view(CustomRole::ADD[VIEW], compact('roles'));
+        $roles = $this->rolesQuery($request)->with('permissions')->get();
+        $permissionGroups = AdminPermissionRegistry::groupedPermissionsBySection();
+
+        return view(CustomRole::ADD[VIEW], compact('roles', 'permissionGroups'));
     }
+
     public function viewRole(Request $request): View
     {
-        $roles = $this->adminRoleRepo->getEmployeeRoleList(
-            orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
-            filters: ['admin_role_id' => $request['role']],
-            dataLimit: 'all'
-        );
-        return view(CustomRole::VIEW[VIEW], compact('roles'));
+        $roles = $this->rolesQuery($request)->with('permissions')->get();
+        $permissionGroups = AdminPermissionRegistry::groupedPermissionsBySection();
+
+        return view(CustomRole::VIEW[VIEW], compact('roles', 'permissionGroups'));
     }
 
     public function add(CustomRoleRequest $request): RedirectResponse
     {
-        $modulePermissions = json_decode($request->module_permissions_json, true);
+        if ($this->isSuperAdminRoleName($request->name) && !$this->currentAdminIsSuperAdmin()) {
+            throw ValidationException::withMessages([
+                'name' => [translate('access_denied')],
+            ]);
+        }
 
-        $data = [
-            'name' => $request->name,
-            'module_access' => json_encode($modulePermissions),
-            'status' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
+        $permissions = $this->validatedRegistryPermissions($request->input('permissions', []));
 
-        $this->adminRoleRepo->add(data: $data);
+        $role = Role::query()->create($this->roleCreatePayload($request->name));
+
+        if ($this->isSuperAdminRoleName($role->name)) {
+            $permissions = AdminPermissionRegistry::all();
+        }
+
+        $role->syncPermissions($permissions);
+        $this->syncLegacyRoleRecord($role, $permissions);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         Toastr::success(translate('role_added_successfully'));
         return back();
     }
 
-
-    public function addOld(CustomRoleRequest $request): RedirectResponse
+    public function getUpdateView(Role $role): View
     {
-        $data = [
-            'name' => $request['name'],
-            'module_access' => json_encode($request['modules']),
-            'status' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-        $this->adminRoleRepo->add(data: $data);
-        Toastr::success(translate('role_added_successfully'));
-        return back();
+        $this->ensureAdminGuardRole($role);
+        $role->load('permissions');
+        $permissionGroups = AdminPermissionRegistry::groupedPermissionsBySection();
+
+        return view(CustomRole::UPDATE[VIEW], compact('role', 'permissionGroups'));
     }
 
-    public function getUpdateView($id): View
+    public function update(CustomRoleRequest $request, Role $role): RedirectResponse
     {
-        $role = $this->adminRoleRepo->getFirstWhere(params: ['id' => $id]);
-        return view(CustomRole::UPDATE[VIEW], compact('role'));
-    }
+        $this->ensureAdminGuardRole($role);
 
-    public function update(CustomRoleRequest $request): RedirectResponse
-    {
+        if ($this->isSuperAdminRole($role) && !$this->currentAdminIsSuperAdmin()) {
+            throw ValidationException::withMessages([
+                'name' => [translate('access_denied')],
+            ]);
+        }
 
-        $modulePermissions = json_decode($request->module_permissions_json, true);
+        if ($this->isSuperAdminRoleName($request->name) && !$this->currentAdminIsSuperAdmin()) {
+            throw ValidationException::withMessages([
+                'name' => [translate('access_denied')],
+            ]);
+        }
 
-        $data = [
-            'name' => $request['name'],
-            'module_access' => json_encode($modulePermissions),
-            'updated_at' => now(),
-        ];
+        if ($this->isSuperAdminRole($role) && $request->name !== $role->name) {
+            throw ValidationException::withMessages([
+                'name' => [translate('super_admin_role_name_can_not_be_changed')],
+            ]);
+        }
 
-        $this->adminRoleRepo->update(id: $request['id'], data: $data);
+        $permissions = $this->validatedRegistryPermissions($request->input('permissions', []));
+        if ($this->isSuperAdminRole($role)) {
+            $permissions = AdminPermissionRegistry::all();
+        }
+
+        $previousName = $role->name;
+        $role->name = $request->name;
+        $role->save();
+        $role->syncPermissions($permissions);
+        $this->syncLegacyRoleRecord($role, $permissions, $previousName);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         Toastr::success(translate('role_updated_successfully'));
         return back();
     }
@@ -117,7 +127,28 @@ class CustomRoleController extends BaseController
 
     public function updateStatus(Request $request): JsonResponse
     {
-        $this->adminRoleRepo->update(id: $request['id'], data: ['status' => $request->get('status', 0)]);
+        $role = Role::query()
+            ->where('guard_name', AdminPermissionRegistry::guard())
+            ->findOrFail((int)$request->get('id'));
+
+        if ($this->isSuperAdminRole($role) && !$request->boolean('status')) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('super_admin_role_can_not_be_disabled'),
+            ], 422);
+        }
+
+        if ($this->roleHasStatusColumn()) {
+            $role->status = $request->boolean('status');
+            $role->save();
+        }
+
+        $legacy = AdminRole::query()->where('name', $role->name)->first();
+        if ($legacy) {
+            $legacy->status = $request->boolean('status');
+            $legacy->save();
+        }
+
         return response()->json([
             'success' => 1,
             'message' => translate('status_updated_successfully'),
@@ -126,12 +157,7 @@ class CustomRoleController extends BaseController
 
     public function exportList(Request $request): BinaryFileResponse
     {
-        $roles = $this->adminRoleRepo->getEmployeeRoleList(
-            orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
-            filters: ['admin_role_id' => $request['role']],
-            dataLimit: 'all'
-        );
+        $roles = $this->rolesQuery($request)->with('permissions')->get();
 
         return Excel::download(new EmployeeRoleListExport([
             'roles' => $roles,
@@ -143,10 +169,157 @@ class CustomRoleController extends BaseController
 
     public function delete(Request $request): JsonResponse
     {
-        $this->adminRoleRepo->delete(params: ['id' => $request['id']]);
+        $role = Role::query()
+            ->where('guard_name', AdminPermissionRegistry::guard())
+            ->findOrFail((int)$request->get('id'));
+
+        if ($this->isSuperAdminRole($role)) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('super_admin_role_can_not_be_deleted'),
+            ], 422);
+        }
+
+        if ($this->assignedAdminCount($role) > 0) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('role_is_assigned_to_admin_users_reassign_before_delete'),
+            ], 422);
+        }
+
+        $legacyRole = AdminRole::query()->where('name', $role->name)->first();
+        $role->delete();
+        if ($legacyRole) {
+            $legacyRole->delete();
+        }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return response()->json([
             'success' => 1,
             'message' => translate('role_deleted_successfully')
         ], 200);
+    }
+
+    private function rolesQuery(Request $request)
+    {
+        return Role::query()
+            ->where('guard_name', AdminPermissionRegistry::guard())
+            ->orderByDesc('id')
+            ->when($request['searchValue'], function ($query) use ($request) {
+                $query->where('name', 'like', '%' . $request['searchValue'] . '%');
+            });
+    }
+
+    private function ensureAdminGuardRole(Role $role): void
+    {
+        abort_unless($role->guard_name === AdminPermissionRegistry::guard(), 404);
+    }
+
+    private function validatedRegistryPermissions(array $permissions): array
+    {
+        $permissions = array_values(array_unique(array_filter($permissions, 'is_string')));
+        $unknown = array_values(array_filter($permissions, fn(string $permission) => !AdminPermissionRegistry::has($permission)));
+        if (count($unknown) > 0) {
+            logger()->warning('RBAC rejected unknown permission payload', [
+                'unknown_permissions' => $unknown,
+            ]);
+
+            throw ValidationException::withMessages([
+                'permissions' => [translate('invalid_permission_selected')],
+            ]);
+        }
+
+        return $permissions;
+    }
+
+    private function assignedAdminCount(Role $role): int
+    {
+        $rolePivot = config('permission.column_names.role_pivot_key') ?: 'role_id';
+        $modelKey = config('permission.column_names.model_morph_key') ?: 'model_id';
+        $table = config('permission.table_names.model_has_roles');
+
+        return DB::table($table)
+            ->where($rolePivot, $role->id)
+            ->where('model_type', Admin::class)
+            ->count();
+    }
+
+    private function syncLegacyRoleRecord(Role $role, array $permissions, ?string $oldName = null): void
+    {
+        $legacy = null;
+        if ($oldName !== null && $oldName !== '') {
+            $legacy = AdminRole::query()->where('name', $oldName)->first();
+        }
+        if (!$legacy) {
+            $legacy = AdminRole::query()->where('name', $role->name)->first();
+        }
+        if (!$legacy) {
+            $legacy = new AdminRole();
+        }
+
+        $legacy->name = $role->name;
+        $legacy->status = $this->roleHasStatusColumn() ? (bool)$role->status : true;
+        $legacy->module_access = json_encode($this->permissionsToLegacyModuleAccess($permissions));
+        $legacy->save();
+    }
+
+    private function permissionsToLegacyModuleAccess(array $permissions): array
+    {
+        $grouped = [];
+        foreach ($permissions as $permission) {
+            if (!str_contains($permission, '.')) {
+                continue;
+            }
+
+            [$module, $action] = explode('.', $permission, 2);
+            if ($module === 'rbac') {
+                continue;
+            }
+            $grouped[$module] ??= [];
+            $grouped[$module][] = $action;
+        }
+
+        foreach ($grouped as $module => $actions) {
+            $actions = array_values(array_unique($actions));
+            sort($actions);
+            $grouped[$module] = $actions;
+        }
+
+        ksort($grouped);
+        return $grouped;
+    }
+
+    private function roleCreatePayload(string $name): array
+    {
+        $payload = [
+            'name' => $name,
+            'guard_name' => AdminPermissionRegistry::guard(),
+        ];
+        if ($this->roleHasStatusColumn()) {
+            $payload['status'] = true;
+        }
+
+        return $payload;
+    }
+
+    private function roleHasStatusColumn(): bool
+    {
+        return \Illuminate\Support\Facades\Schema::hasColumn('roles', 'status');
+    }
+
+    private function isSuperAdminRole(Role $role): bool
+    {
+        return $this->isSuperAdminRoleName($role->name);
+    }
+
+    private function isSuperAdminRoleName(string $name): bool
+    {
+        return trim(strtolower($name)) === trim(strtolower(AdminPermissionRegistry::superAdminRole()));
+    }
+
+    private function currentAdminIsSuperAdmin(): bool
+    {
+        return auth('admin')->user()?->isSuperAdmin() === true;
     }
 }

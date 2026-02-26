@@ -26,7 +26,6 @@
                         </h5>
                         <div class="row">
                             <div class="col-md-6">
-                                <input type="hidden" name="id" value="{{$employee['id']}}">
                                 <div class="form-group">
                                     <label for="name"
                                         class="title-color">{{translate('full_Name')}}</label>
@@ -50,7 +49,7 @@
                                     <select class="form-control" name="role_id" id="role_id">
                                         <option value="0" selected disabled>{{'---'.translate('select').'---'}}</option>
                                         @foreach($adminRoles as $adminRole)
-                                            <option value="{{$adminRole->id}}" {{$adminRole['id']==$employee['admin_role_id']?'selected':''}}>{{ ucfirst($adminRole->name) }}</option>
+                                            <option value="{{$adminRole->id}}" {{$adminRole['id']==($selectedRoleId ?? null)?'selected':''}}>{{ ucfirst($adminRole->name) }}</option>
                                         @endforeach
                                     </select>
                                 </div>

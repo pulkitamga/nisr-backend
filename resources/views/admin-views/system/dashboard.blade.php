@@ -6,7 +6,7 @@
 @endpush
 
 @section('content')
-@if (auth('admin')->user()->admin_role_id == 1 || Helpers::module_permission_check('dashboard'))
+@if (Helpers::module_permission_check('dashboard'))
 <div class="content container-fluid">
     <div class="page-header pb-0 mb-0 border-0">
         <div class="flex-between align-items-center">

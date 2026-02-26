@@ -2,7 +2,7 @@
 
 namespace App\Http;
 
-// use App\Http\Middleware\CheckLicense;
+use App\Http\Middleware\CheckLicense;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\DeliveryManAuth;
 use App\Http\Middleware\GuestMiddleware;
@@ -17,6 +17,9 @@ use App\Http\Middleware\APILocalizationMiddleware;
 use App\Http\Middleware\DatabaseRefreshMiddleware;
 use App\Http\Middleware\MaintenanceModeMiddleware;
 use App\Http\Middleware\ModulePermissionMiddleware;
+use Spatie\Permission\Middleware\PermissionMiddleware as SpatiePermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware as SpatieRoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware as SpatieRoleOrPermissionMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 
@@ -75,6 +78,9 @@ class Kernel extends HttpKernel
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
+        'role' => SpatieRoleMiddleware::class,
+        'permission' => SpatiePermissionMiddleware::class,
+        'role_or_permission' => SpatieRoleOrPermissionMiddleware::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,

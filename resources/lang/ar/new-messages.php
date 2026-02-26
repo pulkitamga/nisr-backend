@@ -11795,7 +11795,6 @@ return [
 	"Current Escalation" => "التصعيد الحالي",
 	"Escalation History" => "سجل التصعيد",
 	"Escalation Status" => "حالة التصعيد",
-	"Escalation Reason" => "سبب التصعيد",
 	"Escalated By" => "تم التصعيد بواسطة",
 	"Escalated At" => "وقت التصعيد",
 	"Change Escalation Status" => "تغيير حالة التصعيد",
@@ -11806,4 +11805,5 @@ return [
 	"escalation_status_updated_successfully" => "تم تحديث حالة التصعيد بنجاح.",
 	"ticket_not_found" => "Ticket not found",
 	"claim_submitted" => "Claim submitted",
+	"select_minimum_one_permission" => "Select minimum one permission",
 ];

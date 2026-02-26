@@ -413,9 +413,7 @@ class DealController extends BaseController
     public function requestQuotation($dealId)
     {
         $deal = Deal::findOrFail($dealId);
-        $admins = Admin::whereHas('role', function ($q) {
-            $q->whereRaw("JSON_CONTAINS(module_access, '\"create_quotation\"', '$.wholesaler_section')");
-        })->get();
+        $admins = Admin::permission('wholesaler_section.create_quotation')->get();
 
         foreach ($admins as $admin) {
             LeadNotification::create([

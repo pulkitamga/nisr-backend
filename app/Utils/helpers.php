@@ -17,6 +17,7 @@ use App\Models\Translation;
 use App\Models\Order;
 use App\Models\Seller;
 use App\Models\Setting;
+use App\Support\AdminPermissionRegistry;
 use App\Traits\CommonTrait;
 use App\Models\User;
 use App\Utils\CartManager;
@@ -712,23 +713,31 @@ class helpers
     public static function module_permission_check($mod_name, $action = null)
     {
         $user = auth('admin')->user();
-        $user_role = $user->role;
-
-        if ($user->admin_role_id == 1) {
-            return true;
+        if (!$user) {
+            return false;
         }
 
-        $permission = $user_role->module_access;
+        if ($action === null && !str_contains((string)$mod_name, ',')) {
+            $module = trim((string)$mod_name);
+            $module = AdminPermissionRegistry::moduleAliases()[$module] ?? $module;
+            $moduleActions = AdminPermissionRegistry::modules()[$module] ?? null;
 
-        if ($user_role->status == 1 && $permission) {
-            $decoded = json_decode($permission, true);
-            if ($action === null) {
-                return isset($decoded[$mod_name]);
+            if (is_array($moduleActions) && count($moduleActions) > 0) {
+                $permissions = array_map(
+                    static fn(string $moduleAction) => sprintf('%s.%s', $module, $moduleAction),
+                    $moduleActions
+                );
+
+                return $user->canAny($permissions);
             }
-            return isset($decoded[$mod_name]) && in_array($action, (array)$decoded[$mod_name]);
         }
 
-        return false;
+        $permission = AdminPermissionRegistry::fromModuleAction((string)$mod_name, $action);
+        if ($permission === null) {
+            return false;
+        }
+
+        return $user->can($permission);
     }
 
 

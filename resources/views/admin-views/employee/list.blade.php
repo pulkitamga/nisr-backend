@@ -3,6 +3,7 @@
 @section('title', translate('employee_list'))
 
 @section('content')
+    @php($superAdminRole = config('permissions_admin.super_admin_role', 'Super Admin'))
     <div class="content container-fluid">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -40,10 +41,10 @@
                                 <form action="{{ url()->current() }}" method="GET">
                                     <div class="d-flex gap-2 align-items-center text-left">
                                         <div class="">
-                                            <select class="form-control text-ellipsis min-w-200" name="admin_role_id">
-                                                <option value="all" {{ request('employee_role') == 'all' ? 'selected' : '' }}>{{translate('all')}}</option>
+                                            <select class="form-control text-ellipsis min-w-200" name="role_id">
+                                                <option value="all" {{ request('role_id', 'all') == 'all' ? 'selected' : '' }}>{{translate('all')}}</option>
                                                 @foreach($employee_roles as $employee_role)
-                                                    <option value="{{ $employee_role['id'] }}" {{ request('admin_role_id') == $employee_role['id'] ? 'selected' : '' }}>
+                                                    <option value="{{ $employee_role['id'] }}" {{ request('role_id') == $employee_role['id'] ? 'selected' : '' }}>
                                                             {{ ucfirst($employee_role['name']) }}
                                                     </option>
                                                 @endforeach
@@ -58,17 +59,19 @@
                                 </form>
                             </div>
                             <div class="dropdown">
-                                <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{route('admin.employee.export',['role'=>request('admin_role_id'),'searchValue'=>request('searchValue')])}}">
+                                <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{route('admin.employee.export',['role'=>request('role_id'),'searchValue'=>request('searchValue')])}}">
                                     <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
                                     <span class="ps-2">{{ translate('export') }}</span>
                                 </a>
                             </div>
-                            <div class="">
-                                <a href="{{route('admin.employee.add-new')}}" class="btn btn--primary text-nowrap">
-                                    <i class="tio-add"></i>
-                                    <span class="text ">{{translate('add_new')}}</span>
-                                </a>
-                            </div>
+                            @can('employee_management.create')
+                                <div class="">
+                                    <a href="{{route('admin.employee.add-new')}}" class="btn btn--primary text-nowrap">
+                                        <i class="tio-add"></i>
+                                        <span class="text ">{{translate('add_new')}}</span>
+                                    </a>
+                                </div>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -89,6 +92,7 @@
                         </thead>
                         <tbody>
                         @foreach($employees as $key => $employee)
+                            @php($isSuperAdminEmployee = $employee->roles->contains('name', $superAdminRole))
                             <tr>
                                 <td>{{$key+1}}</td>
                                 <td class="text-capitalize">
@@ -104,46 +108,54 @@
                                     {{$employee['email']}}
                                 </td>
                                 <td>{{$employee['phone']}}</td>
-                                <td>{{$employee?->role['name'] ?? translate('role_not_found')}}</td>
+                                <td>{{ $employee->roles->first()?->name ?? $employee?->role['name'] ?? translate('role_not_found') }}</td>
                               
                                 <td>
-                                    @if($employee['id'] == 1)
-                                        <label class="badge badge-primary-light">{{ translate('admin') }}</label>
+                                    @if($isSuperAdminEmployee)
+                                        <label class="badge badge-primary-light">{{ translate('super_admin') }}</label>
                                     @else
-                                        <form action="{{route('admin.employee.status')}}" method="post" id="employee-id-{{$employee['id']}}-form" class="employee_id_form">
-                                            @csrf
-                                            <input type="hidden" name="id" value="{{$employee['id']}}">
-                                            <label class="switcher">
-                                                <input type="checkbox" class="switcher_input toggle-switch-message" value="1" id="employee-id-{{$employee['id']}}" name="status"
-                                                       {{$employee->status?'checked':''}}
-                                                       data-modal-id = "toggle-status-modal"
-                                                       data-toggle-id = "employee-id-{{$employee['id']}}"
-                                                       data-on-image = "employee-on.png"
-                                                       data-off-image = "employee-off.png"
-                                                       data-on-title = "{{translate('want_to_Turn_ON_Employee_Status').'?'}}"
-                                                       data-off-title = "{{translate('want_to_Turn_OFF_Employee_Status').'?'}}"
-                                                       data-on-message = "<p>{{translate('if_enabled_this_employee_can_log_in_to_the_system_and_perform_his_role')}}</p>"
-                                                       data-off-message = "<p>{{translate('if_disabled_this_employee_can_not_log_in_to_the_system_and_perform_his_role')}}</p>">`)">
-                                                <span class="switcher_control"></span>
+                                        @can('employee_management.update')
+                                            <form action="{{route('admin.employee.status')}}" method="post" id="employee-id-{{$employee['id']}}-form" class="employee_id_form">
+                                                @csrf
+                                                <input type="hidden" name="id" value="{{$employee['id']}}">
+                                                <label class="switcher">
+                                                    <input type="checkbox" class="switcher_input toggle-switch-message" value="1" id="employee-id-{{$employee['id']}}" name="status"
+                                                           {{$employee->status?'checked':''}}
+                                                           data-modal-id = "toggle-status-modal"
+                                                           data-toggle-id = "employee-id-{{$employee['id']}}"
+                                                           data-on-image = "employee-on.png"
+                                                           data-off-image = "employee-off.png"
+                                                           data-on-title = "{{translate('want_to_Turn_ON_Employee_Status').'?'}}"
+                                                           data-off-title = "{{translate('want_to_Turn_OFF_Employee_Status').'?'}}"
+                                                           data-on-message = "<p>{{translate('if_enabled_this_employee_can_log_in_to_the_system_and_perform_his_role')}}</p>"
+                                                           data-off-message = "<p>{{translate('if_disabled_this_employee_can_not_log_in_to_the_system_and_perform_his_role')}}</p>">
+                                                    <span class="switcher_control"></span>
+                                                </label>
+                                            </form>
+                                        @else
+                                            <label class="badge {{ $employee->status ? 'badge-soft-success' : 'badge-soft-danger' }}">
+                                                {{ $employee->status ? translate('active') : translate('inactive') }}
                                             </label>
-                                        </form>
+                                        @endcan
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    @if($employee['id'] == 1)
-                                        <label class="badge badge-primary-light">{{ translate('default') }}</label>
-                                    @else
-                                        <div class="d-flex gap-10 justify-content-center">
+                                    <div class="d-flex gap-10 justify-content-center">
+                                        @can('employee_management.update')
+                                            @if(!$isSuperAdminEmployee || auth('admin')->user()?->isSuperAdmin())
                                             <a href="{{route('admin.employee.update',[$employee['id']])}}"
                                                class="btn btn-outline--primary btn-sm square-btn"
                                                title="{{translate('edit')}}">
                                                 <i class="tio-edit"></i>
                                             </a>
+                                            @endif
+                                        @endcan
+                                        @can('employee_management.read')
                                             <a class="btn btn-outline-info btn-sm square-btn" title="View" href="{{route('admin.employee.view',['id'=>$employee['id']])}}">
                                                 <i class="tio-invisible"></i>
                                             </a>
-                                        </div>
-                                    @endif
+                                        @endcan
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -171,4 +183,3 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/employee.js')}}"></script>
 @endpush
-
