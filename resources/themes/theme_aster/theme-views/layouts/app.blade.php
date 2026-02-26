@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session()->get('direction') }}">
+@php($direction = session()->get('direction') ?? 'ltr')
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction }}">
 <head>
 
     <meta name="base-url" content="{{ url('/') }}">
@@ -62,7 +63,7 @@
 
     {!! getSystemDynamicPartials(type: 'analytics_script') !!}
 </head>
-<body class="toolbar-enabled">
+<body class="toolbar-enabled {{ $direction === 'rtl' ? 'rtl' : 'ltr' }}">
 <script>
     'use strict';
     function setThemeMode() {
@@ -127,9 +128,9 @@
 <div class="social-chat-icons">
     @if(isset($whatsapp['status']) && $whatsapp['status'] == 1 )
         <div class="">
-            <a href="https://wa.me/{{ $whatsapp['phone'] }}?text=Hello%20there!" target="_blank">
+            <a href="https://wa.me/{{ $whatsapp['phone'] }}?text={{ rawurlencode(translate('hello')) }}" target="_blank">
                 <img src="{{theme_asset('assets/img/whatsapp.svg')}}" width="35" class="chat-image-shadow"
-                     alt="Chat with us on WhatsApp">
+                     alt="{{ translate('Chat_with_us_on_WhatsApp') }}">
             </a>
         </div>
     @endif

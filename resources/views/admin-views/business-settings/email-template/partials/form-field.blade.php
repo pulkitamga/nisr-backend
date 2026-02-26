@@ -96,7 +96,7 @@
         <div class="d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/header-content.png')}}"
                  alt="">
-            <h5 class="mb-0 text-capitalize">{{translate('product_information')}}</h5>
+            <h5 class="mb-0 text-capitalize">{{translate('Product_Information')}}</h5>
         </div>
 
         <label class="switcher">
@@ -105,7 +105,7 @@
         </label>
     </div>
     <div class="bg-soft--primary p-3 rounded mb-3">
-        <p>{{translate('product_information_will_be_automatically_bind_from_database').' '.translate('If_you_do_not_want_to_see_the_information_in_the_mail').' '.translate('just_turn_the_switch_button_off').'.'}}</p>
+        <p>{{translate('product_information_will_be_automatically_bind_from_database').' '.translate('if_you_do_not_want_to see_the_information_in_the_mail').' '.translate('just_turn_the_switch_button_off').'.'}}</p>
     </div>
     @endif
     @if(!in_array('banner_image',$template['hide_field']))
@@ -202,8 +202,7 @@
         </label>
     </div>
     <div class="bg-soft--primary p-3 rounded mb-3">
-        <p class="mb-0">{{translate('order_Information_will_be_automatically_bind_from_database').'. '.translate('if_you_do_not_want_to
-            see_the_information_in_the_mail').'. '.translate('just_turn_the_switch_button_off').'.'}}</p>
+        <p class="mb-0">{{translate('order_Information_will_be_automatically_bind_from_database').'. '.translate('if_you_do_not_want_to see_the_information_in_the_mail').'. '.translate('just_turn_the_switch_button_off').'.'}}</p>
     </div>
     @endif
 

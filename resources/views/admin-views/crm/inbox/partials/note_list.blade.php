@@ -15,7 +15,7 @@
                     <tr>
                         <td>{{ $note->note }}</td>
                         <td>{{ $note->noted_at }}</td>
-                        <td>{{ $note->employee->name ?? 'Unassigned' }}</td>
+                        <td>{{ $note->employee->name ?? translate('Unassigned') }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -24,3 +24,5 @@
 @else
         @include('layouts.back-end._empty-state',['text'=>'no_record_found'],['image'=>'default'])
 @endif
+
+

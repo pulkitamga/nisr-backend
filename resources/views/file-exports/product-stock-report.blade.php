@@ -24,7 +24,7 @@
                 <td> {{translate('SL')}}</td>
                 <td> {{translate('product_Name')}}</td>
                 <td> {{translate('last_Updated_Stock')}}	</td>
-                <td> {{translate('current_Stock	')}}</td>
+                <td> {{translate('current_Stock')}}</td>
                 <td> {{translate('status')}}</td>
             </tr>
             @foreach ($data['products'] as $key=>$item)

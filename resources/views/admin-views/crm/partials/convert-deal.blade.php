@@ -17,8 +17,8 @@
                     <div class="mb-3">
                         <label>{{ translate('Party Type') }}</label>
                         <select class="form-control" name="party_type" id="party_type">
-                            <option value="company">Wholesale (Company)</option>
-                            <option value="contact">Retail (Contact)</option>
+                            <option value="company">{{ translate('Wholesale (Company)') }}</option>
+                            <option value="contact">{{ translate('Retail (Contact)') }}</option>
                         </select>
                     </div>
 

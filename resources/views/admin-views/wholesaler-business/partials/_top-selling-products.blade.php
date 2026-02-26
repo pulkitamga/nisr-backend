@@ -37,7 +37,7 @@
         @endforeach
         @else
         <div class="text-center">
-            <p class="text-muted">{{translate('no_Top_Selling_Products')}}</p>
+            <p class="text-muted">{{translate('no_top_selling_products')}}</p>
             <img class="w-75" src="{{dynamicAsset(path: 'public/assets/back-end/img/no-data.png')}}" alt="">
         </div>
         @endif

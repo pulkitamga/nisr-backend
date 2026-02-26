@@ -45,7 +45,7 @@
                     <h5 class="card-title">{{ translate('calendar') }}</h5>
                     <div class="d-flex justify-content-end mb-3">
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTodoModal">
-                            <i class="tio-add"></i> Add To-Do
+                            <i class="tio-add"></i> {{ translate('Add To-Do') }}
                         </button>
                     </div>
                 </div>
@@ -63,22 +63,22 @@
             @csrf
             <div class="modal-content">
                 <div class="modal-header  text-white">
-                    <h5 class="modal-title" id="addTodoModalLabel">Add To-Do</h5>
+                    <h5 class="modal-title" id="addTodoModalLabel">{{ translate('Add To-Do') }}</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Select Date</label>
+                        <label class="form-label">{{ translate('Select Date') }}</label>
                         <input type="date" class="form-control" name="date" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Note</label>
+                        <label class="form-label">{{ translate('Note') }}</label>
                         <textarea class="form-control" name="note" rows="3" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save To-Do</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Save To-Do') }}</button>
                 </div>
             </div>
         </form>
@@ -104,7 +104,7 @@
             events: {
                 url: "{{ route('admin.crm.calendar.events') }}",
                 failure: function() {
-                    Swal.fire('Error!', 'Failed to load events. Please check the console.', 'error');
+                    Swal.fire('{{ translate('Error') }}!', '{{ translate('Failed to load events. Please check the console.') }}', 'error');
                 }
             },
             editable: false,
@@ -116,9 +116,9 @@
             },
             eventDidMount: function(info) {
                 const tooltip = new bootstrap.Tooltip(info.el, {
-                    title: 'Type: ' + info.event.extendedProps.type +
-                        '\nEmployee: ' + (info.event.extendedProps.employee ?? '-') +
-                        '\nDescription: ' + (info.event.extendedProps.description ?? '-'),
+                    title: '{{ translate('Type') }}: ' + info.event.extendedProps.type +
+                        '\n{{ translate('Employee') }}: ' + (info.event.extendedProps.employee ?? '-') +
+                        '\n{{ translate('Description') }}: ' + (info.event.extendedProps.description ?? '-'),
                     placement: 'top',
                     trigger: 'hover',
                     container: 'body'
@@ -161,19 +161,21 @@
                 .then(data => {
                     console.log(data); // for debugging
                     if (data.status === 'success') {
-                        Swal.fire('Added!', data.message, 'success');
+                        Swal.fire('{{ translate('Added!') }}', data.message, 'success');
                         var modal = bootstrap.Modal.getInstance(document.getElementById('addTodoModal'));
                         modal.hide();
                         window.calendar.refetchEvents(); // <-- use global calendar
                     } else {
-                        Swal.fire('Error!', 'Could not add to-do.', 'error');
+                        Swal.fire('{{ translate('Error') }}!', '{{ translate('Could not add to-do.') }}', 'error');
                     }
                 })
                 .catch(err => {
                     console.error(err);
-                    Swal.fire('Error!', 'Something went wrong.', 'error');
+                    Swal.fire('{{ translate('Error') }}!', '{{ translate('Something went wrong.') }}', 'error');
                 });
         });
     });
 </script>
 @endpush
+
+

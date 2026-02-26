@@ -22,7 +22,7 @@
                 <td> {{translate('SL')}}</td>
                 <td> {{translate('product_Name')}}</td>
                 <td> {{translate('Date')}}	</td>
-                <td> {{translate('total_In_Wishlist	')}}</td>
+                <td> {{translate('total_In_Wishlist')}}</td>
             </tr>
             @foreach ($data['products'] as $key=>$item)
                 <tr>

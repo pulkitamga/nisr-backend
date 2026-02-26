@@ -15,7 +15,7 @@
             <div class="row mb-4">
                 <div class="col-md-6">
                     <h6 class="font-weight-bold">{{ translate('Warranty') }}</h6>
-                    <p><strong>{{ translate('Serial') }}:</strong> {{ $claim->warranty->serial_number }}</p>
+                    <p><strong>{{ translate('serial') }}:</strong> {{ $claim->warranty->serial_number }}</p>
                     <!-- <p><strong>{{ translate('Product') }}:</strong> {{ $claim->warranty->product->name ?? 'N/A' }}</p> -->
                     <p><strong>{{ translate('Customer') }}:</strong> {{$claim->warranty->user->f_name ?? $claim->warranty->activated_by_name}}</p>
                     <p><strong>{{ translate('Phone') }}:</strong> {{$claim->warranty->user->phone ?? $claim->warranty->activated_by_phone}}</p>
@@ -67,7 +67,7 @@
     <div class="card mb-4">
         <div class="card-body mb-4">
             <div class="d-flex justify-content-between mb-4">
-                <h6 class="mt-4">{{ translate('Activity Log') }}</h6>
+                <h6 class="mt-4">{{ translate('activity_log') }}</h6>
                 <div class="mt-4 d-flex flex-wrap gap-2">
 
                     @if($claim->status === 'new')
@@ -84,7 +84,7 @@
 
                     @if($claim->status === 'rma_issued')
                     <button class="btn btn-info btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.receive', $claim->id) }}" data-target="#receiveModal">
-                        {{ translate('Receive') }}
+                        {{ translate('receive') }}
                     </button>
                     @endif
                     @if(in_array($claim->status, ['received', 'diagnosis_pending']))

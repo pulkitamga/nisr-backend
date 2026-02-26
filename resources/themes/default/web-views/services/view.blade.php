@@ -244,7 +244,7 @@ $selectedModel = request('model');
 
                                     <div class="d-flex justify-content-center align-items-center __number-filter-btn">
                                         <a class="action-search-products-by-price">
-                                            <i class="__inline-37 czi-arrow-{{Session::get('direction') === " rtl"
+                                            <i class="__inline-37 czi-arrow-{{Session::get('direction') === "rtl"
                                                 ? 'left' : 'right' }}"></i>
                                         </a>
                                     </div>
@@ -329,7 +329,7 @@ $selectedModel = request('model');
                             <ul class="__brands-cate-wrap attribute-list" data-simplebar
                                 data-simplebar-auto-hide="false">
                                 @foreach($activeBrands as $brand)
-                                <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === " rtl"
+                                <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === "rtl"
                                     ? 'mr-2' : '' }}" id="brand">
                                     <li class="flex-between get-view-by-onclick cursor-pointer"
                                         data-link="{{ route('services',['brand_id'=> $brand['id'],'data_from'=>'brand', 'offer_type' => isset($data['offer_type']) ? $data['offer_type'] : '', 'page'=>1]) }}">
@@ -366,7 +366,7 @@ $selectedModel = request('model');
                             <ul class="__brands-cate-wrap attribute-list" data-simplebar
                                 data-simplebar-auto-hide="false">
                                 @foreach($web_config['publishing_houses'] as $publishingHouseItem)
-                                <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === " rtl"
+                                <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === "rtl"
                                     ? 'mr-2' : '' }}" id="brand">
                                     <li class="flex-between get-view-by-onclick cursor-pointer pe-2"
                                         data-link="{{ route('services',['publishing_house_id'=> $publishingHouseItem['id'], 'product_type' => 'digital', 'offer_type' => isset($data['offer_type']) ? $data['offer_type'] : '', 'page'=>1]) }}">
@@ -405,7 +405,7 @@ $selectedModel = request('model');
                             <ul class="__brands-cate-wrap attribute-list" data-simplebar
                                 data-simplebar-auto-hide="false">
                                 @foreach($web_config['digital_product_authors'] as $productAuthor)
-                                <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === " rtl"
+                                <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === "rtl"
                                     ? 'mr-2' : '' }}" id="brand">
                                     <li class="flex-between get-view-by-onclick cursor-pointer pe-2"
                                         data-link="{{ route('services',['author_id' => $productAuthor['id'], 'product_type' => 'digital','offer_type' => isset($data['offer_type']) ? $data['offer_type'] : '', 'page' => 1]) }}">

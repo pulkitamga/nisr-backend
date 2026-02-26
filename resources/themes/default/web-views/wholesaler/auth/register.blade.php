@@ -219,7 +219,7 @@
                         class="mb-3 mb-20" alt="">
                     <h5 class="modal-title">{{translate('congratulations')}}</h5>
                     <div class="text-center">{{translate('your_registration_is_successful').',
-                        '.translate('please-wait_for_admin_approval').'.'.translate(' you_will_get_a_mail_soon')}}</div>
+                        '.translate('please-wait_for_admin_approval').'.'.translate('you_will_get_a_mail_soon')}}</div>
                 </div>
             </div>
         </div>

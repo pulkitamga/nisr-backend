@@ -12,7 +12,7 @@
         <div class="form-group">
             <label for="max_price" class="mb-1">{{translate('max')}}</label>
             <input type="number" id="max_price" class="form-control form-control--sm"
-                   placeholder="{{'$'.translate('1000')}}">
+                   placeholder="{{''}}">
         </div>
         <button class="btn btn-primary py-1 px-2 fs-13 action-search-products-by-price">
             <i class="bi bi-chevron-right"></i>
@@ -221,3 +221,4 @@
 <div id="ajax-review_partials">
     @include('theme-views.partials._products_review_partials', ['ratings' => $ratings])
 </div>
+

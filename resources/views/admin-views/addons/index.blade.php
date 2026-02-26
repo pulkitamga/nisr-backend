@@ -100,7 +100,7 @@
                                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                                             <span id="name_of_file" class="text-truncate fz-12"></span>
                                             <span class="text-muted fz-12"
-                                                  id="progress-label">{{translate('0').'%'}}</span>
+                                                  id="progress-label">0%</span>
                                         </div>
                                         <progress id="uploadProgress" class="w-100" value="0" max="100"></progress>
                                     </div>
@@ -288,3 +288,4 @@
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/vendor/swiper/swiper-bundle.min.js')}}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/addon.js')}}"></script>
 @endpush
+

@@ -69,7 +69,7 @@
                                 <label for="bonus-type"
                                        class="title-color text-capitalize d-flex">{{translate('bonus_type')}}</label>
                                 <select name="bonus_type" id="bonus-type" class="form-control">
-                                    <option value="percentage" {{ $data->bonus_type == 'percentage' ? 'selected':'' }}>{{translate('percentage ').'(%)'}}</option>
+                                    <option value="percentage" {{ $data->bonus_type == 'percentage' ? 'selected':'' }}>{{translate('percentage').'(%)'}}</option>
                                     <option value="fixed" {{ $data->bonus_type == 'fixed' ? 'selected':'' }}>{{translate('fixed_amount')}}</option>
                                 </select>
                             </div>
@@ -140,4 +140,3 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/customer/wallet.js')}}"></script>
 @endpush
-

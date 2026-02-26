@@ -224,7 +224,7 @@
                                 </label>
 
                                 <input type="text" id="generate_number" name="code" class="form-control"
-                                       value="{{request('product-gallery') ? ' ':$product->code}}" placeholder="{{translate('4FOITO')}}" required>
+                                       value="{{request('product-gallery') ? ' ':$product->code}}" placeholder="4FOITO" required>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3 physical_product_show">

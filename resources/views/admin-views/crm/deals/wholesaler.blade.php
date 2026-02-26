@@ -119,7 +119,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">{{translate('Choose_First')}}</label>
-                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('200')}}" name="choose_first">
+                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{ translate('Ex') }} : 200" name="choose_first">
                     </div>
                     <div class="col-md-12">
                         <label class="d-md-block">&nbsp;</label>
@@ -191,19 +191,19 @@
                     <tr>
                         <td>{{ $deal->id }}</td>
                         <td>{{ $deal->created_at->format('d M, Y H:i A') }}</td>
-                        <td>{{ $deal->relatedParty->company_name ?? 'N/A' }}</td>
+                        <td>{{ $deal->relatedParty->company_name ?? translate('N/A') }}</td>
                         <td>
                             <a href="mailto:{{ $deal->relatedUser->email }}">
-                                {{ $deal->relatedUser->email ?? 'Not Available' }}
+                                {{ $deal->relatedUser->email ?? translate('Not Available') }}
                             </a>
                             <br>
                             <a href="tel:{{ $deal->relatedUser->phone }}">
-                                {{ $deal->relatedUser->phone ?? 'Not Available' }}
+                                {{ $deal->relatedUser->phone ?? translate('Not Available') }}
                             </a>
                         </td>
-                        <td>{{ $deal->owner?->name ?? 'No Owner' }}</td>
-                        <td>{{ $deal->department?->name ?? 'No Department' }}</td>
-                        <td>{{ $deal->employee?->name ?? 'No Employee' }}</td>
+                        <td>{{ $deal->owner?->name ?? translate('No Owner') }}</td>
+                        <td>{{ $deal->department?->name ?? translate('No Department') }}</td>
+                        <td>{{ $deal->employee?->name ?? translate('No Employee') }}</td>
 
                         <td>
                             @php
@@ -429,3 +429,5 @@
 
 
 @endpush
+
+

@@ -136,7 +136,7 @@
         <h2>{{ translate('warranty_claims_report') }}</h2>
         <p>
             {{ translate('generated_on') }}: {{ now()->format('d M Y H:i A') }} &nbsp; | &nbsp;
-            {{ translate('by') }}: System
+            {{ translate('By') }}: System
         </p>
     </div>
 

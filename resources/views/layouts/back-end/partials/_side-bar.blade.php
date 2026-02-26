@@ -20,7 +20,10 @@
     use App\Enums\ViewPaths\Admin\FlashDeal;
     use App\Enums\ViewPaths\Admin\GoogleMapAPI;
     use App\Enums\ViewPaths\Admin\HelpTopic;
+    use App\Enums\ViewPaths\Admin\CrmAgentSalesMatrixReport;
+    use App\Enums\ViewPaths\Admin\CrmEmployeeChannelAssignmentReport;
     use App\Enums\ViewPaths\Admin\InhouseProductSale;
+    use App\Enums\ViewPaths\Admin\CrmDealSalesReport;
     use App\Enums\ViewPaths\Admin\Mail;
     use App\Enums\ViewPaths\Admin\OfflinePaymentMethod;
     use App\Enums\ViewPaths\Admin\Order;
@@ -135,7 +138,7 @@
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="branchSelectModalLabel">Select Branch</h5>
+                                        <h5 class="modal-title" id="branchSelectModalLabel">{{ translate('Select Branch') }}</h5>
                                         <button type="button" class="close custom-close" data-bs-dismiss="modal"
                                             aria-label="Close">
                                             &times;
@@ -145,7 +148,7 @@
                                         @csrf
                                         <div class="modal-body">
                                             <div class="mb-3">
-                                                <label for="posBranchId" class="form-label">Branch</label>
+                                                <label for="posBranchId" class="form-label">{{ translate('Branch') }}</label>
                                                 <select class="js-select2-custom form-control form-select"
                                                     id="posBranchId" name="branch_id" required>
                                                     <option value="0" selected disabled>
@@ -159,7 +162,7 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="submit" class="btn btn-primary w-100">Go to POS</button>
+                                            <button type="submit" class="btn btn-primary w-100">{{ translate('Go to POS') }}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -987,7 +990,7 @@
 
                         @if (Helpers::module_permission_check('report'))
                             <li
-                                class="nav-item {{ Request::is('admin/report/earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/list') || Request::is('admin/refund-section/refund-list') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/reviews*') || Request::is('admin/stock/product-stock') || Request::is('admin/transaction/wallet-bonus') || Request::is('admin/report/order') ? 'scroll-here' : '' }}">
+                                class="nav-item {{ Request::is('admin/report/earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/list') || Request::is('admin/refund-section/refund-list') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/reviews*') || Request::is('admin/stock/product-stock') || Request::is('admin/transaction/wallet-bonus') || Request::is('admin/report/order') ? 'scroll-here' : '' }}">
                                 <small class="nav-subtitle" title="">
                                     {{ translate('reports_&_Analysis') }}
                                 </small>
@@ -995,7 +998,7 @@
                             </li>
 
                             <li
-                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'active' : '' }}">
+                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
                                     href="javascript:" title="{{ translate('sales_&_Transaction_Report') }}">
                                     <i class="tio-chart-bar-4 nav-icon"></i>
@@ -1004,7 +1007,7 @@
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
-                                    style="display: {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'block' : 'none' }}">
+                                    style="display: {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'block' : 'none' }}">
                                     <li
                                         class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') ? 'active' : '' }}">
                                         <a class="js-navbar-vertical-aside-menu-link nav-link"
@@ -1024,6 +1027,36 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('inhouse_Sales') }}
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.report.crm-sales-performance') }}"
+                                            title="{{ translate('crm_sales_report') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">
+                                                {{ translate('crm_sales_report') }}
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.report.crm-agent-sales-matrix') }}"
+                                            title="{{ translate('crm_agent_sales_matrix') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">
+                                                {{ translate('crm_agent_sales_matrix') }}
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.report.crm-employee-channel-assignment') }}"
+                                            title="{{ translate('crm_employee_channel_report') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">
+                                                {{ translate('crm_employee_channel_report') }}
                                             </span>
                                         </a>
                                     </li>

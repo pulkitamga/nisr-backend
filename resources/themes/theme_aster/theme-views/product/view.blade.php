@@ -137,13 +137,13 @@
                                     <div class="form-group">
                                         <label for="min_price" class="mb-1">{{translate('min')}}</label>
                                         <input type="number" id="min_price" class="form-control form-control--sm"
-                                               placeholder="{{'$'.translate('0')}}">
+                                               placeholder="{{''}}">
                                     </div>
                                     <div class="mb-2">-</div>
                                     <div class="form-group">
                                         <label for="max_price" class="mb-1">{{translate('max')}}</label>
                                         <input type="number" id="max_price" class="form-control form-control--sm"
-                                               placeholder="{{'$'.translate('1000')}}">
+                                               placeholder="{{''}}">
                                     </div>
                                     <button class="btn btn-primary py-1 px-2 fs-13 action-search-products-by-price" id="">
                                         <i class="bi bi-chevron-right"></i>
@@ -423,3 +423,5 @@
 @push('script')
     <script src="{{ theme_asset(path: 'assets/js/product-view.js') }}"></script>
 @endpush
+
+

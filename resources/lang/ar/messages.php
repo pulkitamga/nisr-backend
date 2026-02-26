@@ -62,3 +62,4 @@ return [
     "Add_Default_Content" => "إضافة المحتوى الافتراضي",
     "Add_Domain_(For_ex:_demo.dynamiclogic.com)" => "إضافة نطاق (مثال: demo.dynamiclogic.com)",
 ];
+

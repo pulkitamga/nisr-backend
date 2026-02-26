@@ -55,7 +55,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">{{translate('Choose_First')}}</label>
-                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('200')}}" name="choose_first">
+                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{ translate('Ex') }} : 200" name="choose_first">
                     </div>
                     <div class="col-md-12">
                         <label class="d-md-block">&nbsp;</label>
@@ -151,23 +151,23 @@
                         <td>{{ ucfirst($msg->party_type ?? translate('Unknown')) }}</td>
 
                         <td>
-                            {{ $inbox?->sender_name ?? $purchaseOrder?->wholeseller?->name ?? 'Unknown' }}
+                            {{ $inbox?->sender_name ?? $purchaseOrder?->wholeseller?->name ?? translate('Unknown') }}
                         </td>
                         <td>
                             <a href="mailto:{{ $inbox?->sender_email ?? $purchaseOrder?->wholeseller?->email }}">
-                                {{ $inbox?->sender_email ?? $purchaseOrder?->wholeseller?->email ?? 'Not Available' }}
+                                {{ $inbox?->sender_email ?? $purchaseOrder?->wholeseller?->email ?? translate('Not Available') }}
                             </a>
                             <br>
                             <a href="tel:{{ $inbox?->sender_phone ?? $purchaseOrder?->wholeseller?->phone }}">
-                                {{ $inbox?->sender_phone ?? $purchaseOrder?->wholeseller?->phone ?? 'Not Available' }}
+                                {{ $inbox?->sender_phone ?? $purchaseOrder?->wholeseller?->phone ?? translate('Not Available') }}
                             </a>
                         </td>
-                        <td>{{ $msg->owner?->name ?? 'Not Assigned' }}</td>
+                        <td>{{ $msg->owner?->name ?? translate('Not Assigned') }}</td>
 
-                        <td>{{ $msg->department?->name ?? 'No Department' }}</td>
+                        <td>{{ $msg->department?->name ?? translate('No Department') }}</td>
 
-                        <td>{{ $msg->employee?->name ?? 'Not Assigned' }}</td>
-                        <td> {{ $msg?->priority ?? 'Not Available' }}
+                        <td>{{ $msg->employee?->name ?? translate('Not Assigned') }}</td>
+                        <td> {{ $msg?->priority ?? translate('Not Available') }}
 
 
                         <td>
@@ -484,3 +484,5 @@ $(document).ready(function() {
 
 </script>
 @endpush
+
+

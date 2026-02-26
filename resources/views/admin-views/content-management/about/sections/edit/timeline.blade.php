@@ -64,13 +64,13 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 </div>
 
                 <div class="form-group mt-4">
-                    <label>{{ translate(' Image') }}</label>
+                    <label>{{ translate('Image') }}</label>
                     <input type="file" name="image" class="form-control" accept="image/*" onchange="previewIcon(this)">
                 </div>
 
                 <div class="form-group">
                     <br>
-                    <label>{{ translate(' Image_Preview') }}</label>
+                    <label>{{ translate('Image Preview') }}</label>
 
                     <div id="previewWrapper" style="position: relative; display: inline-block;">
                         <img id="iconPreview"

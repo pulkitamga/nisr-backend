@@ -1,6 +1,6 @@
 @php use App\Utils\Helpers; @endphp
 @extends('layouts.back-end.app')
-@section('title', 'Dashboard')
+@section('title', translate('Dashboard'))
 @push('css_or_js')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @endpush
@@ -12,7 +12,7 @@
         <div class="flex-between align-items-center">
             <div>
                 <h1 class="page-header-title">{{ translate('Welcome_Admin') }}</h1>
-                <p>Monitor your business analytics and statistics.</p>
+                <p>{{ translate('Monitor your business analytics and statistics.') }}</p>
             </div>
         </div>
     </div>
@@ -24,14 +24,14 @@
                 <div class="col-sm-6">
                     <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
                         <img src="{{ asset('public/assets/back-end/img/business_analytics.png') }}" alt="">
-                        Business Analytics
+                        {{ translate('Business Analytics') }}
                     </h4>
                 </div>
                 <div class="col-sm-6 d-flex justify-content-sm-end">
                     <select class="custom-select w-auto" name="statistics_type" id="statistics_type_for_crm">
-                        <option value="overall" {{ $statisticsType == 'overall' ? 'selected' : '' }}>Overall Statistics</option>
-                        <option value="today" {{ $statisticsType == 'today' ? 'selected' : '' }}>Today's Statistics</option>
-                        <option value="this_month" {{ $statisticsType == 'this_month' ? 'selected' : '' }}>This Month's Statistics</option>
+                        <option value="overall" {{ $statisticsType == 'overall' ? 'selected' : '' }}>{{ translate('Overall Statistics') }}</option>
+                        <option value="today" {{ $statisticsType == 'today' ? 'selected' : '' }}>{{ translate("Today's Statistics") }}</option>
+                        <option value="this_month" {{ $statisticsType == 'this_month' ? 'selected' : '' }}>{{ translate("This Month's Statistics") }}</option>
                     </select>
                 </div>
             </div>
@@ -48,7 +48,7 @@
         </div>
     </div>
     <div id="loading" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 9999; justify-content: center; align-items: center;">
-        <i class="tio-loading spin"></i> Loading...
+        <i class="tio-loading spin"></i> {{ translate('Loading...') }}
     </div>
     <!-- ==== DEALS ==== -->
     <div class="card mb-2 remove-card-shadow">
@@ -66,7 +66,7 @@
                 <div class="col-sm-12">
                     <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
                         <img src="{{ asset('public/assets/back-end/img/business_analytics.png') }}" alt="">
-                        {{ translate('Tickets section') }}
+                        {{ translate('Tickets Section') }}
                     </h4>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                 <div class="col-sm-12">
                     <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
                         <img src="{{ asset('public/assets/back-end/img/business_analytics.png') }}" alt="">
-                        {{ translate('warranty section ') }}
+                        {{ translate('Warranty Section') }}
                     </h4>
                 </div>
             </div>
@@ -173,11 +173,11 @@
             beforeSend: function () { $('#loading').fadeIn(); },
             success: function (resp) {
                 console.log('AJAX response:', resp);
-                if (!resp.success) { alert('Error loading data'); return; }
+                if (!resp.success) { alert(@json(translate('Error loading data'))); return; }
                 updateNumbers(resp.data);
                 renderServiceChart(resp.data.totalServices, resp.data.totalInvoice);
             },
-            error: function (xhr) { console.error('AJAX error:', xhr.responseText); alert('Request failed – check console'); },
+            error: function (xhr) { console.error('AJAX error:', xhr.responseText); alert(@json(translate('Request failed - check console'))); },
             complete: function () { $('#loading').fadeOut(); }
         });
     });
@@ -235,7 +235,7 @@
         const options = {
             chart: { type: 'donut', height: 280 },
             series: [parseFloat(services), parseFloat(invoice)],
-            labels: ['Services Completed', 'Invoice Amount'],
+            labels: [@json(translate('Services Completed')), @json(translate('Invoice Amount'))],
             colors: ['#00E396', '#FEB019'],
             legend: { show: false },
             dataLabels: { enabled: false },

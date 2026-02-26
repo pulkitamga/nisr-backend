@@ -1,14 +1,14 @@
 @php use Carbon\Carbon; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('wholesale_ticket'))
+@section('title', translate('Wholesale Ticket'))
 
 @section('content')
 <div class="content container-fluid">
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt="">
-            {{translate('wholesale_ticket')}}
+            {{translate('Wholesale Ticket')}}
             <span class="badge badge-soft-dark radius-50 fz-14">{{ $tickets->total() }}</span>
         </h2>
     </div>
@@ -167,7 +167,6 @@
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
                         <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->name ?? $ticket->status }}</span></td>
-                        <!-- <td>{{ $ticket->source_id ?? translate('N/A') }}</td> -->
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         <td class="text-center">
 
@@ -346,3 +345,5 @@
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
 
 @endpush
+
+

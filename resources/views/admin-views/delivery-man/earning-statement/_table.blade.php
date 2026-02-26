@@ -66,7 +66,7 @@
                                             </span>
                             @elseif($order['order_status']=='failed')
                                 <span class="badge badge-danger fz-12">
-                                                {{translate('Failed_To_Deliver')}}
+                                                {{translate('Failed_to_Deliver')}}
                                             </span>
                             @elseif($order['order_status']=='delivered')
                                 <span class="badge badge-success badge-success-2">
@@ -100,3 +100,4 @@
         @endif
     </div>
 </div>
+

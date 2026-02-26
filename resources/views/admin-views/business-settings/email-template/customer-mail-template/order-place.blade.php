@@ -51,7 +51,7 @@
                     <div class="flex-1 w-49">
                     <h3 class="mb-2">{{translate('delivery_Address')}} </h3>
                     <div class="mb-2">{{translate('Munam Shahariar')}}</div>
-                    <div>{{translate('4517 Washington Ave. Manchester, Kentucky 39495')}}</div>
+                    <div>4517 Washington Ave. Manchester, Kentucky 39495</div>
                 </div>
                 @endif
             </div>

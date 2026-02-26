@@ -36,22 +36,22 @@
                             <label class="form-label">{{ translate('Channel') }} <span class="input-required-icon">*</span>
                             </label>
                             <select class="form-control" name="pipeline" required>
-                                <option value="email">Email</option>
-                                <option value="form">Form</option>
-                                <option value="chat">Chat</option>
-                                <option value="social">Social</option>
-                                <option value="phone">Phone</option>
+                                <option value="email">{{ translate('Email') }}</option>
+                                <option value="form">{{ translate('Form') }}</option>
+                                <option value="chat">{{ translate('Chat') }}</option>
+                                <option value="social">{{ translate('social') }}</option>
+                                <option value="phone">{{ translate('Phone') }}</option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">{{ translate('Message Type') }} <span class="input-required-icon">*</span>
                             </label>
                             <select class="form-control" name="message_type" required>
-                                <option value="support">Support</option>
-                                <option value="service">Service</option>
-                                <option value="career">Career</option>
-                                <option value="warranty">Warranty</option>
-                                <option value="contact">Contact</option>
+                                <option value="support">{{ translate('Support') }}</option>
+                                <option value="service">{{ translate('Service') }}</option>
+                                <option value="career">{{ translate('Career') }}</option>
+                                <option value="warranty">{{ translate('Warranty') }}</option>
+                                <option value="contact">{{ translate('Contact') }}</option>
                             </select>
                         </div>
                       

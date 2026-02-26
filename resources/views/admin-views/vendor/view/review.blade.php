@@ -16,7 +16,7 @@
                     <div class="mt-4 pr-2">
                         <div class="flex-between">
                             <div class="mx-1"><h4><i class="tio-shop-outlined"></i></h4></div>
-                            <div><h4>{{translate('vendor_request_for_open_a_shop.')}}</h4></div>
+                            <div><h4>{{translate('vendor_request_for_open_a_shop')}}</h4></div>
                         </div>
                         <div class="text-center">
                             <form class="d-inline-block" action="{{route('admin.vendors.updateStatus')}}" method="POST">
@@ -180,3 +180,4 @@
         </div>
     </div>
 @endsection
+

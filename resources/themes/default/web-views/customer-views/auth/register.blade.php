@@ -191,7 +191,7 @@
                         </div>
                         <div class="text-black-50 mt-3 text-center">
                             <small>
-                                {{  translate('Already_have_account ') }}?
+                                {{  translate('Already_have_account') }}?
                                 <a class="text-primary text-underline" href="{{ route('customer.auth.login') }}">
                                     {{ translate('sign_in') }}
                                 </a>

@@ -6,7 +6,7 @@
 @endphp
 @extends('theme-views.layouts.app')
 
-@section('title', translate('Track_Order_Result ').' | '.$web_config['company_name'].' '.translate('ecommerce'))
+@section('title', translate('Track_Order_Result').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-4">

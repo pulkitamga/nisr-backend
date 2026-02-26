@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session()->get('direction') ?? 'ltr' }}">
+@php($direction = session()->get('direction') ?? 'ltr')
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction }}">
 
 <head>
     <meta charset="utf-8">
@@ -57,18 +58,18 @@
             --web-primary-20:{{ $web_config['primary_color'] }}20;
             --web-primary-40:{{ $web_config['primary_color'] }}40;
             --web-secondary:{{ $web_config['secondary_color'] }};
-            --web-direction:{{ Session::get('direction') }};
-            --text-align-direction:{{ Session::get('direction') === "rtl" ? 'right' : 'left' }};
-            --text-align-direction-alt:{{ Session::get('direction') === "rtl" ? 'left' : 'right'}};
+            --web-direction:{{ $direction }};
+            --text-align-direction:{{ $direction === "rtl" ? 'right' : 'left' }};
+            --text-align-direction-alt:{{ $direction === "rtl" ? 'left' : 'right'}};
         }
 
         .dropdown-menu:not(.m-0) {
-            margin-{{ Session::get('direction') === "rtl" ? 'right' : 'left' }}: -8px !important;
+            margin-{{ $direction === "rtl" ? 'right' : 'left' }}: -8px !important;
         }
 
         @media (max-width: 767px) {
             .navbar-expand-md .dropdown-menu>.dropdown>.dropdown-toggle {
-                padding-{{ Session::get('direction') === "rtl" ? 'left' : 'right'}}: 1.95rem;
+                padding-{{ $direction === "rtl" ? 'left' : 'right'}}: 1.95rem;
             }
         }
 
@@ -82,7 +83,7 @@
     {!! getSystemDynamicPartials(type: 'analytics_script') !!}
 </head>
 
-<body class="toolbar-enabled">
+<body class="toolbar-enabled {{ $direction === 'rtl' ? 'rtl' : 'ltr' }}">
 
     @include('layouts.front-end.partials._modals')
 

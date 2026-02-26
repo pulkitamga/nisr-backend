@@ -19,7 +19,7 @@
                 <td>{{ $activity->created_at->format('d M, Y ') }}</td>
                 <td>{{ ucfirst($activity->activity_type) }}</td>
                 <td>{{ $activity->title }}</td>
-                <td>{{ $activity->employee->name ?? 'Unassigned' }}</td>
+                <td>{{ $activity->employee->name ?? translate('Unassigned') }}</td>
                 <td>
                     <button class="btn btn-sm btn-outline-success view-details" data-bs-toggle="modal" data-bs-target="#activityModal"
                         data-activity='@json($activity)'> <i class="tio-invisible"></i>
@@ -55,6 +55,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const textNA = @json(translate('N/A'));
+    const textUnassigned = @json(translate('Unassigned'));
     const viewButtons = document.querySelectorAll('.view-details');
     viewButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -64,21 +66,21 @@ document.addEventListener('DOMContentLoaded', function() {
             let detailsHtml = `
                 <p><strong>{{ translate('Type') }}:</strong> ${activity.activity_type.charAt(0).toUpperCase() + activity.activity_type.slice(1)}</p>
                 <p><strong>{{ translate('Title') }}:</strong> ${activity.title}</p>
-                <p><strong>{{ translate('Subject') }}:</strong> ${activity.subject || 'N/A'}</p>
+                <p><strong>{{ translate('Subject') }}:</strong> ${activity.subject || textNA}</p>
                 <p><strong>${activity.activity_type === 'task' ? '{{ translate('Due Date') }}' : '{{ translate('Date') }}'}:</strong> 
                     ${activity.note_date ? new Date(activity.note_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : new Date(activity.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-                <p><strong>{{ translate('Employee') }}:</strong> ${activity.employee?.name || 'Unassigned'}</p>
+                <p><strong>{{ translate('Employee') }}:</strong> ${activity.employee?.name || textUnassigned}</p>
             `;
 
            if (activity.details) {
     let detailsObj;
 
-    // Agar string hai to parse karo
+    // Parse JSON string details safely.
     if (typeof activity.details === 'string') {
         try {
             detailsObj = JSON.parse(activity.details);
         } catch (e) {
-            detailsObj = { raw: activity.details }; // Agar invalid JSON hai
+            detailsObj = { raw: activity.details };
         }
     } else {
         detailsObj = activity.details;
@@ -88,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
    for (const [key, value] of Object.entries(detailsObj)) {
     let displayValue = value;
 
-    // Sirf actual date strings ko format kar
+    // Format date-like values for readability.
     if (typeof value === 'string' && /\d{4}-\d{2}-\d{2}/.test(value)) {
         displayValue = new Date(value).toLocaleString('en-GB', { 
             day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
@@ -107,3 +109,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
+

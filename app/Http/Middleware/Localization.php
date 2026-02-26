@@ -37,16 +37,63 @@ class Localization
             }
         }
 
-        if (!empty($sessionLocale)) {
-            $resolvedLocale = function_exists('resolveAppLocale')
-                ? resolveAppLocale((string)$sessionLocale)
-                : strtolower((string)$sessionLocale);
+        $localeToResolve = !empty($sessionLocale)
+            ? (string)$sessionLocale
+            : ((string)config('app.locale', 'en'));
 
-            App::setLocale($resolvedLocale);
-            session()->put('local', $resolvedLocale);
-            session()->put('locale', $resolvedLocale);
-        }
+        $resolvedLocale = function_exists('resolveAppLocale')
+            ? resolveAppLocale($localeToResolve)
+            : strtolower($localeToResolve);
+
+        App::setLocale($resolvedLocale);
+        session()->put('local', $resolvedLocale);
+        session()->put('locale', $resolvedLocale);
+        session()->put('direction', $this->resolveDirectionByLocale(
+            rawLocale: $localeToResolve,
+            resolvedLocale: $resolvedLocale
+        ));
 
         return $next($request);
+    }
+
+    private function resolveDirectionByLocale(string $rawLocale, string $resolvedLocale): string
+    {
+        $defaultDirection = 'ltr';
+        if (!function_exists('getWebConfig')) {
+            return $defaultDirection;
+        }
+
+        $languageList = getWebConfig('language');
+        if (!is_array($languageList)) {
+            return $defaultDirection;
+        }
+
+        $rawLocale = strtolower(trim($rawLocale));
+        $resolvedLocale = strtolower(trim($resolvedLocale));
+        $rawBaseLocale = preg_split('/[_-]/', $rawLocale)[0] ?? '';
+        $resolvedBaseLocale = preg_split('/[_-]/', $resolvedLocale)[0] ?? '';
+
+        $lookupCodes = array_unique(array_filter([
+            $rawLocale,
+            $resolvedLocale,
+            $rawBaseLocale,
+            $resolvedBaseLocale,
+        ]));
+
+        foreach ($languageList as $languageData) {
+            if (!is_array($languageData)) {
+                continue;
+            }
+
+            $languageCode = strtolower(trim((string)($languageData['code'] ?? '')));
+            if ($languageCode === '' || !in_array($languageCode, $lookupCodes, true)) {
+                continue;
+            }
+
+            $direction = strtolower(trim((string)($languageData['direction'] ?? $defaultDirection)));
+            return in_array($direction, ['ltr', 'rtl'], true) ? $direction : $defaultDirection;
+        }
+
+        return $defaultDirection;
     }
 }

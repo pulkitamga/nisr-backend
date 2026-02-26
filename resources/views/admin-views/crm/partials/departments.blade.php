@@ -3,7 +3,7 @@
     <div class="model-sm modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
-                <h3>Select Department</h3>
+                <h3>{{ translate('Select Department') }}</h3>
                 <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
                     <i class="tio-clear"></i>
                 </button>
@@ -58,7 +58,7 @@
                     </div>
 
                     <div class="text-end mt-3">
-                        <button type="submit" class="btn btn-xs btn-primary">Update</button>
+                        <button type="submit" class="btn btn-xs btn-primary">{{ translate('Update') }}</button>
                     </div>
                 </form>
             </div>

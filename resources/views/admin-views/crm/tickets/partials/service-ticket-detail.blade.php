@@ -352,7 +352,7 @@
                                             <th>{{ translate('Status') }}</th>
                                             <th>{{ translate('Remark') }}</th>
                                             <th>{{ translate('Attachments') }}</th>
-                                            <th>{{ translate(' customer_signature') }}</th>
+                                            <th>{{ translate('Customer Signature') }}</th>
                                             <th>{{ translate('Created At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         </tr>
@@ -609,6 +609,12 @@
 @push('script')
 <script>
     $(document).ready(function() {
+        const textNA = @json(translate('N/A'));
+        const textNone = @json(translate('None'));
+        const textSystem = @json(translate('System'));
+        const textMobile = @json(translate('Mobile'));
+        const textInShop = @json(translate('In-shop'));
+
         // Handle tab switching
         $('.action-btn').click(function() {
             $('.action-btn').parent().removeClass('active');
@@ -622,46 +628,46 @@
             let modalId = $(this).data('bs-target');
 
             if (modalId === '#activityDetailsModal') {
-                $('#activity-description').text(details.description || 'N/A');
-                $('#activity-created-by').text(details.created_by && details.created_by.name ? details.created_by.name : 'System');
-                $('#activity-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : 'N/A');
-                $('#activity-attachments').text(details.attachments ? JSON.parse(details.attachments).join(', ') : 'None');
+                $('#activity-description').text(details.description || textNA);
+                $('#activity-created-by').text(details.created_by && details.created_by.name ? details.created_by.name : textSystem);
+                $('#activity-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
+                $('#activity-attachments').text(details.attachments ? JSON.parse(details.attachments).join(', ') : textNone);
             } else if (modalId === '#estimateDetailsModal') {
-                $('#estimate-service').text(details.service ? details.service.title : 'N/A');
+                $('#estimate-service').text(details.service ? details.service.title : textNA);
                 $('#estimate-subtotal').text(details.subtotal ? details.subtotal : '0.00');
                 $('#estimate-tax').text(details.tax ? details.tax : '0.00');
                 $('#estimate-total').text(details.total ? details.total : '0.00');
-                $('#estimate-is-mobile').text(details.is_mobile ? 'Mobile' : 'In-shop');
-                $('#estimate-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : 'N/A');
+                $('#estimate-is-mobile').text(details.is_mobile ? textMobile : textInShop);
+                $('#estimate-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
             } else if (modalId === '#invoiceDetailsModal') {
                 $('#invoice-subtotal').text(details.subtotal ? details.subtotal : '0.00');
                 $('#invoice-tax').text(details.tax ? details.tax : '0.00');
                 $('#invoice-total').text(details.total ? details.total : '0.00');
-                $('#invoice-payment-status').text(details.payment_status ? details.payment_status.toUpperCase() : 'N/A');
-                $('#invoice-generated-at').text(details.generated_at ? new Date(details.generated_at).toLocaleString() : 'N/A');
+                $('#invoice-payment-status').text(details.payment_status ? details.payment_status.toUpperCase() : textNA);
+                $('#invoice-generated-at').text(details.generated_at ? new Date(details.generated_at).toLocaleString() : textNA);
             } else if (modalId === '#changeOrderDetailsModal') {
                 $('#change-order-additional-charges').text(details.additional_charges ? details.additional_charges : '0.00');
-                $('#change-order-description').text(details.description || 'N/A');
-                $('#change-order-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : 'N/A');
+                $('#change-order-description').text(details.description || textNA);
+                $('#change-order-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
             } else if (modalId === '#cancellationDetailsModal') {
-                $('#cancellation-reason').text(details.cancellation_reason || 'N/A');
+                $('#cancellation-reason').text(details.cancellation_reason || textNA);
                 $('#cancellation-fee-amount').text(details.fee_amount ? details.fee_amount : '0.00');
                 $('#cancellation-refund-amount').text(details.refund_amount ? details.refund_amount : '0.00');
-                $('#cancellation-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : 'N/A');
+                $('#cancellation-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
             } else if (modalId === '#serviceDetailsModal') {
-                $('#service-technician').text(details.technician && details.technician.name ? details.technician.name : 'N/A');
-                $('#service-status').text(details.status ? details.status.toUpperCase() : 'N/A');
-                $('#service-scheduled-at').text(details.scheduled_at ? new Date(details.scheduled_at).toLocaleString() : 'N/A');
-                $('#service-started-at').text(details.started_at ? new Date(details.started_at).toLocaleString() : 'N/A');
-                $('#service-completed-at').text(details.completed_at ? new Date(details.completed_at).toLocaleString() : 'N/A');
-                $('#service-odometer-start').text(details.odometer_start || 'N/A');
-                $('#service-odometer-end').text(details.odometer_end || 'N/A');
-                $('#service-gps-location').text(details.gps_location || 'N/A');
-                $('#service-remarks').text(details.remarks || 'N/A');
-                $('#service-priority').text(details.priority || 'N/A');
-                $('#service-sla-hours').text(details.sla_hours || 'N/A');
-                $('#service-is-mobile').text(details.is_mobile ? 'Mobile' : 'In-shop');
-                $('#service-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : 'N/A');
+                $('#service-technician').text(details.technician && details.technician.name ? details.technician.name : textNA);
+                $('#service-status').text(details.status ? details.status.toUpperCase() : textNA);
+                $('#service-scheduled-at').text(details.scheduled_at ? new Date(details.scheduled_at).toLocaleString() : textNA);
+                $('#service-started-at').text(details.started_at ? new Date(details.started_at).toLocaleString() : textNA);
+                $('#service-completed-at').text(details.completed_at ? new Date(details.completed_at).toLocaleString() : textNA);
+                $('#service-odometer-start').text(details.odometer_start || textNA);
+                $('#service-odometer-end').text(details.odometer_end || textNA);
+                $('#service-gps-location').text(details.gps_location || textNA);
+                $('#service-remarks').text(details.remarks || textNA);
+                $('#service-priority').text(details.priority || textNA);
+                $('#service-sla-hours').text(details.sla_hours || textNA);
+                $('#service-is-mobile').text(details.is_mobile ? textMobile : textInShop);
+                $('#service-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
             }
         });
 
@@ -714,3 +720,5 @@ document.addEventListener('click', function (e) {
 </script>
 
 @endpush
+
+

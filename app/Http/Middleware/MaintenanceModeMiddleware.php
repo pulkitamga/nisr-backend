@@ -6,6 +6,7 @@ use App\Traits\MaintenanceModeTrait;
 use App\Utils\Helpers;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -22,30 +23,42 @@ class MaintenanceModeMiddleware
      * @return mixed
      */
     public function handle($request, Closure $next): mixed
-{
-
-    if ($this->checkMaintenanceMode()) {
+    {
+        $currentLocale = strtolower(trim((string) App::getLocale()));
         if (
-            $request->is('admin/*') ||
-            $request->is('login') ||
-            $request->is('login/*') ||
-            $request->is('maintenance-mode') ||
-            $request->is('change-language') ||
-            $request->is('system/*') ||
-            $request->is('get-session-recaptcha-code') ||
-            $request->is('g-recaptcha-response-store')
+            $currentLocale === ''
+            || !preg_match('/^[a-z]{2,3}(?:[_-][a-z]{2,3})?$/', $currentLocale)
         ) {
-            return $next($request);
+            $currentLocale = strtolower(trim((string) config('app.locale', 'en')));
         }
 
-        if ($request->is('vendor/*') || request('maintenance_system') == 'vendor') {
-            return redirect()->route('maintenance-mode', ['maintenance_system' => 'vendor']);
+        $resolvedLocale = function_exists('resolveAppLocale')
+            ? resolveAppLocale($currentLocale)
+            : $currentLocale;
+        App::setLocale($resolvedLocale ?: 'en');
+
+        if ($this->checkMaintenanceMode()) {
+            if (
+                $request->is('admin/*') ||
+                $request->is('login') ||
+                $request->is('login/*') ||
+                $request->is('maintenance-mode') ||
+                $request->is('change-language') ||
+                $request->is('system/*') ||
+                $request->is('get-session-recaptcha-code') ||
+                $request->is('g-recaptcha-response-store')
+            ) {
+                return $next($request);
+            }
+
+            if ($request->is('vendor/*') || request('maintenance_system') == 'vendor') {
+                return redirect()->route('maintenance-mode', ['maintenance_system' => 'vendor']);
+            }
+
+            return redirect()->route('maintenance-mode');
         }
 
-        return redirect()->route('maintenance-mode');
+        return $next($request);
     }
-
-    return $next($request);
-}
 
 }

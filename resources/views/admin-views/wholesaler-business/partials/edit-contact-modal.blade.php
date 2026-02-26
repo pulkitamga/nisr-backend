@@ -13,7 +13,7 @@
 
                  <div class="modal-body row g-3">
                      <div class="col-md-6">
-                         <label>{{ translate('First Name') }}</label>
+                         <label>{{ translate('first_name') }}</label>
                          <input type="text" name="first_name" class="form-control" value="{{ $contact->first_name }}">
                      </div>
 
@@ -28,7 +28,7 @@
                      </div>
 
                      <div class="col-md-6">
-                         <label>{{ translate('Phone Number') }}</label>
+                         <label>{{ translate('phone_number') }}</label>
                          <input type="text" name="phone_number" class="form-control" value="{{ $contact->phone_number }}">
                      </div>
 

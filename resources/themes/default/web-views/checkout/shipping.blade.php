@@ -131,7 +131,7 @@
                                                     <div class="form-group">
                                                         <label>{{ translate('Delivery_Type') }}</label>
                                                         <div class="d-flex mt-lg-1 delivery-radio-btn">
-                                                            <div class="form-control-sm {{Session::get('direction') === " rtl" ? '' : 'ps-5' }}">
+                                                            <div class="form-control-sm {{Session::get('direction') === "rtl" ? '' : 'ps-5' }}">
                                                                 <input class="form-check-input show" type="radio"
                                                                     name="delivery_type"
                                                                     id="delivery_radio"
@@ -142,7 +142,7 @@
                                                                 </label>
                                                             </div>
 
-                                                            <div class="form-control-sm {{Session::get('direction') === " rtl" ? '' : 'ps-5' }}">
+                                                            <div class="form-control-sm {{Session::get('direction') === "rtl" ? '' : 'ps-5' }}">
                                                                 <input class="form-check-input show" type="radio"
                                                                     name="delivery_type"
                                                                     id="pickup_radio"
@@ -162,7 +162,7 @@
                                                     <div class="form-group">
                                                         <label>{{ translate('Delivery_Type') }}</label>
                                                         <div class="d-flex justify-content-md-around mt-lg-1 delivery-radio-btn">
-                                                            <div class="form-control-sm {{Session::get('direction') === " rtl" ? '' : 'ps-5' }}">
+                                                            <div class="form-control-sm {{Session::get('direction') === "rtl" ? '' : 'ps-5' }}">
                                                                 <input class="form-check-input show form-check-input-radio" type="radio"
                                                                     name="delivery_type"
                                                                     id="delivery_radio"
@@ -173,7 +173,7 @@
                                                                 </label>
                                                             </div>
 
-                                                            <div class="form-control-sm {{Session::get('direction') === " rtl" ? '' : 'ps-5' }}">
+                                                            <div class="form-control-sm {{Session::get('direction') === "rtl" ? '' : 'ps-5' }}">
                                                                 <input class="form-check-input show form-check-input-radio" type="radio"
                                                                     name="delivery_type"
                                                                     id="pickup_radio"

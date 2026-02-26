@@ -19,7 +19,7 @@
                     </a>
                 </td>
                 <td>{{ $file->created_at }}</td>
-                <td>{{ $file->employee->name ?? 'Unassigned' }}</td>
+                <td>{{ $file->employee->name ?? translate('Unassigned') }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -28,3 +28,4 @@
 @else
 @include('layouts.back-end._empty-state',['text'=>'no_record_found'],['image'=>'default'])
 @endif
+

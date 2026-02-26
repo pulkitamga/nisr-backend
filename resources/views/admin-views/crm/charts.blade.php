@@ -276,10 +276,10 @@
                 <div class="col-sm mb-2 mb-sm-0">
                     <h1 class="page-header-title">
                         <i class="tio-chart-bar-2 text-primary"></i>
-                        {{ translate('crm_dashboard') }}
+                        {{ translate('CRM Analytics Dashboard') }}
                     </h1>
                     <p class="mb-0 text-muted">
-                        {{ translate('crm_overview') }}
+                        {{ translate('CRM Analytics Overview') }}
                     </p>
                 </div>
             </div>
@@ -292,16 +292,16 @@
         <div class="filter-card">
             <div class="row">
                 <div class="col-lg-3 col-md-6 mb-3">
-                    <label class="form-label">{{ translate('date_range') }}</label>
+                    <label class="form-label">{{ translate('Date Range') }}</label>
                     <input type="text" id="dateRange" class="form-control"
                         value="{{ $start }} - {{ $end }}">
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
-                    <label class="form-label">Group By</label>
+                    <label class="form-label">{{ translate('Group By') }}</label>
                     <select id="groupByFilter" class="form-control">
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
+                        <option value="daily">{{ translate('Daily') }}</option>
+                        <option value="weekly">{{ translate('Weekly') }}</option>
+                        <option value="monthly">{{ translate('Monthly') }}</option>
                     </select>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
@@ -324,7 +324,7 @@
                     </select>
                 </div>
                  <div class="col-lg-3 col-md-6 mb-3">
-                    <label class="form-label">{{ translate('message_type') }}</label>
+                    <label class="form-label">{{ translate('Message Type') }}</label>
                     <select id="messageType" class="form-control">
                         <option value="">{{ translate('All Types') }}</option>
                         <option value="complaint">{{ translate('Complaint') }}</option>
@@ -389,7 +389,7 @@
                                 <input class="form-check-input" type="checkbox" id="stackedToggle"
                                     onchange="toggleStackedMode()">
                                 <label class="form-check-label" for="stackedToggle">
-                                    <strong>{{ translate('stacked_bars') }}</strong>
+                                    <strong>{{ translate('Stacked Bars') }}</strong>
                                 </label>
                             </div>
                         </div>
@@ -423,13 +423,13 @@
                 <h4 class="mb-0">{{ translate('CRM Analytics Overview') }}</h4>
                 <div class="chart-type-selector">
                     <select id="chartType" class="form-control form-control-sm">
-                        <option value="line">Line Chart</option>
-                        <option value="bar" selected>Bar Chart</option>
-                        <option value="stackedBar">Stacked Bar Chart</option>
-                        <option value="radar">Radar Chart</option>
+                        <option value="line">{{ translate('Line Chart') }}</option>
+                        <option value="bar" selected>{{ translate('Bar Chart') }}</option>
+                        <option value="stackedBar">{{ translate('Stacked Bar Chart') }}</option>
+                        <option value="radar">{{ translate('Radar Chart') }}</option>
                     </select>
                     <button class="btn btn-sm btn-outline-primary ms-2" onclick="exportChart()">
-                        <i class="tio-download-to"></i> Export
+                        <i class="tio-download-to"></i> {{ translate('Export') }}
                     </button>
 
                 </div>
@@ -452,13 +452,13 @@
                         <tr>
                             <th>{{ translate('Date') }}</th>
                             <th>{{ translate('Total') }}</th>
-                            <th>{{ translate('assigned') }}</th>
+                            <th>{{ translate('Assigned') }}</th>
                             <th>{{ translate('Pending') }}</th>
                             <th>{{ translate('converted') }}</th>
                             <th>{{ translate('ignored') }}</th>
-                            <th>{{ translate('spam') }}</th>
-                            <th>{{ translate('assignment_rate') }}<small
-                                    title="Assigned messages divided by total messages for that day">
+                            <th>{{ translate('Spam') }}</th>
+                            <th>{{ translate('Assigned %') }}<small
+                                    title="{{ translate('Assigned messages divided by total messages for that day') }}">
                                     <i class="tio-info"></i>
                                 </small></th>
                         </tr>
@@ -483,6 +483,33 @@
     <script>
         (function() {
             'use strict';
+            const crmChartText = {
+                apply: @json(translate('Apply')),
+                cancel: @json(translate('Cancel')),
+                today: @json(translate('Today')),
+                yesterday: @json(translate('Yesterday')),
+                last7days: @json(translate('Last 7 Days')),
+                last30days: @json(translate('Last 30 Days')),
+                thisMonth: @json(translate('This Month')),
+                loading: @json(translate('Loading...')),
+                failedLoadData: @json(translate('Failed to load data')),
+                errorLoadingData: @json(translate('Error loading chart data')),
+                applyFilters: @json(translate('Apply Filters')),
+                date: @json(translate('Date')),
+                messages: @json(translate('messages')),
+                total: @json(translate('Total')),
+                totalMessages: @json(translate('Total Messages')),
+                assigned: @json(translate('Assigned')),
+                pending: @json(translate('Pending')),
+                converted: @json(translate('Converted')),
+                ignored: @json(translate('ignored')),
+                spam: @json(translate('Spam')),
+                noDataFound: @json(translate('No data found')),
+                chartFileName: 'crm-chart.png',
+                chartPdfFileName: 'crm-analytics-report.pdf',
+                chartPdfTitle: @json(translate('CRM Analytics Report')),
+            };
+            window.crmChartText = crmChartText;
 
             function loadScript(src, callback) {
                 var script = document.createElement('script');
@@ -504,17 +531,17 @@
                         $('#dateRange').daterangepicker({
                             locale: {
                                 format: 'YYYY-MM-DD',
-                                applyLabel: 'Apply',
-                                cancelLabel: 'Cancel'
+                                applyLabel: crmChartText.apply,
+                                cancelLabel: crmChartText.cancel
                             },
                             startDate: moment().subtract(6, 'days'),
                             endDate: moment(),
                             ranges: {
-                                'Today': [moment(), moment()],
-                                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                                'This Month': [moment().startOf('month'), moment().endOf('month')]
+                                [crmChartText.today]: [moment(), moment()],
+                                [crmChartText.yesterday]: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                                [crmChartText.last7days]: [moment().subtract(6, 'days'), moment()],
+                                [crmChartText.last30days]: [moment().subtract(29, 'days'), moment()],
+                                [crmChartText.thisMonth]: [moment().startOf('month'), moment().endOf('month')]
                             }
                         });
                     }
@@ -604,6 +631,26 @@
 
 
     <script>
+        const crmChartText = window.crmChartText || {
+            applyFilters: @json(translate('Apply Filters')),
+            loading: @json(translate('Loading...')),
+            failedLoadData: @json(translate('Failed to load data')),
+            errorLoadingData: @json(translate('Error loading chart data')),
+            date: @json(translate('Date')),
+            messages: @json(translate('messages')),
+            total: @json(translate('Total')),
+            totalMessages: @json(translate('Total Messages')),
+            assigned: @json(translate('Assigned')),
+            pending: @json(translate('Pending')),
+            converted: @json(translate('Converted')),
+            ignored: @json(translate('ignored')),
+            spam: @json(translate('Spam')),
+            noDataFound: @json(translate('No data found')),
+            chartFileName: 'crm-chart.png',
+            chartPdfFileName: 'crm-analytics-report.pdf',
+            chartPdfTitle: @json(translate('CRM Analytics Report')),
+        };
+
         let mainChart = null;
         let currentData = null;
 
@@ -665,7 +712,7 @@
                 const groupBy = $('#groupByFilter').val();
 
 
-                $('#applyFilter').prop('disabled', true).html('<i class="tio-refresh spinner"></i> Loading...');
+                $('#applyFilter').prop('disabled', true).html('<i class="tio-refresh spinner"></i> ' + crmChartText.loading);
 
                 $.ajax({
                     url: '{{ route('admin.crm.chart.data') }}',
@@ -687,16 +734,16 @@
                             updateDataTable(response.data.daily_stats);
                             updateLegend(response.data.legend);
                         } else {
-                            toastr.error(response.message || 'Failed to load data');
+                            toastr.error(response.message || crmChartText.failedLoadData);
                         }
 
                         $('#applyFilter').prop('disabled', false).html(
-                            '<i class="tio-filter-list"></i> Apply Filters');
+                            '<i class="tio-filter-list"></i> ' + crmChartText.applyFilters);
                     },
                     error: function(xhr, status, error) {
-                        toastr.error('Error loading chart data: ' + error);
+                        toastr.error(crmChartText.errorLoadingData + ': ' + error);
                         $('#applyFilter').prop('disabled', false).html(
-                            '<i class="tio-filter-list"></i> Apply Filters');
+                            '<i class="tio-filter-list"></i> ' + crmChartText.applyFilters);
                     }
                 });
             }
@@ -746,16 +793,16 @@
                             intersect: false,
                             callbacks: {
                                 title: function(items) {
-                                    return 'Date: ' + items[0].label;
+                                    return crmChartText.date + ': ' + items[0].label;
                                 },
                                 label: function(context) {
                                     const label = context.dataset.label || '';
                                     const value = context.raw || 0;
-                                    return `${label}: ${value} messages`;
+                                    return `${label}: ${value} ${crmChartText.messages}`;
                                 },
                                 footer: function(items) {
                                     let total = items.reduce((sum, i) => sum + i.raw, 0);
-                                    return `Total: ${total}`;
+                                    return `${crmChartText.total}: ${total}`;
                                 }
                             }
                         }
@@ -843,16 +890,16 @@
                                 intersect: false,
                                 callbacks: {
                                     title: function(items) {
-                                        return 'Date: ' + items[0].label;
+                                        return crmChartText.date + ': ' + items[0].label;
                                     },
                                     label: function(context) {
                                         const label = context.dataset.label || '';
                                         const value = context.raw || 0;
-                                        return `${label}: ${value} messages`;
+                                        return `${label}: ${value} ${crmChartText.messages}`;
                                     },
                                     footer: function(items) {
                                         let total = items.reduce((sum, i) => sum + i.raw, 0);
-                                        return `Total: ${total}`;
+                                        return `${crmChartText.total}: ${total}`;
                                     }
                                 }
                             }
@@ -911,37 +958,37 @@
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card" style="border-left-color: #3498db">
                     <div class="stat-number text-primary">${summary.total || 0}</div>
-                    <div class="stat-label">Total Messages</div>
+                    <div class="stat-label">${crmChartText.totalMessages}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card" style="border-left-color: #2ecc71">
                     <div class="stat-number text-success">${summary.assigned || 0}</div>
-                    <div class="stat-label">Assigned</div>
+                    <div class="stat-label">${crmChartText.assigned}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card" style="border-left-color: #f39c12">
                     <div class="stat-number text-warning">${summary.pending || 0}</div>
-                    <div class="stat-label">Pending</div>
+                    <div class="stat-label">${crmChartText.pending}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card" style="border-left-color: #9b59b6">
                     <div class="stat-number text-info">${summary.converted || 0}</div>
-                    <div class="stat-label">Converted</div>
+                    <div class="stat-label">${crmChartText.converted}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card" style="border-left-color: #e74c3c">
                     <div class="stat-number text-danger">${summary.ignored || 0}</div>
-                    <div class="stat-label">Ignored</div>
+                    <div class="stat-label">${crmChartText.ignored}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card" style="border-left-color: #34495e">
                     <div class="stat-number text-dark">${summary.spam || 0}</div>
-                    <div class="stat-label">Spam</div>
+                    <div class="stat-label">${crmChartText.spam}</div>
                 </div>
             </div>
         `);
@@ -955,7 +1002,7 @@
                     tableRows = `
                 <tr>
                     <td colspan="8" class="text-center py-4">
-                        <p class="mb-0 text-muted">No data found</p>
+                        <p class="mb-0 text-muted">${crmChartText.noDataFound}</p>
                     </td>
                 </tr>
             `;
@@ -1042,7 +1089,7 @@
             window.exportChart = function() {
                 if (mainChart) {
                     const link = document.createElement('a');
-                    link.download = "crm-chart.png";
+                    link.download = crmChartText.chartFileName;
                     link.href = mainChart.toBase64Image();
                     link.click();
                 }
@@ -1073,11 +1120,11 @@
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
                     pdf.setFontSize(14);
-                    pdf.text("CRM Analytics Report", 10, 10);
+                    pdf.text(crmChartText.chartPdfTitle, 10, 10);
 
                     pdf.addImage(imgData, 'PNG', 10, 20, imgWidth, imgHeight);
 
-                    pdf.save("crm-analytics-report.pdf");
+                    pdf.save(crmChartText.chartPdfFileName);
                 });
             };
 

@@ -178,7 +178,7 @@
         style="text-align: {{ app()->getLocale() == 'ar' ? 'left' : 'right' }}; margin-bottom: 15px; font-size: 10px; color: #7f8c8d;">
         <strong>{{ translate('generated') }}:</strong>
         {{ $filters['generated_at'] ?? now()->format('d M Y h:i A') }}<br>
-        <strong>{{ translate('by') }}:</strong>{{ auth()->user()->name ?? 'System' }}
+        <strong>{{ translate('By') }}:</strong>{{ auth()->user()->name ?? 'System' }}
     </div>
 
     <!-- ============ FILTERS SECTION - EXACTLY LIKE EXCEL ============ -->
@@ -186,7 +186,7 @@
     <div class="filter-card">
         <div class="filter-grid">
             <div class="filter-item">
-                <span class="filter-label">{{ translate('date_range') }}:</span>
+                <span class="filter-label">{{ translate('Date Range') }}:</span>
                 <span class="filter-value">{{ $filters['start_date'] ?? '-' }} to
                     {{ $filters['end_date'] ?? '-' }}</span>
             </div>
@@ -203,7 +203,7 @@
                 <span class="filter-value">{{ $filters['status'] ?? 'All Status' }}</span>
             </div>
             <div class="filter-item">
-                <span class="filter-label">{{ translate('message_type') }}</span>
+                <span class="filter-label">{{ translate('Message Type') }}</span>
                 <span class="filter-value">{{ $filters['message_type'] ?? 'All Types' }}</span>
             </div>
             <div class="filter-item">
@@ -231,12 +231,12 @@
                 $convertedPercentage = $total > 0 ? round(($converted / $total) * 100, 1) : 0;
             @endphp
             <tr>
-                <td>{{ translate('total_messages') }}</td>
+                <td>{{ translate('Total Messages') }}</td>
                 <td>{{ number_format($total) }}</td>
                 <td>100%</td>
             </tr>
             <tr>
-                <td>{{ translate('assigned') }}</td>
+                <td>{{ translate('Assigned') }}</td>
                 <td class="text-success">{{ number_format($assigned) }}</td>
                 <td><span class="badge badge-success">{{ $assignedPercentage }}%</span></td>
             </tr>
@@ -284,11 +284,11 @@
                 <th style="width: 5%;">#</th>
                 <th style="width: 12%;">{{ translate('date') }}</th>
                 <th style="width: 8%;">{{ translate('total') }}</th>
-                <th style="width: 8%;">{{ translate('assigned') }}</th>
+                <th style="width: 8%;">{{ translate('Assigned') }}</th>
                 <th style="width: 8%;">{{ translate('Pending') }}</th>
                 <th style="width: 8%;">{{ translate('converted') }}</th>
                 <th style="width: 8%;">{{ translate('ignored') }}</th>
-                <th style="width: 8%;">{{ translate('spam') }}</th>
+                <th style="width: 8%;">{{ translate('Spam') }}</th>
                 <th style="width: 10%;">{{ translate('assignment_rate') }}</th>
                 <th style="width: 10%;">{{ translate('conversion_rate') }}</th>
             </tr>
@@ -371,7 +371,7 @@
 
     <!-- DETAILED MESSAGES TABLE -->
     @if (isset($detailed_data) && $detailed_data->count() > 0)
-        <h3>{{ translate('detailed_messages') }}h3>
+        <h3>{{ translate('detailed_messages') }}</h3>
             <table>
                 <thead>
                     <tr>
@@ -379,7 +379,7 @@
                         <th style="width: 12%;">{{ translate('date') }}</th>
                         <th style="width: 15%;">{{ translate('Department') }}</th>
                         <th style="width: 10%;">{{ translate('Status') }}</th>
-                        <th style="width: 58%;">{{ translate('Message<') }}/th>
+                        <th style="width: 58%;">{{ translate('Message') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -387,7 +387,7 @@
                         <tr>
                             <td>{{ $key + 1 }}</td>
                             <td>{{ \Carbon\Carbon::parse($message->created_at)->format('d M Y H:i') }}</td>
-                            <td>{{ optional($message->department)->name ?? 'Unassigned' }}</td>
+                            <td>{{ optional($message->department)->name ?? translate('Unassigned') }}</td>
                             <td>
                                 @php
                                     $statusClass = match ($message->status) {
@@ -411,11 +411,10 @@
     <div class="footer">
         <p><strong>{{ translate('Filter Summary') }}:</strong>
             {{ translate('Date') }} {{ $filters['start_date'] ?? '-' }} to {{ $filters['end_date'] ?? '-' }} |
-            {{ translate('new-messages.to_review_offline_payment:_Go_to_Order_Details_page_ _view_Payment_Information_ _Match_the_payment_information') }}
-            {{ $filters['department'] ?? 'All' }} |
-            {{ translate('Pipeline') }} {{ $filters['pipeline'] ?? 'All' }} |
-            {{ translate('Status') }} {{ $filters['status'] ?? 'All' }} |
-            {{ translate('Type') }} {{ $filters['message_type'] ?? 'All' }}
+            {{ translate('Department') }} {{ $filters['department'] ?? translate('All') }} |
+            {{ translate('Pipeline') }} {{ $filters['pipeline'] ?? translate('All') }} |
+            {{ translate('Status') }} {{ $filters['status'] ?? translate('All') }} |
+            {{ translate('Type') }} {{ $filters['message_type'] ?? translate('All') }}
         </p>
         <p>* {{ translate('auto_generated') }}</p>
         <p>{{ translate('generated_on') }}: {{ now()->format('d M Y h:i:s A') }}</p>
@@ -425,3 +424,7 @@
 </body>
 
 </html>
+
+
+
+

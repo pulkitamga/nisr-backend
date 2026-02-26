@@ -7,13 +7,13 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow">
             <div class="modal-header">
-                <h5 class="modal-title" id="branchSelectModalLabel">Select Branch</h5>
+                <h5 class="modal-title" id="branchSelectModalLabel">{{ translate('Select Branch') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="posBranchForm">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="posBranchId" class="form-label">Branch</label>
+                        <label for="posBranchId" class="form-label">{{ translate('Branch') }}</label>
                         <select id="posBranchId" class="form-select" required>
                             @foreach ($branches as $branch)
                                 <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary w-100">Go to POS</button>
+                    <button type="submit" class="btn btn-primary w-100">{{ translate('Go to POS') }}</button>
                 </div>
             </form>
         </div>

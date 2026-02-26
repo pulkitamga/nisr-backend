@@ -11,7 +11,7 @@
                     <div class="form-group">
                         <label>{{ translate('Dispatch Mode') }}</label>
                         <select name="dispatch_mode" class="form-control" required>
-                            <option value="pickup">{{ translate('Pickup') }}</option>
+                            <option value="pickup">{{ translate('pickup') }}</option>
                             <option value="ship">{{ translate('Ship') }}</option>
                         </select>
                     </div>

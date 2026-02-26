@@ -14,7 +14,10 @@ use App\Enums\ViewPaths\Admin\ClearanceSale;
 use App\Enums\ViewPaths\Admin\Complaint;
 use App\Enums\ViewPaths\Admin\Contact;
 use App\Enums\ViewPaths\Admin\Coupon;
+use App\Enums\ViewPaths\Admin\CrmAgentSalesMatrixReport;
+use App\Enums\ViewPaths\Admin\CrmEmployeeChannelAssignmentReport;
 use App\Enums\ViewPaths\Admin\Crm;
+use App\Enums\ViewPaths\Admin\CrmDealSalesReport;
 use App\Enums\ViewPaths\Admin\Currency;
 use App\Enums\ViewPaths\Admin\Customer;
 use App\Enums\ViewPaths\Admin\CustomerWallet;
@@ -126,9 +129,12 @@ use App\Http\Controllers\Admin\Crm\DashboardChartController;
 use App\Http\Controllers\Admin\Crm\DealController;
 use App\Http\Controllers\Admin\Crm\InboxMessageController;
 use App\Http\Controllers\Admin\Crm\LeadController;
+use App\Http\Controllers\Admin\CrmAgentSalesMatrixReportController;
+use App\Http\Controllers\Admin\CrmEmployeeChannelAssignmentReportController;
 use App\Http\Controllers\Admin\Customer\CustomerController;
 use App\Http\Controllers\Admin\Customer\CustomerLoyaltyController;
 use App\Http\Controllers\Admin\Customer\CustomerWalletController;
+use App\Http\Controllers\Admin\CrmDealSalesReportController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\Deliveryman\DeliveryManCashCollectController;
 use App\Http\Controllers\Admin\Deliveryman\DeliveryManController;
@@ -995,6 +1001,24 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::get(InhouseProductSale::VIEW[URI], 'index')->name('inhouse-product-sale');
                 Route::get(InhouseProductSale::EXPORT_EXCEL[URI], 'exportExcel')->name('inhouse-product-sale-export-excel');
                 Route::get(InhouseProductSale::EXPORT_PDF[URI], 'exportPdf')->name('inhouse-product-sale-export-pdf');
+            });
+
+            Route::controller(CrmDealSalesReportController::class)->group(function () {
+                Route::get(CrmDealSalesReport::VIEW[URI], 'index')->name('crm-sales-performance');
+                Route::get(CrmDealSalesReport::EXPORT_EXCEL[URI], 'exportExcel')->name('crm-sales-performance-export-excel');
+                Route::get(CrmDealSalesReport::EXPORT_PDF[URI], 'exportPdf')->name('crm-sales-performance-export-pdf');
+            });
+
+            Route::controller(CrmAgentSalesMatrixReportController::class)->group(function () {
+                Route::get(CrmAgentSalesMatrixReport::VIEW[URI], 'index')->name('crm-agent-sales-matrix');
+                Route::get(CrmAgentSalesMatrixReport::EXPORT_EXCEL[URI], 'exportExcel')->name('crm-agent-sales-matrix-export-excel');
+                Route::get(CrmAgentSalesMatrixReport::EXPORT_PDF[URI], 'exportPdf')->name('crm-agent-sales-matrix-export-pdf');
+            });
+
+            Route::controller(CrmEmployeeChannelAssignmentReportController::class)->group(function () {
+                Route::get(CrmEmployeeChannelAssignmentReport::VIEW[URI], 'index')->name('crm-employee-channel-assignment');
+                Route::get(CrmEmployeeChannelAssignmentReport::EXPORT_EXCEL[URI], 'exportExcel')->name('crm-employee-channel-assignment-export-excel');
+                Route::get(CrmEmployeeChannelAssignmentReport::EXPORT_PDF[URI], 'exportPdf')->name('crm-employee-channel-assignment-export-pdf');
             });
         });
     });
