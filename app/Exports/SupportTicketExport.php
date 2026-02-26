@@ -27,8 +27,24 @@ class SupportTicketExport implements FromCollection, WithHeadings, WithTitle
                 $searchValue = $this->request->get('searchValue');
                 $query->where(function ($q) use ($searchValue) {
                     $q->where('subject', 'like', "%{$searchValue}%")
+                        ->orWhere('priority', 'like', "%{$searchValue}%")
+                        ->orWhereHas('customer', function ($customerQuery) use ($searchValue) {
+                            $customerQuery->where('f_name', 'like', "%{$searchValue}%")
+                                ->orWhere('l_name', 'like', "%{$searchValue}%")
+                                ->orWhereRaw(
+                                    "CONCAT(COALESCE(f_name, ''), ' ', COALESCE(l_name, '')) LIKE ?",
+                                    ["%{$searchValue}%"]
+                                )
+                                ->orWhere('email', 'like', "%{$searchValue}%")
+                                ->orWhere('phone', 'like', "%{$searchValue}%");
+                        })
                         ->orWhereHas('status_details', function ($q) use ($searchValue) {
                             $q->where('name', 'like', "%{$searchValue}%");
+                        })
+                        ->orWhereHas('relatedInboxMessages', function ($inboxQuery) use ($searchValue) {
+                            $inboxQuery->where('sender_name', 'like', "%{$searchValue}%")
+                                ->orWhere('sender_email', 'like', "%{$searchValue}%")
+                                ->orWhere('sender_phone', 'like', "%{$searchValue}%");
                         });
                 });
             })

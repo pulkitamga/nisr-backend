@@ -27,7 +27,7 @@
                                     </div>
                                     <input id="datatableSearch_" type="search" name="searchValue"
                                         class="form-control"
-                                        placeholder="{{ translate('search_ticket_by_subject_or_status').'...' }}"
+                                        placeholder="{{ translate('search_ticket_by_subject_customer_email_phone_priority_or_status').'...' }}"
                                         aria-label="Search orders" value="{{ request('searchValue') }}">
                                     <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                 </div>
@@ -42,7 +42,7 @@
 
                                 <select class="form-control border-color-c1 w-160 filter-tickets" data-value="priority">
                                     <option value="all">{{ translate('all_Priority') }}</option>
-                                    @foreach(['low','medium','high','urgent'] as $p)
+                                    @foreach(['normal','low','medium','high','urgent','critical'] as $p)
                                     <option value="{{ $p }}" {{ $priority === $p ? 'selected' : '' }}>{{ translate($p) }}</option>
                                     @endforeach
                                 </select>
@@ -108,16 +108,7 @@
                 <tbody>
                     @foreach($tickets as $key => $ticket)
                     @php
-                    $priorityClass = '';
                     $statusClass = '';
-
-                    switch(strtolower($ticket->priority)) {
-                    case 'low': $priorityClass='badge-soft-primary'; break;
-                    case 'medium': $priorityClass='badge-soft-info'; break;
-                    case 'high': $priorityClass='badge-soft-warning'; break;
-                    case 'urgent': $priorityClass='badge-soft-danger'; break;
-                    default: $priorityClass='badge-soft-dark'; break;
-                    }
 
                     switch ($ticket->status ?? 0) {
                     case 1: // new
@@ -165,42 +156,34 @@
                             {{ translate('Customer Not Found') }}
                             @endif
                         </td>
-                        <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
-                        <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->name ?? $ticket->status }}</span></td>
+                        <td>
+                            @php($ticketPriority = strtolower($ticket->priority ?? 'normal'))
+                            <select class="form-control form-control-sm support-ticket-priority-select"
+                                data-ticket-id="{{ $ticket->id }}"
+                                data-current-priority="{{ $ticketPriority }}">
+                                @foreach(['normal','low','medium','high','urgent','critical'] as $priorityOption)
+                                <option value="{{ $priorityOption }}" {{ $ticketPriority === $priorityOption ? 'selected' : '' }}>
+                                    {{ translate($priorityOption) }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-control form-control-sm support-ticket-status-select"
+                                data-ticket-id="{{ $ticket->id }}"
+                                data-current-status="{{ (int)$ticket->status }}">
+                                @foreach($aAllStatus as $statusOption)
+                                <option value="{{ $statusOption->id }}" {{ (int)$ticket->status === (int)$statusOption->id ? 'selected' : '' }}>
+                                    {{ translate($statusOption->name) }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </td>
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         <td class="text-center">
                             <a href="{{ route('admin.support-ticket.details', $ticket->id) }}"
                                 class="btn btn-sm btn-outline-success">{{ translate('View') }}</a>
                             <a href="{{ route('admin.support-ticket.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('Chat')}}</a>
-                            @php
-                            $statusName = strtolower($ticket->status_details?->name ?? '');
-                            @endphp
-                            @if(in_array($statusName, ['new', 'closed']))
-                            <form action="{{ route('admin.support-ticket.status') }}" method="POST" class="d-inline statusForm">
-                                @csrf
-                                <input type="hidden" name="id" value="{{ $ticket->id }}">
-
-                                @php
-                                switch ($statusName) {
-                                case 'new':
-                                $statusBtnText = 'Open';
-                                break;
-                                case 'closed':
-                                $statusBtnText = 'Reopen';
-                                break;
-                                default:
-                                $statusBtnText = '';
-                                break;
-                                }
-                                @endphp
-
-                                @if($statusBtnText)
-                                <button type="submit" class="btn btn-sm btn-outline-primary">
-                                    {{ translate($statusBtnText) }}
-                                </button>
-                                @endif
-                            </form>
-                            @endif
                             @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($ticket->department?->head_id))
                             <a href="javascript:void(0)"
                                 class="btn btn-sm btn-outline-secondary assign-employee-btn"
@@ -210,12 +193,12 @@
                                 {{ $ticket->employee_id ? translate('Re-Assign Employee') : translate('Assign Employee') }}
                             </a>
 
-                            @if(auth('admin')->id() != 1)
+                            @if((int)auth('admin')->user()?->admin_role_id !== 1)
                             <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                             @endif
                             @endif
-                            @if($ticket->status_id != 19)
-                            <a class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#showSupportFollowUpModal"
+                            @if(strtolower($ticket->status_details?->name ?? '') !== 'closed')
+                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showSupportFollowUpModal"
                                 data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}"
                                 data-employee-id="{{ $ticket->employee_id }}" title="Follow-up details">
                                 {{ translate('Follow Up') }}
@@ -244,12 +227,12 @@
     </div>
 </div>
 
-<div class="modal fade" id="showSupportFollowUpModal" data-backdrop="static" tabindex="-1" aria-labelledby="showSupportFollowUpModal" aria-hidden="true">
+<div class="modal fade" id="showSupportFollowUpModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="showSupportFollowUpModal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
                 <h3>{{ translate('Support Follow Up') }}</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="Close">
                     <i class="tio-clear"></i>
                 </button>
             </div>
@@ -259,40 +242,53 @@
                     <input type="hidden" name="ticket_id" id="support-follow-up-ticket-id">
                     <input type="hidden" name="department_id" id="support-follow-up-department-id">
                     <input type="hidden" name="employee_id" id="support-follow-up-employee-id">
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label class="control-label" for="support-follow-up-status">{{ translate('Select Status') }}</label>
-                                <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="support-follow-up-status">
-                                    <option value="0" selected disabled>{{ translate('Select Status') }}</option>
-                                    @foreach ([
-                                    ['id' => 1, 'name' => 'New'],
-                                    ['id' => 2, 'name' => 'Open'],
-                                    ['id' => 3, 'name' => 'Assigned'],
-                                    ['id' => 4, 'name' => 'Triage'],
-                                    ['id' => 5, 'name' => 'In Progress'],
-                                    ['id' => 10, 'name' => 'Resolved'],
-                                    ['id' => 19, 'name' => 'Closed']
-                                    ] as $status)
-                                    <option value="{{ $status['id'] }}">{{ translate($status['name']) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row d-none" id="support-ticket-next-follow-up-date-row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label class="control-label" for="support-ticket-next-follow-up-date">{{ translate('Next Follow-Up Date') }}</label>
-                                <input type="date" name="ticket-next-follow-up-date" id="support-ticket-next-follow-up-date" class="form-control">
-                            </div>
-                        </div>
-                    </div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" for="support-follow-up-note">{{ translate('Note') }}</label>
                                 <textarea rows="3" class="form-control" name="ticket-follow-up-note" id="support-follow-up-note" placeholder="{{ translate('Enter follow-up note') }}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border rounded p-3 mt-3">
+                        <h5 class="mb-3">{{ translate('Add/Edit Task') }}</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label" for="support-task-name">{{ translate('Name') }}</label>
+                                    <input type="text" class="form-control" name="task_name" id="support-task-name" placeholder="{{ translate('Enter name') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label" for="support-task-description">{{ translate('Description') }}</label>
+                                    <textarea rows="3" class="form-control" name="task_description" id="support-task-description" placeholder="{{ translate('Enter description') }}"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label" for="support-task-due-date">{{ translate('Due Date') }}</label>
+                                    <input type="date" class="form-control" name="task_due_date" id="support-task-due-date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label" for="support-task-status">{{ translate('Status') }}</label>
+                                    <select class="form-control" name="task_status" id="support-task-status">
+                                        <option value="pending">{{ translate('Pending') }}</option>
+                                        <option value="in_progress">{{ translate('In Progress') }}</option>
+                                        <option value="complete">{{ translate('Complete') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="support-add-to-calendar" name="add_to_calendar">
+                                    <label class="form-check-label" for="support-add-to-calendar">
+                                        {{ translate('add_to_calendar') }}
+                                    </label>
+                                    <small class="text-muted d-block">{{ translate('task_will_appear_in_crm_calendar') }}</small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -335,6 +331,8 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
+<span id="support-ticket-status-route" data-url="{{ route('admin.support-ticket.status') }}"></span>
+<span id="support-ticket-priority-route" data-url="{{ route('admin.support-ticket.priority') }}"></span>
 @endsection
 
 @push('script')

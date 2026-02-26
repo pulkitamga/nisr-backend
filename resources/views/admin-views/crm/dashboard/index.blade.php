@@ -160,7 +160,6 @@
     $('#statistics_type_for_crm').on('change', function () {
         const type = $(this).val();
         const url = $('#order-status-url-crm').data('url');
-        console.log('Statistics type changed to:', type);
 
         $.ajaxSetup({
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
@@ -172,7 +171,6 @@
             data: { statistics_type: type, _token: $('meta[name="csrf-token"]').attr('content') },
             beforeSend: function () { $('#loading').fadeIn(); },
             success: function (resp) {
-                console.log('AJAX response:', resp);
                 if (!resp.success) { alert(@json(translate('Error loading data'))); return; }
                 updateNumbers(resp.data);
                 renderServiceChart(resp.data.totalServices, resp.data.totalInvoice);
@@ -220,9 +218,9 @@
         $('#count-Active').text(data.activeWarranty);
 
         // SLA (dynamic IDs) - note: spaces in keys replaced with nothing in ID, but data keys have spaces, so map manually
-        $('#count-Overdue SLAs').text(data.overdueSLAs);
-        $('#count-Pending Activities').text(data.pendingActivities);
-        $('#count-VoIP Calls Today').text(data.voipCallsToday);
+        $('#count-overdue-slas').text(data.overdueSLAs);
+        $('#count-pending-activities').text(data.pendingActivities);
+        $('#count-voip-calls-today').text(data.voipCallsToday);
 
         // Service Overview Legend/Header (assuming your helpers for currency)
         $('#totalServicesLegend').text(data.totalServices);

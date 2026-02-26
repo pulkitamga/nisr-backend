@@ -33,7 +33,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <div class="card mb-4 shadow-sm detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+            <div class="card mb-4 shadow-sm detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">{{ translate('Message Details') }}</h5>
                 </div>
@@ -85,7 +85,7 @@
                         <div class="col-6">
                             <p><strong>{{ translate('Purchase Order No') }}:</strong> {{ $lead->purchaseOrder->purchase_order_no ?? translate('Not Assigned') }}</p>
                             <p><strong>{{ translate('Status') }}:</strong> {{ $lead->purchaseOrder->status ?? translate('N/A') }}</p>
-                            <p><strong>{{ translate('Created_At') }}:</strong> {{ $lead->purchaseOrder->created_at->format('d M, Y H:i A') ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Created_At') }}:</strong> {{ $lead->purchaseOrder?->created_at?->format('d M, Y H:i A') ?? translate('N/A') }}</p>
                         </div>
                     </div>
                     @if($lead->purchaseOrder->items && $lead->purchaseOrder->items->count() > 0)
@@ -137,6 +137,10 @@
             </div>
             @endif
 
+        </div>
+
+        <div class="col-md-12">
+            @include('admin-views.crm.partials.escalation-panel', ['escalations' => $lead->escalations ?? collect()])
         </div>
 
         <!-- Actions Card -->

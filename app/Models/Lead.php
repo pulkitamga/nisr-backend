@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Lead extends Model
 {
@@ -121,5 +122,10 @@ class Lead extends Model
     public function purchaseOrder()
     {
         return $this->belongsTo(WholesalePurchaseOrder::class, 'po_id');
+    }
+
+    public function escalations(): MorphMany
+    {
+        return $this->morphMany(Escalation::class, 'escalatable')->latest('id');
     }
 }

@@ -24,9 +24,10 @@ use App\Models\CronConfiguration;
 use App\Models\Service;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SupportTicketExport;
-use App\Models\Escalation;
 use App\Models\Departments;
+use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
+use Illuminate\Validation\ValidationException;
 class SupportTicketController extends BaseController
 {
     /**
@@ -39,7 +40,7 @@ class SupportTicketController extends BaseController
         private readonly AdminRepositoryInterface               $adminRepo,
         private readonly SupportTicketActivityRepositoryInterface $activityRepo,
         private readonly AdminNotificationRepositoryInterface   $notificationRepo, // Add this
-
+        private readonly EscalationService                      $escalationService,
 
     ) {}
 
@@ -81,7 +82,7 @@ class SupportTicketController extends BaseController
         $statusFilter = $request->get('status', $defaultStatusIds[$status] ?? null);
         $tickets = $this->supportTicketRepo->getListWhere(
             orderBy: ['id' => 'desc'],
-            relations: ['department', 'employee', 'status_details', 'relatedInboxMessages'],
+            relations: ['department', 'employee', 'status_details', 'relatedInboxMessages', 'customer'],
             searchValue: $request->get('searchValue'),
             filters: [
                 'priority' => $request->get('priority'),
@@ -151,30 +152,51 @@ class SupportTicketController extends BaseController
         }
 
         $currentStatus = SupportTicketStatusMaster::find($ticket->status);
+        $nextStatus = null;
 
-        // Default next status
-        $nextStatusName = 'Open';
+        $requestedStatusId = (int)$request->input('status');
+        if ($requestedStatusId > 0) {
+            $masterId = $currentStatus?->master_id ?? $this->resolveStatusMasterIdByType((string)$ticket->type);
+            $nextStatus = SupportTicketStatusMaster::query()
+                ->where('id', $requestedStatusId)
+                ->when($masterId, function ($query) use ($masterId) {
+                    $query->where('master_id', $masterId);
+                })
+                ->where('status', 'active')
+                ->first();
 
-        if ($currentStatus) {
-            $currentName = strtolower($currentStatus->name);
+            if (!$nextStatus) {
+                return response()->json([
+                    'message' => translate('invalid_status'),
+                ], 422);
+            }
+        } else {
+            // Default next status
+            $nextStatusName = 'Open';
 
-            // 🔹 Status flow mapping (clear readable logic)
-            $statusFlow = [
-                'new' => 'open',
-                'open' => 'closed',
-                'closed' => 'open', // Reopen leads to Open
-            ];
+            if ($currentStatus) {
+                $currentName = strtolower($currentStatus->name);
 
-            $nextStatusName = $statusFlow[$currentName] ?? 'closed';
+                // 🔹 Status flow mapping (clear readable logic)
+                $statusFlow = [
+                    'new' => 'open',
+                    'open' => 'closed',
+                    'closed' => 'open', // Reopen leads to Open
+                ];
+
+                $nextStatusName = $statusFlow[$currentName] ?? 'closed';
+            }
+
+            // 🔹 Fetch next status record
+            $nextStatus = SupportTicketStatusMaster::where('master_id', $currentStatus->master_id ?? null)
+                ->whereRaw('LOWER(name) = ?', [strtolower($nextStatusName)])
+                ->first();
         }
 
-        // 🔹 Fetch next status record
-        $nextStatus = SupportTicketStatusMaster::where('master_id', $currentStatus->master_id ?? null)
-            ->whereRaw('LOWER(name) = ?', [strtolower($nextStatusName)])
-            ->first();
-
         // 🔹 Handle reopen logic
-        $isReopened = strtolower($currentStatus->name ?? '') === 'closed';
+        $oldStatusSlug = strtolower($currentStatus?->name ?? '');
+        $newStatusSlug = strtolower($nextStatus?->name ?? '');
+        $isReopened = $oldStatusSlug === 'closed' && $newStatusSlug !== 'closed';
 
         $ticket->update([
             'status' => $nextStatus?->id ?? $ticket->status,
@@ -255,6 +277,42 @@ class SupportTicketController extends BaseController
         ]);
     }
 
+    public function updatePriority(Request $request): JsonResponse
+    {
+        $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
+        if (!$ticket) {
+            return response()->json(['message' => translate('ticket_not_found')], 404);
+        }
+
+        $newPriority = strtolower(trim((string)$request->input('priority')));
+        $allowedPriorities = ['low', 'medium', 'high', 'urgent', 'critical', 'normal'];
+
+        if (!in_array($newPriority, $allowedPriorities, true)) {
+            return response()->json(['message' => translate('invalid_priority')], 422);
+        }
+
+        $oldPriority = (string)($ticket->priority ?? 'normal');
+        if ($oldPriority === $newPriority) {
+            return response()->json([
+                'message' => translate('priority_updated_successfully'),
+                'new_priority' => $newPriority,
+            ]);
+        }
+
+        $ticket->update(['priority' => $newPriority]);
+
+        $this->logSupportActivity(
+            $ticket->id,
+            'Priority Updated',
+            "Priority changed from {$oldPriority} to {$newPriority}."
+        );
+
+        return response()->json([
+            'message' => translate('priority_updated_successfully'),
+            'new_priority' => $newPriority,
+        ]);
+    }
+
 
     public function getView($id): View
     {
@@ -291,6 +349,7 @@ class SupportTicketController extends BaseController
                 'status_details',
                 'relatedInboxMessages',
                 'supportActivities',
+                'escalations.escalatedBy',
             ]
         );
 
@@ -319,34 +378,22 @@ class SupportTicketController extends BaseController
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
 
-        Escalation::create([
-            'escalatable_id' => $ticket->id,
-            'escalatable_type' => SupportTicket::class,
-            'escalated_by' => auth('admin')->id(),
-            'reason' => $request->reason,
-        ]);
-
         $title   = 'Ticket Escalated';
         $message = "Ticket #{$ticket->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.support-ticket.details', $ticket->id);
 
-        $recipients = [];
-        if ($ticket->employee_id) { // Assuming employee_id is like owner_id
-            $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
-        }
-        if ($ticket->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
-        }
-
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+        try {
+            $this->escalationService->escalateSupportTicket(
+                ticket: $ticket,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
             );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
         $this->logSupportActivity($ticket->id, 'Escalated', $message, auth('admin')->id());
@@ -364,34 +411,22 @@ class SupportTicketController extends BaseController
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
 
-        Escalation::create([
-            'escalatable_id' => $ticket->id,
-            'escalatable_type' => SupportTicket::class,
-            'escalated_by' => auth('admin')->id(),
-            'reason' => $request->reason,
-        ]);
-
         $title   = 'Ticket Escalated';
         $message = "Ticket #{$ticket->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.support-ticket.details', $ticket->id);
 
-        $recipients = [];
-        if ($ticket->employee_id) { // Assuming employee_id is like owner_id
-            $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
-        }
-        if ($ticket->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
-        }
-
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+        try {
+            $this->escalationService->escalateSupportTicket(
+                ticket: $ticket,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
             );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
         $this->logSupportActivity($ticket->id, 'Escalated', $message, auth('admin')->id());
@@ -409,39 +444,40 @@ class SupportTicketController extends BaseController
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
 
-        Escalation::create([
-            'escalatable_id' => $ticket->id,
-            'escalatable_type' => SupportTicket::class,
-            'escalated_by' => auth('admin')->id(),
-            'reason' => $request->reason,
-        ]);
-
         $title   = 'Ticket Escalated';
         $message = "Ticket #{$ticket->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.support-ticket.details', $ticket->id);
 
-        $recipients = [];
-        if ($ticket->employee_id) { // Assuming employee_id is like owner_id
-            $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
-        }
-        if ($ticket->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
-        }
-
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+        try {
+            $this->escalationService->escalateSupportTicket(
+                ticket: $ticket,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
             );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
         $this->logSupportActivity($ticket->id, 'Escalated', $message, auth('admin')->id());
 
         Toastr::success(translate('Ticket escalated successfully'));
         return back();
+    }
+
+    private function resolveStatusMasterIdByType(string $type): int
+    {
+        return match (strtolower($type)) {
+            'support' => 1,
+            'service' => 2,
+            'career' => 3,
+            'complaint' => 4,
+            'retail' => 5,
+            'wholesale' => 6,
+            default => 0,
+        };
     }
 }

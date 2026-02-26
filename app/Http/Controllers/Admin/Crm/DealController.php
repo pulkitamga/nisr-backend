@@ -39,7 +39,9 @@ use App\Models\DealFile;
 use App\Models\DealNote;
 use App\Models\DealTask;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface;
+use Illuminate\Validation\ValidationException;
 
 class DealController extends BaseController
 {
@@ -50,6 +52,7 @@ class DealController extends BaseController
         private readonly DepartmentRepositoryInterface          $departmentRepo,
         private readonly AdminRepositoryInterface               $adminRepo,
         private readonly AdminNotificationRepositoryInterface   $notificationRepo,
+        private readonly EscalationService                      $escalationService,
     ) {}
 
     public function index(Request|null $request, string $type = null): View
@@ -66,8 +69,6 @@ class DealController extends BaseController
 
        if ($request->filled('searchValue')) {
     $search = trim($request->searchValue);
-    
-    $request->merge(['status' => 'all']);
 
     $query->where(function ($q) use ($search) {
 
@@ -89,10 +90,6 @@ class DealController extends BaseController
         });
     });
 }
-        if ($request->filled('searchValue')) {
-            // Agar search hai toh status ko 'all' force kar do (user ko pata bhi nahi chalega)
-            $request->merge(['status' => 'all']);
-        }
         if ($request->filled('fhilter_date')) {
             $dateRange = explode(' - ', $request->fhilter_date);
             if (count($dateRange) === 2) {
@@ -110,12 +107,11 @@ class DealController extends BaseController
             $query->where('status', 'open');
         }
 
+        $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
+            ? (int)$request->choose_first
+            : (int)$dataLimit;
 
-        if ($request->filled('choose_first') && $request->choose_first > 0) {
-            $deals = $query->latest()->take((int)$request->choose_first)->get();
-        } else {
-            $deals = $query->latest()->paginate(perPage: $dataLimit)->appends($request->all());
-        }
+        $deals = $query->latest()->paginate(perPage: $perPage)->appends($request->all());
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             dataLimit: 'all'
@@ -174,12 +170,11 @@ class DealController extends BaseController
             $query->where('status', 'open');
         }
 
+        $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
+            ? (int)$request->choose_first
+            : (int)$dataLimit;
 
-        if ($request->filled('choose_first') && $request->choose_first > 0) {
-            $deals = $query->latest()->take((int)$request->choose_first)->get();
-        } else {
-            $deals = $query->latest()->paginate(perPage: $dataLimit)->appends($request->all());
-        }
+        $deals = $query->latest()->paginate(perPage: $perPage)->appends($request->all());
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             dataLimit: 'all'
@@ -207,6 +202,7 @@ class DealController extends BaseController
             'employee',
             'lead',
             'relatedUser',
+            'escalations.escalatedBy',
             'activities',
             'notes',
             'tasks',
@@ -233,6 +229,7 @@ class DealController extends BaseController
             'employee',
             'lead',
             'relatedUser',
+            'escalations.escalatedBy',
             'activities',
             'notes',
             'tasks',
@@ -324,7 +321,7 @@ class DealController extends BaseController
         $authUser = auth('admin')->user();
 
         if (
-            $authUser->id !== 1 &&
+            !$this->isSuperAdmin($authUser) &&
             $deal->employee?->id !== $authUser->id &&
             $deal->department?->head_id !== $authUser->id
         ) {
@@ -793,10 +790,26 @@ class DealController extends BaseController
         if (!$deal) {
             return response()->json(['status' => false, 'message' => 'Deal not found'], 404);
         }
-        $deal->employee_id = $request->employee_id;
-        $deal->save();
+
+        if (empty($deal->department_id)) {
+            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
+        }
 
         $employee = Admin::find($request->employee_id);
+        if (!$employee) {
+            return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
+        }
+
+        if ((int)$employee->admin_role_id !== $this->departmentEmployeeRoleId()) {
+            return response()->json(['status' => false, 'message' => 'Please select a department employee.'], 422);
+        }
+
+        if ((int)$employee->department_id !== (int)$deal->department_id) {
+            return response()->json(['status' => false, 'message' => 'Employee must belong to the selected department.'], 422);
+        }
+
+        $deal->employee_id = $request->employee_id;
+        $deal->save();
 
         $activity = new DealActivity();
         $activity->deal_id = $deal->id;
@@ -828,10 +841,21 @@ class DealController extends BaseController
             return response()->json(['status' => false, 'message' => 'Deal not found'], 404);
         }
 
-        $deal->owner_id = $request->employee_id;
-        $deal->save();
+        if (empty($deal->department_id)) {
+            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
+        }
 
         $owner = Admin::find($request->employee_id);
+        if (!$owner) {
+            return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
+        }
+
+        if ((int)$owner->admin_role_id !== $this->supervisorRoleId()) {
+            return response()->json(['status' => false, 'message' => 'Owner must be a supervisor.'], 422);
+        }
+
+        $deal->owner_id = $request->employee_id;
+        $deal->save();
 
         $activity = new DealActivity();
         $activity->deal_id = $deal->id;
@@ -854,7 +878,14 @@ class DealController extends BaseController
 
     public function getEmployeesByDepartment(Request $request)
     {
-        $filters = ['department_id' => $request->department_id];
+        if (empty($request->department_id)) {
+            return response()->json([]);
+        }
+
+        $filters = [
+            'department_id' => $request->department_id,
+            'admin_role_id' => $this->departmentEmployeeRoleId(),
+        ];
         $employees = $this->adminRepo->getEmployeeListWhere(
             ['id' => 'desc'],
             null,
@@ -877,34 +908,22 @@ class DealController extends BaseController
 
         $deal = Deal::findOrFail($request->deal_id);
 
-        \App\Models\Escalation::create([
-            'escalatable_id'   => $deal->id,
-            'escalatable_type' => Deal::class,
-            'escalated_by'     => auth('admin')->id(),
-            'reason'           => $request->reason,
-        ]);
-
         $title   = 'Deal Escalated';
         $message = "Deal #{$deal->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.crm.deals.retail.view', $deal->id);
 
-        $recipients = [];
-        if ($deal->owner_id) {
-            $recipients[] = ['type' => 'employee', 'id' => $deal->owner_id];
-        }
-        if ($deal->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $deal->department_id];
-        }
-
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $deal->id,
-                Deal::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+        try {
+            $this->escalationService->escalateDeal(
+                deal: $deal,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
             );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
         $activity = new DealActivity();
@@ -929,34 +948,22 @@ class DealController extends BaseController
 
         $deal = Deal::findOrFail($request->deal_id);
 
-        \App\Models\Escalation::create([
-            'escalatable_id'   => $deal->id,
-            'escalatable_type' => Deal::class,
-            'escalated_by'     => auth('admin')->id(),
-            'reason'           => $request->reason,
-        ]);
-
         $title   = 'Deal Escalated';
         $message = "Deal #{$deal->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.crm.deals.wholesale.view', $deal->id); // Wholesale view
 
-        $recipients = [];
-        if ($deal->owner_id) {
-            $recipients[] = ['type' => 'employee', 'id' => $deal->owner_id];
-        }
-        if ($deal->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $deal->department_id];
-        }
-
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $deal->id,
-                Deal::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+        try {
+            $this->escalationService->escalateDeal(
+                deal: $deal,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
             );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
         $activity = new DealActivity();
@@ -1024,5 +1031,20 @@ class DealController extends BaseController
         $activity->save();
 
         return response()->json(['success' => true, 'message' => 'Order linked successfully!']);
+    }
+
+    private function isSuperAdmin(?Admin $admin): bool
+    {
+        return (int)($admin?->admin_role_id ?? 0) === 1;
+    }
+
+    private function supervisorRoleId(): int
+    {
+        return defined('DEPARTMENT_HEAD_ROLE_ID') ? (int)DEPARTMENT_HEAD_ROLE_ID : 8;
+    }
+
+    private function departmentEmployeeRoleId(): int
+    {
+        return defined('DEPARTMENT_EMPLOYEE_ROLE_ID') ? (int)DEPARTMENT_EMPLOYEE_ROLE_ID : 9;
     }
 }

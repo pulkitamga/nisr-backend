@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\WholeSalerBusiness;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Deal extends Model
 {
@@ -117,5 +118,10 @@ class Deal extends Model
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    public function escalations(): MorphMany
+    {
+        return $this->morphMany(Escalation::class, 'escalatable')->latest('id');
     }
 }

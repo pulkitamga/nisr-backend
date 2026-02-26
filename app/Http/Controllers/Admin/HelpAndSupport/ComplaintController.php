@@ -24,8 +24,11 @@ use App\Models\SupportTicketStatusMaster;
 use App\Models\SupportTicketNotification;
 use App\Models\CronConfiguration;
 use App\Models\CronSenderDetail;
+use App\Models\InboxTask;
 use App\Models\SupportTicketActivity; // Add this import
+use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
+use Illuminate\Validation\ValidationException;
 class ComplaintController extends BaseController
 {
     /**
@@ -38,6 +41,7 @@ class ComplaintController extends BaseController
         private readonly AdminRepositoryInterface $adminRepo,
         private readonly SupportTicketActivityRepositoryInterface $activityRepo, // Add activity repo
         private readonly AdminNotificationRepositoryInterface   $notificationRepo, // Add this
+        private readonly EscalationService                     $escalationService,
     ) {}
 
     /**
@@ -121,7 +125,7 @@ class ComplaintController extends BaseController
     {
         $supportTicket = $this->supportTicketRepo->getListWhere(
             filters: ['id' => $id],
-            relations: ['conversations', 'activities'], // Include activities
+            relations: ['conversations', 'activities', 'escalations.escalatedBy'], // Include activities
             dataLimit: 'all'
         );
         $departments = [];
@@ -592,33 +596,46 @@ class ComplaintController extends BaseController
     /**
      * Update support ticket follow-up and log activity
      */
-  public function updateSupportTicketFollowUp(Request $request)
+    public function updateSupportTicketFollowUp(Request $request)
 {
     $ticketId      = $request->input('ticket_id');
     $departmentId  = $request->input('department_id');
     $employeeId    = $request->input('employee_id');
-    $statusId      = $request->input('ticket-follow-up-status');
     $followUpDate  = $request->input('ticket-next-follow-up-date');
     $note          = $request->input('ticket-follow-up-note');
-
-    $ticket = $this->supportTicketRepo->getListWhere(filters: ['id' => $ticketId]);
-    if ($ticket->isEmpty()) {
-        return response()->json(['success' => 0, 'message' => 'Ticket not found'], 400);
+    $addToCalendar = $request->boolean('add_to_calendar');
+    $taskName      = trim((string)$request->input('task_name', ''));
+    $taskDescription = trim((string)$request->input('task_description', ''));
+    $taskDueDate   = $request->input('task_due_date');
+    $taskStatus    = strtolower(trim((string)$request->input('task_status', 'pending')));
+    if (!in_array($taskStatus, ['pending', 'in_progress', 'complete'], true)) {
+        $taskStatus = 'pending';
     }
 
-    $oldTicket = $ticket->first();
+    $oldTicket = $this->supportTicketRepo->getFirstWhere(
+        params: ['id' => $ticketId],
+        relations: ['relatedInboxMessages']
+    );
+    if (!$oldTicket) {
+        return response()->json(['success' => 0, 'message' => translate('ticket_not_found')], 400);
+    }
+
+    $statusId = (int)($request->input('ticket-follow-up-status') ?: $oldTicket->status);
 
     // Validate status
     if (!SupportTicketStatusMaster::where(['id' => $statusId, 'master_id' => 1, 'status' => 'active'])->exists()) {
-        return response()->json(['success' => 0, 'message' => 'Invalid status'], 400);
+        return response()->json(['success' => 0, 'message' => translate('invalid_status')], 400);
     }
 
     if (empty($note)) {
-        return response()->json(['success' => 0, 'message' => 'Note required'], 400);
+        return response()->json(['success' => 0, 'message' => translate('note_required')], 400);
     }
 
-    if ($statusId == 5 && empty($followUpDate)) {
-        return response()->json(['success' => 0, 'message' => 'Follow-up date required for In Progress'], 400);
+    if ($addToCalendar && empty($taskName)) {
+        return response()->json(['success' => 0, 'message' => translate('task_name_required_when_add_to_calendar')], 400);
+    }
+    if ($addToCalendar && empty($taskDueDate)) {
+        return response()->json(['success' => 0, 'message' => translate('task_due_date_required_when_add_to_calendar')], 400);
     }
 
     SupportTicketDepartmentEmployee::create([
@@ -632,7 +649,7 @@ class ComplaintController extends BaseController
 
     // Update ticket
     $updateData = ['status' => $statusId];
-    if ($statusId == 5) {
+    if (!empty($followUpDate)) {
         $updateData['follow_up_date'] = date('Y-m-d', strtotime($followUpDate));
     }
     $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
@@ -655,6 +672,34 @@ class ComplaintController extends BaseController
     }
     if ($oldTicket->status != $statusId) {
         $description .= ". Status changed from {$oldTicket->status}";
+    }
+
+    $reminderWarning = null;
+    if ($addToCalendar) {
+        $sourceInboxMessageId = (int)($oldTicket->source_id ?? 0);
+        if ($sourceInboxMessageId === 0) {
+            $sourceInboxMessageId = (int)($oldTicket->relatedInboxMessages->first()->id ?? 0);
+        }
+
+        if ($sourceInboxMessageId > 0) {
+            $effectiveDepartmentId = (int)($departmentId ?: $oldTicket->department_id);
+            $effectiveEmployeeId = (int)($employeeId ?: auth('admin')->id());
+            $taskDueAt = Carbon::parse($taskDueDate);
+
+            InboxTask::create([
+                'massage_id' => $sourceInboxMessageId,
+                'employee_id' => $effectiveEmployeeId,
+                'department_id' => $effectiveDepartmentId,
+                'name' => $taskName,
+                'description' => $taskDescription ?: $note,
+                'due_date' => $taskDueAt->toDateString(),
+                'status' => $taskStatus,
+            ]);
+
+            $description .= ", Task added: {$taskName}, Due: " . $taskDueAt->format('Y-m-d');
+        } else {
+            $reminderWarning = translate('task_skipped_ticket_not_linked_to_inbox');
+        }
     }
 
     $this->activityRepo->add([
@@ -706,7 +751,7 @@ class ComplaintController extends BaseController
                 'sender_id'     => $employeeId ?? 0,
                 'title'         => 'Follow-up Reminder',
                 'message'       => 'Please follow up on the support ticket.',
-                'send_date'     => Carbon\Carbon::parse($followUpDate)->copy()->addHours($config['duration']),
+                'send_date'     => Carbon::parse($followUpDate)->copy()->addHours($config['duration']),
                 'ticket_status' => $statusId,
                 'status'        => 0,
                 'is_active'     => 0,
@@ -718,7 +763,12 @@ class ComplaintController extends BaseController
         CronSenderDetail::insert($cronData);
     }
 
-    return response()->json(['success' => 1, 'message' => 'Support ticket follow-up updated']);
+    $responseMessage = translate('support_ticket_follow_up_updated');
+    if ($reminderWarning) {
+        $responseMessage .= '. ' . $reminderWarning;
+    }
+
+    return response()->json(['success' => 1, 'message' => $responseMessage]);
 }
 
    public function updateComplainTicketFollowUp(Request $request)
@@ -1083,34 +1133,22 @@ class ComplaintController extends BaseController
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
 
-        \App\Models\Escalation::create([
-            'escalatable_id' => $ticket->id,
-            'escalatable_type' => \App\Models\SupportTicket::class,
-            'escalated_by' => auth('admin')->id(),
-            'reason' => $request->reason,
-        ]);
-
         $title   = 'Ticket Escalated';
         $message = "Complaint Ticket #{$ticket->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.support-ticket.details', $ticket->id); 
 
-        $recipients = [];
-        if ($ticket->employee_id) { 
-            $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
-        }
-        if ($ticket->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
-        }
-
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                \App\Models\SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+        try {
+            $this->escalationService->escalateSupportTicket(
+                ticket: $ticket,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
             );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
         $this->activityRepo->add([

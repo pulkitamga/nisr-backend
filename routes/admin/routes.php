@@ -127,6 +127,7 @@ use App\Http\Controllers\Admin\Crm\CalendarController;
 use App\Http\Controllers\Admin\Crm\CrmDashboardController;
 use App\Http\Controllers\Admin\Crm\DashboardChartController;
 use App\Http\Controllers\Admin\Crm\DealController;
+use App\Http\Controllers\Admin\Crm\EscalationController;
 use App\Http\Controllers\Admin\Crm\InboxMessageController;
 use App\Http\Controllers\Admin\Crm\LeadController;
 use App\Http\Controllers\Admin\CrmAgentSalesMatrixReportController;
@@ -1703,6 +1704,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('module:crm_section,update')->group(function () {
             Route::controller(SupportTicketController::class)->group(function () {
                 Route::post(SupportTicket::STATUS[URI], 'updateStatus')->name('status');
+                Route::post(SupportTicket::PRIORITY[URI], 'updatePriority')->name('priority');
                 Route::post(SupportTicket::VIEW[URI] . '/{id}', 'reply')->name('replay');
                 Route::post(SupportTicket::ESCLATE_RETAIL[URI], 'escalateRetail')->name('esclate.retail');
                 Route::post(SupportTicket::ESCLATE_WHOLESALE[URI], 'escalateWholesale')->name('esclate.wholesale');
@@ -2028,6 +2030,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('module:crm_section,update')->group(function () {
                 Route::post('/retail/escalate', [DealController::class, 'escalateRetail'])->name('retail.escalate');
                 Route::post('/wholesale/escalate', [DealController::class, 'escalateWholesale'])->name('wholesale.escalate');
+            });
+        });
+
+        Route::group(['prefix' => 'escalation', 'as' => 'escalation.'], function () {
+            Route::middleware('module:crm_section,update')->group(function () {
+                Route::post('{escalation}/status', [EscalationController::class, 'updateStatus'])->name('update-status');
             });
         });
     });

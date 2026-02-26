@@ -27,8 +27,10 @@ use App\Models\Departments;
 use App\Models\CareerTalentPool;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CareerTicketExport;
+use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 class CareerTicketController extends BaseController
 {
     public function __construct(
@@ -37,6 +39,7 @@ class CareerTicketController extends BaseController
         private readonly DepartmentRepositoryInterface $departmentRepo,
         private readonly AdminRepositoryInterface $adminRepo,
         private readonly AdminNotificationRepositoryInterface   $notificationRepo, // Add this
+        private readonly EscalationService                     $escalationService,
 
     ) {}
     public function index(?Request $request, string $type = null): View|RedirectResponse|\Illuminate\Database\Eloquent\Collection|\Illuminate\Pagination\LengthAwarePaginator|null|callable
@@ -104,7 +107,7 @@ class CareerTicketController extends BaseController
     {
         $supportTicket = $this->supportTicketRepo->getListWhere(
             filters: ['id' => $id],
-            relations: ['customer', 'careerInterviews', 'careerActivities', 'careerActivities.createdBy', 'careerOffers', 'careerRejections', 'conversations'],
+            relations: ['customer', 'careerInterviews', 'careerActivities', 'careerActivities.createdBy', 'careerOffers', 'careerRejections', 'conversations', 'escalations.escalatedBy'],
             dataLimit: 'all'
         )->first();
 
@@ -874,36 +877,23 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
         log::info('this is the request');
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
 
-        // Create global escalation
-        \App\Models\Escalation::create([
-            'escalatable_id' => $ticket->id,
-            'escalatable_type' => \App\Models\SupportTicket::class,
-            'escalated_by' => auth('admin')->id(),
-            'reason' => $request->reason,
-        ]);
-
         // Send notifications
         $title   = 'Ticket Escalated';
         $message = "Career Ticket #{$ticket->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.support-ticket.career.single', $ticket->id);
 
-        $recipients = [];
-        if ($ticket->employee_id) {
-            $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
-        }
-        if ($ticket->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
-        }
-
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                \App\Models\SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+        try {
+            $this->escalationService->escalateSupportTicket(
+                ticket: $ticket,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
             );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
         $this->logCareerActivity($ticket->id, 'escalated', $message);

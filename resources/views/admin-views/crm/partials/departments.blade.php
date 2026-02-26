@@ -1,10 +1,10 @@
-<div class="modal fade" id="showDepartmentsModal" data-backdrop="static" tabindex="-1" aria-labelledby="showDepartmentsModal"
+<div class="modal fade" id="showDepartmentsModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="showDepartmentsModal"
     aria-hidden="true">
     <div class="model-sm modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
                 <h3>{{ translate('Select Department') }}</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="Close">
                     <i class="tio-clear"></i>
                 </button>
             </div>

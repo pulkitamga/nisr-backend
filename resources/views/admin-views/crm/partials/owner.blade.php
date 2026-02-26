@@ -12,13 +12,16 @@
                     @csrf
                     <input type="hidden" name="ticket_id" id="owner_ticket_id">
                     <div class="form-group mt-2">
-                        <label>{{ translate('Select Employee') }}</label>
+                        <label>{{ translate('Select Supervisor') }}</label>
                         <select class="form-control" name="employee_id" id="owner-employee-id">
-                            <option value="" disabled>{{ translate('Select Employee') }}</option>
+                            <option value="" disabled>{{ translate('Select Supervisor') }}</option>
+                            @php($supervisorRoleId = defined('DEPARTMENT_HEAD_ROLE_ID') ? (int)DEPARTMENT_HEAD_ROLE_ID : 8)
                             @foreach ($employees as $employee)
+                            @if((int)($employee['admin_role_id'] ?? 0) === $supervisorRoleId)
                             <option value="{{ $employee['id'] }}">
                                 {{ $employee['name'] }}
                             </option>
+                            @endif
                             @endforeach
                         </select>
                     </div>
