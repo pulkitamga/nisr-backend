@@ -1822,7 +1822,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('repair_pending') }}
                                                 <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'repair-pending')->count() }}
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'repair_pending')->count() }}
                                                 </span>
                                             </span>
                                         </a>

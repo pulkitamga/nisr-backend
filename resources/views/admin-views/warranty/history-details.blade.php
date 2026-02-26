@@ -24,7 +24,8 @@
                         <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                     </div>
                 </form>
-                <button class="btn btn--primary text-nowrap">{{translate('export_csv')}}</button>
+                <a href="{{ route('admin.warranty.history-details.export', ['date' => $date, 'searchValue' => request('searchValue')]) }}"
+                    class="btn btn--primary text-nowrap">{{translate('export_csv')}}</a>
             </div>
         </div>
         <div class="card-body p-0">
@@ -50,7 +51,7 @@
                             <td><span class="badge badge-soft-primary">{{$warranty->status}}</span></td>
                             <td>{{$warranty->created_at->format('Y-m-d H:i')}}</td>
                             <td>
-                                <a href="{{route('admin.warranty.activation.manual', $warranty->id)}}" class="btn btn-sm btn-outline-primary">{{translate('activate')}}</a>
+                                <a href="{{ route('admin.warranty.activation.manual.view', ['serial_number' => $warranty->serial_number]) }}" class="btn btn-sm btn-outline-primary">{{translate('activate')}}</a>
                             </td>
                         </tr>
                         @endforeach
@@ -72,14 +73,11 @@
 
 @push('script')
 <script>
-    // Search/filter JS
-    $('.form-control').on('keyup change', function() {
-        var serial = $('.w-150px:first').val().toLowerCase();
-        var product = $('.w-150px:last').val();
-        $('table tbody tr').filter(function() {
-            var match = $(this).text().toLowerCase().indexOf(serial) > -1;
-            if (product) match = match && $(this).find('td:nth-child(2)').text() === product;
-            $(this).toggle(match);
+    $('input[name="searchValue"]').on('input', function() {
+        const value = ($(this).val() || '').toLowerCase();
+        $('table tbody tr').each(function() {
+            const rowText = $(this).text().toLowerCase();
+            $(this).toggle(rowText.indexOf(value) > -1);
         });
     });
 </script>

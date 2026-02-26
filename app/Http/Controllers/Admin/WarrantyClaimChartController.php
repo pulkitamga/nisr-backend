@@ -65,6 +65,29 @@ class WarrantyClaimChartController extends Controller
         $claims = $query->paginate(15);
         $formattedClaims = $claims->map(function ($claim) {
             $branchName = $claim->branch?->branch_name ?? '-';
+            $warranty = $claim->warranty;
+            $warrantyEndDate = $warranty?->end_date?->format('Y-m-d') ?? '-';
+            $warrantyMonths = $warranty?->warranty_months ?? '-';
+
+            $remaining = '-';
+            if ($warranty?->end_date) {
+                $now = now()->startOfDay();
+                $endDate = $warranty->end_date->copy()->startOfDay();
+                if ($now->gt($endDate)) {
+                    $remaining = translate('expired');
+                } else {
+                    $months = $now->diffInMonths($endDate);
+                    $days = $now->copy()->addMonths($months)->diffInDays($endDate);
+                    if ($months > 0 && $days > 0) {
+                        $remaining = $months . ' ' . translate('months') . ' ' . $days . ' ' . translate('days');
+                    } elseif ($months > 0) {
+                        $remaining = $months . ' ' . translate('months');
+                    } else {
+                        $remaining = $days . ' ' . translate('days');
+                    }
+                }
+            }
+
             return [
                 'id'            => $claim->id,
                 'claim_number'  => $claim->claim_number,
@@ -76,6 +99,9 @@ class WarrantyClaimChartController extends Controller
                 'view_url'      => route('admin.warranty.claim.view', $claim->id),
                 'product_name'  => $claim->warranty?->product?->name ?? '-',
                 'branch_name' => $branchName,
+                'warranty_months' => $warrantyMonths,
+                'warranty_end_date' => $warrantyEndDate,
+                'remaining' => $remaining,
             ];
         });
 

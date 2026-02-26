@@ -622,7 +622,7 @@ class WarrantyClaimController extends Controller
         $claim->update([
             'tracking_number' => $request->tracking_number ?? '',
             'dispatched_at'   => now(),
-            'status'          => 'shipped_ready',
+            'status'          => 'dispatched',
         ]);
 
         $description = "Dispatched via {$request->dispatch_mode}";
@@ -682,13 +682,14 @@ class WarrantyClaimController extends Controller
             return response()->json(['message' => translate('Invalid target status.')], 422);
         }
 
+        $fromStatus = $claim->status;
         $claim->update([
             'status' => $target,
         ]);
 
         $claim->timelineEvents()->create([
             'event_type'  => 'claim_resumed',
-            'description' => "Resumed from {$claim->status} → {$target}. Notes: {$request->notes}",
+            'description' => "Resumed from {$fromStatus} → {$target}. Notes: {$request->notes}",
             'user_id'     => auth('admin')->id(),
         ]);
 

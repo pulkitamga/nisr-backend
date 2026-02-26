@@ -3,23 +3,33 @@
 namespace App\Providers;
 
 use App\Events\AddFundToWalletEvent;
+use App\Events\ActivationReviewNeededEvent;
 use App\Events\CashCollectEvent;
+use App\Events\ClaimForReviewEvent;
+use App\Events\ClaimSubmittedEvent;
 use App\Events\CustomerRegistrationEvent;
 use App\Events\CustomerStatusUpdateEvent;
 use App\Events\DeliverymanPasswordResetEvent;
+use App\Events\DispatchReadyEvent;
 use App\Events\DigitalProductDownloadEvent;
 use App\Events\DigitalProductOtpVerificationEvent;
 use App\Events\EmailVerificationEvent;
 use App\Events\MaintenanceModeNotificationEvent;
+use App\Events\NoStockEvent;
 use App\Events\OrderPlacedEvent;
 use App\Events\PasswordResetEvent;
 use App\Events\ChattingEvent;
 use App\Events\OrderStatusEvent;
 use App\Events\ProductRequestStatusUpdateEvent;
+use App\Events\RepairCompletedEvent;
+use App\Events\RepairFailedEvent;
+use App\Events\ReplacementShippedEvent;
 use App\Events\RefundEvent;
 use App\Events\RequestProductRestockEvent;
 use App\Events\RestockProductNotificationEvent;
+use App\Events\RMAIssuedEvent;
 use App\Events\VendorRegistrationEvent;
+use App\Events\WarrantyActivatedEvent;
 use App\Events\WithdrawStatusUpdateEvent;
 use App\Listeners\AddFundToWalletListener;
 use App\Listeners\CashCollectListener;
@@ -38,6 +48,7 @@ use App\Listeners\ProductRequestStatusUpdateListener;
 use App\Listeners\RefundListener;
 use App\Listeners\RequestProductRestockListener;
 use App\Listeners\RestockProductNotificationListener;
+use App\Listeners\RunWarrantyEventHandler;
 use App\Listeners\VendorRegistrationListener;
 use App\Listeners\WithdrawStatusUpdateListener;
 use App\Events\WholesalerEmailEvent;
@@ -111,6 +122,36 @@ class EventServiceProvider extends ServiceProvider
         ],
         RestockProductNotificationEvent::class => [
             RestockProductNotificationListener::class,
+        ],
+        ClaimSubmittedEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        ClaimForReviewEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        RMAIssuedEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        DispatchReadyEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        WarrantyActivatedEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        ActivationReviewNeededEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        NoStockEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        RepairCompletedEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        RepairFailedEvent::class => [
+            RunWarrantyEventHandler::class,
+        ],
+        ReplacementShippedEvent::class => [
+            RunWarrantyEventHandler::class,
         ],
     ];
 

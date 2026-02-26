@@ -272,10 +272,32 @@ class WarrantyController extends Controller
         return view('admin-views.warranty.import-history', compact('history'));
     }
 
+    public function exportImportHistory(Request $request): StreamedResponse
+    {
+        $history = Warranty::where('status', 'preactivated')
+            ->selectRaw('DATE(created_at) as import_date, COUNT(*) as count')
+            ->groupBy('import_date')
+            ->orderBy('import_date', 'desc')
+            ->get();
+
+        $filename = 'warranty-import-history-' . now()->format('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($history) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Date', 'Imported Serials']);
+            foreach ($history as $row) {
+                fputcsv($handle, [$row->import_date, $row->count]);
+            }
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
     // Manual Activate View
     public function manualActivateView()
     {
-        return view('admin-views.warranty.manual-activate');
+        return view('admin-views.warranty.manual-activate', [
+            'prefillSerial' => request('serial_number'),
+        ]);
     }
 
     // Manual Activate
@@ -423,6 +445,36 @@ class WarrantyController extends Controller
         return view('admin-views.warranty.history-details', compact('details', 'date'));
     }
 
+    public function exportHistoryDetails(Request $request, $date): StreamedResponse
+    {
+        $search = $request->searchValue;
+
+        $details = Warranty::with('product')
+            ->where('status', 'preactivated')
+            ->whereDate('created_at', $date)
+            ->when($search, function ($q) use ($search) {
+                $q->where('serial_number', 'LIKE', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'warranty-import-details-' . $date . '-' . now()->format('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($details) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Serial Number', 'Product', 'Status', 'Created At']);
+            foreach ($details as $warranty) {
+                fputcsv($handle, [
+                    $warranty->serial_number,
+                    $warranty->product?->name ?? '-',
+                    $warranty->status,
+                    optional($warranty->created_at)->format('Y-m-d H:i:s'),
+                ]);
+            }
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
 
     // Reviews (Activation)
     public function activationReviews()
@@ -510,6 +562,9 @@ class WarrantyController extends Controller
             'user_public_form' => 'Public Form',
             'admin_manual'     => 'Admin Panel',
             'auto_activation'  => 'Auto Activation',
+            'mobile_app'       => 'Mobile App',
+            'order_activation' => 'Order Activation',
+            'replacement'      => 'Replacement',
         ];
 
         $methodCounts = [];
@@ -520,6 +575,18 @@ class WarrantyController extends Controller
                 'label' => $label,
                 'count' => $count,
                 'percentage' => $active > 0 ? round(($count / $active) * 100, 2) : 0
+            ];
+        }
+
+        $knownMethods = array_keys($activationMethods);
+        $otherCount = Warranty::where('status', 'active')
+            ->whereNotIn('activation_method', $knownMethods)
+            ->count();
+        if ($otherCount > 0) {
+            $methodCounts[] = [
+                'label' => 'Other',
+                'count' => $otherCount,
+                'percentage' => $active > 0 ? round(($otherCount / $active) * 100, 2) : 0,
             ];
         }
 

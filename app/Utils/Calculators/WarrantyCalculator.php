@@ -2,7 +2,8 @@
 
 namespace App\Utils\Calculators;
 
-use App\Models\SupportTicket;
+use App\Models\Warranty;
+use App\Models\WarrantyClaim;
 use Carbon\Carbon;
 
 class WarrantyCalculator
@@ -14,35 +15,49 @@ class WarrantyCalculator
         $this->type = $type;
     }
 
-    private function getQuery()
+    private function getClaimQuery()
     {
-        $query = SupportTicket::query()->where('type', 'warranty');
+        $query = WarrantyClaim::query();
         if ($this->type === 'today') {
-            $query->whereDate('created_at', Carbon::today());
+            $query->whereDate('submitted_at', Carbon::today());
         } elseif ($this->type === 'this_month') {
-            $query->whereMonth('created_at', Carbon::now()->month)
-                  ->whereYear('created_at', Carbon::now()->year);
+            $query->whereMonth('submitted_at', Carbon::now()->month)
+                ->whereYear('submitted_at', Carbon::now()->year);
+        }
+        return $query;
+    }
+
+    private function getWarrantyQuery()
+    {
+        $query = Warranty::query()->where('status', 'active')->where('end_date', '>', now());
+        if ($this->type === 'today') {
+            $query->whereDate('activation_date', Carbon::today());
+        } elseif ($this->type === 'this_month') {
+            $query->whereMonth('activation_date', Carbon::now()->month)
+                ->whereYear('activation_date', Carbon::now()->year);
         }
         return $query;
     }
 
     public function warrantyClaims()
     {
-        return $this->getQuery()->count();
+        return $this->getClaimQuery()->count();
     }
 
     public function claimsApproved()
     {
-        return $this->getQuery()->where('status', 'approved')->count();
+        return $this->getClaimQuery()->where('status', 'approved')->count();
     }
 
     public function claimsPending()
     {
-        return $this->getQuery()->where('status', 'pending')->count();
+        return $this->getClaimQuery()
+            ->whereNotIn('status', ['resolved', 'closed', 'rejected'])
+            ->count();
     }
 
     public function activeWarranty()
     {
-        return $this->getQuery()->where('status', 'active')->count();
+        return $this->getWarrantyQuery()->count();
     }
 }

@@ -508,7 +508,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get('/import', 'importView')->name('import')->middleware('module:warranty_section,warranty_import');
             Route::post('/import', 'import')->name('import')->middleware('module:warranty_section,warranty_import');
             Route::get('/import-history', 'importHistory')->name('import-history')->middleware('module:warranty_section,warranty_import_history');
+            Route::get('/import-history/export', 'exportImportHistory')->name('import-history.export')->middleware('module:warranty_section,warranty_import_history');
             Route::get('/import/{date}', 'historyDetails')->name('history-details')->middleware('module:warranty_section,warranty_import_history');
+            Route::get('/import/{date}/export', 'exportHistoryDetails')->name('history-details.export')->middleware('module:warranty_section,warranty_import_history');
             Route::get('/download-error-csv', 'downloadErrorCsv')->name('download_error_csv')->middleware('module:warranty_section,warranty_import');
             Route::get('/continue-import', 'continueImport')->name('continue-import')->middleware('module:warranty_section,warranty_import');
             Route::get('/reupload', 'reupload')->name('reupload')->middleware('module:warranty_section,warranty_import');

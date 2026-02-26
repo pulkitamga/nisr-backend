@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Models\BusinessSetting;
 use App\Models\Policy;
+use Illuminate\Support\Str;
 
 
 
@@ -54,7 +55,8 @@ class PagesController extends BaseController
     public function getWarrantyPolicyView(): View
     {
         $warranty_policy = Policy::with('translations')
-            ->orderBy('created_at', 'desc')
+            ->orderByDesc('published_at')
+            ->orderByDesc('created_at')
             ->first();
         return view(Pages::WARRANTY_POLICY[VIEW], compact('warranty_policy'));
     }
@@ -118,14 +120,35 @@ class PagesController extends BaseController
         $defaultLang = getDefaultLanguage() ?? 'en';
         $data = $request->validated();
         $version = $data['version'] ?? '1.0';
-        $value = $data['value'][array_search($defaultLang, $data['lang'])];
+        $defaultLangIndex = array_search($defaultLang, $data['lang'], true);
+        if ($defaultLangIndex === false) {
+            $defaultLangIndex = 0;
+        }
+        $value = $data['value'][$defaultLangIndex] ?? ($data['value'][0] ?? '');
+        $locale = $data['locale'] ?? ($data['lang'][$defaultLangIndex] ?? $defaultLang);
+        $publishedAt = isset($data['published_at']) ? \Carbon\Carbon::parse($data['published_at']) : now();
 
-        $policy = Policy::where('version', $version)->first();
+        $slugBase = Str::slug("warranty-policy-{$version}-{$locale}");
+        $slug = $slugBase;
+
+        $policy = Policy::where('version', $version)
+            ->where('locale', $locale)
+            ->first();
 
         if ($policy) {
+            $slugExists = Policy::where('slug', $slug)->where('id', '!=', $policy->id)->exists();
+            if ($slugExists) {
+                $slug = "{$slugBase}-" . now()->timestamp;
+            }
+
             $policy->update([
-                'value' => $value,
-                'published_at' => $data['published_at'] ?? now(),
+                'locale' => $locale,
+                'status' => 'published',
+                'effective_date' => $publishedAt->toDateString(),
+                'content_html' => $value,
+                'content_text' => strip_tags($value),
+                'slug' => $slug,
+                'published_at' => $publishedAt,
                 'created_by' => auth()->id(),
             ]);
 
@@ -136,10 +159,20 @@ class PagesController extends BaseController
             );
             Toastr::success(translate('warranty_policy_updated_successfully'));
         } else {
+            $slugExists = Policy::where('slug', $slug)->exists();
+            if ($slugExists) {
+                $slug = "{$slugBase}-" . now()->timestamp;
+            }
+
             $policy = Policy::create([
                 'version' => $version,
-                'value' => $value,
-                'published_at' => $data['published_at'] ?? now(),
+                'locale' => $locale,
+                'status' => 'published',
+                'effective_date' => $publishedAt->toDateString(),
+                'content_html' => $value,
+                'content_text' => strip_tags($value),
+                'slug' => $slug,
+                'published_at' => $publishedAt,
                 'created_by' => auth()->id(),
             ]);
 

@@ -12224,7 +12224,6 @@ return [
 	"Current Escalation" => "Current Escalation",
 	"Escalation History" => "Escalation History",
 	"Escalation Status" => "Escalation Status",
-	"Escalation Reason" => "Escalation Reason",
 	"Escalated By" => "Escalated By",
 	"Escalated At" => "Escalated At",
 	"Change Escalation Status" => "Change Escalation Status",
@@ -12235,4 +12234,5 @@ return [
 	"escalation_status_updated_successfully" => "Escalation status updated successfully.",
 	"normal" => "Normal",
 	"critical" => "Critical",
+	"Role_Category" => "Role Category",
 ];
