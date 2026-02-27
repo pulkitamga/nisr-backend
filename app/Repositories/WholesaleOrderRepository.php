@@ -63,99 +63,38 @@ class WholesaleOrderRepository implements WholesaleOrderRepositoryInterface
     public function getListWhere(array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
         $query = $this->order->with($relations)
-            ->when(isset($filters['seller_is']) && $filters['seller_is'] != 'all', function ($query) use ($filters) {
-                return $query->where('seller_is', $filters['seller_is']);
+            ->when(isset($filters['status']) && $filters['status'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('status', $filters['status']);
             })
-            ->when(isset($filters['seller_id']) && $filters['seller_id'] != 'all', function ($query) use ($filters) {
-                return $query->where('seller_id', $filters['seller_id']);
+            ->when(isset($filters['delivery_status']) && $filters['delivery_status'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('delivery_status', $filters['delivery_status']);
             })
-            ->when(isset($filters['order_type']) && $filters['order_type'] != 'all', function ($query) use ($filters) {
-                return $query->where('order_type', $filters['order_type']);
+            ->when(isset($filters['payment_status']) && $filters['payment_status'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('payment_status', $filters['payment_status']);
             })
-            ->when(isset($filters['status']) && $filters['status'] != 'all', function ($query) use ($filters) {
-                return $query->where('status', $filters['status']);
+            ->when(isset($filters['wholesaler_id']) && $filters['wholesaler_id'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('wholesaler_id', $filters['wholesaler_id']);
             })
-            ->when(isset($filters['delivery_status']) && $filters['delivery_status'] != 'all', function ($query) use ($filters) {
-                return $query->where('delivery_status', $filters['delivery_status']);
+            ->when(isset($filters['whereIn_order_status']) && $filters['whereIn_order_status'] !== 'all', function ($builder) use ($filters) {
+                return $builder->whereIn('status', (array)$filters['whereIn_order_status']);
             })
-            ->when(isset($filters['customer_id']) && $filters['customer_id'] != 'all', function ($query) use ($filters) {
-                return $query->where('customer_id', $filters['customer_id']);
+            ->when(isset($filters['whereIn_payment_status']) && $filters['whereIn_payment_status'] !== 'all', function ($builder) use ($filters) {
+                return $builder->whereIn('payment_status', (array)$filters['whereIn_payment_status']);
             })
-            ->when(isset($filters['is_guest']), function ($query) use ($filters) {
-                return $query->where('is_guest', $filters['is_guest']);
-            })
-            ->when(isset($filters['customer_type']), function ($query) use ($filters) {
-                return $query->where('is_guest', $filters['customer_type']);
-            })
-            ->when(isset($filters['coupon_code']), function ($query) use ($filters) {
-                return $query->where('coupon_code', $filters['coupon_code']);
-            })
-            ->when(isset($filters['checked']), function ($query) use ($filters) {
-                return $query->where('checked', $filters['checked']);
-            })
-            ->when(isset($filters['filter']), function ($query) use ($filters) {
-                $query->when($filters['filter'] == 'all', function ($query) {
-                    return $query;
-                })
-                    ->when($filters['filter'] == 'POS', function ($query) {
-                        return $query->where('order_type', 'POS');
-                    })
-                    ->when($filters['filter'] == 'default_type', function ($query) {
-                        return $query->where('order_type', 'default_type');
-                    })
-                    ->when($filters['filter'] == 'admin' || $filters['filter'] == 'seller', function ($query) use ($filters) {
-                        return $query->whereHas('details', function ($query) use ($filters) {
-                            return $query->whereHas('product', function ($query) use ($filters) {
-                                return $query->where('added_by', $filters['filter']);
-                            });
-                        });
-                    });
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_year", function ($query) {
-                $current_start_year = date('Y-01-01');
-                $current_end_year = date('Y-12-31');
-                return $query->whereDate('created_at', '>=', $current_start_year)
-                    ->whereDate('created_at', '<=', $current_end_year);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_month", function ($query) {
-                $current_month_start = date('Y-m-01');
-                $current_month_end = date('Y-m-t');
-                return $query->whereDate('created_at', '>=', $current_month_start)
-                    ->whereDate('created_at', '<=', $current_month_end);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_week", function ($query) {
-                $start_week = Carbon::now()->subDays(7)->startOfWeek()->format('Y-m-d');
-                $end_week = Carbon::now()->startOfWeek()->format('Y-m-d');
-                return $query->whereDate('created_at', '>=', $start_week)
-                    ->whereDate('created_at', '<=', $end_week);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "custom_date" && isset($filters['from']) && isset($filters['to']), function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['from'])
-                    ->whereDate('created_at', '<=', $filters['to']);
-            })
-            ->when(isset($filters['delivery_man_id']), function ($query) use ($filters) {
-                return $query->where(['delivery_man_id' => $filters['delivery_man_id']]);
-            })
-            ->when($searchValue, function ($query) use ($searchValue) {
-                return $query->where(function ($query) use ($searchValue) {
-                    return $query->where('id', 'like', "%{$searchValue}%")
-                        ->orWhere('order_status', 'like', "%{$searchValue}%")
-                        ->orWhere('transaction_ref', 'like', "%{$searchValue}%");
+            ->when($searchValue, function ($builder) use ($searchValue) {
+                return $builder->where(function ($searchQuery) use ($searchValue) {
+                    $searchQuery->where('id', 'like', "%{$searchValue}%")
+                        ->orWhere('order_id', 'like', "%{$searchValue}%")
+                        ->orWhere('purchase_order_no', 'like', "%{$searchValue}%")
+                        ->orWhere('quotation_no', 'like', "%{$searchValue}%")
+                        ->orWhere('invoice_no', 'like', "%{$searchValue}%")
+                        ->orWhere('confirm_order_no', 'like', "%{$searchValue}%");
                 });
-            })
-            ->when(isset($filters['whereHas_deliveryMan']), function ($query) use ($filters) {
-                return $query->whereHas('deliveryMan', function ($query) use ($filters) {
-                    $query->where('seller_id', $filters['whereHas_deliveryMan']);
-                });
-            })
-            ->when(isset($filters['whereIn_order_status']) && $filters['whereIn_order_status'] != 'all', function ($query) use ($filters) {
-                $query->whereIn('order_status', $filters['whereIn_order_status']);
-            })
-            ->when(isset($filters['whereIn_payment_status']) && $filters['whereIn_payment_status'] != 'all', function ($query) use ($filters) {
-                $query->whereIn('payment_status', $filters['whereIn_payment_status']);
-            })
-            ->when(!empty($orderBy), function ($query) use ($orderBy) {
-                $query->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
+            });
+
+        $query = $this->applyDateTypeFilter($query, $filters)
+            ->when(!empty($orderBy), function ($builder) use ($orderBy) {
+                $builder->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
             });
 
         $filters += ['searchValue' => $searchValue];
@@ -164,99 +103,27 @@ class WholesaleOrderRepository implements WholesaleOrderRepositoryInterface
     public function getQuotationListWhere(array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
         $query = $this->quotation->with($relations)
-            ->when(isset($filters['seller_is']) && $filters['seller_is'] != 'all', function ($query) use ($filters) {
-                return $query->where('seller_is', $filters['seller_is']);
+            ->when(isset($filters['status']) && $filters['status'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('status', $filters['status']);
             })
-            ->when(isset($filters['seller_id']) && $filters['seller_id'] != 'all', function ($query) use ($filters) {
-                return $query->where('seller_id', $filters['seller_id']);
+            ->when(isset($filters['wholeseller_id']) && $filters['wholeseller_id'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('wholeseller_id', $filters['wholeseller_id']);
             })
-            ->when(isset($filters['order_type']) && $filters['order_type'] != 'all', function ($query) use ($filters) {
-                return $query->where('order_type', $filters['order_type']);
+            ->when(isset($filters['wholeseller_tier']) && $filters['wholeseller_tier'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('wholeseller_tier', $filters['wholeseller_tier']);
             })
-            ->when(isset($filters['status']) && $filters['status'] != 'all', function ($query) use ($filters) {
-                return $query->where('status', $filters['status']);
-            })
-            ->when(isset($filters['delivery_status']) && $filters['delivery_status'] != 'all', function ($query) use ($filters) {
-                return $query->where('delivery_status', $filters['delivery_status']);
-            })
-            ->when(isset($filters['customer_id']) && $filters['customer_id'] != 'all', function ($query) use ($filters) {
-                return $query->where('customer_id', $filters['customer_id']);
-            })
-            ->when(isset($filters['is_guest']), function ($query) use ($filters) {
-                return $query->where('is_guest', $filters['is_guest']);
-            })
-            ->when(isset($filters['customer_type']), function ($query) use ($filters) {
-                return $query->where('is_guest', $filters['customer_type']);
-            })
-            ->when(isset($filters['coupon_code']), function ($query) use ($filters) {
-                return $query->where('coupon_code', $filters['coupon_code']);
-            })
-            ->when(isset($filters['checked']), function ($query) use ($filters) {
-                return $query->where('checked', $filters['checked']);
-            })
-            ->when(isset($filters['filter']), function ($query) use ($filters) {
-                $query->when($filters['filter'] == 'all', function ($query) {
-                    return $query;
-                })
-                    ->when($filters['filter'] == 'POS', function ($query) {
-                        return $query->where('order_type', 'POS');
-                    })
-                    ->when($filters['filter'] == 'default_type', function ($query) {
-                        return $query->where('order_type', 'default_type');
-                    })
-                    ->when($filters['filter'] == 'admin' || $filters['filter'] == 'seller', function ($query) use ($filters) {
-                        return $query->whereHas('details', function ($query) use ($filters) {
-                            return $query->whereHas('product', function ($query) use ($filters) {
-                                return $query->where('added_by', $filters['filter']);
-                            });
-                        });
-                    });
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_year", function ($query) {
-                $current_start_year = date('Y-01-01');
-                $current_end_year = date('Y-12-31');
-                return $query->whereDate('created_at', '>=', $current_start_year)
-                    ->whereDate('created_at', '<=', $current_end_year);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_month", function ($query) {
-                $current_month_start = date('Y-m-01');
-                $current_month_end = date('Y-m-t');
-                return $query->whereDate('created_at', '>=', $current_month_start)
-                    ->whereDate('created_at', '<=', $current_month_end);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_week", function ($query) {
-                $start_week = Carbon::now()->subDays(7)->startOfWeek()->format('Y-m-d');
-                $end_week = Carbon::now()->startOfWeek()->format('Y-m-d');
-                return $query->whereDate('created_at', '>=', $start_week)
-                    ->whereDate('created_at', '<=', $end_week);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "custom_date" && isset($filters['from']) && isset($filters['to']), function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['from'])
-                    ->whereDate('created_at', '<=', $filters['to']);
-            })
-            ->when(isset($filters['delivery_man_id']), function ($query) use ($filters) {
-                return $query->where(['delivery_man_id' => $filters['delivery_man_id']]);
-            })
-            ->when($searchValue, function ($query) use ($searchValue) {
-                return $query->where(function ($query) use ($searchValue) {
-                    return $query->where('id', 'like', "%{$searchValue}%")
-                        ->orWhere('order_status', 'like', "%{$searchValue}%")
-                        ->orWhere('transaction_ref', 'like', "%{$searchValue}%");
+            ->when($searchValue, function ($builder) use ($searchValue) {
+                return $builder->where(function ($searchQuery) use ($searchValue) {
+                    $searchQuery->where('id', 'like', "%{$searchValue}%")
+                        ->orWhere('order_id', 'like', "%{$searchValue}%")
+                        ->orWhere('purchase_order_no', 'like', "%{$searchValue}%")
+                        ->orWhere('quotation_no', 'like', "%{$searchValue}%");
                 });
-            })
-            ->when(isset($filters['whereHas_deliveryMan']), function ($query) use ($filters) {
-                return $query->whereHas('deliveryMan', function ($query) use ($filters) {
-                    $query->where('seller_id', $filters['whereHas_deliveryMan']);
-                });
-            })
-            ->when(isset($filters['whereIn_order_status']) && $filters['whereIn_order_status'] != 'all', function ($query) use ($filters) {
-                $query->whereIn('order_status', $filters['whereIn_order_status']);
-            })
-            ->when(isset($filters['whereIn_payment_status']) && $filters['whereIn_payment_status'] != 'all', function ($query) use ($filters) {
-                $query->whereIn('payment_status', $filters['whereIn_payment_status']);
-            })
-            ->when(!empty($orderBy), function ($query) use ($orderBy) {
-                $query->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
+            });
+
+        $query = $this->applyDateTypeFilter($query, $filters)
+            ->when(!empty($orderBy), function ($builder) use ($orderBy) {
+                $builder->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
             });
 
         $filters += ['searchValue' => $searchValue];
@@ -265,118 +132,69 @@ class WholesaleOrderRepository implements WholesaleOrderRepositoryInterface
     public function getPurchaseListWhere(array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
         $query = $this->purchaseOrder->with($relations)
-            ->when(isset($filters['seller_is']) && $filters['seller_is'] != 'all', function ($query) use ($filters) {
-                return $query->where('seller_is', $filters['seller_is']);
+            ->when(isset($filters['status']) && $filters['status'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('status', $filters['status']);
             })
-            ->when(isset($filters['seller_id']) && $filters['seller_id'] != 'all', function ($query) use ($filters) {
-                return $query->where('seller_id', $filters['seller_id']);
+            ->when(isset($filters['wholeseller_id']) && $filters['wholeseller_id'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('wholeseller_id', $filters['wholeseller_id']);
             })
-            ->when(isset($filters['order_type']) && $filters['order_type'] != 'all', function ($query) use ($filters) {
-                return $query->where('order_type', $filters['order_type']);
+            ->when(isset($filters['wholeseller_tier']) && $filters['wholeseller_tier'] !== 'all', function ($builder) use ($filters) {
+                return $builder->where('wholeseller_tier', $filters['wholeseller_tier']);
             })
-            ->when(isset($filters['status']) && $filters['status'] != 'all', function ($query) use ($filters) {
-                return $query->where('status', $filters['status']);
-            })
-            ->when(isset($filters['delivery_status']) && $filters['delivery_status'] != 'all', function ($query) use ($filters) {
-                return $query->where('delivery_status', $filters['delivery_status']);
-            })
-            ->when(isset($filters['customer_id']) && $filters['customer_id'] != 'all', function ($query) use ($filters) {
-                return $query->where('customer_id', $filters['customer_id']);
-            })
-            ->when(isset($filters['is_guest']), function ($query) use ($filters) {
-                return $query->where('is_guest', $filters['is_guest']);
-            })
-            ->when(isset($filters['customer_type']), function ($query) use ($filters) {
-                return $query->where('is_guest', $filters['customer_type']);
-            })
-            ->when(isset($filters['coupon_code']), function ($query) use ($filters) {
-                return $query->where('coupon_code', $filters['coupon_code']);
-            })
-            ->when(isset($filters['checked']), function ($query) use ($filters) {
-                return $query->where('checked', $filters['checked']);
-            })
-            ->when(isset($filters['filter']), function ($query) use ($filters) {
-                $query->when($filters['filter'] == 'all', function ($query) {
-                    return $query;
-                })
-                    ->when($filters['filter'] == 'POS', function ($query) {
-                        return $query->where('order_type', 'POS');
-                    })
-                    ->when($filters['filter'] == 'default_type', function ($query) {
-                        return $query->where('order_type', 'default_type');
-                    })
-                    ->when($filters['filter'] == 'admin' || $filters['filter'] == 'seller', function ($query) use ($filters) {
-                        return $query->whereHas('details', function ($query) use ($filters) {
-                            return $query->whereHas('product', function ($query) use ($filters) {
-                                return $query->where('added_by', $filters['filter']);
-                            });
-                        });
-                    });
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_year", function ($query) {
-                $current_start_year = date('Y-01-01');
-                $current_end_year = date('Y-12-31');
-                return $query->whereDate('created_at', '>=', $current_start_year)
-                    ->whereDate('created_at', '<=', $current_end_year);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_month", function ($query) {
-                $current_month_start = date('Y-m-01');
-                $current_month_end = date('Y-m-t');
-                return $query->whereDate('created_at', '>=', $current_month_start)
-                    ->whereDate('created_at', '<=', $current_month_end);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_week", function ($query) {
-                $start_week = Carbon::now()->subDays(7)->startOfWeek()->format('Y-m-d');
-                $end_week = Carbon::now()->startOfWeek()->format('Y-m-d');
-                return $query->whereDate('created_at', '>=', $start_week)
-                    ->whereDate('created_at', '<=', $end_week);
-            })
-            ->when(isset($filters['date_type']) && $filters['date_type'] == "custom_date" && isset($filters['from']) && isset($filters['to']), function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['from'])
-                    ->whereDate('created_at', '<=', $filters['to']);
-            })
-            ->when(isset($filters['delivery_man_id']), function ($query) use ($filters) {
-                return $query->where(['delivery_man_id' => $filters['delivery_man_id']]);
-            })
-            ->when($searchValue, function ($query) use ($searchValue) {
-                return $query->where(function ($query) use ($searchValue) {
-                    return $query->where('id', 'like', "%{$searchValue}%")
-                        ->orWhere('order_status', 'like', "%{$searchValue}%")
-                        ->orWhere('transaction_ref', 'like', "%{$searchValue}%");
+            ->when($searchValue, function ($builder) use ($searchValue) {
+                return $builder->where(function ($searchQuery) use ($searchValue) {
+                    $searchQuery->where('id', 'like', "%{$searchValue}%")
+                        ->orWhere('order_id', 'like', "%{$searchValue}%")
+                        ->orWhere('purchase_order_no', 'like', "%{$searchValue}%");
                 });
-            })
-            ->when(isset($filters['whereHas_deliveryMan']), function ($query) use ($filters) {
-                return $query->whereHas('deliveryMan', function ($query) use ($filters) {
-                    $query->where('seller_id', $filters['whereHas_deliveryMan']);
-                });
-            })
-            ->when(isset($filters['whereIn_order_status']) && $filters['whereIn_order_status'] != 'all', function ($query) use ($filters) {
-                $query->whereIn('order_status', $filters['whereIn_order_status']);
-            })
-            ->when(isset($filters['whereIn_payment_status']) && $filters['whereIn_payment_status'] != 'all', function ($query) use ($filters) {
-                $query->whereIn('payment_status', $filters['whereIn_payment_status']);
-            })
-            ->when(!empty($orderBy), function ($query) use ($orderBy) {
-                $query->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
+            });
+
+        $query = $this->applyDateTypeFilter($query, $filters)
+            ->when(!empty($orderBy), function ($builder) use ($orderBy) {
+                $builder->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
             });
 
         $filters += ['searchValue' => $searchValue];
         return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit)->appends($filters);
     }
 
+    private function applyDateTypeFilter($query, array $filters)
+    {
+        return $query
+            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_year", function ($builder) {
+                return $builder->whereDate('created_at', '>=', date('Y-01-01'))
+                    ->whereDate('created_at', '<=', date('Y-12-31'));
+            })
+            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_month", function ($builder) {
+                return $builder->whereDate('created_at', '>=', date('Y-m-01'))
+                    ->whereDate('created_at', '<=', date('Y-m-t'));
+            })
+            ->when(isset($filters['date_type']) && $filters['date_type'] == "this_week", function ($builder) {
+                return $builder->whereDate('created_at', '>=', Carbon::now()->startOfWeek()->format('Y-m-d'))
+                    ->whereDate('created_at', '<=', Carbon::now()->endOfWeek()->format('Y-m-d'));
+            })
+            ->when(isset($filters['date_type']) && $filters['date_type'] == "custom_date" && isset($filters['from']) && isset($filters['to']), function ($builder) use ($filters) {
+                return $builder->whereDate('created_at', '>=', $filters['from'])
+                    ->whereDate('created_at', '<=', $filters['to']);
+            });
+    }
+
     public function getListWhereDate(array $filters = [], string $dateType = null, array $filterDate = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
         return $this->order->with($relations)
-            ->when($filters['order_status'], function ($query) use ($filters) {
-                $query->where(['order_status' => $filters['order_status']]);
+            ->when(isset($filters['status']) && $filters['status'] !== 'all', function ($query) use ($filters) {
+                $query->where(['status' => $filters['status']]);
             })
-            ->when($filters['seller_is'] == 'seller', function ($query) use ($filters) {
-                $query->where(['seller_is' => 'seller', 'seller_id' => $filters['seller_id']]);
+            ->when(isset($filters['delivery_status']) && $filters['delivery_status'] !== 'all', function ($query) use ($filters) {
+                $query->where(['delivery_status' => $filters['delivery_status']]);
             })
-            ->when($dateType == 'today', function ($query) use ($filterDate) {
+            ->when(isset($filters['payment_status']) && $filters['payment_status'] !== 'all', function ($query) use ($filters) {
+                $query->where(['payment_status' => $filters['payment_status']]);
+            })
+            ->when($dateType == 'today', function ($query) {
                 $query->whereDate('created_at', Carbon::today());
             })
-            ->when($dateType == 'thisMonth', function ($query) use ($filterDate) {
+            ->when($dateType == 'thisMonth', function ($query) {
                 $query->whereMonth('created_at', Carbon::now());
             })
             ->get();
@@ -385,8 +203,8 @@ class WholesaleOrderRepository implements WholesaleOrderRepositoryInterface
     public function getListWhereCount(string $searchValue = null, array $filters = [], array $relations = []): int
     {
         return $this->order->with($relations)
-            ->when(isset($filters['customer_id']), function ($query) use ($filters) {
-                return $query->where(['customer_id' => $filters['customer_id']]);
+            ->when(isset($filters['wholesaler_id']), function ($query) use ($filters) {
+                return $query->where(['wholesaler_id' => $filters['wholesaler_id']]);
             })->count();
     }
 

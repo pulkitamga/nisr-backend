@@ -72,7 +72,7 @@
 
                             <a href="javascript:void(0);" title="{{ translate('Delete') }}"
                                 class="btn btn-danger btn-sm square-btn"
-                                onclick="confirmAndDelete('{{ route('admin.wholesale.business.order.delete', $quote->id) }}')">
+                                onclick="confirmAndDelete('{{ route('admin.wholesale.business.quotation.delete', $quote->id) }}')">
                                 <i class="tio-delete"></i>
                             </a>
                         </div>

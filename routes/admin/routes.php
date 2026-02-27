@@ -2110,7 +2110,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::controller(WholeSaleProductController::class)->group(function () {
                 Route::get(WholeSalesProducts::UPDATE_VIEW[URI] . '/{product_id}', 'getUpdateView')->middleware('permission:wholesaler_section.product_edit,admin')->name('edit');
                 Route::post(WholeSalesProducts::UPDATE[URI] . '/{id}', 'update')->middleware('permission:wholesaler_section.product_edit,admin')->name('update');
-                Route::get(WholeSalesProducts::PRODUCT_TOGGLE[URI] . '/{id}', 'toggleStatusProduct')->middleware('permission:wholesaler_section.product_status,admin')->name('toggle-status');
+                Route::post(WholeSalesProducts::PRODUCT_TOGGLE[URI] . '/{id}', 'toggleStatusProduct')->middleware('permission:wholesaler_section.product_status,admin')->name('toggle-status');
             });
 
             // Delete permissions
@@ -2177,9 +2177,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             });
 
             Route::controller(WholeSalerController::class)->group(function () {
-                Route::get(WholeSaler::REQUEST_DELETE[URI] . '/{id}', 'orderDestroy')->middleware('permission:wholesaler_section.purchase_request_delete,admin')->name('order.delete');
-                Route::get(WholeSaler::QUOTATION_DELETE[URI] . '/{id}', 'quotationDestroy')->middleware('permission:wholesaler_section.quotation_delete,admin')->name('quotation.delete');
-                Route::get(WholeSaler::CONFIREM_ORDER_DELETE[URI] . '/{id}', 'confiremOrderDestroy')->middleware('permission:wholesaler_section.confirem_order_delete,admin')->name('confirem.order.delete');
+                Route::post(WholeSaler::REQUEST_DELETE[URI] . '/{id}', 'orderDestroy')->middleware('permission:wholesaler_section.purchase_request_delete,admin')->name('order.delete');
+                Route::post(WholeSaler::QUOTATION_DELETE[URI] . '/{id}', 'quotationDestroy')->middleware('permission:wholesaler_section.quotation_delete,admin')->name('quotation.delete');
+                Route::post(WholeSaler::CONFIREM_ORDER_DELETE[URI] . '/{id}', 'confiremOrderDestroy')->middleware('permission:wholesaler_section.confirem_order_delete,admin')->name('confirem.order.delete');
                 Route::delete(WholeSaler::TIER_DELETE[URI] . '/{id}', 'tierDestroy')->middleware('permission:wholesaler_section.tier_delete,admin')->name('wholesaler.tier.delete');
                 Route::patch(WholeSaler::WHOLESALER_CONTACT_DELETE[URI] . '/{id}', 'wholesalerContactDelete')->middleware('permission:wholesaler_section.wholesaler_contact,admin')->name('wholsaler-contect.softDelete');
             });

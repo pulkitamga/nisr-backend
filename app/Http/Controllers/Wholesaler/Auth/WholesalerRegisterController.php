@@ -199,8 +199,13 @@ class WholesalerRegisterController extends BaseController
         // event(new VendorRegistrationEvent(email: $request['email'], data: $data));
         return response()->json(
             [
-                'redirectRoute' => route('vendor.auth.login')
+                'redirectRoute' => route('wholesaler.auth.login')
             ]
         );
+    }
+
+    public function submitRegisterData(VendorAddRequest $request): JsonResponse
+    {
+        return $this->add($request);
     }
 }
