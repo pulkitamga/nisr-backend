@@ -10,9 +10,25 @@ class WarrantyPolicyController extends Controller
 {
     public function show(Request $request)
     {
+        $locale = $request->query('locale', app()->getLocale());
+        if (!preg_match('/^[a-z]{2,3}(_[a-z]{2,3})?$/', $locale)) {
+            $locale = app()->getLocale();
+        }
+
         $policy = Policy::with('translations')
-            ->orderBy('created_at', 'desc')
+            ->published()
+            ->where('locale', $locale)
+            ->orderByDesc('effective_date')
+            ->orderByDesc('published_at')
             ->first();
+
+        if (!$policy) {
+            $policy = Policy::with('translations')
+                ->published()
+                ->orderByDesc('effective_date')
+                ->orderByDesc('published_at')
+                ->first();
+        }
 
         return view(VIEW_FILE_NAMES['warranty_policy'], compact('policy'));
     }
@@ -27,10 +43,11 @@ class WarrantyPolicyController extends Controller
         }
 
         $policy = Policy::where('version', $version)
+            ->published()
             ->where('locale', $locale)
             ->firstOrFail();
 
-        $isOutdated = $policy->status !== 'published' || Policy::published()
+        $isOutdated = Policy::published()
             ->where('locale', $locale)
             ->where('effective_date', '>', $policy->effective_date)
             ->exists();

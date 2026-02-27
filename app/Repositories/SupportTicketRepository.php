@@ -49,7 +49,26 @@ class SupportTicketRepository implements SupportTicketRepositoryInterface
                     $q->where('subject', 'like', "%{$searchValue}%")
                         ->orWhere('type', 'like', "%{$searchValue}%")
                         ->orWhere('description', 'like', "%{$searchValue}%")
-                        ->orWhere('status', 'like', "%{$searchValue}%");
+                        ->orWhere('priority', 'like', "%{$searchValue}%")
+                        ->orWhere('status', 'like', "%{$searchValue}%")
+                        ->orWhereHas('status_details', function ($statusQuery) use ($searchValue) {
+                            $statusQuery->where('name', 'like', "%{$searchValue}%");
+                        })
+                        ->orWhereHas('customer', function ($customerQuery) use ($searchValue) {
+                            $customerQuery->where('f_name', 'like', "%{$searchValue}%")
+                                ->orWhere('l_name', 'like', "%{$searchValue}%")
+                                ->orWhereRaw(
+                                    "CONCAT(COALESCE(f_name, ''), ' ', COALESCE(l_name, '')) LIKE ?",
+                                    ["%{$searchValue}%"]
+                                )
+                                ->orWhere('email', 'like', "%{$searchValue}%")
+                                ->orWhere('phone', 'like', "%{$searchValue}%");
+                        })
+                        ->orWhereHas('relatedInboxMessages', function ($inboxQuery) use ($searchValue) {
+                            $inboxQuery->where('sender_name', 'like', "%{$searchValue}%")
+                                ->orWhere('sender_email', 'like', "%{$searchValue}%")
+                                ->orWhere('sender_phone', 'like', "%{$searchValue}%");
+                        });
                 });
             })
             ->when(isset($filters['id']), function ($query) use ($filters) {

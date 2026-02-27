@@ -81,12 +81,7 @@
             <div class="dropdown">
                 <a type="button"
                     class="btn btn-outline--primary text-nowrap"
-                    href="{{ route('admin.crm.lead.export', [
-                        'fhilter_date' => request('fhilter_date'),
-                        'status'       => request('status'),
-                        'choose_first' => request('choose_first'),
-                        'searchValue'  => request('searchValue'),
-                ]) }}">
+                    href="{{ route('admin.warranty.import-history.export') }}">
                     <img width="14" src="{{ dynamicAsset(path: 'public/assets/back-end/img/excel.png') }}" alt="" class="excel">
                     <span class="ps-2">{{ translate('export') }}</span>
                 </a>

@@ -201,12 +201,12 @@
                                 {{ $ticket->employee_id ? translate('Re-Assign Employee') : translate('Assign Employee') }}
                             </a>
 
-                            @if(auth('admin')->id() != 1)
+                            @if((int)auth('admin')->user()?->admin_role_id !== 1)
                             <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                             @endif
                             @endif
                             @if(!empty($ticket->status_details) && trim(strtolower($ticket->status_details->name)) != 'closed')
-                            <a class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#showComplainFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" title="Follow-up details">
+                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showComplainFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" title="Follow-up details">
                                 {{ translate('change_Status') }}
                             </a>
                             @endif
@@ -232,12 +232,12 @@
     </div>
 </div>
 
-<div class="modal fade" id="showComplainFollowUpModal" data-backdrop="static" tabindex="-1" aria-labelledby="showSupportFollowUpModal" aria-hidden="true">
+<div class="modal fade" id="showComplainFollowUpModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="showSupportFollowUpModal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
                 <h3>{{ translate('Support Follow Up') }}</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="Close">
                     <i class="tio-clear"></i>
                 </button>
             </div>
@@ -298,7 +298,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateTicketModalLabel">{{ translate('Escalate Ticket') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -312,7 +312,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
                     <button type="submit" class="btn btn-warning">{{ translate('Escalate') }}</button>
                 </div>
             </form>

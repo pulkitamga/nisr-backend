@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Events\DigitalProductOtpVerificationEvent;
 use App\Models\ActivationReview;
 use App\Models\Blacklist;
 use App\Models\OrderDetail;
@@ -171,7 +172,18 @@ class WarrantyActivationController extends Controller
             if ($otpMethod === 'email') {
                 $otp = rand(1000, 9999);
                 Cache::put("otp:{$email}", $otp, now()->addMinutes(5));
-                Log::info('Warranty Activation OTP generated');
+                $mailConfig = getWebConfig(name: 'mail_config');
+                $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
+                if ($mailEnabled && is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    event(new DigitalProductOtpVerificationEvent(email: $email, data: [
+                        'userName' => $request->name ?? 'Customer',
+                        'userType' => 'customer',
+                        'templateName' => 'digital-product-otp',
+                        'subject' => translate('verification_Code'),
+                        'title' => translate('verification_Code') . '!',
+                        'verificationCode' => (string)$otp,
+                    ]));
+                }
             }
 
             Session::put([
@@ -309,7 +321,7 @@ class WarrantyActivationController extends Controller
             'invoice_number' => $request->invoice_number,
             'activated_ip' => $request->ip(),
             'activation_method' => 'user_public_form',
-            'policy_version' => Policy::published()->orderByDesc('published_at')->first()->version ?? null,
+            'policy_version' => Policy::published()->orderByDesc('published_at')->first()?->version,
             'consent_checked' => true,
             'consent_timestamp' => now(),
             'consent_ip' => $request->ip(),
@@ -330,19 +342,22 @@ class WarrantyActivationController extends Controller
             'event_type' => 'activated',
             'description' => 'Activated via public form' . ($isGuest ? ' (guest)' : ''),
             'timestamp' => now(),
-            'user_id' => Auth::id() ?? null,
+            'user_id' => auth('admin')->check() ? auth('admin')->id() : null,
         ]);
 
         if ($flagged && $autoApprove != '1') {
             $reasons = is_array($flaggedReason)
                 ? array_filter($flaggedReason) // remove empty values
                 : ($flaggedReason ? array_filter(explode(', ', $flaggedReason)) : []);
+            $submittedAt = now();
             ActivationReview::create([
                 'warranty_id' => $warranty->id,
                 'status' => 'pending',
                 'review_notes' => 'Auto-created from public activation; awaiting admin review.',
                 'flagged_reason' => !empty($reasons) ? implode(', ', $reasons) : 'No reason specified',
-                'submitted_at' => now(),
+                'submitted_at' => $submittedAt,
+                'first_response_due' => $submittedAt->copy()->addHours(24),
+                'decision_due' => $submittedAt->copy()->addDays(3),
             ]);
         }
     }
@@ -369,6 +384,18 @@ class WarrantyActivationController extends Controller
             } else {
                 $otp = rand(1000, 9999);
                 Cache::put("otp:{$email}", $otp, now()->addMinutes(5));
+                $mailConfig = getWebConfig(name: 'mail_config');
+                $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
+                if ($mailEnabled && is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    event(new DigitalProductOtpVerificationEvent(email: $email, data: [
+                        'userName' => Session::get('name', 'Customer'),
+                        'userType' => 'customer',
+                        'templateName' => 'digital-product-otp',
+                        'subject' => translate('verification_Code'),
+                        'title' => translate('verification_Code') . '!',
+                        'verificationCode' => (string)$otp,
+                    ]));
+                }
                 return back()->with('success', translate('OTP resent successfully to your email.'));
             }
         } catch (\Exception $e) {
@@ -481,7 +508,7 @@ class WarrantyActivationController extends Controller
                 'consent_checked' => true,
                 'consent_timestamp' => now(),
                 'consent_ip' => $request->ip(),
-                'policy_version' => Policy::published()->orderByDesc('published_at')->first()->version ?? null,
+                'policy_version' => Policy::published()->orderByDesc('published_at')->first()?->version,
             ]);
 
             WarrantyTimelineEvent::create([
@@ -489,7 +516,7 @@ class WarrantyActivationController extends Controller
                 'event_type' => 'activated',
                 'description' => 'Activated via order details',
                 'timestamp' => now(),
-                'user_id' => auth('customer')->id(),
+                'user_id' => auth('admin')->check() ? auth('admin')->id() : null,
             ]);
 
             $activatedSerials[] = $serialNumber;

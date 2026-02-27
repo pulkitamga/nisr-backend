@@ -10,7 +10,7 @@
         border-left: 4px solid var('');
     }
 
-    .detail-card p {
+    .detail-card .detail-row {
         margin-bottom: 0.75rem;
         line-height: 1.5;
     }
@@ -18,6 +18,30 @@
     .detail-card strong {
         color: #2c3e50;
         font-weight: 600;
+    }
+
+    .detail-card.rtl {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .detail-card.ltr {
+        direction: ltr;
+        text-align: left;
+    }
+
+    .detail-card .detail-value {
+        unicode-bidi: plaintext;
+    }
+
+    .detail-card .detail-value-ltr {
+        direction: ltr;
+        display: inline-block;
+        text-align: left;
+    }
+
+    .detail-card .list-group-item {
+        gap: .75rem;
     }
 </style>
 @endpush
@@ -32,37 +56,99 @@
     </div>
 
     <div class="row">
+        @php
+            $isRtl = Session::get('direction') === 'rtl';
+            $translateToken = function ($value) {
+                $value = trim((string) $value);
+                if ($value === '') {
+                    return '-';
+                }
+
+                $key = strtolower($value);
+                $map = [
+                    'new' => 'new',
+                    'processing' => 'processing',
+                    'converted' => 'converted',
+                    'ignored' => 'ignored',
+                    'spam' => 'spam',
+                    'form' => 'form',
+                    'contact' => 'contact',
+                    'support' => 'support',
+                    'service' => 'service',
+                    'career' => 'career',
+                    'retail' => 'retail',
+                    'wholesale' => 'wholesale',
+                    'complaint' => 'complaint',
+                    'delivery issue' => 'delivery_issue',
+                    'return/rma' => 'return_rma',
+                    'billing/refund' => 'billing_refund',
+                    'product issue/defect' => 'product_issue_defect',
+                    'setup/how-to' => 'setup_how_to',
+                    'general inquiry' => 'general_inquiry',
+                    'contact us' => 'contact_us',
+                ];
+
+                if (isset($map[$key])) {
+                    return translate($map[$key]);
+                }
+
+                return $value;
+            };
+            $translateMessageText = function ($value) {
+                $value = trim((string) $value);
+                if ($value === '') {
+                    return '-';
+                }
+
+                if (preg_match('/^contact form\\s*-\\s*(.+)$/i', $value, $matches)) {
+                    return translate('contact_form') . ' - ' . $matches[1];
+                }
+
+                $directMap = [
+                    'new contact form submitted' => 'new_contact_form_submitted',
+                ];
+                $lower = strtolower($value);
+                if (isset($directMap[$lower])) {
+                    return translate($directMap[$lower]);
+                }
+
+                return $value;
+            };
+            $valueClass = function ($value) {
+                return preg_match('/[A-Za-z0-9@._:+-]/', (string) $value) ? 'detail-value detail-value-ltr' : 'detail-value';
+            };
+        @endphp
         <div class="col-md-12">
-<div class="card mb-4 shadow-sm detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+<div class="card mb-4 shadow-sm detail-card {{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">{{ translate('Message Details') }}</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>{{ translate('Subject') }}:</strong> {{ $inbox->subject ?? translate('No Subject') }}</p>
-                    <p><strong>{{ translate('Body') }}:</strong> {{ $inbox->body ?? translate('No Message') }}</p>
-                    <p><strong>{{ translate('Sender Name') }}:</strong> {{ $inbox->sender_name ?? translate('Unassigned') }}</p>
-                    <p><strong>{{ translate('Sender Email') }}:</strong> {{ $inbox->sender_email ?? translate('Not Available') }}</p>
-                    <p><strong>{{ translate('Sender Phone') }}:</strong> {{ $inbox->sender_phone ?? translate('Not Available') }}</p>
-                    <p><strong>{{ translate('Pipeline') }}:</strong> {{ $inbox->pipeline ?? '-' }}</p>
-                    <p><strong>{{ translate('Message Type') }}:</strong> {{ $inbox->message_type ?? '-' }}</p>
-                    <p><strong>{{ translate('Status') }}:</strong> {{ $inbox->status ?? '-' }}</p>
-                    <p><strong>{{ translate('Received At') }}:</strong> {{ $inbox->created_at?->format('d M, Y H:i A') }}</p>
+                    <p class="detail-row"><strong>{{ translate('Subject') }}:</strong> <span class="{{ $valueClass($inbox->subject ?? '') }}">{{ $translateMessageText($inbox->subject ?? translate('No Subject')) }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Body') }}:</strong> <span class="{{ $valueClass($inbox->body ?? '') }}">{{ $translateMessageText($inbox->body ?? translate('No Message')) }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Sender Name') }}:</strong> <span class="{{ $valueClass($inbox->sender_name ?? '') }}">{{ $inbox->sender_name ?? translate('Unassigned') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Sender Email') }}:</strong> <span class="{{ $valueClass($inbox->sender_email ?? '') }}">{{ $inbox->sender_email ?? translate('Not Available') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Sender Phone') }}:</strong> <span class="{{ $valueClass($inbox->sender_phone ?? '') }}">{{ $inbox->sender_phone ?? translate('Not Available') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Pipeline') }}:</strong> <span class="{{ $valueClass($inbox->pipeline ?? '') }}">{{ $translateToken($inbox->pipeline ?? '-') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Message Type') }}:</strong> <span class="{{ $valueClass($inbox->message_type ?? '') }}">{{ $translateToken($inbox->message_type ?? '-') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Status') }}:</strong> <span class="{{ $valueClass($inbox->status ?? '') }}">{{ $translateToken($inbox->status ?? '-') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Received At') }}:</strong> <span class="detail-value detail-value-ltr">{{ $inbox->created_at?->format('d M, Y H:i A') }}</span></p>
                     @if(is_array($inbox->details))
                     <div class="mb-3">
                         <strong>{{ translate('Details') }}:</strong>
                         <ul class="list-group mt-2">
                             @foreach($inbox->details as $key => $value)
                             @if(!empty($value)) 
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <li class="list-group-item d-flex justify-content-between align-items-center {{ $isRtl ? 'flex-row-reverse text-right' : '' }}">
                                 <span class="fw-bold">{{ translate($key) }}</span>
-                                <span>{{ $value }}</span>
+                                <span class="{{ $valueClass($value) }}">{{ $translateToken($value) }}</span>
                             </li>
                             @endif
                             @endforeach
                         </ul>
                     </div>
                     @else
-                    <p><strong>{{ translate('Details') }}:</strong> {{ $inbox->details ?? '-' }}</p>
+                    <p class="detail-row"><strong>{{ translate('Details') }}:</strong> <span class="{{ $valueClass($inbox->details ?? '') }}">{{ $translateToken($inbox->details ?? '-') }}</span></p>
                     @endif
 
 

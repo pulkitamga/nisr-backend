@@ -16,6 +16,7 @@ use App\Models\StockTransfers;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use App\Exports\BranchStockExport;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Admin\BaseAdminController;
@@ -28,7 +29,7 @@ use Illuminate\Support\Facades\Validator;
 class BranchChartController extends BaseAdminController
 {
 
-    public function index()
+    public function index(?Request $request = null, string $type = null): View
     {
         $branches = Branch::where('status', 'active')->get();
         $agents   = Admin::where('status', 1)->get();

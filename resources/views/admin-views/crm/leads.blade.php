@@ -60,7 +60,7 @@
                     <div class="col-md-12">
                         <label class="d-md-block">&nbsp;</label>
                         <div class="btn--container justify-content-end">
-                            <a href="{{ route('admin.crm.index') }}"
+                            <a href="{{ route('admin.crm.lead.index') }}"
                                 class="btn btn-secondary px-5">
                                 {{ translate('reset') }}
                             </a>
@@ -201,8 +201,8 @@
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-primary convert-btn"
                                     data-lead-id="{{ $msg->id }}"
-                                    data-toggle="modal"
-                                    data-target="#convertLeadModal">
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#convertLeadModal">
                                     🔀 Convert to Deal
                                 </a>
                                 @endif
@@ -223,7 +223,7 @@
                                     data-head-id="{{ $msg->department->head_id ?? '' }}">
                                     {{ translate('Assign Employee') }}
                                 </a>
-                                @if(auth('admin')->id() != 1)
+                                @if((int)auth('admin')->user()?->admin_role_id !== 1)
                                 <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                                 @endif
                                 @endif
@@ -273,7 +273,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateLeadModalLabel">{{ translate('Escalate Lead') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -287,7 +287,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
                     <button type="submit" class="btn btn-warning">{{ translate('Escalate') }}</button>
                 </div>
             </form>
@@ -335,7 +335,6 @@
                     party_type: partyType
                 },
                 success: function(data) {
-                    console.log('AJAX success, results:', data);
                     let resultsContainer = $('#party_search_results');
                     resultsContainer.empty();
 
@@ -373,7 +372,6 @@
 
     $(document).on('click', '.convert-btn', function() {
         let leadId = $(this).data('lead-id');
-        console.log("Lead ID set ho raha hai:", leadId);
         $('#lead_id').val(leadId);
     });
 </script>
@@ -418,13 +416,9 @@
     });
 
 $(document).ready(function() {
-    // Log to confirm script is running
-    console.log('Convert Lead Modal JS Loaded');
-
     // Reset form when party_type changes
     $('#party_type').on('change', function() {
         const type = $(this).val();
-        console.log('Party Type Changed:', type); // Debug: Log party type
 
         // Reset fields
         $('#order-section').hide();
@@ -439,8 +433,6 @@ $(document).ready(function() {
         const selectedText = $(this).text();
         const type = $('#party_type').val();
 
-        console.log('Party Selected:', { id: selectedId, text: selectedText, type: type }); // Debug: Log selection
-
         $('#party_id').val(selectedId);
         $('#party_search_input').val(selectedText);
         $('#party_search_results').hide();
@@ -450,7 +442,6 @@ $(document).ready(function() {
 
         // If party_type is 'contact', show order-section and fetch orders
         if (type === 'contact') {
-            console.log('Fetching orders for contact:', selectedId); // Debug
             $('#order-section').show(); // Show the order section
             $('#order_id').html('<option>{{ translate("Loading...") }}</option>');
 
@@ -459,7 +450,6 @@ $(document).ready(function() {
                 type: "GET",
                 data: { user_id: selectedId },
                 success: function(data) {
-                    console.log('Orders Response:', data); // Debug: Log AJAX response
                     $('#order_id').empty();
 
                     if (data && data.length > 0) {
@@ -476,8 +466,6 @@ $(document).ready(function() {
                     $('#order_id').html('<option value="">{{ translate("Error loading orders") }}</option>');
                 }
             });
-        } else {
-            console.log('Not a contact, hiding order-section'); // Debug
         }
     });
 });

@@ -2,7 +2,7 @@
 <div class="col-sm-6 col-lg-4">
     <a class="business-analytics card py-3" href="#">
         <h5 class="business-analytics__subtitle">{{ translate($label) }}</h5>
-        <h2 class="business-analytics__title" id="count-{{ $label }}">{{ $count }}</h2>
+        <h2 class="business-analytics__title" id="count-{{ \Illuminate\Support\Str::slug($label) }}">{{ $count }}</h2>
 
         {{-- Dynamic Image Based on Label --}}
         @php

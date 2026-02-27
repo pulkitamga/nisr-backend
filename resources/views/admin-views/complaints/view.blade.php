@@ -10,6 +10,10 @@
                 {{translate('complaint_ticket')}}
             </h2>
         </div>
+        @php($ticketEntity = $supportTicket->first())
+        @if($ticketEntity)
+            @include('admin-views.crm.partials.escalation-panel', ['escalations' => $ticketEntity->escalations ?? collect()])
+        @endif
         <div class="card card-chat justify-content-between">
             <div class="card-header flex-wrap gap-3">
                 @foreach($supportTicket as $ticket )

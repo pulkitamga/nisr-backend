@@ -356,7 +356,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
 Route::group(['prefix' => 'wholesaler', 'as' => 'wholesaler.'], function () {
     /* authentication */
     Route::group(['prefix' => 'auth', 'as' => 'auth.'], function () {
-        Route::controller(LoginController::class)->group(function () {
+        Route::controller(WholesalerLoginController::class)->group(function () {
             Route::get(Wholesaler::WHOLESALER_LOGIN[URI], 'getLoginView')->name('login');
         });
 
@@ -410,7 +410,7 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
     Route::group(['prefix' => 'wholesaler', 'as' => 'wholesaler.', 'namespace' => 'Web'], function () {
         Route::controller(WholesaleController::class)->group(function () {
             Route::get('/', 'index')->name('business.add')->middleware('customer');
-            Route::post('save-business', 'SaveBusinessInfo')->name('save-business');
+            Route::post('save-business', 'SaveBusinessInfo')->name('save-business')->middleware('customer');
         });
     });
 
@@ -555,7 +555,7 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
     Route::get('/wholesale/orders', [WholesaleController::class, 'viewWholesaleOrders'])->name('wholesale.viewOrders')->middleware('customer');
 
     Route::post('/web/add', [WholesaleController::class, 'addtowholesalecart'])->name('web.addwholesale')->middleware('customer');
-    Route::post('/wholesaler/auth/login', [CustomerAuthController::class, 'loginSubmit'])->name('wholesaler.auth.with-login')->middleware('customer');
+    Route::post('/wholesaler/auth/login', [WholesalerLoginController::class, 'loginSubmit'])->name('wholesale.auth.login');
 
 
     // routes/web.php
@@ -564,7 +564,7 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
     Route::get('/wholesale-account-quotation/{id}', [WholesaleController::class, 'orderQuotation'])->name('wholesale.account.order.quotation')->middleware('customer');
     Route::get('/wholesale-account-order/{id}', [WholesaleController::class, 'showOrderOne'])->name('wholesale.account.order.detail')->middleware('customer');
     Route::post('/wholesale/order/{id}/approve', [WholesaleController::class, 'approveQuotation'])->name('wholesale.order.approve')->middleware('customer');
-    Route::get('/wholesale/order/{id}/reject', [WholesaleController::class, 'rejectQuotation'])->name('wholesale.order.reject')->middleware('customer');
+    Route::post('/wholesale/order/{id}/reject', [WholesaleController::class, 'rejectQuotation'])->name('wholesale.order.reject')->middleware('customer');
 
 
     Route::get('/get-states', [ShippingAjaxController::class, 'getStates'])->name('get.states');
@@ -598,5 +598,4 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
         Route::get('/blog/{slug}', 'getDetailsView')->name('frontend.blog.details');
     });
 
-    Route::post('wholesale/auth/login', [WholesalerLoginController::class, 'loginSubmit'])->name('wholesale.auth.login');
 });

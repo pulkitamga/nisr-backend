@@ -745,7 +745,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateTicketModalLabel">{{ translate('Escalate Ticket') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -759,7 +759,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
                     <button type="submit" class="btn btn-warning">{{ translate('Escalate') }}</button>
                 </div>
             </form>

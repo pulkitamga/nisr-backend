@@ -1465,7 +1465,7 @@
                                 </ul>
                             </li>
 
-                            @if (auth('admin')->user()->admin_role_id == 1)
+                            @if (auth('admin')->user()->can('rbac.roles.manage') || auth('admin')->user()->can('employee_management.read'))
                                 <li
                                     class="navbar-vertical-aside-has-menu {{ Request::is('admin/employee*') || Request::is('admin/custom-role*') ? 'active' : '' }}">
                                     <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
@@ -1477,36 +1477,40 @@
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
                                         style="display: {{ Request::is('admin/employee*') || Request::is('admin/custom-role*') ? 'block' : 'none' }}">
-                                        <li
-                                            class="navbar-vertical-aside-has-menu {{ Request::is('admin/custom-role/' . Employee::ADD[URI]) ? 'active' : '' }}">
-                                            <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                                href="{{ route('admin.custom-role.create') }}"
-                                                title="{{ translate('employee_Role_Create') }}">
-                                                <span class="tio-circle nav-indicator-icon"></span>
-                                                <span
-                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                                    {{ translate('employee_Role_Create') }}</span>
-                                            </a>
-                                        </li>
-                                        <li
-                                            class="navbar-vertical-aside-has-menu {{ Request::is('admin/custom-role/' . Employee::VIEW[URI]) ? 'active' : '' }}">
-                                            <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                                href="{{ route('admin.custom-role.view-all') }}"
-                                                title="{{ translate('employee_Roles') }}">
-                                                <span class="tio-circle nav-indicator-icon"></span>
-                                                <span
-                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                                    {{ translate('employee_Roles') }}</span>
-                                            </a>
-                                        </li>
-                                        <li
-                                            class="nav-item {{ Request::is('admin/employee/' . Employee::LIST[URI]) || Request::is('admin/employee/' . Employee::ADD[URI]) || Request::is('admin/employee/' . Employee::UPDATE[URI] . '*') ? 'active' : '' }}">
-                                            <a class="nav-link" href="{{ route('admin.employee.list') }}"
-                                                title="{{ translate('employees') }}">
-                                                <span class="tio-circle nav-indicator-icon"></span>
-                                                <span class="text-truncate">{{ translate('employees') }}</span>
-                                            </a>
-                                        </li>
+                                        @if (auth('admin')->user()->can('rbac.roles.manage'))
+                                            <li
+                                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/custom-role/' . Employee::ADD[URI]) ? 'active' : '' }}">
+                                                <a class="js-navbar-vertical-aside-menu-link nav-link"
+                                                    href="{{ route('admin.custom-role.create') }}"
+                                                    title="{{ translate('employee_Role_Create') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span
+                                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                                        {{ translate('employee_Role_Create') }}</span>
+                                                </a>
+                                            </li>
+                                            <li
+                                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/custom-role/' . Employee::VIEW[URI]) ? 'active' : '' }}">
+                                                <a class="js-navbar-vertical-aside-menu-link nav-link"
+                                                    href="{{ route('admin.custom-role.view-all') }}"
+                                                    title="{{ translate('employee_Roles') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span
+                                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                                        {{ translate('employee_Roles') }}</span>
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if (auth('admin')->user()->can('employee_management.read'))
+                                            <li
+                                                class="nav-item {{ Request::is('admin/employee/' . Employee::LIST[URI]) || Request::is('admin/employee/' . Employee::ADD[URI]) || Request::is('admin/employee/' . Employee::UPDATE[URI] . '*') ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.employee.list') }}"
+                                                    title="{{ translate('employees') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span class="text-truncate">{{ translate('employees') }}</span>
+                                                </a>
+                                            </li>
+                                        @endif
                                     </ul>
                                 </li>
                             @endif
@@ -1822,7 +1826,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('repair_pending') }}
                                                 <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'repair-pending')->count() }}
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'repair_pending')->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1894,7 +1898,7 @@
                                     </span>
                                 </a>
                             </li>
-                            @if (Helpers::module_permission_check('crm_section,sla_list'))
+                            @if (Helpers::module_permission_check('crm_section', 'sla_list'))
                                 <li
                                     class="navbar-vertical-aside-has-menu  {{ Request::is('admin/sla*') ? 'active' : '' }}">
                                     <a class="nav-link" title="{{ translate('sla_configration') }}"

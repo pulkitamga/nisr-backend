@@ -39,6 +39,7 @@ use App\Models\SerialTransferHistory;
 use App\Models\WholesaleConfirmOrder;
 use App\Models\WholesaleOrderDelivery;
 use App\Models\WholesalePurchaseOrder;
+use App\Models\WholesaleOrderPayment;
 use illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\Models\Activity;
 use App\Http\Controllers\BaseController;
@@ -405,20 +406,27 @@ class WholeSalerController extends BaseController
     {
         $validated = $request->validate([
             'id' => 'required|exists:users,id',
-            'tier' => 'required|string',
-            'wholesaler_discount' => 'required|numeric|min:0',
+            'action' => 'required|in:approve,reject',
         ]);
+
         $wholesaler = User::findOrFail($validated['id']);
-        if ($request->action == 'approve') {
-            $tier = WholesaleTier::where('name', $validated['tier'])->where('is_active', 1)->first();
+        if ($validated['action'] === 'approve') {
+            $approveValidated = $request->validate([
+                'tier' => 'required|string',
+                'wholesaler_discount' => 'required|numeric|min:0',
+            ]);
+
+            $tier = WholesaleTier::where('name', $approveValidated['tier'])->where('is_active', 1)->first();
 
             if (!$tier) {
                 return redirect()->back()->with('error', 'Selected tier is not valid or inactive.');
             }
+
             $wholesaler->update([
+                'user_type' => 1,
                 'wholesaler_status' => 1,
                 'tier' => $tier->name,
-                'wholesaler_discount' => $validated['wholesaler_discount'],
+                'wholesaler_discount' => $approveValidated['wholesaler_discount'],
             ]);
 
             $title   = "Business Account Approved";
@@ -426,12 +434,12 @@ class WholeSalerController extends BaseController
             $link    = route('home');
 
             $recipients = [
-                ['type' => 'customer', 'id' => $request->id],
+                ['type' => 'customer', 'id' => $validated['id']],
             ];
 
             $this->notificationRepo->notifyRecipients(
-                $request->id,
-                \App\Models\SupportTicket::class,
+                $validated['id'],
+                User::class,
                 $title,
                 $message,
                 $link,
@@ -439,20 +447,24 @@ class WholeSalerController extends BaseController
             );
 
             return redirect()->back()->with('success', 'Business approved successfully');
-        } elseif ($request->action == 'reject') {
+        } elseif ($validated['action'] === 'reject') {
             $wholesaler->update([
                 'user_type' => 0,
+                'wholesaler_status' => 0,
+                'tier' => null,
+                'wholesaler_discount' => 0,
+                'moq_override_enabled' => 0,
             ]);
             $title   = "Business Account is rejected";
             $message = "Your Business Account is rejected by admin";
             $link    = route('home');
 
             $recipients = [
-                ['type' => 'customer', 'id' => $request->id],
+                ['type' => 'customer', 'id' => $validated['id']],
             ];
 
             $this->notificationRepo->notifyRecipients(
-                $request->id,
+                $validated['id'],
                 User::class,
                 $title,
                 $message,
@@ -791,7 +803,7 @@ class WholeSalerController extends BaseController
         $link    = route('home');
 
         $recipients = [
-            ['type' => 'customer', 'id' => $request->wholeseller_id],
+            ['type' => 'customer', 'id' => $request->wholesaler_id],
         ];
 
         $this->notificationRepo->notifyRecipients(
@@ -1359,32 +1371,56 @@ class WholeSalerController extends BaseController
             'order_id' => 'required|exists:wholesale_confirm_orders,id',
             'reference' => 'required|string',
             'amount' => 'required|numeric|min:0.01',
-            'remaining' => 'required|numeric|min:0',
             'method' => 'required|string',
             'note' => 'nullable|string',
             'date' => 'required|date',
         ]);
 
-        $order = WholesaleConfirmOrder::findOrFail($request->order_id);
+        $incomingAmount = (float)$request->amount;
+        try {
+            DB::transaction(function () use ($request, $incomingAmount) {
+                $order = WholesaleConfirmOrder::query()
+                    ->where('id', $request->order_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-        $order->payments()->create([
-            'order_id' =>  $order->order_id,
-            'wholesale_confirm_order_id' =>  $request->order_id,
-            'reference' => $request->reference,
-            'amount' => $request->amount,
-            'payment_through' => $request->method,
-            'notes' => $request->note,
-            'remaining_amount' => $request->remaining,
-            'date' => $request->date,
-        ]);
+                $paidAmount = (float)WholesaleOrderPayment::query()
+                    ->where('wholesale_confirm_order_id', $order->id)
+                    ->lockForUpdate()
+                    ->sum('amount');
+                $currentRemaining = max(0, (float)$order->final_price - $paidAmount);
 
-        if ($request->remaining == 0) {
-            $order->payment_status = 'paid';
-        } else {
-            $order->payment_status = 'partials';
+                if ($incomingAmount > $currentRemaining + 0.00001) {
+                    throw new \RuntimeException(translate('Payment amount exceeds remaining balance.'));
+                }
+
+                $newRemaining = max(0, $currentRemaining - $incomingAmount);
+
+                $order->payments()->create([
+                    'order_id' =>  $order->order_id,
+                    'wholesale_confirm_order_id' =>  $order->id,
+                    'reference' => $request->reference,
+                    'amount' => $incomingAmount,
+                    'payment_through' => $request->method,
+                    'notes' => $request->note,
+                    'remaining_amount' => $newRemaining,
+                    'date' => $request->date,
+                ]);
+
+                $order->payment_status = $newRemaining <= 0 ? 'paid' : 'partials';
+                $order->save();
+            });
+        } catch (\RuntimeException $exception) {
+            Toastr::error($exception->getMessage());
+            return back()->withInput();
+        } catch (\Throwable $exception) {
+            Log::error('Failed to store wholesale payment', [
+                'order_id' => $request->order_id,
+                'error' => $exception->getMessage(),
+            ]);
+            Toastr::error(translate('Unable to save payment.'));
+            return back()->withInput();
         }
-
-        $order->save();
 
         Toastr::success(translate('Payment_Added_Successfully'));
 
@@ -1536,7 +1572,7 @@ class WholeSalerController extends BaseController
         return response()->json(['stock' => $stock ? $stock->current_stock : 0]);
     }
 
-   public function deliveryStore(Request $request)
+    public function deliveryStore(Request $request)
     {
         Log::info("📥 DELIVERY REQUEST", ['request' => $request->all()]);
 
@@ -1554,12 +1590,40 @@ class WholeSalerController extends BaseController
         $product = Product::findOrFail($request->product_id);
         $variationRequested = $request->filled('variation_type') ? trim($request->variation_type) : null;
         $qtyToSend = (int) $request->quantity_sent;
+        $serialCsvPath = null;
+        $serials = [];
+
+        if ((int)$product->is_warranty === 1) {
+            if (!$request->hasFile('serial_csv')) {
+                Toastr::error(translate('Serial CSV is required for warranty products.'));
+                return redirect()->back()->withInput();
+            }
+
+            $errors = [];
+            $serials = $this->parseCsvSerials($request->file('serial_csv'), $errors);
+            if (count($serials) !== $qtyToSend) {
+                $errors[] = "CSV must contain exactly {$qtyToSend} serials.";
+            }
+
+            if (!empty($errors)) {
+                $csvName = $this->generateErrorCsv($errors);
+                session()->forget('error_csv');
+                session()->flash('error_csv', $csvName);
+                session()->flash('error_count', count($errors));
+                Toastr::error('Serial validation failed. Download error report.');
+                return redirect()->back()->withInput();
+            }
+
+            $serialCsvPath = $request->file('serial_csv')->store('wholesale_delivery_csv', 'public');
+        } elseif ($request->hasFile('serial_csv')) {
+            $serialCsvPath = $request->file('serial_csv')->store('wholesale_delivery_csv', 'public');
+        }
 
         DB::beginTransaction();
         try {
-            // 1️⃣ Find confirm order item
             $confirmItemQuery = WholesaleConfirmOrderItem::where('confirmed_order_id', $request->confirmed_order_id)
-                ->where('product_id', $request->product_id);
+                ->where('product_id', $request->product_id)
+                ->lockForUpdate();
 
             $confirmItem = $variationRequested
                 ? $confirmItemQuery->get()->first(function ($item) use ($variationRequested) {
@@ -1574,11 +1638,45 @@ class WholeSalerController extends BaseController
             $confirmOrder = $confirmItem->confirmOrder;
 
             if ($confirmOrder->delivery_status === 'delivered') {
-                Toastr::error('This order is already fully delivered.');
-                return redirect()->back();
+                throw new \RuntimeException('This order is already fully delivered.');
             }
 
-            // 2️⃣ Centralized inventory mutation (branch + product stock + variation + ledger + transaction log)
+            if ($qtyToSend > (int)$confirmItem->remaining) {
+                throw new \RuntimeException('Quantity exceeds remaining quantity for this order item.');
+            }
+
+            if ((int)$product->is_warranty === 1 && !empty($serials)) {
+                $warranties = Warranty::query()
+                    ->whereIn('serial_number', $serials)
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('serial_number');
+
+                $serialErrors = [];
+                foreach ($serials as $serial) {
+                    $warranty = $warranties->get($serial);
+                    if (!$warranty) {
+                        $serialErrors[] = "Serial {$serial} not found in system.";
+                        continue;
+                    }
+                    if (!empty($warranty->distributor_id)) {
+                        $serialErrors[] = "Serial {$serial} is already delivered to a wholesaler.";
+                        continue;
+                    }
+                    if (!empty($warranty->branch_id) && (int)$warranty->branch_id !== (int)$request->branch_id) {
+                        $serialErrors[] = "Serial {$serial} does not belong to selected branch.";
+                    }
+                }
+
+                if (!empty($serialErrors)) {
+                    $csvName = $this->generateErrorCsv($serialErrors);
+                    session()->forget('error_csv');
+                    session()->flash('error_csv', $csvName);
+                    session()->flash('error_count', count($serialErrors));
+                    throw new \RuntimeException('Serial validation failed. Download error report.');
+                }
+            }
+
             $stockMutation = $this->inventoryMutationService->decreaseForPosLine(
                 productId: (int)$request->product_id,
                 qty: $qtyToSend,
@@ -1591,17 +1689,13 @@ class WholeSalerController extends BaseController
             );
 
             if (!($stockMutation['status'] ?? false)) {
-                DB::rollBack();
-                Toastr::error($stockMutation['message'] ?? 'Not enough stock in selected branch.');
-                return redirect()->back()->withInput();
+                throw new \RuntimeException($stockMutation['message'] ?? 'Not enough stock in selected branch.');
             }
 
             $resolvedBranchId = isset($stockMutation['branchId']) && (int)$stockMutation['branchId'] > 0
                 ? (int)$stockMutation['branchId']
                 : (int)$request->branch_id;
 
-
-            // 6️⃣ Create delivery record
             $delivery = WholesaleOrderDelivery::create([
                 'order_id' => $confirmOrder->order_id,
                 'confirmed_order_id' => $confirmOrder->id,
@@ -1609,19 +1703,52 @@ class WholeSalerController extends BaseController
                 'branch_id' => $resolvedBranchId,
                 'quantity_sent' => $qtyToSend,
                 'product_variation_type' => $variationRequested,
+                'serial_csv_path' => $serialCsvPath,
                 'note' => $request->note,
                 'delivery_date' => now(),
             ]);
 
-            // 7️⃣ Update confirm item
+            if ((int)$product->is_warranty === 1 && !empty($serials)) {
+                Warranty::query()
+                    ->whereIn('serial_number', $serials)
+                    ->update([
+                        'distributor_id' => $confirmOrder->wholesaler_id,
+                        'branch_id' => null,
+                    ]);
+
+                $historyRows = array_map(function ($serial) use ($delivery, $request, $confirmOrder) {
+                    return [
+                        'wholesale_delivery_id' => $delivery->id,
+                        'serial_number' => $serial,
+                        'from_branch_id' => $request->branch_id,
+                        'to_branch_id' => null,
+                        'distributor_id' => $confirmOrder->wholesaler_id,
+                        'transfer_type' => 'branch_to_wholesale',
+                        'transferred_at' => now(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }, $serials);
+                SerialTransferHistory::insert($historyRows);
+            }
+
             $confirmItem->update([
                 'quantity_sent' => $confirmItem->quantity_sent + $qtyToSend,
                 'remaining' => max(0, $confirmItem->remaining - $qtyToSend),
             ]);
 
-            // 8️⃣ Update delivery status
-            $newStatus = $request->delivery_status === 'delivered' ? 'delivered' : 'partials';
+            $hasRemaining = WholesaleConfirmOrderItem::query()
+                ->where('confirmed_order_id', $confirmOrder->id)
+                ->where('remaining', '>', 0)
+                ->exists();
+            $newStatus = $hasRemaining ? 'partials' : 'delivered';
             $confirmOrder->update(['delivery_status' => $newStatus]);
+
+            if (!empty($confirmOrder->purchase_order_no)) {
+                WholesalePurchaseOrder::query()
+                    ->where('purchase_order_no', $confirmOrder->purchase_order_no)
+                    ->update(['status' => $newStatus]);
+            }
 
             DB::commit();
 

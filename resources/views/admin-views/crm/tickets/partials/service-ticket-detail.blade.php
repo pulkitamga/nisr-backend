@@ -20,7 +20,7 @@
     <div class="row">
         <div class="row col-12 d-flex align-items-stretch mb-4">
             <div class="col-lg-6 col-md-12">
-                <div class="card mb-4 shadow-sm h-100 detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+                <div class="card mb-4 shadow-sm h-100 detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">{{ translate('Customer Details') }}</h5>
                     </div>
@@ -44,7 +44,7 @@
 
             <!-- Service Details Card -->
             <div class="col-lg-6 col-md-12">
-                <div class="card mb-4 shadow-sm h-100 detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+                <div class="card mb-4 shadow-sm h-100 detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">{{ translate('Service Details') }}</h5>
                     </div>
@@ -71,6 +71,11 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-12">
+            @include('admin-views.crm.partials.escalation-panel', ['escalations' => $supportTicket->escalations ?? collect()])
+        </div>
+
         <!-- Related Actions Card -->
         <div class="col-md-12">
             <div class="card shadow-sm">

@@ -727,8 +727,10 @@ $(".delete-data").on("click", function () {
 });
 
 function deleteDataWithoutForm() {
-    $(".delete-data-without-form").on("click", function () {
+    $(document).on("click", ".delete-data-without-form", function (event) {
+        event.preventDefault();
         let getText = $("#get-confirm-and-cancel-button-text-for-delete");
+        const triggerElement = $(this);
         Swal.fire({
             title: getText.data("sure"),
             text: getText.data("text"),
@@ -748,13 +750,18 @@ function deleteDataWithoutForm() {
                         ),
                     },
                 });
-                let id = $(this).data("id");
+                let id = triggerElement.data("id");
                 $.ajax({
-                    url: $(this).data("action"),
+                    url: triggerElement.data("action"),
                     method: "POST",
+                    dataType: "json",
                     data: { id: id },
                     success: function (data) {
-                        if ($(this).data("from") === "currency") {
+                        const isSuccess =
+                            parseInt(data.success, 10) === 1 ||
+                            parseInt(data.status, 10) === 1;
+
+                        if (triggerElement.data("from") === "currency") {
                             if (parseInt(data.status) === 1) {
                                 toastr.success(
                                     $("#get-delete-currency-message").data(
@@ -768,12 +775,25 @@ function deleteDataWithoutForm() {
                                     )
                                 );
                             }
+                        } else if (!isSuccess) {
+                            toastr.warning(
+                                data.message ||
+                                    $("#get-please-check-required-fields-message").data("text")
+                            );
                         } else {
                             toastr.success(
-                                $("#get-deleted-message").data("text")
+                                data.message || $("#get-deleted-message").data("text")
                             );
+                            location.reload();
                         }
-                        location.reload();
+                    },
+                    error: function (xhr) {
+                        const response = xhr.responseJSON || {};
+                        toastr.warning(
+                            response.message ||
+                                $("#get-please-check-required-fields-message").data("text") ||
+                                "Request failed."
+                        );
                     },
                 });
             }

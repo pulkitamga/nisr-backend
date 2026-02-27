@@ -11,14 +11,18 @@ class RMAService
 {
     public static function issueRMA(WarrantyClaim $claim)
     {
+        $warranty = $claim->warranty;
+        $fallbackBranchId = $warranty?->branch_id ?: Branch::query()->value('id');
+        $resolvedBranchId = $claim->branch_id ?: $fallbackBranchId;
+
         $claim->update([
             'status' => 'rma_issued',
             'rma_number' => 'RMA-' . Str::upper(Str::random(8)),
             'rma_deadline' => now()->addDays(14),
+            'branch_id' => $resolvedBranchId,
         ]);
 
         $instructions = self::generateInstructions($claim);
-        $warranty = $claim->warranty;
         $user = $warranty?->user;
 
         if ($user) {

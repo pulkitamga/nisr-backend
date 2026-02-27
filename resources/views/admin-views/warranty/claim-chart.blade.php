@@ -228,11 +228,11 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2 mb-3">
-                <a href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
+                <a id="exportExcelBtn" href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
                     class="btn btn-success">
                     <i class="tio-file-excel"></i> {{ translate('export_excel') }}
                 </a>
-                <a href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
+                <a id="exportPdfBtn" href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
                     class="btn btn-danger">
                     <i class="tio-file-pdf"></i> {{ translate('export_pdf') }}
                 </a>
@@ -348,10 +348,6 @@
                 <div class="px-4 py-3 d-flex justify-content-end" id="paginationLinks">
                     {{ $claims->appends(request()->query())->links() }}
                 </div>
-            
-            <div class="px-4 py-3 d-flex justify-content-end" id="paginationLinks">
-                {{ $claims->appends(request()->query())->links() }}
-            </div>
         </div>
     </div>
 @endsection
@@ -449,8 +445,8 @@
             let excelUrl = '{{ route('admin.warranty.claim.export.excel') }}?' + params;
             let pdfUrl = '{{ route('admin.warranty.claim.export.pdf') }}?' + params;
 
-            $('.btn-success').attr('href', excelUrl);
-            $('.btn-danger').attr('href', pdfUrl);
+            $('#exportExcelBtn').attr('href', excelUrl);
+            $('#exportPdfBtn').attr('href', pdfUrl);
         }
 
 
@@ -510,7 +506,7 @@
             if (data.data.length === 0) {
                 tbody.html(`
         <tr>
-            <td colspan="9" class="text-center py-5">
+            <td colspan="13" class="text-center py-5">
                 <img src="{{ dynamicAsset('public/assets/back-end/img/empty.png') }}" width="100">
                 <p class="mt-3">{{ translate('no_record_found') }}</p>
             </td>
@@ -536,9 +532,13 @@
             <td>${sl + index}</td>
             <td>${claim.claim_number}</td>
             <td>${claim.serial_number}</td>
+            <td>${claim.product_name}</td>
+            <td>${claim.warranty_months}</td>
+            <td>${claim.warranty_end_date}</td>
+            <td>${claim.remaining}</td>
             <td><span class="badge ${badgeClass}">${claim.status.replace(/_/g,' ')}</span></td>
             <td>${claim.customer}</td>
-            <td>${claim.product_name}</td>
+            <td>${claim.branch_name}</td>
             <td>${claim.submitted_at}</td>
             <td>${claim.resolution_due}</td>
             <td class="text-center">

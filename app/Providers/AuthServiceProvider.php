@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Warranty;
+use App\Policies\WarrantyPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -12,7 +15,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-         // 'App\Model' => 'App\Policies\ModelPolicy',
+        Warranty::class => WarrantyPolicy::class,
     ];
 
     /**
@@ -23,5 +26,13 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+
+        Gate::before(function ($user, string $ability) {
+            if ($user instanceof \App\Models\Admin && $user->isSuperAdmin()) {
+                return true;
+            }
+
+            return null;
+        });
     }
 }

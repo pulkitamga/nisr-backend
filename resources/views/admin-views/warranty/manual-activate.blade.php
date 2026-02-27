@@ -12,7 +12,7 @@
                 @csrf
                 <div class="form-group">
                     <label>{{translate('serial_number')}}</label>
-                    <input type="text" name="serial_number" class="form-control" required>
+                    <input type="text" name="serial_number" value="{{ old('serial_number', $prefillSerial ?? '') }}" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label>{{translate('purchase_date')}}</label>

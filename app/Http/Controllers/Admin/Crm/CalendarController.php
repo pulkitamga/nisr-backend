@@ -13,17 +13,10 @@ use App\Models\Deal;
 use App\Models\CalendarTodo;
 use App\Models\InboxTask;
 use App\Models\InboxCall;
-use App\Models\InboxNote;
-use App\Models\InboxActivities;
 use App\Models\LeadTask;
 use App\Models\LeadCall;
-use App\Models\LeadNote;
-use App\Models\LeadActivity;
 use App\Models\DealTask;
 use App\Models\DealCall;
-use App\Models\DealNote;
-use App\Models\DealActivity;
-use illuminate\Support\Facades\Log;
 use App\Models\Departments;
 
 class CalendarController extends Controller
@@ -44,7 +37,7 @@ class CalendarController extends Controller
         // Department employees
         $employeeIds = [];
         $departmentId = null;
-        if ($user->id != 1) {
+        if (!$this->isSuperAdmin($user)) {
             $department = Departments::where('head_id', $userId)->first();
 
             if ($department) {
@@ -59,11 +52,11 @@ class CalendarController extends Controller
         // Inbox
         $events = array_merge($events, $this->fetchEvents(
             InboxMessage::class,
-            [InboxTask::class, InboxCall::class, InboxNote::class, InboxActivities::class],
-            ['Inbox Task', 'Inbox Call', 'Inbox Note', 'Inbox Activity'],
-            ['due_date', 'from', 'noted_at', 'note_date'],
-            ['name', 'title', 'note', 'title'],
-            ['admin.crm.massage.show', 'admin.crm.massage.show', 'admin.crm.massage.show', 'admin.crm.massage.show'],
+            [InboxTask::class, InboxCall::class],
+            ['Inbox Task', 'Inbox Call'],
+            ['due_date', 'from'],
+            ['name', 'title'],
+            ['admin.crm.massage.show', 'admin.crm.massage.show'],
             $userId,
             $employeeIds,
             false,
@@ -75,11 +68,11 @@ class CalendarController extends Controller
         // Lead
         $events = array_merge($events, $this->fetchEvents(
             Lead::class,
-            [LeadTask::class, LeadCall::class, LeadNote::class, LeadActivity::class],
-            ['Lead Task', 'Lead Call', 'Lead Note', 'Lead Activity'],
-            ['due_date', 'from', 'noted_at', 'note_date'],
-            ['name', 'title', 'note', 'title'],
-            ['admin.crm.lead.show', 'admin.crm.lead.show', 'admin.crm.lead.show', 'admin.crm.lead.show'],
+            [LeadTask::class, LeadCall::class],
+            ['Lead Task', 'Lead Call'],
+            ['due_date', 'from'],
+            ['name', 'title'],
+            ['admin.crm.lead.show', 'admin.crm.lead.show'],
             $userId,
             $employeeIds,
             false,
@@ -89,11 +82,11 @@ class CalendarController extends Controller
         ));
         $events = array_merge($events, $this->fetchEvents(
             Deal::class,
-            [DealTask::class, DealCall::class, DealNote::class, DealActivity::class],
-            ['Deal Task', 'Deal Call', 'Deal Note', 'Deal Activity'],
-            ['due_date', 'from', 'noted_at', 'note_date'],
-            ['name', 'title', 'note', 'title'],
-            ['admin.crm.deals.retail.view', 'admin.crm.deals.retail.view', 'admin.crm.deals.retail.view', 'admin.crm.deals.retail.view'], // default retail
+            [DealTask::class, DealCall::class],
+            ['Deal Task', 'Deal Call'],
+            ['due_date', 'from'],
+            ['name', 'title'],
+            ['admin.crm.deals.retail.view', 'admin.crm.deals.retail.view'], // default retail
             $userId,
             $employeeIds,
             true,
@@ -104,7 +97,7 @@ class CalendarController extends Controller
 
         $todos = CalendarTodo::where(function ($q) use ($user) {
             $q->where('employee_id', $user->id);
-            if ($user->id == 1) {
+            if ($this->isSuperAdmin($user)) {
                 $q->orWhereNotNull('employee_id');
             }
         })->get();
@@ -123,10 +116,28 @@ class CalendarController extends Controller
 
     private function fetchEvents($mainModel, $subModels, $prefixes, $dateFields, $titleFields, $routeNames, $userId, $employeeIds = [], $isDeal = false, $start = null, $end = null, $departmentId = null)
     {
-        if ($userId == 1) {
-            $mainItems = $mainModel::all();
-        } else {
-            $mainItems = $mainModel::where(function ($q) use ($userId, $employeeIds, $departmentId) {
+        $relationMeta = [];
+        foreach ($subModels as $i => $subModel) {
+            $relation = $this->getRelationName($subModel);
+            if (!$relation) {
+                continue;
+            }
+            $relationMeta[] = [
+                'relation' => $relation,
+                'prefix' => $prefixes[$i],
+                'dateField' => $dateFields[$i],
+                'titleField' => $titleFields[$i],
+                'routeName' => $routeNames[$i],
+            ];
+        }
+
+        if (empty($relationMeta)) {
+            return [];
+        }
+
+        $mainQuery = $mainModel::query();
+        if (!$this->isSuperAdmin(Auth::guard('admin')->user())) {
+            $mainQuery->where(function ($q) use ($userId, $employeeIds, $departmentId) {
                 $q->where('employee_id', $userId)
                     ->orWhere('owner_id', $userId);
 
@@ -137,31 +148,50 @@ class CalendarController extends Controller
                 if (!empty($employeeIds)) {
                     $q->orWhereIn('employee_id', $employeeIds);
                 }
-            })->get();
+            });
         }
+
+        if ($start && $end) {
+            $from = $start . ' 00:00:00';
+            $to = $end . ' 23:59:59';
+
+            $mainQuery->where(function ($q) use ($relationMeta, $from, $to) {
+                foreach ($relationMeta as $idx => $meta) {
+                    $method = $idx === 0 ? 'whereHas' : 'orWhereHas';
+                    $q->{$method}($meta['relation'], function ($subQ) use ($meta, $from, $to) {
+                        $subQ->whereBetween($meta['dateField'], [$from, $to]);
+                    });
+                }
+            });
+        }
+
+        $with = [];
+        foreach ($relationMeta as $meta) {
+            $with[$meta['relation']] = function ($subQ) use ($meta, $start, $end) {
+                if ($start && $end) {
+                    $subQ->whereBetween(
+                        $meta['dateField'],
+                        [$start . ' 00:00:00', $end . ' 23:59:59']
+                    );
+                }
+                $subQ->with('employee');
+            };
+        }
+        $mainItems = $mainQuery->with($with)->get();
 
         $events = [];
         foreach ($mainItems as $main) {
-            foreach ($subModels as $i => $subModel) {
-                $dateField = $dateFields[$i];
-                $titleField = $titleFields[$i];
-                $fk = $this->getForeignKey($main, $subModel);
-
-                if (!$fk) continue;
-
-                $subQuery = $subModel::where($fk, $main->id);
-                if ($start && $end) {
-                    $subQuery->whereBetween($dateField, [$start . ' 00:00:00', $end . ' 23:59:59']);
-                }
-                $subItems = $subQuery->get();
+            foreach ($relationMeta as $meta) {
+                $subItems = $main->{$meta['relation']} ?? collect();
 
                 foreach ($subItems as $item) {
+                    $dateField = $meta['dateField'];
                     if (empty($item->{$dateField})) {
                         continue;
                     }
 
-                    $prefix = $prefixes[$i];
-                    $routeName = $routeNames[$i];
+                    $prefix = $meta['prefix'];
+                    $routeName = $meta['routeName'];
 
                     if ($isDeal && $main->deal_type) {
                         $typePrefix = $main->deal_type === 'wholesale' ? 'WS' : 'RT';
@@ -174,11 +204,11 @@ class CalendarController extends Controller
                     }
 
                     $events[] = [
-                        'title' => $prefix . ': ' . Str::limit($item->{$titleField}, 40),
+                        'title' => $prefix . ': ' . Str::limit((string)($item->{$meta['titleField']} ?? ''), 40),
                         'start' => $item->{$dateField} ? Carbon::parse($item->{$dateField})->toIso8601String() : null,
-                        'color' => $this->getColor($prefixes[$i], $main->deal_type ?? null),
+                        'color' => $this->getColor($meta['prefix']),
                         'url' => route($routeName, $main->id),
-                        'description' => $item->{$titleField},
+                        'description' => (string)($item->{$meta['titleField']} ?? ''),
                         'employee' => $item->employee->name ?? null,
                         'type' => $prefix,
                         'deal_type' => $main->deal_type ?? 'retail',
@@ -190,23 +220,17 @@ class CalendarController extends Controller
     }
 
 
-    private function getForeignKey($mainModel, $subModel)
+    private function getRelationName($subModel)
     {
         $mapping = [
-            InboxTask::class => 'massage_id',
-            InboxCall::class => 'massage_id',
-            InboxNote::class => 'massage_id',
-            InboxActivities::class => 'massage_id',
+            InboxTask::class => 'tasks',
+            InboxCall::class => 'calls',
 
-            LeadTask::class => 'lead_id',
-            LeadCall::class => 'lead_id',
-            LeadNote::class => 'lead_id',
-            LeadActivity::class => 'lead_id',
+            LeadTask::class => 'tasks',
+            LeadCall::class => 'calls',
 
-            DealTask::class => 'deal_id',
-            DealCall::class => 'deal_id',
-            DealNote::class => 'deal_id',
-            DealActivity::class => 'deal_id',
+            DealTask::class => 'tasks',
+            DealCall::class => 'calls',
         ];
         return $mapping[$subModel] ?? null;
     }
@@ -215,16 +239,10 @@ class CalendarController extends Controller
         $colors = [
             'Inbox Task' => 'blue',
             'Inbox Call' => 'green',
-            'Inbox Note' => 'purple',
-            'Inbox Activity' => 'orange',
             'Lead Task' => 'blue',
             'Lead Call' => 'green',
-            'Lead Note' => 'purple',
-            'Lead Activity' => 'orange',
             'Deal Task' => 'blue',
             'Deal Call' => 'green',
-            'Deal Note' => 'purple',
-            'Deal Activity' => 'orange',
         ];
 
         return $colors[$prefix] ?? 'gray';
@@ -247,5 +265,10 @@ class CalendarController extends Controller
             'status' => 'success',
             'message' => 'To-do added successfully!'
         ]);
+    }
+
+    private function isSuperAdmin($admin): bool
+    {
+        return (int)($admin?->admin_role_id ?? 0) === 1;
     }
 }

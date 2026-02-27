@@ -203,6 +203,10 @@
     const rejectUrl = @json(route('wholesale.order.reject', ['id' => $order -> id]));
 </script>
 
+<form id="rejectQuotationForm" action="{{ route('wholesale.order.reject', ['id' => $order->id]) }}" method="POST" class="d-none">
+    @csrf
+</form>
+
 
 @endsection
 
@@ -226,7 +230,7 @@
                 confirmButtonText: `Yes, Reject it!`
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = url;
+                    document.getElementById('rejectQuotationForm').submit();
                 }
             });
         }

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -14,6 +13,10 @@ class ExampleTest extends TestCase
      */
     public function testBasicTest()
     {
+        if (!in_array('sqlite', \PDO::getAvailableDrivers(), true)) {
+            $this->markTestSkipped('pdo_sqlite extension is not available in this environment.');
+        }
+
         $response = $this->get('/');
 
         $response->assertStatus(200);

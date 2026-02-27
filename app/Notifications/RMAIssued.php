@@ -23,6 +23,6 @@ class RMAIssued extends Notification
             ->subject(translate('RMA Issued'))
             ->line(translate('Your RMA') . $this->claim->rma_number)
             ->line($this->instructions)
-            ->action(translate('View Claim'), route('claim.view', $this->claim->id));
+            ->action(translate('View Claim'), route('warranty.track.page'));
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Support\AdminPermissionRegistry;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class AdminUpdateRequest extends FormRequest
@@ -16,9 +18,15 @@ class AdminUpdateRequest extends FormRequest
 
     public function rules(): array
     {
+        $roleRule = Rule::exists('roles', 'id')
+            ->where(fn($query) => $query->where('guard_name', AdminPermissionRegistry::guard()));
+        if (Schema::hasColumn('roles', 'status')) {
+            $roleRule = $roleRule->where(fn($query) => $query->where('status', 1));
+        }
+
         $rules = [
             'name' => 'required',
-            'role_id' => 'required',
+            'role_id' => ['required', $roleRule],
             'email' => [
                 'required',
                 'email',

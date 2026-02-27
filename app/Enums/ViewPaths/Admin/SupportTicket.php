@@ -50,6 +50,10 @@ enum SupportTicket
         URI => 'status',
         VIEW => ''
     ];
+    const PRIORITY = [
+        URI => 'priority',
+        VIEW => ''
+    ];
     const ESCLATE_RETAIL = [
         URI => 'esclate/retail',
         VIEW => ''

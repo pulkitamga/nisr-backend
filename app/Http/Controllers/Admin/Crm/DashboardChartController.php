@@ -50,7 +50,8 @@ class DashboardChartController extends Controller
             ->when($departmentId, function ($q) use ($departmentId) {
                 return $q->where('department_id', $departmentId);
             })
-              ->when($pipeline, fn($q) => $q->where('pipeline', $pipeline))
+            ->when($pipeline, fn($q) => $q->where('pipeline', $pipeline))
+            ->groupBy('status')
             ->get()
             ->pluck('count', 'status')
             ->toArray();
@@ -75,10 +76,10 @@ class DashboardChartController extends Controller
         )
             ->leftJoin('departments', 'admins.department_id', '=', 'departments.id')
             ->leftJoin('inbox_messages', function ($join) use ($startDate, $endDate) {
-                $join->on('admins.id', '=', 'inbox_messages.department_id')
+                $join->on('admins.id', '=', 'inbox_messages.employee_id')
                     ->whereBetween('inbox_messages.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
             })
-            ->where('admins.role_id', '!=', 1)
+            ->where('admins.admin_role_id', '!=', 1)
             ->groupBy('admins.id', 'admins.name', 'departments.name')
             ->get();
 
@@ -323,8 +324,8 @@ class DashboardChartController extends Controller
                 })->count(),
         ];
 
-        $employeeCount = Admin::where('role_id', '!=', 1)->count();
-        $activeEmployees = Admin::where('role_id', '!=', 1)
+        $employeeCount = Admin::where('admin_role_id', '!=', 1)->count();
+        $activeEmployees = Admin::where('admin_role_id', '!=', 1)
             ->where('status', 1)
             ->count();
 
@@ -416,18 +417,25 @@ private function baseMessageQuery(Request $request)
 
 public function exportExcel(Request $request)
 {
+    $groupBy = $request->input('group_by', 'daily');
+    $periodExpr = match ($groupBy) {
+        'weekly' => 'DATE_FORMAT(created_at, "%x-W%v")',
+        'monthly' => 'DATE_FORMAT(created_at, "%Y-%m")',
+        default => 'DATE(created_at)',
+    };
+
     $data = $this->baseMessageQuery($request)
-        ->selectRaw('
-            $groupFormat as period,
+        ->selectRaw("
+            {$periodExpr} as period,
             COUNT(*) as total,
             SUM(department_id IS NOT NULL AND department_id != 0) as assigned,
             SUM(department_id IS NULL OR department_id = 0) as pending,
-            SUM(status = "converted") as converted,
-            SUM(status = "ignored") as ignored,
-            SUM(status = "spam") as spam
-        ')
-        ->groupBy('date')
-        ->orderBy('date')
+            SUM(status = \"converted\") as converted,
+            SUM(status = \"ignored\") as ignored,
+            SUM(status = \"spam\") as spam
+        ")
+        ->groupBy('period')
+        ->orderBy('period')
         ->get();
 
     // Calculate summary statistics

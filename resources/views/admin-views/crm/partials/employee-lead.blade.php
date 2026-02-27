@@ -1,4 +1,4 @@
-<div class="modal fade" id="showEmployeeModal" data-backdrop="static" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="showEmployeeModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
@@ -11,7 +11,7 @@
                 <form id="updateTicketEmployeeForm" action="{{ route('admin.crm.lead.employee-assign') }}" method="POST">
                     @csrf
                     <input type="hidden" name="ticket_id" id="modal_ticket_id">
-                    @if(auth('admin')->id() == 1)
+                    @if((int)auth('admin')->user()?->admin_role_id === 1)
                     <div class="form-group">
                         <label>{{ translate('Select Department') }}</label>
                         <select class="form-control" name="department_id" id="ticket-department-id">

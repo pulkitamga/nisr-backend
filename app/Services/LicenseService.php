@@ -1,350 +1,351 @@
 <?php
 
-// namespace App\Services;
 
-// use Illuminate\Support\Facades\Log;
+namespace App\Services;
 
-// class LicenseService
-// {
-//     protected const PUBLIC_KEY = 'gGynReLeavHiElVdKa2knwh43GmVgIKm5rAaEMuJkBE=';
+use Illuminate\Support\Facades\Log;
 
-//     public function validate(): bool
-//     {
-//         if ($this->shouldBypassValidation()) {
-//             return true;
-//         }
+class LicenseService
+{
+    protected const PUBLIC_KEY = 'gGynReLeavHiElVdKa2knwh43GmVgIKm5rAaEMuJkBE=';
 
-//         if (!function_exists('sodium_crypto_sign_verify_detached')) {
-//             $this->violation('Sodium extension is required for license verification.');
-//         }
+    public function validate(): bool
+    {
+        if ($this->shouldBypassValidation()) {
+            return true;
+        }
 
-//         $license = $this->readLicenseKey();
+        if (!function_exists('sodium_crypto_sign_verify_detached')) {
+            $this->violation('Sodium extension is required for license verification.');
+        }
 
-//         if (!$license) {
-//             $this->violation('License key missing.');
-//         }
+        $license = $this->readLicenseKey();
 
-//         [$payloadJson, $signature, $payload] = $this->decodeLicense($license);
+        if (!$license) {
+            $this->violation('License key missing.');
+        }
 
-//         if (!$this->verifySignature($payloadJson, $signature)) {
-//             $this->violation('License signature is invalid.');
-//         }
+        [$payloadJson, $signature, $payload] = $this->decodeLicense($license);
 
-//         $this->validatePayload($payload);
+        if (!$this->verifySignature($payloadJson, $signature)) {
+            $this->violation('License signature is invalid.');
+        }
 
-//         return true;
-//     }
+        $this->validatePayload($payload);
 
-//     protected function shouldBypassValidation(): bool
-//     {
-//         if (app()->runningInConsole()) {
-//             return true;
-//         }
+        return true;
+    }
 
-//         return config('license.mode', 'development') === 'development';
-//     }
+    protected function shouldBypassValidation(): bool
+    {
+        if (app()->runningInConsole()) {
+            return true;
+        }
 
-//     protected function readLicenseKey(): ?string
-//     {
-//         $path = (string) config('license.file', storage_path('framework/.license'));
+        return config('license.mode', 'development') === 'development';
+    }
 
-//         if (is_file($path) && is_readable($path)) {
-//             $license = trim((string) file_get_contents($path));
+    protected function readLicenseKey(): ?string
+    {
+        $path = (string) config('license.file', storage_path('framework/.license'));
 
-//             if ($license !== '') {
-//                 return $license;
-//             }
-//         }
+        if (is_file($path) && is_readable($path)) {
+            $license = trim((string) file_get_contents($path));
 
-//         $fallback = trim((string) config('license.key', ''));
+            if ($license !== '') {
+                return $license;
+            }
+        }
 
-//         if ($fallback === '' || $fallback === 'DEV-UNLICENSED') {
-//             return null;
-//         }
+        $fallback = trim((string) config('license.key', ''));
 
-//         return $fallback;
-//     }
+        if ($fallback === '' || $fallback === 'DEV-UNLICENSED') {
+            return null;
+        }
 
-//     protected function decodeLicense(string $license): array
-//     {
-//         $license = trim($license);
+        return $fallback;
+    }
 
-//         if (!str_starts_with($license, 'LIC-')) {
-//             $this->violation('License format is invalid.');
-//         }
+    protected function decodeLicense(string $license): array
+    {
+        $license = trim($license);
 
-//         $encoded = substr($license, 4);
-//         $parts = explode('.', $encoded, 2);
+        if (!str_starts_with($license, 'LIC-')) {
+            $this->violation('License format is invalid.');
+        }
 
-//         if (count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') {
-//             $this->violation('License payload/signature is missing.');
-//         }
+        $encoded = substr($license, 4);
+        $parts = explode('.', $encoded, 2);
 
-//         $payloadJson = $this->base64UrlDecode($parts[0]);
-//         $signature = $this->base64UrlDecode($parts[1]);
+        if (count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') {
+            $this->violation('License payload/signature is missing.');
+        }
 
-//         if ($payloadJson === null || $signature === null) {
-//             $this->violation('License encoding is invalid.');
-//         }
+        $payloadJson = $this->base64UrlDecode($parts[0]);
+        $signature = $this->base64UrlDecode($parts[1]);
 
-//         $payload = json_decode($payloadJson, true);
+        if ($payloadJson === null || $signature === null) {
+            $this->violation('License encoding is invalid.');
+        }
 
-//         if (!is_array($payload)) {
-//             $this->violation('License payload JSON is invalid.');
-//         }
+        $payload = json_decode($payloadJson, true);
 
-//         return [$payloadJson, $signature, $payload];
-//     }
+        if (!is_array($payload)) {
+            $this->violation('License payload JSON is invalid.');
+        }
 
-//     protected function verifySignature(string $payloadJson, string $signature): bool
-//     {
-//         $publicKeyBase64 = trim(static::PUBLIC_KEY);
+        return [$payloadJson, $signature, $payload];
+    }
 
-//         if ($publicKeyBase64 === '' || $publicKeyBase64 === 'PASTE_YOUR_PUBLIC_KEY_HERE') {
-//             $this->violation('Public key is not configured.');
-//         }
+    protected function verifySignature(string $payloadJson, string $signature): bool
+    {
+        $publicKeyBase64 = trim(static::PUBLIC_KEY);
 
-//         $publicKey = base64_decode($publicKeyBase64, true);
+        if ($publicKeyBase64 === '' || $publicKeyBase64 === 'PASTE_YOUR_PUBLIC_KEY_HERE') {
+            $this->violation('Public key is not configured.');
+        }
 
-//         if ($publicKey === false || strlen($publicKey) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
-//             $this->violation('Public key format is invalid.');
-//         }
-
-//         return sodium_crypto_sign_verify_detached($signature, $payloadJson, $publicKey);
-//     }
+        $publicKey = base64_decode($publicKeyBase64, true);
 
-//     protected function validatePayload(array $payload): void
-//     {
-//         $version = $payload['v'] ?? null;
+        if ($publicKey === false || strlen($publicKey) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+            $this->violation('Public key format is invalid.');
+        }
 
-//         if ((int) $version !== 1) {
-//             $this->violation('Unsupported license version.');
-//         }
+        return sodium_crypto_sign_verify_detached($signature, $payloadJson, $publicKey);
+    }
 
-//         $expectedProduct = (string) config('license.product', 'alnisr2');
-//         $licensedProduct = (string) ($payload['p'] ?? '');
+    protected function validatePayload(array $payload): void
+    {
+        $version = $payload['v'] ?? null;
 
-//         if ($licensedProduct === '' || !hash_equals($expectedProduct, $licensedProduct)) {
-//             $this->violation('License product mismatch.');
-//         }
+        if ((int) $version !== 1) {
+            $this->violation('Unsupported license version.');
+        }
 
-//         $now = time();
+        $expectedProduct = (string) config('license.product', 'alnisr2');
+        $licensedProduct = (string) ($payload['p'] ?? '');
 
-//         $nbf = $payload['nbf'] ?? null;
-//         if ($nbf !== null && (!is_numeric($nbf) || (int) $nbf > $now)) {
-//             $this->violation('License is not active yet.');
-//         }
+        if ($licensedProduct === '' || !hash_equals($expectedProduct, $licensedProduct)) {
+            $this->violation('License product mismatch.');
+        }
 
-//         $exp = $payload['exp'] ?? null;
-//         if ($exp !== null && (!is_numeric($exp) || (int) $exp < $now)) {
-//             $this->violation('License has expired.');
-//         }
+        $now = time();
 
-//         $currentHost = $this->normalizeHost((string) request()->getHost());
-//         if ($currentHost === '') {
-//             $this->violation('Unable to resolve request host.');
-//         }
+        $nbf = $payload['nbf'] ?? null;
+        if ($nbf !== null && (!is_numeric($nbf) || (int) $nbf > $now)) {
+            $this->violation('License is not active yet.');
+        }
 
-//         $domains = $this->normalizeDomains($payload['domains'] ?? []);
-//         if ($domains !== [] && !$this->domainAllowed($currentHost, $domains)) {
-//             $this->violation('Current domain is not allowed by license.');
-//         }
-
-//         $ips = $this->normalizeStringArray($payload['ips'] ?? []);
-//         $cidrs = $this->normalizeStringArray($payload['cidrs'] ?? []);
+        $exp = $payload['exp'] ?? null;
+        if ($exp !== null && (!is_numeric($exp) || (int) $exp < $now)) {
+            $this->violation('License has expired.');
+        }
 
-//         if (($ips !== [] || $cidrs !== []) && !$this->ipAllowed(request()->ip(), $ips, $cidrs)) {
-//             $this->violation('Current IP is not allowed by license.');
-//         }
+        $currentHost = $this->normalizeHost((string) request()->getHost());
+        if ($currentHost === '') {
+            $this->violation('Unable to resolve request host.');
+        }
 
-//         $instance = $payload['instance'] ?? null;
-//         if (is_string($instance) && trim($instance) !== '') {
-//             $instanceHost = $this->normalizeHost($instance);
+        $domains = $this->normalizeDomains($payload['domains'] ?? []);
+        if ($domains !== [] && !$this->domainAllowed($currentHost, $domains)) {
+            $this->violation('Current domain is not allowed by license.');
+        }
 
-//             if ($instanceHost === '' || !$this->hostMatches($currentHost, $instanceHost)) {
-//                 $this->violation('License instance restriction mismatch.');
-//             }
-//         }
-//     }
-
-//     protected function normalizeDomains($domains): array
-//     {
-//         $normalized = [];
-
-//         foreach ($this->normalizeStringArray($domains) as $domain) {
-//             $isWildcard = str_starts_with($domain, '*.');
-//             $target = $isWildcard ? substr($domain, 2) : $domain;
-//             $host = $this->normalizeHost($target);
-
-//             if ($host === '') {
-//                 continue;
-//             }
-
-//             $normalized[] = $isWildcard ? '*.' . $host : $host;
-//         }
-
-//         return array_values(array_unique($normalized));
-//     }
-
-//     protected function normalizeStringArray($value): array
-//     {
-//         if (is_string($value)) {
-//             $value = explode(',', $value);
-//         }
-
-//         if (!is_array($value)) {
-//             return [];
-//         }
-
-//         $result = [];
-
-//         foreach ($value as $item) {
-//             if (!is_string($item)) {
-//                 continue;
-//             }
-
-//             $item = trim($item);
-
-//             if ($item !== '') {
-//                 $result[] = $item;
-//             }
-//         }
-
-//         return array_values($result);
-//     }
-
-//     protected function normalizeHost(string $host): string
-//     {
-//         $host = trim(strtolower($host));
+        $ips = $this->normalizeStringArray($payload['ips'] ?? []);
+        $cidrs = $this->normalizeStringArray($payload['cidrs'] ?? []);
 
-//         if ($host === '') {
-//             return '';
-//         }
+        if (($ips !== [] || $cidrs !== []) && !$this->ipAllowed(request()->ip(), $ips, $cidrs)) {
+            $this->violation('Current IP is not allowed by license.');
+        }
 
-//         if (str_contains($host, '://')) {
-//             $parsed = parse_url($host, PHP_URL_HOST);
-
-//             if (is_string($parsed) && $parsed !== '') {
-//                 $host = strtolower($parsed);
-//             }
-//         }
+        $instance = $payload['instance'] ?? null;
+        if (is_string($instance) && trim($instance) !== '') {
+            $instanceHost = $this->normalizeHost($instance);
 
-//         $host = preg_replace('/:\d+$/', '', $host);
+            if ($instanceHost === '' || !$this->hostMatches($currentHost, $instanceHost)) {
+                $this->violation('License instance restriction mismatch.');
+            }
+        }
+    }
 
-//         return preg_replace('/^www\./', '', $host);
-//     }
-
-//     protected function domainAllowed(string $currentHost, array $allowedDomains): bool
-//     {
-//         foreach ($allowedDomains as $allowed) {
-//             if ($this->hostMatches($currentHost, $allowed)) {
-//                 return true;
-//             }
-//         }
-
-//         return false;
-//     }
-
-//     protected function hostMatches(string $currentHost, string $allowedHost): bool
-//     {
-//         if ($currentHost === $allowedHost) {
-//             return true;
-//         }
-
-//         if (str_starts_with($allowedHost, '*.')) {
-//             $suffix = substr($allowedHost, 2);
-
-//             if ($suffix !== '' && ($currentHost === $suffix || str_ends_with($currentHost, '.' . $suffix))) {
-//                 return true;
-//             }
-//         }
-
-//         return false;
-//     }
-
-//     protected function ipAllowed(?string $currentIp, array $ips, array $cidrs): bool
-//     {
-//         if ($ips === [] && $cidrs === []) {
-//             return true;
-//         }
-
-//         if (!is_string($currentIp) || $currentIp === '') {
-//             return false;
-//         }
-
-//         if (in_array($currentIp, $ips, true)) {
-//             return true;
-//         }
-
-//         foreach ($cidrs as $cidr) {
-//             if ($this->ipInCidr($currentIp, $cidr)) {
-//                 return true;
-//             }
-//         }
-
-//         return false;
-//     }
-
-//     protected function ipInCidr(string $ip, string $cidr): bool
-//     {
-//         if (!str_contains($cidr, '/')) {
-//             return false;
-//         }
-
-//         [$network, $bits] = explode('/', $cidr, 2);
-//         $network = trim($network);
-//         $bits = trim($bits);
-
-//         if ($network === '' || $bits === '' || !ctype_digit($bits)) {
-//             return false;
-//         }
-
-//         $bits = (int) $bits;
-//         $ipBin = inet_pton($ip);
-//         $networkBin = inet_pton($network);
-
-//         if ($ipBin === false || $networkBin === false || strlen($ipBin) !== strlen($networkBin)) {
-//             return false;
-//         }
-
-//         $maxBits = strlen($ipBin) * 8;
-
-//         if ($bits < 0 || $bits > $maxBits) {
-//             return false;
-//         }
-
-//         $fullBytes = intdiv($bits, 8);
-//         $remainingBits = $bits % 8;
-
-//         if ($fullBytes > 0 && substr($ipBin, 0, $fullBytes) !== substr($networkBin, 0, $fullBytes)) {
-//             return false;
-//         }
-
-//         if ($remainingBits === 0) {
-//             return true;
-//         }
-
-//         $mask = (0xFF00 >> $remainingBits) & 0xFF;
-
-//         return (ord($ipBin[$fullBytes]) & $mask) === (ord($networkBin[$fullBytes]) & $mask);
-//     }
-
-//     protected function base64UrlDecode(string $value): ?string
-//     {
-//         $padding = (4 - (strlen($value) % 4)) % 4;
-//         $decoded = base64_decode(strtr($value, '-_', '+/') . str_repeat('=', $padding), true);
-
-//         return $decoded === false ? null : $decoded;
-//     }
-
-//     protected function violation(string $reason)
-//     {
-//         Log::warning('License validation failed', [
-//             'reason' => $reason,
-//             'host' => request()->getHost(),
-//             'ip' => request()->ip(),
-//         ]);
-
-//         abort(403, 'Application license is invalid.');
-//     }
-// }
+    protected function normalizeDomains($domains): array
+    {
+        $normalized = [];
+
+        foreach ($this->normalizeStringArray($domains) as $domain) {
+            $isWildcard = str_starts_with($domain, '*.');
+            $target = $isWildcard ? substr($domain, 2) : $domain;
+            $host = $this->normalizeHost($target);
+
+            if ($host === '') {
+                continue;
+            }
+
+            $normalized[] = $isWildcard ? '*.' . $host : $host;
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    protected function normalizeStringArray($value): array
+    {
+        if (is_string($value)) {
+            $value = explode(',', $value);
+        }
+
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $result = [];
+
+        foreach ($value as $item) {
+            if (!is_string($item)) {
+                continue;
+            }
+
+            $item = trim($item);
+
+            if ($item !== '') {
+                $result[] = $item;
+            }
+        }
+
+        return array_values($result);
+    }
+
+    protected function normalizeHost(string $host): string
+    {
+        $host = trim(strtolower($host));
+
+        if ($host === '') {
+            return '';
+        }
+
+        if (str_contains($host, '://')) {
+            $parsed = parse_url($host, PHP_URL_HOST);
+
+            if (is_string($parsed) && $parsed !== '') {
+                $host = strtolower($parsed);
+            }
+        }
+
+        $host = preg_replace('/:\d+$/', '', $host);
+
+        return preg_replace('/^www\./', '', $host);
+    }
+
+    protected function domainAllowed(string $currentHost, array $allowedDomains): bool
+    {
+        foreach ($allowedDomains as $allowed) {
+            if ($this->hostMatches($currentHost, $allowed)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function hostMatches(string $currentHost, string $allowedHost): bool
+    {
+        if ($currentHost === $allowedHost) {
+            return true;
+        }
+
+        if (str_starts_with($allowedHost, '*.')) {
+            $suffix = substr($allowedHost, 2);
+
+            if ($suffix !== '' && ($currentHost === $suffix || str_ends_with($currentHost, '.' . $suffix))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function ipAllowed(?string $currentIp, array $ips, array $cidrs): bool
+    {
+        if ($ips === [] && $cidrs === []) {
+            return true;
+        }
+
+        if (!is_string($currentIp) || $currentIp === '') {
+            return false;
+        }
+
+        if (in_array($currentIp, $ips, true)) {
+            return true;
+        }
+
+        foreach ($cidrs as $cidr) {
+            if ($this->ipInCidr($currentIp, $cidr)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function ipInCidr(string $ip, string $cidr): bool
+    {
+        if (!str_contains($cidr, '/')) {
+            return false;
+        }
+
+        [$network, $bits] = explode('/', $cidr, 2);
+        $network = trim($network);
+        $bits = trim($bits);
+
+        if ($network === '' || $bits === '' || !ctype_digit($bits)) {
+            return false;
+        }
+
+        $bits = (int) $bits;
+        $ipBin = inet_pton($ip);
+        $networkBin = inet_pton($network);
+
+        if ($ipBin === false || $networkBin === false || strlen($ipBin) !== strlen($networkBin)) {
+            return false;
+        }
+
+        $maxBits = strlen($ipBin) * 8;
+
+        if ($bits < 0 || $bits > $maxBits) {
+            return false;
+        }
+
+        $fullBytes = intdiv($bits, 8);
+        $remainingBits = $bits % 8;
+
+        if ($fullBytes > 0 && substr($ipBin, 0, $fullBytes) !== substr($networkBin, 0, $fullBytes)) {
+            return false;
+        }
+
+        if ($remainingBits === 0) {
+            return true;
+        }
+
+        $mask = (0xFF00 >> $remainingBits) & 0xFF;
+
+        return (ord($ipBin[$fullBytes]) & $mask) === (ord($networkBin[$fullBytes]) & $mask);
+    }
+
+    protected function base64UrlDecode(string $value): ?string
+    {
+        $padding = (4 - (strlen($value) % 4)) % 4;
+        $decoded = base64_decode(strtr($value, '-_', '+/') . str_repeat('=', $padding), true);
+
+        return $decoded === false ? null : $decoded;
+    }
+
+    protected function violation(string $reason)
+    {
+        Log::warning('License validation failed', [
+            'reason' => $reason,
+            'host' => request()->getHost(),
+            'ip' => request()->ip(),
+        ]);
+
+        abort(403, 'Application license is invalid.');
+    }
+}

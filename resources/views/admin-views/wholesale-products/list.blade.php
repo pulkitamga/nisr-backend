@@ -136,6 +136,8 @@
 @push('script')
 
 <script>
+    const csrfToken = @json(csrf_token());
+
     $(document).on('change', '.product-status-toggle', function() {
         let checkbox = $(this);
         let productId = checkbox.data('id');
@@ -144,7 +146,10 @@
 
         $.ajax({
             url: url,
-            type: 'GET',
+            type: 'POST',
+            data: {
+                _token: csrfToken
+            },
             success: function(response) {
                 toastr.success(response.message); // Show success message
             },

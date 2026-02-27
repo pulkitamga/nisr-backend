@@ -135,7 +135,7 @@
                                                 </a>
                                                 <a class="dropdown-item text-danger py-1 px-2"
                                                     href="javascript:void(0);"
-                                                    onclick="confirmAndDelete('{{ route('admin.wholesale.business.order.delete', $c->id) }}')">
+                                                    onclick="confirmAndDelete('{{ route('admin.wholesale.business.confirem.order.delete', $c->id) }}')">
                                                     <i class="tio-delete"></i> Delete
                                                 </a>
                                             </div>

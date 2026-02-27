@@ -21,16 +21,13 @@
                         <option value="all">{{ translate('All') }}</option>
                         <option value="Task">{{ translate('Task') }}</option>
                         <option value="Call">{{ translate('Call') }}</option>
-                        <option value="Note">{{ translate('Note') }}</option>
-                        <option value="Activity">{{ translate('Activity') }}</option>
+                        <option value="To-Do">{{ translate('To_Do') }}</option>
                     </select>
                 </div>
                 <div class="col-md-8 d-flex align-items-end">
                     <div class="calendar-legend ms-auto">
                         <span class="legend-item"><span class="legend-circle bg-blue"></span>{{ translate('Task') }}</span>
                         <span class="legend-item"><span class="legend-circle bg-green"></span>{{ translate('Call') }}</span>
-                        <span class="legend-item"><span class="legend-circle bg-purple"></span>{{ translate('Note') }}</span>
-                        <span class="legend-item"><span class="legend-circle bg-orange"></span>{{ translate('Activity') }}</span>
                         <span class="legend-item"><span class="legend-circle bg-red"></span>{{ translate('To_Do') }}</span>
                     </div>
                 </div>
@@ -159,7 +156,6 @@
                     })
                 .then(res => res.json())
                 .then(data => {
-                    console.log(data); // for debugging
                     if (data.status === 'success') {
                         Swal.fire('{{ translate('Added!') }}', data.message, 'success');
                         var modal = bootstrap.Modal.getInstance(document.getElementById('addTodoModal'));

@@ -29,7 +29,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Models\SupportTicketNotification;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
+use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // New
+use Illuminate\Validation\ValidationException;
 class ServiceTicketController extends BaseController
 {
     public function __construct(
@@ -39,6 +41,7 @@ class ServiceTicketController extends BaseController
         private readonly AdminRepositoryInterface $adminRepo,
         private readonly TranslationRepositoryInterface     $translationRepo,
         private readonly AdminNotificationRepositoryInterface $notificationRepo, // New
+        private readonly EscalationService                 $escalationService,
 
     ) {}
 
@@ -134,7 +137,8 @@ class ServiceTicketController extends BaseController
                 'estimates.service',
                 'invoices',
                 'changeOrders',
-                'cancellations'
+                'cancellations',
+                'escalations.escalatedBy',
             ],
             dataLimit: 'all'
         )->first();
@@ -1060,35 +1064,25 @@ class ServiceTicketController extends BaseController
         ]);
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
-        \App\Models\Escalation::create([
-            'escalatable_id' => $ticket->id,
-            'escalatable_type' => \App\Models\SupportTicket::class,
-            'escalated_by' => auth('admin')->id(),
-            'reason' => $request->reason,
-        ]);
-        // Send notifications
+
         $title   = 'Ticket Escalated';
         $message = "Service Ticket #{$ticket->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.support-ticket.service.singleTicket', $ticket->id);
 
-        $recipients = [];
-        if ($ticket->employee_id) {
-            $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
-        }
-        if ($ticket->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
+        try {
+            $this->escalationService->escalateSupportTicket(
+                ticket: $ticket,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
+            );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                \App\Models\SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
-            );
-        }
         $this->logJobActivity($ticket->id, 'escalated', $message);
 
         Toastr::success(translate('Ticket escalated successfully'));
