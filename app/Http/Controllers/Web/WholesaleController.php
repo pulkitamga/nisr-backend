@@ -27,7 +27,6 @@ use App\Models\WholesaleProductPriceRange;
 use App\Models\WholesaleConfirmOrderItem;
 use App\Domain\Stock\Support\VariantMatcher;
 use Illuminate\Support\Str;
-use App\Utils\Helpers;
 use Illuminate\Support\Facades\Log;
 use App\Events\WholesalerEmailEvent;
 use App\Models\Lead;
@@ -261,11 +260,8 @@ class WholesaleController extends Controller
         Log::info('Starting createPurchaseOrder', ['user_id' => auth('customer')->id() ?? null]);
 
         $wholeseller = auth('customer')->user();
-
-        // Instead of getting products from request, get from cart
-        $cartItems = Cart::where('customer_id', $wholeseller->id)
-            ->where('is_guest', 0)
-            ->get();
+        $activeWholesaleGroupId = $this->getOrCreateCartGroupId($wholeseller);
+        $cartItems = $this->getWholesaleCartQuery($wholeseller->id, $activeWholesaleGroupId)->get();
 
         if ($cartItems->isEmpty()) {
             return back()->with('error', 'Your cart is empty.');
@@ -274,7 +270,7 @@ class WholesaleController extends Controller
         $tier = $wholeseller->tier;
 
         try {
-            $order = DB::transaction(function () use ($wholeseller, $tier) {
+            $order = DB::transaction(function () use ($wholeseller, $tier, $cartItems) {
                 $lastOrderId = DB::table('wholesale_purchase_orders')
                     ->lockForUpdate()
                     ->max('order_id');
@@ -283,133 +279,100 @@ class WholesaleController extends Controller
 
                 Log::info('Creating new wholesale order', ['next_order_id' => $nextOrderId]);
 
-                return WholesalePurchaseOrder::create([
+                $order = WholesalePurchaseOrder::create([
                     'wholeseller_id'   => $wholeseller->id,
                     'wholeseller_tier' => $tier,
                     'status'           => 'pending',
                     'order_id'         => $nextOrderId,
                 ]);
-            });
+                $createdItemsCount = 0;
+                foreach ($cartItems as $cartItem) {
+                    $variationData = $this->extractVariationDataFromCart($cartItem);
+                    $wholesaleProduct = $this->findWholesaleProductByVariation(
+                        productId: $cartItem->product_id,
+                        variationInput: $variationData['variation_key'] ?? null,
+                        variationType: $variationData['variation_type'] ?? null
+                    );
+
+                    if (!$wholesaleProduct) {
+                        throw new \RuntimeException("Wholesale product not found for product #{$cartItem->product_id}.");
+                    }
+
+                    $priceRange = WholesaleProductPriceRange::query()
+                        ->where('wholesale_id', $wholesaleProduct->id)
+                        ->where('tier', $tier)
+                        ->where('min_qty', '<=', $cartItem->quantity)
+                        ->where(function ($query) use ($cartItem) {
+                            $query->whereNull('max_qty')
+                                ->orWhere('max_qty', 0)
+                                ->orWhere('max_qty', '>=', $cartItem->quantity);
+                        })
+                        ->orderByDesc('min_qty')
+                        ->first();
+
+                    if (!$priceRange && $wholeseller->moq_override_enabled) {
+                        $priceRange = WholesaleProductPriceRange::query()
+                            ->where('wholesale_id', $wholesaleProduct->id)
+                            ->where('tier', $tier)
+                            ->orderBy('min_qty')
+                            ->first();
+                    }
+
+                    if (!$priceRange) {
+                        throw new \RuntimeException("No valid price range found for product #{$cartItem->product_id}.");
+                    }
+
+                    $pricePerUnit = (float)$priceRange->price_per_piece;
+                    WholesalePurchaseOrderItem::create([
+                        'wholesale_order_id' => $order->id,
+                        'product_id'         => $cartItem->product_id,
+                        'product_variation_type' => $variationData['variation_type'] ?? $variationData['variant'],
+                        'product_quantity'   => $cartItem->quantity,
+                        'tax'                => $cartItem->tax,
+                        'base_price'         => $pricePerUnit,
+                        'final_price'        => $pricePerUnit * $cartItem->quantity,
+                        'price_range_id'     => $priceRange->id,
+                        'created_at'         => now(),
+                        'updated_at'         => now(),
+                    ]);
+                    $createdItemsCount++;
+                }
+
+                if ($createdItemsCount < 1) {
+                    throw new \RuntimeException('No valid wholesale items were found to place this order.');
+                }
+
+                try {
+                    $userWithBusiness = \App\Models\User::with('wholesalerBusiness')->find($wholeseller->id);
+                    if ($userWithBusiness && $userWithBusiness->wholesalerBusiness) {
+                        Lead::create([
+                            'party_type'  => 'wholesale',
+                            'company_id'  => $userWithBusiness->wholesalerBusiness->id,
+                            'source_id'   => $order->id,
+                            'po_id'       => $order->id,
+                            'status'      => 'new',
+                            'priority'    => 'high',
+                            'employee_id' => 1,
+                        ]);
+                    }
+                } catch (\Throwable $leadException) {
+                    Log::warning('Lead creation skipped for wholesale order', [
+                        'order_id' => $order->id,
+                        'error' => $leadException->getMessage(),
+                    ]);
+                }
+
+                return $order;
+            }, 3);
 
             Log::info('Order created successfully', ['order_id' => $order->id]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Order creation failed', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Order creation failed. Try again.');
+            return back()->with('error', $e->getMessage());
         }
 
-        // Process each cart item
-        foreach ($cartItems as $cartItem) {
-            try {
-                Log::info('Processing cart item', [
-                    'cart_item_id' => $cartItem->id,
-                    'product_id' => $cartItem->product_id,
-                    'quantity' => $cartItem->quantity
-                ]);
-
-                // Get variation data from cart item
-                $variationData = $this->extractVariationDataFromCart($cartItem);
-
-                // Get wholesale product using variation key from cart
-                $wholesaleProduct = $this->findWholesaleProductByVariation(
-                    productId: $cartItem->product_id,
-                    variationInput: $variationData['variation_key'] ?? null,
-                    variationType: $variationData['variation_type'] ?? null
-                );
-
-                if (!$wholesaleProduct) {
-                    Log::warning('Wholesale product not found', [
-                        'product_id' => $cartItem->product_id,
-                        'variation_key' => $variationData['variation_key']
-                    ]);
-                    continue; // Skip this item instead of returning error
-                }
-
-                $priceRange = WholesaleProductPriceRange::where('wholesale_id', $wholesaleProduct->id)
-                    ->where('tier', $tier)
-                    ->where('min_qty', '<=', $cartItem->quantity)
-                    ->orderByDesc('min_qty')
-                    ->first();
-
-                if (!$priceRange && $wholeseller->moq_override_enabled) {
-                    Log::info('MOQ override active, fetching first available price range', [
-                        'product_id' => $cartItem->product_id
-                    ]);
-                    $priceRange = WholesaleProductPriceRange::where('wholesale_id', $wholesaleProduct->id)
-                        ->where('tier', $tier)
-                        ->orderBy('min_qty', 'asc')
-                        ->first();
-                }
-
-                if (!$priceRange) {
-                    Log::warning('No valid price range', [
-                        'product_id' => $cartItem->product_id,
-                        'quantity' => $cartItem->quantity
-                    ]);
-                    continue; // Skip this item
-                }
-
-                $pricePerUnit = $priceRange->price_per_piece;
-
-                // Create order item with variation data
-                $item = WholesalePurchaseOrderItem::create([
-                    'wholesale_order_id' => $order->id,
-                    'product_id'         => $cartItem->product_id,
-                    'product_variation_type' => $variationData['variation_type'] ?? $variationData['variant'],
-                    'product_quantity'   => $cartItem->quantity,
-                    'tax'                => $cartItem->tax,
-                    'base_price'         => $pricePerUnit,
-                    'final_price'        => $pricePerUnit * $cartItem->quantity,
-                    'price_range_id'     => $priceRange->id,
-                    'created_at'         => now(),
-                    'updated_at'         => now(),
-                ]);
-
-                Log::info('Order item created', [
-                    'item_id' => $item->id,
-                    'product_variation_type' => $variationData['variation_type'] ?? $variationData['variant']
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Item save failed', [
-                    'error' => $e->getMessage(),
-                    'cart_item' => $cartItem->id
-                ]);
-                continue; // Skip this item and continue with others
-            }
-        }
-
-        // Create lead if user has business
-        try {
-            $userWithBusiness = \App\Models\User::with('wholesalerBusiness')->find($wholeseller->id);
-
-            if ($userWithBusiness && $userWithBusiness->wholesalerBusiness) {
-                $companyId = $userWithBusiness->wholesalerBusiness->id;
-
-                Lead::create([
-                    'party_type'  => 'wholesale',
-                    'company_id'  => $companyId,
-                    'source_id'   => $order->id,
-                    'po_id'       => $order->id,
-                    'status'      => 'new',
-                    'priority'    => 'high',
-                    'employee_id' => 1,
-                ]);
-
-                Log::info('Lead created for wholesale order', [
-                    'po_id' => $order->id,
-                    'company_id' => $companyId
-                ]);
-            } else {
-                Log::warning('User does not have a wholesaler business', [
-                    'user_id' => $wholeseller->id
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('Lead creation failed', ['error' => $e->getMessage()]);
-        }
-
-        // Clear cart
-        $this->remove_all_cart();
-        Log::info('Cart cleared and purchase success view returned', ['order_id' => $order->id]);
+        $this->clearWholesaleCart($wholeseller->id, $activeWholesaleGroupId);
+        Log::info('Wholesale cart cleared and purchase success view returned', ['order_id' => $order->id]);
 
         return view(VIEW_FILE_NAMES['purches_success']);
     }
@@ -463,28 +426,49 @@ class WholesaleController extends Controller
 
     public function remove_all_cart()
     {
-        $user = Helpers::getCustomerInformation();
+        $customerId = Auth::guard('customer')->id();
+        if ($customerId) {
+            $activeWholesaleGroupId = session('wholesale_cart_group_id');
+            if (!is_string($activeWholesaleGroupId) || !preg_match('/^(WH-|wholesale_)/i', $activeWholesaleGroupId)) {
+                $activeWholesaleGroupId = (string)(Cart::query()
+                    ->where('customer_id', $customerId)
+                    ->where('is_guest', 0)
+                    ->where(function ($query) {
+                        $query->where('cart_group_id', 'like', 'WH-%')
+                            ->orWhere('cart_group_id', 'like', 'wholesale_%');
+                    })
+                    ->orderByDesc('id')
+                    ->value('cart_group_id') ?? '');
+            }
+            $this->clearWholesaleCart($customerId, $activeWholesaleGroupId !== '' ? $activeWholesaleGroupId : null);
+        }
 
-        Cart::where([
-            'customer_id' => ($user == 'offline' ? session('guest_id') : auth('customer')->id()),
-            'is_guest' => ($user == 'offline' ? 1 : '0'),
-        ])->delete();
         return redirect()->back();
     }
 
     public function showInvoice($order_id)
     {
-        $order = WholesaleQuotation::with('metas', 'wholeseller', 'product')->findOrFail($order_id);
+        $customerId = Auth::guard('customer')->id();
+        $order = WholesaleQuotation::with(['metas', 'wholeseller', 'items.product'])
+            ->where('id', $order_id)
+            ->where('wholeseller_id', $customerId)
+            ->firstOrFail();
+
         if ($order->status === 'pending') {
             return back()->with('warning', 'Your order is under review. You will be able to view the quotation once it is approved.');
         }
+
         return view(VIEW_FILE_NAMES['order_invoice_details'], compact('order'));
     }
 
     public function orderQuotation($id)
     {
-        // Fetching the order with related items (products and quantities) and metas
-        $order = WholesaleQuotation::with(['wholeseller', 'items.product', 'metas'])->findOrFail($id);
+        $customerId = Auth::guard('customer')->id();
+        $order = WholesaleQuotation::with(['wholeseller', 'items.product', 'metas'])
+            ->where('id', $id)
+            ->where('wholeseller_id', $customerId)
+            ->firstOrFail();
+
         if ($order->status === 'pending') {
             Toastr::success(translate('Your order is under review. You will be able to view the quotation once it is approved.'));
 
@@ -496,17 +480,24 @@ class WholesaleController extends Controller
 
     public function viewOrderPage($order_id)
     {
-        $order = WholesalePurchaseOrder::with('product', 'wholesaler')->findOrFail($order_id);
+        $customerId = Auth::guard('customer')->id();
+        $order = WholesalePurchaseOrder::with(['items.product', 'wholeseller', 'confirmOrder'])
+            ->where('id', $order_id)
+            ->where('wholeseller_id', $customerId)
+            ->firstOrFail();
 
-        return view('wholesale.order-view', compact('order'));
+        return view(VIEW_FILE_NAMES['wholesale_order_view'], compact('order'));
     }
 
     public function viewWholesaleOrders()
     {
         $userId = auth('customer')->id();
-        $orders = WholesalePurchaseOrder::with('product')->where('wholeseller_id', $userId)->latest()->get();
+        $orders = WholesalePurchaseOrder::with('items.product')
+            ->where('wholeseller_id', $userId)
+            ->latest()
+            ->paginate(10);
 
-        return view(VIEW_FILE_NAMES['product_order_details'], compact('orders'));
+        return view(VIEW_FILE_NAMES['wholesale_orders'], compact('orders'));
     }
 
     private function generateCartGroupId($user)
@@ -610,19 +601,21 @@ class WholesaleController extends Controller
 
     public function showOrderOne($id)
     {
+        $customerId = Auth::guard('customer')->id();
         $order = WholesalePurchaseOrder::with([
             'items.product',
             'wholeseller',
-        ])->findOrFail($id);
+        ])
+            ->where('id', $id)
+            ->where('wholeseller_id', $customerId)
+            ->firstOrFail();
 
         return view(VIEW_FILE_NAMES['wholesale_order_view'], compact('order'));
     }
 
     public function approveQuotation(Request $request, $id)
     {
-
-        Log::info('the approve request is ', ['the request is ' => $request->all()]);
-        $order = WholesaleQuotation::with('items.product')->findOrFail($id);
+        $customerId = Auth::guard('customer')->id();
         $request->validate([
             'external_po_number' => [
                 'nullable',
@@ -633,55 +626,120 @@ class WholesaleController extends Controller
             'quotation_file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
         ]);
 
-        $filePath = null;
-        if ($request->hasFile('quotation_file')) {
-            $file = $request->file('quotation_file');
-            $storedPath = $file->store('wholesale_attachment', 'public');
-            $filePath = basename($storedPath);
-        }
-        $confirmOrder = WholesaleConfirmOrder::create([
-            'purchase_order_no' => $order->purchase_order_no ?? null,
-            'quotation_no'    => $order->quotation_no,
-            'wholesaler_id'   => $order->wholeseller_id,
-            'status'          => 'confirmed',
-            'delivery_status' => 'pending',
-            'payment_status'  => 'unpaid',
-            'confirmed_at'    => Carbon::now(),
-            'final_price'     => $order->final_price,
-            'attachments'    => $filePath,
-            'external_po_number' => $request->input('external_po_number') ?? null,
-        ]);
+        try {
+            DB::transaction(function () use ($request, $id, $customerId) {
+                $order = WholesaleQuotation::with('items.product')
+                    ->where('id', $id)
+                    ->where('wholeseller_id', $customerId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-        foreach ($order->items as $item) {
-            WholesaleConfirmOrderItem::create([
-                'confirmed_order_id' => $confirmOrder->id,
-                'product_id'         => $item->product_id,
-                'product_variation_type' => $item->product_variation_type,
-                'product_quantity'   => $item->product_quantity,
-                'base_price'         => $item->base_price,
-                'tax'                => $item->tax,
-                'final_price'        => $item->final_price,
-                'quantity_sent'      => 0,
-                'remaining'          => $item->product_quantity,
+                if ($order->status === 'accepted') {
+                    throw new \RuntimeException(translate('This quotation is already approved.'));
+                }
+                if ($order->status === 'rejected') {
+                    throw new \RuntimeException(translate('This quotation is already rejected.'));
+                }
+                if ($order->status !== 'sent') {
+                    throw new \RuntimeException(translate('Only sent quotations can be approved.'));
+                }
+
+                $existingConfirmOrder = WholesaleConfirmOrder::query()
+                    ->where('wholesaler_id', $customerId)
+                    ->where(function ($query) use ($order) {
+                        $query->where('quotation_no', $order->quotation_no);
+                        if (!empty($order->purchase_order_no)) {
+                            $query->orWhere('purchase_order_no', $order->purchase_order_no);
+                        }
+                    })
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existingConfirmOrder) {
+                    throw new \RuntimeException(translate('This quotation has already been confirmed.'));
+                }
+
+                $filePath = null;
+                if ($request->hasFile('quotation_file')) {
+                    $file = $request->file('quotation_file');
+                    $storedPath = $file->store('wholesale_attachment', 'public');
+                    $filePath = basename($storedPath);
+                }
+
+                $confirmOrder = WholesaleConfirmOrder::create([
+                    'order_id'         => $order->order_id,
+                    'purchase_order_no' => $order->purchase_order_no ?? null,
+                    'quotation_no'     => $order->quotation_no,
+                    'wholesaler_id'    => $order->wholeseller_id,
+                    'status'           => 'confirmed',
+                    'delivery_status'  => 'pending',
+                    'payment_status'   => 'unpaid',
+                    'confirmed_at'     => Carbon::now(),
+                    'final_price'      => $order->final_price,
+                    'attachments'      => $filePath,
+                    'external_po_number' => $request->input('external_po_number') ?? null,
+                ]);
+
+                foreach ($order->items as $item) {
+                    WholesaleConfirmOrderItem::create([
+                        'confirmed_order_id' => $confirmOrder->id,
+                        'product_id'         => $item->product_id,
+                        'product_variation_type' => $item->product_variation_type,
+                        'product_quantity'   => $item->product_quantity,
+                        'base_price'         => $item->base_price,
+                        'tax'                => $item->tax,
+                        'final_price'        => $item->final_price,
+                        'quantity_sent'      => 0,
+                        'remaining'          => $item->product_quantity,
+                    ]);
+                }
+
+                $order->status = 'accepted';
+                $order->save();
+                $deal = Deal::where('quotation_id', $order->id)->first();
+                if ($deal) {
+                    $deal->update([
+                        'quotation_status' => 'accepted',
+                        'status'           => 'won',
+                    ]);
+                }
+            });
+        } catch (\RuntimeException $exception) {
+            Toastr::warning($exception->getMessage());
+            return redirect()->back();
+        } catch (\Throwable $exception) {
+            Log::error('Failed to approve wholesale quotation', [
+                'quotation_id' => $id,
+                'error' => $exception->getMessage(),
             ]);
+            Toastr::error(translate('Unable to approve quotation at the moment.'));
+            return redirect()->back();
         }
 
-        $order->status = 'accepted';
-        $order->save();
-        $deal = Deal::where('quotation_id', $order->id)->first();
-        if ($deal) {
-            $deal->update([
-                'quotation_status' => 'accepted',
-                'status'           => 'won',
-            ]);
-        }
         Toastr::success(translate('Quotation Approved & Delivery Initialized'));
 
         return redirect()->back();
     }
     public function rejectQuotation($id)
     {
-        $order = WholesaleQuotation::with('items.product')->findOrFail($id);
+        $customerId = Auth::guard('customer')->id();
+        $order = WholesaleQuotation::with('items.product')
+            ->where('id', $id)
+            ->where('wholeseller_id', $customerId)
+            ->firstOrFail();
+
+        if ($order->status === 'accepted') {
+            Toastr::error(translate('Approved quotation cannot be rejected.'));
+            return redirect()->back();
+        }
+        if ($order->status === 'rejected') {
+            Toastr::warning(translate('This quotation is already rejected.'));
+            return redirect()->back();
+        }
+        if ($order->status !== 'sent') {
+            Toastr::warning(translate('Only sent quotations can be rejected.'));
+            return redirect()->back();
+        }
 
         $order->status = 'rejected';
         $order->save();
@@ -702,22 +760,19 @@ class WholesaleController extends Controller
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'name' => 'required|string|max:255',
-            'thumbnail' => 'nullable|string',
-            'price' => 'required|numeric',
-            'discount' => 'nullable|numeric',
-            'tax' => 'nullable|numeric',
-            'tax_model' => 'nullable|string',
-            'shipping_cost' => 'nullable|numeric',
-            'price_range_id' => 'required',
+            'price_range_id' => 'required|integer|exists:wholesale_product_price_ranges,id',
             'quantity' => 'required|integer|min:1',
             'variant' => 'required|string',
         ]);
 
         $user = auth()->guard('customer')->user();
+        if (!$user || empty($user->tier)) {
+            Toastr::error(translate('Your wholesale tier is not configured.'));
+            return redirect()->back();
+        }
+
         $product = Product::findOrFail($validated['product_id']);
 
-        // Get wholesale product for variations
         $resolvedType = WholeSaleProducts::extractTypeFromVariationKey($validated['variant']);
         $wholesaleProduct = $this->findWholesaleProductByVariation(
             productId: $product->id,
@@ -730,7 +785,43 @@ class WholesaleController extends Controller
             return redirect()->back();
         }
 
-        // Get cart group ID
+        $tier = (string)$user->tier;
+        $requestedRange = WholesaleProductPriceRange::query()
+            ->where('id', $validated['price_range_id'])
+            ->where('wholesale_id', $wholesaleProduct->id)
+            ->first();
+
+        if (!$requestedRange || (string)$requestedRange->tier !== $tier) {
+            Toastr::error(translate('Selected wholesale price range is invalid.'));
+            return redirect()->back();
+        }
+
+        $quantity = (int)$validated['quantity'];
+        $maxQty = is_null($requestedRange->max_qty) ? null : (int)$requestedRange->max_qty;
+        $quantityInsideRange = $quantity >= (int)$requestedRange->min_qty
+            && (is_null($maxQty) || $maxQty === 0 || $quantity <= $maxQty);
+
+        if (!$quantityInsideRange) {
+            if (!$user->moq_override_enabled) {
+                Toastr::error(translate('Selected quantity does not match the requested price range.'));
+                return redirect()->back();
+            }
+
+            $requestedRange = WholesaleProductPriceRange::query()
+                ->where('wholesale_id', $wholesaleProduct->id)
+                ->where('tier', $tier)
+                ->orderBy('min_qty')
+                ->first();
+
+            if (!$requestedRange) {
+                Toastr::error(translate('No valid wholesale price range was found.'));
+                return redirect()->back();
+            }
+        }
+
+        $pricePerUnit = (float)$requestedRange->price_per_piece;
+        $serverTax = is_numeric($product->tax) ? (float)$product->tax : 0;
+
         $cartGroupId = $this->getOrCreateCartGroupId($user);
 
         $variationKey = trim((string)($wholesaleProduct->resolved_variation_key ?? $validated['variant']));
@@ -753,18 +844,12 @@ class WholesaleController extends Controller
 
         $color = $this->extractColorValueFromPairs($variationsArray);
 
-        // Get seller info
         $sellerId = ($product->added_by == 'admin') ? 1 : $product->user_id;
         $sellerIs = ($product->added_by == 'admin') ? 'admin' : 'seller';
         $shopInfo = ($product->added_by == 'admin') ? 'Dynamic Logic' : null;
 
-        // Generate unique slug for cart item
         $slug = $product->slug . '-' . Str::random(8);
 
-        // Get the original variation key (for reference if needed)
-        $originalVariationKey = $variationKey;
-
-        // Create NEW cart item - ALWAYS create new entry
         $cart = new Cart();
         $cart->customer_id = $user->id;
         $cart->customer_type = 0; // Default for wholesale
@@ -781,15 +866,15 @@ class WholesaleController extends Controller
         $cart->variant = $variantForColumn;
 
         $cart->quantity = $validated['quantity'];
-        $cart->price = $validated['price'];
-        $cart->tax = $validated['tax'] ?? 0;
-        $cart->discount = $validated['discount'] ?? 0;
+        $cart->price = $pricePerUnit;
+        $cart->tax = $serverTax;
+        $cart->discount = 0;
         $cart->wholesale_discount = 0.000000;
         $cart->wholesale_spacial_discount = 0.000000;
         $cart->installtion_charges = 0;
         $cart->exchange_qty = 0;
         $cart->exchange_charges = 0;
-        $cart->tax_model = $validated['tax_model'] ?? 'exclude';
+        $cart->tax_model = $product->tax_model ?? 'exclude';
         $cart->is_checked = 1;
         $cart->slug = $slug;
         $cart->name = $product->name;
@@ -799,13 +884,12 @@ class WholesaleController extends Controller
         $cart->created_at = now();
         $cart->updated_at = now();
         $cart->shop_info = $shopInfo;
-        $cart->shipping_cost = $validated['shipping_cost'] ?? 0;
+        $cart->shipping_cost = 0;
         $cart->shipping_type = 'area_wise';
         $cart->is_guest = 0;
 
         $cart->save();
 
-        // Debug: Log the saved data
         Log::info('Cart item saved', [
             'cart_id' => $cart->id,
             'variations' => $cart->variations,
@@ -1036,5 +1120,44 @@ class WholesaleController extends Controller
         $groupId = 'WH-' . $userId . '-' . Str::random(6) . '-' . time();
         session()->put('wholesale_cart_group_id', $groupId);
         return $groupId;
+    }
+
+    private function getWholesaleCartQuery(int $customerId, ?string $groupId = null)
+    {
+        $resolvedGroupId = $groupId;
+        if (!is_string($resolvedGroupId) || !preg_match('/^(WH-|wholesale_)/i', $resolvedGroupId)) {
+            $sessionGroupId = session('wholesale_cart_group_id');
+            if (is_string($sessionGroupId) && preg_match('/^(WH-|wholesale_)/i', $sessionGroupId)) {
+                $resolvedGroupId = $sessionGroupId;
+            }
+        }
+
+        if (!is_string($resolvedGroupId) || !preg_match('/^(WH-|wholesale_)/i', $resolvedGroupId)) {
+            return Cart::query()->whereRaw('1 = 0');
+        }
+
+        $query = Cart::query()
+            ->where('customer_id', $customerId)
+            ->where('is_guest', 0)
+            ->where(function ($builder) {
+                $builder->where('cart_group_id', 'like', 'WH-%')
+                    ->orWhere('cart_group_id', 'like', 'wholesale_%');
+            });
+        $query->where('cart_group_id', $resolvedGroupId);
+
+        return $query;
+    }
+
+    private function clearWholesaleCart(int $customerId, ?string $groupId = null): void
+    {
+        $this->getWholesaleCartQuery($customerId, $groupId)->delete();
+        if (is_string($groupId) && preg_match('/^(WH-|wholesale_)/i', $groupId)) {
+            if (session('wholesale_cart_group_id') === $groupId) {
+                session()->forget('wholesale_cart_group_id');
+            }
+            return;
+        }
+
+        session()->forget('wholesale_cart_group_id');
     }
 }

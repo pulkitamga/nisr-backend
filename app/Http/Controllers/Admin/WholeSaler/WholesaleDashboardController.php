@@ -23,6 +23,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\Branch;
+use App\Models\WholesaleConfirmOrder;
 use App\Enums\ViewPaths\Admin\WholeSaler;
 
 
@@ -130,12 +131,43 @@ class WholesaleDashboardController extends BaseController
         $type = $dateTypeArray['type'];
         $range = $dateTypeArray['range'];
         $inHouseOrderEarningArray = $this->getOrderStatisticsData(from: $from, to: $to, range: $range, type: $type, userType: 'admin');
+        $vendorOrderEarningArray = $this->getOrderStatisticsData(from: $from, to: $to, range: $range, type: $type, userType: 'seller');
         $label = $dateTypeArray['keyRange'] ?? [];
         $inHouseOrderEarningArray = array_values($inHouseOrderEarningArray);
         $vendorOrderEarningArray = array_values($vendorOrderEarningArray);
         return response()->json([
             'view' => view(Dashboard::ORDER_STATISTICS[VIEW], compact('inHouseOrderEarningArray', 'vendorOrderEarningArray', 'label', 'dateType'))->render(),
         ]);
+    }
+
+    protected function getOrderStatisticsData($from, $to, $range, $type, $userType): array
+    {
+        if ($userType === 'seller') {
+            $empty = [];
+            foreach ($range as $value) {
+                $empty[$value] = 0;
+            }
+            return $empty;
+        }
+
+        $orderEarnings = WholesaleConfirmOrder::query()
+            ->where('payment_status', 'paid')
+            ->whereBetween('created_at', [$from, $to])
+            ->selectRaw('IFNULL(sum(final_price),0) as sums, YEAR(created_at) year, MONTH(created_at) month, DAY(created_at) day, DAYNAME(created_at) day_of_week')
+            ->groupBy('year', 'month', 'day', 'day_of_week')
+            ->get();
+
+        $orderEarningArray = [];
+        foreach ($range as $value) {
+            $matchingEarnings = $orderEarnings->where($type, $value);
+            if ($matchingEarnings->count() > 0) {
+                $orderEarningArray[$value] = usdToDefaultCurrency($matchingEarnings->sum('sums'));
+            } else {
+                $orderEarningArray[$value] = 0;
+            }
+        }
+
+        return $orderEarningArray;
     }
     public function getEarningStatistics(Request $request): JsonResponse
     {
@@ -197,7 +229,7 @@ class WholesaleDashboardController extends BaseController
 
     public function getRealTimeActivities(): JsonResponse
     {
-        $newOrder = $this->orderRepo->getListWhere(filters: ['checked' => 0], dataLimit: 'all')->count();
+        $newOrder = $this->orderRepo->getListWhere(filters: ['delivery_status' => 'pending'], dataLimit: 'all')->count();
         $restockProductList = $this->restockProductRepo->getListWhere(filters: ['added_by' => 'in_house'], dataLimit: 'all')->groupBy('product_id');
         $restockProduct = [];
         if (count($restockProductList) == 1) {

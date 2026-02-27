@@ -67,10 +67,19 @@ class WholeSalerRepository implements WholeSalerRepositoryInterface
     {
         $query = $this->wholeSalerBusiness->with($relations)->where($filters)
             ->when($searchValue, function ($query) use ($searchValue) {
-                $product_ids = $this->product
-                ->where('name', 'like', "%{$searchValue}%")
-                ->pluck('id');
-                return $query->where('product_id', 'like', "%{$product_ids}%")->orWhereIn('product_id', $product_ids);
+                return $query->where(function ($searchQuery) use ($searchValue) {
+                    $searchQuery->where('company_name', 'like', "%{$searchValue}%")
+                        ->orWhere('trade_name', 'like', "%{$searchValue}%")
+                        ->orWhere('registration_number', 'like', "%{$searchValue}%")
+                        ->orWhere('tax_id', 'like', "%{$searchValue}%")
+                        ->orWhere('vat_number', 'like', "%{$searchValue}%")
+                        ->orWhereHas('wholesaler', function ($wholesalerQuery) use ($searchValue) {
+                            $wholesalerQuery->where('f_name', 'like', "%{$searchValue}%")
+                                ->orWhere('l_name', 'like', "%{$searchValue}%")
+                                ->orWhere('email', 'like', "%{$searchValue}%")
+                                ->orWhere('phone', 'like', "%{$searchValue}%");
+                        });
+                });
             })
             ->when(!empty($orderBy), function ($query) use ($orderBy) {
                 $query->orderBy(array_key_first($orderBy),array_values($orderBy)[0]);
