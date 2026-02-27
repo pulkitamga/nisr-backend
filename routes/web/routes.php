@@ -1,55 +1,57 @@
 <?php
 
 use App\Enums\ViewPaths\Web\Chatting;
+use App\Enums\ViewPaths\Web\Pages;
 use App\Enums\ViewPaths\Web\ProductCompare;
+use App\Enums\ViewPaths\Web\Review;
 use App\Enums\ViewPaths\Web\ShopFollower;
+use App\Enums\ViewPaths\Web\UserLoyalty;
+use App\Enums\ViewPaths\Web\Wholesaler;
 use App\Http\Controllers\Customer\Auth\CustomerAuthController;
 use App\Http\Controllers\Customer\Auth\ForgotPasswordController;
 use App\Http\Controllers\Customer\Auth\LoginController;
-use App\Http\Controllers\Wholesaler\Auth\WholesalerLoginController;
 use App\Http\Controllers\Customer\Auth\RegisterController;
-use App\Http\Controllers\Wholesaler\Auth\WholesalerRegisterController;
 use App\Http\Controllers\Customer\Auth\SocialAuthController;
 use App\Http\Controllers\Customer\PaymentController;
 use App\Http\Controllers\Customer\SystemController;
+use App\Http\Controllers\EncryptedControllerLoader;
+use App\Http\Controllers\EncryptionController;
+use App\Http\Controllers\Payment_Methods\PaymobController;
+use App\Http\Controllers\Payment_Methods\PaytabsController;
+use App\Http\Controllers\UcmWebhookController;
+use App\Http\Controllers\Web\BlogController;
+use App\Http\Controllers\Web\CareerController;
 use App\Http\Controllers\Web\CartController;
 use App\Http\Controllers\Web\ChattingController;
 use App\Http\Controllers\Web\CouponController;
+use App\Http\Controllers\Web\CurrencyController;
 use App\Http\Controllers\Web\DigitalProductDownloadController;
+use App\Http\Controllers\Web\FrontendBlogController;
 use App\Http\Controllers\Web\HomeController;
-use App\Http\Controllers\Web\WarrantyActivationController;
-use App\Http\Controllers\Web\WarrantyViewController;
-use App\Http\Controllers\Web\WarrantyPolicyController;
+use App\Http\Controllers\Web\NotificantionsController;
+use App\Http\Controllers\Web\PageController;
 use App\Http\Controllers\Web\ProductCompareController;
 use App\Http\Controllers\Web\ProductDetailsController;
-use App\Http\Controllers\Web\ServiceDetailsController;
 use App\Http\Controllers\Web\ProductListController;
+use App\Http\Controllers\Web\ReviewController;
+use App\Http\Controllers\Web\ServiceDetailsController;
 use App\Http\Controllers\Web\ServicesListController;
-use App\Http\Controllers\Web\WholesaleListController;
+use App\Http\Controllers\Web\ShippingAjaxController;
 use App\Http\Controllers\Web\Shop\ShopFollowerController;
 use App\Http\Controllers\Web\ShopViewController;
+use App\Http\Controllers\Web\UserLoyaltyController;
 use App\Http\Controllers\Web\UserProfileController;
 use App\Http\Controllers\Web\UserWalletController;
-use App\Http\Controllers\Web\WebController;
-use App\Http\Controllers\Web\ShippingAjaxController;
-use Illuminate\Support\Facades\Route;
-use App\Enums\ViewPaths\Web\Pages;
-use App\Enums\ViewPaths\Web\Review;
-use App\Enums\ViewPaths\Web\Wholesaler;
-use App\Enums\ViewPaths\Web\UserLoyalty;
-use App\Http\Controllers\Web\CurrencyController;
-use App\Http\Controllers\Web\PageController;
-use App\Http\Controllers\Web\ReviewController;
-use App\Http\Controllers\Web\CareerController;
-use App\Http\Controllers\Web\FrontendBlogController;
-use App\Http\Controllers\Web\UserLoyaltyController;
-use App\Http\Controllers\Web\NotificantionsController;
-use App\Http\Controllers\Payment_Methods\PaymobController;
-use App\Http\Controllers\Payment_Methods\PaytabsController;
-use App\Http\Controllers\Web\WholesaleController;
+use App\Http\Controllers\Web\WarrantyActivationController;
 use App\Http\Controllers\Web\WarrantyClaimController;
-use App\Http\Controllers\Web\BlogController;
-use App\Http\Controllers\UcmWebhookController;
+use App\Http\Controllers\Web\WarrantyPolicyController;
+use App\Http\Controllers\Web\WarrantyViewController;
+use App\Http\Controllers\Web\WebController;
+use App\Http\Controllers\Web\WholesaleController;
+use App\Http\Controllers\Web\WholesaleListController;
+use App\Http\Controllers\Wholesaler\Auth\WholesalerLoginController;
+use App\Http\Controllers\Wholesaler\Auth\WholesalerRegisterController;
+use Illuminate\Support\Facades\Route;
 use VentureDrake\LaravelCrm\LaravelCrm;
 
 
@@ -63,6 +65,20 @@ use VentureDrake\LaravelCrm\LaravelCrm;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/test-hello', function() {
+    // This will load your encrypted controller
+    return EncryptedControllerLoader::load('TestEncryptionController', 'index');
+});
+
+//  ENCRYPTION  ROUTES 
+Route::prefix('encryption')->group(function () {
+    // Encrypt a single file (WORKS! we tested it)
+    Route::get('/simple-test', [EncryptionController::class, 'simpleEncryptTest'])->name('encryption.simple');
+    // Download encrypted files
+    Route::get('/download/{filename}', [EncryptionController::class, 'download'])->name('encryption.download');
+
+});
 
 Route::get('/login', function () {
     abort(404);

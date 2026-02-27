@@ -12290,4 +12290,5 @@ return [
 	"role_is_assigned_to_admin_users_reassign_before_delete" => "Role is assigned to admin users reassign before delete",
 	"this_role_already_exists" => "This role already exists",
 	"invalid_permission_selected" => "Invalid permission selected",
+	"custom_range" => "Custom range",
 ];
