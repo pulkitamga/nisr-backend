@@ -1,5 +1,19 @@
+# Auto-detect text files and normalize line endings
 * text=auto
-*.css linguist-vendored
-*.scss linguist-vendored
-*.js linguist-vendored
+
+# Force LF for common text-based files (useful لو فريقك على Windows)
+*.php       text eol=lf
+*.blade.php text eol=lf
+*.js        text eol=lf
+*.css       text eol=lf
+*.scss      text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+
+# Treat generated/vendor front-end assets as vendored for GitHub language stats
+# *.js   linguist-vendored
+# *.css  linguist-vendored
+# *.scss linguist-vendored
+
+# Exclude from git archive exports (only affects git archive)
 CHANGELOG.md export-ignore
