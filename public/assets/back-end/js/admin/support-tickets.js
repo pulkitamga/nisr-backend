@@ -27,6 +27,113 @@ function removeURLParameter(url, parameter) {
     return url;
 }
 
+$(document).on('change', '.support-ticket-status-select', function () {
+    const select = $(this);
+    const ticketId = select.data('ticket-id');
+    const selectedStatusId = select.val();
+    const previousStatusId = select.data('current-status');
+    const selectedStatusName = select.find('option:selected').text().trim();
+    const updateRoute = $('#support-ticket-status-route').data('url');
+    const confirmTextSource = $('#get-confirm-and-cancel-button-text');
+
+    if (!updateRoute || !ticketId || !selectedStatusId) {
+        return;
+    }
+
+    if (String(previousStatusId) === String(selectedStatusId)) {
+        return;
+    }
+
+    Swal.fire({
+        title: confirmTextSource.data('sure') || 'Are you sure?',
+        text: selectedStatusName,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: confirmTextSource.data('confirm') || 'Yes',
+        cancelButtonText: confirmTextSource.data('cancel') || 'No',
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            select.val(previousStatusId);
+            return;
+        }
+
+        select.prop('disabled', true);
+        $.ajax({
+            url: updateRoute,
+            method: 'POST',
+            data: {
+                id: ticketId,
+                status: selectedStatusId,
+                _token: $('meta[name="csrf-token"]').attr('content'),
+            },
+            success: function (response) {
+                toastr.success(response?.message || 'Status updated successfully.');
+                select.data('current-status', selectedStatusId);
+            },
+            error: function (jqXHR) {
+                select.val(previousStatusId);
+                toastr.error(jqXHR.responseJSON?.message || 'Request failed.');
+            },
+            complete: function () {
+                select.prop('disabled', false);
+            }
+        });
+    });
+});
+
+$(document).on('change', '.support-ticket-priority-select', function () {
+    const select = $(this);
+    const ticketId = select.data('ticket-id');
+    const selectedPriority = String(select.val() || '').toLowerCase();
+    const previousPriority = String(select.data('current-priority') || '').toLowerCase();
+    const selectedPriorityName = select.find('option:selected').text().trim();
+    const updateRoute = $('#support-ticket-priority-route').data('url');
+    const confirmTextSource = $('#get-confirm-and-cancel-button-text');
+
+    if (!updateRoute || !ticketId || !selectedPriority) {
+        return;
+    }
+
+    if (selectedPriority === previousPriority) {
+        return;
+    }
+
+    Swal.fire({
+        title: confirmTextSource.data('sure') || 'Are you sure?',
+        text: selectedPriorityName,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: confirmTextSource.data('confirm') || 'Yes',
+        cancelButtonText: confirmTextSource.data('cancel') || 'No',
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            select.val(previousPriority);
+            return;
+        }
+
+        select.prop('disabled', true);
+        $.ajax({
+            url: updateRoute,
+            method: 'POST',
+            data: {
+                id: ticketId,
+                priority: selectedPriority,
+                _token: $('meta[name="csrf-token"]').attr('content'),
+            },
+            success: function (response) {
+                toastr.success(response?.message || 'Priority updated successfully.');
+                select.data('current-priority', selectedPriority);
+            },
+            error: function (jqXHR) {
+                select.val(previousPriority);
+                toastr.error(jqXHR.responseJSON?.message || 'Request failed.');
+            },
+            complete: function () {
+                select.prop('disabled', false);
+            }
+        });
+    });
+});
 
 
 document.querySelectorAll('.statusForm').forEach(form => {
@@ -82,14 +189,6 @@ $(document).on('click', '[data-target="#showSupportFollowUpModal"]', function ()
 });
 
 $(document).on("ready", function () {
-    $('#support-follow-up-status').on('change', function () {
-        var status = $(this).val();
-        $('#support-ticket-next-follow-up-date-row').removeClass().addClass('row d-none');
-        if (status == 5 || status == 39) { // In Progress
-            $('#support-ticket-next-follow-up-date-row').removeClass().addClass('row');
-        }
-    });
-
     $('#showSupportFollowUpModal').on('show.bs.modal', function (event) {
         const button = $(event.relatedTarget);
         const ticketId = button.data('ticket-id');
@@ -98,6 +197,11 @@ $(document).on("ready", function () {
         $('#support-follow-up-ticket-id').val(ticketId);
         $('#support-follow-up-department-id').val(departmentId);
         $('#support-follow-up-employee-id').val(employeeId);
+        $('#support-task-name').val('');
+        $('#support-task-description').val('');
+        $('#support-task-due-date').val('');
+        $('#support-task-status').val('pending');
+        $('#support-add-to-calendar').prop('checked', false);
     });
 
     $('#updateSupportTicketFollowUpForm').on('submit', function (event) {
@@ -114,7 +218,7 @@ $(document).on("ready", function () {
             data: $(this).serialize(),
             success: function (response) {
                 if (response.success) {
-                    toastr.success('Follow-up updated successfully!');
+                    toastr.success(response.message || 'Follow-up updated successfully!');
                     $('#showSupportFollowUpModal').modal('hide');
                     location.reload();
                 } else {
@@ -161,8 +265,8 @@ $(document).on("ready", function () {
             data: $(this).serialize(),
             success: function (response) {
                 if (response.success) {
-                    toastr.success('Follow-up updated successfully!');
-                    $('#showSupportFollowUpModal').modal('hide');
+                    toastr.success(response.message || 'Follow-up updated successfully!');
+                    $('#showComplainFollowUpModal').modal('hide');
                     location.reload();
                 } else {
                     toastr.error(response.message || 'Something went wrong.');

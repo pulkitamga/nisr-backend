@@ -18,6 +18,7 @@ use App\Http\Controllers\RestAPI\v3\seller\SellerController;
 use App\Http\Controllers\RestAPI\v3\seller\shippingController;
 use App\Http\Controllers\RestAPI\v3\seller\ShippingMethodController;
 use App\Http\Controllers\RestAPI\v3\seller\ShopController;
+use App\Http\Controllers\RestAPI\v3\LsLibController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -256,6 +257,5 @@ Route::group(['namespace' => 'RestAPI\v3\seller', 'prefix' => 'v3/seller', 'midd
         });
     });
 
-    Route::post('ls-lib-update', 'LsLibController@lib_update');
+    Route::post('ls-lib-update', [LsLibController::class, 'lib_update']);
 });
-

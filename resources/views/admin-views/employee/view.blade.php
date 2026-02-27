@@ -21,7 +21,7 @@
                         <div class="media-body">
                             <div class="text-capitalize mb-4">
                                 <h4 class="mb-2">{{$employee->name}}</h4>
-                                <p>{{isset($employee->role) ? $employee->role->name : translate('role_not_found')}}</p>
+                                <p>{{ $employee->roles->first()?->name ?? (isset($employee->role) ? $employee->role->name : translate('role_not_found')) }}</p>
                             </div>
 
                             <ul class="d-flex flex-column gap-3 px-0">
@@ -59,30 +59,34 @@
                                         <i class="tio-account-square-outlined"></i>
                                         <h6 class="text-dark mb-0 text-capitalize">{{translate('access_available').':'.' '}}</h6>
                                     </div>
-                                    @if (isset($employee->role))
                                     <div class="tags d-flex gap-2 flex-wrap">
-                                        @foreach (json_decode($employee->role->module_access, true) as $key => $permissions)
-                                        @foreach ($permissions as $permission)
-                                        <span class="badge bg-primary-light text-capitalize">{{ str_replace('_', ' ', $permission) }}</span>
-                                        @endforeach
+                                        @foreach ($employee->getAllPermissions() as $permission)
+                                            <span class="badge bg-primary-light text-capitalize">{{ str_replace(['_', '.'], ' ', $permission->name) }}</span>
                                         @endforeach
 
                                     </div>
-                                    @endif
                                 </div>
-                                <a href="{{route('admin.employee.update',[$employee['id']])}}">
-                                    <i class="tio-edit" data-toggle="tooltip" data-placement="top" title="{{translate('you_can_create_or_edit_role_form_employee_role_setup')}}"></i>
-                                </a>
+                                @can('employee_management.update')
+                                    @if(!($employee->roles->contains('name', config('permissions_admin.super_admin_role', 'Super Admin')) && !auth('admin')->user()?->isSuperAdmin()))
+                                        <a href="{{route('admin.employee.update',[$employee['id']])}}">
+                                            <i class="tio-edit" data-toggle="tooltip" data-placement="top" title="{{translate('you_can_create_or_edit_role_form_employee_role_setup')}}"></i>
+                                        </a>
+                                    @endif
+                                @endcan
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-12">
                     <div class="d-flex justify-content-end">
-                        <a href="{{route('admin.employee.update',[$employee['id']])}}" class="btn btn--primary px-5">
-                            <i class="tio-edit"></i>
-                            {{translate('edit')}}
-                        </a>
+                        @can('employee_management.update')
+                            @if(!($employee->roles->contains('name', config('permissions_admin.super_admin_role', 'Super Admin')) && !auth('admin')->user()?->isSuperAdmin()))
+                                <a href="{{route('admin.employee.update',[$employee['id']])}}" class="btn btn--primary px-5">
+                                    <i class="tio-edit"></i>
+                                    {{translate('edit')}}
+                                </a>
+                            @endif
+                        @endcan
                     </div>
                 </div>
             </div>

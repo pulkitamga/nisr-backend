@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\Employee;
 
 use App\Contracts\Repositories\AdminRepositoryInterface;
-use App\Contracts\Repositories\AdminRoleRepositoryInterface;
 use App\Contracts\Repositories\DepartmentRepositoryInterface;
 use App\Contracts\Repositories\BranchRepositoryInterface;
 use App\Enums\ExportFileNames\Admin\Customer as CustomerExport;
@@ -13,6 +12,9 @@ use App\Exports\EmployeeListExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\AdminAddRequest;
 use App\Http\Requests\Admin\AdminUpdateRequest;
+use App\Models\Admin;
+use App\Models\AdminRole;
+use App\Support\AdminPermissionRegistry;
 use App\Services\AdminService;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +22,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Traits\PaginatorTrait;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class EmployeeController extends BaseController
@@ -29,7 +33,6 @@ class EmployeeController extends BaseController
 
     public function __construct(
         private readonly AdminRepositoryInterface $adminRepo,
-        private readonly AdminRoleRepositoryInterface $adminRoleRepo,
         private readonly DepartmentRepositoryInterface $departmentRepo,
         private readonly BranchRepositoryInterface $branchRepo,
     ) {}
@@ -47,12 +50,15 @@ class EmployeeController extends BaseController
 
     public function getListView(Request $request): View
     {
-        $employee_roles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
+        $employee_roles = $this->getActiveAdminRoles();
         $employees = $this->adminRepo->getEmployeeListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            filters: ['admin_role_id' => $request['admin_role_id'] ?? 'all'],
-            relations: ['role', 'branch', 'department'],
+            filters: [
+                'admin_role_id' => 'all',
+                'role_id' => $request['role_id'] ?? 'all',
+            ],
+            relations: ['role', 'roles', 'branch', 'department'],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
         $departments = $this->departmentRepo->getListWhere(
@@ -70,8 +76,11 @@ class EmployeeController extends BaseController
     {
         $employees = $this->adminRepo->getEmployeeListWhere(
             searchValue: $request['searchValue'],
-            filters: ['admin_role_id' => $request['role']],
-            relations: ['role'],
+            filters: [
+                'admin_role_id' => 'all',
+                'role_id' => $request['role'],
+            ],
+            relations: ['role', 'roles'],
             dataLimit: 'all'
         );
         $active = $employees->where('status', 1)->count();
@@ -79,7 +88,10 @@ class EmployeeController extends BaseController
 
         $filter = 'all';
         if ($request->has('role') &&  $request['role'] != 'all') {
-            $filter = $this->adminRoleRepo->getFirstWhere(params: ['id' => $request['role']])['name'];
+            $selectedRole = Role::query()
+                ->where('guard_name', AdminPermissionRegistry::guard())
+                ->find($request['role']);
+            $filter = $selectedRole?->name ?? 'all';
         }
 
         $data = [
@@ -95,7 +107,7 @@ class EmployeeController extends BaseController
 
     public function getAddView(): View
     {
-        $employee_roles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
+        $employee_roles = $this->getActiveAdminRoles();
         $departments = $this->departmentRepo->getListWhere(
             filters: ['status' => 1],
             dataLimit: 'all'
@@ -109,17 +121,24 @@ class EmployeeController extends BaseController
 
     public function add(AdminAddRequest $request, AdminService $adminService): RedirectResponse
     {
-
-        if ($request['role_id'] == 1) {
-            Toastr::warning(translate('access_denied'));
-            return back();
+        $role = $this->resolveAssignableRole((int)$request['role_id']);
+        if (!$role) {
+            Toastr::warning(translate('invalid_role_selected'));
+            return back()->withInput();
         }
+
+        if ($this->isSuperAdminRole($role) && !auth('admin')->user()?->isSuperAdmin()) {
+            Toastr::warning(translate('access_denied'));
+            return back()->withInput();
+        }
+
+        $legacyRole = $this->ensureLegacyRoleMirror($role);
 
         $data = [
             'name' => $request['name'],
             'phone' => $request['phone'],
             'email' => $request['email'],
-            'admin_role_id' => $request['role_id'],
+            'admin_role_id' => $legacyRole?->id,
             'branch_id' => json_encode($request['branch_id']),
             'department_id' => $request['department_id'],
             'identify_type' => $request['identify_type'],
@@ -133,7 +152,11 @@ class EmployeeController extends BaseController
         ];
 
 
-        $this->adminRepo->add(data: $data);
+        /** @var Admin $admin */
+        $admin = $this->adminRepo->add(data: $data);
+        if ($admin instanceof Admin) {
+            $admin->syncRoles([$role->name]);
+        }
         Toastr::success(translate('employee_added_successfully'));
         return redirect()->route('admin.employee.list');
     }
@@ -142,17 +165,22 @@ class EmployeeController extends BaseController
 
     public function getView(Request $request): View
     {
-        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['role']);
+        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['role', 'roles']);
         return view(Employee::VIEW[VIEW], compact('employee'));
     }
 
     public function getUpdateView($id): View
     {
-        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $id]);
+        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $id], relations: ['roles']);
+        if ($employee && $employee->hasRole(AdminPermissionRegistry::superAdminRole()) && !auth('admin')->user()?->isSuperAdmin()) {
+            abort(403);
+        }
+
         $selectedBranches = is_array($employee->branch_id)
             ? $employee->branch_id
             : (json_decode($employee->branch_id, true) ?? []);
-        $adminRoles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
+        $adminRoles = $this->getActiveAdminRoles();
+        $selectedRoleId = $employee->roles->first()?->id;
         $departments = $this->departmentRepo->getListWhere(
             filters: ['status' => 1],
             dataLimit: 'all'
@@ -161,16 +189,38 @@ class EmployeeController extends BaseController
             filters: ['status' => 1],
             dataLimit: 'all'
         );
-        return view(Employee::UPDATE[VIEW], compact('adminRoles', 'employee', 'departments', 'branches',   'selectedBranches'));
+        return view(Employee::UPDATE[VIEW], compact('adminRoles', 'employee', 'departments', 'branches', 'selectedBranches', 'selectedRoleId'));
     }
 
     public function update(AdminUpdateRequest $request, AdminService $adminService): RedirectResponse
     {
-        if ($request['role_id'] == 1) {
-            Toastr::warning(translate('access_denied'));
-            return back();
+        $employeeId = (int)$request->route('id');
+        $role = $this->resolveAssignableRole((int)$request['role_id']);
+        if (!$role) {
+            Toastr::warning(translate('invalid_role_selected'));
+            return back()->withInput();
         }
-        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']]);
+
+        if ($this->isSuperAdminRole($role) && !auth('admin')->user()?->isSuperAdmin()) {
+            Toastr::warning(translate('access_denied'));
+            return back()->withInput();
+        }
+
+        $legacyRole = $this->ensureLegacyRoleMirror($role);
+
+        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $employeeId]);
+        $employee->load('roles');
+
+        if ($employee->hasRole(AdminPermissionRegistry::superAdminRole()) && !auth('admin')->user()?->isSuperAdmin()) {
+            Toastr::warning(translate('access_denied'));
+            return back()->withInput();
+        }
+
+        if ($employee->hasRole(AdminPermissionRegistry::superAdminRole()) && !$this->isSuperAdminRole($role) && $this->countSuperAdminUsers() <= 1) {
+            Toastr::warning(translate('last_super_admin_can_not_be_downgraded'));
+            return back()->withInput();
+        }
+
         $identity_image = [];
         if ($request->file('identity_image')) {
             $identity_image = $adminService->getIdentityImages(request: $request, oldImages: $employee);
@@ -180,7 +230,7 @@ class EmployeeController extends BaseController
             'name' => $request['name'],
             'phone' => $request['phone'],
             'email' => $request['email'],
-            'admin_role_id' => $request['role_id'],
+            'admin_role_id' => $legacyRole?->id,
             'branch_id' => $request['branch_id'],
             'department_id' => $request['department_id'],
             'password' => $request['password'] ? bcrypt($request['password']) : $employee['password'],
@@ -191,13 +241,41 @@ class EmployeeController extends BaseController
             'updated_at' => now(),
         ];
 
-        $this->adminRepo->update(id: $request['id'], data: $data);
+        $this->adminRepo->update(id: $employeeId, data: $data);
+        $employee->syncRoles([$role->name]);
         Toastr::success(translate('employee_updated_successfully'));
         return redirect()->route('admin.employee.list');
     }
 
     public function updateStatus(Request $request): RedirectResponse|JsonResponse
     {
+        $admin = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['roles']);
+        if ($admin && $admin->hasRole(AdminPermissionRegistry::superAdminRole()) && !auth('admin')->user()?->isSuperAdmin()) {
+            $message = translate('access_denied');
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $message,
+                ], 403);
+            }
+
+            Toastr::warning($message);
+            return back();
+        }
+
+        if ($admin && $admin->hasRole(AdminPermissionRegistry::superAdminRole()) && !$request->boolean('status') && $this->countSuperAdminUsers() <= 1) {
+            $message = translate('last_super_admin_can_not_be_disabled');
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $message,
+                ], 422);
+            }
+
+            Toastr::warning($message);
+            return back();
+        }
+
         $this->adminRepo->update(id: $request['id'], data: ['status' => $request->get('status', 0)]);
         if ($request->ajax()) {
             return response()->json([
@@ -246,5 +324,63 @@ class EmployeeController extends BaseController
         }
         Toastr::success(translate('department_Updated'));
         return back();
+    }
+
+    private function getActiveAdminRoles()
+    {
+        $superAdminRole = AdminPermissionRegistry::superAdminRole();
+        $query = Role::query()
+            ->where('guard_name', AdminPermissionRegistry::guard())
+            ->orderBy('name');
+
+        if (Schema::hasColumn('roles', 'status')) {
+            $query->where('status', 1);
+        }
+
+        if (!auth('admin')->user()?->isSuperAdmin()) {
+            $query->where('name', '!=', $superAdminRole);
+        }
+
+        return $query->get();
+    }
+
+    private function resolveAssignableRole(int $roleId): ?Role
+    {
+        $query = Role::query()
+            ->where('guard_name', AdminPermissionRegistry::guard())
+            ->where('id', $roleId);
+
+        if (Schema::hasColumn('roles', 'status')) {
+            $query->where('status', 1);
+        }
+
+        return $query->first();
+    }
+
+    private function ensureLegacyRoleMirror(Role $role): AdminRole
+    {
+        return AdminRole::query()->firstOrCreate(
+            ['name' => $role->name],
+            [
+                'module_access' => '{}',
+                'status' => Schema::hasColumn('roles', 'status') ? (bool)$role->status : true,
+            ]
+        );
+    }
+
+    private function isSuperAdminRole(Role $role): bool
+    {
+        return trim(strtolower($role->name)) === trim(strtolower(AdminPermissionRegistry::superAdminRole()));
+    }
+
+    private function countSuperAdminUsers(): int
+    {
+        return Admin::query()
+            ->where('status', 1)
+            ->whereHas('roles', function ($query) {
+                $query->where('name', AdminPermissionRegistry::superAdminRole())
+                    ->where('guard_name', AdminPermissionRegistry::guard());
+            })
+            ->count();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\restapi\v1;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\TriageClaimJob;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimAttachment;
@@ -44,6 +45,9 @@ class WarrantyClaimController extends Controller
             }
 
             $description = "Subject: {$request->subject}\nDetails: {$request->details}\nIssue: {$request->issue}";
+            $submittedAt = Carbon::now();
+            $firstResponseHours = (int) (getWebConfig(name: 'warranty_sla_first_response')['value'] ?? 24);
+            $resolutionDays = (int) (getWebConfig(name: 'warranty_sla_decision')['value'] ?? 3);
 
             $claim = WarrantyClaim::create([
                 'warranty_id' => $warranty->id,
@@ -51,7 +55,9 @@ class WarrantyClaimController extends Controller
                 'claim_number' => 'CLM-' . strtoupper(Str::random(8)),
                 'status' => 'new',
                 'description' => $description,
-                'submitted_at' => Carbon::now(),
+                'submitted_at' => $submittedAt,
+                'response_due' => $submittedAt->copy()->addHours($firstResponseHours),
+                'resolution_due' => $submittedAt->copy()->addDays($resolutionDays),
             ]);
 
             // Upload images
@@ -73,6 +79,8 @@ class WarrantyClaimController extends Controller
                 'description' => 'Claim submitted by customer',
                 'timestamp' => now(),
             ]);
+
+            TriageClaimJob::dispatch($claim);
 
             return response()->json([
                 'success' => true,

@@ -12,10 +12,11 @@ $(document).ready(function () {
     // AJAX submit
     $('#updateTypeForm').on('submit', function (e) {
         e.preventDefault();
+        let actionUrl = $(this).attr('action');
         let formData = $(this).serialize();
 
         $.ajax({
-            url: "{{ route('admin.crm.update-massage-type') }}",
+            url: actionUrl,
             type: "POST",
             data: formData,
             success: function (response) {
@@ -24,7 +25,6 @@ $(document).ready(function () {
 
                     $('div.edit-message-type[data-id="' + $('#message_id').val() + '"]').closest('td').find('.text-success').first().text($('#type-id').val());
                     $('#showTypeModal').modal('hide');
-                    location.reload();
                 } else {
                     toastr.error(response.message || 'Failed to update message type!');
                 }
@@ -37,58 +37,122 @@ $(document).ready(function () {
 
 });
 
+function getStatusClass(status) {
+    const map = {
+        new: 'text-primary bg-soft-primary',
+        processing: 'text-warning bg-soft-warning',
+        converted: 'text-success bg-soft-success',
+        ignored: 'text-secondary bg-soft-secondary',
+        spam: 'text-danger bg-soft-danger'
+    };
+    return map[status] || 'text-dark bg-soft-light';
+}
 
-
-
-
-
-document.querySelector(".bulk-convert-btn").addEventListener("click", function () {
-    let ids = Array.from(document.querySelectorAll(".message-checkbox:checked"))
-        .map(cb => cb.value);
-
-    if (ids.length === 0) {
-        Swal.fire("Please select at least one message!");
-        return false;
-    }
-    document.getElementById("convertMessageIds").value = ids.join(",");
-
-    let convertModal = new bootstrap.Modal(document.getElementById("convertBulkModal"));
-    convertModal.show();
-});
-
-document.getElementById("bulkConvertForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    let form = this;
-    let formData = new FormData(form);
-
-    if (formData.get("message_ids").includes(",")) {
-        formData.set("message_ids", formData.get("message_ids").split(","));
+function updateRowStatus(messageId, status) {
+    const row = $('#row-' + messageId);
+    if (!row.length) {
+        return;
     }
 
-    fetch(form.action, {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-CSRF-TOKEN": document.querySelector("meta[name=csrf-token]").content
+    const badge = row.find('span.fz-12').first();
+    if (!badge.length) {
+        return;
+    }
+
+    badge
+        .attr('class', 'btn ' + getStatusClass(status) + ' font-weight-bold px-3 py-1 mb-0 fz-12')
+        .text(status.charAt(0).toUpperCase() + status.slice(1));
+}
+
+function clearActionButtons(messageId) {
+    const row = $('#row-' + messageId);
+    if (!row.length) {
+        return;
+    }
+
+    row.find('.ignore-btn, .mark-spam-btn, a[data-bs-target="#convertModal"]').remove();
+    row.find('.message-checkbox').prop('checked', false);
+}
+
+function updateOwnerCell(messageId, ownerName) {
+    const row = $('#row-' + messageId);
+    if (!row.length) {
+        return;
+    }
+
+    const ownerCell = row.children('td').eq(7);
+    if (!ownerCell.length) {
+        return;
+    }
+
+    ownerCell.text(ownerName || 'Not Assigned');
+}
+
+const bulkConvertButton = document.querySelector(".bulk-convert-btn");
+if (bulkConvertButton) {
+    bulkConvertButton.addEventListener("click", function () {
+        let ids = Array.from(document.querySelectorAll(".message-checkbox:checked"))
+            .map(cb => cb.value);
+
+        if (ids.length === 0) {
+            Swal.fire("Please select at least one message!");
+            return false;
         }
-    }).then(res => res.json())
-        .then(data => {
-            if (data.status) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Converted!',
-                    text: data.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => location.reload());
-            } else {
-                Swal.fire('Oops...', 'Something went wrong!', 'error');
+        document.getElementById("convertMessageIds").value = ids.join(",");
+
+        let convertModal = new bootstrap.Modal(document.getElementById("convertBulkModal"));
+        convertModal.show();
+    });
+
+    document.getElementById("bulkConvertForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        let form = this;
+        let formData = new FormData(form);
+
+        if (formData.get("message_ids").includes(",")) {
+            formData.set("message_ids", formData.get("message_ids").split(","));
+        }
+
+        fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": document.querySelector("meta[name=csrf-token]").content
             }
-        }).catch(err => {
-            console.error(err);
-            Swal.fire('Server Error', 'Please try again later!', 'error');
-        });
-});
+        }).then(res => res.json())
+            .then(data => {
+                if (data.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Converted!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    const convertedIds = Array.isArray(data.converted) ? data.converted : [];
+                    convertedIds.forEach(id => {
+                        updateRowStatus(id, 'converted');
+                        clearActionButtons(id);
+                    });
+
+                    const bulkModalEl = document.getElementById("convertBulkModal");
+                    if (bulkModalEl) {
+                        const bulkModal = bootstrap.Modal.getInstance(bulkModalEl);
+                        if (bulkModal) {
+                            bulkModal.hide();
+                        }
+                    }
+                    $('#select-all').prop('checked', false);
+                } else {
+                    Swal.fire('Not Converted', data.message || 'No inquiry converted!', 'warning');
+                }
+            }).catch(err => {
+                console.error(err);
+                Swal.fire('Server Error', 'Please try again later!', 'error');
+            });
+    });
+}
 
 
 
@@ -136,7 +200,8 @@ $(document).on('click', '.ignore-btn', function () {
                         response.message,
                         'success'
                     )
-                    location.reload(); // page refresh
+                    updateRowStatus(id, 'ignored');
+                    clearActionButtons(id);
                 },
                 error: function (xhr) {
                     Swal.fire(
@@ -178,7 +243,8 @@ $(document).on('click', '.mark-spam-btn', function () {
                         response.message,
                         'success'
                     )
-                    location.reload(); // page refresh
+                    updateRowStatus(id, 'spam');
+                    clearActionButtons(id);
                 },
                 error: function (xhr) {
                     Swal.fire(
@@ -196,6 +262,7 @@ $(document).on('click', '.mark-spam-btn', function () {
 $(document).on('click', '.assign-owner-btn', function () {
     let ticketId = $(this).data('id');
     let form = $('#updateTicketOwnerForm');
+
     form.find('#owner_ticket_id').val(ticketId);
     $('#showOwnerModal').modal('show');
 });
@@ -209,7 +276,6 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
     let actionUrl = $('#assignOwnerRoute').data('url');
     let formData = form.serialize();
 
-    console.log("Form Data:", formData);
     $.ajax({
         url: actionUrl,
         type: "POST",
@@ -217,7 +283,9 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
         success: function (response) {
             $('#showOwnerModal').modal('hide');
             Swal.fire('Success!', response.message, 'success');
-            location.reload();
+            const ticketId = form.find('#owner_ticket_id').val();
+            const ownerName = form.find('#owner-employee-id option:selected').text().trim();
+            updateOwnerCell(ticketId, ownerName);
         },
         error: function (xhr) {
             Swal.fire(
@@ -248,8 +316,6 @@ $('#updateTicketEmployeeForm').on('submit', function (e) {
     let actionUrl = $('#assignEmployeeRoute').data('url');
     let formData = form.serialize();
 
-    console.log("Form Data:", formData);
-
     $.ajax({
         url: actionUrl,
         type: "POST",
@@ -257,7 +323,6 @@ $('#updateTicketEmployeeForm').on('submit', function (e) {
         success: function (response) {
             $('#showEmployeeModal').modal('hide');
             Swal.fire('Success!', response.message, 'success');
-            location.reload();
         },
         error: function (xhr) {
             Swal.fire(
@@ -276,7 +341,6 @@ $(document).on('click', '.assign-dept-btn', function () {
     let ticketId = $(this).data('id');
     let deptId = $(this).data('department-id') || '';
 
-    console.log("Setting dept ticket_id:", ticketId, "current dept:", deptId);
     $('#depart_ticket_id').val(ticketId);
     $('#department-id').val(deptId).trigger('change');
     $('#priority').val('');
@@ -293,8 +357,6 @@ $('#updateTicketDepartmentForm').on('submit', function (e) {
     let actionUrl = $('#assignDepartmentRoute').data('url');
     let formData = form.serialize();
 
-    console.log("Dept Form Data:", formData);
-
     $.ajax({
         url: actionUrl,
         type: "POST",
@@ -306,7 +368,6 @@ $('#updateTicketDepartmentForm').on('submit', function (e) {
                 response.message,
                 'success'
             );
-            location.reload(); // page reload for update
         },
         error: function (xhr) {
             Swal.fire(
@@ -370,58 +431,77 @@ document.querySelectorAll("[data-bs-target='#convertModal']").forEach(btn => {
 
 
 // Ajax form submit
-document.getElementById("convertForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    let form = this;
+const convertForm = document.getElementById("convertForm");
+if (convertForm) {
+    convertForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        let form = this;
 
-    fetch(form.action, {
-        method: "POST",
-        body: new FormData(form),
-        headers: {
-            "X-CSRF-TOKEN": document.querySelector("meta[name=csrf-token]").content
-        }
-    }).then(res => res.json())
-        .then(data => {
-            if (data.status) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Converted!',
-                    text: data.message, // ✅ Controller se aaya message
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Not Converted',
-                    text: data.message || 'Conversion failed!', // ✅ Exact reason dikhayega
-                });
+        fetch(form.action, {
+            method: "POST",
+            body: new FormData(form),
+            headers: {
+                "X-CSRF-TOKEN": document.querySelector("meta[name=csrf-token]").content
             }
-        }).catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Server Error',
-                text: 'Please try again later!'
+        }).then(res => res.json())
+            .then(data => {
+                if (data.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Converted!',
+                        text: data.message, // ✅ Controller se aaya message
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    const messageId = document.getElementById("convertMessageId")?.value;
+                    if (messageId) {
+                        updateRowStatus(messageId, 'converted');
+                        clearActionButtons(messageId);
+                    }
+
+                    const convertModalEl = document.getElementById("convertModal");
+                    if (convertModalEl) {
+                        const convertModal = bootstrap.Modal.getInstance(convertModalEl);
+                        if (convertModal) {
+                            convertModal.hide();
+                        }
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Not Converted',
+                        text: data.message || 'Conversion failed!', // ✅ Exact reason dikhayega
+                    });
+                }
+            }).catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Server Error',
+                    text: 'Please try again later!'
+                });
             });
-        });
-});
+    });
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     const typeSelect = document.getElementById("bulkTypeSelect");
     const subTypeWrapper = document.getElementById("bulkSubTypeWrapper");
     const subTypeSelect = document.getElementById("bulkSubTypeSelect");
-    const reasonWrapper = document.getElementById("reasonWrapper");
-    const reasonSelect = document.getElementById("reasonSelect");
+    const bulkReasonWrapper = document.getElementById("bulkReasonWrapper");
+    const bulkReasonSelect = document.getElementById("bulkReasonSelect");
+
+    if (!typeSelect || !subTypeWrapper || !subTypeSelect || !bulkReasonWrapper || !bulkReasonSelect) {
+        return;
+    }
 
     // Type change
     typeSelect.addEventListener("change", function () {
         const type = this.value;
 
         subTypeSelect.innerHTML = '<option value="">-- Select Sub-Type --</option>';
-        reasonWrapper.style.display = "none";
-        reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+        bulkReasonWrapper.style.display = "none";
+        bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
 
         if (type === "lead") {
             subTypeWrapper.style.display = "block";
@@ -444,7 +524,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const value = e.target.value;
 
             if (value === "retail") {
-                bulkreasonWrapper.style.display = "block";
+                bulkReasonWrapper.style.display = "block";
                 const bulkreasons = [
                     "Complaint",
                     "Delivery Issue",
@@ -454,13 +534,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     "Setup/How-to",
                     "General Inquiry"
                 ];
-                bulkreasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+                bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
                 bulkreasons.forEach(opt => {
-                    bulkreasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
+                    bulkReasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
                 });
             } else {
-                bulkreasonWrapper.style.display = "none";
-                bulkreasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+                bulkReasonWrapper.style.display = "none";
+                bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
             }
         }
     });

@@ -77,7 +77,6 @@ class AdminRepository implements AdminRepositoryInterface
     ): Collection|LengthAwarePaginator {
         $query = $this->admin
             ->with($relations)
-            ->whereNotIn('id', [1])
             ->when($searchValue, function ($query) use ($searchValue) {
                 $query->where('name', 'like', "%$searchValue%")
                     ->orWhere('phone', 'like', "%$searchValue%")
@@ -85,6 +84,12 @@ class AdminRepository implements AdminRepositoryInterface
             })
             ->when(isset($filters['admin_role_id']) && $filters['admin_role_id'] != 'all', function ($query) use ($filters) {
                 $query->where('admin_role_id', $filters['admin_role_id']);
+            })
+            ->when(isset($filters['role_id']) && $filters['role_id'] != 'all', function ($query) use ($filters) {
+                $query->whereHas('roles', function ($roleQuery) use ($filters) {
+                    $roleQuery->where('roles.id', $filters['role_id'])
+                        ->where('guard_name', config('permissions_admin.guard', 'admin'));
+                });
             })
 
             ->when(!empty($filters['department_id']), function ($query) use ($filters) {

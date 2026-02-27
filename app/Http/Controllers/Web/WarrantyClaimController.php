@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\TriageClaimJob;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimAttachment;
@@ -54,9 +55,16 @@ class WarrantyClaimController extends Controller
             return back();
         }
 
+        if ($warranty->claims()->open()->exists()) {
+            Toastr::error(translate('There is already an open claim for this warranty.'));
+            return back();
+        }
+
         $description = "Subject: {$request->subject}\nDetails: {$request->details}\nIssue: {$request->issue}";
 
         $submittedAt = Carbon::now();
+        $firstResponseHours = (int) (getWebConfig(name: 'warranty_sla_first_response')['value'] ?? 24);
+        $resolutionDays = (int) (getWebConfig(name: 'warranty_sla_decision')['value'] ?? 3);
 
         $claim = WarrantyClaim::create([
             'warranty_id' => $warranty->id,
@@ -65,6 +73,8 @@ class WarrantyClaimController extends Controller
             'status' => 'new',
             'description' => $description,
             'submitted_at' => $submittedAt,
+            'response_due' => $submittedAt->copy()->addHours($firstResponseHours),
+            'resolution_due' => $submittedAt->copy()->addDays($resolutionDays),
         ]);
 
         foreach ($request->file('product_images') as $file) {
@@ -83,6 +93,8 @@ class WarrantyClaimController extends Controller
             'description' => 'Claim submitted by customer',
             'timestamp' => now(),
         ]);
+
+        TriageClaimJob::dispatch($claim);
 
         Toastr::success(translate('Claim submitted successfully. Claim number: ') . $claim->claim_number);
         return redirect()->route('warranty.claim.success', $claim->claim_number);

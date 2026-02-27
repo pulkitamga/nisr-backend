@@ -17,7 +17,6 @@
                             <option value="">-- {{ translate('Select Type') }} --</option>
                             <option value="lead">{{ translate('Lead') }}</option>
                             <option value="ticket">{{ translate('Ticket') }}</option>
-                            <option value="warranty">{{ translate('Warranty') }}</option>
                         </select>
                     </div>
 
@@ -46,8 +45,8 @@
                     </div>
 
                     <div class="mb-3" id="departmentWrapper">
-                        <label for="department-id" class="form-label">{{ translate('Select Department') }}</label>
-                        <select class="form-control" name="department_id" id="department-id">
+                        <label for="convertDepartmentId" class="form-label">{{ translate('Select Department') }}</label>
+                        <select class="form-control" name="department_id" id="convertDepartmentId">
                             <option value="">-- {{ translate('Select Department') }} --</option>
                             @foreach ($getDepartment as $dept)
                             <option value="{{ $dept['id'] }}">{{ $dept['name'] }}</option>

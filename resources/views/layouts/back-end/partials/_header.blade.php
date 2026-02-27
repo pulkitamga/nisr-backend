@@ -105,7 +105,7 @@ use Carbon\Carbon;
                         </div>
                     </li>
 
-                    @if(\App\Utils\Helpers::module_permission_check('support_section'))
+                    @if(\App\Utils\Helpers::module_permission_check('crm_section', 'inbox_list'))
                     <li class="nav-item">
                         <div class="hs-unfold">
                             <a class="js-hs-unfold-invoker btn btn-icon btn-ghost-secondary rounded-circle"
@@ -321,7 +321,7 @@ use Carbon\Carbon;
                         {{translate('view_website')}}
                     </a>
                 </div>
-                @if(\App\Utils\Helpers::module_permission_check('support_section'))
+                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'read'))
                 <div class="bg-white p-1 rounded mt-2">
                     <a class="p-2  title-color"
                         href="{{route('admin.contact.list')}}">

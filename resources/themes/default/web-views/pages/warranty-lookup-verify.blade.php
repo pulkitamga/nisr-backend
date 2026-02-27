@@ -37,8 +37,8 @@
 
                     <div class="form-group mb-4">
                         <label for="otp" class="form-label">{{ translate('Enter OTP') }}</label>
-                        <input type="text" class="form-control text-center fs-4 py-2" name="otp" id="otp" maxlength="6"
-                               placeholder="{{ translate('Enter 6-digit OTP') }}" required>
+                        <input type="text" class="form-control text-center fs-4 py-2" name="otp" id="otp" maxlength="4"
+                               placeholder="{{ translate('Enter 4-digit OTP') }}" required>
                     </div>
 
                     <button type="submit" class="btn btn--primary w-100 mb-3">

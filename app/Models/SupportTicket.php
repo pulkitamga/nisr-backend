@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 class SupportTicket extends Model
@@ -188,6 +189,11 @@ class SupportTicket extends Model
     public function careerTalentPool()
     {
         return $this->hasOne(CareerTalentPool::class, 'ticket_id');
+    }
+
+    public function escalations(): MorphMany
+    {
+        return $this->morphMany(Escalation::class, 'escalatable')->latest('id');
     }
 
     // 🔹 Accessors

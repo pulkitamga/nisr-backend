@@ -17,7 +17,6 @@
                             <option value="">-- {{ translate('Select Type') }} --</option>
                             <option value="lead">{{ translate('Lead') }}</option>
                             <option value="ticket">{{ translate('Ticket') }}</option>
-                            <option value="warranty">{{ translate('Warranty') }}</option>
                         </select>
                     </div>
 
@@ -28,9 +27,9 @@
                         </select>
                     </div>
 
-                    <div class="mb-3" id="bulkreasonWrapper" style="display: none;">
-                        <label for="reasonSelect" class="form-label">{{ translate('Select Ticket Reason') }}</label>
-                        <select class="form-control" id="bulkreasonSelect" name="reason">
+                    <div class="mb-3" id="bulkReasonWrapper" style="display: none;">
+                        <label for="bulkReasonSelect" class="form-label">{{ translate('Select Ticket Reason') }}</label>
+                        <select class="form-control" id="bulkReasonSelect" name="reason">
                             <option value="">-- {{ translate('Select Reason') }} --</option>
                         </select>
                     </div>
@@ -47,8 +46,8 @@
 
 
                     <div class="mb-3" id="departmentWrapper">
-                        <label for="department-id" class="form-label">{{ translate('Select Department') }}</label>
-                        <select class="form-control" name="department_id" id="department-id">
+                        <label for="bulkDepartmentId" class="form-label">{{ translate('Select Department') }}</label>
+                        <select class="form-control" name="department_id" id="bulkDepartmentId">
                             <option value="">-- {{ translate('Select Department') }} --</option>
                             @foreach ($getDepartment as $dept)
                             <option value="{{ $dept['id'] }}">{{ $dept['name'] }}</option>

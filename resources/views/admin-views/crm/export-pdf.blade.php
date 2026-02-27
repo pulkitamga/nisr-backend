@@ -178,7 +178,7 @@
         style="text-align: {{ app()->getLocale() == 'ar' ? 'left' : 'right' }}; margin-bottom: 15px; font-size: 10px; color: #7f8c8d;">
         <strong>{{ translate('generated') }}:</strong>
         {{ $filters['generated_at'] ?? now()->format('d M Y h:i A') }}<br>
-        <strong>{{ translate('By') }}:</strong>{{ auth()->user()->name ?? 'System' }}
+        <strong>{{ translate('By') }}:</strong>{{ auth('admin')->user()->name ?? 'System' }}
     </div>
 
     <!-- ============ FILTERS SECTION - EXACTLY LIKE EXCEL ============ -->

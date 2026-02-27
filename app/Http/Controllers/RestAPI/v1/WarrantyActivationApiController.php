@@ -4,6 +4,7 @@ namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Events\DigitalProductOtpVerificationEvent;
 use App\Models\Warranty;
 use App\Models\Blacklist;
 use App\Models\ActivationReview;
@@ -212,6 +213,21 @@ class WarrantyActivationApiController extends Controller
             $otp,
             now()->addMinutes(5)
         );
+        Cache::put("otp_method:{$request->serial_number}:{$request->email}", 'email', now()->addMinutes(10));
+        Cache::put("contact_for_otp:{$request->serial_number}:{$request->email}", $request->phone, now()->addMinutes(10));
+
+        $mailConfig = getWebConfig(name: 'mail_config');
+        $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
+        if ($mailEnabled && is_string($request->email) && filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+            event(new DigitalProductOtpVerificationEvent(email: $request->email, data: [
+                'userName' => $request->name ?? 'Customer',
+                'userType' => 'customer',
+                'templateName' => 'digital-product-otp',
+                'subject' => translate('verification_Code'),
+                'title' => translate('verification_Code') . '!',
+                'verificationCode' => (string)$otp,
+            ]));
+        }
 
 
 
@@ -337,7 +353,19 @@ class WarrantyActivationApiController extends Controller
             now()->addMinutes(5)
         );
 
-        // Send OTP here
+        $mailConfig = getWebConfig(name: 'mail_config');
+        $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
+        if ($mailEnabled && is_string($request->email) && filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+            $sessionData = Cache::get($cacheKey, []);
+            event(new DigitalProductOtpVerificationEvent(email: $request->email, data: [
+                'userName' => $sessionData['name'] ?? 'Customer',
+                'userType' => 'customer',
+                'templateName' => 'digital-product-otp',
+                'subject' => translate('verification_Code'),
+                'title' => translate('verification_Code') . '!',
+                'verificationCode' => (string)$otp,
+            ]));
+        }
 
         return response()->json([
             'status' => true,
@@ -400,14 +428,18 @@ class WarrantyActivationApiController extends Controller
             $reasons = is_array($flaggedReason)
                 ? array_filter($flaggedReason)
                 : ($flaggedReason ? array_filter(explode(', ', $flaggedReason)) : []);
+            $submittedAt = now();
 
             ActivationReview::create([
                 'warranty_id' => $warranty->id,
                 'status' => 'pending',
+                'review_notes' => 'Auto-created from mobile activation; awaiting admin review.',
                 'flagged_reason' => !empty($reasons)
                     ? implode(', ', $reasons)
                     : 'No reason specified',
-                'submitted_at' => now(),
+                'submitted_at' => $submittedAt,
+                'first_response_due' => $submittedAt->copy()->addHours(24),
+                'decision_due' => $submittedAt->copy()->addDays(3),
             ]);
         }
     }

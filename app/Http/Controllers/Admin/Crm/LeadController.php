@@ -18,7 +18,6 @@ use App\Contracts\Repositories\AdminRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Brian2694\Toastr\Facades\Toastr;
-use Illuminate\Support\Facades\Log;
 use App\Services\LeadConvert;
 use App\Models\Lead;
 use App\Models\WholeSalerBusiness;
@@ -35,7 +34,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\LeadsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
+use Illuminate\Validation\ValidationException;
 class LeadController extends BaseController
 {
 
@@ -45,6 +46,7 @@ class LeadController extends BaseController
         private readonly DepartmentRepositoryInterface          $departmentRepo,
         private readonly AdminRepositoryInterface               $adminRepo,
         private readonly AdminNotificationRepositoryInterface   $notificationRepo,
+        private readonly EscalationService                      $escalationService,
     ) {}
 
     public function index(Request|null $request, string $type = null): View
@@ -67,9 +69,6 @@ class LeadController extends BaseController
 
        if ($request->filled('searchValue')) {
         $search = trim($request->searchValue);
-
-        // SEARCH AAYA TOH STATUS = ALL KAR DO (jaise tu chahta tha)
-        $request->merge(['status' => 'all']);
 
         $query->where(function ($q) use ($search) {
 
@@ -123,12 +122,11 @@ class LeadController extends BaseController
             $query->where('status', 'new');
         }
 
+        $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
+            ? (int)$request->choose_first
+            : (int)$dataLimit;
 
-        if ($request->filled('choose_first') && $request->choose_first > 0) {
-            $lead = $query->latest()->take((int)$request->choose_first)->get();
-        } else {
-            $lead = $query->latest()->paginate(perPage: $dataLimit)->appends($request->all());
-        }
+        $lead = $query->latest()->paginate(perPage: $perPage)->appends($request->all());
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             dataLimit: 'all'
@@ -199,12 +197,6 @@ class LeadController extends BaseController
         $type = $request->get('party_type');
         $term = $request->get('q');
 
-        Log::info('SearchParty Request', [
-            'party_type'   => $type,
-            'search_term'  => $term,
-            'request_data' => $request->all()
-        ]);
-
         if ($type === 'company') {
             $results = WholesalerBusiness::query()
                 ->join('users', 'users.id', '=', 'wholesaler_businesses.wholesaler_id')
@@ -229,11 +221,6 @@ class LeadController extends BaseController
                 ->get();
         }
 
-        Log::info('SearchParty Results', [
-            'results_count' => $results->count(),
-            'results'       => $results->toArray()
-        ]);
-
         return response()->json($results);
     }
 public function getUserOrders(Request $request)
@@ -241,7 +228,6 @@ public function getUserOrders(Request $request)
     $userId = $request->get('user_id');
 
     if (!$userId) {
-        Log::warning('getUserOrders: No user_id provided'); // Log for debugging
         return response()->json([]);
     }
 
@@ -250,8 +236,6 @@ public function getUserOrders(Request $request)
         ->select('id', 'order_no')
         ->orderByDesc('id')
         ->get();
-
-    Log::info('getUserOrders: Orders fetched', ['user_id' => $userId, 'count' => $orders->count()]); // Log for debugging
 
     return response()->json($orders);
 }
@@ -274,7 +258,7 @@ public function getUserOrders(Request $request)
         $authUser = auth('admin')->user();
 
         if (
-            $authUser->id !== 1 &&
+            !$this->isSuperAdmin($authUser) &&
             $lead->employee?->id !== $authUser->id &&
             $lead->department?->head_id !== $authUser->id
         ) {
@@ -322,7 +306,7 @@ public function getUserOrders(Request $request)
         $lead = Lead::findOrFail($request->message_id);
 
         if (
-            $authUser->id !== 1 &&
+            !$this->isSuperAdmin($authUser) &&
             $lead->employee?->id !== $authUser->id &&
             $lead->department?->head_id !== $authUser->id
         ) {
@@ -360,6 +344,7 @@ public function getUserOrders(Request $request)
                 $q->latest()->first();
             },
             'latestInboxMessage',
+            'escalations.escalatedBy',
             'activities',
             'notes',
             'tasks',
@@ -803,10 +788,25 @@ public function getUserOrders(Request $request)
             return response()->json(['status' => false, 'message' => 'Lead not found'], 404);
         }
 
-        $lead->employee_id = $request->employee_id;
-        $lead->save();
+        if (empty($lead->department_id)) {
+            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
+        }
 
         $employee = Admin::find($request->employee_id);
+        if (!$employee) {
+            return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
+        }
+
+        if ((int)$employee->admin_role_id !== $this->departmentEmployeeRoleId()) {
+            return response()->json(['status' => false, 'message' => 'Please select a department employee.'], 422);
+        }
+
+        if ((int)$employee->department_id !== (int)$lead->department_id) {
+            return response()->json(['status' => false, 'message' => 'Employee must belong to the selected department.'], 422);
+        }
+
+        $lead->employee_id = $request->employee_id;
+        $lead->save();
 
         $activity = new LeadActivity();
         $activity->lead_id = $lead->id;
@@ -838,10 +838,21 @@ public function getUserOrders(Request $request)
             return response()->json(['status' => false, 'message' => 'Lead not found'], 404);
         }
 
-        $lead->owner_id = $request->employee_id;
-        $lead->save();
+        if (empty($lead->department_id)) {
+            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
+        }
 
         $owner = Admin::find($request->employee_id);
+        if (!$owner) {
+            return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
+        }
+
+        if ((int)$owner->admin_role_id !== $this->supervisorRoleId()) {
+            return response()->json(['status' => false, 'message' => 'Owner must be a supervisor.'], 422);
+        }
+
+        $lead->owner_id = $request->employee_id;
+        $lead->save();
 
         $activity = new LeadActivity();
         $activity->lead_id = $lead->id;
@@ -864,7 +875,14 @@ public function getUserOrders(Request $request)
 
     public function getEmployeesByDepartment(Request $request)
     {
-        $filters = ['department_id' => $request->department_id];
+        if (empty($request->department_id)) {
+            return response()->json([]);
+        }
+
+        $filters = [
+            'department_id' => $request->department_id,
+            'admin_role_id' => $this->departmentEmployeeRoleId(),
+        ];
         $employees = $this->adminRepo->getEmployeeListWhere(
             ['id' => 'desc'],
             null,
@@ -887,35 +905,25 @@ public function getUserOrders(Request $request)
         ]);
 
         $lead = Lead::findOrFail($request->lead_id);
-        \App\Models\Escalation::create([
-            'escalatable_id'   => $lead->id,
-            'escalatable_type' => Lead::class,
-            'escalated_by'     => auth('admin')->id(),
-            'reason'           => $request->reason,
-        ]);
 
         $title   = 'Lead Escalated';
         $message = "Lead #{$lead->id} escalated. Reason: {$request->reason}";
         $link    = route('admin.crm.lead.show', $lead->id);
 
-        $recipients = [];
-        if ($lead->owner_id) {
-            $recipients[] = ['type' => 'employee', 'id' => $lead->owner_id];
-        }
-        if ($lead->department_id) {
-            $recipients[] = ['type' => 'department', 'id' => $lead->department_id];
+        try {
+            $this->escalationService->escalateLead(
+                lead: $lead,
+                actorId: (int)auth('admin')->id(),
+                reason: (string)$request->reason,
+                title: $title,
+                message: $message,
+                link: $link
+            );
+        } catch (ValidationException $exception) {
+            Toastr::error($exception->errors()['escalation'][0] ?? translate('Request failed.'));
+            return back();
         }
 
-        if ($recipients) {
-            $this->notificationRepo->notifyRecipients(
-                $lead->id,
-                Lead::class,
-                $title,
-                $message,
-                $link,
-                $recipients
-            );
-        }
         $activity = new LeadActivity();
         $activity->lead_id       = $lead->id;
         $activity->employee_id   = auth('admin')->id();
@@ -927,5 +935,20 @@ public function getUserOrders(Request $request)
 
         Toastr::success(translate('Lead escalated successfully'));
         return back();
+    }
+
+    private function isSuperAdmin(?Admin $admin): bool
+    {
+        return (int)($admin?->admin_role_id ?? 0) === 1;
+    }
+
+    private function supervisorRoleId(): int
+    {
+        return defined('DEPARTMENT_HEAD_ROLE_ID') ? (int)DEPARTMENT_HEAD_ROLE_ID : 8;
+    }
+
+    private function departmentEmployeeRoleId(): int
+    {
+        return defined('DEPARTMENT_EMPLOYEE_ROLE_ID') ? (int)DEPARTMENT_EMPLOYEE_ROLE_ID : 9;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Warranty;
 use App\Models\ViewToken;
+use App\Events\DigitalProductOtpVerificationEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Session;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Utils\SMSModule;
 
 class WarrantyViewController extends Controller
 {
@@ -106,11 +108,7 @@ class WarrantyViewController extends Controller
             } else {
                 $otp = rand(1000, 9999);
                 Cache::put("warranty_lookup:{$warranty->id}:{$request->contact}", $otp, now()->addMinutes(5));
-
-                Log::info('Warranty Lookup OTP generated', [
-                    'serial_number' => $request->serial_number,
-                    'contact' => $request->contact,
-                ]);
+                $this->dispatchLookupOtp($warranty, (string)$request->contact, (string)$otp);
             }
 
             Session::put([
@@ -225,6 +223,10 @@ class WarrantyViewController extends Controller
             abort(403, translate('invalid/expired token'));
         }
 
+        if ($token) {
+            $token->update(['used_at' => now()]);
+        }
+
         $warranty = Warranty::where('warranty_public_id', $warranty_public_id)
             ->with(['timelineEvents' => fn($q) => $q->latest()->paginate(10)])
             ->firstOrFail();
@@ -265,5 +267,32 @@ class WarrantyViewController extends Controller
         $url = route('warranty.view', ['warranty_public_id' => $publicId]) . '?vt=' . $jti;
         Toastr::success(translate('Shareable link generated: ') . $url);
         return redirect($url);
+    }
+
+    private function dispatchLookupOtp(Warranty $warranty, string $contact, string $otp): void
+    {
+        $smsResponse = SMSModule::sendCentralizedSMS($contact, $otp);
+        if ($smsResponse !== 'success') {
+            Log::warning('Warranty lookup OTP SMS delivery failed', [
+                'serial_number' => $warranty->serial_number,
+                'contact' => $contact,
+                'response' => $smsResponse,
+            ]);
+        }
+
+        $email = $warranty->user?->email ?: $warranty->activated_by_email;
+        $mailConfig = getWebConfig(name: 'mail_config');
+        $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
+
+        if ($mailEnabled && is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            event(new DigitalProductOtpVerificationEvent(email: $email, data: [
+                'userName' => $warranty->user?->f_name ?: ($warranty->activated_by_name ?? 'Customer'),
+                'userType' => 'customer',
+                'templateName' => 'digital-product-otp',
+                'subject' => translate('verification_Code'),
+                'title' => translate('verification_Code') . '!',
+                'verificationCode' => $otp,
+            ]));
+        }
     }
 }

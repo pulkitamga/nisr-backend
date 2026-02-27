@@ -36,7 +36,7 @@ class ClaimWorkflowController extends Controller
         $claim->timelineEvents()->create([
             'event_type' => 'diagnosis',
             'description' => "Diagnosed: {$request->repair_or_replace}, Notes: {$request->diagnosis_notes}",
-            'user_id' => auth()->id(),
+            'user_id' => auth('admin')->id(),
         ]);
 
         if ($request->repair_or_replace === 'replace') {
@@ -44,7 +44,7 @@ class ClaimWorkflowController extends Controller
         }
 
         Toastr::success(translate('Diagnosis recorded.'));
-        return redirect()->route('warranty.claim.view', $claim);
+        return redirect()->route('admin.warranty.claim.view', $claim);
     }
 
     public function repairComplete(Request $request, WarrantyClaim $claim)
@@ -82,11 +82,11 @@ class ClaimWorkflowController extends Controller
         $claim->timelineEvents()->create([
             'event_type' => 'repair_completed',
             'description' => "QC: " . ($request->qc_passed ? 'Passed' : 'Failed'),
-            'user_id' => auth()->id(),
+            'user_id' => auth('admin')->id(),
         ]);
 
         Toastr::success(translate('Repair completed.'));
-        return redirect()->route('warranty.claim.view', $claim);
+        return redirect()->route('admin.warranty.claim.view', $claim);
     }
 
     public function replacementCommit(Request $request, WarrantyClaim $claim)
@@ -124,11 +124,11 @@ class ClaimWorkflowController extends Controller
         $claim->timelineEvents()->create([
             'event_type' => 'replacement',
             'description' => "New serial: {$request->new_serial_number}, Mode: {$request->coverage_mode}",
-            'user_id' => auth()->id(),
+            'user_id' => auth('admin')->id(),
         ]);
 
         Toastr::success(translate('Replacement committed.'));
-        return redirect()->route('warranty.claim.view', $claim);
+        return redirect()->route('admin.warranty.claim.view', $claim);
     }
 
     public function close(Request $request, WarrantyClaim $claim)
@@ -146,10 +146,10 @@ class ClaimWorkflowController extends Controller
         $claim->timelineEvents()->create([
             'event_type' => 'closed',
             'description' => "Closed with CSAT: " . ($request->csat_score ?? 'N/A'),
-            'user_id' => auth()->id(),
+            'user_id' => auth('admin')->id(),
         ]);
 
         Toastr::success(translate('Claim closed.'));
-        return redirect()->route('warranty.claim.view', $claim);
+        return redirect()->route('admin.warranty.claim.view', $claim);
     }
 }

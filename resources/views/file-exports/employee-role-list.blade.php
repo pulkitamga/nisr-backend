@@ -1,4 +1,7 @@
 <html>
+@php
+    use App\Support\AdminPermissionRegistry;
+@endphp
 <table>
     <thead>
     <tr>
@@ -19,6 +22,7 @@
         <td> {{translate('SL')}}	</td>
         <td> {{translate('role_Name')}}</td>
         <td> {{translate('Modules')}}</td>
+        <td> {{translate('permissions')}}</td>
         <td> {{translate('created_At')}}</td>
         <td> {{translate('status')}}</td>
     </tr>
@@ -26,23 +30,38 @@
         <tr>
             <td> {{++$key}}	</td>
             <td>{{ucwords($item['name'])}}</td>
+            @php
+                $rolePermissionGroups = collect($item->permissions ?? [])
+                    ->pluck('name')
+                    ->filter(fn($permission) => str_contains((string)$permission, '.'))
+                    ->mapToGroups(function ($permission) {
+                        [$module, $action] = explode('.', (string)$permission, 2);
+                        return [$module => $action];
+                    });
+            @endphp
             <td>
-                @if($item['module_access'] != null)
-                    @foreach((array)json_decode($item['module_access']) as $module)
-                        @if($module == 'report')
-                            {{translate('reports_and_analytics').(!$loop->last ? ',': '')}} <br>
-                        @elseif($module == 'user_section')
-                            {{translate('user_management').(!$loop->last ? ',': '')}} <br>
-                        @elseif($module == 'support_section')
-                            {{translate('Help_&_Support_Section').(!$loop->last ? ',': '')}} <br>
-                        @else
-                            {{translate(str_replace('_',' ', $module)).(!$loop->last ? ',': '')}} <br>
-                        @endif
-                    @endforeach
-                @endif
+                @forelse($rolePermissionGroups as $module => $actions)
+                    {{ AdminPermissionRegistry::moduleDisplayName((string)$module) }}<br>
+                @empty
+                    -
+                @endforelse
+            </td>
+            <td>
+                @forelse($rolePermissionGroups as $module => $actions)
+                    @php
+                        $permissionLabels = collect($actions)
+                            ->unique()
+                            ->values()
+                            ->map(fn($action) => AdminPermissionRegistry::permissionDisplayName($module . '.' . $action))
+                            ->implode(', ');
+                    @endphp
+                    {{ $permissionLabels }}<br>
+                @empty
+                    -
+                @endforelse
             </td>
             <td> {{date('d M, Y h:i A',strtotime($item->created_at))}}</td>
-            <td>{{translate($item['status'] ==1 ? 'active' : 'inactive')}}</td>
+            <td>{{translate((isset($item['status']) ? (int)$item['status'] : 1) === 1 ? 'active' : 'inactive')}}</td>
         </tr>
     @endforeach
     </thead>

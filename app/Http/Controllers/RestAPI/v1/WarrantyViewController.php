@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\restapi\v1;
 
 use App\Http\Controllers\Controller;
+use App\Events\DigitalProductOtpVerificationEvent;
 use Illuminate\Http\Request;
 use App\Models\Warranty;
 use App\Models\ViewToken;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Services\FirebaseService;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Utils\SMSModule;
 
 class WarrantyViewController extends Controller
 {
@@ -126,16 +128,16 @@ class WarrantyViewController extends Controller
                     ], 500);
                 }
             } else {
- 
+
                 $otp = rand(1000, 9999);
- 
+
                 Cache::put(
-                    'otp_' . $request->contact,
+                    "warranty_lookup:{$warranty->id}:{$request->contact}",
                     $otp,
                     now()->addMinutes(5)
                 );
- 
-                // Send SMS here if needed
+
+                $this->dispatchLookupOtp($warranty, (string)$request->contact, (string)$otp);
             }
  
             return response()->json([
@@ -148,13 +150,7 @@ class WarrantyViewController extends Controller
         }
  
         // 4. Direct Success (No OTP Required)
-        $viewToken = $this->generateViewToken($warranty);
- 
-        return response()->json([
-            'status' => 'success',
-            'view_token' => $viewToken,
-            'warranty_id' => $warranty->id
-        ]);
+        return $this->generateViewTokenResponse($warranty, $request, (string)$request->contact);
     }
 
     /**
@@ -164,19 +160,42 @@ class WarrantyViewController extends Controller
     {
         $request->validate([
             'otp' => 'required|digits:4',
-            'warranty_id' => 'required|exists:warranties,id',
-            'contact' => 'required|string',
+            'temp_token' => 'nullable|string',
+            'warranty_id' => 'nullable|exists:warranties,id',
+            'contact' => 'nullable|string',
         ]);
 
-        $otpMethod = session('otp_method', 'email');
+        $sessionData = [];
+        if ($request->filled('temp_token')) {
+            try {
+                $sessionData = decrypt($request->temp_token);
+            } catch (\Throwable $exception) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid verification session',
+                ], 422);
+            }
+        }
+
+        $warrantyId = $sessionData['warranty_id'] ?? $request->warranty_id;
+        $contact = $sessionData['contact'] ?? $request->contact;
+
+        if (!$warrantyId || !$contact) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Verification session expired',
+            ], 422);
+        }
+
+        $otpMethod = $sessionData['otp_method'] ?? 'manual';
         $isValid = false;
 
         if ($otpMethod === 'firebase') {
-            $sessionInfo = session('otp_session');
-            $response = $this->firebaseService->verifyOtp($sessionInfo, $request->contact, $request->otp);
+            $sessionInfo = $sessionData['otp_session'] ?? null;
+            $response = $this->firebaseService->verifyOtp($sessionInfo, $contact, $request->otp);
             $isValid = ($response['status'] ?? '') === 'success';
         } else {
-            $storedOtp = Cache::get("warranty_lookup:{$request->warranty_id}:{$request->contact}");
+            $storedOtp = Cache::get("warranty_lookup:{$warrantyId}:{$contact}");
             $isValid = ($request->otp == $storedOtp || $request->otp == '0000');
         }
 
@@ -188,19 +207,18 @@ class WarrantyViewController extends Controller
         }
 
         if ($otpMethod !== 'firebase') {
-            Cache::forget("warranty_lookup:{$request->warranty_id}:{$request->contact}");
+            Cache::forget("warranty_lookup:{$warrantyId}:{$contact}");
         }
-        session()->forget(['otp_session', 'otp_method']);
 
-        $warranty = Warranty::findOrFail($request->warranty_id);
+        $warranty = Warranty::findOrFail($warrantyId);
 
-        return $this->generateViewTokenResponse($warranty, $request);
+        return $this->generateViewTokenResponse($warranty, $request, $contact);
     }
 
     /**
      * Generate view token and return link for app
      */
-    private function generateViewTokenResponse($warranty, $request)
+    private function generateViewTokenResponse($warranty, $request, string $contact)
     {
         if (!$warranty->warranty_public_id) {
             $warranty->warranty_public_id = Str::uuid();
@@ -211,7 +229,7 @@ class WarrantyViewController extends Controller
         ViewToken::create([
             'jti' => $jti,
             'warranty_public_id' => $warranty->warranty_public_id,
-            'recipient_hash' => hash_hmac('sha256', $request->contact, config('app.key')),
+            'recipient_hash' => hash_hmac('sha256', $contact, config('app.key')),
             'scope' => 'warranty:view',
             'issued_at' => now(),
             'expires_at' => now()->addMinutes(getWebConfig('view_token_ttl_minutes') ?? 10),
@@ -219,10 +237,10 @@ class WarrantyViewController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        session()->forget(['warranty_id', 'contact', 'otp_method', 'otp_session']);
-
         return response()->json([
+            'status' => 'success',
             'success' => true,
+            'warranty_id' => $warranty->id,
             'warranty_public_id' => $warranty->warranty_public_id,
             'view_token' => $jti,
             'view_url' => route('api.warranty.view', [
@@ -250,6 +268,8 @@ class WarrantyViewController extends Controller
             ], 403);
         }
 
+        $token->update(['used_at' => now()]);
+
         $warranty = Warranty::where('warranty_public_id', $warranty_public_id)
             ->with(['timelineEvents' => fn($q) => $q->latest()->paginate(10)])
             ->firstOrFail();
@@ -259,5 +279,32 @@ class WarrantyViewController extends Controller
             'warranty' => $warranty,
             'timeline_events' => $warranty->timelineEvents()->latest()->paginate(10),
         ]);
+    }
+
+    private function dispatchLookupOtp(Warranty $warranty, string $contact, string $otp): void
+    {
+        $smsResponse = SMSModule::sendCentralizedSMS($contact, $otp);
+        if ($smsResponse !== 'success') {
+            Log::warning('Warranty API lookup OTP SMS delivery failed', [
+                'serial_number' => $warranty->serial_number,
+                'contact' => $contact,
+                'response' => $smsResponse,
+            ]);
+        }
+
+        $email = $warranty->user?->email ?: $warranty->activated_by_email;
+        $mailConfig = getWebConfig(name: 'mail_config');
+        $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
+
+        if ($mailEnabled && is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            event(new DigitalProductOtpVerificationEvent(email: $email, data: [
+                'userName' => $warranty->user?->f_name ?: ($warranty->activated_by_name ?? 'Customer'),
+                'userType' => 'customer',
+                'templateName' => 'digital-product-otp',
+                'subject' => translate('verification_Code'),
+                'title' => translate('verification_Code') . '!',
+                'verificationCode' => $otp,
+            ]));
+        }
     }
 }

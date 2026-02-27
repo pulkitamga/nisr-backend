@@ -28,8 +28,20 @@
                             <td>{{$claim->serial_number}}</td>
                             <td>{{$claim->description}}</td>
                             <td>
-                                <a href="{{route('admin.warranty.claim.decide', $claim)}}" class="btn btn-sm btn-success">Approve</a>
-                                <a href="{{route('admin.warranty.claim.decide', $claim)}}" class="btn btn-sm btn-danger">Reject</a>
+                                <form action="{{route('admin.warranty.claim.decide', $claim)}}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="decision" value="approve">
+                                    <input type="hidden" name="reason_code" value="approved_by_reviewer">
+                                    <input type="hidden" name="reason_message" value="{{ translate('Approved during review queue processing.') }}">
+                                    <button type="submit" class="btn btn-sm btn-success">{{ translate('Approve') }}</button>
+                                </form>
+                                <form action="{{route('admin.warranty.claim.decide', $claim)}}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="decision" value="reject">
+                                    <input type="hidden" name="reason_code" value="rejected_by_reviewer">
+                                    <input type="hidden" name="reason_message" value="{{ translate('Rejected during review queue processing.') }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">{{ translate('Reject') }}</button>
+                                </form>
                             </td>
                         </tr>
                         @endforeach

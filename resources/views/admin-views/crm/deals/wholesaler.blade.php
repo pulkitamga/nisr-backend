@@ -124,7 +124,7 @@
                     <div class="col-md-12">
                         <label class="d-md-block">&nbsp;</label>
                         <div class="btn--container justify-content-end">
-                            <a href="{{ route('admin.crm.index') }}"
+                            <a href="{{ route('admin.crm.deals.wholesale.index') }}"
                                 class="btn btn-secondary px-5">
                                 {{ translate('reset') }}
                             </a>
@@ -159,7 +159,12 @@
                 </div>
             </form>
             <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.customer.export', ['sort_by' => request('sort_by'), 'choose_first' => request('choose_first'),'is_active' => request('is_active'), 'order_date' => request('order_date'),'customer_joining_date' => request('customer_joining_date'),  'searchValue' => request('searchValue')])}}">
+                <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.crm.deals.wholesale.export', [
+                    'fhilter_date' => request('fhilter_date'),
+                    'status' => request('status'),
+                    'choose_first' => request('choose_first'),
+                    'searchValue' => request('searchValue')
+                ])}}">
                     <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="" class="excel">
                     <span class="ps-2">{{ translate('export') }}</span>
                 </a>
@@ -193,11 +198,11 @@
                         <td>{{ $deal->created_at->format('d M, Y H:i A') }}</td>
                         <td>{{ $deal->relatedParty->company_name ?? translate('N/A') }}</td>
                         <td>
-                            <a href="mailto:{{ $deal->relatedUser->email }}">
+                            <a href="mailto:{{ $deal->relatedUser->email ?? '' }}">
                                 {{ $deal->relatedUser->email ?? translate('Not Available') }}
                             </a>
                             <br>
-                            <a href="tel:{{ $deal->relatedUser->phone }}">
+                            <a href="tel:{{ $deal->relatedUser->phone ?? '' }}">
                                 {{ $deal->relatedUser->phone ?? translate('Not Available') }}
                             </a>
                         </td>
@@ -259,7 +264,7 @@
                                     data-head-id="{{ $deal->department->head_id ?? '' }}">
                                     {{ translate('Assign Employee') }}
                                 </a>
-                                @if(auth('admin')->id() != 1)
+                                @if((int)auth('admin')->user()?->admin_role_id !== 1)
                                 <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                                 @endif
                                 @endif
@@ -312,7 +317,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateWholesaleDealModalLabel">{{ translate('Escalate Deal') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -326,7 +331,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
                     <button type="submit" class="btn btn-warning">{{ translate('Escalate') }}</button>
                 </div>
             </form>

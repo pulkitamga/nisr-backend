@@ -13,7 +13,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Permission\Contracts\Permission;
 
 
 /**
@@ -88,26 +87,9 @@ class Admin extends Authenticatable
         return $this->belongsTo(AdminRole::class, 'admin_role_id');
     }
 
-    public function hasPermissionTo($permission, $guardName = null): bool
+    public function isSuperAdmin(): bool
     {
-        // Super admin has all permissions
-        if ($this->admin_role_id == 1) {
-            return true;
-        }
-
-        // Call trait method explicitly
-        return $this->checkPermissionTo($permission, $guardName);
-    }
-
-
-    public function hasRole($roles, $guard = null): bool
-    {
-        // Super admin has all roles
-        if ($this->admin_role_id == 1) {
-            return true;
-        }
-
-        return parent::hasRole($roles, $guard);
+        return $this->hasRole(config('permissions_admin.super_admin_role', 'Super Admin'));
     }
 
     public function branch(): BelongsTo

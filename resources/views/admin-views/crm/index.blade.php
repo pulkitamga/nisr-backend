@@ -94,7 +94,7 @@
             <div class="dropdown">
                 <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.crm.messages.export', [ 
                 'fhilter_date' => request('fhilter_date'),
-                 'channel' => request('Channel'),
+                 'Channel' => request('Channel'),
                         'status'       => request('status'),
                         'choose_first' => request('choose_first'),
                         'searchValue'  => request('searchValue'),])}}">
@@ -151,8 +151,8 @@
                             <div class=" text-success d-flex align-items-center gap-3 font-weight-bolder mb-2">
                                 {{ $msg->message_type }}
                                 <div class="ripple-animation edit-message-type"
-                                    data-toggle="modal"
-                                    data-target="#showTypeModal"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#showTypeModal"
                                     data-id="{{ $msg->id }}"
                                     data-current-type="{{ $msg->message_type }}">
                                     <i class="tio-edit"></i>

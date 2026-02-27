@@ -13,7 +13,7 @@
 <div class="content container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
                 <div class="card-header">
                     <h2 class="h1 mb-0 text-capitalize">
                         {{ translate('Deal Details') }} :{{ $deal->id }}
@@ -51,6 +51,10 @@
 
                 </div>
             </div>
+        </div>
+
+        <div class="col-md-12">
+            @include('admin-views.crm.partials.escalation-panel', ['escalations' => $deal->escalations ?? collect()])
         </div>
 
         <div class="col-md-12 mt-4">

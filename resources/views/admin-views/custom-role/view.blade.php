@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Session;
 @section('title', translate('create_Role'))
 @section('content')
 <div class="content container-fluid">
+    @php
+        $adminUser = auth('admin')->user();
+        $canManageRoles = $adminUser && ($adminUser->isSuperAdmin() || $adminUser->can('rbac.roles.manage'));
+    @endphp
 
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -51,6 +55,7 @@ use Illuminate\Support\Facades\Session;
                             <th>{{translate('SL')}}</th>
                             <th>{{translate('role_name')}}</th>
                             <th>{{translate('modules')}}</th>
+                            <th>{{translate('permissions')}}</th>
                             <th>{{translate('created_at')}}</th>
                             <th>{{translate('status')}}</th>
                             <th class="text-center">{{translate('action')}}</th>
@@ -58,34 +63,41 @@ use Illuminate\Support\Facades\Session;
                     </thead>
                     <tbody>
                         @foreach($roles as $key => $role)
+                        @php
+                            $isProtectedRole = strtolower((string)$role->name) === strtolower((string)config('permissions_admin.super_admin_role', 'Super Admin'));
+                        @endphp
                         <tr>
                             <td>{{$key+1}}</td>
                             <td>{{$role['name']}}</td>
                             <td class="text-capitalize">
-                                @if($role['module_access'] != null)
-                                @foreach((array)json_decode($role['module_access'], true) as $mod_name => $actions)
-                                @if($mod_name == 'report')
-                                {{translate('reports_and_analytics')}}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> <br>
-                                @elseif($mod_name == 'user_section')
-                                {{translate('user_management')}}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> <br>
-                                @elseif($mod_name == 'support_section')
-                                {{translate('Help_&_Support_Section')}}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> <br>
-                                @else
-                                {{ translate(str_replace('_',' ', $mod_name)) }}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> @endif
-                                @endforeach
-                                @endif
+                                @php
+                                    $rolePermissionGroups = $role->permissions
+                                        ->pluck('name')
+                                        ->filter(fn($permission) => str_contains((string)$permission, '.'))
+                                        ->mapToGroups(function ($permission) {
+                                            [$module, $action] = explode('.', $permission, 2);
+                                            return [$module => $action];
+                                        });
+                                @endphp
+                                @forelse(($rolePermissionGroups ?? collect()) as $moduleName => $actions)
+                                    {{ \App\Support\AdminPermissionRegistry::moduleDisplayName((string)$moduleName) }}<br>
+                                @empty
+                                    -
+                                @endforelse
+                            </td>
+                            <td class="text-capitalize">
+                                @forelse(($rolePermissionGroups ?? collect()) as $moduleName => $actions)
+                                    @php
+                                        $permissionLabels = collect($actions)
+                                            ->unique()
+                                            ->values()
+                                            ->map(fn($action) => \App\Support\AdminPermissionRegistry::permissionDisplayName($moduleName . '.' . $action))
+                                            ->implode(', ');
+                                    @endphp
+                                    <small class="text-muted">{{ $permissionLabels }}</small><br>
+                                @empty
+                                    -
+                                @endforelse
                             </td>
 
                             <td>{{date('d-M-y',strtotime($role['created_at']))}}</td>
@@ -94,7 +106,7 @@ use Illuminate\Support\Facades\Session;
                                     @csrf
                                     <input type="hidden" name="id" value="{{$role['id']}}">
                                     <label class="switcher" for="employee-role-status{{$role['id']}}">
-                                        <input type="checkbox" class="switcher_input toggle-switch-message" id="employee-role-status{{$role['id']}}" name="status" value="1" {{$role['status'] == 1?'checked':''}}
+                                        <input type="checkbox" class="switcher_input toggle-switch-message" id="employee-role-status{{$role['id']}}" name="status" value="1" {{ (isset($role['status']) ? (int)$role['status'] : 1) === 1 ? 'checked' : '' }} {{ ($isProtectedRole ?? false) ? 'disabled' : '' }}
                                             data-modal-id="toggle-status-modal"
                                             data-toggle-id="employee-role-status{{$role['id']}}"
                                             data-on-image="employee-on.png"
@@ -109,17 +121,21 @@ use Illuminate\Support\Facades\Session;
                             </td>
                             <td>
                                 <div class="d-flex gap-2 justify-content-center">
-                                    <a href="{{route('admin.custom-role.update',[$role['id']])}}"
-                                        class="btn btn-outline--primary btn-sm square-btn"
-                                        title="{{translate('edit') }}">
-                                        <i class="tio-edit"></i>
-                                    </a>
-                                    <a href="javascript:"
-                                        class="btn btn-outline-danger btn-sm delete-data-without-form"
-                                        data-action="{{route('admin.custom-role.delete')}}"
-                                        title="{{translate('delete') }}" data-id="{{$role['id']}}">
-                                        <i class="tio-delete"></i>
-                                    </a>
+                                    @if($canManageRoles)
+                                        <a href="{{route('admin.custom-role.update',[$role['id']])}}"
+                                           class="btn btn-outline--primary btn-sm square-btn"
+                                           title="{{translate('edit') }}">
+                                            <i class="tio-edit"></i>
+                                        </a>
+                                        @unless($isProtectedRole ?? false)
+                                            <a href="javascript:"
+                                               class="btn btn-outline-danger btn-sm delete-data-without-form"
+                                               data-action="{{route('admin.custom-role.delete')}}"
+                                               title="{{translate('delete') }}" data-id="{{$role['id']}}">
+                                                <i class="tio-delete"></i>
+                                            </a>
+                                        @endunless
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -140,29 +156,4 @@ use Illuminate\Support\Facades\Session;
 
 @push('script')
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/custom-role.js')}}"></script>
-<script>
-    $(document).ready(function() {
-        // When the master switch for a module is toggled
-        $('.module-master-checkbox').on('change', function() {
-            var moduleKey = $(this).data('module');
-            var isChecked = $(this).is(':checked');
-
-            // Find all permission checkboxes for this module
-            $('.permission-checkbox[data-module="' + moduleKey + '"]').prop('checked', isChecked);
-        });
-
-        // Optional: Auto-check master switch if all individual toggles are checked manually
-        $('.permission-checkbox').on('change', function() {
-            var moduleKey = $(this).data('module');
-            var allModuleCheckboxes = $('.permission-checkbox[data-module="' + moduleKey + '"]');
-            var masterCheckbox = $('#master_' + moduleKey);
-
-            if (allModuleCheckboxes.length === allModuleCheckboxes.filter(':checked').length) {
-                masterCheckbox.prop('checked', true);
-            } else {
-                masterCheckbox.prop('checked', false);
-            }
-        });
-    });
-</script>
 @endpush

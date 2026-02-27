@@ -16,10 +16,10 @@ use App\Contracts\Repositories\AdminRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Brian2694\Toastr\Facades\Toastr;
-use Illuminate\Support\Facades\Log;
 use App\Services\LeadConvert;
 use App\Services\TicketConvert;
 use App\Models\Lead;
+use App\Models\Admin;
 use App\Models\InboxActivities;
 use App\Models\InboxCall;
 use App\Models\InboxFile;
@@ -92,10 +92,6 @@ class InboxMessageController extends BaseController
                     });
             });
         }
-        if ($request->filled('searchValue')) {
-            // Agar search hai toh status ko 'all' force kar do (user ko pata bhi nahi chalega)
-            $request->merge(['status' => 'all']);
-        }
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             dataLimit: 'all'
@@ -136,12 +132,11 @@ class InboxMessageController extends BaseController
         $query->orderByRaw("CASE WHEN status = 'new' THEN 0 ELSE 1 END")
             ->orderBy('created_at', 'desc');
 
-        // ⏳ Limit or paginate
-        if ($request->filled('choose_first') && $request->choose_first > 0) {
-            $messages = $query->take((int)$request->choose_first)->get();
-        } else {
-            $messages = $query->paginate(perPage: $dataLimit)->appends($request->all());
-        }
+        $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
+            ? (int)$request->choose_first
+            : (int)$dataLimit;
+
+        $messages = $query->paginate(perPage: $perPage)->appends($request->all());
 
         return view(Crm::INDEX[VIEW], compact('messages', 'getDepartment', 'employees'));
     }
@@ -234,23 +229,18 @@ class InboxMessageController extends BaseController
             'department_id' => 'nullable|exists:departments,id',
         ]);
 
-        Log::info('convertInquiry request received', [
-            'message_id'    => $request->message_id,
-            'type'          => $request->type,
-            'sub_type'      => $request->sub_type,
-            'department_id' => $request->department_id ?? 'null',
-            'auth_user_id'  => auth('admin')->id(),
-        ]);
-
         $message = InboxMessage::findOrFail($request->message_id);
+        /** @var Admin|null $authUser */
         $authUser = auth('admin')->user();
-        if (is_null($message->owner_id) || $message->owner_id == 1) {
+        $owner = $message->owner;
+
+        if (!$owner || (int)$owner->admin_role_id !== $this->supervisorRoleId()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Assign owner first.',
+                'message' => 'Assign a supervisor as owner first.',
             ], 400);
         }
-        if ($authUser->id !== 1) {
+        if (!$this->isSuperAdmin($authUser)) {
             if (
                 $message->employee_id !== $authUser->id &&
                 $message->department?->head_id !== $authUser->id
@@ -343,13 +333,14 @@ class InboxMessageController extends BaseController
                 continue;
             }
 
-            if (is_null($message->owner_id) || $message->owner_id == 1) {
+            $owner = $message->owner;
+            if (!$owner || (int)$owner->admin_role_id !== $this->supervisorRoleId()) {
                 $skipped[] = $id;
                 continue; // ya chaho to separate message bhej sakte ho
             }
 
             // 🔒 Permission check
-            if ($authUser->id !== 1) {
+            if (!$this->isSuperAdmin($authUser)) {
                 if (
                     $message->employee_id !== $authUser->id &&
                     $message->department?->head_id !== $authUser->id
@@ -402,7 +393,7 @@ class InboxMessageController extends BaseController
         }
 
         return response()->json([
-            'status'    => true,
+            'status'    => count($converted) > 0,
             'message'   => count($converted) > 1
                 ? 'Messages converted successfully!'
                 : (count($converted) === 1 ? 'Inquiry converted successfully!' : 'No inquiry converted!'),
@@ -1020,6 +1011,19 @@ class InboxMessageController extends BaseController
             return response()->json(['status' => false, 'message' => 'Ticket not found'], 404);
         }
 
+        if (empty($ticket->department_id)) {
+            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
+        }
+
+        $employee = Admin::find($request->employee_id);
+        if (!$employee) {
+            return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
+        }
+
+        if ((int)$employee->department_id !== (int)$ticket->department_id) {
+            return response()->json(['status' => false, 'message' => 'Employee must belong to the selected department.'], 422);
+        }
+
         $ticket->employee_id = $request->employee_id;
         $ticket->save();
 
@@ -1055,6 +1059,19 @@ class InboxMessageController extends BaseController
             return response()->json(['status' => false, 'message' => 'Ticket not found'], 404);
         }
 
+        if (empty($ticket->department_id)) {
+            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
+        }
+
+        $owner = Admin::find($request->employee_id);
+        if (!$owner) {
+            return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
+        }
+
+        if ((int)$owner->admin_role_id !== $this->supervisorRoleId()) {
+            return response()->json(['status' => false, 'message' => 'Owner must be a supervisor.'], 422);
+        }
+
         $ticket->owner_id = $request->employee_id;
         $ticket->save();
 
@@ -1079,7 +1096,14 @@ class InboxMessageController extends BaseController
 
     public function getEmployeesByDepartment(Request $request)
     {
-        $filters = ['department_id' => $request->department_id];
+        if (empty($request->department_id)) {
+            return response()->json([]);
+        }
+
+        $filters = [
+            'department_id' => $request->department_id,
+            'admin_role_id' => $this->departmentEmployeeRoleId(),
+        ];
         $employees = $this->adminRepo->getEmployeeListWhere(
             ['id' => 'desc'],
             null,
@@ -1091,5 +1115,20 @@ class InboxMessageController extends BaseController
             $employees = $employees->where('id', '!=', $request->head_id)->values();
         }
         return response()->json($employees);
+    }
+
+    private function isSuperAdmin(?Admin $admin): bool
+    {
+        return (int)($admin?->admin_role_id ?? 0) === 1;
+    }
+
+    private function supervisorRoleId(): int
+    {
+        return defined('DEPARTMENT_HEAD_ROLE_ID') ? (int)DEPARTMENT_HEAD_ROLE_ID : 8;
+    }
+
+    private function departmentEmployeeRoleId(): int
+    {
+        return defined('DEPARTMENT_EMPLOYEE_ROLE_ID') ? (int)DEPARTMENT_EMPLOYEE_ROLE_ID : 9;
     }
 }

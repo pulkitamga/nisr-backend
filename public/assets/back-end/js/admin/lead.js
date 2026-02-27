@@ -18,7 +18,6 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
     let actionUrl = $('#assignOwnerRoute').data('url');
     let formData = form.serialize();
 
-    console.log("Form Data:", formData);
     $.ajax({
         url: actionUrl,
         type: "POST",
@@ -26,7 +25,6 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
         success: function (response) {
             $('#showOwnerModal').modal('hide');
             Swal.fire('Success!', response.message, 'success');
-            location.reload();
         },
         error: function (xhr) {
             Swal.fire(
@@ -57,8 +55,6 @@ $('#updateTicketEmployeeForm').on('submit', function (e) {
     let actionUrl = $('#assignEmployeeRoute').data('url');
     let formData = form.serialize();
 
-    console.log("Form Data:", formData);
-
     $.ajax({
         url: actionUrl,
         type: "POST",
@@ -66,7 +62,6 @@ $('#updateTicketEmployeeForm').on('submit', function (e) {
         success: function (response) {
             $('#showEmployeeModal').modal('hide');
             Swal.fire('Success!', response.message, 'success');
-            location.reload();
         },
         error: function (xhr) {
             Swal.fire(
@@ -85,7 +80,6 @@ $(document).on('click', '.assign-dept-btn', function () {
     let ticketId = $(this).data('id');
     let deptId = $(this).data('department-id') || '';
 
-    console.log("Setting dept ticket_id:", ticketId, "current dept:", deptId);
     $('#depart_ticket_id').val(ticketId);
     $('#department-id').val(deptId).trigger('change');
     $('#priority').val('');
@@ -102,8 +96,6 @@ $('#updateTicketDepartmentForm').on('submit', function (e) {
     let actionUrl = $('#assignDepartmentRoute').data('url');
     let formData = form.serialize();
 
-    console.log("Dept Form Data:", formData);
-
     $.ajax({
         url: actionUrl,
         type: "POST",
@@ -115,7 +107,6 @@ $('#updateTicketDepartmentForm').on('submit', function (e) {
                 response.message,
                 'success'
             );
-            location.reload(); // page reload for update
         },
         error: function (xhr) {
             Swal.fire(
@@ -187,7 +178,7 @@ $('#escalateLeadForm').submit(function (e) {
     e.preventDefault();
     let form = $(this);
     Swal.fire({
-        title: 'Are you sure?"',
+        title: 'Are you sure?',
         text: 'This will notify the department and owner.',
         icon: 'warning',
         showCancelButton: true,

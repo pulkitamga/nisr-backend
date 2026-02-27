@@ -8,7 +8,7 @@
     <h2 class="mt-3">{{ translate('ticket_details') }} #{{ $supportTicket->id }}</h2>
     <div class="row">
         <div class="col-md-6">
-            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
                 <div class="card-header">{{ translate('candidate_details') }}</div>
                 <div class="card-body">
                     <p><strong>{{ translate('name') }}:</strong> {{ $supportTicket->customer->name ?? translate('N/A') }}</p>
@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'ltr' : 'rtl'}};">
+            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
                 <div class="card-header">{{ translate('ticket_details') }}</div>
                 <div class="card-body">
                     <p><strong>{{ translate('subject') }}:</strong> {{ $supportTicket->subject }}</p>
@@ -37,14 +37,16 @@
         </div>
     </div>
 
+    @include('admin-views.crm.partials.escalation-panel', ['escalations' => $supportTicket->escalations ?? collect()])
+
     <div class="card mt-3" >
         <div class="card-header">
             <ul class="nav nav-tabs">
-                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#activity">{{ translate('Activity') }}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#interviews">{{ translate('interviews') }}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#offers">{{ translate('offers') }}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rejections">{{ translate('rejections') }}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#talent-pool">{{ translate('talent_pool') }}</a></li>
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activity">{{ translate('Activity') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#interviews">{{ translate('interviews') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#offers">{{ translate('offers') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rejections">{{ translate('rejections') }}</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#talent-pool">{{ translate('talent_pool') }}</a></li>
             </ul>
         </div>
         <div class="card-body">

@@ -34,16 +34,21 @@ class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles,Wit
     public function columnWidths(): array
     {
         return [
-            'A' => 15,
+            'A' => 8,
+            'B' => 24,
+            'C' => 28,
+            'D' => 60,
+            'E' => 22,
+            'F' => 12,
         ];
     }
 
     public function styles(Worksheet $sheet) {
         $sheet->getStyle('A1:A3')->getFont()->setBold(true);
-        $sheet->getStyle('A3:E3')->getFont()->setBold(true)->getColor()
+        $sheet->getStyle('A3:F3')->getFont()->setBold(true)->getColor()
             ->setARGB('FFFFFF');
 
-        $sheet->getStyle('A3:E3')->getFill()->applyFromArray([
+        $sheet->getStyle('A3:F3')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
             'color' => ['rgb' => '063C93'],
@@ -51,7 +56,7 @@ class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles,Wit
         $sheet->setShowGridlines(false);
         return [
             // Define the style for cells with data
-            'A1:E'.$this->data['roles']->count() + 3 => [
+            'A1:F'.$this->data['roles']->count() + 3 => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -66,22 +71,22 @@ class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles,Wit
     {
             return [
                 AfterSheet::class => function(AfterSheet $event) {
-                    $event->sheet->getStyle('A1:E1') // Adjust the range as per your needs
+                    $event->sheet->getStyle('A1:F1') // Adjust the range as per your needs
                     ->getAlignment()
                         ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                         ->setVertical(Alignment::VERTICAL_CENTER);
-                    $event->sheet->getStyle('A3:E'.$this->data['roles']->count() + 3) // Adjust the range as per your needs
+                    $event->sheet->getStyle('A3:F'.$this->data['roles']->count() + 3) // Adjust the range as per your needs
                     ->getAlignment()
                         ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                         ->setVertical(Alignment::VERTICAL_CENTER);
-                    $event->sheet->getStyle('A2:E2') // Adjust the range as per your needs
+                    $event->sheet->getStyle('A2:F2') // Adjust the range as per your needs
                     ->getAlignment()
                         ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                         ->setVertical(Alignment::VERTICAL_CENTER);
 
-                    $event->sheet->mergeCells('A1:E1');
+                    $event->sheet->mergeCells('A1:F1');
                     $event->sheet->mergeCells('A2:B2');
-                    $event->sheet->mergeCells('C2:E2');
+                    $event->sheet->mergeCells('C2:F2');
                     $event->sheet->getDefaultRowDimension()->setRowHeight(30);
                     $event->sheet->getRowDimension(2)->setRowHeight(60);
                 }
