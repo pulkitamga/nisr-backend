@@ -73,7 +73,6 @@ Route::get('/test-hello', function() {
 
 //  ENCRYPTION  ROUTES 
 Route::prefix('encryption')->group(function () {
-    // Encrypt a single file (WORKS! we tested it)
     Route::get('/simple-test', [EncryptionController::class, 'simpleEncryptTest'])->name('encryption.simple');
     // Download encrypted files
     Route::get('/download/{filename}', [EncryptionController::class, 'download'])->name('encryption.download');
