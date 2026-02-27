@@ -39,10 +39,18 @@ class WholesalerLoginController extends Controller
         $this->middleware('guest:customer', ['except' => ['logout']]);
     }
 
-    public function loginView(): View|RedirectResponse
+    public function getLoginView(): View|RedirectResponse
     {
         session()->put('keep_return_url', url()->previous());
-        return theme_root_path() == 'default' ? view('web-views.customer-views.auth.login') : redirect()->route('store');
+
+        return theme_root_path() == 'default'
+            ? view(VIEW_FILE_NAMES['wholesale_login_view'])
+            : redirect()->route('store');
+    }
+
+    public function loginView(): View|RedirectResponse
+    {
+        return $this->getLoginView();
     }
 
     public function loginSubmit(Request $request): JsonResponse|RedirectResponse

@@ -425,6 +425,23 @@
         });
 
 
+        const csrfToken = @json(csrf_token());
+
+        function submitDeleteForm(deleteUrl) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = deleteUrl;
+
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '_token';
+            tokenInput.value = csrfToken;
+            form.appendChild(tokenInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
 
         function openOrderNoPopup(orderId) {
             $('#modal_order_id').val(orderId);
@@ -459,7 +476,7 @@
 
         function confirmAndDelete(deleteUrl) {
             if (confirm("Are you sure you want to delete this order?")) {
-                window.location.href = deleteUrl;
+                submitDeleteForm(deleteUrl);
             }
         }
 

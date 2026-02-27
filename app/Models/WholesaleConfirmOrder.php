@@ -35,7 +35,14 @@ class WholesaleConfirmOrder extends Model
     // Relationships
     public function metas()
     {
-        return $this->hasMany(QuotationMeta::class, 'wholesale_quotation_id', 'quotation_no');
+        return $this->hasManyThrough(
+            QuotationMeta::class,
+            WholesaleQuotation::class,
+            'quotation_no',
+            'wholesale_quotation_id',
+            'quotation_no',
+            'id'
+        );
     }
 
     public function purchaseOrder()
@@ -51,7 +58,7 @@ class WholesaleConfirmOrder extends Model
 
     public function items()
     {
-        return $this->hasMany(WholesalePurchaseOrderItem::class, 'wholesale_order_id', 'id');
+        return $this->hasMany(WholesaleConfirmOrderItem::class, 'confirmed_order_id');
     }
 
 
@@ -109,7 +116,7 @@ class WholesaleConfirmOrder extends Model
     }
     public function getImageFullUrlAttribute(): array
     {
-        $value = $this->image;
+        $value = $this->attachments;
         if (count($this->storage) > 0) {
             $storage = $this->storage->where('key', 'attachments')->first();
         }

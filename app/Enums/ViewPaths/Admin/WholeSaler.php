@@ -126,7 +126,7 @@ enum WholeSaler
         VIEW => ''
     ];
     const CONFIRMED_ORDER_DELIVERY_STORE = [
-        URI => 'toggle-moq-override',
+        URI => 'delivery.store',
         VIEW => ''
     ];
 
