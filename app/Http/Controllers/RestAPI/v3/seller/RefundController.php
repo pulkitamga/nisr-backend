@@ -57,10 +57,26 @@ class RefundController extends Controller
     public function refund_details(Request $request)
     {
         $seller = $request->seller;
-        $order_details = OrderDetail::find($request->order_details_id);
-        $refund_request = RefundRequest::with('refundStatus')->where('order_details_id',$request->order_details_id)->get();
+        $order_details = OrderDetail::where('id', $request->order_details_id)->whereHas('order', function ($query) use ($seller) {
+            $query->where('seller_is', 'seller')->where('seller_id', $seller['id']);
+        })->first();
+        if (!$order_details) {
+            return response()->json(['message' => 'Order details not found'], 404);
+        }
 
-            $order = Order::find($order_details->order_id);
+        $refund_request = RefundRequest::with('refundStatus')
+            ->where('order_details_id', $request->order_details_id)
+            ->whereHas('order', function ($query) use ($seller) {
+                $query->where('seller_is', 'seller')->where('seller_id', $seller['id']);
+            })->get();
+
+            $order = Order::where('id', $order_details->order_id)
+                ->where('seller_is', 'seller')
+                ->where('seller_id', $seller['id'])
+                ->first();
+            if (!$order) {
+                return response()->json(['message' => 'Order not found'], 404);
+            }
 
             $total_product_price = 0;
             $refund_amount = 0;
@@ -95,20 +111,26 @@ class RefundController extends Controller
     {
         $seller = $request->seller;
         $validator = Validator::make($request->all(), [
-            'refund_status' => 'required',
+            'refund_status' => 'required|in:approved,rejected',
             'refund_request_id' => 'required',
             'note'=>'required',
         ]);
 
         if ($validator->errors()->count() > 0) {
-            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)]);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 422);
         }
 
         $refund = RefundRequest::whereHas('order', function ($query) use($seller) {
                                     $query->where('seller_is', 'seller')->where('seller_id',$seller['id']);
                                 })->find($request->refund_request_id);
+        if (!$refund) {
+            return response()->json(['message' => 'Refund request not found'], 404);
+        }
 
         $user = User::find($refund->customer_id);
+        if (!$user) {
+            return response()->json(['message' => 'Customer not found'], 404);
+        }
 
         $loyalty_point_status = getWebConfig(name: 'loyalty_point_status');
 
@@ -118,28 +140,29 @@ class RefundController extends Controller
 
             if($user->loyalty_point < $loyalty_point && $request->refund_status == 'approved')
             {
-                return response()->json(['message'=>'Customer has not sufficient loyalty point to take refund for this order'],403);
+                return response()->json(['message'=>'Customer has not sufficient loyalty point to take refund for this order'],409);
             }
         }
 
         if($refund->change_by =='admin'){
 
-            return response()->json(['message'=>'refunded status can not be changed!! Admin already changed the status : '.$refund->status.'!!'],403);
+            return response()->json(['message'=>'refunded status can not be changed!! Admin already changed the status : '.$refund->status.'!!'],409);
         }
         if($refund->status != 'refunded')
         {
-            $orderDetails = OrderDetail::find($refund->order_details_id);
+            $orderDetails = OrderDetail::where('id', $refund->order_details_id)->whereHas('order', function ($query) use ($seller) {
+                $query->where('seller_is', 'seller')->where('seller_id', $seller['id']);
+            })->first();
+            if (!$orderDetails) {
+                return response()->json(['message' => 'Order details not found'], 404);
+            }
             $refund_status = new RefundStatus;
             $refund_status->refund_request_id = $refund->id;
             $refund_status->change_by = 'seller';
             $refund_status->change_by_id = $seller['id'];
             $refund_status->status = $request->refund_status;
 
-            if($request->refund_status == 'pending')
-            {
-                $orderDetails->refund_request = 1;
-            }
-            elseif($request->refund_status == 'approved')
+            if($request->refund_status == 'approved')
             {
                 $orderDetails->refund_request = 2;
                 $refund->approved_note = $request->note;
@@ -165,7 +188,7 @@ class RefundController extends Controller
             event(new RefundEvent(status: $request['refund_status'], order: $order, refund: $refund, orderDetails: $orderDetails));
             return response()->json(['message'=>'refund status updated successfully!'], 200);
         } else {
-            return response()->json(['message'=>'refunded status can not be changed!!'],403);
+            return response()->json(['message'=>'refunded status can not be changed!!'],409);
         }
 
     }

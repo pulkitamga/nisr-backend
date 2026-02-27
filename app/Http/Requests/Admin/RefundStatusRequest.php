@@ -31,6 +31,7 @@ class RefundStatusRequest extends FormRequest
             'approved_note' => $this->input('refund_status') == 'approved' ? 'required' : '',
             'rejected_note' => $this->input('refund_status') == 'rejected' ? 'required': '',
             'payment_method' => $this->input('refund_status') == 'refunded' ? 'required': '',
+            'inventory_action' => $this->input('refund_status') == 'refunded' ? 'nullable|in:restock,no_restock' : 'nullable',
         ];
     }
     public function messages(): array

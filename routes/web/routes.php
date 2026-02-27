@@ -281,9 +281,9 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
         Route::get('account-order-details-reviews', 'getAccountOrderDetailsReviewsView')->name('account-order-details-reviews')->middleware('customer');
         Route::get('generate-invoice/{id}', 'generate_invoice')->name('generate-invoice');
         Route::get('account-wishlist', 'account_wishlist')->name('account-wishlist'); //add to card not work
-        Route::get('refund-request/{id}', 'refund_request')->name('refund-request');
-        Route::get('refund-details/{id}', 'refund_details')->name('refund-details');
-        Route::post('refund-store', 'store_refund')->name('refund-store');
+        Route::get('refund-request/{id}', 'refund_request')->name('refund-request')->middleware('customer');
+        Route::get('refund-details/{id}', 'refund_details')->name('refund-details')->middleware('customer');
+        Route::post('refund-store', 'store_refund')->name('refund-store')->middleware('customer');
         Route::get('account-tickets', 'account_tickets')->name('account-tickets');
         Route::get('order-cancel/{id}', 'order_cancel')->name('order-cancel');
         Route::post('ticket-submit', 'submitSupportTicket')->name('ticket-submit');

@@ -38,7 +38,7 @@ class RefundRequestRepository implements RefundRequestRepositoryInterface
 
     public function getListWhereHas(array $orderBy = [], string $searchValue = null, array $filters = [], string $whereHas = null, array $whereHasFilters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
-        $query = $this->refundRequest->whereHas($whereHas, function ($query) use ($whereHasFilters) {
+        $query = $this->refundRequest->with($relations)->whereHas($whereHas, function ($query) use ($whereHasFilters) {
                 return $query->when(isset($whereHasFilters['seller_is']) && $whereHasFilters['seller_is'] == 'admin', function ($query) use ($whereHasFilters) {
                     return $query->where(['seller_is' => $whereHasFilters['seller_is']]);
                 })->when(isset($whereHasFilters['seller_is']) && $whereHasFilters['seller_is'] == 'seller', function ($query) use ($whereHasFilters) {

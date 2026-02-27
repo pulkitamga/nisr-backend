@@ -128,7 +128,7 @@
                                                         <td class="text-end">{{webCurrencyConverter($detail->price)}} </td>
                                                         <td class="text-end">{{webCurrencyConverter($detail->discount)}}</td>
                                                         <td class="text-end">{{webCurrencyConverter(($detail->qty*$detail->price)-$detail->discount)}}</td>
-                                                        @php($length = $detail->created_at->diffInDays($current_date))
+                                                        @php($length = ($detail->refund_window_start_at ?? $detail->created_at)->diffInDays($current_date))
                                                         <td>
                                                             <div class="d-flex justify-content-center gap-2">
                                                                 @if($detail?->product && $order->payment_status == 'paid' && $detail?->product->digital_product_type == 'ready_product')

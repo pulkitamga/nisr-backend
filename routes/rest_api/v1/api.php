@@ -338,9 +338,9 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
         Route::group(['prefix' => 'order'], function () {
             Route::controller(OrderController::class)->group(function () {
                 Route::get('place-by-wallet', 'placeOrderByWallet');
-                Route::get('refund', 'refund_request');
-                Route::post('refund-store', 'store_refund');
-                Route::get('refund-details', 'refund_details');
+                Route::get('refund', 'refund_request')->middleware('auth:api');
+                Route::post('refund-store', 'store_refund')->middleware('auth:api');
+                Route::get('refund-details', 'refund_details')->middleware('auth:api');
                 Route::post('again', 'order_again');
             });
 

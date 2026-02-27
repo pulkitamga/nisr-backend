@@ -268,7 +268,7 @@
                                                             @endif
                                                             <?php
                                                             $refund_day_limit = getWebConfig(name: 'refund_day_limit');
-                                                            $order_details_date = $detail->created_at;
+                                                            $order_details_date = $detail->refund_window_start_at ?? $detail->created_at;
                                                             $current = \Carbon\Carbon::now();
                                                             $length = $order_details_date->diffInDays($current);
                                                             ?>
@@ -435,7 +435,7 @@
                                 @endif
                                 <?php
                                 $refund_day_limit = getWebConfig(name: 'refund_day_limit');
-                                $order_details_date = $detail->created_at;
+                                $order_details_date = $detail->refund_window_start_at ?? $detail->created_at;
                                 $current = \Carbon\Carbon::now();
                                 $length = $order_details_date->diffInDays($current);
                                 ?>
