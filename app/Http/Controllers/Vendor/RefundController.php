@@ -135,11 +135,12 @@ class RefundController extends BaseController
         }
         if($refund['status'] != 'refunded'){
             $statusMapping = [
-                'pending' => 1,
                 'approved' => 2,
                 'rejected' => 3,
-                'refunded' => 4,
             ];
+            if (!isset($statusMapping[$request['refund_status']])) {
+                return response()->json(['error'=>'Invalid refund status']);
+            }
             $this->orderDetailRepo->update(
                 id:$orderDetails['id'],
                 data: ['refund_request'=>$statusMapping[$request['refund_status']]]

@@ -21,6 +21,7 @@ use App\Models\Product;
 use App\Models\Departments;
 use App\Models\ProductCompare;
 use App\Models\RefundRequest;
+use App\Models\OrderStatusHistory;
 use App\Models\Review;
 use App\Models\Seller;
 use App\Models\ShippingAddress;
@@ -420,12 +421,18 @@ class UserProfileController extends Controller
 
     public function account_order_details(Request $request): View|RedirectResponse
     {
-        $order = $this->order->with(['deliveryManReview', 'customer', 'offlinePayments', 'details.productAllStatus'])
+        $order = $this->order->with(['deliveryManReview', 'customer', 'offlinePayments', 'details.productAllStatus', 'orderStatusHistory'])
             ->where(['id' => $request['id'], 'customer_id' => auth('customer')->id(), 'is_guest' => '0'])
             ->first();
 
         if ($order) {
-            $order?->details?->map(function ($detail) use ($order) {
+            $deliveredAtForRefundWindow = $order->orderStatusHistory
+                ?->where('status', 'delivered')
+                ?->sortByDesc('id')
+                ?->first()
+                ?->created_at;
+
+            $order?->details?->map(function ($detail) use ($order, $deliveredAtForRefundWindow) {
                 $order['total_qty'] += $detail->qty;
 
                 $reviews = Review::where(['product_id' => $detail['product_id'], 'customer_id' => auth('customer')->id()])->whereNull('delivery_man_id')->get();
@@ -440,6 +447,7 @@ class UserProfileController extends Controller
                     $reviewData = ($reviews[0]['order_id'] == null ? $reviews[0] : null);
                 }
                 $detail['reviewData'] = $reviewData;
+                $detail['refund_window_start_at'] = $deliveredAtForRefundWindow ?? $detail->created_at;
                 return $order;
             });
             return view(VIEW_FILE_NAMES['account_order_details'], [
@@ -1046,8 +1054,27 @@ class UserProfileController extends Controller
 
     public function refund_request(Request $request, $id): View|RedirectResponse
     {
-        $orderDetails = OrderDetail::find($id);
         $user = auth('customer')->user();
+        $orderDetails = $this->getCustomerOrderDetail(orderDetailsId: $id, customerId: $user->id);
+        if (!$orderDetails) {
+            Toastr::error(translate('order_not_found'));
+            return back();
+        }
+
+        if ($orderDetails->delivery_status !== 'delivered') {
+            Toastr::warning(translate('you_can_refund_request_after_the_product_is_delivered'));
+            return back();
+        }
+
+        if ($this->isRefundWindowExpired(orderDetails: $orderDetails)) {
+            Toastr::warning(translate('refund_request_time_limit'));
+            return back();
+        }
+
+        if ($this->hasRefundRequest(orderDetailsId: (int)$orderDetails->id, currentFlag: (int)$orderDetails->refund_request)) {
+            Toastr::warning(translate('already_applied_for_refund_request!!'));
+            return back();
+        }
 
         $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
         if ($loyaltyPointStatus == 1) {
@@ -1067,19 +1094,47 @@ class UserProfileController extends Controller
     {
         $request->validate([
             'order_details_id' => 'required',
-            'amount' => 'required',
-            'refund_reason' => 'required'
+            'refund_reason' => 'required',
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        $orderDetails = OrderDetail::find($request->order_details_id);
         $user = auth('customer')->user();
+        $orderDetails = $this->getCustomerOrderDetail(orderDetailsId: $request->order_details_id, customerId: $user->id);
+        if (!$orderDetails) {
+            Toastr::error(translate('order_not_found'));
+            return back();
+        }
+
+        if ($orderDetails->delivery_status !== 'delivered') {
+            Toastr::warning(translate('you_can_refund_request_after_the_product_is_delivered'));
+            return back();
+        }
+
+        if ($this->isRefundWindowExpired(orderDetails: $orderDetails)) {
+            Toastr::warning(translate('refund_request_time_limit'));
+            return back();
+        }
+
+        if ($this->hasRefundRequest(orderDetailsId: (int)$orderDetails->id, currentFlag: (int)$orderDetails->refund_request)) {
+            Toastr::warning(translate('already_applied_for_refund_request!!'));
+            return back();
+        }
+
+        $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
+        if ($loyaltyPointStatus == 1) {
+            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int)$orderDetails->id);
+            if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
+                Toastr::warning(translate('you_have_not_sufficient_loyalty_point_to_refund_this_order') . '!!');
+                return back();
+            }
+        }
 
         // RefundRequest save code
         $refundRequest = new RefundRequest();
-        $refundRequest->order_details_id = $request->order_details_id;
+        $refundRequest->order_details_id = $orderDetails->id;
         $refundRequest->customer_id = $user->id;
         $refundRequest->status = 'pending';
-        $refundRequest->amount = $request->amount;
+        $refundRequest->amount = $this->calculateRefundAmount(orderDetails: $orderDetails);
         $refundRequest->product_id = $orderDetails->product_id;
         $refundRequest->order_id = $orderDetails->order_id;
         $refundRequest->refund_reason = $request->refund_reason;
@@ -1132,7 +1187,13 @@ class UserProfileController extends Controller
 
     public function refund_details($id)
     {
-        $order_details = OrderDetail::find($id);
+        $customerId = auth('customer')->id();
+        $order_details = $this->getCustomerOrderDetail(orderDetailsId: $id, customerId: (int)$customerId);
+        if (!$order_details) {
+            Toastr::error(translate('order_not_found'));
+            return redirect()->back();
+        }
+
         $refund = RefundRequest::with(['product', 'order'])->where('customer_id', auth('customer')->id())
             ->where('order_details_id', $order_details->id)->first();
         $product = $this->product->find($order_details->product_id);
@@ -1154,6 +1215,70 @@ class UserProfileController extends Controller
 
         Toastr::error(translate('product_not_found'));
         return redirect()->back();
+    }
+
+    private function getCustomerOrderDetail(int|string $orderDetailsId, int $customerId): ?OrderDetail
+    {
+        return OrderDetail::where('id', $orderDetailsId)
+            ->whereHas('order', function ($query) use ($customerId) {
+                $query->where('customer_id', $customerId)->where('is_guest', 0);
+            })->first();
+    }
+
+    private function hasRefundRequest(int $orderDetailsId, int $currentFlag): bool
+    {
+        if ($currentFlag !== 0) {
+            return true;
+        }
+
+        return RefundRequest::where('order_details_id', $orderDetailsId)->exists();
+    }
+
+    private function isRefundWindowExpired(OrderDetail $orderDetails): bool
+    {
+        $refundDayLimit = (int)(getWebConfig(name: 'refund_day_limit') ?? 0);
+        if ($refundDayLimit <= 0) {
+            return false;
+        }
+
+        $refundWindowStartAt = $this->getRefundWindowStartAt(orderDetails: $orderDetails);
+        return $refundWindowStartAt->diffInDays(now()) > $refundDayLimit;
+    }
+
+    private function calculateRefundAmount(OrderDetail $orderDetails): float
+    {
+        $order = Order::with('details')->find($orderDetails->order_id);
+        if (!$order || !$order->details) {
+            return 0;
+        }
+
+        $totalProductPrice = 0;
+        foreach ($order->details as $detail) {
+            $totalProductPrice += ($detail->qty * $detail->price) + $detail->tax - $detail->discount;
+        }
+
+        if ($totalProductPrice <= 0) {
+            return 0;
+        }
+
+        $subtotal = ($orderDetails->price * $orderDetails->qty) - $orderDetails->discount + $orderDetails->tax;
+        $couponDiscount = (($order->discount_amount ?? 0) * $subtotal) / $totalProductPrice;
+        return max(0, (float)($subtotal - $couponDiscount));
+    }
+
+    private function getRefundWindowStartAt(OrderDetail $orderDetails): Carbon
+    {
+        $deliveredAt = OrderStatusHistory::query()
+            ->where('order_id', $orderDetails->order_id)
+            ->where('status', 'delivered')
+            ->latest('id')
+            ->value('created_at');
+
+        if ($deliveredAt) {
+            return Carbon::parse($deliveredAt);
+        }
+
+        return Carbon::parse($orderDetails->updated_at ?? $orderDetails->created_at ?? now());
     }
 
     public function submit_review(Request $request, $id): View|RedirectResponse

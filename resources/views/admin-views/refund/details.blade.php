@@ -294,7 +294,7 @@
                                         <td class="text-capitalize">
                                             {{$status->change_by == 'seller' ? 'vendor' : $status->change_by}}
                                         </td>
-                                        <td>{{date('d M Y, h:s:A',strtotime($refund['created_at']))}}</td>
+                                        <td>{{date('d M Y, h:s:A',strtotime($status['created_at']))}}</td>
                                         <td class="text-capitalize">
                                             {{translate($status->status)}}
                                         </td>
@@ -391,6 +391,13 @@
                                 @if ($walletStatus == 1 && $walletAddRefund == 1)
                                     <option value="customer_wallet">{{translate('customer_wallet')}}</option>
                                 @endif
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label" for="inventory_action">Inventory action</label>
+                            <select class="form-control" name="inventory_action" id="inventory_action">
+                                <option value="restock">Restock</option>
+                                <option value="no_restock">No restock</option>
                             </select>
                         </div>
                         <div class="form-group">

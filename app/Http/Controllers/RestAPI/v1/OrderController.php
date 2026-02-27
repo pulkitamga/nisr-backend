@@ -11,6 +11,7 @@ use App\Models\DigitalProductOtpVerification;
 use App\Models\OfflinePaymentMethod;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\OrderStatusHistory;
 use App\Models\RefundRequest;
 use App\Models\Setting;
 use App\Models\ShippingAddress;
@@ -29,6 +30,7 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 
@@ -533,145 +535,208 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
     public function refund_request(Request $request): JsonResponse
     {
-        $order_details = OrderDetail::find($request->order_details_id);
+        $validator = Validator::make($request->all(), [
+            'order_details_id' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
+        }
+
+        $order_details = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int)$request->order_details_id);
+        if (!$order_details) {
+            return response()->json(['message' => translate('order_not_found')], 404);
+        }
 
         $user = $request->user();
         $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
         if ($loyaltyPointStatus == 1) {
-            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount($request->order_details_id);
+            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int)$order_details->id);
             if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
-                return response()->json(['message' => translate('you_have_not_sufficient_loyalty_point_to_refund_this_order')], 202);
+                return response()->json(['message' => translate('you_have_not_sufficient_loyalty_point_to_refund_this_order')], 409);
             }
         }
 
         if ($order_details->delivery_status == 'delivered') {
-            $order = Order::find($order_details->order_id);
-            $total_product_price = 0;
-            $refund_amount = 0;
-            $data = [];
-            foreach ($order->details as $key => $or_d) {
-                $total_product_price += ($or_d->qty * $or_d->price) + $or_d->tax - $or_d->discount;
-            }
-
-            $subtotal = ($order_details->price * $order_details->qty) - $order_details->discount + $order_details->tax;
-            $coupon_discount = ($order->discount_amount * $subtotal) / $total_product_price;
-            $refund_amount = $subtotal - $coupon_discount;
-
-            $data['product_price'] = $order_details->price;
-            $data['quntity'] = $order_details->qty;
-            $data['product_total_discount'] = $order_details->discount;
-            $data['product_total_tax'] = $order_details->tax;
-            $data['subtotal'] = $subtotal;
-            $data['coupon_discount'] = $coupon_discount;
-            $data['refund_amount'] = $refund_amount;
-
-            $refund_day_limit = getWebConfig(name: 'refund_day_limit');
-            $order_details_date = $order_details->created_at;
-            $current = Carbon::now();
-            $length = $order_details_date->diffInDays($current);
+            $data = $this->getRefundBreakdown(orderDetails: $order_details);
             $expired = false;
             $already_requested = false;
-            if ($order_details->refund_request != 0) {
+            if ($this->hasRefundRequest(orderDetails: $order_details)) {
                 $already_requested = true;
             }
-            if ($length > $refund_day_limit) {
+            if ($this->isRefundWindowExpired(orderDetails: $order_details)) {
                 $expired = true;
             }
             return response()->json(['already_requested' => $already_requested, 'expired' => $expired, 'refund' => $data], 200);
         } else {
-            return response()->json(['message' => translate('You_can_request_for_refund_after_order_delivered')], 200);
+            return response()->json(['message' => translate('you_can_refund_request_after_the_product_is_delivered')], 409);
         }
     }
 
     public function store_refund(Request $request): JsonResponse
     {
-        $orderDetails = OrderDetail::find($request->order_details_id);
+        $validator = Validator::make($request->all(), [
+            'order_details_id' => 'required|integer',
+            'refund_reason' => 'required',
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
+        }
+
+        $orderDetails = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int)$request->order_details_id);
+        if (!$orderDetails) {
+            return response()->json(['message' => translate('order_not_found')], 404);
+        }
+
         $user = $request->user();
-        $loyalty_point_status = getWebConfig(name: 'loyalty_point_status');
-        if ($loyalty_point_status == 1) {
-            $loyalty_point = CustomerManager::count_loyalty_point_for_amount($request->order_details_id);
-            if ($user->loyalty_point < $loyalty_point) {
-                return response()->json(translate('you have not sufficient loyalty point to refund this order!!'), 200);
+        $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
+        if ($loyaltyPointStatus == 1) {
+            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int)$orderDetails->id);
+            if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
+                return response()->json(['message' => translate('you have not sufficient loyalty point to refund this order!!')], 409);
             }
         }
 
-        if ($orderDetails->refund_request == 0) {
+        if ($orderDetails->delivery_status !== 'delivered') {
+            return response()->json(['message' => translate('you_can_refund_request_after_the_product_is_delivered')], 409);
+        }
 
-            $validator = Validator::make($request->all(), [
-                'order_details_id' => 'required',
-                'amount' => 'required',
-                'refund_reason' => 'required'
+        if ($this->isRefundWindowExpired(orderDetails: $orderDetails)) {
+            return response()->json(['message' => translate('refund_request_time_limit')], 409);
+        }
 
-            ]);
-            if ($validator->fails()) {
-                return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
+        if ($this->hasRefundRequest(orderDetails: $orderDetails)) {
+            return response()->json(['message' => translate('already_applied_for_refund_request!!')], 409);
+        }
+
+        $refundRequest = DB::transaction(function () use ($orderDetails, $request) {
+            $lockedOrderDetails = OrderDetail::query()->lockForUpdate()->find($orderDetails->id);
+            if (!$lockedOrderDetails || $this->hasRefundRequest(orderDetails: $lockedOrderDetails)) {
+                return null;
             }
-            $refund_request = new RefundRequest;
-            $refund_request->order_details_id = $request->order_details_id;
-            $refund_request->customer_id = $request->user()->id;
-            $refund_request->status = 'pending';
-            $refund_request->amount = $request->amount;
-            $refund_request->product_id = $orderDetails->product_id;
-            $refund_request->order_id = $orderDetails->order_id;
-            $refund_request->refund_reason = $request->refund_reason;
+
+            $refundRequest = new RefundRequest();
+            $refundRequest->order_details_id = $lockedOrderDetails->id;
+            $refundRequest->customer_id = (int)$request->user()->id;
+            $refundRequest->status = 'pending';
+            $refundRequest->amount = (float)$this->getRefundBreakdown(orderDetails: $lockedOrderDetails)['refund_amount'];
+            $refundRequest->product_id = $lockedOrderDetails->product_id;
+            $refundRequest->order_id = $lockedOrderDetails->order_id;
+            $refundRequest->refund_reason = $request->refund_reason;
 
             if ($request->file('images')) {
+                $images = [];
                 foreach ($request->file('images') as $img) {
                     $images[] = [
                         'image_name' => $this->upload('refund/', 'webp', $img),
                         'storage' => getWebConfig(name: 'storage_connection_type') ?? 'public',
                     ];
-
                 }
-                $refund_request->images = $images;
+                $refundRequest->images = $images;
             }
-            $refund_request->save();
 
-            $orderDetails->refund_request = 1;
-            $orderDetails->save();
+            $refundRequest->save();
+            $lockedOrderDetails->refund_request = 1;
+            $lockedOrderDetails->save();
 
-            $order = Order::find($orderDetails->order_id);
-            event(new RefundEvent(status: 'refund_request', order: $order, refund: $refund_request, orderDetails: $orderDetails));
+            return ['refund' => $refundRequest, 'orderDetails' => $lockedOrderDetails];
+        });
 
-            return response()->json(translate('refunded_request_updated_successfully!!'), 200);
-        } else {
-            return response()->json(translate('already_applied_for_refund_request!!'), 302);
+        if (!$refundRequest) {
+            return response()->json(['message' => translate('already_applied_for_refund_request!!')], 409);
         }
+
+        $order = Order::find($refundRequest['orderDetails']->order_id);
+        event(new RefundEvent(status: 'refund_request', order: $order, refund: $refundRequest['refund'], orderDetails: $refundRequest['orderDetails']));
+
+        return response()->json(translate('refunded_request_updated_successfully!!'), 200);
     }
 
     public function refund_details(Request $request)
     {
-        $orderDetails = OrderDetail::find($request->id);
+        $orderDetails = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int)$request->id);
+        if (!$orderDetails) {
+            return response()->json(['message' => translate('order_not_found')], 404);
+        }
+
         $refund = RefundRequest::where('customer_id', $request->user()->id)
             ->with(['refundStatus'])
             ->where('order_details_id', $orderDetails->id)->get();
 
         $order = Order::find($orderDetails->order_id);
-
-        $total_product_price = 0;
-        $refund_amount = 0;
-        $data = [];
-        foreach ($order->details as $key => $or_d) {
-            $total_product_price += ($or_d->qty * $or_d->price) + $or_d->tax - $or_d->discount;
-        }
-
-        $subtotal = ($orderDetails->price * $orderDetails->qty) - $orderDetails->discount + $orderDetails->tax;
-
-        $coupon_discount = ($order->discount_amount * $subtotal) / $total_product_price;
-
-        $refund_amount = $subtotal - $coupon_discount;
-
-        $data['product_price'] = $orderDetails->price;
-        $data['quntity'] = $orderDetails->qty;
-        $data['product_total_discount'] = $orderDetails->discount;
-        $data['product_total_tax'] = $orderDetails->tax;
-        $data['subtotal'] = $subtotal;
-        $data['coupon_discount'] = $coupon_discount;
-        $data['refund_amount'] = $refund_amount;
+        $data = $this->getRefundBreakdown(orderDetails: $orderDetails);
         $data['refund_request'] = $refund;
         $data['order_place_date'] = $order->created_at;
 
         return response()->json($data, 200);
+    }
+
+    private function getCustomerOrderDetail(Request $request, int|string $orderDetailsId): ?OrderDetail
+    {
+        return OrderDetail::where('id', $orderDetailsId)->whereHas('order', function ($query) use ($request) {
+            $query->where('customer_id', $request->user()->id)->where('is_guest', 0);
+        })->first();
+    }
+
+    private function hasRefundRequest(OrderDetail $orderDetails): bool
+    {
+        if ((int)$orderDetails->refund_request !== 0) {
+            return true;
+        }
+
+        return RefundRequest::where('order_details_id', $orderDetails->id)->exists();
+    }
+
+    private function isRefundWindowExpired(OrderDetail $orderDetails): bool
+    {
+        $refundDayLimit = (int)(getWebConfig(name: 'refund_day_limit') ?? 0);
+        if ($refundDayLimit <= 0) {
+            return false;
+        }
+
+        $refundWindowStartAt = $this->getRefundWindowStartAt(orderDetails: $orderDetails);
+        return $refundWindowStartAt->diffInDays(Carbon::now()) > $refundDayLimit;
+    }
+
+    private function getRefundBreakdown(OrderDetail $orderDetails): array
+    {
+        $order = Order::with('details')->find($orderDetails->order_id);
+        $totalProductPrice = 0;
+        if ($order && $order->details) {
+            foreach ($order->details as $detail) {
+                $totalProductPrice += ($detail->qty * $detail->price) + $detail->tax - $detail->discount;
+            }
+        }
+
+        $subtotal = ($orderDetails->price * $orderDetails->qty) - $orderDetails->discount + $orderDetails->tax;
+        $couponDiscount = $totalProductPrice > 0 ? (($order->discount_amount ?? 0) * $subtotal) / $totalProductPrice : 0;
+        $refundAmount = max(0, (float)($subtotal - $couponDiscount));
+
+        return [
+            'product_price' => $orderDetails->price,
+            'quntity' => $orderDetails->qty,
+            'product_total_discount' => $orderDetails->discount,
+            'product_total_tax' => $orderDetails->tax,
+            'subtotal' => $subtotal,
+            'coupon_discount' => $couponDiscount,
+            'refund_amount' => $refundAmount,
+        ];
+    }
+
+    private function getRefundWindowStartAt(OrderDetail $orderDetails): Carbon
+    {
+        $deliveredAt = OrderStatusHistory::query()
+            ->where('order_id', $orderDetails->order_id)
+            ->where('status', 'delivered')
+            ->latest('id')
+            ->value('created_at');
+
+        if ($deliveredAt) {
+            return Carbon::parse($deliveredAt);
+        }
+
+        return Carbon::parse($orderDetails->updated_at ?? $orderDetails->created_at ?? Carbon::now());
     }
 
     public function digital_product_download($id, Request $request)

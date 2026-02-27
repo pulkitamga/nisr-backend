@@ -23,9 +23,9 @@
                         <img class="mb-1" src="{{dynamicAsset(path: 'public/assets/back-end/img/warning-icon.png')}}" alt="{{translate('warning')}}">
                         @if($refund['status'] != 'pending' && ($refund['approved_count']<2 || $refund['denied_count']<2))
                             @if($refund['status'] == 'approved' && $refund['approved_count']<2 )
-                                {{translate('you_have_already_denied_refund_status_once').'.'}}
-                            @elseif($refund['status'] == 'rejected' && $refund['denied_count']<2)
                                 {{translate('you_have_already_approved_refund_status_once').'.'}}
+                            @elseif($refund['status'] == 'rejected' && $refund['denied_count']<2)
+                                {{translate('you_have_already_denied_refund_status_once').'.'}}
                             @endif
                         @elseif($refund['approved_count']>=2 || $refund['denied_count']>=2)
                             {{translate('you_have_already_').$refund['status'].translate('_refund_status_twice').'.'}}
@@ -287,7 +287,7 @@
                                             <td class="text-capitalize">
                                                 {{$status->change_by == 'seller' ? 'vendor' : $status->change_by}}
                                             </td>
-                                            <td>{{date('d M Y, h:s:A',strtotime($refund['created_at']))}}</td>
+                                            <td>{{date('d M Y, h:s:A',strtotime($status['created_at']))}}</td>
 
                                             <td class="text-break">
                                                 <div class="word-break max-w-360px mx-auto">

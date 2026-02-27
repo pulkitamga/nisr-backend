@@ -50,8 +50,13 @@ class RefundStatusService
             $refundStatus['message'] = $request['rejected_note'];
         } elseif ($request['refund_status'] == 'refunded') {
             $orderDetails['refund_request'] = 4;
-            $refundData['payment_info'] = $request['payment_info'];
-            $refundStatus['message'] = $request['payment_info'];
+            $paymentInfo = trim((string)($request['payment_info'] ?? ''));
+            $inventoryAction = trim((string)($request->input('inventory_action') ?? ''));
+            if ($inventoryAction !== '') {
+                $paymentInfo = trim($paymentInfo . ' | inventory_action:' . $inventoryAction, " \t\n\r\0\x0B|");
+            }
+            $refundData['payment_info'] = $paymentInfo !== '' ? $paymentInfo : null;
+            $refundStatus['message'] = $paymentInfo !== '' ? $paymentInfo : null;
 
             $walletAddRefund = getWebConfig(name: 'wallet_add_refund');
             if ($walletAddRefund == 1 && $request['payment_method'] == 'customer_wallet') {
