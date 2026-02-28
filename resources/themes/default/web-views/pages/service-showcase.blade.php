@@ -7,6 +7,7 @@
 @endpush
 
 @section('content')
+<div dir="{{ Session::get('direction') === 'rtl' ? 'rtl' : 'ltr' }}">
 <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/cms/css/style.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
@@ -220,7 +221,7 @@ if ($total > 0 && $total < $minSlidesNeeded) { while ($slides->count() < $minSli
                         <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="feature-img text-center text-lg-start">
-                                    <img src="{{ Storage::url($productSlide->image) }}" alt="Filter Image">
+                                    <img src="{{ Storage::url($productSlide->image) }}" alt="{{ translate('Service image') }}">
                                 </div>
                             </div>
 
@@ -272,7 +273,7 @@ if ($total > 0 && $total < $minSlidesNeeded) { while ($slides->count() < $minSli
                             <div
                                 class="col-md-6 order-0 order-md-1 text-center text-lg-end d-flex justify-content-end">
                                 <div class="feature-img me-xl-4 pe-xl-5">
-                                    <img src="{{ Storage::url($productSlide->image) }}" alt="Filter Image">
+                                    <img src="{{ Storage::url($productSlide->image) }}" alt="{{ translate('Service image') }}">
 
                                 </div>
                             </div>
@@ -292,7 +293,7 @@ if ($total > 0 && $total < $minSlidesNeeded) { while ($slides->count() < $minSli
                         <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="feature-img text-center text-lg-start">
-                                    <img src="{{ Storage::url($productSlide->image) }}" alt="Filter Image">
+                                    <img src="{{ Storage::url($productSlide->image) }}" alt="{{ translate('Service image') }}">
 
                                 </div>
                             </div>
@@ -408,5 +409,6 @@ if ($total > 0 && $total < $minSlidesNeeded) { while ($slides->count() < $minSli
                 }
             });
         </script>
+</div>
 
         @endsection

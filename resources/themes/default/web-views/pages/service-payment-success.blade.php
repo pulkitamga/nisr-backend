@@ -6,7 +6,7 @@
 @section('content')
 @include('layouts.front-end.partials._store-header')
 
-<div class="container py-5">
+<div class="container py-5" dir="{{ Session::get('direction') === 'rtl' ? 'rtl' : 'ltr' }}">
     <div class="row justify-content-center">
         <div class="col-lg-6 col-md-8">
             <div class="card shadow-lg border-0 rounded-4 text-center">

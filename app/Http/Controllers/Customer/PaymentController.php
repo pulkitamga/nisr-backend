@@ -17,7 +17,6 @@ use App\Models\BusinessSetting;
 use App\Models\Cart;
 use App\Models\ServiceInvoice;
 use App\Models\CartShipping;
-use App\Models\SupportTicket;
 use App\Models\Currency;
 use App\Traits\Payment;
 use App\Utils\CartManager;
@@ -30,8 +29,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Validator;
 use function App\Utils\payment_gateways;
-use App\Http\Controllers\Admin\HelpAndSupport\ServiceTicketController;
-use App\Contracts\Repositories\AdminNotificationRepositoryInterface;
+use App\Services\ServiceInvoicePaymentService;
 
 class PaymentController extends Controller
 {
@@ -219,65 +217,59 @@ class PaymentController extends Controller
         return response()->json(['message' => 'Payment failed'], 403);
     }
 
-   public function web_payment_success(Request $request)
-{
-    if ($request->flag == 'success') {
-        if (session('payment_type') == 'service_invoice') {
-            $invoice = ServiceInvoice::find(session('invoice_id'));
-            if ($invoice && $invoice->payment_status == 'pending') {
-                $invoice->payment_status = 'paid';
-                $invoice->save();
+    public function web_payment_success(Request $request)
+    {
+        $paymentRequest = $this->getPaymentRequestFromToken($request->query('token'));
+        $serviceInvoiceId = $this->resolveServiceInvoiceId($paymentRequest);
+        $isServiceInvoicePayment = $serviceInvoiceId !== null || session('payment_type') === 'service_invoice' || ($paymentRequest && $paymentRequest->attribute === 'service_invoice');
 
-                $jobId = $invoice->job_id;
-                $ticketId = $invoice->ticket_id;
-
-                app(ServiceTicketController::class)->logJobActivity($jobId, 'payment_received', "Payment received for invoice #{$invoice->id}");
-
-                // Notify
-                $title = "Payment Received";
-                $message = "Payment received for service ticket #{$ticketId}";
-                $link = route('admin.support-ticket.service.singleTicket', $ticketId);
-
-                $recipients = [];
-                $ticket = SupportTicket::find($ticketId);
-                if ($ticket) {
-                    if ($ticket->employee_id) {
-                        $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
-                    }
-                    if ($ticket->department_id) {
-                        $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
-                    }
+        if ($request->flag == 'success') {
+            if ($isServiceInvoicePayment) {
+                if (!$this->isValidServicePaymentSuccess($paymentRequest, $serviceInvoiceId)) {
+                    session()->forget(['payment_type', 'invoice_id']);
+                    Toastr::error(translate('Payment verification failed'));
+                    return redirect(url('/'));
                 }
 
-                app(AdminNotificationRepositoryInterface::class)->notifyRecipients(
-                    $ticketId,
-                    SupportTicket::class,
-                    $title,
-                    $message,
-                    $link,
-                    $recipients
-                );
+                $invoice = $serviceInvoiceId ? ServiceInvoice::with('ticket')->find($serviceInvoiceId) : null;
+                if (!$invoice) {
+                    session()->forget(['payment_type', 'invoice_id']);
+                    Toastr::error(translate('Invoice not found or already paid'));
+                    return redirect(url('/'));
+                }
+
+                if ($invoice->payment_status !== 'paid') {
+                    $invoice->update(['payment_status' => 'paid']);
+                }
+
+                $this->afterServiceInvoicePaymentSuccess($invoice);
+                session()->forget(['payment_type', 'invoice_id']);
+
+                Toastr::success(translate('Payment_success'));
+                return view(VIEW_FILE_NAMES['service_payment_success']);
             }
-            session()->forget(['payment_type', 'invoice_id']);
-            Toastr::success(translate('Payment successful'));
-            return view(VIEW_FILE_NAMES['service_payment_success']); // Create this view
-        } elseif (session()->has('payment_mode') && session('payment_mode') == 'app') {
-            return response()->json(['message' => 'Payment succeeded'], 200);
-        } else {
+
+            if (session()->has('payment_mode') && session('payment_mode') == 'app') {
+                return response()->json(['message' => 'Payment succeeded'], 200);
+            }
+
             Toastr::success(translate('Payment_success'));
             $isNewCustomerInSession = session('newCustomerRegister');
             session()->forget('newCustomerRegister');
             return view(VIEW_FILE_NAMES['order_complete'], compact('isNewCustomerInSession'));
         }
-    } else {
+
+        if ($isServiceInvoicePayment) {
+            session()->forget(['payment_type', 'invoice_id']);
+        }
+
         if (session()->has('payment_mode') && session('payment_mode') == 'app') {
             return response()->json(['message' => 'Payment failed'], 403);
-        } else {
-            Toastr::error(translate('Payment_failed') . '!');
-            return redirect(url('/'));
         }
+
+        Toastr::error(translate('Payment_failed') . '!');
+        return redirect(url('/'));
     }
-}
     public function getCustomerPaymentRequest(Request $request, $orderAdditionalData = []): mixed
     {
         $additionalData = [
@@ -505,98 +497,208 @@ class PaymentController extends Controller
 
 
     public function servicePayment($id)
-{
-    $invoice = ServiceInvoice::find($id);
-    if (!$invoice || $invoice->payment_status != 'pending') {
-        Toastr::error(translate('Invoice not found or already paid'));
-        return redirect('/');
-    }
-
-    $payment_gateways_list = payment_gateways();
-                $digital_payment = getWebConfig(name: 'digital_payment');
-
-    return view(VIEW_FILE_NAMES['service_payment'], compact('invoice', 'payment_gateways_list', 'digital_payment'));
-}
-
-public function service_payment_request(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'invoice_id' => 'required|exists:service_invoices,id',
-        'payment_method' => 'required',
-        'payment_platform' => 'required|in:web,app',
-    ]);
-
-    if ($validator->fails()) {
-        foreach ($validator->errors()->all() as $error) {
-            Toastr::error($error);
+    {
+        if (!auth('customer')->check()) {
+            Toastr::error(translate('please_login_first'));
+            return redirect()->route('customer.auth.login');
         }
-        return back();
+
+        $invoice = ServiceInvoice::with('ticket')->find($id);
+        if (!$invoice || $invoice->payment_status !== 'pending' || !$invoice->ticket) {
+            Toastr::error(translate('Invoice not found or already paid'));
+            return redirect('/');
+        }
+
+        if ((int)$invoice->ticket->customer_id !== (int)auth('customer')->id()) {
+            Toastr::error(translate('you_have_no_access_to_this_invoice'));
+            return redirect('/');
+        }
+
+        $payment_gateways_list = payment_gateways();
+        $digital_payment = getWebConfig(name: 'digital_payment');
+
+        return view(VIEW_FILE_NAMES['service_payment'], compact('invoice', 'payment_gateways_list', 'digital_payment'));
     }
 
-    $invoice = ServiceInvoice::find($request->invoice_id);
-    if (!$invoice || $invoice->payment_status != 'pending') {
-        Toastr::error(translate('Invoice not found or already paid'));
-        return back();
+    public function service_payment_request(Request $request)
+    {
+        if (!auth('customer')->check()) {
+            Toastr::error(translate('please_login_first'));
+            return redirect()->route('customer.auth.login');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'invoice_id' => 'required|exists:service_invoices,id',
+            'payment_method' => 'required',
+            'payment_platform' => 'required|in:web,app',
+        ]);
+
+        if ($validator->fails()) {
+            foreach ($validator->errors()->all() as $error) {
+                Toastr::error($error);
+            }
+            return back();
+        }
+
+        $invoice = ServiceInvoice::with('ticket')->find($request->invoice_id);
+        if (!$invoice || $invoice->payment_status !== 'pending' || !$invoice->ticket) {
+            Toastr::error(translate('Invoice not found or already paid'));
+            return back();
+        }
+
+        if ((int)$invoice->ticket->customer_id !== (int)auth('customer')->id()) {
+            Toastr::error(translate('you_have_no_access_to_this_invoice'));
+            return back();
+        }
+
+        $customer = auth('customer')->user();
+        session([
+            'payment_type' => 'service_invoice',
+            'invoice_id' => $invoice->id,
+        ]);
+
+        $additional_data = [
+            'business_name' => getWebConfig('company_name'),
+            'business_logo' => getStorageImages(path: getWebConfig('company_web_logo'), type: 'shop'),
+            'payment_mode' => $request->payment_platform,
+            'invoice_id' => $invoice->id,
+            'service_invoice_id' => $invoice->id,
+            'ticket_id' => $invoice->ticket_id,
+            'customer_id' => $customer->id,
+            'is_guest' => 0,
+            'is_guest_in_order' => 0,
+            'new_customer_id' => null,
+            'address_id' => null,
+            'billing_address_id' => null,
+            'order_note' => 'Service Invoice Payment - Ticket #' . $invoice->ticket_id,
+            'payment_request_from' => 'service',
+        ];
+
+        $payer = new Payer(
+            $customer->f_name . ' ' . $customer->l_name,
+            $customer->email,
+            $customer->phone,
+            ''
+        );
+
+        $currency_model = getWebConfig(name: 'currency_model');
+        if ($currency_model == 'multi_currency') {
+            $currency_code = 'USD';
+        } else {
+            $default = getWebConfig(name: 'system_default_currency');
+            $currency_code = Currency::find($default)->code;
+        }
+
+        $payment_info = new PaymentInfo(
+            success_hook: 'service_invoice_payment_success',
+            failure_hook: 'service_invoice_payment_fail',
+            currency_code: $currency_code,
+            payment_method: $request->payment_method,
+            payment_platform: $request->payment_platform,
+            payer_id: $customer->id,
+            receiver_id: '100',
+            additional_data: $additional_data,
+            payment_amount: $invoice->total,
+            external_redirect_link: route('web-payment-success'),
+            attribute: 'service_invoice',
+            attribute_id: $invoice->id
+        );
+
+        $receiver_info = new Receiver('receiver_name', 'example.png');
+        $redirect_link = $this->generate_link($payer, $payment_info, $receiver_info);
+
+        if ($request->payment_platform === 'app') {
+            return response()->json(['redirect_link' => $redirect_link], 200);
+        }
+
+        return redirect($redirect_link);
     }
 
-    $ticket = $invoice->ticket;
-    $customer = User::find($ticket->customer_id);
+    private function getPaymentRequestFromToken(?string $token): ?PaymentRequest
+    {
+        if (!$token) {
+            return null;
+        }
 
-    session([
-        'payment_type' => 'service_invoice',
-        'invoice_id' => $invoice->id,
-    ]);
+        $token = str_replace(' ', '+', $token);
+        $decoded = base64_decode($token, true);
+        if (!$decoded) {
+            return null;
+        }
 
-   $additional_data = [
-        'business_name' => getWebConfig('company_name'),
-        'business_logo' => getStorageImages(path: getWebConfig('company_web_logo'), type: 'shop'),
-        'payment_mode' => $request->payment_platform,
-        'invoice_id' => $invoice->id,
+        $payload = [];
+        foreach (explode('&&', $decoded) as $pair) {
+            $parts = explode('=', $pair, 2);
+            if (count($parts) === 2) {
+                $payload[$parts[0]] = $parts[1];
+            }
+        }
 
-        // YE SAB ZAROORI HAIN – YE ADD KARO!
-        'customer_id' => $customer->id,
-        'is_guest' => 0,
-        'is_guest_in_order' => 0,           // <-- YEHI MISSING THA!
-        'new_customer_id' => null,
-        'address_id' => null,
-        'billing_address_id' => null,
-        'order_note' => 'Service Invoice Payment - Ticket #' . $ticket->id,
-        'payment_request_from' => 'web',
-    ];
+        $paymentMethod = $payload['payment_method'] ?? null;
+        $transactionReference = $payload['transaction_reference'] ?? null;
+        if (!$paymentMethod || !$transactionReference) {
+            return null;
+        }
 
-    $payer = new Payer(
-        $customer->f_name . ' ' . $customer->l_name,
-        $customer->email,
-        $customer->phone,
-        ''
-    );
-
-    $currency_model = getWebConfig(name: 'currency_model');
-    if ($currency_model == 'multi_currency') {
-        $currency_code = 'USD';
-    } else {
-        $default = getWebConfig(name: 'system_default_currency');
-        $currency_code = Currency::find($default)->code;
+        return PaymentRequest::query()
+            ->where('payment_method', $paymentMethod)
+            ->where('transaction_id', $transactionReference)
+            ->latest('updated_at')
+            ->first();
     }
 
-    $payment_info = new PaymentInfo(
-        success_hook: 'digital_payment_success', // Adjust if needed
-        failure_hook: 'digital_payment_fail',
-        currency_code: $currency_code,
-        payment_method: $request->payment_method,
-        payment_platform: $request->payment_platform,
-        payer_id: $customer->id,
-        receiver_id: '100',
-        additional_data: $additional_data,
-        payment_amount: $invoice->total,
-        external_redirect_link: route('web-payment-success'),
-        attribute: 'service_invoice',
-        attribute_id: $invoice->id
-    );
+    private function resolveServiceInvoiceId(?PaymentRequest $paymentRequest): ?int
+    {
+        if ($paymentRequest) {
+            $fromPaymentRequest = $this->resolveServiceInvoiceIdFromPaymentRequest($paymentRequest);
+            if ($fromPaymentRequest) {
+                return $fromPaymentRequest;
+            }
+        }
 
-    $receiver_info = new Receiver('receiver_name', 'example.png');
+        $sessionInvoiceId = session('invoice_id');
+        return $sessionInvoiceId ? (int)$sessionInvoiceId : null;
+    }
 
-    $redirect_link = $this->generate_link($payer, $payment_info, $receiver_info);
-    return redirect($redirect_link);
-}
+    private function resolveServiceInvoiceIdFromPaymentRequest(PaymentRequest $paymentRequest): ?int
+    {
+        if ($paymentRequest->attribute === 'service_invoice' && $paymentRequest->attribute_id) {
+            return (int)$paymentRequest->attribute_id;
+        }
+
+        if ($paymentRequest->additional_data) {
+            $additionalData = json_decode($paymentRequest->additional_data, true);
+            if (is_array($additionalData)) {
+                $invoiceId = $additionalData['service_invoice_id'] ?? $additionalData['invoice_id'] ?? null;
+                if ($invoiceId) {
+                    return (int)$invoiceId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidServicePaymentSuccess(?PaymentRequest $paymentRequest, ?int $resolvedInvoiceId): bool
+    {
+        if (!$paymentRequest || (int)$paymentRequest->is_paid !== 1) {
+            return false;
+        }
+
+        if ($paymentRequest->attribute !== 'service_invoice') {
+            return false;
+        }
+
+        $expectedInvoiceId = $this->resolveServiceInvoiceIdFromPaymentRequest($paymentRequest);
+        if (!$expectedInvoiceId || !$resolvedInvoiceId) {
+            return false;
+        }
+
+        return $expectedInvoiceId === (int)$resolvedInvoiceId;
+    }
+
+    private function afterServiceInvoicePaymentSuccess(ServiceInvoice $invoice): void
+    {
+        app(ServiceInvoicePaymentService::class)->handlePaidInvoice($invoice);
+    }
 }

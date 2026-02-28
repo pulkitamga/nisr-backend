@@ -7,7 +7,10 @@
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
 $defaultLanguage = $language[0]['code'] ?? 'en';
+$serviceWorkflow = \App\Support\ServiceTicketWorkflow::class;
+$pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 @endphp
+<div dir="{{ $pageDirection }}">
 <div class="content container-fluid">
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -41,7 +44,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                             <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end">
                                 @php
                                 $priority = request()->has('priority') ? request()->input('priority') : '';
-                                $statusId = request()->has('status') ? request()->input('status') : '20';
+                                $statusId = request()->has('status') ? request()->input('status') : 'all';
                                 @endphp
                                 <select class="form-control border-color-c1 w-160 filter-tickets" data-value="priority">
                                     <option value="all">{{ translate('all_Priority') }}</option>
@@ -99,6 +102,12 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                    $latestJobIds = collect($tickets->items())->pluck('latestServiceJob.id')->filter()->values();
+                    $qaConfirmedJobIds = $latestJobIds->isNotEmpty()
+                        ? App\Models\ServiceJobActivity::whereIn('job_id', $latestJobIds)->where('activity_type', 'qa_confirmation')->pluck('job_id')->all()
+                        : [];
+                    @endphp
                     @foreach($tickets as $key => $ticket)
                     @php
                     $priorityClass = match(strtolower($ticket->priority)) {
@@ -118,7 +127,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     default => 'badge-soft-primary',
                     };
                     $job = $ticket->latestServiceJob;
-                    $service = $job ? App\Models\Service::find($job->service_sku) : null;
+                    $service = $job ? $services->firstWhere('id', $job->service_sku) : null;
+                    $qaConfirmed = $job ? in_array($job->id, $qaConfirmedJobIds) : false;
                     @endphp
                     <tr>
                         <td>{{ $tickets->firstItem() + $key }}</td>
@@ -131,8 +141,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                             {{ translate('Customer Not Found') }}
                             @endif
                         </td>
-                        <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
-                        <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->name ?? $ticket->status }}</span></td>
+                        <td><span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span></td>
+                        <td><span class="badge {{ $statusClass }}">{{ translate($ticket->status_details->name ?? $ticket->status) }}</span></td>
                         <td>{{ $service ? $service->title : translate('No Service Picked') }}</td>
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         <td class="text-center">
@@ -141,33 +151,33 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                                 <a href="{{ route('admin.support-ticket.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('Conversation')}}</a>
 
 
-                                @if($ticket->status == 20 )
+                                @if((int)$ticket->status === $serviceWorkflow::STATUS_NEW)
                                 <span id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.estimate') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="estimate">{{translate('Create Estimate')}}</span>
-                                @elseif($ticket->status == 21)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_ASSIGNED)
                                 <span id="assign-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.assign') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="assign">{{translate('Assign')}}</span>
-                                @elseif($ticket->status == 22 && $job)
-                                <span id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.estimate') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-action="estimate">{{translate('Create Estimate')}}</span>
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_SCHEDULED && $job)
                                 <span id="schedule-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.schedule') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-job-id="{{ $job->id ?? '' }}"
                                     data-action="schedule">{{translate('Schedule')}}</span>
-                                @elseif($ticket->status == 23 && $job)
+                                <span id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-warning action-btn"
+                                    data-route="{{ route('admin.support-ticket.service.estimate') }}"
+                                    data-ticket-id="{{ $ticket->id }}"
+                                    data-action="estimate">{{translate('Revise Estimate')}}</span>
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_READY_TO_START && $job)
                                 <span id="start-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.start-job') }}"
                                     data-job-id="{{ $job->id ?? '' }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="start-job">{{translate('Start Job')}}</span>
-                                @elseif($ticket->status == 24 && $job)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_IN_PROGRESS && $job)
                                 <span id="complete-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.complete-job') }}"
                                     data-job-id="{{ $job->id ?? '' }}"
@@ -178,18 +188,19 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                                     data-job-id="{{ $job->id ?? '' }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="change-order">{{translate('Change Order')}}</span>
-                                @elseif($ticket->status == 25 && $job)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_QA_PENDING && $job && !$qaConfirmed)
                                 <span id="qa-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.qa') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-job-id="{{ $job->id ?? '' }}"
                                     data-action="qa">{{translate('QA Confirmation')}}</span>
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_QA_PENDING && $job && $qaConfirmed)
                                 <span id="close-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-success action-btn"
                                     data-route="{{ route('admin.support-ticket.service.close') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="close-ticket">{{translate('Close Ticket')}}</span>
                                 @endif
-                                @if($job && $ticket->status != 24 && $ticket->status != 25 && $ticket->status != 26)
+                                @if($job && $serviceWorkflow::canCancelFromStatus((int)$ticket->status))
                                 <span id="cancel-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-danger action-btn"
                                     data-route="{{ route('admin.support-ticket.service.cancel') }}"
                                     data-ticket-id="{{ $ticket->id }}"
@@ -257,7 +268,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     </div>
                     <div class="form-group">
                         <label for="sla_hours">{{translate('SLA (Hours)')}}</label>
-                        <input type="number" name="sla_hours" id="sla_hours" class="form-control" placeholder="e.g., 24" required>
+                        <input type="number" name="sla_hours" id="sla_hours" class="form-control" placeholder="24" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -308,8 +319,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 
                     <!-- Service Mode -->
                     <div class="form-group">
-                        <label for="is_mobile">{{ translate('Service Mode') }}</label>
-                        <select name="is_mobile" id="is_mobile" class="form-control">
+                        <label for="estimate_is_mobile">{{ translate('Service Mode') }}</label>
+                        <select name="is_mobile" id="estimate_is_mobile" class="form-control">
                             <option value="0">{{ translate('In-shop') }}</option>
                             <option value="1">{{ translate('Mobile') }}</option>
                         </select>
@@ -377,7 +388,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
-                            <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            <a class="nav-link estimate-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
                                 href="javascript:" id="esti-{{ $lang }}-link">
                                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                             </a>
@@ -388,7 +399,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     <div class="tab-content">
                         @foreach($languages as $lang)
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
-                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} estimate-language-form"
                             id="esti-{{ $lang }}-form">
                             <div class="form-group"> <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <textarea name="description[]" class="form-control" rows="3" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
@@ -441,8 +452,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                         <input type="datetime-local" name="scheduled_at" id="scheduled_at" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="is_mobile">{{translate('Service Mode')}}</label>
-                        <select name="is_mobile" id="is_mobile" class="form-control">
+                        <label for="schedule_is_mobile">{{translate('Service Mode')}}</label>
+                        <select name="is_mobile" id="schedule_is_mobile" class="form-control">
                             <option value="0">{{translate('In-shop')}}</option>
                             <option value="1">{{translate('Mobile')}}</option>
                         </select>
@@ -473,11 +484,11 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     <input type="hidden" name="job_id" id="startJobId">
                     <div class="form-group">
                         <label for="gps_coordinates">{{translate('GPS Coordinates')}}</label>
-                        <input type="text" name="gps_coordinates" id="gps_coordinates" class="form-control" placeholder="e.g., 40.7128,-74.0060">
+                        <input type="text" name="gps_coordinates" id="gps_coordinates" class="form-control" placeholder="40.7128,-74.0060">
                     </div>
                     <div class="form-group">
                         <label for="odometer_reading">{{translate('Odometer Reading')}}</label>
-                        <input type="number" name="odometer_reading" id="odometer_reading" class="form-control" placeholder="e.g., 150000">
+                        <input type="number" name="odometer_reading" id="odometer_reading" class="form-control" placeholder="150000">
                     </div>
 
                     <div class="form-group">
@@ -488,7 +499,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
-                            <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            <a class="nav-link job-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
                                 href="javascript:" id="job-{{ $lang }}-link">
                                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                             </a>
@@ -499,7 +510,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     <div class="tab-content">
                         @foreach($languages as $lang)
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
-                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} job-language-form"
                             id="job-{{ $lang }}-form">
                             <div class="form-group"> <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <textarea name="description[]" class="form-control" rows="3" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
@@ -535,7 +546,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 
                     <div class="form-group">
                         <label for="odometer_end">{{translate('Odometer End')}}</label>
-                        <input type="number" name="odometer_end" id="odometer_end" class="form-control" placeholder="e.g., 150100">
+                        <input type="number" name="odometer_end" id="odometer_end" class="form-control" placeholder="150100">
                     </div>
 
                     <div class="form-group">
@@ -610,7 +621,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
-                            <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            <a class="nav-link order-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
                                 href="javascript:" id="order-{{ $lang }}-link">
                                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                             </a>
@@ -621,7 +632,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     <div class="tab-content">
                         @foreach($languages as $lang)
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
-                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} order-language-form"
                             id="order-{{ $lang }}-form">
                             <div class="form-group"> <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <textarea name="description[]" class="form-control" rows="3" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
@@ -662,8 +673,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="qa_notes">{{translate('QA Notes')}}</label>
-                        <textarea name="qa_notes" id="qa_notes" class="form-control" required></textarea>
+                        <label for="qa_notes_field">{{translate('QA Notes')}}</label>
+                        <textarea name="qa_notes" id="qa_notes_field" class="form-control" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -689,8 +700,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 <div class="modal-body">
                     <input type="hidden" name="ticket_id" id="closeTicketId">
                     <div class="form-group">
-                        <label for="qa_notes">{{translate('QA Notes')}}</label>
-                        <textarea name="qa_notes" id="qa_notes" class="form-control" required></textarea>
+                        <label for="close_qa_notes">{{translate('QA Notes')}}</label>
+                        <textarea name="qa_notes" id="close_qa_notes" class="form-control" required></textarea>
                     </div>
 
                 </div>
@@ -723,11 +734,11 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                     </div>
                     <div class="form-group">
                         <label for="fee_amount">{{translate('Fee Amount')}}</label>
-                        <input type="number" step="0.01" name="fee_amount" id="fee_amount" class="form-control" placeholder="e.g., 50.00" required>
+                        <input type="number" step="0.01" name="fee_amount" id="fee_amount" class="form-control" placeholder="50.00" required>
                     </div>
                     <div class="form-group">
                         <label for="refund_amount">{{translate('Refund Amount')}}</label>
-                        <input type="number" step="0.01" name="refund_amount" id="refund_amount" class="form-control" placeholder="e.g., 0.00" required>
+                        <input type="number" step="0.01" name="refund_amount" id="refund_amount" class="form-control" placeholder="0.00" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -765,6 +776,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             </form>
         </div>
     </div>
+</div>
 </div>
 @endsection
 
@@ -810,6 +822,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 case 'estimate':
                     $('#estimateTicketId').val(ticketId);
                     $('#estimateTicketForm').attr('action', route);
+                    applyEstimateDefaults();
+                    recalculateEstimateTotals();
                     $('#estimateTicketModal').modal('show');
                     break;
                 case 'schedule':
@@ -879,9 +893,8 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             }
         }
 
-        $('#is_mobile, #estimate_service_id, #entered_km, #parts_cost, #labor_charge, #parts_cost_mobile, #labor_charge_mobile, #extra_charge').on('input change', function() {
+        function applyEstimateDefaults() {
             let option = $('#estimate_service_id option:selected');
-            let mode = $('#is_mobile').val();
 
             let baseInshop = parseFloat(option.data('price-inshop')) || 0;
             let baseMobile = parseFloat(option.data('price-mobile')) || 0;
@@ -890,50 +903,69 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             let laborCharge = parseFloat(option.data('labour-charge')) || 0;
             let partsCost = parseFloat(option.data('parts-cost')) || 0;
 
-            let extraCharge = parseFloat($('#extra_charge').val()) || 0;
-            let subtotal = 0;
-            let total = 0;
+            $('#base_price_inshop').val(baseInshop.toFixed(2));
+            $('#base_price_mobile').val(baseMobile.toFixed(2));
+            $('#travel_fee_per_km').val(travelFee.toFixed(2));
+            $('#included_km').val(includedKm.toFixed(2));
+            $('#labor_charge').val(laborCharge.toFixed(2));
+            $('#parts_cost').val(partsCost.toFixed(2));
+            $('#labor_charge_mobile').val(laborCharge.toFixed(2));
+            $('#parts_cost_mobile').val(partsCost.toFixed(2));
 
-            if (mode == '0') {
-                // In-shop mode
-                $('.inshop-fields').show();
-                $('.mobile-fields').hide();
-
-                $('#base_price_inshop').val(baseInshop);
-                $('#labor_charge').val(laborCharge);
-                $('#parts_cost').val(partsCost);
-
-                subtotal = baseInshop + partsCost + laborCharge;
-                $('#subtotal_inshop').val(subtotal.toFixed(2));
-            } else {
-                // Mobile mode
+            if ($('#estimate_is_mobile').val() === '1') {
                 $('.mobile-fields').show();
                 $('.inshop-fields').hide();
+            } else {
+                $('.inshop-fields').show();
+                $('.mobile-fields').hide();
+            }
+        }
 
-                $('#base_price_mobile').val(baseMobile);
-                $('#travel_fee_per_km').val(travelFee);
-                $('#included_km').val(includedKm);
-                $('#labor_charge_mobile').val(laborCharge);
-                $('#parts_cost_mobile').val(partsCost);
+        function recalculateEstimateTotals() {
+            let mode = $('#estimate_is_mobile').val();
+            let baseInshop = parseFloat($('#base_price_inshop').val()) || 0;
+            let baseMobile = parseFloat($('#base_price_mobile').val()) || 0;
+            let travelFee = parseFloat($('#travel_fee_per_km').val()) || 0;
+            let includedKm = parseFloat($('#included_km').val()) || 0;
+            let extraCharge = parseFloat($('#extra_charge').val()) || 0;
+            let subtotal = 0;
 
+            if (mode === '1') {
                 let enteredKm = parseFloat($('#entered_km').val()) || 0;
                 let laborMobile = parseFloat($('#labor_charge_mobile').val()) || 0;
+                let partsMobile = parseFloat($('#parts_cost_mobile').val()) || 0;
                 let extraKm = Math.max(0, enteredKm - includedKm);
                 let travelCharge = extraKm * travelFee;
 
-                subtotal = baseMobile + laborMobile + partsCost + travelCharge;
+                subtotal = baseMobile + laborMobile + partsMobile + travelCharge;
                 $('#subtotal_mobile').val(subtotal.toFixed(2));
+
+                // Keep submitted fields aligned with selected mode.
+                $('#labor_charge').val(laborMobile.toFixed(2));
+                $('#parts_cost').val(partsMobile.toFixed(2));
+            } else {
+                let laborInshop = parseFloat($('#labor_charge').val()) || 0;
+                let partsInshop = parseFloat($('#parts_cost').val()) || 0;
+                subtotal = baseInshop + laborInshop + partsInshop;
+                $('#subtotal_inshop').val(subtotal.toFixed(2));
             }
 
             let tax = 0;
-
-            total = subtotal + extraCharge + tax;
-
-            // ✅ Update hidden inputs
+            let total = subtotal + extraCharge + tax;
             $('#subtotal').val(subtotal.toFixed(2));
             $('#tax').val(tax.toFixed(2));
             $('#total').val(total.toFixed(2));
+        }
+
+        $('#estimate_service_id, #estimate_is_mobile').on('change', function() {
+            applyEstimateDefaults();
+            recalculateEstimateTotals();
         });
+        $('#entered_km, #parts_cost, #labor_charge, #parts_cost_mobile, #labor_charge_mobile, #extra_charge').on('input', function() {
+            recalculateEstimateTotals();
+        });
+        applyEstimateDefaults();
+        recalculateEstimateTotals();
 
 
 
@@ -1031,66 +1063,31 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.form-system-language-tab');
+        const wireLanguageTabs = (tabSelector, formSelector, prefix) => {
+            const tabs = document.querySelectorAll(tabSelector);
+            if (!tabs.length) return;
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                const lang = this.id.replace('job-', '').replace('-link', '');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const lang = this.id.replace(prefix + '-', '').replace('-link', '');
 
-                tabs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
 
-                // Hide all forms
-                const forms = document.querySelectorAll('.form-system-language-form');
-                forms.forEach(f => f.classList.add('d-none'));
+                    const forms = document.querySelectorAll(formSelector);
+                    forms.forEach(form => form.classList.add('d-none'));
 
-                // Show selected language form
-                const selectedForm = document.getElementById('job-' + lang + '-form');
-                if (selectedForm) selectedForm.classList.remove('d-none');
+                    const selectedForm = document.getElementById(prefix + '-' + lang + '-form');
+                    if (selectedForm) {
+                        selectedForm.classList.remove('d-none');
+                    }
+                });
             });
-        });
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.form-system-language-tab');
+        };
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                const lang = this.id.replace('order-', '').replace('-link', '');
-
-                // Remove active class from all tabs
-                tabs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-
-                // Hide all forms
-                const forms = document.querySelectorAll('.form-system-language-form');
-                forms.forEach(f => f.classList.add('d-none'));
-
-                // Show selected language form
-                const selectedForm = document.getElementById('order-' + lang + '-form');
-                if (selectedForm) selectedForm.classList.remove('d-none');
-            });
-        });
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.form-system-language-tab');
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                const lang = this.id.replace('esti-', '').replace('-link', '');
-
-                // Remove active class from all tabs
-                tabs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-
-                // Hide all forms
-                const forms = document.querySelectorAll('.form-system-language-form');
-                forms.forEach(f => f.classList.add('d-none'));
-
-                // Show selected language form
-                const selectedForm = document.getElementById('esti-' + lang + '-form');
-                if (selectedForm) selectedForm.classList.remove('d-none');
-            });
-        });
+        wireLanguageTabs('.estimate-language-tab', '.estimate-language-form', 'esti');
+        wireLanguageTabs('.job-language-tab', '.job-language-form', 'job');
+        wireLanguageTabs('.order-language-tab', '.order-language-form', 'order');
     });
 </script>
 @if(session('force_close_prompt'))
@@ -1138,6 +1135,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
         }
     });
 </script>
+@endif
 
 <script>
     $(document).on('click', '.escalate-btn', function() {
@@ -1146,7 +1144,6 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
         $('#escalateTicketModal').modal('show');
     });
 
-    // Form submission with confirmation
     $('#escalateTicketForm').submit(function(e) {
         e.preventDefault();
         let form = $(this);
@@ -1159,11 +1156,10 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
             cancelButtonText: '{{ translate('Cancel') }}'
         }).then((result) => {
             if (result.isConfirmed) {
-                form.off('submit').submit(); // Submit without further prevention
+                form.off('submit').submit();
             }
         });
     });
 </script>
-@endif
 
 @endpush

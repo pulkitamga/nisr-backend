@@ -45,6 +45,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\InboxMessage;
 use Illuminate\Support\Facades\Log;
 use App\Services\SlaService;
+use App\Support\ServiceTicketWorkflow;
 
 class UserProfileController extends Controller
 {
@@ -658,7 +659,7 @@ class UserProfileController extends Controller
         $statusMap = [
             'support' => 1,
             'complaint' => 36,
-            'service' => 20,
+            'service' => ServiceTicketWorkflow::STATUS_NEW,
             'retail' => 43,
             'wholesale' => 56,
         ];
@@ -740,22 +741,48 @@ class UserProfileController extends Controller
 
     public function single_ticket(Request $request)
     {
+        if (!auth('customer')->check()) {
+            return redirect()->route('customer.auth.login');
+        }
+
         $ticket = SupportTicket::with(['conversations' => function ($query) {
             $query->when(theme_root_path() == 'default', function ($sub_query) {
                 $sub_query->orderBy('id', 'desc');
             });
-        }])->where('id', $request->id)->first();
+        }])
+            ->where('id', $request->id)
+            ->where('customer_id', auth('customer')->id())
+            ->first();
+
+        if (!$ticket) {
+            Toastr::error(translate('ticket_not_found'));
+            return redirect()->route('account-tickets');
+        }
+
         return view(VIEW_FILE_NAMES['ticket_view'], compact('ticket'));
     }
 
     public function comment_submit(Request $request, $id)
     {
+        if (!auth('customer')->check()) {
+            return redirect()->route('customer.auth.login');
+        }
+
+        $ticket = SupportTicket::where('id', $id)
+            ->where('customer_id', auth('customer')->id())
+            ->first();
+
+        if (!$ticket) {
+            Toastr::error(translate('ticket_not_found'));
+            return redirect()->route('account-tickets');
+        }
+
         if ($request->file('image') == null && empty($request['comment'])) {
             Toastr::error(translate('type_something') . '!');
             return back();
         }
 
-        DB::table('support_tickets')->where(['id' => $id])->update([
+        DB::table('support_tickets')->where(['id' => $ticket->id])->update([
             // 'status' => 'open',
             'updated_at' => now(),
         ]);
@@ -776,7 +803,7 @@ class UserProfileController extends Controller
         $data = [
             'customer_message' => $request->comment,
             'attachment' => $image,
-            'support_ticket_id' => $id,
+            'support_ticket_id' => $ticket->id,
             'position' => 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -788,12 +815,27 @@ class UserProfileController extends Controller
 
     public function support_ticket_close($id)
     {
+        if (!auth('customer')->check()) {
+            return redirect()->route('customer.auth.login');
+        }
+
         // Ticket fetch
         $aSupportTicket = DB::table('support_tickets')
             ->join('departments', 'support_tickets.department_id', '=', 'departments.id')
             ->where('support_tickets.id', $id)
+            ->where('support_tickets.customer_id', auth('customer')->id())
             ->select('support_tickets.*', 'departments.name as department_name', 'departments.head_id')
             ->first();
+
+        if (!$aSupportTicket) {
+            Toastr::error(translate('ticket_not_found'));
+            return redirect()->route('account-tickets');
+        }
+
+        if (strtolower((string)$aSupportTicket->type) === 'service') {
+            Toastr::error('Service tickets can only be closed by support after QA and payment confirmation.');
+            return redirect()->route('account-tickets');
+        }
 
         // Last status ke master_id ka closed id fetch karna
         $lastStatus = DB::table('support_ticket_status_master')
@@ -866,7 +908,14 @@ class UserProfileController extends Controller
     public function support_ticket_delete(Request $request)
     {
         if (auth('customer')->check()) {
-            $support = SupportTicket::find($request->id);
+            $support = SupportTicket::where('id', $request->id)
+                ->where('customer_id', auth('customer')->id())
+                ->first();
+
+            if (!$support) {
+                Toastr::error(translate('ticket_not_found'));
+                return redirect()->route('account-tickets');
+            }
 
             if ($support->attachment && !is_array($support->attachment) && count(json_decode($support->attachment)) > 0) {
                 foreach (json_decode($support->attachment, true) as $image) {
@@ -1357,7 +1406,7 @@ class UserProfileController extends Controller
         $statusMap = [
             'support' => 1,
             'complaint' => 36,
-            'service' => 20,
+            'service' => ServiceTicketWorkflow::STATUS_NEW,
             'retail' => 43,
             'wholesale' => 56,
         ];

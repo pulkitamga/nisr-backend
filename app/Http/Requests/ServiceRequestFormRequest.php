@@ -23,7 +23,7 @@ class ServiceRequestFormRequest extends FormRequest
     {
         return [
             'service_id' => 'required|exists:services,id',
-            'customer_id' => 'required|exists:users,id',
+            'customer_id' => 'nullable|exists:users,id',
             'service_option' => 'required|string|in:in_shop,mobile',
 
             'country' => ['exclude_unless:service_option,mobile', 'required', 'string'],

@@ -25,12 +25,16 @@ use App\Models\ServiceChangeOrder;
 use App\Models\ServiceCancellation;
 use App\Models\Service;
 use App\Models\ServiceJobItem;
+use App\Models\SupportTicket as SupportTicketModel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\SupportTicketNotification;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // New
+use App\Services\ServiceWorkflowNotificationService;
+use App\Support\ServiceTicketWorkflow;
 use Illuminate\Validation\ValidationException;
 class ServiceTicketController extends BaseController
 {
@@ -41,6 +45,7 @@ class ServiceTicketController extends BaseController
         private readonly AdminRepositoryInterface $adminRepo,
         private readonly TranslationRepositoryInterface     $translationRepo,
         private readonly AdminNotificationRepositoryInterface $notificationRepo, // New
+        private readonly ServiceWorkflowNotificationService $workflowNotifier,
         private readonly EscalationService                 $escalationService,
 
     ) {}
@@ -122,6 +127,16 @@ class ServiceTicketController extends BaseController
         ]);
     }
 
+    private function ensureJobStatus(ServiceJob $job, array $allowedStatuses, string $actionLabel): bool
+    {
+        if (!in_array((string)$job->status, $allowedStatuses, true)) {
+            Toastr::error("Cannot {$actionLabel} while job status is '{$job->status}'.");
+            return false;
+        }
+
+        return true;
+    }
+
 
     public function getDetails($id, Request $request): View
     {
@@ -130,9 +145,12 @@ class ServiceTicketController extends BaseController
             relations: [
                 'customer',
                 'serviceJobs',
+                'serviceJobs.service',
+                'serviceJobs.technician',
+                'serviceJobs.activities',
+                'serviceJobs.activities.createdBy',
                 'latestServiceJob',
-                'latestServiceJob.activities',
-                'latestServiceJob.activities.createdBy',
+                'latestServiceJob.service',
                 'estimates',
                 'estimates.service',
                 'invoices',
@@ -191,11 +209,11 @@ class ServiceTicketController extends BaseController
 
         if ($nextStatusName === 'new' && $currentStatus->name === 'closed') {
             $message = "Ticket #{$ticket->id} has been reopened. Please review and proceed.";
-            $link = route('admin.support-ticket.details', $ticket->id); // Redirect link
+            $link = route('admin.support-ticket.service.singleTicket', $ticket->id);
 
             $recipients = [];
             if ($ticket->employee_id) {
-                $recipients[] = ['type' => 'user', 'id' => $ticket->employee_id];
+                $recipients[] = ['type' => 'employee', 'id' => $ticket->employee_id];
             }
             if ($ticket->department_id) {
                 $recipients[] = ['type' => 'department', 'id' => $ticket->department_id];
@@ -253,41 +271,36 @@ class ServiceTicketController extends BaseController
         ]);
 
         $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = $defaultLangIndex === false ? 0 : $defaultLangIndex;
         $estimate->description = $request->description[$defaultLangIndex];
         $estimate->save();
 
-        // UPDATE TICKET STATUS
-        $this->supportTicketRepo->update($ticket->id, ['status' => 21]);
+        // Keep workflow moving forward, but do not regress if estimate is revised later.
+        $nextStatus = (int)$ticket->status < ServiceTicketWorkflow::STATUS_ASSIGNED
+            ? ServiceTicketWorkflow::STATUS_ASSIGNED
+            : (int)$ticket->status;
+        $this->supportTicketRepo->update($ticket->id, ['status' => $nextStatus]);
 
         // ADD CONVERSATION LOG
         $this->supportTicketConvRepo->add([
             'support_ticket_id' => $ticket->id,
-            'admin_message' => "Estimate created for service {$service->title} and Total Amount is EGP " . number_format($estimate->total, 2),
+            'admin_message' => "Estimate created for service {$service->title}. Total amount: " . number_format((float)$estimate->total, 2),
             'admin_id' => auth('admin')->id(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        /**
-         * -------------------------------
-         * 🔥 SEND NOTIFICATION TO CUSTOMER
-         * -------------------------------
-         */
-        $title   = 'Service Estimate Created';
-        $message = "A new estimate has been generated for Ticket #{$ticket->id}. Total Amount: ₹" . number_format($estimate->total, 2);
-        $link    = route('admin.support-ticket.details', $ticket->id);
-
-        $recipients = [
-            ['type' => 'customer', 'id' => $ticket->customer_id],
-        ];
-
-        $this->notificationRepo->notifyRecipients(
-            $ticket->id,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
+        $title = 'Service Estimate Created';
+        $message = "A new estimate has been generated for Ticket #{$ticket->id}. Total: " . number_format($estimate->total, 2);
+        $link = route('admin.support-ticket.service.singleTicket', $ticket->id);
+        $this->workflowNotifier->notify(
+            ticket: $ticket->id,
+            eventKey: 'estimate_created',
+            title: $title,
+            message: $message,
+            link: $link,
+            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]],
+            templateData: ['amount' => number_format($estimate->total, 2)]
         );
 
         // TRANSLATION
@@ -330,7 +343,7 @@ class ServiceTicketController extends BaseController
         $this->supportTicketRepo->update($ticketId, [
             'employee_id' => $employeeId,
             'priority' => $priority,
-            'status' => 22,
+            'status' => ServiceTicketWorkflow::STATUS_SCHEDULED,
             'sla_hours' => $slaHours,
         ]);
 
@@ -357,22 +370,20 @@ class ServiceTicketController extends BaseController
             'updated_at' => now(),
         ]);
 
-        $title   = "Ticket Assigned";
-        $message = "Your ticket #{$ticketId} has been assigned for {$service->title}.";
-        $link    = route('admin.support-ticket.details', $ticketId);
-
-        $recipients = [
-            ['type' => 'customer', 'id' => $ticket->customer_id], // customer
-            ['type' => 'employee', 'id' => $employeeId],          // assigned technician
-        ];
-
-        $this->notificationRepo->notifyRecipients(
-            $ticketId,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
+        $title = 'Ticket Assigned';
+        $message = "Ticket #{$ticketId} has been assigned for {$service->title}.";
+        $link = route('admin.support-ticket.service.singleTicket', $ticketId);
+        $this->workflowNotifier->notify(
+            ticket: $ticketId,
+            eventKey: 'ticket_assigned',
+            title: $title,
+            message: $message,
+            link: $link,
+            recipients: [
+                ['type' => 'customer', 'id' => $ticket->customer_id],
+                ['type' => 'employee', 'id' => $employeeId],
+            ],
+            templateData: ['service_title' => $service->title]
         );
 
         Toastr::success(translate('ticket_assigned_successfully'));
@@ -392,7 +403,8 @@ class ServiceTicketController extends BaseController
         $ticketId = $request->input('ticket_id');
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
         if (!$ticket) {
-            return response()->json(['message' => translate('ticket_not_found')], 404);
+            Toastr::error(translate('ticket_not_found'));
+            return redirect()->back();
         }
         $hasEstimate = ServiceEstimate::where('ticket_id', $ticketId)->exists();
         if (!$hasEstimate) {
@@ -402,7 +414,17 @@ class ServiceTicketController extends BaseController
 
         $job = ServiceJob::find($request->job_id);
         if (!$job) {
-            return response()->json(['message' => translate('job_not_found')], 404);
+            Toastr::error(translate('job_not_found'));
+            return redirect()->back();
+        }
+
+        if ((int)$job->ticket_id !== (int)$ticketId) {
+            Toastr::error(translate('invalid_ticket_details'));
+            return redirect()->back();
+        }
+
+        if (!$this->ensureJobStatus($job, ['assigned', 'scheduled'], 'schedule this job')) {
+            return redirect()->back();
         }
 
         $job->update([
@@ -416,7 +438,7 @@ class ServiceTicketController extends BaseController
 
 
         $this->supportTicketRepo->update($ticketId, [
-            'status' => 23,
+            'status' => ServiceTicketWorkflow::STATUS_READY_TO_START,
         ]);
 
         $this->supportTicketConvRepo->add([
@@ -436,21 +458,18 @@ class ServiceTicketController extends BaseController
         ]);
 
 
-        $title   = "Ticket Assigned";
-        $message =  "Your ticket #{$ticketId} is scheduled for " . Carbon::parse($request->scheduled_at)->format('d M, Y H:i');
-        $link    = route('admin.support-ticket.details', $ticketId);
-
-        $recipients = [
-            ['type' => 'customer', 'id' => $ticket->customer_id], // customer
-        ];
-
-        $this->notificationRepo->notifyRecipients(
-            $ticketId,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
+        $scheduledAt = Carbon::parse($request->scheduled_at)->format('d M, Y H:i');
+        $title = 'Ticket Scheduled';
+        $message = "Ticket #{$ticketId} is scheduled for {$scheduledAt}.";
+        $link = route('admin.support-ticket.service.singleTicket', $ticketId);
+        $this->workflowNotifier->notify(
+            ticket: $ticketId,
+            eventKey: 'ticket_scheduled',
+            title: $title,
+            message: $message,
+            link: $link,
+            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]],
+            templateData: ['scheduled_at' => $scheduledAt]
         );
 
         Toastr::success(translate('ticket_scheduled_successfully'));
@@ -471,13 +490,29 @@ class ServiceTicketController extends BaseController
         ]);
 
         $ticketId = $request->input('ticket_id');
-        $job = ServiceJob::find($request->job_id);
-        if (!$job) {
-
-            Toastr::success(translate('job_not_found'));
+        $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
+        if (!$ticket) {
+            Toastr::error(translate('ticket_not_found'));
             return redirect()->back();
         }
+
+        $job = ServiceJob::find($request->job_id);
+        if (!$job) {
+            Toastr::error(translate('job_not_found'));
+            return redirect()->back();
+        }
+
+        if ((int)$job->ticket_id !== (int)$ticketId) {
+            Toastr::error(translate('invalid_ticket_details'));
+            return redirect()->back();
+        }
+
+        if (!$this->ensureJobStatus($job, ['scheduled', 'in_progress'], 'start this job')) {
+            return redirect()->back();
+        }
+
         $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = $defaultLangIndex === false ? 0 : $defaultLangIndex;
 
         $hasEstimate = ServiceEstimate::where('ticket_id', $ticketId)->exists();
         if (!$hasEstimate) {
@@ -502,7 +537,7 @@ class ServiceTicketController extends BaseController
         ]);
 
         $this->supportTicketRepo->update($request->ticket_id, [
-            'status' => 24,
+            'status' => ServiceTicketWorkflow::STATUS_IN_PROGRESS,
         ]);
         ServiceJobActivity::create([
             'job_id' => $job->id,
@@ -513,6 +548,18 @@ class ServiceTicketController extends BaseController
             'updated_at' => now(),
         ]);
         $this->translationRepo->add($request, 'App\Models\ServiceJob', $job->id);
+
+        $title = 'Service Started';
+        $message = "Service for ticket #{$ticketId} has started.";
+        $link = route('admin.support-ticket.service.singleTicket', $ticketId);
+        $this->workflowNotifier->notify(
+            ticket: $ticketId,
+            eventKey: 'job_started',
+            title: $title,
+            message: $message,
+            link: $link,
+            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]]
+        );
 
         Toastr::success(translate('job_started_successfully'));
         return redirect()->back();
@@ -533,8 +580,19 @@ class ServiceTicketController extends BaseController
         $jobId = $request->input('job_id');
         $additionalCharges = $request->input('additional_charges');
         $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = $defaultLangIndex === false ? 0 : $defaultLangIndex;
         $description = $request->description[$defaultLangIndex];
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
+        $job = ServiceJob::find($jobId);
+
+        if (!$ticket || !$job || (int)$job->ticket_id !== (int)$ticketId) {
+            Toastr::error(translate('invalid_ticket_details'));
+            return redirect()->back();
+        }
+
+        if (!$this->ensureJobStatus($job, ['in_progress', 'completed'], 'create change order')) {
+            return redirect()->back();
+        }
 
 
         if ($request->hasFile('image')) {
@@ -565,21 +623,17 @@ class ServiceTicketController extends BaseController
             'updated_at' => now(),
         ]);
         $this->logJobActivity($jobId, 'change_order', "Change order created: $description (Additional Charges: $additionalCharges)");
-        $title   = "Change Order Added";
+        $title = 'Change Order Added';
         $message = "Change order added for ticket #{$ticketId}: {$description}";
-        $link    = route('admin.support-ticket.details', $ticketId);
-
-        $recipients = [
-            ['type' => 'customer', 'id' => $ticket->customer_id],
-        ];
-
-        $this->notificationRepo->notifyRecipients(
-            $ticketId,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
+        $link = route('admin.support-ticket.service.singleTicket', $ticketId);
+        $this->workflowNotifier->notify(
+            ticket: $ticketId,
+            eventKey: 'change_order_created',
+            title: $title,
+            message: $message,
+            link: $link,
+            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]],
+            templateData: ['description' => $description]
         );
 
         $this->translationRepo->add($request, 'App\Models\ServiceChangeOrder', $changeOrder->id);
@@ -605,16 +659,29 @@ class ServiceTicketController extends BaseController
             'items.*.rate' => 'required|numeric|min:0',
         ]);
 
-        $job = ServiceJob::find($request->job_id);
+        $ticketId = (int)$request->ticket_id;
+        $job = ServiceJob::find((int)$request->job_id);
         if (!$job) {
             Log::error('❌ Job not found', ['job_id' => $request->job_id]);
             Toastr::error(translate('job_not_found'));
             return redirect()->back();
         }
 
+        $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
+        if (!$ticket) {
+            Toastr::error(translate('ticket_not_found'));
+            return redirect()->back();
+        }
 
+        if ((int)$job->ticket_id !== $ticketId) {
+            Toastr::error(translate('invalid_ticket_details'));
+            return redirect()->back();
+        }
 
-        $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
+        if (!$this->ensureJobStatus($job, ['in_progress', 'completed'], 'complete this job')) {
+            return redirect()->back();
+        }
+
         $isMobile = $job->is_mobile;
 
         $attachments = [];
@@ -628,148 +695,160 @@ class ServiceTicketController extends BaseController
 
         Log::info('Job updating...', ['job_id' => $job->id]);
 
-        $job->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-            'odometer_end' => $request->odometer_end,
-            'remarks' => $request->remarks,
-            'attachments' => json_encode($attachments),
-            'customer_signature' => $isMobile ? $request->customer_signature : null,
-        ]);
-
-        if ($request->has('items')) {
-            foreach ($request->items as $item) {
-                ServiceJobItem::create([
-                    'job_id' => $job->id,
-                    'item_type' => $item['item_type'],
-                    'item_name' => $item['item_name'],
-                    'quantity' => $item['quantity'],
-                    'rate' => $item['rate'],
-                    'total' => $item['quantity'] * $item['rate'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
+        $invoice = null;
+        $paymentLink = null;
+        $newTotal = null;
+        DB::transaction(function () use (
+            $job,
+            $request,
+            $isMobile,
+            $attachments,
+            &$invoice,
+            &$paymentLink,
+            &$newTotal,
+            $ticketId
+        ) {
+            if ($job->status !== 'completed') {
+                $job->update([
+                    'status' => 'completed',
+                    'completed_at' => now(),
+                    'odometer_end' => $request->odometer_end,
+                    'remarks' => $request->remarks,
+                    'attachments' => $attachments ?: $job->attachments,
+                    'customer_signature' => $isMobile ? $request->customer_signature : null,
                 ]);
             }
-        }
 
-        Log::info('Job items saved', ['job_id' => $job->id]);
+            if ($request->has('items') && !ServiceJobItem::where('job_id', $job->id)->exists()) {
+                foreach ($request->items as $item) {
+                    ServiceJobItem::create([
+                        'job_id' => $job->id,
+                        'item_type' => $item['item_type'],
+                        'item_name' => $item['item_name'],
+                        'quantity' => $item['quantity'],
+                        'rate' => $item['rate'],
+                        'total' => $item['quantity'] * $item['rate'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
 
-        ServiceJobActivity::create([
-            'job_id' => $job->id,
-            'activity_type' => 'complete_job',
-            'description' => 'Job completed: ' . $request->remarks,
-            'attachments' => json_encode($attachments),
-            'created_by' => auth('admin')->id(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        $this->logJobActivity($job->id, 'complete_job', 'Job completed: ' . $request->remarks, $attachments);
+            Log::info('Job items synced', ['job_id' => $job->id]);
 
-        $estimate = ServiceEstimate::where('ticket_id', $job->ticket_id)->first();
-        Log::info('Estimate check', [
-            'ticket_id' => $job->ticket_id,
-            'estimate_found' => $estimate ? true : false,
-            'estimate' => $estimate
-        ]);
+            $alreadyCompletedLogged = ServiceJobActivity::where('job_id', $job->id)
+                ->where('activity_type', 'complete_job')
+                ->exists();
+            if (!$alreadyCompletedLogged) {
+                $this->logJobActivity($job->id, 'complete_job', 'Job completed: ' . ($request->remarks ?? ''), $attachments);
+            }
 
-        if ($estimate) {
-            $change_orders_sum = ServiceChangeOrder::where('ticket_id', $job->ticket_id)->sum('additional_charges');
-            $job_items_sum = ServiceJobItem::where('job_id', $job->id)->sum('total');
-
-            Log::info('Calculations', [
-                'change_orders_sum' => $change_orders_sum,
-                'job_items_sum' => $job_items_sum,
-                'estimate_subtotal' => $estimate->subtotal,
-                'estimate_tax' => $estimate->tax,
-                'extra_charge' => $estimate->extra_charge,
-                'labor_charge' => $estimate->labor_charge
-            ]);
-
-            $new_subtotal = $estimate->subtotal + $change_orders_sum + $job_items_sum + $estimate->extra_charge + $estimate->labor_charge;
-            $tax_rate = $estimate->subtotal > 0 ? $estimate->tax / $estimate->subtotal : 0.1;
-            $new_tax = $new_subtotal * $tax_rate;
-            $new_total = $new_subtotal + $new_tax;
-
-            Log::info('Invoice creation data', [
-                'new_subtotal' => $new_subtotal,
-                'new_tax' => $new_tax,
-                'new_total' => $new_total,
-            ]);
-
-            $invoice = ServiceInvoice::create([
+            $estimate = ServiceEstimate::where('ticket_id', $job->ticket_id)->latest('id')->first();
+            Log::info('Estimate check', [
                 'ticket_id' => $job->ticket_id,
-                'job_id' => $job->id,
-                'subtotal' => $new_subtotal,
-                'tax' => $new_tax,
-                'total' => $new_total,
-                'payment_status' => 'pending',
-                'generated_at' => now(),
+                'estimate_found' => (bool)$estimate,
             ]);
 
-            Log::info('Invoice created successfully', ['invoice_id' => $invoice->id]);
+            if ($estimate) {
+                $changeOrdersSum = ServiceChangeOrder::where('ticket_id', $job->ticket_id)->sum('additional_charges');
+                $jobItemsSum = ServiceJobItem::where('job_id', $job->id)->sum('total');
+                $newSubtotal = (float)$estimate->subtotal + (float)$changeOrdersSum + (float)$jobItemsSum + (float)$estimate->extra_charge + (float)$estimate->labor_charge;
+                $taxRate = (float)$estimate->subtotal > 0 ? ((float)$estimate->tax / (float)$estimate->subtotal) : 0.1;
+                $newTax = $newSubtotal * $taxRate;
+                $newTotal = $newSubtotal + $newTax;
 
-            $paymentLink = route('pay-service-invoice', $invoice->id);
-            $invoice->update(['payment_link' => $paymentLink]);
+                $invoice = ServiceInvoice::where('job_id', $job->id)->latest('id')->first();
+                if (!$invoice) {
+                    $invoice = ServiceInvoice::create([
+                        'ticket_id' => $job->ticket_id,
+                        'job_id' => $job->id,
+                        'subtotal' => $newSubtotal,
+                        'tax' => $newTax,
+                        'total' => $newTotal,
+                        'payment_status' => 'pending',
+                        'generated_at' => now(),
+                    ]);
+                } elseif ($invoice->payment_status !== 'paid') {
+                    $invoice->update([
+                        'subtotal' => $newSubtotal,
+                        'tax' => $newTax,
+                        'total' => $newTotal,
+                    ]);
+                    $invoice->refresh();
+                } else {
+                    $newTotal = (float)$invoice->total;
+                }
 
+                if (!$invoice->payment_link) {
+                    $paymentLink = route('pay-service-invoice', $invoice->id);
+                    $invoice->update(['payment_link' => $paymentLink]);
+                } else {
+                    $paymentLink = $invoice->payment_link;
+                }
 
+                Log::info('Invoice synced', ['invoice_id' => $invoice->id]);
+            } else {
+                Log::warning('No estimate found for completed job', [
+                    'ticket_id' => $job->ticket_id,
+                    'job_id' => $job->id,
+                ]);
+            }
 
-            $title   = "Invoice generated";
-            $message = "Invoice generated for ticket #{$ticket->id}. Pay here: {$paymentLink}";
-            $link    = route('admin.support-ticket.details', $ticket->id);
-
-            $recipients = [
-                ['type' => 'customer', 'id' => $ticket->customer_id],
-            ];
-
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                \App\Models\SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
-            );
-        } else {
-            Log::warning('⚠️ No estimate found for this job', [
-                'ticket_id' => $job->ticket_id,
-                'job_id' => $job->id
-            ]);
-        }
-
-        $this->supportTicketRepo->update($request->ticket_id, ['status' => 25]);
+            $this->supportTicketRepo->update((string)$ticketId, ['status' => ServiceTicketWorkflow::STATUS_QA_PENDING]);
+        });
 
         SupportTicketNotification::create([
-            'ticket_id' => $request->ticket_id,
+            'ticket_id' => $ticketId,
             'recipient_id' => $ticket->customer_id,
-            'message' => "Your ticket #{$request->ticket_id} job has been completed.",
+            'message' => "Your ticket #{$ticketId} job has been completed.",
             'type' => 'email',
             'created_at' => now(),
         ]);
 
 
-        $title   = "Service Completed";
-        $message = "Your ticket #{$request->ticket_id} job has been completed.";
-        $link    = route('admin.support-ticket.details', $ticket->id);
+        if ($invoice && $paymentLink) {
+            $invoiceMessage = "Invoice generated for ticket #{$ticket->id}. Pay here: {$paymentLink}";
+            $this->workflowNotifier->notify(
+                ticket: $ticket->id,
+                eventKey: 'invoice_generated',
+                title: 'Invoice Generated',
+                message: $invoiceMessage,
+                link: route('admin.support-ticket.service.singleTicket', $ticket->id),
+                recipients: [['type' => 'customer', 'id' => $ticket->customer_id]],
+                templateData: [
+                    'amount' => number_format((float)$invoice->total, 2),
+                    'payment_link' => $paymentLink,
+                ]
+            );
+        }
 
-        $recipients = [
-            ['type' => 'customer', 'id' => $ticket->customer_id],
-        ];
+        $completionMessage = "Your ticket #{$ticketId} job has been completed.";
+        if ($invoice && $paymentLink) {
+            $completionMessage .= " Total payable amount is " . number_format((float)($newTotal ?? $invoice->total), 2) . ". Pay here: {$paymentLink}";
+        }
 
-        $this->notificationRepo->notifyRecipients(
-            $ticket->id,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
+        $this->workflowNotifier->notify(
+            ticket: $ticket->id,
+            eventKey: 'job_completed',
+            title: 'Service Completed',
+            message: "Your ticket #{$ticketId} job has been completed.",
+            link: route('admin.support-ticket.service.singleTicket', $ticket->id),
+            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]]
         );
-        $this->supportTicketConvRepo->add([
-            'support_ticket_id' => $ticket->id,
-            'admin_message' => "Your ticket #{$request->ticket_id} job has been completed. nd your pay ammount is {$new_total} pay via this link {$paymentLink}",
-            'admin_id' => auth('admin')->id(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+
+        $alreadyPosted = DB::table('support_ticket_convs')
+            ->where('support_ticket_id', $ticket->id)
+            ->where('admin_message', $completionMessage)
+            ->exists();
+        if (!$alreadyPosted) {
+            $this->supportTicketConvRepo->add([
+                'support_ticket_id' => $ticket->id,
+                'admin_message' => $completionMessage,
+                'admin_id' => auth('admin')->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         Log::info('=== Job Completion Ended ===', ['job_id' => $job->id]);
 
@@ -789,15 +868,21 @@ class ServiceTicketController extends BaseController
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
         $job = ServiceJob::find($request->job_id);
 
-        if (!$ticket || !$job) {
-            Toastr::success(translate('ticket_and_job_not_found'));
+        if (!$ticket || !$job || (int)$job->ticket_id !== (int)$ticket->id) {
+            Toastr::error(translate('ticket_and_job_not_found'));
+            return redirect()->back();
+        }
+
+        if (!$this->ensureJobStatus($job, ['completed'], 'submit QA confirmation')) {
             return redirect()->back();
         }
 
         $service = Service::find($job->service_sku);
 
         if ($request->qa_passed) {
-            $service->update(['call_center_flag' => true]);
+            if ($service) {
+                $service->update(['call_center_flag' => true]);
+            }
             ServiceJobActivity::create([
                 'job_id' => $job->id,
                 'activity_type' => 'qa_confirmation',
@@ -808,7 +893,7 @@ class ServiceTicketController extends BaseController
             ]);
         } else {
             $this->supportTicketRepo->update($ticket->id, [
-                'status' => 21, // Reopen
+                'status' => ServiceTicketWorkflow::STATUS_ASSIGNED, // Reopen
                 'reopen_count' => ($ticket->reopen_count ?? 0) + 1,
             ]);
             ServiceJobActivity::create([
@@ -830,21 +915,16 @@ class ServiceTicketController extends BaseController
 
 
 
-            $title   = "Ticket Reopen";
-            $message = "Ticket #{$ticket->id} has been reopened due to QA failure.";
-            $link    = route('admin.support-ticket.details', $ticket->id);
-
-            $recipients = [
-                ['type' => 'customer', 'id' => $ticket->customer_id],
-            ];
-
-            $this->notificationRepo->notifyRecipients(
-                $ticket->id,
-                \App\Models\SupportTicket::class,
-                $title,
-                $message,
-                $link,
-                $recipients
+            $this->workflowNotifier->notify(
+                ticket: $ticket->id,
+                eventKey: 'qa_failed',
+                title: 'Ticket Reopened',
+                message: "Ticket #{$ticket->id} has been reopened due to QA failure.",
+                link: route('admin.support-ticket.service.singleTicket', $ticket->id),
+                recipients: array_filter([
+                    ['type' => 'customer', 'id' => $ticket->customer_id],
+                    $ticket->employee_id ? ['type' => 'employee', 'id' => $ticket->employee_id] : null,
+                ])
             );
         }
         Toastr::success(translate('qa_confirmation_processed'));
@@ -865,9 +945,23 @@ class ServiceTicketController extends BaseController
             return redirect()->back();
         }
 
-        $invoice = ServiceInvoice::where('ticket_id', $ticket->id)->first();
+        $forceClose = (bool)$request->force_close;
+        if ((int)$ticket->status !== ServiceTicketWorkflow::STATUS_QA_PENDING && !$forceClose) {
+            Toastr::error("Ticket #{$ticket->id} must be completed before closing.");
+            return redirect()->back();
+        }
 
-        if ($invoice && $invoice->payment_status !== 'paid') {
+        $latestJob = ServiceJob::where('ticket_id', $ticket->id)->latest('id')->first();
+        if ($latestJob && $latestJob->status !== 'completed' && !$forceClose) {
+            Toastr::error("Cannot close ticket while job status is '{$latestJob->status}'.");
+            return redirect()->back();
+        }
+
+        $hasUnpaidInvoices = ServiceInvoice::where('ticket_id', $ticket->id)
+            ->where('payment_status', '!=', 'paid')
+            ->exists();
+
+        if ($hasUnpaidInvoices) {
             if (!$request->has('force_close') || !$request->force_close) {
                 return redirect()->back()->with('force_close_prompt', $ticket->id);
             }
@@ -879,18 +973,14 @@ class ServiceTicketController extends BaseController
         }
 
         $this->supportTicketRepo->update($ticket->id, [
-            'status' => 26,
+            'status' => ServiceTicketWorkflow::STATUS_CLOSED,
             'closed_at' => now(),
         ]);
 
-        ServiceJobActivity::create([
-            'job_id' => $ticket->latestServiceJob->id ?? null,
-            'activity_type' => 'close_ticket',
-            'description' => 'Ticket closed after QA: ' . $request->qa_notes,
-            'created_by' => auth('admin')->id(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $latestJobId = ServiceJob::where('ticket_id', $ticket->id)->latest('id')->value('id');
+        if ($latestJobId) {
+            $this->logJobActivity($latestJobId, 'close_ticket', 'Ticket closed after QA: ' . $request->qa_notes);
+        }
 
         SupportTicketNotification::create([
             'ticket_id' => $ticket->id,
@@ -900,23 +990,13 @@ class ServiceTicketController extends BaseController
             'created_at' => now(),
         ]);
 
-
-
-        $title   = "Ticket Close";
-        $message = "Your ticket #{$ticket->id} has been closed.";
-        $link    = route('admin.support-ticket.details', $ticket->id);
-
-        $recipients = [
-            ['type' => 'customer', 'id' => $ticket->customer_id],
-        ];
-
-        $this->notificationRepo->notifyRecipients(
-            $ticket->id,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
+        $this->workflowNotifier->notify(
+            ticket: $ticket->id,
+            eventKey: 'ticket_closed',
+            title: 'Ticket Closed',
+            message: "Your ticket #{$ticket->id} has been closed.",
+            link: route('admin.support-ticket.service.singleTicket', $ticket->id),
+            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]]
         );
         Toastr::success(translate('ticket_closed_successfully'));
         return redirect()->back();
@@ -939,6 +1019,21 @@ class ServiceTicketController extends BaseController
         $feeAmount = $request->input('fee_amount');
         $refundAmount = $request->input('refund_amount');
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
+        $job = ServiceJob::find($jobId);
+
+        if (!$ticket || !$job || (int)$job->ticket_id !== (int)$ticketId) {
+            Toastr::error(translate('invalid_ticket_details'));
+            return redirect()->back();
+        }
+
+        if ((int)$ticket->status === ServiceTicketWorkflow::STATUS_CLOSED || $job->status === 'cancelled') {
+            Toastr::error(translate('ticket_already_closed'));
+            return redirect()->back();
+        }
+
+        if (!$this->ensureJobStatus($job, ['assigned', 'scheduled', 'in_progress'], 'cancel this ticket')) {
+            return redirect()->back();
+        }
 
         ServiceCancellation::create([
             'ticket_id' => $ticketId,
@@ -951,9 +1046,10 @@ class ServiceTicketController extends BaseController
         ]);
 
         $this->supportTicketRepo->update($ticketId, [
-            'status' => 26,
+            'status' => ServiceTicketWorkflow::STATUS_CLOSED,
             'closed_at' => now(),
         ]);
+        $job->update(['status' => 'cancelled']);
 
         $this->supportTicketConvRepo->add([
             'support_ticket_id' => $ticketId,
@@ -966,29 +1062,20 @@ class ServiceTicketController extends BaseController
 
         SupportTicketNotification::create([
             'ticket_id' => $ticketId,
-            'recipient_id' => $this->supportTicketRepo->getFirstWhere(['id' => $ticketId])->customer_id,
+            'recipient_id' => $ticket->customer_id,
             'message' => "Your ticket #{$ticketId} has been cancelled: $reason",
             'type' => 'email',
             'created_at' => now(),
         ]);
 
-
-
-        $title   = "ticket cancelled";
-        $message = "Your ticket #{$ticketId} has been cancelled: $reason";
-        $link    = route('admin.support-ticket.details', $ticketId);
-
-        $recipients = [
-            ['type' => 'customer', 'id' => $ticket->customer_id],
-        ];
-
-        $this->notificationRepo->notifyRecipients(
-            $ticketId,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
+        $this->workflowNotifier->notify(
+            ticket: $ticketId,
+            eventKey: 'ticket_cancelled',
+            title: 'Ticket Cancelled',
+            message: "Your ticket #{$ticketId} has been cancelled: $reason",
+            link: route('admin.support-ticket.service.singleTicket', $ticketId),
+            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]],
+            templateData: ['reason' => $reason]
         );
 
         Toastr::success(translate('ticket_cancelled_successfully'));
@@ -1019,16 +1106,16 @@ class ServiceTicketController extends BaseController
 
     public function checkSLABreaches(): void
     {
-        $tickets = $this->supportTicketRepo->getListWhere(
-            filters: ['status' => [21, 22, 23, 24]],
-            dataLimit: 'all'
-        );
+        $tickets = SupportTicketModel::query()
+            ->with('latestServiceJob')
+            ->whereIn('status', ServiceTicketWorkflow::activeSlaStatuses())
+            ->get();
 
         foreach ($tickets as $ticket) {
             $responseTime = now()->diffInHours($ticket->created_at);
             $resolutionTime = $ticket->latestServiceJob && $ticket->latestServiceJob->started_at ? now()->diffInHours($ticket->latestServiceJob->started_at) : null;
 
-            if ($responseTime > $ticket->sla_hours && $ticket->status == 21) {
+            if ($responseTime > $ticket->sla_hours && (int)$ticket->status === ServiceTicketWorkflow::STATUS_ASSIGNED) {
                 SupportTicketNotification::create([
                     'ticket_id' => $ticket->id,
                     'recipient_id' => 1, // Owner ID
@@ -1036,11 +1123,11 @@ class ServiceTicketController extends BaseController
                     'type' => 'email',
                     'created_at' => now(),
                 ]);
-                $this->supportTicketRepo->update($ticket->id, ['escalation_level' => 'L1']);
+                $this->supportTicketRepo->update((string)$ticket->id, ['escalation_level' => 'L1']);
             }
 
             if ($resolutionTime && $resolutionTime > $ticket->sla_hours) {
-                $this->supportTicketRepo->update($ticket->id, [
+                $this->supportTicketRepo->update((string)$ticket->id, [
                     'escalation_level' => 'L2',
                     'escalated_at' => now(),
                     'escalated_by' => 1, // System
@@ -1083,7 +1170,10 @@ class ServiceTicketController extends BaseController
             return back();
         }
 
-        $this->logJobActivity($ticket->id, 'escalated', $message);
+        $latestJobId = ServiceJob::where('ticket_id', $ticket->id)->latest('id')->value('id');
+        if ($latestJobId) {
+            $this->logJobActivity($latestJobId, 'escalated', $message);
+        }
 
         Toastr::success(translate('Ticket escalated successfully'));
         return back();

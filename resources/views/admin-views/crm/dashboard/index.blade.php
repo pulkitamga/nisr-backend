@@ -153,6 +153,25 @@
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/apexcharts.js') }}"></script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/dashboard.js') }}"></script>
 <script>
+    const appCurrencyCode = @json(strtoupper(getCurrencyCode(type: 'default')));
+    const appCurrencySymbol = @json(getCurrencySymbol(currencyCode: getCurrencyCode(type: 'default')));
+    const appCurrencyPosition = @json(getWebConfig('currency_symbol_position') ?? 'left');
+    const appCurrencySpace = @json(getWebConfig('currency_symbol_space') == '1' ? ' ' : '');
+
+    function formatInvoiceAmount(amount) {
+        const total = Number(amount ?? 0);
+        const safeTotal = Number.isFinite(total) ? total : 0;
+        const formattedNumber = safeTotal.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        const symbol = appCurrencySymbol || appCurrencyCode;
+
+        return appCurrencyPosition === 'right'
+            ? `${formattedNumber}${appCurrencySpace}${symbol}`
+            : `${symbol}${appCurrencySpace}${formattedNumber}`;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         renderServiceChart({{ $totalServices }}, {{ $totalInvoice }});
     });
@@ -224,8 +243,8 @@
 
         // Service Overview Legend/Header (assuming your helpers for currency)
         $('#totalServicesLegend').text(data.totalServices);
-        $('#totalInvoiceLegend').text(new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.totalInvoice)); // Adjust currency formatter as per your app
-        $('#totalInvoiceHeader').text(new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.totalInvoice)); // Adjust as needed
+        $('#totalInvoiceLegend').text(formatInvoiceAmount(data.totalInvoice));
+        $('#totalInvoiceHeader').text(formatInvoiceAmount(data.totalInvoice));
     }
 
     let serviceChart = null;

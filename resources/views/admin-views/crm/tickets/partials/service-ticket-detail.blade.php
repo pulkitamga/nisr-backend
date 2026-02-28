@@ -9,7 +9,12 @@
 @endpush
 
 @section('content')
-<div class="content container-fluid" >
+@php
+    $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
+    $localizedTicketPriority = translate($supportTicket->priority);
+    $localizedTicketStatus = translate($supportTicket->status_details->name ?? $supportTicket->status);
+@endphp
+<div class="content container-fluid" dir="{{ $pageDirection }}">
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png') }}" alt="">
@@ -20,7 +25,7 @@
     <div class="row">
         <div class="row col-12 d-flex align-items-stretch mb-4">
             <div class="col-lg-6 col-md-12">
-                <div class="card mb-4 shadow-sm h-100 detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
+                <div class="card mb-4 shadow-sm h-100 detail-card">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">{{ translate('Customer Details') }}</h5>
                     </div>
@@ -44,14 +49,13 @@
 
             <!-- Service Details Card -->
             <div class="col-lg-6 col-md-12">
-                <div class="card mb-4 shadow-sm h-100 detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
+                <div class="card mb-4 shadow-sm h-100 detail-card">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">{{ translate('Service Details') }}</h5>
                     </div>
                     <div class="card-body">
                         @php
-                        $service = $supportTicket->latestServiceJob ?
-                        App\Models\Service::find($supportTicket->latestServiceJob->service_sku) : null;
+                        $service = $supportTicket->latestServiceJob?->service;
                         @endphp
                         <p><strong>{{ translate('Service') }}:</strong>
                             {{ $service ? $service->title : translate('No Service Picked') }}
@@ -60,9 +64,9 @@
                         <p><strong>{{ translate('Subject') }}:</strong>
                             {{ $supportTicket->subject ?? translate('No Subject') }}
                         </p>
-                        <p><strong>{{ translate('Priority') }}:</strong> {{ ucfirst($supportTicket->priority) }}</p>
+                        <p><strong>{{ translate('Priority') }}:</strong> {{ $localizedTicketPriority }}</p>
                         <p><strong>{{ translate('Status') }}:</strong>
-                            {{ $supportTicket->status_details->name ?? $supportTicket->status }}
+                            {{ $localizedTicketStatus }}
                         </p>
                         <p><strong>{{ translate('Created At') }}:</strong>
                             {{ $supportTicket->created_at->format('d M, Y H:i A') }}
@@ -129,6 +133,12 @@
                     </div>
 
                     <!-- Activity Section -->
+                    @php
+                    $ticketActivities = collect($supportTicket->serviceJobs ?? [])
+                        ->flatMap(fn($job) => $job->activities ?? collect())
+                        ->sortByDesc('created_at')
+                        ->values();
+                    @endphp
                     <div class="collapse show" id="collapseActivity-{{ $supportTicket->id }}">
                         <div class="card border-0 shadow-sm mb-3">
                             <div class="card-header">
@@ -147,8 +157,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($supportTicket->latestServiceJob?->activities ?? [] as $key =>
-                                        $activity)
+                                        @forelse($ticketActivities as $key => $activity)
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $activity->description }}</td>
@@ -157,13 +166,17 @@
                                             <td>{{ $activity->created_at->format('d M, Y H:i A') }}</td>
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-info view-details"
-                                                    data-details='{{ json_encode($activity) }}' data-bs-toggle="modal"
+                                                    data-details='@json($activity)' data-bs-toggle="modal"
                                                     data-bs-target="#activityDetailsModal">
                                                     <i class="tio-invisible"></i>
                                                 </button>
                                             </td>
                                         </tr>
-                                        @endforeach
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">{{ translate('No activity found') }}</td>
+                                        </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -230,7 +243,7 @@
                                             <th>{{ translate('Subtotal') }}</th>
                                             <th>{{ translate('Tax') }}</th>
                                             <th>{{ translate('Total') }}</th>
-                                            <th>{{ translate('payment_Link') }}</th>
+                                            <th>{{ translate('Payment Link') }}</th>
                                             <th>{{ translate('Payment Status') }}</th>
                                             <th>{{ translate('Generated At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
@@ -244,7 +257,7 @@
                                             <td> {{ webCurrencyConverter(amount:  $invoice->tax) }}</td>
                                             <td> {{ webCurrencyConverter(amount:  $invoice->total) }}</td>
                                             <td><a href="{{ $invoice->payment_link }}">{{ $invoice->payment_link }}</a></td>
-                                            <td>{{ ucfirst($invoice->payment_status) }}</td>
+                                            <td>{{ translate($invoice->payment_status) }}</td>
                                             <td>{{ $invoice->generated_at->format('d M, Y H:i A') }}</td>
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-info view-details"
@@ -367,7 +380,7 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $serviceJob->technician ? $serviceJob->technician->name : translate('N/A') }}</td>
-                                            <td>{{ ucfirst($serviceJob->status) }}</td>
+                                            <td>{{ translate($serviceJob->status) }}</td>
                                             <td>{{ $serviceJob->remarks }}</td>
 
                                             <td>
@@ -597,7 +610,7 @@
                 <p><strong>{{ translate('Remarks') }}:</strong> <span id="service-remarks"></span></p>
                 <p><strong>{{ translate('Priority') }}:</strong> <span id="service-priority"></span></p>
                 <p><strong>{{ translate('SLA Hours') }}:</strong> <span id="service-sla-hours"></span></p>
-                <p><strong>{{ translate('Service_Mode') }}:</strong> <span id="service-is-mobile"></span></p>
+                <p><strong>{{ translate('Service Mode') }}:</strong> <span id="service-is-mobile"></span></p>
                 <p><strong>{{ translate('Created At') }}:</strong> <span id="service-created-at"></span></p>
             </div>
             <div class="modal-footer">
@@ -619,6 +632,55 @@
         const textSystem = @json(translate('System'));
         const textMobile = @json(translate('Mobile'));
         const textInShop = @json(translate('In-shop'));
+        const workflowStatusMap = @json([
+            'new' => translate('new'),
+            'assigned' => translate('assigned'),
+            'scheduled' => translate('scheduled'),
+            'ready_to_start' => translate('ready_to_start'),
+            'in_progress' => translate('in_progress'),
+            'qa_pending' => translate('qa_pending'),
+            'completed' => translate('completed'),
+            'closed' => translate('closed'),
+            'cancelled' => translate('cancelled'),
+        ]);
+        const paymentStatusMap = @json([
+            'pending' => translate('pending'),
+            'paid' => translate('paid'),
+            'failed' => translate('failed'),
+            'refunded' => translate('refunded'),
+            'cancelled' => translate('cancelled'),
+        ]);
+        const priorityMap = @json([
+            'low' => translate('low'),
+            'medium' => translate('medium'),
+            'high' => translate('high'),
+            'urgent' => translate('urgent'),
+        ]);
+
+        const normalizeKey = (value) => String(value ?? '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '_');
+
+        const getLocalizedValue = (map, value) => {
+            const key = normalizeKey(value);
+            return map[key] || value || textNA;
+        };
+
+        const parseAttachmentList = (value) => {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string' && value.length > 0) {
+                try {
+                    const parsedValue = JSON.parse(value);
+                    return Array.isArray(parsedValue) ? parsedValue : [];
+                } catch (error) {
+                    return [];
+                }
+            }
+            return [];
+        };
 
         // Handle tab switching
         $('.action-btn').click(function() {
@@ -636,7 +698,8 @@
                 $('#activity-description').text(details.description || textNA);
                 $('#activity-created-by').text(details.created_by && details.created_by.name ? details.created_by.name : textSystem);
                 $('#activity-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
-                $('#activity-attachments').text(details.attachments ? JSON.parse(details.attachments).join(', ') : textNone);
+                const activityAttachments = parseAttachmentList(details.attachments);
+                $('#activity-attachments').text(activityAttachments.length ? activityAttachments.join(', ') : textNone);
             } else if (modalId === '#estimateDetailsModal') {
                 $('#estimate-service').text(details.service ? details.service.title : textNA);
                 $('#estimate-subtotal').text(details.subtotal ? details.subtotal : '0.00');
@@ -648,7 +711,7 @@
                 $('#invoice-subtotal').text(details.subtotal ? details.subtotal : '0.00');
                 $('#invoice-tax').text(details.tax ? details.tax : '0.00');
                 $('#invoice-total').text(details.total ? details.total : '0.00');
-                $('#invoice-payment-status').text(details.payment_status ? details.payment_status.toUpperCase() : textNA);
+                $('#invoice-payment-status').text(getLocalizedValue(paymentStatusMap, details.payment_status));
                 $('#invoice-generated-at').text(details.generated_at ? new Date(details.generated_at).toLocaleString() : textNA);
             } else if (modalId === '#changeOrderDetailsModal') {
                 $('#change-order-additional-charges').text(details.additional_charges ? details.additional_charges : '0.00');
@@ -661,7 +724,7 @@
                 $('#cancellation-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
             } else if (modalId === '#serviceDetailsModal') {
                 $('#service-technician').text(details.technician && details.technician.name ? details.technician.name : textNA);
-                $('#service-status').text(details.status ? details.status.toUpperCase() : textNA);
+                $('#service-status').text(getLocalizedValue(workflowStatusMap, details.status));
                 $('#service-scheduled-at').text(details.scheduled_at ? new Date(details.scheduled_at).toLocaleString() : textNA);
                 $('#service-started-at').text(details.started_at ? new Date(details.started_at).toLocaleString() : textNA);
                 $('#service-completed-at').text(details.completed_at ? new Date(details.completed_at).toLocaleString() : textNA);
@@ -669,7 +732,7 @@
                 $('#service-odometer-end').text(details.odometer_end || textNA);
                 $('#service-gps-location').text(details.gps_location || textNA);
                 $('#service-remarks').text(details.remarks || textNA);
-                $('#service-priority').text(details.priority || textNA);
+                $('#service-priority').text(getLocalizedValue(priorityMap, details.priority));
                 $('#service-sla-hours').text(details.sla_hours || textNA);
                 $('#service-is-mobile').text(details.is_mobile ? textMobile : textInShop);
                 $('#service-created-at').text(details.created_at ? new Date(details.created_at).toLocaleString() : textNA);
@@ -692,15 +755,28 @@
 
 <script>
 document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('view-attachments-btn')) {
-        const attachments = JSON.parse(e.target.dataset.attachments);
+    const trigger = e.target.closest('.view-attachments-btn');
+    if (trigger) {
+        let attachments = [];
+        try {
+            const parsed = JSON.parse(trigger.dataset.attachments || '[]');
+            attachments = Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            attachments = [];
+        }
+
         const container = document.getElementById('attachmentsModalBody');
         container.innerHTML = '';
 
         if (attachments.length === 0) {
             container.innerHTML = `<p class="text-muted">{{ translate('No attachments found.') }}</p>`;
         } else {
-            attachments.forEach(file => {
+            attachments.forEach(fileItem => {
+                const file = typeof fileItem === 'string' ? fileItem : (fileItem.file_name || '');
+                if (!file) {
+                    return;
+                }
+
                 const ext = file.split('.').pop().toLowerCase();
                 let content = '';
 

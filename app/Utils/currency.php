@@ -164,16 +164,16 @@ if (!function_exists('getCurrencySymbol')) {
      * @param string $type
      * @return float|int|string
      */
-    function getCurrencySymbol(string $currencyCode = 'USD', string $type = 'default'): float|int|string
+    function getCurrencySymbol(string $currencyCode = '', string $type = 'default'): float|int|string
     {
         loadCurrency();
-        $code = $currencyCode;
+        $code = trim($currencyCode);
         if ($type === 'web') {
-            $code = session('currency_code') ?: $currencyCode;
+            $code = session('currency_code') ?: $code;
         }
 
-        if (empty($code) && session()->has('system_default_currency_info')) {
-            $code = session('system_default_currency_info')->code ?? $currencyCode;
+        if (empty($code)) {
+            $code = getCurrencyCode(type: $type);
         }
 
         if (filled($code)) {
@@ -198,15 +198,21 @@ if (!function_exists('setCurrencySymbol')) {
      * @param string $type
      * @return string
      */
-    function setCurrencySymbol(string|int|float $amount, string $currencyCode = USD, string $type = 'default'): string
+    function setCurrencySymbol(string|int|float $amount, string $currencyCode = '', string $type = 'default'): string
     {
         $decimalPointSettings = getWebConfig('decimal_point_settings');
         $position = getWebConfig('currency_symbol_position');
         $space = getWebConfig('currency_symbol_space') == '1' ? ' ' : '';
+        $code = trim($currencyCode);
+
+        if (empty($code)) {
+            $code = getCurrencyCode(type: $type);
+        }
+
         if ($position === 'left') {
-            $string = getCurrencySymbol(currencyCode: $currencyCode, type: $type) . $space . number_format($amount, (!empty($decimalPointSettings) ? $decimalPointSettings : 0));
+            $string = getCurrencySymbol(currencyCode: $code, type: $type) . $space . number_format($amount, (!empty($decimalPointSettings) ? $decimalPointSettings : 0));
         } else {
-            $string = number_format($amount, !empty($decimalPointSettings) ? $decimalPointSettings : 0) . $space . getCurrencySymbol(currencyCode: $currencyCode, type: $type);
+            $string = number_format($amount, !empty($decimalPointSettings) ? $decimalPointSettings : 0) . $space . getCurrencySymbol(currencyCode: $code, type: $type);
         }
         return $string;
     }
