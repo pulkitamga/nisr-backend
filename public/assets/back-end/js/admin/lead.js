@@ -1,8 +1,13 @@
 
 $(document).on('click', '.assign-owner-btn', function () {
     let ticketId = $(this).data('id');
+    let ownerId = $(this).data('owner-id') || $(this).closest('tr').data('owner-id') || '';
     let form = $('#updateTicketOwnerForm');
+
     form.find('#owner_ticket_id').val(ticketId);
+    form.find('#owner-employee-id').empty().append('<option value="">Select Supervisor</option>');
+    loadOwners('', ownerId);
+
     $('#showOwnerModal').modal('show');
 });
 
@@ -36,7 +41,41 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
     });
 });
 
+function mapEmployeeResponse(res) {
+    if (Array.isArray(res)) {
+        return res;
+    }
+    if (res && Array.isArray(res.employee)) {
+        return res.employee;
+    }
+    if (res && Array.isArray(res.data)) {
+        return res.data;
+    }
+    return [];
+}
 
+function loadOwners(deptId, selectedOwnerId = null) {
+    const employeeRouteUrl = $('#getEmployeeRoute').data('url');
+    $('#owner-employee-id').html('<option value="">Loading...</option>');
+
+    $.ajax({
+        url: employeeRouteUrl,
+        type: "GET",
+        data: { department_id: deptId || '', assignment: 'owner' },
+        success: function (res) {
+            const owners = mapEmployeeResponse(res);
+            $('#owner-employee-id').html('<option value="">Select Supervisor</option>');
+
+            $.each(owners, function (key, owner) {
+                const selected = selectedOwnerId && String(selectedOwnerId) === String(owner.id) ? 'selected' : '';
+                $('#owner-employee-id').append(`<option value="${owner.id}" ${selected}>${owner.name}</option>`);
+            });
+        },
+        error: function () {
+            $('#owner-employee-id').html('<option value="">Select Supervisor</option>');
+        }
+    });
+}
 
 $(document).on('click', '.assign-employee-btn', function () {
     let ticketId = $(this).data('id');
@@ -145,20 +184,29 @@ $(document).ready(function () {
     });
 });
 
-let routeUrl = $('#getEmployeeRoute').data('url');
+let employeeRouteUrl = $('#getEmployeeRoute').data('url');
 
 function loadEmployees(deptId, headId = null) {
+    if (!deptId) {
+        $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+        return;
+    }
+
     $("#ticket-employee-id").html('<option value="">Loading...</option>');
 
     $.ajax({
-        url: routeUrl,
+        url: employeeRouteUrl,
         type: "GET",
-        data: { department_id: deptId, head_id: headId },
+        data: { department_id: deptId, head_id: headId, assignment: 'employee' },
         success: function (res) {
+            const employees = mapEmployeeResponse(res);
             $("#ticket-employee-id").html('<option value="">Select Employee</option>');
-            $.each(res, function (key, emp) {
+            $.each(employees, function (key, emp) {
                 $("#ticket-employee-id").append(`<option value="${emp.id}">${emp.name}</option>`);
             });
+        },
+        error: function () {
+            $("#ticket-employee-id").html('<option value="">Select Employee</option>');
         }
     });
 }

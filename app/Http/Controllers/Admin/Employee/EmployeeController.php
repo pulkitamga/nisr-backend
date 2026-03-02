@@ -14,6 +14,7 @@ use App\Http\Requests\Admin\AdminAddRequest;
 use App\Http\Requests\Admin\AdminUpdateRequest;
 use App\Models\Admin;
 use App\Models\AdminRole;
+use App\Models\Departments;
 use App\Support\AdminPermissionRegistry;
 use App\Services\AdminService;
 use Brian2694\Toastr\Facades\Toastr;
@@ -141,6 +142,7 @@ class EmployeeController extends BaseController
             'admin_role_id' => $legacyRole?->id,
             'branch_id' => json_encode($request['branch_id']),
             'department_id' => $request['department_id'],
+            'is_supervisor' => $request->boolean('is_supervisor'),
             'identify_type' => $request['identify_type'],
             'identify_number' => $request['identify_number'],
             'identify_image' => $adminService->getIdentityImages(request: $request),
@@ -156,6 +158,12 @@ class EmployeeController extends BaseController
         $admin = $this->adminRepo->add(data: $data);
         if ($admin instanceof Admin) {
             $admin->syncRoles([$role->name]);
+
+            if ($request->boolean('is_department_head') && (int)$request['department_id'] > 0) {
+                Departments::query()
+                    ->where('id', (int)$request['department_id'])
+                    ->update(['head_id' => $admin->id]);
+            }
         }
         Toastr::success(translate('employee_added_successfully'));
         return redirect()->route('admin.employee.list');
@@ -189,7 +197,12 @@ class EmployeeController extends BaseController
             filters: ['status' => 1],
             dataLimit: 'all'
         );
-        return view(Employee::UPDATE[VIEW], compact('adminRoles', 'employee', 'departments', 'branches', 'selectedBranches', 'selectedRoleId'));
+        $isDepartmentHead = Departments::query()
+            ->where('head_id', (int)$id)
+            ->where('id', (int)($employee->department_id ?? 0))
+            ->exists();
+
+        return view(Employee::UPDATE[VIEW], compact('adminRoles', 'employee', 'departments', 'branches', 'selectedBranches', 'selectedRoleId', 'isDepartmentHead'));
     }
 
     public function update(AdminUpdateRequest $request, AdminService $adminService): RedirectResponse
@@ -233,6 +246,7 @@ class EmployeeController extends BaseController
             'admin_role_id' => $legacyRole?->id,
             'branch_id' => $request['branch_id'],
             'department_id' => $request['department_id'],
+            'is_supervisor' => $request->boolean('is_supervisor'),
             'password' => $request['password'] ? bcrypt($request['password']) : $employee['password'],
             'image' => $request->file('image') ? $adminService->getProceedImage(request: $request, oldImage: $employee['image']) : $employee['image'],
             'identify_image' => $request->file('identity_image') ? $identity_image : $employee['identify_image'],
@@ -243,6 +257,23 @@ class EmployeeController extends BaseController
 
         $this->adminRepo->update(id: $employeeId, data: $data);
         $employee->syncRoles([$role->name]);
+
+        $newDepartmentId = (int)($request['department_id'] ?? 0);
+        if ($request->boolean('is_department_head') && $newDepartmentId > 0) {
+            Departments::query()
+                ->where('head_id', $employeeId)
+                ->where('id', '!=', $newDepartmentId)
+                ->update(['head_id' => null]);
+
+            Departments::query()
+                ->where('id', $newDepartmentId)
+                ->update(['head_id' => $employeeId]);
+        } else {
+            Departments::query()
+                ->where('head_id', $employeeId)
+                ->update(['head_id' => null]);
+        }
+
         Toastr::success(translate('employee_updated_successfully'));
         return redirect()->route('admin.employee.list');
     }

@@ -30,11 +30,18 @@ class DepartmentService
     
     public function getAddData(object $request):array
     {
-        return [
+        $data = [
             'name' => $request['name'],
             'status' => $request['status'] == '0' ? '0' : '1',
-            'head_id' => $request['head_id']
         ];
+
+        // Department head is now managed from Employee form.
+        // Keep backward compatibility if head_id is still posted from legacy UI.
+        if (method_exists($request, 'has') && $request->has('head_id')) {
+            $data['head_id'] = !empty($request['head_id']) ? (int)$request['head_id'] : null;
+        }
+
+        return $data;
     }
 
     public function getAddDepartmentUsers(object $request, int $iDepartmentId):array

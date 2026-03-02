@@ -760,7 +760,7 @@ class WholesaleController extends Controller
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'price_range_id' => 'required|integer|exists:wholesale_product_price_ranges,id',
+            'price_range_id' => 'required|integer|exists:wholesale_price_ranges,id',
             'quantity' => 'required|integer|min:1',
             'variant' => 'required|string',
         ]);

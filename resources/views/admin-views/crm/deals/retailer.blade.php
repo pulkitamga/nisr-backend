@@ -363,6 +363,10 @@
         // Routes from span tags
         const getUserOrdersRoute = $('#getUserOrdersRoute').data('url');
         const linkOrderRoute = $('#linkOrderRoute').data('url');
+        const crmCurrencySymbol = @json(getCurrencySymbol(currencyCode: getCurrencyCode(), type: 'default'));
+        const crmCurrencyPosition = @json(getWebConfig('currency_symbol_position') ?? 'left');
+        const crmCurrencySpaceEnabled = @json((string)(getWebConfig('currency_symbol_space') ?? '0') === '1');
+        const crmCurrencyDecimals = Number(@json((int)(getWebConfig('decimal_point_settings') ?? 2)));
         const crmDealText = {
             noOrdersFound: @json(translate('No orders found for this customer.')),
             action: @json(translate('Action')),
@@ -382,6 +386,23 @@
             serverError: @json(translate('Server error. Please try again.')),
             cancel: @json(translate('Cancel')),
         };
+
+        function formatPanelCurrency(value) {
+            const amount = Number.parseFloat(value);
+            const safeAmount = Number.isFinite(amount) ? amount : 0;
+            const decimals = Number.isFinite(crmCurrencyDecimals) ? crmCurrencyDecimals : 2;
+            const formattedNumber = safeAmount.toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+            const spacing = crmCurrencySpaceEnabled ? ' ' : '';
+
+            if (crmCurrencyPosition === 'right') {
+                return `${formattedNumber}${spacing}${crmCurrencySymbol}`;
+            }
+
+            return `${crmCurrencySymbol}${spacing}${formattedNumber}`;
+        }
 
         // Open Modal + Load Orders
         $(document).on('click', '.link-order-btn', function() {
@@ -448,7 +469,7 @@
                         </td>
                         <td><strong>#${order.id}</strong></td>
                         <td>${date}</td>
-                        <td>₹${parseFloat(order.order_amount).toLocaleString('en-IN')}</td>
+                        <td>${formatPanelCurrency(order.order_amount)}</td>
                         <td>
                             <span class="badge badge-soft-${statusBadge}">
                                 ${order.order_status.replace(/_/g, ' ')}

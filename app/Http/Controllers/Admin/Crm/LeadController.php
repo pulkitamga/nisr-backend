@@ -256,6 +256,12 @@ public function getUserOrders(Request $request)
 
         $lead = Lead::findOrFail($request->lead_id);
         $authUser = auth('admin')->user();
+        $owner = Admin::find($request->owner_id);
+
+        if (!$owner || !(bool)($owner->is_supervisor ?? false)) {
+            Toastr::error(translate('Owner must be marked as supervisor in employee profile'));
+            return redirect()->back()->withInput();
+        }
 
         if (
             !$this->isSuperAdmin($authUser) &&
@@ -797,10 +803,6 @@ public function getUserOrders(Request $request)
             return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
         }
 
-        if ((int)$employee->admin_role_id !== $this->departmentEmployeeRoleId()) {
-            return response()->json(['status' => false, 'message' => 'Please select a department employee.'], 422);
-        }
-
         if ((int)$employee->department_id !== (int)$lead->department_id) {
             return response()->json(['status' => false, 'message' => 'Employee must belong to the selected department.'], 422);
         }
@@ -838,17 +840,17 @@ public function getUserOrders(Request $request)
             return response()->json(['status' => false, 'message' => 'Lead not found'], 404);
         }
 
-        if (empty($lead->department_id)) {
-            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
-        }
-
         $owner = Admin::find($request->employee_id);
         if (!$owner) {
             return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
         }
 
-        if ((int)$owner->admin_role_id !== $this->supervisorRoleId()) {
-            return response()->json(['status' => false, 'message' => 'Owner must be a supervisor.'], 422);
+        if (!$this->isSupervisor($owner)) {
+            return response()->json(['status' => false, 'message' => 'Owner must be marked as supervisor in employee profile.'], 422);
+        }
+
+        if (!empty($lead->department_id) && (int)$owner->department_id !== (int)$lead->department_id) {
+            return response()->json(['status' => false, 'message' => 'Owner must belong to the selected department.'], 422);
         }
 
         $lead->owner_id = $request->employee_id;
@@ -875,14 +877,15 @@ public function getUserOrders(Request $request)
 
     public function getEmployeesByDepartment(Request $request)
     {
-        if (empty($request->department_id)) {
+        $isOwnerAssignment = $request->input('assignment') === 'owner';
+        if (empty($request->department_id) && !$isOwnerAssignment) {
             return response()->json([]);
         }
 
-        $filters = [
-            'department_id' => $request->department_id,
-            'admin_role_id' => $this->departmentEmployeeRoleId(),
-        ];
+        $filters = [];
+        if (!empty($request->department_id)) {
+            $filters['department_id'] = $request->department_id;
+        }
         $employees = $this->adminRepo->getEmployeeListWhere(
             ['id' => 'desc'],
             null,
@@ -890,6 +893,15 @@ public function getUserOrders(Request $request)
             [],
             'all'
         );
+        $employees = $employees
+            ->filter(fn($employee) => (int)($employee->admin_role_id ?? 0) !== 1)
+            ->values();
+        if ($isOwnerAssignment) {
+            $employees = $employees
+                ->filter(fn($employee) => $this->isSupervisor($employee))
+                ->values();
+        }
+
         if ($request->filled('head_id')) {
             $employees = $employees->where('id', '!=', $request->head_id)->values();
         }
@@ -945,6 +957,11 @@ public function getUserOrders(Request $request)
     private function supervisorRoleId(): int
     {
         return defined('DEPARTMENT_HEAD_ROLE_ID') ? (int)DEPARTMENT_HEAD_ROLE_ID : 8;
+    }
+
+    private function isSupervisor(?Admin $admin): bool
+    {
+        return (bool)($admin?->is_supervisor ?? false);
     }
 
     private function departmentEmployeeRoleId(): int

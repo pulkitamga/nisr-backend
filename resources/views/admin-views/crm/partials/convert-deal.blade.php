@@ -41,7 +41,9 @@
                         <label>{{ translate('Owner') }}</label>
                         <select class="form-control" name="owner_id">
                             @foreach($employees as $admin)
+                            @if((bool)($admin->is_supervisor ?? false))
                             <option value="{{ $admin->id }}">{{ $admin->name }}</option>
+                            @endif
                             @endforeach
                         </select>
                     </div>

@@ -14,15 +14,7 @@
                     <div class="form-group mt-2">
                         <label>{{ translate('Select Supervisor') }}</label>
                         <select class="form-control" name="employee_id" id="owner-employee-id">
-                            <option value="" disabled>{{ translate('Select Supervisor') }}</option>
-                            @php($supervisorRoleId = defined('DEPARTMENT_HEAD_ROLE_ID') ? (int)DEPARTMENT_HEAD_ROLE_ID : 8)
-                            @foreach ($employees as $employee)
-                            @if((int)($employee['admin_role_id'] ?? 0) === $supervisorRoleId)
-                            <option value="{{ $employee['id'] }}">
-                                {{ $employee['name'] }}
-                            </option>
-                            @endif
-                            @endforeach
+                            <option value="">{{ translate('Select Supervisor') }}</option>
                         </select>
                     </div>
                     <div class="text-end mt-2">

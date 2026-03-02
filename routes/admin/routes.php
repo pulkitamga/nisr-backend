@@ -550,6 +550,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get('/claim/rma-issued', 'rmaIssued')->name('claim.rma-issued')->middleware('permission:crm_section.warranty_claim_rma,admin');
             Route::get('/claim/received', 'received')->name('claim.received')->middleware('permission:crm_section.warranty_claim_received,admin');
             Route::get('/claim/repair-pending', 'repairPending')->name('claim.repair-pending')->middleware('permission:crm_section.warranty_claim_repair,admin');
+            Route::get('/claim/replacement-pending', 'replacementPending')->name('claim.replacement-pending')->middleware('permission:crm_section.warranty_claim_list,admin');
+            Route::get('/claim/waiting-customer', 'waitingCustomer')->name('claim.waiting-customer')->middleware('permission:crm_section.warranty_claim_list,admin');
+            Route::get('/claim/waiting-parts', 'waitingParts')->name('claim.waiting-parts')->middleware('permission:crm_section.warranty_claim_list,admin');
+            Route::get('/claim/waiting-payment', 'waitingPayment')->name('claim.waiting-payment')->middleware('permission:crm_section.warranty_claim_list,admin');
+            Route::get('/claim/diagnosis-pending', 'diagnosisPending')->name('claim.diagnosis-pending')->middleware('permission:crm_section.warranty_claim_list,admin');
+            Route::get('/claim/qc-pending', 'qcPending')->name('claim.qc-pending')->middleware('permission:crm_section.warranty_claim_list,admin');
+            Route::get('/claim/shipped-ready', 'shippedReady')->name('claim.shipped-ready')->middleware('permission:crm_section.warranty_claim_list,admin');
+            Route::get('/claim/dispatched', 'dispatched')->name('claim.dispatched')->middleware('permission:crm_section.warranty_claim_list,admin');
             Route::get('/claim/resolved', 'resolved')->name('claim.resolved')->middleware('permission:crm_section.warranty_claim_resolved,admin');
             Route::get('/claim/closed', 'closed')->name('claim.closed')->middleware('permission:crm_section.warranty_claim_closed,admin');
             Route::get('/claim/rejected', 'rejected')->name('claim.rejected')->middleware('permission:crm_section.warranty_claim_rejected,admin');

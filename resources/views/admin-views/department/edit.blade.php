@@ -42,13 +42,14 @@
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
-                            <label class="title-color d-flex">{{translate('Department_Head')}} </label>
-                            <select id="head_id" name="head_id" class="form-control js-select2-custom">
-                                <option value="0" selected="" disabled="">-- Select employee --</option>
-                                @foreach ($employees as $key => $employee)
-                                    <option value="{{ $employee->id }}" {{ $department->head_id == $employee->id ? 'selected' : '' }} >{{ $employee->name}}</option>                                    
-                                @endforeach
-                            </select>
+                            <label class="title-color d-flex">{{translate('Department_Head')}}</label>
+                            <input
+                                class="form-control"
+                                type="text"
+                                value="{{ $department->employee?->name ?? 'No department head assigned' }}"
+                                readonly
+                            >
+                            <small class="text-muted">Update this from Employees -> Edit Employee -> Department Head For Escalation.</small>
                         </div>
                     </div>
                 </div>

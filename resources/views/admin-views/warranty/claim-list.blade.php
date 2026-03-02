@@ -44,11 +44,13 @@
                             <option {{ request('status') == 'all' ? 'selected' : '' }} value="all">{{ translate('All') }}</option>
 
                             <option {{ request('status') == 'new' ? 'selected' : '' }} value="new">{{ translate('new') }}</option>
+                            <option {{ request('status') == 'triage_pending' ? 'selected' : '' }} value="triage_pending">{{ translate('triage_pending') }}</option>
                             <option {{ request('status') == 'approved' ? 'selected' : '' }} value="approved">{{ translate('approved') }}</option>
                             <option {{ request('status') == 'rma_issued' ? 'selected' : '' }} value="rma_issued">{{ translate('rma_issued') }}</option>
                             <option {{ request('status') == 'received' ? 'selected' : '' }} value="received">{{ translate('received') }}</option>
                             <option {{ request('status') == 'repair_pending' ? 'selected' : '' }} value="repair_pending">{{ translate('repair_pending') }}</option>
                             <option {{ request('status') == 'replacement_pending' ? 'selected' : '' }} value="replacement_pending">{{ translate('replacement_pending') }}</option>
+                            <option {{ request('status') == 'diagnosis_pending' ? 'selected' : '' }} value="diagnosis_pending">{{ translate('diagnosis_pending') }}</option>
                             <option {{ request('status') == 'qc_pending' ? 'selected' : '' }} value="qc_pending">{{ translate('qc_pending') }}</option>
                             <option {{ request('status') == 'shipped_ready' ? 'selected' : '' }} value="shipped_ready">{{ translate('shipped_ready') }}</option>
                             <option {{ request('status') == 'dispatched' ? 'selected' : '' }} value="dispatched">{{ translate('dispatched') }}</option>

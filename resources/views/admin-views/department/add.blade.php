@@ -42,13 +42,9 @@
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
-                            <label class="title-color d-flex">{{translate('Department_Head')}} </label>
-                            <select id="head_id" name="head_id" class="form-control js-select2-custom">
-                                <option value="0" selected="" disabled="">-- Select employee --</option>
-                                @foreach ($employees as $key => $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->name}}</option>                                    
-                                @endforeach
-                            </select>
+                            <label class="title-color d-flex">{{translate('Department_Head')}}</label>
+                            <input class="form-control" type="text" value="Managed from employee profile" readonly>
+                            <small class="text-muted">Set department head from Employees -> Edit Employee.</small>
                         </div>
                     </div>
                 </div>

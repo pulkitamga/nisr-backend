@@ -180,20 +180,45 @@ $(document).ready(function () {
     });
 });
 
-let routeUrl = $('#getEmployeeRoute').data('url');
+let employeeRouteUrl = $('#route-get-department-employee').data('url') || $('#getEmployeeRoute').data('url');
+
+function mapEmployeeResponse(res) {
+    if (Array.isArray(res)) {
+        return res;
+    }
+    if (res && Array.isArray(res.employee)) {
+        return res.employee;
+    }
+    if (res && Array.isArray(res.data)) {
+        return res.data;
+    }
+    return [];
+}
 
 function loadEmployees(deptId, headId = null) {
+    if (!deptId) {
+        $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+        return;
+    }
+
     $("#ticket-employee-id").html('<option value="">Loading...</option>');
 
     $.ajax({
-        url: routeUrl,
+        url: employeeRouteUrl,
         type: "GET",
-        data: { department_id: deptId, head_id: headId },
+        data: { department_id: deptId, head_id: headId, assignment: 'employee' },
         success: function (res) {
+            let employees = mapEmployeeResponse(res);
+            if (headId) {
+                employees = employees.filter(emp => String(emp.id) !== String(headId));
+            }
             $("#ticket-employee-id").html('<option value="">Select Employee</option>');
-            $.each(res, function (key, emp) {
+            $.each(employees, function (key, emp) {
                 $("#ticket-employee-id").append(`<option value="${emp.id}">${emp.name}</option>`);
             });
+        },
+        error: function () {
+            $("#ticket-employee-id").html('<option value="">Select Employee</option>');
         }
     });
 }

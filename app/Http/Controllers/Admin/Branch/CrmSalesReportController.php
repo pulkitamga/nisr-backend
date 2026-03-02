@@ -360,7 +360,10 @@ class CrmSalesReportController extends Controller
         // Find top agent
         if (!empty($agentTotals)) {
             $topAgent = collect($agentTotals)->sortByDesc('total')->first();
-            $stats['top_agent'] = $topAgent['name'] . ' (₹' . number_format($topAgent['total']) . ')';
+            $stats['top_agent'] = $topAgent['name'] . ' (' . setCurrencySymbol(
+                amount: usdToDefaultCurrency(amount: $topAgent['total']),
+                currencyCode: getCurrencyCode()
+            ) . ')';
         }
 
         // Calculate percentages

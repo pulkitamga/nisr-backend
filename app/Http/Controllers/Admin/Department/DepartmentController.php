@@ -69,14 +69,7 @@ class DepartmentController extends BaseController
     public function getAddView(Request $request): View
     {
         $aRoles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
-        $employees = $this->adminRepo->getEmployeeListWhere(
-            orderBy:['id'=>'desc'],
-            searchValue: $request['searchValue'],
-            relations: [],
-            dataLimit:'all'
-        );
-
-        return view(Department::ADD[VIEW], compact('aRoles', 'employees'));
+        return view(Department::ADD[VIEW], compact('aRoles'));
     }
 
     public function fViewBranchUsers(Request $request, $dept_id): View
@@ -106,6 +99,9 @@ class DepartmentController extends BaseController
     {
         $success = 1;
         $dataArray = $service->getAddData(request: $request);
+        if (!array_key_exists('head_id', $dataArray)) {
+            $dataArray['head_id'] = 0;
+        }
         $savedRequest = $this->departmentRepo->add(data: $dataArray);
          return response()->json(['message' => translate('Department_added_successfully')]);
     }
@@ -120,13 +116,11 @@ class DepartmentController extends BaseController
 
     public function getUpdateView($id): View
     {
-        $department = $this->departmentRepo->getFirstWhere(params:['id' => $id]);
-        $employees = $this->adminRepo->getEmployeeListWhere(
-            orderBy:['id'=>'desc'],
-            relations: [],
-            dataLimit:'all'
+        $department = $this->departmentRepo->getFirstWhere(
+            params:['id' => $id],
+            relations: ['employee']
         );
-        return view(Department::UPDATE[VIEW], compact('department', 'employees'));
+        return view(Department::UPDATE[VIEW], compact('department'));
     }
 
     public function update(DepartmentUpdateRequest $request, DepartmentService $departmentService): JsonResponse
