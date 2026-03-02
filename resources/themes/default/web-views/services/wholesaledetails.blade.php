@@ -40,7 +40,7 @@
     {{ session('error') }}
 </div>
 @endif
-<div class="container mx-5 my-5 ">
+<div class="container mx-5 my-5" dir="{{ Session::get('direction') === 'rtl' ? 'rtl' : 'ltr' }}">
     <div class="row">
         <!-- ✅ Left: Product Image -->
         <div class="col-md-3 text-center">
@@ -72,13 +72,13 @@
                     <input type="hidden" name="price_range_id" value="{{ $range->id }}" id="selected-range-id" data-min="{{ $range->min_qty }}" data-max="{{ $range->max_qty }}">
         
                     <!-- Quantity Selection -->
-                    <label for="quantity" class="fw-semibold">Select Quantity:</label>
+                    <label for="quantity" class="fw-semibold">{{ translate('Select Quantity') }}:</label>
                     <div class="d-flex align-items-center mb-2">
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQuantity(-1)">-</button>
                         <input type="number" id="quantity" name="quantity" class="form-control mx-2 text-center w-25" required min="{{ $range->min_qty }}">
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQuantity(1)">+</button>
                     </div>
-                    <p class="text-muted mb-3">Min: <strong id="min-val">{{ $range->min_qty }}</strong> pcs
+                    <p class="text-muted mb-3">{{ translate('Min') }}: <strong id="min-val">{{ $range->min_qty }}</strong> {{ translate('pcs') }}
                     <div class="mb-3">
                         <span class="d-flex align-items-end gap-2">
                             <span class="text-success fs-4 fw-bold">
@@ -100,13 +100,13 @@
                             @endif
                         </span>
                     </div>
-                    <button type="submit" class="btn btn-primary" id="submit-btn">Add to Purchase Order</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translate('Add to Purchase Order') }}</button>
                 @else
-                    <p class="text-danger">No price range available.</p>
+                    <p class="text-danger">{{ translate('No price range available.') }}</p>
                 @endif
             </form>
         @else
-            <p class="text-danger">You need to be a wholesaler to add to cart.</p>
+            <p class="text-danger">{{ translate('You need to be a wholesaler to add to cart.') }}</p>
         @endif
         
 
@@ -120,6 +120,7 @@
         const quantityInput = document.getElementById('quantity');
         const submitBtn = document.getElementById('submit-btn');
         const selectedRange = document.getElementById('selected-range-id');
+        const minimumQtyText = @json(translate('Minimum quantity allowed is'));
 
         @if(!$moqOverride)
         const minQty = parseInt(selectedRange.dataset.min);
@@ -134,7 +135,7 @@
             let newQty = currentQty + amount;
 
             if (newQty < minQty) {
-                alert(`Minimum quantity allowed is ${minQty}.`);
+                alert(`${minimumQtyText} ${minQty}.`);
                 quantityInput.value = minQty;
             } else {
                 quantityInput.value = newQty;
@@ -154,7 +155,7 @@
         function checkQuantity() {
             const qty = parseInt(quantityInput.value);
             if (isNaN(qty) || qty < minQty) {
-                alert(`Minimum quantity allowed is ${minQty}.`);
+                alert(`${minimumQtyText} ${minQty}.`);
                 quantityInput.value = minQty;
                 submitBtn.disabled = true;
             } else {

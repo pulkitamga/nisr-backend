@@ -27,6 +27,7 @@ use App\Exports\SupportTicketExport;
 use App\Models\Departments;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
+use App\Support\ServiceTicketWorkflow;
 use Illuminate\Validation\ValidationException;
 class SupportTicketController extends BaseController
 {
@@ -73,7 +74,7 @@ class SupportTicketController extends BaseController
 
         $defaultStatusIds = [
             'support'   => 1,
-            'service'   => 20,
+            'service'   => ServiceTicketWorkflow::STATUS_NEW,
             'career'    => 26,
             'complaint' => 36,
             'retail'    => 43,
@@ -103,7 +104,7 @@ class SupportTicketController extends BaseController
 
         $masterIds = [
             'support'   => 1,
-            'service'   => 2,
+            'service'   => ServiceTicketWorkflow::STATUS_MASTER_ID,
             'career'    => 3,
             'complaint' => 4,
             'retail'    => 5,

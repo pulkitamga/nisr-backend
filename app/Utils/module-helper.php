@@ -2,8 +2,10 @@
 
 use App\Events\AddFundToWalletEvent;
 use App\Models\Cart;
+use App\Models\ServiceInvoice;
 use App\Models\ShippingAddress;
 use App\Models\User;
+use App\Services\ServiceInvoicePaymentService;
 use App\Utils\CartManager;
 use App\Utils\CustomerManager;
 use App\Utils\OrderManager;
@@ -121,6 +123,47 @@ if (!function_exists('digital_payment_fail')) {
     function digital_payment_fail($payment_data)
     {
 
+    }
+}
+
+if (!function_exists('service_invoice_payment_success')) {
+    function service_invoice_payment_success($paymentData): void
+    {
+        if (!isset($paymentData) || (int)$paymentData['is_paid'] !== 1) {
+            return;
+        }
+
+        $invoiceId = null;
+        if (($paymentData['attribute'] ?? null) === 'service_invoice' && !empty($paymentData['attribute_id'])) {
+            $invoiceId = (int)$paymentData['attribute_id'];
+        }
+
+        if (!$invoiceId && !empty($paymentData['additional_data'])) {
+            $additionalData = json_decode($paymentData['additional_data'], true);
+            if (is_array($additionalData)) {
+                $invoiceId = (int)($additionalData['service_invoice_id'] ?? $additionalData['invoice_id'] ?? 0);
+            }
+        }
+
+        if (!$invoiceId) {
+            return;
+        }
+
+        $invoice = ServiceInvoice::find($invoiceId);
+        if ($invoice) {
+            if ($invoice->payment_status !== 'paid') {
+                $invoice->update(['payment_status' => 'paid']);
+                $invoice->refresh();
+            }
+
+            app(ServiceInvoicePaymentService::class)->handlePaidInvoice($invoice);
+        }
+    }
+}
+
+if (!function_exists('service_invoice_payment_fail')) {
+    function service_invoice_payment_fail($paymentData): void
+    {
     }
 }
 

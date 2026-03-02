@@ -211,7 +211,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
     });
     Route::controller(ServiceDetailsController::class)->group(function () {
         Route::get('/service/{slug}', 'index')->name('service');
-        Route::post('/service-request', [ServiceDetailsController::class, 'storeServiceRequest'])->name('service.request.store');
+        Route::post('/service-request', [ServiceDetailsController::class, 'storeServiceRequest'])->name('service.request.store')->middleware('customer');
     });
 
     Route::controller(ProductListController::class)->group(function () {
@@ -256,10 +256,10 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
     // Support Ticket
     Route::controller(UserProfileController::class)->group(function () {
         Route::group(['prefix' => 'support-ticket', 'as' => 'support-ticket.'], function () {
-            Route::get('{id}', 'single_ticket')->name('index');
-            Route::post('{id}', 'comment_submit')->name('comment');
-            Route::get('delete/{id}', 'support_ticket_delete')->name('delete');
-            Route::get('close/{id}', 'support_ticket_close')->name('close');
+            Route::get('{id}', 'single_ticket')->name('index')->middleware('customer');
+            Route::post('{id}', 'comment_submit')->name('comment')->middleware('customer');
+            Route::get('delete/{id}', 'support_ticket_delete')->name('delete')->middleware('customer');
+            Route::get('close/{id}', 'support_ticket_close')->name('close')->middleware('customer');
         });
     });
 
@@ -498,10 +498,10 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
 
     Route::group(['namespace' => 'Customer', 'prefix' => 'customer', 'as' => 'customer.'], function () {
         Route::controller(PaymentController::class)->group(function () {
-            Route::post('/service-payment-request', 'service_payment_request')->name('service-payment-request');
+            Route::post('/service-payment-request', 'service_payment_request')->name('service-payment-request')->middleware('customer');
         });
     });
-    Route::get('/pay-service-invoice/{id}', [PaymentController::class, 'servicePayment'])->name('pay-service-invoice');
+    Route::get('/pay-service-invoice/{id}', [PaymentController::class, 'servicePayment'])->name('pay-service-invoice')->middleware('customer');
     Route::controller(PaymentController::class)->group(function () {
         Route::get('web-payment', 'web_payment_success')->name('web-payment-success');
         Route::get('payment-success', 'success')->name('payment-success');

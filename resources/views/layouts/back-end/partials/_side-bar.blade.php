@@ -672,7 +672,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('history') }}
                                                 <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\Warranty::where('status', 'preactivated')->groupBy('created_at')->count() }}
+                                                    {{ \App\Models\Warranty::where('status', 'preactivated')->distinct()->count(\Illuminate\Support\Facades\DB::raw('DATE(created_at)')) }}
                                                 </span>
                                             </span>
                                         </a>
@@ -696,7 +696,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('all') }}
                                                 <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\Warranty::where('status', 'active')->count() }}
+                                                    {{ \App\Models\Warranty::count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1143,7 +1143,7 @@
                                             <span class="text-truncate">
                                                 {{ translate('branch_List') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\Branch::all()->count() }}
+                                                    {{ \App\Models\Branch::count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1663,7 +1663,7 @@
                                             <span class="text-truncate">
                                                 {{ translate('support') }}
                                                 <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\SupportTicket::where(['type' => 'support'])->count() }}
+                                                    {{ \App\Models\SupportTicket::where(['type' => 'support', 'status' => 1])->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1677,7 +1677,7 @@
                                             <span class="text-truncate">
                                                 {{ translate('complaint') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\SupportTicket::where(['type' => 'complaint'])->count() }}
+                                                    {{ \App\Models\SupportTicket::where(['type' => 'complaint', 'status' => 36])->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1690,7 +1690,7 @@
                                             <span class="text-truncate">
                                                 {{ translate('career') }}
                                                 <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\SupportTicket::where(['type' => 'career'])->count() }}
+                                                    {{ \App\Models\SupportTicket::where(['type' => 'career', 'status' => 27])->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1704,7 +1704,7 @@
                                             <span class="text-truncate">
                                                 {{ translate('service') }}
                                                 <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\SupportTicket::where(['type' => 'service'])->count() }}
+                                                    {{ \App\Models\SupportTicket::where(['type' => 'service', 'status' => 20])->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1718,7 +1718,7 @@
                                             <span class="text-truncate">
                                                 {{ translate('retail') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\SupportTicket::where(['type' => 'retail'])->count() }}
+                                                    {{ \App\Models\SupportTicket::where(['type' => 'retail', 'status' => 43])->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1732,7 +1732,7 @@
                                             <span class="text-truncate">
                                                 {{ translate('wholesale') }}
                                                 <span class="badge badge-soft-danger badge-pill ml-1">
-                                                    {{ \App\Models\SupportTicket::where('type', 'wholesale')->count() }}
+                                                    {{ \App\Models\SupportTicket::where(['type' => 'wholesale', 'status' => 56])->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -1978,7 +1978,7 @@
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Tiers') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WholesaleTier::where('is_active', 1)->count() }}
+                                                    {{ \App\Models\WholesaleTier::count() }}
                                                 </span>
                                             </span>
 
@@ -1993,7 +1993,9 @@
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Join Requests') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\User::where('user_type', 1)->where('wholesaler_status', 0)->whereHas('wholesalerBusiness')->count() }}
+                                                    {{ \App\Models\WholeSalerBusiness::whereHas('wholesaler', function ($query) {
+                                                        $query->where('user_type', 1)->where('wholesaler_status', '!=', 1);
+                                                    })->count() }}
                                                 </span>
 
                                             </span>
@@ -2008,7 +2010,9 @@
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Wholesalers') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WholeSalerBusiness::all()->count() }}
+                                                    {{ \App\Models\WholeSalerBusiness::whereHas('wholesaler', function ($query) {
+                                                        $query->where('user_type', 1)->where('wholesaler_status', '!=', 0);
+                                                    })->count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -2023,7 +2027,7 @@
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Purchase Requests') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WholesalePurchaseOrder::all()->count() }}
+                                                    {{ \App\Models\WholesalePurchaseOrder::count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -2038,7 +2042,7 @@
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Quotation_Sent') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WholesaleQuotation::all()->count() }}
+                                                    {{ \App\Models\WholesaleQuotation::count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -2065,7 +2069,7 @@
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Confirmed_Orders') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WholesaleConfirmOrder::all()->count() }}
+                                                    {{ \App\Models\WholesaleConfirmOrder::count() }}
                                                 </span>
                                             </span>
                                         </a>
@@ -2103,7 +2107,16 @@
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Product_List') }}
                                                 <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WholeSaleProducts::all()->count() }}
+                                                    {{ \App\Models\WholeSaleProducts::where('status', 1)
+                                                        ->whereHas('product', function ($query) {
+                                                            $query->whereNull('deleted_at')
+                                                                ->where('status', 1)
+                                                                ->where('request_status', 1)
+                                                                ->where(function ($availabilityQuery) {
+                                                                    $availabilityQuery->whereIn('product_type', ['digital', 'services'])
+                                                                        ->orWhere('current_stock', '>', 0);
+                                                                });
+                                                        })->count() }}
                                                 </span>
                                             </span>
                                         </a>

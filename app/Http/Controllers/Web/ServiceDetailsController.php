@@ -23,9 +23,15 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\VehicleMake;
 use App\Models\VehicleYear;
 use App\Models\InboxMessage;
+use App\Models\SupportTicket as SupportTicketModel;
+use App\Models\SupportTicketStatusMaster;
+use App\Services\ServiceWorkflowNotificationService;
+use App\Support\ServiceTicketWorkflow;
 use App\Http\Requests\ServiceRequestFormRequest;
 
 
@@ -212,38 +218,108 @@ class ServiceDetailsController extends Controller
 
     public function storeServiceRequest(ServiceRequestFormRequest $request)
     {
-        $validated = $request->validated();
+        if (!auth('customer')->check()) {
+            Toastr::error(translate('please_login_first'));
+            return redirect()->route('customer.auth.login');
+        }
 
-        $serviceRequest = $this->serviceRequestRepo->create($validated);
+        $createdTicket = null;
+        try {
+            DB::transaction(function () use ($request, &$createdTicket): void {
+                $validated = $request->validated();
+                $validated['customer_id'] = auth('customer')->id();
 
-        InboxMessage::create([
-            'subject'       => 'New Service Request For - ' . $serviceRequest->service->title,
-            'body'          => 'A new service request has been submitted.',
-            'contact_id'   => $serviceRequest->customer_id ?? null,
-            'sender_name'   => $serviceRequest->customer->name ?? 'N/A',
-            'sender_email'  => $serviceRequest->customer->email ?? null,
-            'sender_phone'  => $serviceRequest->customer->phone ?? null,
-            'pipeline'       => 'form',
-            'message_type'  => 'service',
-            'status'        => 'new',
-            'details'       => [
-                'service_id'     => $serviceRequest->service->service_id,
-                'service_option' => $serviceRequest->service_option,
-                'country'        => $serviceRequest->country,
-                'state'          => $serviceRequest->state,
-                'city'           => $serviceRequest->city,
-                'area'           => $serviceRequest->area,
-                'address'        => $serviceRequest->address,
-                'latitude'       => $serviceRequest->latitude,
-                'longitude'      => $serviceRequest->longitude,
-                'vehicle_type'   => $serviceRequest->vehicle_type,
-                'vehicle_make'   => $serviceRequest->vehicle_make,
-                'vehicle_model'  => $serviceRequest->vehicle_model,
-                'vehicle_year'   => $serviceRequest->vehicle_year,
-                'vehicle_mileage' => $serviceRequest->vehicle_mileage,
-                'vin'            => $serviceRequest->vin,
-            ]
-        ]);
+                $serviceRequest = $this->serviceRequestRepo->create($validated);
+
+                $subject = 'New Service Request For - ' . $serviceRequest->service->title;
+                $inboxMessage = InboxMessage::create([
+                    'subject'       => $subject,
+                    'body'          => 'A new service request has been submitted.',
+                    'contact_id'   => $serviceRequest->customer_id ?? null,
+                    'sender_name'   => trim(($serviceRequest->customer->f_name ?? '') . ' ' . ($serviceRequest->customer->l_name ?? '')) ?: ($serviceRequest->customer->name ?? 'N/A'),
+                    'sender_email'  => $serviceRequest->customer->email ?? null,
+                    'sender_phone'  => $serviceRequest->customer->phone ?? null,
+                    'pipeline'       => 'form',
+                    'message_type'  => 'service',
+                    'status'        => 'new',
+                    'details'       => [
+                        'service_id'     => $serviceRequest->service_id,
+                        'service_option' => $serviceRequest->service_option,
+                        'country'        => $serviceRequest->country,
+                        'state'          => $serviceRequest->state,
+                        'city'           => $serviceRequest->city,
+                        'area'           => $serviceRequest->area,
+                        'address'        => $serviceRequest->address,
+                        'latitude'       => $serviceRequest->latitude,
+                        'longitude'      => $serviceRequest->longitude,
+                        'vehicle_type'   => $serviceRequest->vehicle_type,
+                        'vehicle_make'   => $serviceRequest->vehicle_make,
+                        'vehicle_model'  => $serviceRequest->vehicle_model,
+                        'vehicle_year'   => $serviceRequest->vehicle_year,
+                        'vehicle_mileage' => $serviceRequest->vehicle_mileage,
+                        'vin'            => $serviceRequest->vin,
+                    ]
+                ]);
+
+                $defaultStatus = SupportTicketStatusMaster::query()
+                    ->where('master_id', ServiceTicketWorkflow::STATUS_MASTER_ID)
+                    ->whereRaw('LOWER(name) = ?', ['new'])
+                    ->where('status', 'active')
+                    ->orderBy('position', 'asc')
+                    ->first();
+
+                $ticketDescription = implode(PHP_EOL, array_filter([
+                    "Service option: {$serviceRequest->service_option}",
+                    "Vehicle: {$serviceRequest->vehicle_type} / {$serviceRequest->vehicle_make} / {$serviceRequest->vehicle_model} / {$serviceRequest->vehicle_year}",
+                    "Mileage: {$serviceRequest->vehicle_mileage}",
+                    $serviceRequest->vin ? "VIN: {$serviceRequest->vin}" : null,
+                    $serviceRequest->service_option === 'mobile' ? "Address: {$serviceRequest->address}, {$serviceRequest->area}, {$serviceRequest->city}, {$serviceRequest->state}, {$serviceRequest->country}" : null,
+                    $serviceRequest->service_option === 'mobile' ? "Coordinates: {$serviceRequest->latitude}, {$serviceRequest->longitude}" : null,
+                ]));
+
+                $ticket = SupportTicketModel::create([
+                    'source_id' => $inboxMessage->id,
+                    'customer_id' => $serviceRequest->customer_id,
+                    'subject' => $subject,
+                    'type' => 'service',
+                    'sub_type' => 'service',
+                    'request_type' => 'service_request',
+                    'priority' => 'medium',
+                    'description' => $ticketDescription ?: 'Service request submitted from website.',
+                    'status' => $defaultStatus?->id ?? ServiceTicketWorkflow::STATUS_NEW,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $inboxMessage->update([
+                    'related_ticket_id' => $ticket->id,
+                    'convert_type' => 'ticket',
+                    'convert_sub_type' => 'service',
+                    'status' => 'converted',
+                ]);
+
+                $createdTicket = $ticket;
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Service request pipeline creation failed', [
+                'customer_id' => auth('customer')->id(),
+                'service_id' => $request->input('service_id'),
+                'error' => $exception->getMessage(),
+            ]);
+            Toastr::error(translate('something_went_wrong'));
+            return redirect()->back();
+        }
+
+        if ($createdTicket) {
+            app(ServiceWorkflowNotificationService::class)->notify(
+                ticket: $createdTicket,
+                eventKey: 'ticket_created',
+                title: 'Service Ticket Created',
+                message: "Your service ticket #{$createdTicket->id} has been created.",
+                link: route('account-tickets'),
+                recipients: [['type' => 'customer', 'id' => $createdTicket->customer_id]]
+            );
+        }
 
         Toastr::success(translate('Service request created successfully.'));
 

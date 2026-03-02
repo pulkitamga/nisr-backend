@@ -52,7 +52,7 @@
     );
     @endphp
 
-    <div class="__inline-23">
+    <div class="__inline-23" dir="{{ Session::get('direction') === 'rtl' ? 'rtl' : 'ltr' }}">
         <div class="container mt-4 rtl text-align-direction">
             <div class="row {{Session::get('direction') === "rtl" ? '__dir-rtl' : ''}}">
                 <div class="col-lg-9">
@@ -386,24 +386,24 @@
 
                                             <div class="form-group col-lg-6">
                                                 <label>{{ translate('address') }} <span class="text-danger">*</span></label>
-                                                <textarea class="form-control" name="address" id="address_details" rows="1" placeholder="Building, Landmark, etc."></textarea>
+                                                <textarea class="form-control" name="address" id="address_details" rows="1" placeholder="{{ translate('Building, Landmark, etc.') }}"></textarea>
                                             </div>
 
                                         </div>
                                         @if(getWebConfig('map_api_status') == 1)
                                         <div class="row">
                                             <div class="form-group col-lg-6 col-md-12 col-sm-12">
-                                                <label>Latitude:</label>
+                                                <label>{{ translate('Latitude') }}:</label>
                                                 <input type="text" id="latitude" name="latitude" class="form-control mb-2" readonly />
                                             </div>
                                             <div class="form-group col-lg-6 col-md-12 col-sm-12">
 
-                                                <label>Longitude:</label>
+                                                <label>{{ translate('Longitude') }}:</label>
                                                 <input type="text" id="longitude" name="longitude" class="form-control mb-2" readonly />
                                             </div>
                                         </div>
                                         <div class="form-group location-map-canvas-area map-area-alert-border">
-                                            <input type="text" id="pac-input" placeholder="Search location" class="form-control mb-2" />
+                                            <input type="text" id="pac-input" placeholder="{{ translate('Search location') }}" class="form-control mb-2" />
                                             <div id="location_map_canvas" style="height: 300px; width: 100%;"></div>
                                         </div>
                                         @endif
@@ -420,10 +420,10 @@
                                                 <label class="form-label">{{ translate('Vehicle Type') }} <span class="input-required-icon">*</span>
                                                 </label>
                                                 <select name="vehicle_type" class="form-control" required>
-                                                    <option value="Sedan">Sedan</option>
-                                                    <option value="SUV">SUV</option>
-                                                    <option value="Truck">Truck</option>
-                                                    <option value="Other">Other</option>
+                                                    <option value="Sedan">{{ translate('Sedan') }}</option>
+                                                    <option value="SUV">{{ translate('SUV') }}</option>
+                                                    <option value="Truck">{{ translate('Truck') }}</option>
+                                                    <option value="Other">{{ translate('Other') }}</option>
                                                 </select>
                                             </div>
                                             <div class="col-6 col-md-4">
@@ -984,9 +984,9 @@
             if (!isLoggedIn) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Login First',
-                    text: 'You need to login to request a service.',
-                    confirmButtonText: 'Go to Login'
+                    title: @json(translate('Login First')),
+                    text: @json(translate('You need to login to request a service.')),
+                    confirmButtonText: @json(translate('Go to Login'))
                 }).then((result) => {
                     if (result.isConfirmed) {
                         window.location.href = "{{ route('customer.auth.login') }}";
@@ -995,13 +995,13 @@
                 return;
             }
             Swal.fire({
-                title: 'Are you sure?',
-                text: 'You want to confirm this service request?',
+                title: @json(translate('Are you sure?')),
+                text: @json(translate('You want to confirm this service request?')),
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, Confirm'
+                confirmButtonText: @json(translate('Yes, Confirm'))
             }).then((result) => {
                 if (result.isConfirmed) {
                     setTimeout(() => {
@@ -1030,6 +1030,10 @@
         const makeSelect = document.getElementById('makeSelect');
         const modelSelect = document.getElementById('modelSelect');
         const makeNameInput = document.getElementById('vehicle_make_name'); // hidden input for make name
+        const selectModelLabel = @json(translate('Select Model'));
+        const selectStateLabel = @json(translate('Select State'));
+        const selectCityLabel = @json(translate('Select City'));
+        const selectAreaLabel = @json(translate('Select Area'));
 
         makeSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
@@ -1037,7 +1041,7 @@
             makeNameInput.value = makeName;
 
             const makeId = this.value;
-            modelSelect.innerHTML = '<option value="" disabled selected>Select Model</option>';
+            modelSelect.innerHTML = `<option value="" disabled selected>${selectModelLabel}</option>`;
             if (makeId && allModels[makeId]) {
                 allModels[makeId].forEach(model => {
                     const option = document.createElement('option');
@@ -1063,9 +1067,9 @@
                 let countryName = $(this).find('option:selected').data('name');
                 $('#country_name').val(countryName);
 
-                $('#address-state').empty().append('<option value="">Select State</option>');
-                $('#address-city').empty().append('<option value="">Select City</option>');
-                $('#address-area').empty().append('<option value="">Select Area</option>');
+                $('#address-state').empty().append(`<option value="">${selectStateLabel}</option>`);
+                $('#address-city').empty().append(`<option value="">${selectCityLabel}</option>`);
+                $('#address-area').empty().append(`<option value="">${selectAreaLabel}</option>`);
 
                 $.get(getStatesURL, {
                     country: countryCode
@@ -1082,8 +1086,8 @@
                 let stateName = $(this).find('option:selected').data('name');
                 $('#state_name').val(stateName);
 
-                $('#address-city').empty().append('<option value="">Select City</option>');
-                $('#address-area').empty().append('<option value="">Select Area</option>');
+                $('#address-city').empty().append(`<option value="">${selectCityLabel}</option>`);
+                $('#address-area').empty().append(`<option value="">${selectAreaLabel}</option>`);
 
                 $.get(getCitiesURL, {
                     state_id: stateId
@@ -1100,7 +1104,7 @@
                 let cityName = $(this).find('option:selected').data('name');
                 $('#city_name').val(cityName);
 
-                $('#address-area').empty().append('<option value="">Select Area</option>');
+                $('#address-area').empty().append(`<option value="">${selectAreaLabel}</option>`);
 
                 $.get(getAreasURL, {
                     city_id: cityId

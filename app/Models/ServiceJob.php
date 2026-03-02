@@ -51,6 +51,11 @@ class ServiceJob extends Model
         return $this->belongsTo(Admin::class, 'technician_id');
     }
 
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'service_sku');
+    }
+
     public function activities()
     {
         return $this->hasMany(ServiceJobActivity::class, 'job_id');

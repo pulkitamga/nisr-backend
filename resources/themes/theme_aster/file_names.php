@@ -9,6 +9,8 @@ return [
     'terms_conditions_page' => 'theme-views.pages.terms-conditions',
     'cancellation_policy_page' => 'theme-views.pages.cancellation-policy',
     'shipping_policy_page' => 'theme-views.pages.shipping-policy',
+    'service_payment' => 'web-views.pages.service-payment',
+    'service_payment_success' => 'web-views.pages.service-payment-success',
     'user_account' => 'theme-views.users-profile.profile.update-user-profile',
     'user_profile' => 'theme-views.users-profile.profile.user-profile',
     'account_address_add' => 'theme-views.users-profile.profile.account-address-add',
