@@ -12292,4 +12292,5 @@ return [
 	"invalid_permission_selected" => "Invalid permission selected",
 	"Supervisor" => "Supervisor",
 	"Department Head For Escalation" => "Department Head For Escalation",
+	"custom_range" => "Custom range",
 ];
