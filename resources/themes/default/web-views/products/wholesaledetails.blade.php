@@ -158,6 +158,7 @@
                                                 data-display-text="{{ $displayText }}"
                                                 data-clean-variant="{{ $cleanVariant }}"
                                                 data-price="{{ $range->price_per_piece }}"
+                                                data-display-price="{{ webCurrencyConverterOnlyDigit($range->price_per_piece) }}"
                                                 data-min-qty="{{ $moqOverride ? 1 : $range->min_qty }}"
                                                 data-max-qty="{{ $range->max_qty }}"
                                                 data-range-id="{{ $range->id }}"
@@ -179,6 +180,7 @@
                                         $firstWp = $firstVariation['wholesaleProduct'] ?? null;
                                         $firstCleanVariant = $firstWp ? ($firstWp->resolved_variation_display ?? $firstWp->variation_type ?? '') : '';
                                         $firstResolvedVariationKey = $firstWp ? ($firstWp->resolved_variation_key ?? $firstWp->variation_key ?? '__default__') : '__default__';
+                                        $initialQuantity = $moqOverride ? 1 : ($firstRange ? $firstRange->min_qty : 1);
                                     @endphp
                                     
                                     @if($firstRange)
@@ -230,7 +232,7 @@
                                     <div><strong>Total Price:</strong></div>
                                     <div class="product-price" id="total-price">
                                         @if($firstRange ?? null)
-                                            {{ getCurrencySymbol() }}{{ number_format($firstRange->price_per_piece * ($moqOverride ? 1 : $firstRange->min_qty), 2) }}
+                                            {{ setCurrencySymbol(amount: webCurrencyConverterOnlyDigit($firstRange->price_per_piece * $initialQuantity), currencyCode: getCurrencyCode(type: 'web'), type: 'web') }}
                                         @endif
                                     </div>
                                 </div>
@@ -252,6 +254,7 @@
                                     <input type="hidden" name="tax_model" value="{{ $baseProduct->tax_model }}">
                                     <input type="hidden" name="thumbnail" value="{{ getStorageImages(path: $baseProduct->thumbnail_full_url, type: 'product') }}">
                                     <input type="hidden" name="price" value="{{ $firstRange->price_per_piece ?? 0 }}" id="price-input">
+                                    <input type="hidden" value="{{ webCurrencyConverterOnlyDigit($firstRange ? $firstRange->price_per_piece : 0) }}" id="display-price-input">
                                     <input type="hidden" name="discount" value="{{ getProductPriceByType(product: $baseProduct, type: 'discount', result: 'value') }}">
                                     <input type="hidden" name="shipping_cost" value="0">
                                     <input type="hidden" name="price_range_id" value="{{ $firstRange->id ?? 0 }}" id="price-range-id">
@@ -305,6 +308,10 @@
 <script>
     // Current selected variation index
     let currentVariationIndex = 0;
+    const webCurrencySymbol = @json(getCurrencySymbol(type: 'web'));
+    const webCurrencyPosition = @json(getWebConfig('currency_symbol_position') ?? 'left');
+    const webCurrencySpaceEnabled = @json((string)(getWebConfig('currency_symbol_space') ?? '0') === '1');
+    const webCurrencyDecimals = Number(@json((int)(getWebConfig('decimal_point_settings') ?? 2)));
     
 // Select variation function
 function selectVariation(button) {
@@ -321,6 +328,7 @@ function selectVariation(button) {
     const variationKey = button.getAttribute('data-variation-key');
     const displayText = button.getAttribute('data-display-text');
     const price = button.getAttribute('data-price');
+    const displayPrice = button.getAttribute('data-display-price');
     const minQty = button.getAttribute('data-min-qty');
     const maxQty = button.getAttribute('data-max-qty');
     const rangeId = button.getAttribute('data-range-id');
@@ -330,7 +338,7 @@ function selectVariation(button) {
     
     // Update price display
     const priceElement = document.getElementById('current-price');
-    priceElement.textContent = formatPrice(price);
+    priceElement.textContent = formatPrice(displayPrice);
     
     // Update MOQ info
     const moqInfo = document.getElementById('moq-info');
@@ -352,6 +360,7 @@ function selectVariation(button) {
     // Update hidden form fields
     document.getElementById('variant-input').value = variationKey; // Full variation key
     document.getElementById('price-input').value = price;
+    document.getElementById('display-price-input').value = displayPrice;
     document.getElementById('price-range-id').value = rangeId;
     
     // Calculate and update total price
@@ -385,19 +394,30 @@ function selectVariation(button) {
     // Calculate total price function
     function calculateTotalPrice() {
         const quantityInput = document.getElementById('quantity-input');
-        const priceInput = document.getElementById('price-input');
+        const displayPriceInput = document.getElementById('display-price-input');
         const totalPriceElement = document.getElementById('total-price');
         
         const quantity = parseInt(quantityInput.value) || parseInt(quantityInput.min);
-        const price = parseFloat(priceInput.value) || 0;
+        const price = parseFloat(displayPriceInput.value) || 0;
         const total = quantity * price;
         
-        totalPriceElement.textContent = '{{ getCurrencySymbol() }}' + total.toFixed(2);
+        totalPriceElement.textContent = formatPrice(total);
     }
     
     // Format price function
     function formatPrice(price) {
-        return '{{ getCurrencySymbol() }}' + parseFloat(price).toFixed(2);
+        const amount = Number.parseFloat(price) || 0;
+        const decimalPlaces = Number.isFinite(webCurrencyDecimals) ? webCurrencyDecimals : 2;
+        const formattedAmount = amount
+            .toFixed(decimalPlaces)
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const space = webCurrencySpaceEnabled ? ' ' : '';
+
+        if (webCurrencyPosition === 'right') {
+            return `${formattedAmount}${space}${webCurrencySymbol}`;
+        }
+
+        return `${webCurrencySymbol}${space}${formattedAmount}`;
     }
     
     // Quantity input change event

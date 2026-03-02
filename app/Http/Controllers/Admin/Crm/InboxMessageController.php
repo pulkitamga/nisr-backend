@@ -234,7 +234,7 @@ class InboxMessageController extends BaseController
         $authUser = auth('admin')->user();
         $owner = $message->owner;
 
-        if (!$owner || (int)$owner->admin_role_id !== $this->supervisorRoleId()) {
+        if (!$owner || !$this->isSupervisor($owner)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Assign a supervisor as owner first.',
@@ -334,7 +334,7 @@ class InboxMessageController extends BaseController
             }
 
             $owner = $message->owner;
-            if (!$owner || (int)$owner->admin_role_id !== $this->supervisorRoleId()) {
+            if (!$owner || !$this->isSupervisor($owner)) {
                 $skipped[] = $id;
                 continue; // ya chaho to separate message bhej sakte ho
             }
@@ -1059,17 +1059,17 @@ class InboxMessageController extends BaseController
             return response()->json(['status' => false, 'message' => 'Ticket not found'], 404);
         }
 
-        if (empty($ticket->department_id)) {
-            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
-        }
-
         $owner = Admin::find($request->employee_id);
         if (!$owner) {
             return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
         }
 
-        if ((int)$owner->admin_role_id !== $this->supervisorRoleId()) {
-            return response()->json(['status' => false, 'message' => 'Owner must be a supervisor.'], 422);
+        if (!$this->isSupervisor($owner)) {
+            return response()->json(['status' => false, 'message' => 'Owner must be marked as supervisor in employee profile.'], 422);
+        }
+
+        if (!empty($ticket->department_id) && (int)$owner->department_id !== (int)$ticket->department_id) {
+            return response()->json(['status' => false, 'message' => 'Owner must belong to the selected department.'], 422);
         }
 
         $ticket->owner_id = $request->employee_id;
@@ -1096,14 +1096,15 @@ class InboxMessageController extends BaseController
 
     public function getEmployeesByDepartment(Request $request)
     {
-        if (empty($request->department_id)) {
+        $isOwnerAssignment = $request->input('assignment') === 'owner';
+        if (empty($request->department_id) && !$isOwnerAssignment) {
             return response()->json([]);
         }
 
-        $filters = [
-            'department_id' => $request->department_id,
-            'admin_role_id' => $this->departmentEmployeeRoleId(),
-        ];
+        $filters = [];
+        if (!empty($request->department_id)) {
+            $filters['department_id'] = $request->department_id;
+        }
         $employees = $this->adminRepo->getEmployeeListWhere(
             ['id' => 'desc'],
             null,
@@ -1111,6 +1112,15 @@ class InboxMessageController extends BaseController
             [],
             'all'
         );
+        $employees = $employees
+            ->filter(fn($employee) => (int)($employee->admin_role_id ?? 0) !== 1)
+            ->values();
+        if ($isOwnerAssignment) {
+            $employees = $employees
+                ->filter(fn($employee) => $this->isSupervisor($employee))
+                ->values();
+        }
+
         if ($request->filled('head_id')) {
             $employees = $employees->where('id', '!=', $request->head_id)->values();
         }
@@ -1125,6 +1135,11 @@ class InboxMessageController extends BaseController
     private function supervisorRoleId(): int
     {
         return defined('DEPARTMENT_HEAD_ROLE_ID') ? (int)DEPARTMENT_HEAD_ROLE_ID : 8;
+    }
+
+    private function isSupervisor(?Admin $admin): bool
+    {
+        return (bool)($admin?->is_supervisor ?? false);
     }
 
     private function departmentEmployeeRoleId(): int

@@ -12290,5 +12290,7 @@ return [
 	"role_is_assigned_to_admin_users_reassign_before_delete" => "Role is assigned to admin users reassign before delete",
 	"this_role_already_exists" => "This role already exists",
 	"invalid_permission_selected" => "Invalid permission selected",
+	"Supervisor" => "Supervisor",
+	"Department Head For Escalation" => "Department Head For Escalation",
 	"custom_range" => "Custom range",
 ];

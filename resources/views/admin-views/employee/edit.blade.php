@@ -68,11 +68,30 @@
                                 <div class="form-group">
                                     <label for="role_id" class="title-color">{{translate('department')}}</label>
                                     <select class="form-control" name="department_id" id="department_id">
-                                        <option value="0" selected disabled>{{'---'.translate('select').'---'}}</option>
+                                        <option value="0" {{ (int)$employee['department_id'] === 0 ? 'selected' : '' }}>{{'---'.translate('select').'---'}}</option>
                                         @foreach($departments as $dept)
                                             <option value="{{$dept->id}}" {{$dept['id']==$employee['department_id']?'selected':''}}>{{ $dept->name }}</option>
                                         @endforeach
                                     </select>
+                                    @if($departments->isEmpty())
+                                        <small class="text-muted">No departments found. You can save employee without selecting one.</small>
+                                    @endif
+                                </div>
+                                <div class="form-group mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1" id="is_supervisor" name="is_supervisor" {{ old('is_supervisor', $employee->is_supervisor ?? false) ? 'checked' : '' }}>
+                                        <label class="form-check-label title-color" for="is_supervisor">
+                                            {{ translate('Supervisor') }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1" id="is_department_head" name="is_department_head" {{ old('is_department_head', $isDepartmentHead ?? false) ? 'checked' : '' }}>
+                                        <label class="form-check-label title-color" for="is_department_head">
+                                            {{ translate('Department Head For Escalation') }}
+                                        </label>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="identify_type" class="title-color">{{translate('identify_type')}}</label>
@@ -201,6 +220,7 @@
                     e.preventDefault(); // stop unselect
                 }
             });
+
         });
     </script>
     

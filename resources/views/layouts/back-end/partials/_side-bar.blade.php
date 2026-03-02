@@ -1772,16 +1772,16 @@
                                             </span>
                                         </a>
                                     </li>
-                                    <!-- <li class="nav-item {{ Request::is('admin/warranty/claim/triage-pending') ? 'active' : '' }}">
-                                    <a class="nav-link" href="{{ route('admin.warranty.claim.triage-pending') }}" title="{{ translate('triage_pending') }}">
-                                        <span class="tio-circle nav-indicator-icon"></span>
-                                        <span class="text-truncate">{{ translate('triage_pending') }}
-                                            <span class="badge badge-soft-info badge-pill ml-1">
-                                                {{ \App\Models\WarrantyClaim::where('status', 'triage_pending')->count() }}
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/triage-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.triage-pending') }}" title="{{ translate('triage_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('triage_pending') }}
+                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'triage_pending')->count() }}
+                                                </span>
                                             </span>
-                                        </span>
-                                    </a>
-                                </li> -->
+                                        </a>
+                                    </li>
                                     <li
                                         class="nav-item {{ Request::is('admin/warranty/claim/approved') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.warranty.claim.approved') }}"
@@ -1827,6 +1827,94 @@
                                             <span class="text-truncate">{{ translate('repair_pending') }}
                                                 <span class="badge badge-soft-info badge-pill ml-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'repair_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/replacement-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.replacement-pending') }}"
+                                            title="{{ translate('replacement_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('replacement_pending') }}
+                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'replacement_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-customer') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-customer') }}"
+                                            title="{{ translate('waiting_customer') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('waiting_customer') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_customer')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-parts') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-parts') }}"
+                                            title="{{ translate('waiting_parts') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('waiting_parts') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_parts')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-payment') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-payment') }}"
+                                            title="{{ translate('waiting_payment') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('waiting_payment') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_payment')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/diagnosis-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.diagnosis-pending') }}"
+                                            title="{{ translate('diagnosis_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('diagnosis_pending') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'diagnosis_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/qc-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.qc-pending') }}"
+                                            title="{{ translate('qc_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('qc_pending') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'qc_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/shipped-ready') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.shipped-ready') }}"
+                                            title="{{ translate('shipped_ready') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('shipped_ready') }}
+                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'shipped_ready')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/dispatched') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.dispatched') }}"
+                                            title="{{ translate('dispatched') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('dispatched') }}
+                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'dispatched')->count() }}
                                                 </span>
                                             </span>
                                         </a>

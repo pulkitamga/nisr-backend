@@ -29,7 +29,7 @@ class DepartmentAddRequest extends FormRequest
         return [
             'name' => 'required|unique:departments',
             'status' => 'required',
-            'head_id' => 'required',
+            'head_id' => 'nullable|integer|exists:admins,id',
         ];
     }
 
@@ -39,7 +39,6 @@ class DepartmentAddRequest extends FormRequest
             'name.required' => translate('The_department_name_field_is_required'),
             'name.unique' => translate('The_department_name_has_already_been_taken'),
             'status.required' => translate('The_status_field_is_required'),
-            'head_id.required' => translate('The_department_head_field_is_required'),
         ];
     }
 

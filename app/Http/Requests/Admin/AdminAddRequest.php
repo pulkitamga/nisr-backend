@@ -30,7 +30,9 @@ class AdminAddRequest extends FormRequest
             'image' => 'required',
             'email' => 'required|email|unique:admins',
             'password' => 'required|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)(?!.*\s).{8,}$/|same:confirm_password',
-            'phone'=>'required|min:4|max:20'
+            'phone'=>'required|min:4|max:20',
+            'is_supervisor' => 'nullable|boolean',
+            'is_department_head' => 'nullable|boolean',
         ];
     }
 

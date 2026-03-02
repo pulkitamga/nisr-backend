@@ -22,33 +22,48 @@ use Illuminate\Support\Facades\Validator;
 
 class WarrantyClaimController extends Controller
 {
-    // All Claims
-    public function all(Request $request)
+    private function buildClaimsQuery(Request $request, ?string $status = null)
     {
         $query = WarrantyClaim::with('warranty.user', 'branch');
-        if ($request->searchValue) {
+
+        if ($status !== null) {
+            $query->where('status', $status);
+        } elseif ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('searchValue')) {
             $search = $request->searchValue;
             $query->where(function ($q) use ($search) {
                 $q->where('claim_number', 'like', "%{$search}%")
-                    ->orWhereHas('warranty', function ($qw) use ($search) {
-                        $qw->where('serial_number', 'like', "%{$search}%");
-                    });
+                    ->orWhere('serial_number', 'like', "%{$search}%");
             });
         }
 
-        if ($request->status && $request->status != 'all') {
-            $query->where('status', $request->status);
-        }
-        if ($request->fhilter_date) {
-            [$from, $to] = explode(' - ', $request->fhilter_date);
-            $query->whereBetween('submitted_at', [$from, $to]);
-        }
-
-        if ($request->choose_first) {
-            $query->take($request->choose_first);
+        if ($request->filled('fhilter_date')) {
+            $dates = explode(' - ', $request->fhilter_date);
+            if (count($dates) === 2) {
+                $query->whereBetween('submitted_at', [$dates[0], $dates[1]]);
+            }
         }
 
-        $claims = $query->paginate(20)->appends($request->query());
+        if ($request->filled('choose_first')) {
+            $query->limit((int)$request->choose_first);
+        }
+
+        return $query;
+    }
+
+    private function renderStatusList(Request $request, string $status)
+    {
+        $claims = $this->buildClaimsQuery($request, $status)->paginate(20)->appends($request->query());
+        return view('admin-views.warranty.claim-list', compact('claims'));
+    }
+
+    // All Claims
+    public function all(Request $request)
+    {
+        $claims = $this->buildClaimsQuery($request)->paginate(20)->appends($request->query());
 
         return view('admin-views.warranty.claim-list', compact('claims'));
     }
@@ -135,82 +150,95 @@ class WarrantyClaimController extends Controller
     // New Claims
     public function new(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'new')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'new');
     }
 
     // Triage Pending
     public function triagePending(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'triage_pending')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'triage_pending');
     }
 
     // Approved
     public function approved(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'approved')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'approved');
     }
 
     // RMA Issued
     public function rmaIssued(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'rma_issued')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'rma_issued');
     }
 
     // Received
     public function received(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'received')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'received');
     }
 
     // Repair Pending
     public function repairPending(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'repair_pending')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'repair_pending');
+    }
+
+    public function replacementPending(Request $request)
+    {
+        return $this->renderStatusList($request, 'replacement_pending');
+    }
+
+    public function waitingCustomer(Request $request)
+    {
+        return $this->renderStatusList($request, 'waiting_customer');
+    }
+
+    public function waitingParts(Request $request)
+    {
+        return $this->renderStatusList($request, 'waiting_parts');
+    }
+
+    public function waitingPayment(Request $request)
+    {
+        return $this->renderStatusList($request, 'waiting_payment');
+    }
+
+    public function diagnosisPending(Request $request)
+    {
+        return $this->renderStatusList($request, 'diagnosis_pending');
+    }
+
+    public function qcPending(Request $request)
+    {
+        return $this->renderStatusList($request, 'qc_pending');
+    }
+
+    public function shippedReady(Request $request)
+    {
+        return $this->renderStatusList($request, 'shipped_ready');
+    }
+
+    public function dispatched(Request $request)
+    {
+        return $this->renderStatusList($request, 'dispatched');
     }
 
     // Resolved
     public function resolved(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'resolved')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'resolved');
     }
 
     // Closed
     public function closed(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'closed')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'closed');
     }
 
     // Rejected
     public function rejected(Request $request)
     {
-        $query = WarrantyClaim::where('status', 'rejected')->with('warranty.user');
-        if ($request->search) $query->where('claim_number', 'like', '%' . $request->search . '%');
-        $claims = $query->paginate(20);
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return $this->renderStatusList($request, 'rejected');
     }
 
     // View Claim

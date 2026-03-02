@@ -217,6 +217,8 @@
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-owner-btn"
                                     data-id="{{ $msg->id }}"
+                                    data-owner-id="{{ $msg->owner_id ?? '' }}"
+                                    data-department-id="{{ $msg->department_id ?? '' }}"
                                     data-bs-toggle="false"
                                     data-bs-target="none">
                                     {{ translate('Assign Owner') }}

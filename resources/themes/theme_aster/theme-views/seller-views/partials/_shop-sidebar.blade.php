@@ -6,7 +6,7 @@
         <div class="form-group">
             <label for="min_price" class="mb-1">{{translate('min')}}</label>
             <input type="number" id="min_price" class="form-control form-control--sm"
-                   placeholder="$0">
+                   placeholder="{{ setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode(type: 'web'), type: 'web') }}">
         </div>
         <div class="mb-2">-</div>
         <div class="form-group">

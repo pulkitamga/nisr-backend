@@ -27,6 +27,8 @@ class AdminUpdateRequest extends FormRequest
         $rules = [
             'name' => 'required',
             'role_id' => ['required', $roleRule],
+            'is_supervisor' => 'nullable|boolean',
+            'is_department_head' => 'nullable|boolean',
             'email' => [
                 'required',
                 'email',

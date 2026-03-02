@@ -261,9 +261,13 @@ $(document).on('click', '.mark-spam-btn', function () {
 
 $(document).on('click', '.assign-owner-btn', function () {
     let ticketId = $(this).data('id');
+    let ownerId = $(this).data('owner-id') || $(this).closest('tr').data('owner-id') || '';
     let form = $('#updateTicketOwnerForm');
 
     form.find('#owner_ticket_id').val(ticketId);
+    form.find('#owner-employee-id').empty().append('<option value="">Select Supervisor</option>');
+    loadOwners('', ownerId);
+
     $('#showOwnerModal').modal('show');
 });
 
@@ -297,7 +301,41 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
     });
 });
 
+function mapEmployeeResponse(res) {
+    if (Array.isArray(res)) {
+        return res;
+    }
+    if (res && Array.isArray(res.employee)) {
+        return res.employee;
+    }
+    if (res && Array.isArray(res.data)) {
+        return res.data;
+    }
+    return [];
+}
 
+function loadOwners(deptId, selectedOwnerId = null) {
+    const employeeRouteUrl = $('#getEmployeeRoute').data('url');
+    $('#owner-employee-id').html('<option value="">Loading...</option>');
+
+    $.ajax({
+        url: employeeRouteUrl,
+        type: "GET",
+        data: { department_id: deptId || '', assignment: 'owner' },
+        success: function (res) {
+            const owners = mapEmployeeResponse(res);
+            $('#owner-employee-id').html('<option value="">Select Supervisor</option>');
+
+            $.each(owners, function (key, owner) {
+                const selected = selectedOwnerId && String(selectedOwnerId) === String(owner.id) ? 'selected' : '';
+                $('#owner-employee-id').append(`<option value="${owner.id}" ${selected}>${owner.name}</option>`);
+            });
+        },
+        error: function () {
+            $('#owner-employee-id').html('<option value="">Select Supervisor</option>');
+        }
+    });
+}
 
 $(document).on('click', '.assign-employee-btn', function () {
     let ticketId = $(this).data('id');
@@ -495,6 +533,32 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    const toggleBulkReasonByTypeAndSubtype = () => {
+        const type = typeSelect.value;
+        const subType = subTypeSelect.value;
+
+        if (type === "ticket" && subType === "retail") {
+            bulkReasonWrapper.style.display = "block";
+            const bulkreasons = [
+                "Complaint",
+                "Delivery Issue",
+                "Return/RMA",
+                "Billing/Refund",
+                "Product Issue/Defect",
+                "Setup/How-to",
+                "General Inquiry"
+            ];
+            bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+            bulkreasons.forEach(opt => {
+                bulkReasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
+            });
+            return;
+        }
+
+        bulkReasonWrapper.style.display = "none";
+        bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+    };
+
     // Type change
     typeSelect.addEventListener("change", function () {
         const type = this.value;
@@ -516,84 +580,81 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             subTypeWrapper.style.display = "none";
         }
+
+        toggleBulkReasonByTypeAndSubtype();
     });
 
     // Sub-type change using event delegation
     document.addEventListener("change", function (e) {
         if (e.target && e.target.id === "bulkSubTypeSelect") {
-            const value = e.target.value;
-
-            if (value === "retail") {
-                bulkReasonWrapper.style.display = "block";
-                const bulkreasons = [
-                    "Complaint",
-                    "Delivery Issue",
-                    "Return/RMA",
-                    "Billing/Refund",
-                    "Product Issue/Defect",
-                    "Setup/How-to",
-                    "General Inquiry"
-                ];
-                bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
-                bulkreasons.forEach(opt => {
-                    bulkReasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
-                });
-            } else {
-                bulkReasonWrapper.style.display = "none";
-                bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
-            }
+            toggleBulkReasonByTypeAndSubtype();
         }
     });
 });
 
 
-document.getElementById("typeSelect").addEventListener("change", function () {
-    let type = this.value;
-    let subTypeWrapper = document.getElementById("subTypeWrapper");
-    let subTypeSelect = document.getElementById("subTypeSelect");
-    let reasonWrapper = document.getElementById("reasonWrapper");
-    let reasonSelect = document.getElementById("reasonSelect");
+const typeSelect = document.getElementById("typeSelect");
+const subTypeWrapper = document.getElementById("subTypeWrapper");
+const subTypeSelect = document.getElementById("subTypeSelect");
+const reasonWrapper = document.getElementById("reasonWrapper");
+const reasonSelect = document.getElementById("reasonSelect");
 
-    subTypeSelect.innerHTML = '<option value="">-- Select Sub-Type --</option>';
-    reasonWrapper.style.display = "none";
-    reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+if (typeSelect && subTypeWrapper && subTypeSelect && reasonWrapper && reasonSelect) {
+    const renderReasonOptions = () => {
+        let reasons = [
+            "Complaint",
+            "Delivery Issue",
+            "Return/RMA",
+            "Billing/Refund",
+            "Product Issue/Defect",
+            "Setup/How-to",
+            "General Inquiry"
+        ];
+        reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+        reasons.forEach(opt => {
+            reasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
+        });
+    };
 
-    if (type === "lead") {
-        subTypeWrapper.style.display = "block";
-        ["Retail", "Wholesale"].forEach(opt => {
-            subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
-        });
-    } else if (type === "ticket") {
-        subTypeWrapper.style.display = "block";
-        ["Support", "Complaint", "Career", "Service", "Retail", "Wholesale"].forEach(opt => {
-            subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
-        });
+    const toggleReasonByTypeAndSubtype = () => {
+        if (typeSelect.value === "ticket" && subTypeSelect.value === "retail") {
+            reasonWrapper.style.display = "block";
+            renderReasonOptions();
+            return;
+        }
 
-        subTypeSelect.addEventListener("change", function () {
-            if (this.value === "retail") {
-                reasonWrapper.style.display = "block";
-                let reasons = [
-                    "Complaint",
-                    "Delivery Issue",
-                    "Return/RMA",
-                    "Billing/Refund",
-                    "Product Issue/Defect",
-                    "Setup/How-to",
-                    "General Inquiry"
-                ];
-                reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
-                reasons.forEach(opt => {
-                    reasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
-                });
-            } else {
-                reasonWrapper.style.display = "none";
-                reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
-            }
-        });
-    } else {
-        subTypeWrapper.style.display = "none";
-    }
-});
+        reasonWrapper.style.display = "none";
+        reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+    };
+
+    typeSelect.addEventListener("change", function () {
+        let type = this.value;
+
+        subTypeSelect.innerHTML = '<option value="">-- Select Sub-Type --</option>';
+        reasonWrapper.style.display = "none";
+        reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+
+        if (type === "lead") {
+            subTypeWrapper.style.display = "block";
+            ["Retail", "Wholesale"].forEach(opt => {
+                subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
+            });
+        } else if (type === "ticket") {
+            subTypeWrapper.style.display = "block";
+            ["Support", "Complaint", "Career", "Service", "Retail", "Wholesale"].forEach(opt => {
+                subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
+            });
+        } else {
+            subTypeWrapper.style.display = "none";
+        }
+
+        toggleReasonByTypeAndSubtype();
+    });
+
+    subTypeSelect.addEventListener("change", function () {
+        toggleReasonByTypeAndSubtype();
+    });
+}
 
 
 
@@ -622,20 +683,29 @@ $(document).ready(function () {
     });
 });
 
-let routeUrl = $('#getEmployeeRoute').data('url');
+let employeeRouteUrl = $('#getEmployeeRoute').data('url');
 
 function loadEmployees(deptId, headId = null) {
+    if (!deptId) {
+        $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+        return;
+    }
+
     $("#ticket-employee-id").html('<option value="">Loading...</option>');
 
     $.ajax({
-        url: routeUrl,
+        url: employeeRouteUrl,
         type: "GET",
-        data: { department_id: deptId, head_id: headId },
+        data: { department_id: deptId, head_id: headId, assignment: 'employee' },
         success: function (res) {
+            const employees = mapEmployeeResponse(res);
             $("#ticket-employee-id").html('<option value="">Select Employee</option>');
-            $.each(res, function (key, emp) {
+            $.each(employees, function (key, emp) {
                 $("#ticket-employee-id").append(`<option value="${emp.id}">${emp.name}</option>`);
             });
+        },
+        error: function () {
+            $("#ticket-employee-id").html('<option value="">Select Employee</option>');
         }
     });
 }
