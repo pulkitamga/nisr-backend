@@ -283,7 +283,7 @@
         let dealId = $(this).data('id');
 
         $.ajax({
-            url: '/admin/crm/deals/wholesale/request-quotation/' + dealId,
+            url: '/admin/crm/deals/retail/request-quotation/' + dealId,
             type: 'POST',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -323,4 +323,3 @@
     });
 </script>
 @endpush
-

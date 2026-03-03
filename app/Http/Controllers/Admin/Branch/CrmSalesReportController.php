@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Admin;
 use App\Models\Order;
-use App\Models\OrderDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -117,6 +116,9 @@ class CrmSalesReportController extends Controller
     private function getAgentSalesData($year, $month, $agents, $saleType = null)
     {
         $data = [];
+        $orderDetailsQtySub = DB::table('order_details')
+            ->select('order_id', DB::raw('SUM(qty) as order_total_qty'))
+            ->groupBy('order_id');
 
         foreach ($agents as $agent) {
             // Build query for this agent
@@ -130,44 +132,58 @@ class CrmSalesReportController extends Controller
 
             if ($saleType) {
                 if ($saleType === 'wholesale') {
-                    $query->where('order_amount', '>=', 10000)
-                        ->orWhereHas('details.product', function($q) {
-                            $q->where('minimum_order_qty', '>=', 10);
-                        });
+                    $query->where(function ($subQuery) {
+                        $subQuery->where('order_amount', '>=', 10000)
+                            ->orWhereHas('details.product', function ($q) {
+                                $q->where('minimum_order_qty', '>=', 10);
+                            });
+                    });
                 } else {
-                    $query->where('order_amount', '<', 10000)
-                        ->whereHas('details.product', function($q) {
-                            $q->where('minimum_order_qty', '<', 10);
-                        });
+                    $query->where(function ($subQuery) {
+                        $subQuery->where('order_amount', '<', 10000)
+                            ->whereHas('details.product', function ($q) {
+                                $q->where('minimum_order_qty', '<', 10);
+                            });
+                    });
                 }
             }
 
             // Group by period
             if ($month) {
-                $results = $query->select(
-                        DB::raw('DAY(created_at) as period'),
-                        DB::raw('SUM(order_amount) as total_sales'),
-                        DB::raw('COUNT(*) as total_orders'),
-                        DB::raw('(SELECT SUM(qty) FROM order_details WHERE order_id = orders.id) as total_quantity'),
+                $results = $query
+                    ->leftJoinSub($orderDetailsQtySub, 'order_detail_totals', function ($join) {
+                        $join->on('order_detail_totals.order_id', '=', 'orders.id');
+                    })
+                    ->select(
+                        DB::raw('DAY(orders.created_at) as period'),
+                        DB::raw('SUM(orders.order_amount) as total_sales'),
+                        DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                        DB::raw('SUM(COALESCE(order_detail_totals.order_total_qty, 0)) as total_quantity'),
                         DB::raw('CASE
-                            WHEN order_amount >= 10000 THEN "wholesale"
+                            WHEN orders.order_amount >= 10000 THEN "wholesale"
                             ELSE "retail"
                         END as sale_type')
                     )
                     ->groupBy('period', DB::raw('sale_type'))
+                    ->orderBy('period')
                     ->get();
             } else {
-                $results = $query->select(
-                        DB::raw('MONTH(created_at) as period'),
-                        DB::raw('SUM(order_amount) as total_sales'),
-                        DB::raw('COUNT(*) as total_orders'),
-                        DB::raw('(SELECT SUM(qty) FROM order_details WHERE order_id = orders.id) as total_quantity'),
+                $results = $query
+                    ->leftJoinSub($orderDetailsQtySub, 'order_detail_totals', function ($join) {
+                        $join->on('order_detail_totals.order_id', '=', 'orders.id');
+                    })
+                    ->select(
+                        DB::raw('MONTH(orders.created_at) as period'),
+                        DB::raw('SUM(orders.order_amount) as total_sales'),
+                        DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                        DB::raw('SUM(COALESCE(order_detail_totals.order_total_qty, 0)) as total_quantity'),
                         DB::raw('CASE
-                            WHEN order_amount >= 10000 THEN "wholesale"
+                            WHEN orders.order_amount >= 10000 THEN "wholesale"
                             ELSE "retail"
                         END as sale_type')
                     )
                     ->groupBy('period', DB::raw('sale_type'))
+                    ->orderBy('period')
                     ->get();
             }
 

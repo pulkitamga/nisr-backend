@@ -23,7 +23,7 @@
                         <label class="form-label">{{ translate('Select_Date') }}</label>
                         <div class="position-relative">
                             <span class="tio-calendar icon-absolute-on-right"></span>
-                            <input type="text" name="fhilter_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{request('fhilter_date')}}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
+                            <input type="text" name="filter_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{ request('filter_date', request('fhilter_date')) }}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
                         </div>
                     </div>
 
@@ -76,7 +76,7 @@
                 <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $messages->total() }}</span>
             </h5>
             <form action="{{ url()->current() }}" method="GET">
-                <input type="hidden" name="fhilter_date" value="{{request('fhilter_date')}}">
+                <input type="hidden" name="filter_date" value="{{ request('filter_date', request('fhilter_date')) }}">
                 <input type="hidden" name="Channel" value="{{request('Channel')}}">
                 <input type="hidden" name="status" value="{{request('status')}}">
                 <input type="hidden" name="choose_first" value="{{request('choose_first')}}">
@@ -93,7 +93,7 @@
             </form>
             <div class="dropdown">
                 <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.crm.messages.export', [ 
-                'fhilter_date' => request('fhilter_date'),
+                'filter_date' => request('filter_date', request('fhilter_date')),
                  'Channel' => request('Channel'),
                         'status'       => request('status'),
                         'choose_first' => request('choose_first'),
@@ -299,9 +299,9 @@
 <span id="ignoreRoute" data-url="{{ route('admin.crm.ignore') }}"></span>
 <span id="spamRoute" data-url="{{ route('admin.crm.mark-spam') }}"></span>
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
-<span id="assignOwnerRoute" data-url="{{ route('admin.crm.owner-assign') }}"></span>
-<span id="assignEmployeeRoute" data-url="{{ route('admin.crm.employee-assign') }}"></span>
-<span id="assignDepartmentRoute" data-url="{{ route('admin.crm.update-ticket-department') }}"></span>
+<span id="assignOwnerRoute" data-url="{{ route('admin.crm.assignment-update') }}"></span>
+<span id="assignEmployeeRoute" data-url="{{ route('admin.crm.assignment-update') }}"></span>
+<span id="assignDepartmentRoute" data-url="{{ route('admin.crm.assignment-update') }}"></span>
 <span id="getUserRoute" data-route="{{ url('admin/crm/inbox/user-info') }}"></span>
 <span id="connectUserRoute" data-route="{{ route('admin.crm.inbox.connect-user') }}"></span>
 
@@ -315,5 +315,3 @@
 </script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 @endpush
-
-

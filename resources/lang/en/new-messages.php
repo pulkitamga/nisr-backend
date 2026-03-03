@@ -12293,4 +12293,5 @@ return [
 	"Supervisor" => "Supervisor",
 	"Department Head For Escalation" => "Department Head For Escalation",
 	"custom_range" => "Custom range",
+	"diagnosis_pending" => "Diagnosis pending",
 ];
