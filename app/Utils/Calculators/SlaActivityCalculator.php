@@ -3,8 +3,8 @@
 namespace App\Utils\Calculators;
 
 use App\Models\SupportTicket;
-use App\Models\InboxActivities;
 use App\Models\InboxCall;
+use App\Models\SupportTicketStatusMaster;
 use Carbon\Carbon;
 
 class SlaActivityCalculator
@@ -30,9 +30,20 @@ class SlaActivityCalculator
 
     public function overdueSLAs()
     {
+        $openStatusIds = SupportTicketStatusMaster::query()
+            ->whereIn('name', ['open', 'in_progress'])
+            ->pluck('id')
+            ->map(fn($id) => (string)$id)
+            ->toArray();
+
         return $this->getQuery(SupportTicket::class)
             ->whereRaw('NOW() > DATE_ADD(created_at, INTERVAL sla_hours HOUR)')
-            ->whereIn('status', ['open', 'in_progress'])
+            ->where(function ($query) use ($openStatusIds) {
+                $query->whereIn('status', ['open', 'in_progress']);
+                if (!empty($openStatusIds)) {
+                    $query->orWhereIn('status', $openStatusIds);
+                }
+            })
             ->count();
     }
 

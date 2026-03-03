@@ -193,12 +193,12 @@ class CalendarController extends Controller
                     $prefix = $meta['prefix'];
                     $routeName = $meta['routeName'];
 
-                    if ($isDeal && $main->deal_type) {
-                        $typePrefix = $main->deal_type === 'wholesale' ? 'WS' : 'RT';
+                    if ($isDeal) {
+                        $isWholesaleDeal = ($main->related_party_type ?? null) === 'company';
+                        $typePrefix = $isWholesaleDeal ? 'WS' : 'RT';
                         $prefix = "[$typePrefix] " . $prefix;
 
-                        // Correct Route
-                        $routeName = $main->deal_type === 'wholesale'
+                        $routeName = $isWholesaleDeal
                             ? 'admin.crm.deals.wholesale.view'
                             : 'admin.crm.deals.retail.view';
                     }
@@ -211,7 +211,7 @@ class CalendarController extends Controller
                         'description' => (string)($item->{$meta['titleField']} ?? ''),
                         'employee' => $item->employee->name ?? null,
                         'type' => $prefix,
-                        'deal_type' => $main->deal_type ?? 'retail',
+                        'deal_type' => ($main->related_party_type ?? null) === 'company' ? 'wholesale' : 'retail',
                     ];
                 }
             }
