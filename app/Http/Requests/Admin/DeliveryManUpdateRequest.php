@@ -45,6 +45,31 @@ class DeliveryManUpdateRequest extends FormRequest
             ],
             'phone' => 'required|max:20|min:4',
             'country_code' => 'required',
+            'identity_type' => 'nullable|in:passport,driving_license,nid,company_id',
+            'identity_number' => [
+                'nullable',
+                'string',
+                'max:50',
+                function ($attribute, $value, $fail) {
+                    $identityType = strtolower((string)$this->input('identity_type', ''));
+                    $identityNumber = trim((string)$value);
+
+                    if ($identityNumber === '') {
+                        return;
+                    }
+
+                    if ($identityType === 'nid') {
+                        if (!preg_match('/^[0-9]+$/', $identityNumber)) {
+                            $fail(translate('identity_number_must_be_numeric_for_nid'));
+                        }
+                        return;
+                    }
+
+                    if (!preg_match('/^[A-Za-z0-9\-\/\s]+$/', $identityNumber)) {
+                        $fail(translate('identity_number_must_be_alphanumeric_for_selected_type'));
+                    }
+                }
+            ],
         ];
         if ($this['password']) {
             $rules['password'] = 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)(?!.*\s).{8,}$/|same:confirm_password';
