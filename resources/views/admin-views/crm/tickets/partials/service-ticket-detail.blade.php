@@ -625,37 +625,47 @@
 @endsection
 
 @push('script')
+@php
+    $textNA = translate('N/A');
+    $textNone = translate('None');
+    $textSystem = translate('System');
+    $textMobile = translate('Mobile');
+    $textInShop = translate('In-shop');
+    $workflowStatusMap = [
+        'new' => translate('new'),
+        'assigned' => translate('assigned'),
+        'scheduled' => translate('scheduled'),
+        'ready_to_start' => translate('ready_to_start'),
+        'in_progress' => translate('in_progress'),
+        'qa_pending' => translate('qa_pending'),
+        'completed' => translate('completed'),
+        'closed' => translate('closed'),
+        'cancelled' => translate('cancelled'),
+    ];
+    $paymentStatusMap = [
+        'pending' => translate('pending'),
+        'paid' => translate('paid'),
+        'failed' => translate('failed'),
+        'refunded' => translate('refunded'),
+        'cancelled' => translate('cancelled'),
+    ];
+    $priorityMap = [
+        'low' => translate('low'),
+        'medium' => translate('medium'),
+        'high' => translate('high'),
+        'urgent' => translate('urgent'),
+    ];
+@endphp
 <script>
     $(document).ready(function() {
-        const textNA = @json(translate('N/A'));
-        const textNone = @json(translate('None'));
-        const textSystem = @json(translate('System'));
-        const textMobile = @json(translate('Mobile'));
-        const textInShop = @json(translate('In-shop'));
-        const workflowStatusMap = @json([
-            'new' => translate('new'),
-            'assigned' => translate('assigned'),
-            'scheduled' => translate('scheduled'),
-            'ready_to_start' => translate('ready_to_start'),
-            'in_progress' => translate('in_progress'),
-            'qa_pending' => translate('qa_pending'),
-            'completed' => translate('completed'),
-            'closed' => translate('closed'),
-            'cancelled' => translate('cancelled'),
-        ]);
-        const paymentStatusMap = @json([
-            'pending' => translate('pending'),
-            'paid' => translate('paid'),
-            'failed' => translate('failed'),
-            'refunded' => translate('refunded'),
-            'cancelled' => translate('cancelled'),
-        ]);
-        const priorityMap = @json([
-            'low' => translate('low'),
-            'medium' => translate('medium'),
-            'high' => translate('high'),
-            'urgent' => translate('urgent'),
-        ]);
+        const textNA = @json($textNA);
+        const textNone = @json($textNone);
+        const textSystem = @json($textSystem);
+        const textMobile = @json($textMobile);
+        const textInShop = @json($textInShop);
+        const workflowStatusMap = @json($workflowStatusMap);
+        const paymentStatusMap = @json($paymentStatusMap);
+        const priorityMap = @json($priorityMap);
 
         const normalizeKey = (value) => String(value ?? '')
             .trim()
@@ -801,5 +811,4 @@ document.addEventListener('click', function (e) {
 </script>
 
 @endpush
-
 

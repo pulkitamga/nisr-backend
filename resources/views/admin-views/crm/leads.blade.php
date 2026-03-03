@@ -129,7 +129,7 @@
                         <th>{{translate('Employee')}}</th>
                         <th>{{translate('Priority')}}</th>
                         <th>{{translate('Status')}}</th>
-                        <th>{{translate('Converted_At')}}</th>
+                        <th>{{translate('Updated At')}}</th>
                         <th class="text-center">{{translate('action')}}</th>
                     </tr>
                 </thead>
@@ -187,7 +187,7 @@
                                 {{ ucfirst($msg->status) }}
                             </span>
                         </td>
-                        <td>{{ $msg->created_at->format('d M, Y H:i A') }}</td>
+                        <td>{{ ($msg->updated_at ?? $msg->created_at)?->format('d M, Y H:i A') }}</td>
 
                         <td>
                             <div class="d-flex flex-wrap gap-1">
@@ -197,43 +197,49 @@
                                 <!-- <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary reply-btn" data-id="{{ $msg->id }}">
                                     {{ translate('Reply') }}
                                 </a> -->
-                                @if(!in_array($msg->status, ['converted', 'disqualified']) && !$msg->po_id)
-                                <a href="javascript:void(0)"
-                                    class="btn btn-sm btn-outline-primary convert-btn"
-                                    data-lead-id="{{ $msg->id }}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#convertLeadModal">
-                                    🔀 Convert to Deal
-                                </a>
-                                @endif
-                                <!-- @if(auth('admin')->user()->admin_role_id == 1)
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'lead_assign_owner'))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-owner-btn"
                                     data-id="{{ $msg->id }}"
+                                    data-owner-id="{{ $msg->owner_id ?? '' }}"
                                     data-bs-toggle="false"
                                     data-bs-target="none">
-                                    {{ translate('Assign Owner') }}
+                                    {{ $msg->owner_id ? translate('Re-Assign Owner') : translate('Assign Owner') }}
                                 </a>
-                                @endif -->
-                                @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($msg->department?->head_id) || auth('admin')->user()->id == ($msg->owner_id))
+                                @endif
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'lead_assign_employee'))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-employee-btn"
                                     data-id="{{ $msg->id }}"
                                     data-department-id="{{ $msg->department->id ?? '' }}"
                                     data-head-id="{{ $msg->department->head_id ?? '' }}">
-                                    {{ translate('Assign Employee') }}
+                                    {{ $msg->employee_id ? translate('Re-Assign Employee') : translate('Assign Employee') }}
                                 </a>
                                 @if((int)auth('admin')->user()?->admin_role_id !== 1)
                                 <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                                 @endif
                                 @endif
 
-
-                                <!-- @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($msg->owner_id))
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'lead_assign_department'))
                                 <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary assign-dept-btn" data-id="{{ $msg->id }}" data-department-id="{{ $msg->department->id ?? 0 }}" data-department-employee-id="0">
-                                    {{ translate('Assign Department') }}
+                                    {{ $msg->department_id ? translate('Re-Assign Department') : translate('Assign Department') }}
                                 </a>
-                                @endif -->
+                                @endif
+                                @if(!in_array($msg->status, ['converted', 'disqualified']) && !$msg->po_id)
+                                    @if(!empty($msg->department_id) && !empty($msg->owner_id) && !empty($msg->employee_id))
+                                    <a href="javascript:void(0)"
+                                        class="btn btn-sm btn-outline-primary convert-btn"
+                                        data-lead-id="{{ $msg->id }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#convertLeadModal">
+                                        🔀 {{ translate('Convert to Deal') }}
+                                    </a>
+                                    @else
+                                    <span class="btn btn-sm btn-outline-secondary disabled" title="{{ translate('Assign department, owner and employee before convert') }}">
+                                        {{ translate('Assign before Convert') }}
+                                    </span>
+                                    @endif
+                                @endif
 
                                 @if(!in_array($msg->status, ['converted', 'disqualified']))
                                 <a href="javascript:void(0)"
@@ -315,12 +321,26 @@
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/lead.js') }}" defer></script>
 
 <script>
+    const convertSelectPartyMessage = @json(translate('Please select a party from search results before converting'));
+    const convertLeadMissingMessage = @json(translate('Lead id is missing. Please close and reopen the convert form'));
+    const convertingText = @json(translate('Converting...'));
+    const convertButtonText = @json(translate('Convert'));
+
     $(document).on('shown.bs.modal', '#convertLeadModal', function() {
         let partyRouteUrl = $('#partySearchRoute').data('url');
+        const form = $('#convertForm');
+
+        form.find('button[type="submit"]').prop('disabled', false).text(convertButtonText);
+        $('#party_search_results').hide().empty();
+        $('#party_search_input').val('');
+        $('#party_id').val('');
+        $('#order-section').hide();
+        $('#order_id').empty().append('<option value="">{{ translate("Select Order") }}</option>');
 
         $('#party_search_input').off('keyup').on('keyup', function() {
             let query = $(this).val().trim();
             let partyType = $('#party_type').val();
+            $('#party_id').val('');
 
             if (query.length < 1) {
                 $('#party_search_results').hide();
@@ -373,6 +393,31 @@
     $(document).on('click', '.convert-btn', function() {
         let leadId = $(this).data('lead-id');
         $('#lead_id').val(leadId);
+    });
+
+    $(document).off('submit', '#convertForm').on('submit', '#convertForm', function(e) {
+        const leadId = $('#lead_id').val();
+        const partyId = $('#party_id').val();
+        const submitBtn = $(this).find('button[type="submit"]');
+
+        if (!leadId) {
+            e.preventDefault();
+            Swal.fire('Error', convertLeadMissingMessage, 'error');
+            return;
+        }
+
+        if (!partyId) {
+            e.preventDefault();
+            Swal.fire('Error', convertSelectPartyMessage, 'error');
+            return;
+        }
+
+        submitBtn.prop('disabled', true).text(convertingText);
+    });
+
+    $(document).on('hidden.bs.modal', '#convertLeadModal', function() {
+        const form = $('#convertForm');
+        form.find('button[type="submit"]').prop('disabled', false).text(convertButtonText);
     });
 </script>
 
@@ -472,5 +517,3 @@ $(document).ready(function() {
 
 </script>
 @endpush
-
-

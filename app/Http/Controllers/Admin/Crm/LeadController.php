@@ -246,20 +246,48 @@ public function getUserOrders(Request $request)
             'lead_id'     => 'required|exists:leads,id',
             'party_type'  => 'required|in:company,contact',
             'party_id'    => 'required|integer',
-            'owner_id'    => 'required|exists:admins,id',
             'value'       => 'nullable|numeric|min:0',
-            'employee_id' => 'nullable|exists:admins,id', // Optional employee assignment
         ], [
             'party_id.required' => translate('Please select any user or company to convert deal'),
             'party_id.integer'  => translate('Please select a valid user or company'),
         ]);
 
         $lead = Lead::findOrFail($request->lead_id);
+        $partyExists = $request->party_type === 'company'
+            ? WholeSalerBusiness::where('id', $request->party_id)->exists()
+            : User::where('id', $request->party_id)->exists();
+
+        if (!$partyExists) {
+            Toastr::error(translate('Please select a valid party from search results before converting'));
+            return redirect()->back()->withInput();
+        }
+
         $authUser = auth('admin')->user();
-        $owner = Admin::find($request->owner_id);
+        $owner = Admin::find($lead->owner_id);
 
         if (!$owner || !(bool)($owner->is_supervisor ?? false)) {
             Toastr::error(translate('Owner must be marked as supervisor in employee profile'));
+            return redirect()->back()->withInput();
+        }
+
+        if (empty($lead->department_id) || empty($lead->employee_id) || empty($lead->owner_id)) {
+            Toastr::error(translate('Assign department, owner and employee before converting this lead'));
+            return redirect()->back()->withInput();
+        }
+
+        if ((int)$owner->department_id !== (int)$lead->department_id) {
+            Toastr::error(translate('Assigned owner must belong to the selected department before conversion'));
+            return redirect()->back()->withInput();
+        }
+
+        $employee = Admin::find($lead->employee_id);
+        if (!$employee) {
+            Toastr::error(translate('Assigned employee is invalid. Please assign again before conversion'));
+            return redirect()->back()->withInput();
+        }
+
+        if ((int)$employee->department_id !== (int)$lead->department_id) {
+            Toastr::error(translate('Assigned employee must belong to the selected department before conversion'));
             return redirect()->back()->withInput();
         }
 
@@ -273,7 +301,10 @@ public function getUserOrders(Request $request)
         }
 
         try {
-            $deal = app(LeadConvertService::class)->convert($lead, $request->all());
+            $payload = $request->all();
+            $payload['owner_id'] = $lead->owner_id;
+            $payload['employee_id'] = $lead->employee_id;
+            $deal = app(LeadConvertService::class)->convert($lead, $payload);
 
             $activity = new LeadActivity();
             $activity->lead_id = $lead->id;
@@ -286,11 +317,11 @@ public function getUserOrders(Request $request)
                 'deal_id'         => $deal->id ?? null,
                 'party_id'        => $request->party_id,
                 'party_type'      => $request->party_type,
-                'owner_id'        => $request->owner_id,
+                'owner_id'        => $lead->owner_id,
                 'value'           => $request->value,
                 'quotation_id'    => null,
                 'quotation_status' => 'draft',
-                'employee_id'     => $request->employee_id ?? $authUser->id,
+                'employee_id'     => $lead->employee_id,
             ];
             $activity->save();
 
@@ -757,8 +788,15 @@ public function getUserOrders(Request $request)
         if (!$lead) {
             return response()->json(['status' => false, 'message' => 'Ticket not found'], 404);
         }
-        $lead->department_id = $request->department_id;
+        $previousDepartmentId = (int)$lead->department_id;
+        $newDepartmentId = (int)$request->department_id;
+        $departmentChanged = $previousDepartmentId !== $newDepartmentId;
+
+        $lead->department_id = $newDepartmentId;
         $lead->priority      = $request->priority;
+        if ($departmentChanged) {
+            $lead->employee_id = null;
+        }
 
         $lead->save();
         $departmentName = $lead->department?->name ?? 'N/A';
@@ -774,6 +812,7 @@ public function getUserOrders(Request $request)
             'department_id' => $request->department_id,
             'department_name' => $departmentName,
             'priority'      => $lead->priority,
+            'employee_cleared' => $departmentChanged,
             'reply'         => $request->reply,
         ];
         $activity->save();
@@ -894,7 +933,7 @@ public function getUserOrders(Request $request)
             'all'
         );
         $employees = $employees
-            ->filter(fn($employee) => (int)($employee->admin_role_id ?? 0) !== 1)
+            ->filter(fn($employee) => !$this->isSuperAdmin($employee))
             ->values();
         if ($isOwnerAssignment) {
             $employees = $employees
@@ -951,7 +990,7 @@ public function getUserOrders(Request $request)
 
     private function isSuperAdmin(?Admin $admin): bool
     {
-        return (int)($admin?->admin_role_id ?? 0) === 1;
+        return $admin?->isSuperAdmin() === true;
     }
 
     private function supervisorRoleId(): int

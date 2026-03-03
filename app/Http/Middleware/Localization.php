@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Schema;
 
 class Localization
 {
@@ -63,7 +64,16 @@ class Localization
             return $defaultDirection;
         }
 
-        $languageList = getWebConfig('language');
+        if (!Schema::hasTable('business_settings')) {
+            return $defaultDirection;
+        }
+
+        try {
+            $languageList = getWebConfig('language');
+        } catch (\Throwable) {
+            return $defaultDirection;
+        }
+
         if (!is_array($languageList)) {
             return $defaultDirection;
         }

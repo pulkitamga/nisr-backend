@@ -269,6 +269,6 @@ class CalendarController extends Controller
 
     private function isSuperAdmin($admin): bool
     {
-        return (int)($admin?->admin_role_id ?? 0) === 1;
+        return $admin?->isSuperAdmin() === true;
     }
 }

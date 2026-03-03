@@ -30,6 +30,9 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
         success: function (response) {
             $('#showOwnerModal').modal('hide');
             Swal.fire('Success!', response.message, 'success');
+            setTimeout(function () {
+                window.location.reload();
+            }, 500);
         },
         error: function (xhr) {
             Swal.fire(
@@ -101,6 +104,9 @@ $('#updateTicketEmployeeForm').on('submit', function (e) {
         success: function (response) {
             $('#showEmployeeModal').modal('hide');
             Swal.fire('Success!', response.message, 'success');
+            setTimeout(function () {
+                window.location.reload();
+            }, 500);
         },
         error: function (xhr) {
             Swal.fire(
@@ -146,6 +152,9 @@ $('#updateTicketDepartmentForm').on('submit', function (e) {
                 response.message,
                 'success'
             );
+            setTimeout(function () {
+                window.location.reload();
+            }, 500);
         },
         error: function (xhr) {
             Swal.fire(
@@ -238,7 +247,6 @@ $('#escalateLeadForm').submit(function (e) {
         }
     });
 });
-
 
 
 

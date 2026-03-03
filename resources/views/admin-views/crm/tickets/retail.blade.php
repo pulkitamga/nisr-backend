@@ -212,7 +212,7 @@
 
 
 
-                                @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($ticket->department?->head_id))
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_employee_update') || auth('admin')->user()->id == ($ticket->department?->head_id))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-employee-btn"
                                     data-id="{{ $ticket->id }}"
@@ -220,7 +220,7 @@
                                     data-head-id="{{ $ticket->department->head_id ?? '' }}">
                                     {{ $ticket->employee_id ? translate('Re-Assign Employee') : translate('Assign Employee') }}
                                 </a>
-                                @if((int)auth('admin')->user()?->admin_role_id !== 1)
+                                @if(!auth('admin')->user()?->isSuperAdmin())
                                 <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                                 @endif
                                 @endif

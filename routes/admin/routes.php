@@ -1783,7 +1783,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                     Route::post('qa', 'qaConfirmation')->name('qa')->middleware('permission:crm_section.service_ticket_qa,admin');
                     Route::post('close', 'closeTicket')->name('close')->middleware('permission:crm_section.service_ticket_close,admin');
                     Route::post('cancel', 'cancelTicket')->name('cancel')->middleware('permission:crm_section.service_ticket_cancel,admin');
-                    Route::post('escalate', 'escalate')->name('escalate');
+                    Route::post('escalate', 'escalate')->name('escalate')->middleware('permission:crm_section.update,admin');
                 });
             });
         });
@@ -1804,7 +1804,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                     Route::post('/talent-pool', 'addToTalentPool')->name('talent-pool')->middleware('permission:crm_section.career_ticket_add_to_talent_pool,admin');
                     Route::get('/pool/export', 'export')->name('pool.export')->middleware('permission:crm_section.career_ticket_export_pool,admin');
                     Route::post('/reply', 'reply')->name('reply')->middleware('permission:crm_section.career_ticket_reply,admin');
-                    Route::post('/escalate', 'escalate')->name('escalate');
+                    Route::post('/escalate', 'escalate')->name('escalate')->middleware('permission:crm_section.update,admin');
                 });
             });
         });
@@ -1830,7 +1830,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             });
         });
 
-        Route::middleware('permission:crm_section.access,admin')->group(function () {
+        Route::middleware('permission:crm_section.update,admin')->group(function () {
             Route::controller(ComplaintController::class)->group(function () {
                 Route::post(Complaint::STATUS[URI], 'updateStatus')->name('status');
                 Route::post(Complaint::VIEW[URI] . '/{id}', 'reply')->name('replay');
@@ -3558,4 +3558,3 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         });
     });
 });
-

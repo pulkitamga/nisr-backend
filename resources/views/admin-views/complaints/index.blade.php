@@ -80,10 +80,10 @@
                                 <th>{{translate('SL')}}</th>     
                                 <th>{{translate('Type')}}</th> 
                                 <th>
-                                    @if(auth('admin')->user()->admin_role_id == 1)
+                                    @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_department_update'))
                                         {{translate('Department')}}
                                     @endif    
-                                    @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->admin_role_id == DEPARTMENT_HEAD_ROLE_ID)
+                                    @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_employee_update'))
                                         / {{translate('Employee')}}
                                     @endif 
                                 </th> 
@@ -104,7 +104,7 @@
                                     	<span class="badge badge-soft-danger">{{translate(str_replace('_',' ',$ticket->priority))}}</span>
                                     </td>     
                                     <td>
-                                        @if(auth('admin')->user()->admin_role_id == 1)                              
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_department_update'))
                                             <div class="{{ $ticket->department_id != 0 ? ' text-success' : 'text-danger' }} d-flex align-items-center gap-3 font-weight-bolder mb-2">
                                                 @if (!empty($ticket->department) && !is_null($ticket->department->name))
                                                     {{ translate($ticket->department->name) }}
@@ -119,7 +119,7 @@
                                                 @endif
                                             </div>
                                         @endif
-                                        @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->admin_role_id == 8)
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_employee_update'))
                                             @if($ticket->department_id != 0)
                                             <div class="{{ $ticket->employee_id != 0 ? ' text-success' : 'text-danger' }} d-flex align-items-center gap-3 font-weight-bolder mb-2">
                                                 @if (!empty($ticket->employee) && !is_null($ticket->employee->name))

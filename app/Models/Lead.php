@@ -72,14 +72,7 @@ class Lead extends Model
 
     public function department()
     {
-        return $this->hasOneThrough(
-            Departments::class,
-            InboxMessage::class,
-            'related_lead_id',
-            'id',
-            'id',
-            'department_id'
-        );
+        return $this->belongsTo(Departments::class, 'department_id', 'id');
     }
 
     public function employee()

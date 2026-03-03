@@ -889,7 +889,7 @@ class DealController extends BaseController
             'all'
         );
         $employees = $employees
-            ->filter(fn($employee) => (int)($employee->admin_role_id ?? 0) !== 1)
+            ->filter(fn($employee) => !$this->isSuperAdmin($employee))
             ->values();
         if ($isOwnerAssignment) {
             $employees = $employees
@@ -1039,7 +1039,7 @@ class DealController extends BaseController
 
     private function isSuperAdmin(?Admin $admin): bool
     {
-        return (int)($admin?->admin_role_id ?? 0) === 1;
+        return $admin?->isSuperAdmin() === true;
     }
 
     private function supervisorRoleId(): int

@@ -404,7 +404,16 @@
                                     @endif
                                     <dt class="col-5 text-capitalize">{{ translate('sub_total') }}</dt>
                                     <dd class="col-6 title-color">
-                                        <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['subTotal']), currencyCode: getCurrencyCode()) }}</strong>
+                                        @php
+                                            $displaySubTotal = max(
+                                                0,
+                                                (float)($orderTotalPriceSummary['itemPrice'] ?? 0)
+                                                - (float)($orderTotalPriceSummary['itemDiscount'] ?? 0)
+                                                + (float)($orderTotalPriceSummary['totalInstallationPrice'] ?? 0)
+                                                - (float)($orderTotalPriceSummary['totalExchangePrice'] ?? 0)
+                                            );
+                                        @endphp
+                                        <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $displaySubTotal), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
                                     <dt class="col-5 text-nowrap">
                                         {{ translate('coupon_discount') }}

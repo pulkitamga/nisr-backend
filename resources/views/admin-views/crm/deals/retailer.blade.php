@@ -188,16 +188,17 @@
                         <td>
                             <div class="d-flex flex-wrap gap-1">
                                 <a href="{{ route('admin.crm.deals.retail.view', $deal->id) }}" class="btn btn-sm btn-info">{{ translate('View') }}</a>
-                                <!-- @if(auth('admin')->user()->admin_role_id == 1)
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_retail_assign_owner'))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-owner-btn"
                                     data-id="{{ $deal->id }}"
+                                    data-owner-id="{{ $deal->owner_id ?? '' }}"
                                     data-bs-toggle="false"
                                     data-bs-target="none">
                                     {{ translate('Assign Owner') }}
                                 </a>
-                                @endif -->
-                                @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($deal->department?->head_id) || auth('admin')->user()->id == ($deal->owner_id))
+                                @endif
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_retail_assign_employee'))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-employee-btn"
                                     data-id="{{ $deal->id }}"
@@ -208,6 +209,11 @@
                                 @if((int)auth('admin')->user()?->admin_role_id !== 1)
                                 <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                                 @endif
+                                @endif
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_retail_assign_department'))
+                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary assign-dept-btn" data-id="{{ $deal->id }}" data-department-id="{{ $deal->department->id ?? 0 }}" data-department-employee-id="0">
+                                    {{ translate('Assign Department') }}
+                                </a>
                                 @endif
 
                                 @if(!$deal->order)
@@ -530,5 +536,4 @@
     });
 </script>
 @endpush
-
 
