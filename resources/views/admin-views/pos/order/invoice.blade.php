@@ -105,19 +105,19 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
         <tr>
             <td colspan="2"></td>
             <td class="text-right">{{ translate('item_discount') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemDiscount']), currencyCode: getCurrencyCode()) }}</td>
+            <td class="text-right">-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
             <td class="text-right">{{ translate('extra_discount') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['extraDiscount']), currencyCode: getCurrencyCode()) }}</td>
+            <td class="text-right">-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['extraDiscount'])), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         @if(!empty($orderTotalPriceSummary['totalExchangePrice']) && $orderTotalPriceSummary['totalExchangePrice'] > 0)
         <tr>
             <td colspan="2"></td>
             <td class="text-right">{{ translate('exchange_charge') }}:</td>
             <td class="text-right">
-                {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalExchangePrice']), currencyCode: getCurrencyCode()) }}
+                -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['totalExchangePrice'])), currencyCode: getCurrencyCode()) }}
             </td>
         </tr>
         @endif
@@ -150,7 +150,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
         <tr>
             <td colspan="2"></td>
             <td class="text-right">{{ translate('coupon_discount') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['couponDiscount']), currencyCode: getCurrencyCode()) }}</td>
+            <td class="text-right">-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>

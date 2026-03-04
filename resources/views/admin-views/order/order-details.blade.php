@@ -241,7 +241,7 @@
                                                             </div>
                                                             <div>
                                                                 <strong>{{ translate('unit_price') }} :</strong>
-                                                                {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'] + ($detail->tax_model == 'include' ? $detail['tax'] / $detail['qty'] : 0))) }}
+                                                                {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'])) }}
                                                                 @if ($detail->tax_model == 'include')
                                                                     ({{ translate('tax_incl.') }})
                                                                 @else
@@ -259,9 +259,9 @@
                                                             @endif
                                                             @if ($detail->exchange_qty > 0 && $detail->exchange_charges > 0)
                                                                 <div>
-                                                                    <strong>{{ translate('Exchange') }} : </strong>
+                                                                    <strong>{{ translate('exchange_charge') }} : </strong>
                                                                     {{ $detail->exchange_qty }} *
-                                                                    {{ webCurrencyConverter(amount: $detail->exchange_charges) }}
+                                                                    {{ webCurrencyConverter(amount: abs((float)$detail->exchange_charges)) }}
                                                                 </div>
                                                             @endif
                                                         </div>
@@ -285,11 +285,29 @@
                                                     {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['installtion_charges'] * $detail['qty']), currencyCode: getCurrencyCode()) }}
                                                 </td>
                                                 <td>
-                                                    -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['exchange_charges']), currencyCode: getCurrencyCode()) }}
+                                                    @php
+                                                        $lineExchangeQty = (int)($detail['exchange_qty'] ?? 0);
+                                                        $lineExchangeCharge = abs((float)($detail['exchange_charges'] ?? 0));
+                                                        $lineExchangeTotal = $lineExchangeQty > 0
+                                                            ? $lineExchangeCharge * $lineExchangeQty
+                                                            : $lineExchangeCharge;
+                                                    @endphp
+                                                    -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $lineExchangeTotal), currencyCode: getCurrencyCode()) }}
                                                 </td>
-                                                <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['discount']), currencyCode: getCurrencyCode()) }}
+                                                <td>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$detail['discount'])), currencyCode: getCurrencyCode()) }}
                                                 </td>
-                                                @php $subtotal = $detail['price'] * $detail['qty'] + $detail['tax'] + $detail['installtion_charges'] * $detail['qty'] - $detail['discount']; @endphp
+                                                @php
+                                                    $lineDiscount = abs((float)($detail['discount'] ?? 0));
+                                                    $lineInstallationTotal = (float)$detail['installtion_charges'] * (float)$detail['qty'];
+                                                    $subtotal = max(
+                                                        0,
+                                                        (float)$detail['price'] * (float)$detail['qty']
+                                                        + (float)$detail['tax']
+                                                        + $lineInstallationTotal
+                                                        - $lineDiscount
+                                                        - $lineExchangeTotal
+                                                    );
+                                                @endphp
                                                 <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $subtotal), currencyCode: getCurrencyCode()) }}
                                                 </td>
                                             </tr>
@@ -388,12 +406,18 @@
                                     </dd>
                                     <dt class="col-5 text-capitalize">{{ translate('item_discount') }}</dt>
                                     <dd class="col-6 title-color">
-                                        <strong>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemDiscount']), currencyCode: getCurrencyCode()) }}</strong>
+                                        <strong>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
+                                    @if ($orderTotalPriceSummary['extraDiscount'] > 0)
+                                        <dt class="col-5 text-capitalize">{{ translate('extra_discount') }}</dt>
+                                        <dd class="col-6 title-color">
+                                            <strong>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['extraDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
+                                        </dd>
+                                    @endif
                                     @if ($orderTotalPriceSummary['totalExchangePrice'] > 0)
                                         <dt class="col-5 text-capitalize">{{ translate('exchange_charge') }}</dt>
                                         <dd class="col-6 title-color">
-                                            <strong>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalExchangePrice']), currencyCode: getCurrencyCode()) }}</strong>
+                                            <strong>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['totalExchangePrice'])), currencyCode: getCurrencyCode()) }}</strong>
                                         </dd>
                                     @endif
                                     @if ($orderTotalPriceSummary['totalInstallationPrice'] > 0)
@@ -402,26 +426,13 @@
                                             <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalInstallationPrice']), currencyCode: getCurrencyCode()) }}</strong>
                                         </dd>
                                     @endif
-                                    <dt class="col-5 text-capitalize">{{ translate('sub_total') }}</dt>
-                                    <dd class="col-6 title-color">
-                                        @php
-                                            $displaySubTotal = max(
-                                                0,
-                                                (float)($orderTotalPriceSummary['itemPrice'] ?? 0)
-                                                - (float)($orderTotalPriceSummary['itemDiscount'] ?? 0)
-                                                + (float)($orderTotalPriceSummary['totalInstallationPrice'] ?? 0)
-                                                - (float)($orderTotalPriceSummary['totalExchangePrice'] ?? 0)
-                                            );
-                                        @endphp
-                                        <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $displaySubTotal), currencyCode: getCurrencyCode()) }}</strong>
-                                    </dd>
                                     <dt class="col-5 text-nowrap">
                                         {{ translate('coupon_discount') }}
                                         <br>
                                         {{ !in_array($order['coupon_code'], [0, null]) ? '(' . translate('expense_bearer_') . ($order['coupon_discount_bearer'] == 'inhouse' ? 'admin' : ($order['coupon_discount_bearer'] == 'seller' ? 'vendor' : $order['coupon_discount_bearer'])) . ')' : '' }}
                                     </dt>
                                     <dd class="col-6 title-color">
-                                        -<strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['couponDiscount']), currencyCode: getCurrencyCode()) }}</strong>
+                                        -<strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
                                     <dt class="col-5 text-uppercase">{{ translate('vat') }}/{{ translate('tax') }}</dt>
                                     <dd class="col-6 title-color">

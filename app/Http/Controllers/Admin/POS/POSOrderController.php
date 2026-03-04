@@ -9,7 +9,6 @@ use App\Contracts\Repositories\OrderRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Contracts\Repositories\StorageRepositoryInterface;
 use App\Contracts\Repositories\VendorRepositoryInterface;
-use App\Enums\SessionKey;
 use App\Enums\ViewPaths\Admin\POSOrder;
 use App\Events\DigitalProductDownloadEvent;
 use App\Http\Controllers\BaseController;
@@ -18,6 +17,8 @@ use App\Services\InventoryMutationService;
 use App\Services\OrderDetailsService;
 use App\Services\OrderService;
 use App\Services\POSService;
+use App\Services\PosCartStateService;
+use App\Services\PosIdempotencyService;
 use App\Traits\CalculatorTrait;
 use App\Traits\CustomerTrait;
 use App\Utils\OrderManager;
@@ -30,6 +31,7 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class POSOrderController extends BaseController
 {
@@ -59,6 +61,8 @@ class POSOrderController extends BaseController
         private readonly StorageRepositoryInterface                 $storageRepo,
         private readonly POSService                                 $POSService,
         private readonly CartService                                $cartService,
+        private readonly PosCartStateService                        $posCartStateService,
+        private readonly PosIdempotencyService                      $posIdempotencyService,
         private readonly InventoryMutationService                   $inventoryMutationService,
         private readonly OrderDetailsService                        $orderDetailsService,
         private readonly OrderService                               $orderService,
@@ -97,202 +101,242 @@ class POSOrderController extends BaseController
      */
     public function placeOrder(Request $request): JsonResponse
     {
-        $requestBranchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
-        if ($requestBranchId <= 0) {
-            $requestBranchId = 1;
-        }
-        session()->put(SessionKey::POS_BRANCH_ID, $requestBranchId);
-
-        $requestedCartId = trim((string)($request['cart_id'] ?? ''));
-        $cartId = session(SessionKey::CURRENT_USER);
-        if (
-            $requestedCartId !== ''
-            && $this->cartService->cartBelongsToBranch($requestedCartId, $requestBranchId)
-            && session()->has($requestedCartId)
-            && is_array(session($requestedCartId))
-        ) {
-            $cartId = $requestedCartId;
-            session()->put(SessionKey::CURRENT_USER, $requestedCartId);
-        }
-        if (!is_string($cartId) || $cartId === '') {
-            Toastr::error(translate('cart_empty_warning'));
-            return response()->json();
+        $context = $this->validateWriteContext($request, true);
+        $branchId = $context['branch_id'];
+        $cartId = $context['cart_id'];
+        $idempotencyKey = trim((string)$request->input('idempotency_key', ''));
+        if ($idempotencyKey === '') {
+            throw ValidationException::withMessages([
+                'idempotency_key' => [translate('invalid_request')],
+            ]);
         }
 
-        $cart = session($cartId, []);
-        if (!is_array($cart)) {
-            $cart = [];
-        }
-        $cartLineItems = $this->getSessionCartLineItems(cart: $cart);
-        $orderAmountData = $this->getOrderAmountData(
-            cartId: $cartId,
-            cartLineItems: $cartLineItems
-        );
-        $amount = $orderAmountData['amount'];
-        $installationCharge = $orderAmountData['installationCharge'];
-        $exchangeCharge = $orderAmountData['exchangeCharge'];
-
-        $lineBranchIds = collect($cartLineItems)
-            ->map(fn($item) => (int)($item['branch_id'] ?? 0))
-            ->filter(fn($id) => $id > 0)
-            ->unique()
-            ->values();
-
-        if ($lineBranchIds->count() > 1) {
-            Toastr::error(translate('please_place_separate_pos_orders_per_branch'));
-            return response()->json();
-        }
-
-        $branchId = $requestBranchId > 0
-            ? $requestBranchId
-            : (int)($lineBranchIds->first() ?? 1);
-        if ($lineBranchIds->count() === 1) {
-            $branchId = (int)$lineBranchIds->first();
-        }
-
-        $resolvedBranchId = $branchId;
-        $paymentType = (string)($request['type'] ?? 'cash');
-        $paidAmount = $paymentType === 'cash' ? (float)($request['paid_amount'] ?? 0) : null;
-        $condition = $this->POSService->checkConditions(amount: $amount, paidAmount: $paidAmount);
-        if ($condition) {
-            return response()->json();
-        }
-
-        $userId = $this->cartService->getUserId();
-        $checkProductTypeDigital = $this->cartService->checkProductTypeDigital(cartId: $cartId);
-        if ($userId == 0 && $checkProductTypeDigital) {
-            return response()->json(['checkProductTypeForWalkingCustomer' => true, 'message' => translate('To_order_digital_product') . ',' . translate('_kindly_fill_up_the_“Add_New_Customer”_form') . '.']);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            if ($paymentType == 'wallet' && $userId != 0) {
-                $customerBalance = $this->customerRepo->getFirstWhere(params: ['id' => $userId]) ?? 0;
-                if ($customerBalance['wallet_balance'] >= $amount) {
-                    $this->createWalletTransaction(user_id: $userId, amount: $amount, transaction_type: 'order_place', reference: 'order_place_in_pos');
-                } else {
-                    Toastr::error(translate('need_Sufficient_Amount_Balance'));
-                    DB::rollBack();
-                    return response()->json();
-                }
-            }
-
-            $orderId = OrderManager::getNextOrderId();
-            $createdOrderDetails = 0;
-            foreach ($cartLineItems as $item) {
-                $product = $this->productRepo->getFirstWhere(params: ['id' => $item['id']], relations: ['clearanceSale' => function ($query) {
-                    return $query->active();
-                }]);
-
-                if (!$product) {
-                    throw new \RuntimeException(translate('Product_not_found_in_cart'));
-                }
-
-                $tax = $this->getTaxAmount($item['price'], $product['tax']);
-                $price = $product['tax_model'] == 'include' ? $item['price'] - $tax : $item['price'];
-                $installationChargeProduct = (float)($item['installation_charge'] ?? 0);
-                $exchangeChargeProduct = (float)($item['exchange_charge'] ?? 0);
-
-                $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(params: ['product_id' => $item['id'], 'variant_key' => $item['variant']], relations: ['storage']);
-                if ($product['product_type'] == 'digital' && $digitalProductVariation) {
-                    $price = $product['tax_model'] == 'include' ? $digitalProductVariation['price'] - $tax : $digitalProductVariation['price'];
-
-                    if ($product['digital_product_type'] == 'ready_product') {
-                        $getStoragePath = $this->storageRepo->getFirstWhere(params: [
-                            'data_id' => $digitalProductVariation['id'],
-                            "data_type" => "App\Models\DigitalProductVariation",
-                        ]);
-                        $product['digital_file_ready'] = $digitalProductVariation['file'];
-                        $product['storage_path'] = $getStoragePath ? $getStoragePath['value'] : 'public';
-                    }
-                } elseif ($product['digital_product_type'] == 'ready_product' && !empty($product['digital_file_ready'])) {
-                    $product['storage_path'] = $product['digital_file_ready_storage_type'] ?? 'public';
-                }
-
-                $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
-                    orderId: $orderId,
-                    item: $item,
-                    product: $product,
-                    price: $price,
-                    tax: $tax,
-                    installationCharge: $installationChargeProduct,
-                    exchangeCharge: $exchangeChargeProduct,
+        $result = $this->posIdempotencyService->execute(
+            action: 'admin_place_order',
+            idempotencyKey: $idempotencyKey,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id(),
+            ttlSeconds: 300,
+            callback: function () use ($request, $branchId, $cartId) {
+                $cart = $this->posCartStateService->getPayload(
+                    cartId: $cartId,
+                    branchId: $branchId,
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
                 );
+                $cartLineItems = $this->getSessionCartLineItems(cart: $cart);
+                $orderAmountData = $this->getOrderAmountData(
+                    cartId: $cartId,
+                    cartLineItems: $cartLineItems
+                );
+                $amount = $orderAmountData['amount'];
+                $installationCharge = $orderAmountData['installationCharge'];
+                $exchangeCharge = $orderAmountData['exchangeCharge'];
 
-                if ($product['product_type'] == 'physical') {
-                    $lineBranchId = (int)($item['branch_id'] ?? 0);
-                    if ($lineBranchId <= 0) {
-                        $lineBranchId = $branchId;
+                $lineBranchIds = collect($cartLineItems)
+                    ->map(fn($item) => (int)($item['branch_id'] ?? 0))
+                    ->filter(fn($id) => $id > 0)
+                    ->unique()
+                    ->values();
+                if ($lineBranchIds->count() > 1) {
+                    return [
+                        'status' => 'error',
+                        'message' => translate('please_place_separate_pos_orders_per_branch'),
+                    ];
+                }
+
+                $resolvedBranchId = $lineBranchIds->count() === 1
+                    ? (int)$lineBranchIds->first()
+                    : $branchId;
+                $paymentType = (string)($request['type'] ?? 'cash');
+                $paidAmount = $paymentType === 'cash' ? (float)($request['paid_amount'] ?? 0) : null;
+                $condition = $this->POSService->checkConditions(
+                    amount: $amount,
+                    paidAmount: $paidAmount,
+                    cartId: $cartId,
+                    branchId: $branchId,
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
+                );
+                if ($condition) {
+                    return ['status' => 'validation_error'];
+                }
+
+                $userId = $this->cartService->getUserId($cartId);
+                $checkProductTypeDigital = $this->cartService->checkProductTypeDigital(cartId: $cartId);
+                if ($userId == 0 && $checkProductTypeDigital) {
+                    return [
+                        'checkProductTypeForWalkingCustomer' => true,
+                        'message' => translate('To_order_digital_product') . ',' . translate('_kindly_fill_up_the_“Add_New_Customer”_form') . '.',
+                    ];
+                }
+
+                try {
+                    DB::beginTransaction();
+
+                    if ($paymentType == 'wallet' && $userId != 0) {
+                        $customerBalance = $this->customerRepo->getFirstWhere(params: ['id' => $userId]) ?? 0;
+                        if ($customerBalance['wallet_balance'] >= $amount) {
+                            $this->createWalletTransaction(user_id: $userId, amount: $amount, transaction_type: 'order_place', reference: 'order_place_in_pos');
+                        } else {
+                            DB::rollBack();
+                            return [
+                                'status' => 'error',
+                                'message' => translate('need_Sufficient_Amount_Balance'),
+                            ];
+                        }
                     }
 
-                    $stockMutation = $this->inventoryMutationService->decreaseForPosLine(
-                        productId: (int)$item['id'],
-                        qty: (int)$item['quantity'],
-                        variant: $item['variant'] ?? null,
-                        branchId: $lineBranchId,
-                        sellerId: null,
-                        referenceId: (int)$orderId,
-                        context: 'Admin POS'
+                    $orderId = OrderManager::getNextOrderId();
+                    $createdOrderDetails = 0;
+                    foreach ($cartLineItems as $item) {
+                        $product = $this->productRepo->getFirstWhere(params: ['id' => $item['id']], relations: ['clearanceSale' => function ($query) {
+                            return $query->active();
+                        }]);
+
+                        if (!$product) {
+                            throw new \RuntimeException(translate('Product_not_found_in_cart'));
+                        }
+
+                        $tax = $this->getTaxAmount($item['price'], $product['tax']);
+                        $price = $product['tax_model'] == 'include' ? $item['price'] - $tax : $item['price'];
+                        $installationChargeProduct = (float)($item['installation_charge'] ?? 0);
+                        $exchangeChargeProduct = (float)($item['exchange_charge'] ?? 0);
+
+                        $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(params: ['product_id' => $item['id'], 'variant_key' => $item['variant']], relations: ['storage']);
+                        if ($product['product_type'] == 'digital' && $digitalProductVariation) {
+                            $price = $product['tax_model'] == 'include' ? $digitalProductVariation['price'] - $tax : $digitalProductVariation['price'];
+
+                            if ($product['digital_product_type'] == 'ready_product') {
+                                $getStoragePath = $this->storageRepo->getFirstWhere(params: [
+                                    'data_id' => $digitalProductVariation['id'],
+                                    "data_type" => "App\Models\DigitalProductVariation",
+                                ]);
+                                $product['digital_file_ready'] = $digitalProductVariation['file'];
+                                $product['storage_path'] = $getStoragePath ? $getStoragePath['value'] : 'public';
+                            }
+                        } elseif ($product['digital_product_type'] == 'ready_product' && !empty($product['digital_file_ready'])) {
+                            $product['storage_path'] = $product['digital_file_ready_storage_type'] ?? 'public';
+                        }
+
+                        $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
+                            orderId: $orderId,
+                            item: $item,
+                            product: $product,
+                            price: $price,
+                            tax: $tax,
+                            installationCharge: $installationChargeProduct,
+                            exchangeCharge: $exchangeChargeProduct,
+                        );
+
+                        if ($product['product_type'] == 'physical') {
+                            $lineBranchId = (int)($item['branch_id'] ?? 0);
+                            if ($lineBranchId <= 0) {
+                                $lineBranchId = $branchId;
+                            }
+
+                            $stockMutation = $this->inventoryMutationService->decreaseForPosLine(
+                                productId: (int)$item['id'],
+                                qty: (int)$item['quantity'],
+                                variant: $item['variant'] ?? null,
+                                branchId: $lineBranchId,
+                                sellerId: null,
+                                referenceId: (int)$orderId,
+                                context: 'Admin POS'
+                            );
+
+                            if (!($stockMutation['status'] ?? false)) {
+                                throw new \RuntimeException($stockMutation['message'] ?? translate('Stock_not_available_in_this_branch_for_product_and_variation'));
+                            }
+
+                            if (isset($stockMutation['branchId']) && (int)$stockMutation['branchId'] > 0) {
+                                $resolvedBranchId = (int)$stockMutation['branchId'];
+                            }
+                        }
+
+                        $this->orderDetailRepo->add(data: $orderDetail);
+                        $createdOrderDetails++;
+                    }
+
+                    if ($createdOrderDetails === 0) {
+                        throw new \RuntimeException(translate('cart_empty_warning'));
+                    }
+
+                    $order = $this->orderService->getPOSOrderData(
+                        orderId: $orderId,
+                        cart: $cart,
+                        amount: $amount,
+                        paidAmount: $paymentType == 'cash' ? $paidAmount : $amount,
+                        paymentType: $paymentType,
+                        addedBy: 'admin',
+                        userId: $userId,
+                        installationCharge: $installationCharge,
+                        exchangeCharge: $exchangeCharge,
+                        branchId: $resolvedBranchId,
                     );
 
-                    if (!($stockMutation['status'] ?? false)) {
-                        throw new \RuntimeException($stockMutation['message'] ?? translate('Stock_not_available_in_this_branch_for_product_and_variation'));
-                    }
-
-                    if (isset($stockMutation['branchId']) && (int)$stockMutation['branchId'] > 0) {
-                        $resolvedBranchId = (int)$stockMutation['branchId'];
-                    }
+                    $this->orderRepo->add(data: $order);
+                    DB::commit();
+                } catch (\Throwable $exception) {
+                    DB::rollBack();
+                    return [
+                        'status' => 'error',
+                        'message' => $exception->getMessage(),
+                    ];
                 }
 
-                $this->orderDetailRepo->add(data: $orderDetail);
-                $createdOrderDetails++;
+                if ($checkProductTypeDigital) {
+                    $order = $this->orderRepo->getFirstWhere(params: ['id' => $orderId], relations: ['details.productAllStatus']);
+                    $data = [
+                        'userName' => $order->customer->f_name,
+                        'userType' => 'customer',
+                        'templateName' => 'digital-product-download',
+                        'order' => $order,
+                        'subject' => translate('download_Digital_Product'),
+                        'title' => translate('Congratulations') . '!',
+                        'emailId' => $order->customer['email'],
+                    ];
+                    event(new DigitalProductDownloadEvent(email: $order->customer['email'], data: $data));
+                }
+
+                $this->posCartStateService->putPayload(
+                    cartId: $cartId,
+                    branchId: $branchId,
+                    payload: [],
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
+                );
+                $newCartId = $this->cartService->generateWalkingCustomerCartId($branchId);
+                $this->posCartStateService->ensureCart(
+                    cartId: $newCartId,
+                    branchId: $branchId,
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
+                );
+
+                return [
+                    'status' => 'success',
+                    'orderId' => $orderId,
+                    'cartId' => $newCartId,
+                ];
             }
+        );
 
-            if ($createdOrderDetails === 0) {
-                throw new \RuntimeException(translate('cart_empty_warning'));
-            }
-
-            $order = $this->orderService->getPOSOrderData(
-                orderId: $orderId,
-                cart: $cart,
-                amount: $amount,
-                paidAmount: $paymentType == 'cash' ? $paidAmount : $amount,
-                paymentType: $paymentType,
-                addedBy: 'admin',
-                userId: $userId,
-                installationCharge: $installationCharge,
-                exchangeCharge: $exchangeCharge,
-                branchId: $resolvedBranchId,
-            );
-
-            $this->orderRepo->add(data: $order);
-            DB::commit();
-        } catch (\Throwable $exception) {
-            DB::rollBack();
-            Toastr::error($exception->getMessage());
+        if (($result['status'] ?? '') === 'error') {
+            Toastr::error((string)($result['message'] ?? translate('something_went_wrong')));
             return response()->json();
         }
-
-        if ($checkProductTypeDigital) {
-            $order = $this->orderRepo->getFirstWhere(params: ['id' => $orderId], relations: ['details.productAllStatus']);
-            $data = [
-                'userName' => $order->customer->f_name,
-                'userType' => 'customer',
-                'templateName' => 'digital-product-download',
-                'order' => $order,
-                'subject' => translate('download_Digital_Product'),
-                'title' => translate('Congratulations') . '!',
-                'emailId' => $order->customer['email'],
-            ];
-            event(new DigitalProductDownloadEvent(email: $order->customer['email'], data: $data));
+        if (($result['status'] ?? '') === 'validation_error') {
+            return response()->json();
         }
-        session()->forget($cartId);
-        $this->cartService->getNewCartId();
+        if (boolval($result['checkProductTypeForWalkingCustomer'] ?? false) === true) {
+            return response()->json($result);
+        }
+
         Toastr::success(translate('order_placed_successfully'));
         return response()->json([
-            'orderId' => $orderId,
-            'cartId' => (string)(session(SessionKey::CURRENT_USER) ?? ''),
+            'orderId' => (int)($result['orderId'] ?? 0),
+            'cartId' => (string)($result['cartId'] ?? ''),
         ]);
     }
 
@@ -388,17 +432,21 @@ class POSOrderController extends BaseController
 
     public function cancelOrder(Request $request): JsonResponse
     {
-        $branchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
-        if ($branchId <= 0) {
-            $branchId = 1;
-        }
-        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
-        session()->remove($request['cart_id']);
-        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId);
-        $cartNames = $this->POSService->getCartNames($branchId);
-        $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames);
+        $context = $this->validateWriteContext($request, true);
+        $branchId = $context['branch_id'];
+        $cartId = $context['cart_id'];
+
+        $this->posCartStateService->deleteCart(
+            cartId: $cartId,
+            branchId: $branchId,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id()
+        );
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId, 'admin', (int)auth('admin')->id());
+        $cartNames = $this->POSService->getCartNames($branchId, 'admin', (int)auth('admin')->id());
+        $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames, branchId: $branchId);
         return response()->json([
-            'message' => $request['cart_id'] . ' ' . translate('order_is_cancel'),
+            'message' => $cartId . ' ' . translate('order_is_cancel'),
             'status' => 'success',
             'view' => view(POSOrder::CANCEL_ORDER[VIEW], compact('totalHoldOrders', 'cartItems'))->render(),
         ]);
@@ -410,14 +458,13 @@ class POSOrderController extends BaseController
      */
     public function getAllHoldOrdersView(Request $request): JsonResponse
     {
-        $branchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
+        $branchId = (int)($request['branch_id'] ?? 1);
         if ($branchId <= 0) {
             $branchId = 1;
         }
-        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
-        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId);
-        $cartNames = $this->POSService->getCartNames($branchId);
-        $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames);
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId, 'admin', (int)auth('admin')->id());
+        $cartNames = $this->POSService->getCartNames($branchId, 'admin', (int)auth('admin')->id());
+        $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames, branchId: $branchId);
         if (!empty($request['customer'])) {
             $searchValue = strtolower($request['customer']);
             $filteredItems = collect($cartItems)->filter(function ($item) use ($searchValue) {
@@ -437,11 +484,12 @@ class POSOrderController extends BaseController
      */
     protected function getCustomerDataFromSessionForPOS(): array
     {
-        if (Str::contains(session(SessionKey::CURRENT_USER), 'walking-customer')) {
+        $cartId = trim((string)request()->input('cart_id', ''));
+        if ($cartId === '' || Str::contains($cartId, 'walking-customer')) {
             $currentCustomer = translate('walking_customer');
             $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => '0']);
         } else {
-            $userId = explode('-', session(SessionKey::CURRENT_USER))[2];
+            $userId = explode('-', $cartId)[2];
             $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => $userId]);
             $currentCustomer = $currentCustomerData['f_name'] . ' ' . $currentCustomerData['l_name'] . ' (' . $currentCustomerData['phone'] . ')';
         }
@@ -456,12 +504,12 @@ class POSOrderController extends BaseController
      * @param array $cartNames
      * @return array
      */
-    protected function getHoldOrderCalculationData(array $cartNames): array
+    protected function getHoldOrderCalculationData(array $cartNames, int $branchId): array
     {
         $cartData = [];
         foreach ($cartNames as $cartName) {
             $customerCartData = $this->getCustomerCartData(cartName: $cartName);
-            $CartItemData = $this->calculateCartItemsData(cartName: $cartName, customerCartData: $customerCartData);
+            $CartItemData = $this->calculateCartItemsData(cartName: $cartName, customerCartData: $customerCartData, branchId: $branchId);
             $cartData[$cartName] = array_merge($customerCartData[$cartName], $CartItemData);
         }
         return $cartData;
@@ -493,7 +541,7 @@ class POSOrderController extends BaseController
         return $customerCartData;
     }
 
-    protected function calculateCartItemsData(string $cartName, array $customerCartData): array
+    protected function calculateCartItemsData(string $cartName, array $customerCartData, int $branchId): array
     {
         $cartItemValue = [];
         $subTotalCalculation = [
@@ -507,8 +555,14 @@ class POSOrderController extends BaseController
             'discountOnProduct' => 0,
             'productSubtotal' => 0,
         ];
-        if (session()->get($cartName)) {
-            foreach (session()->get($cartName) as $cartItem) {
+        $cartPayload = $this->posCartStateService->getPayload(
+            cartId: $cartName,
+            branchId: $branchId,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id()
+        );
+        if (!empty($cartPayload)) {
+            foreach ($cartPayload as $cartItem) {
                 if (is_array($cartItem)) {
                     $product = $this->productRepo->getFirstWhere(params: ['id' => $cartItem['id']], relations: ['clearanceSale' => function ($query) {
                         return $query->active();
@@ -559,10 +613,42 @@ class POSOrderController extends BaseController
         ];
     }
 
-    protected function getCartData(string $cartName): array
+    protected function getCartData(string $cartName, int $branchId): array
     {
         $customerCartData = $this->getCustomerCartData(cartName: $cartName);
-        $cartItemData = $this->calculateCartItemsData(cartName: $cartName, customerCartData: $customerCartData);
+        $cartItemData = $this->calculateCartItemsData(cartName: $cartName, customerCartData: $customerCartData, branchId: $branchId);
         return array_merge($customerCartData[$cartName], $cartItemData);
+    }
+
+    private function validateWriteContext(Request $request, bool $mustExistCart): array
+    {
+        $branchId = (int)$request->input('branch_id', 0);
+        $cartId = trim((string)$request->input('cart_id', ''));
+        if ($branchId <= 0 || $cartId === '' || !$this->cartService->cartBelongsToBranch($cartId, $branchId)) {
+            throw ValidationException::withMessages([
+                'cart_id' => [translate('invalid_request')],
+            ]);
+        }
+
+        if ($mustExistCart) {
+            $this->posCartStateService->assertCart(
+                cartId: $cartId,
+                branchId: $branchId,
+                actorType: 'admin',
+                actorId: (int)auth('admin')->id()
+            );
+        } else {
+            $this->posCartStateService->ensureCart(
+                cartId: $cartId,
+                branchId: $branchId,
+                actorType: 'admin',
+                actorId: (int)auth('admin')->id()
+            );
+        }
+
+        return [
+            'branch_id' => $branchId,
+            'cart_id' => $cartId,
+        ];
     }
 }

@@ -388,20 +388,20 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::get(POS::INDEX[URI], 'index')->name('index');
                 Route::get(POS::QUICK_VIEW[URI], 'getQuickView')->name('quick-view');
                 Route::get(POS::SEARCH[URI], 'getSearchedProductsView')->name('search-product');
-                Route::any(POS::CHANGE_CUSTOMER[URI], 'changeCustomer')->name('change-customer');  // Reading or selecting customer
+                Route::any(POS::CHANGE_CUSTOMER[URI], 'changeCustomer')->name('change-customer')->block(30, 30);  // Reading or selecting customer
             });
 
             Route::controller(CartController::class)->group(function () {
                 Route::get(Cart::GET_CART_IDS[URI], 'getCartIds')->name('get-cart-ids');
-                Route::get(Cart::CLEAR_CART_IDS[URI], 'clearSessionCartIds')->name('clear-cart-ids');
-                Route::any(Cart::CART_EMPTY[URI], 'emptyCart')->name('empty-cart');
-                Route::any(Cart::CHANGE_CART[URI], 'changeCart')->name('change-cart');
-                Route::get(Cart::NEW_CART_ID[URI], 'addNewCartId')->name('new-cart-id');
+                Route::get(Cart::CLEAR_CART_IDS[URI], 'clearSessionCartIds')->name('clear-cart-ids')->block(30, 30);
+                Route::any(Cart::CART_EMPTY[URI], 'emptyCart')->name('empty-cart')->block(30, 30);
+                Route::any(Cart::CHANGE_CART[URI], 'changeCart')->name('change-cart')->block(30, 30);
+                Route::get(Cart::NEW_CART_ID[URI], 'addNewCartId')->name('new-cart-id')->block(30, 30);
             });
 
             Route::controller(POSOrderController::class)->group(function () {
                 Route::any(POSOrder::HOLD_ORDERS[URI], 'getAllHoldOrdersView')->name('view-hold-orders');
-                Route::any(POSOrder::CANCEL_ORDER[URI], 'cancelOrder')->name('cancel-order');
+                Route::any(POSOrder::CANCEL_ORDER[URI], 'cancelOrder')->name('cancel-order')->block(30, 30);
             });
         });
 
@@ -409,11 +409,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:pos_management.create,admin')->group(function () {
 
             Route::controller(CartController::class)->group(function () {
-                Route::post(Cart::ADD[URI], 'addToCart')->name('add-to-cart');
+                Route::post(Cart::ADD[URI], 'addToCart')->name('add-to-cart')->block(30, 30);
             });
 
             Route::controller(POSOrderController::class)->group(function () {
-                Route::post(POSOrder::ORDER_PLACE[URI], 'placeOrder')->name('place-order');
+                Route::post(POSOrder::ORDER_PLACE[URI], 'placeOrder')->name('place-order')->block(30, 30);
             });
         });
 
@@ -421,14 +421,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:pos_management.update,admin')->group(function () {
 
             Route::controller(POSController::class)->group(function () {
-                Route::post(POS::UPDATE_DISCOUNT[URI], 'updateDiscount')->name('update-discount');
-                Route::post(POS::COUPON_DISCOUNT[URI], 'getCouponDiscount')->name('coupon-discount');
+                Route::post(POS::UPDATE_DISCOUNT[URI], 'updateDiscount')->name('update-discount')->block(30, 30);
+                Route::post(POS::COUPON_DISCOUNT[URI], 'getCouponDiscount')->name('coupon-discount')->block(30, 30);
             });
 
             Route::controller(CartController::class)->group(function () {
                 Route::post(Cart::VARIANT[URI], 'getVariantPrice')->name('get-variant-price');
-                Route::post(Cart::QUANTITY_UPDATE[URI], 'updateQuantity')->name('update-quantity');
-                Route::post(Cart::REMOVE[URI], 'removeCart')->name('remove-cart');
+                Route::post(Cart::QUANTITY_UPDATE[URI], 'updateQuantity')->name('update-quantity')->block(30, 30);
+                Route::post(Cart::REMOVE[URI], 'removeCart')->name('remove-cart')->block(30, 30);
             });
 
             Route::controller(POSOrderController::class)->group(function () {

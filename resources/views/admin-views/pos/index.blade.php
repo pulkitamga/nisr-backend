@@ -87,8 +87,8 @@
                     <div class="form-group d-flex gap-2">
                         <?php
                             $userId = 0;
-                            if (Illuminate\Support\Str::contains(session('current_user'), 'saved-customer')) {
-                                $userId = explode('-', session('current_user'))[2];
+                            if (Illuminate\Support\Str::contains($cartId ?? '', 'saved-customer')) {
+                                $userId = (int)(explode('-', $cartId)[2] ?? 0);
                             }
                             ?>
                         <select id='customer' name="customer_id" data-placeholder="{{ translate('walking_customer') }}" class="js-example-matcher form-control form-ellipsis action-customer-change">
@@ -176,7 +176,7 @@
 <span id="message-sorry-the-minimum-value-was-reached" data-text="{{ translate('sorry_the_minimum_value_was_reached') }}"></span>
 <span id="message-this-discount-is-not-applied-for-this-amount" data-text="{{ translate('this_discount_is_not_applied_for_this_amount') }}"></span>
 <span id="message-product-quantity-cannot-be-zero-in-cart" data-text="{{ translate('product_quantity_can_not_be_zero_or_less_than_zero_in_cart') }}"></span>
-<span id="branch_id" data-branch="{{ request()->get('branch_id', '') }}" class="d-none"></span>
+<span id="branch_id" data-branch="{{ (int)($branchId ?? request()->get('branch_id', 1)) }}" class="d-none"></span>
 
 @endsection
 

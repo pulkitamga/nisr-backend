@@ -6,9 +6,12 @@ use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\SessionKey;
 use App\Models\Branch;
 use App\Models\ManageBranchProductStock;
+use App\Models\PosCartState;
 use App\Traits\CalculatorTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -17,6 +20,10 @@ class CartService
     use CalculatorTrait;
 
     private ?VariantMatcher $variantMatcher = null;
+
+    public function __construct(
+        private readonly PosCartStateService $posCartStateService
+    ) {}
 
     /**
      * @param object $request
@@ -64,11 +71,15 @@ class CartService
         $requestQuantity = (int)$request['quantity'];
 
         $inCartStatus = 0;
-        $requestedCartId = trim((string)($this->getRequestValue($request, 'cart_id') ?? ''));
-        $activeCartId = $requestedCartId !== '' && session()->has($requestedCartId)
-            ? $requestedCartId
-            : (string)(session(SessionKey::CURRENT_USER) ?? '');
-        $cartData = $activeCartId !== '' ? (array)session()->get($activeCartId, []) : [];
+        $activeCartId = trim((string)($this->getRequestValue($request, 'cart_id') ?? ''));
+        $cartData = [];
+        if ($activeCartId !== '' && $this->cartBelongsToBranch($activeCartId, $branchId)) {
+            try {
+                $cartData = $this->getCartPayloadById($activeCartId, $branchId);
+            } catch (Throwable) {
+                $cartData = [];
+            }
+        }
         $inCartData = null;
         $requestedLineKey = trim((string)($this->getRequestValue($request, 'line_key') ?? ''));
 
@@ -176,19 +187,22 @@ class CartService
         return $variation;
     }
 
-    public function getUserId(): int
+    public function getUserId(?string $cartId = null): int
     {
         $userId = 0;
-        if (Str::contains(session(SessionKey::CURRENT_USER), 'saved-customer')) {
-            $userId = explode('-', session(SessionKey::CURRENT_USER))[2];
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        if (Str::contains($resolvedCartId, 'saved-customer')) {
+            $segments = explode('-', $resolvedCartId);
+            $userId = (int)($segments[2] ?? 0);
         }
         return $userId;
     }
 
-    public function getUserType(): string
+    public function getUserType(?string $cartId = null): string
     {
         $userType = 'walking-customer';
-        if (Str::contains(session(SessionKey::CURRENT_USER), 'saved-customer')) {
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        if (Str::contains($resolvedCartId, 'saved-customer')) {
             $userType = 'saved-customer';
         }
         return $userType;
@@ -196,35 +210,40 @@ class CartService
 
     public function getNewCartSession(string|int $cartId): void
     {
-        $activeCartId = (string)$cartId;
-        if (session()->has(SessionKey::CURRENT_USER)) {
-            $activeCartId = (string)session(SessionKey::CURRENT_USER);
-        } else {
-            session()->put(SessionKey::CURRENT_USER, $activeCartId);
+        $activeCartId = trim((string)$cartId);
+        if ($activeCartId === '') {
+            throw ValidationException::withMessages([
+                'cart_id' => [translate('invalid_request')],
+            ]);
         }
 
-        if (!session()->has(SessionKey::CART_NAME)) {
-            session()->put(SessionKey::CART_NAME, []);
-        }
-        if (!in_array($activeCartId, session(SessionKey::CART_NAME) ?? [], true)) {
-            session()->push(SessionKey::CART_NAME, $activeCartId);
-        }
-        if (!session()->has($activeCartId) || !is_array(session($activeCartId))) {
-            session()->put($activeCartId, []);
-        }
+        $this->posCartStateService->ensureCart(
+            cartId: $activeCartId,
+            branchId: $this->resolveBranchIdFromCartId($activeCartId, null)
+        );
     }
 
-    public function getCartKeeper(): void
+    public function getCartKeeper(?string $cartId = null, ?int $branchId = null): void
     {
-        $cartId = session(SessionKey::CURRENT_USER);
-        $cart = session($cartId);
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        if ($resolvedCartId === '') {
+            return;
+        }
+
+        $resolvedBranchId = $this->resolveBranchIdFromCartId($resolvedCartId, $branchId);
+        $cart = $this->getCartPayloadById($resolvedCartId, $resolvedBranchId);
         $cartKeeper = [];
-        if (session()->has($cartId) && count($cart) > 0) {
-            foreach ($cart as $cartItem) {
+        foreach ($cart as $cartItem) {
+            if (is_array($cartItem)) {
                 $cartKeeper[] = $cartItem;
             }
         }
-        session()->put(session(SessionKey::CURRENT_USER), $cartKeeper);
+
+        if (!isset($cartKeeper['add_to_cart_time'])) {
+            $cartKeeper['add_to_cart_time'] = Carbon::now();
+        }
+
+        $this->putCartPayloadById($resolvedCartId, $resolvedBranchId, $cartKeeper);
     }
 
     public function getVariationPrice(array $variation, string $variant): float
@@ -270,14 +289,18 @@ class CartService
         ?string $cartId = null
     ): array
     {
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        $resolvedCartId = trim((string)($cartId ?? ''));
         if ($resolvedCartId === '') {
-            $resolvedCartId = $this->generateWalkingCustomerCartId($this->getActivePosBranchId());
-            session()->put(SessionKey::CURRENT_USER, $resolvedCartId);
-            if (!in_array($resolvedCartId, session(SessionKey::CART_NAME) ?? [], true)) {
-                session()->push(SessionKey::CART_NAME, $resolvedCartId);
-            }
+            throw ValidationException::withMessages([
+                'cart_id' => [translate('invalid_request')],
+            ]);
         }
+
+        $resolvedBranchId = $this->resolveBranchIdFromCartId(
+            $resolvedCartId,
+            (int)($extra['branch_id'] ?? 0)
+        );
+
         $lineKey = $extra['line_key'] ?? $this->makeCartLineKey(
             productId: (int)$product['id'],
             variant: $variant,
@@ -288,7 +311,7 @@ class CartService
         $sessionData = [
             'id' => $product['id'],
             'line_key' => $lineKey,
-            'customerId' => $this->getUserId(),
+            'customerId' => $this->getUserId($resolvedCartId),
             'customerOnHold' => false,
             'quantity' => $quantity,
             'price' => $price,
@@ -303,20 +326,18 @@ class CartService
         if (!empty($extra)) {
             $sessionData = array_merge($sessionData, $extra);
         }
-        if (session()->has($resolvedCartId)) {
-            $keeper = [];
-            foreach ((array)session($resolvedCartId, []) as $item) {
+
+        $keeper = [];
+        foreach ($this->getCartPayloadById($resolvedCartId, $resolvedBranchId) as $item) {
+            if (is_array($item)) {
                 $keeper[] = $item;
             }
-            $keeper[] = $sessionData;
-
-            if (!isset(session()->get($resolvedCartId)['add_to_cart_time'])) {
-                $keeper += ['add_to_cart_time' => Carbon::now()];
-            }
-            session()->put($resolvedCartId, $keeper);
-        } else {
-            session()->put($resolvedCartId, [$sessionData] + ['add_to_cart_time' => Carbon::now()]);
         }
+        $keeper[] = $sessionData;
+        if (!isset($keeper['add_to_cart_time'])) {
+            $keeper['add_to_cart_time'] = Carbon::now();
+        }
+        $this->putCartPayloadById($resolvedCartId, $resolvedBranchId, $keeper);
 
         return $sessionData;
     }
@@ -330,8 +351,15 @@ class CartService
     ): int
     {
         $quantity = 0;
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
-        $cart = $resolvedCartId !== '' ? (array)session($resolvedCartId, []) : [];
+        $resolvedCartId = trim((string)($cartId ?? ''));
+        if ($resolvedCartId === '') {
+            throw ValidationException::withMessages([
+                'cart_id' => [translate('invalid_request')],
+            ]);
+        }
+
+        $resolvedBranchIdForCart = $this->resolveBranchIdFromCartId($resolvedCartId, $branchId);
+        $cart = $this->getCartPayloadById($resolvedCartId, $resolvedBranchIdForCart);
         $keeper = [];
         $requestedVariant = trim((string)($request['variant'] ?? ''));
         $requestedQuantity = (int)$request['quantity'];
@@ -379,9 +407,7 @@ class CartService
             }
         }
         $keeper += ['add_to_cart_time' => Carbon::now()];
-        if ($resolvedCartId !== '') {
-            session()->put($resolvedCartId, $keeper);
-        }
+        $this->putCartPayloadById($resolvedCartId, $resolvedBranchIdForCart, $keeper);
         return $quantity;
     }
 
@@ -407,11 +433,12 @@ class CartService
     public function getNewCartId(): void
     {
         $cartId = $this->generateWalkingCustomerCartId($this->getActivePosBranchId());
+        $this->posCartStateService->ensureCart(
+            cartId: $cartId,
+            branchId: $this->resolveBranchIdFromCartId($cartId, null)
+        );
+        // Backward-compatible read fallback for modules not migrated yet.
         session()->put(SessionKey::CURRENT_USER, $cartId);
-        if (!in_array($cartId, session(SessionKey::CART_NAME) ?? [], true)) {
-            session()->push(SessionKey::CART_NAME, $cartId);
-        }
-        session()->put($cartId, []);
     }
 
     public function generateWalkingCustomerCartId(?int $branchId = null): string
@@ -421,8 +448,7 @@ class CartService
         do {
             $cartId = 'walking-customer-' . Str::lower(Str::random(16)) . $suffix;
         } while (
-            session()->has($cartId) ||
-            in_array($cartId, session(SessionKey::CART_NAME) ?? [], true)
+            PosCartState::query()->where('cart_id', $cartId)->exists()
         );
 
         return $cartId;
@@ -467,27 +493,61 @@ class CartService
 
     public function getCartSubtotalCalculation(object $product, array $cartItem, array $calculation): array
     {
-        $taxCalculate = $product['tax_model'] == 'include' ? 0 : $this->getTaxAmount($cartItem['price'], $product['tax']) * $cartItem['quantity'];
-        $discount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: $cartItem['price'], from: 'panel');
-        $productSubtotal = (($cartItem['price'] - $discount) * $cartItem['quantity']) - ($product['tax_model'] == 'include' ? $taxCalculate : 0);
+        $unitPrice = max(0, (float)($cartItem['price'] ?? 0));
+        $quantity = max(0, (int)($cartItem['quantity'] ?? 0));
+        $discount = max(0, (float)($cartItem['discount'] ?? 0));
+        if ($discount <= 0) {
+            $discount = max(0, (float)getProductPriceByType(
+                product: $product,
+                type: 'discounted_amount',
+                result: 'value',
+                price: $unitPrice,
+                from: 'panel'
+            ));
+        }
+
+        // Tax must be calculated after product discount.
+        $taxableUnitAmount = max(0, $unitPrice - $discount);
+        $taxRate = max(0, (float)($product['tax'] ?? 0));
+        $taxModel = (string)($product['tax_model'] ?? ($cartItem['tax_model'] ?? 'exclude'));
+
+        if ($taxModel == 'include') {
+            $unitIncludedTax = $taxRate > 0
+                ? ($taxableUnitAmount * $taxRate) / (100 + $taxRate)
+                : 0;
+
+            $taxCalculate = 0;
+            $totalIncludeTax = $unitIncludedTax * $quantity;
+            $productSubtotal = $taxableUnitAmount * $quantity; // gross (tax incl.)
+        } else {
+            $unitTax = $this->getTaxAmount($taxableUnitAmount, $taxRate);
+            $taxCalculate = $unitTax * $quantity;
+            $totalIncludeTax = 0;
+            $productSubtotal = $taxableUnitAmount * $quantity; // net (tax excl.)
+        }
+
         return [
             'countItem' => 1,
-            'totalQuantity' => $cartItem['quantity'],
+            'totalQuantity' => $quantity,
             'taxCalculate' => $taxCalculate,
             'totalTaxShow' => $taxCalculate,
             'totalTax' => $taxCalculate,
-            'totalIncludeTax' => $product['tax_model'] == 'include' ? $this->getTaxAmount($cartItem['price'], $product['tax']) * $cartItem['quantity'] : 0,
+            'totalIncludeTax' => $totalIncludeTax,
             'productSubtotal' => $productSubtotal,
-            'subtotal' => $productSubtotal - ($cartItem['tax_model'] == 'include' ? $taxCalculate : 0),
-            'discountOnProduct' => $discount * $cartItem['quantity'],
+            'subtotal' => $productSubtotal,
+            'discountOnProduct' => $discount * $quantity,
         ];
     }
 
     public function getTotalCalculation(array $subTotalCalculation, string $cartName): array
     {
         $total = $subTotalCalculation['subtotal'];
-        $extraDiscount = session()->get($cartName)['ext_discount'] ?? 0;
-        $extraDiscountType = session()->get($cartName)['ext_discount_type'] ?? 'amount';
+        $payload = $this->getCartPayloadById(
+            cartId: $cartName,
+            branchId: $this->resolveBranchIdFromCartId($cartName, null)
+        );
+        $extraDiscount = $payload['ext_discount'] ?? 0;
+        $extraDiscountType = $payload['ext_discount_type'] ?? 'amount';
         if ($extraDiscountType == 'percent' && $extraDiscount > 0) {
             $extraDiscount = (($subTotalCalculation['subtotal'] + $subTotalCalculation['discountOnProduct'] - $subTotalCalculation['totalIncludeTax']) * $extraDiscount) / 100;
         }
@@ -495,8 +555,8 @@ class CartService
             $total -= $extraDiscount;
         }
         $couponDiscount = 0;
-        if (isset(session()->get($cartName)['coupon_discount'])) {
-            $couponDiscount = session()->get($cartName)['coupon_discount'];
+        if (isset($payload['coupon_discount'])) {
+            $couponDiscount = $payload['coupon_discount'];
         }
         return [
             'total' => $total,
@@ -505,11 +565,17 @@ class CartService
         ];
     }
 
-    public function customerOnHoldStatus($status): void
+    public function customerOnHoldStatus($status, ?string $cartId = null, ?int $branchId = null): void
     {
-        $cart = session(session(SessionKey::CURRENT_USER));
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        if ($resolvedCartId === '') {
+            return;
+        }
+
+        $resolvedBranchId = $this->resolveBranchIdFromCartId($resolvedCartId, $branchId);
+        $cart = $this->getCartPayloadById($resolvedCartId, $resolvedBranchId);
         $cartKeeper = [];
-        if (session()->has(session(SessionKey::CURRENT_USER)) && count($cart) > 0) {
+        if (count($cart) > 0) {
             foreach ($cart as $cartItem) {
                 if (is_array($cartItem)) {
                     $cartItem['customerOnHold'] = $status;
@@ -517,7 +583,7 @@ class CartService
                 $cartKeeper[] = $cartItem;
             }
         }
-        session()->put(session(SessionKey::CURRENT_USER), $cartKeeper);
+        $this->putCartPayloadById($resolvedCartId, $resolvedBranchId, $cartKeeper);
     }
 
     public function checkCurrentStock(
@@ -558,7 +624,14 @@ class CartService
 
     public function checkProductTypeDigital(string|int $cartId): bool
     {
-        $cart = session($cartId);
+        $resolvedCartId = trim((string)$cartId);
+        if ($resolvedCartId === '') {
+            return false;
+        }
+        $cart = $this->getCartPayloadById(
+            cartId: $resolvedCartId,
+            branchId: $this->resolveBranchIdFromCartId($resolvedCartId, null)
+        );
         $isDigitalProduct = false;
         foreach ($cart as $item) {
             if (is_array($item) && $item['productType'] == 'digital') {
@@ -576,8 +649,6 @@ class CartService
         } else {
             $customerName = "";
             $customerPhone = "";
-            session()->forget(session($customerId));
-            $this->getNewCartId();
         }
         return [
             'customerName' => $customerName,
@@ -715,6 +786,56 @@ class CartService
         }
 
         return $this->normalizeVariantToken($raw) === null;
+    }
+
+    private function getCartPayloadById(string $cartId, ?int $branchId): array
+    {
+        $resolvedCartId = trim($cartId);
+        if ($resolvedCartId === '') {
+            return [];
+        }
+
+        $resolvedBranchId = $this->resolveBranchIdFromCartId($resolvedCartId, $branchId);
+        try {
+            return $this->posCartStateService->getPayload(
+                cartId: $resolvedCartId,
+                branchId: $resolvedBranchId
+            );
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    private function putCartPayloadById(string $cartId, ?int $branchId, array $payload): void
+    {
+        $resolvedCartId = trim($cartId);
+        if ($resolvedCartId === '') {
+            return;
+        }
+
+        $resolvedBranchId = $this->resolveBranchIdFromCartId($resolvedCartId, $branchId);
+        $this->posCartStateService->putPayload(
+            cartId: $resolvedCartId,
+            branchId: $resolvedBranchId,
+            payload: $payload
+        );
+    }
+
+    private function resolveBranchIdFromCartId(string $cartId, ?int $branchId): int
+    {
+        $resolvedBranchId = $this->normalizeBranchId($branchId);
+        if ($resolvedBranchId > 0) {
+            return $resolvedBranchId;
+        }
+
+        if (preg_match('/-b(\d+)$/', trim($cartId), $matches)) {
+            $fromCartId = (int)($matches[1] ?? 0);
+            if ($fromCartId > 0) {
+                return $fromCartId;
+            }
+        }
+
+        return $this->normalizeBranchId(null);
     }
 
     private function getVariantMatcher(): VariantMatcher

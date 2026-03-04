@@ -101,27 +101,27 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
             Route::group(['prefix' => 'pos', 'as' => 'pos.'], function () {
                 Route::controller(POSController::class)->group(function () {
                     Route::get(POS::INDEX[URI], 'index')->name('index');
-                    Route::any(POS::CHANGE_CUSTOMER[URI], 'changeCustomer')->name('change-customer');
-                    Route::post(POS::UPDATE_DISCOUNT[URI], 'updateDiscount')->name('update-discount');
-                    Route::post(POS::COUPON_DISCOUNT[URI], 'getCouponDiscount')->name('coupon-discount');
+                    Route::any(POS::CHANGE_CUSTOMER[URI], 'changeCustomer')->name('change-customer')->block(30, 30);
+                    Route::post(POS::UPDATE_DISCOUNT[URI], 'updateDiscount')->name('update-discount')->block(30, 30);
+                    Route::post(POS::COUPON_DISCOUNT[URI], 'getCouponDiscount')->name('coupon-discount')->block(30, 30);
                     Route::get(POS::QUICK_VIEW[URI], 'getQuickView')->name('quick-view');
                     Route::get(POS::SEARCH[URI], 'getSearchedProductsView')->name('search-product');
                 });
                 Route::controller(CartController::class)->group(function () {
                     Route::post(Cart::VARIANT[URI], 'getVariantPrice')->name('get-variant-price');
-                    Route::post(Cart::QUANTITY_UPDATE[URI], 'updateQuantity')->name('quantity-update');
+                    Route::post(Cart::QUANTITY_UPDATE[URI], 'updateQuantity')->name('quantity-update')->block(30, 30);
                     Route::get(Cart::GET_CART_IDS[URI], 'getCartIds')->name('get-cart-ids');
-                    Route::get(Cart::CLEAR_CART_IDS[URI], 'clearSessionCartIds')->name('clear-cart-ids');
-                    Route::post(Cart::ADD[URI], 'addToCart')->name('add-to-cart');
-                    Route::post(Cart::REMOVE[URI], 'removeCart')->name('cart-remove');
-                    Route::any(Cart::CART_EMPTY[URI], 'emptyCart')->name('cart-empty');
-                    Route::any(Cart::CHANGE_CART[URI], 'changeCart')->name('change-cart');
-                    Route::get(Cart::NEW_CART_ID[URI], 'addNewCartId')->name('new-cart-id');
+                    Route::get(Cart::CLEAR_CART_IDS[URI], 'clearSessionCartIds')->name('clear-cart-ids')->block(30, 30);
+                    Route::post(Cart::ADD[URI], 'addToCart')->name('add-to-cart')->block(30, 30);
+                    Route::post(Cart::REMOVE[URI], 'removeCart')->name('cart-remove')->block(30, 30);
+                    Route::any(Cart::CART_EMPTY[URI], 'emptyCart')->name('cart-empty')->block(30, 30);
+                    Route::any(Cart::CHANGE_CART[URI], 'changeCart')->name('change-cart')->block(30, 30);
+                    Route::get(Cart::NEW_CART_ID[URI], 'addNewCartId')->name('new-cart-id')->block(30, 30);
                 });
                 Route::controller(POSOrderController::class)->group(function () {
                     Route::post(POSOrder::ORDER_DETAILS[URI] . '/{id}', 'index')->name('order-details');
-                    Route::post(POSOrder::ORDER_PLACE[URI], 'placeOrder')->name('order-place');
-                    Route::any(POSOrder::CANCEL_ORDER[URI], 'cancelOrder')->name('cancel-order');
+                    Route::post(POSOrder::ORDER_PLACE[URI], 'placeOrder')->name('order-place')->block(30, 30);
+                    Route::any(POSOrder::CANCEL_ORDER[URI], 'cancelOrder')->name('cancel-order')->block(30, 30);
                     Route::any(POSOrder::HOLD_ORDERS[URI], 'getAllHoldOrdersView')->name('view-hold-orders');
                 });
             });

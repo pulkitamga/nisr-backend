@@ -724,7 +724,7 @@
                                 <tr>
                                     <td class="text-left font-bold">{{ translate('product_Discount')}}</td>
                                     <td class="text-right">
-                                        - {{ webCurrencyConverter(amount: $orderTotalPriceSummary['itemDiscount']) }}</td>
+                                        - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])) }}</td>
                                 </tr>
                                 @if($orderTotalPriceSummary['totalInstallationPrice'] > 0)
                                 <tr>
@@ -736,9 +736,9 @@
                                     @endif
                                 @if($orderTotalPriceSummary['totalExchangePrice'] > 0)
                                 <tr>
-                                    <td class="text-left font-bold">{{translate('exchange_Price')}}</td>
+                                    <td class="text-left font-bold">{{translate('exchange_charge')}}</td>
                                     <td class="text-right">
-                                    - {{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalExchangePrice']) }}</strong>
+                                    - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['totalExchangePrice'])) }}</strong>
                                     </td>
                                 </tr>
                                     @endif
@@ -746,7 +746,7 @@
                                     <tr>
                                         <td class="text-left font-bold">{{ translate('extra_Discount')}}</td>
                                         <td class="text-right">
-                                            - {{ webCurrencyConverter(amount: $orderTotalPriceSummary['extraDiscount']) }}
+                                            - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['extraDiscount'])) }}
                                         </td>
                                     </tr>
                                 @endif
@@ -767,7 +767,7 @@
                                 <tr>
                                     <td class="text-left font-bold">{{ translate('coupon_Discount')}}</td>
                                     <td class="text-right">
-                                        - {{ webCurrencyConverter(amount: $orderTotalPriceSummary['couponDiscount']) }}</td>
+                                        - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="text-left font-bold">{{ translate('tax')}}</td>
@@ -824,4 +824,3 @@
 </div>
 </body>
 </html>
-

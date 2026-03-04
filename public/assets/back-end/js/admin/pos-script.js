@@ -8,6 +8,16 @@ let isPosOrderPlacing = false;
 let isPosAddToCartRunning = false;
 let lastQuickViewRequestToken = 0;
 
+function generatePosIdempotencyKey(action) {
+    const prefix = (action || "pos").toString().trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+    const stamp = Date.now().toString(36);
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return `${prefix}-${stamp}-${window.crypto.randomUUID()}`;
+    }
+    const fallback = Math.random().toString(36).slice(2, 12);
+    return `${prefix}-${stamp}-${fallback}`;
+}
+
 function getPosActiveCartId() {
     const byHiddenInput = ($("#order-place input[name='cart_id']").val() || "").toString().trim();
     if (byHiddenInput.length > 0) {
@@ -340,6 +350,10 @@ function basicFunctionalityForCartSummary() {
         if (branchId) {
             clearUrl += (clearUrl.includes("?") ? "&" : "?") + "branch_id=" + encodeURIComponent(branchId);
         }
+        const activeCartId = getPosActiveCartId();
+        if (activeCartId) {
+            clearUrl += (clearUrl.includes("?") ? "&" : "?") + "cart_id=" + encodeURIComponent(activeCartId);
+        }
         document.location.href = clearUrl;
     });
 
@@ -347,6 +361,10 @@ function basicFunctionalityForCartSummary() {
         let newOrderUrl = $("#route-admin-pos-new-cart-id").data("url");
         if (branchId) {
             newOrderUrl += (newOrderUrl.includes("?") ? "&" : "?") + "branch_id=" + encodeURIComponent(branchId);
+        }
+        const activeCartId = getPosActiveCartId();
+        if (activeCartId) {
+            newOrderUrl += (newOrderUrl.includes("?") ? "&" : "?") + "cart_id=" + encodeURIComponent(activeCartId);
         }
         document.location.href = newOrderUrl;
     });
@@ -426,6 +444,7 @@ function basicFunctionalityForCartSummary() {
                     $('.action-form-submit').attr('disabled', true);
 
                     let formData = new FormData(document.getElementById('order-place'));
+                    formData.append('idempotency_key', generatePosIdempotencyKey('place-order'));
                     $.ajaxSetup({
                         headers: {
                             "X-XSRF-TOKEN": $('meta[name="csrf-token"]').attr(
@@ -1175,7 +1194,8 @@ function addToCart(form_id = "add-to-cart-form") {
             { name: 'exchange_charge', value: exchangeCharge },
             { name: 'installation_charge', value: installationCharge },
             { name: 'branch_id', value: branch_id },
-            { name: 'cart_id', value: getPosActiveCartId() }
+            { name: 'cart_id', value: getPosActiveCartId() },
+            { name: 'idempotency_key', value: generatePosIdempotencyKey('add-to-cart') }
         ]);
         isPosAddToCartRunning = true;
         $('.quick-view-modal-add-cart-button').attr('disabled', true);

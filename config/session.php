@@ -207,7 +207,7 @@ return [
     |
     */
 
-    'block' => env('SESSION_BLOCK', true),
+    'block' => env('SESSION_BLOCK', false),
 
     'block_store' => env('SESSION_BLOCK_STORE', null),
 

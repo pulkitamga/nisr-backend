@@ -772,26 +772,22 @@ class WholesaleController extends Controller
         }
 
         $product = Product::findOrFail($validated['product_id']);
-
-        $resolvedType = WholeSaleProducts::extractTypeFromVariationKey($validated['variant']);
-        $wholesaleProduct = $this->findWholesaleProductByVariation(
-            productId: $product->id,
-            variationInput: $validated['variant'],
-            variationType: $resolvedType
-        );
-
-        if (!$wholesaleProduct) {
-            Toastr::error(translate('Wholesale product not found.'));
-            return redirect()->back();
-        }
-
         $tier = (string)$user->tier;
         $requestedRange = WholesaleProductPriceRange::query()
             ->where('id', $validated['price_range_id'])
-            ->where('wholesale_id', $wholesaleProduct->id)
             ->first();
 
         if (!$requestedRange || (string)$requestedRange->tier !== $tier) {
+            Toastr::error(translate('Selected wholesale price range is invalid.'));
+            return redirect()->back();
+        }
+
+        $wholesaleProduct = WholeSaleProducts::query()
+            ->where('id', (int)$requestedRange->wholesale_id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        if (!$wholesaleProduct) {
             Toastr::error(translate('Selected wholesale price range is invalid.'));
             return redirect()->back();
         }

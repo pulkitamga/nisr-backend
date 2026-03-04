@@ -33,7 +33,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Models\User;
 use App\Models\WholeSalerBusiness;
-use illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log;
 
 ini_set('memory_limit', -1);
 ini_set('upload_max_filesize', '180M');

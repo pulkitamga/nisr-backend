@@ -158,7 +158,7 @@
                                                         </div>
                                                         <div>
                                                             <strong>{{translate('unit_price')}} :</strong>
-                                                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'] + ($detail->tax_model =='include' ? ($detail['tax'] / $detail['qty']) :0))) }}
+                                                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'])) }}
                                                             @if ($detail->tax_model =='include')
                                                                 ({{translate('tax_incl.')}})
                                                             @else
@@ -265,7 +265,7 @@
                                     <dt class="col-5 text-capitalize">{{translate('item_discount')}}</dt>
                                     <dd class="col-6 title-color">
                                         -
-                                        <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemDiscount']), currencyCode: getCurrencyCode())}}</strong>
+                                        <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode())}}</strong>
                                     </dd>
                                     <dt class="col-5 text-capitalize">{{translate('sub_total')}}</dt>
                                     <dd class="col-6 title-color">
@@ -278,7 +278,7 @@
                                     </dt>
                                     <dd class="col-6 title-color">
                                         -
-                                        <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['couponDiscount']), currencyCode: getCurrencyCode())}}</strong>
+                                        <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode())}}</strong>
                                     </dd>
                                     <dt class="col-5 text-uppercase">{{translate('vat')}}/{{translate('tax')}}</dt>
                                     <dd class="col-6 title-color">

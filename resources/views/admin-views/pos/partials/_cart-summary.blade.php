@@ -1,6 +1,6 @@
 @php($currentCustomerData = $summaryData['currentCustomerData'] ?? null)
 @php($cartNames = $summaryData['cartNames'] ?? [])
-@php($activeCartId = (string)($cartId ?? session('current_user')))
+@php($activeCartId = (string)($cartId ?? ''))
 @php($isWalkingCustomer = str_contains($activeCartId, 'walking-customer'))
 @if (!$isWalkingCustomer)
     <div class="pos-home-delivery mb-4">

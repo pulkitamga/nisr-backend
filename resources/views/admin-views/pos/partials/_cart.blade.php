@@ -1,7 +1,7 @@
 @php
 $installationTotel = 0;
 $exchangeTotel = 0;
-$activeCartId = (string)($cartId ?? session('current_user'));
+$activeCartId = (string)($cartId ?? '');
 
 if (!empty($cartItems['cartItemValue'])) {
 foreach ($cartItems['cartItemValue'] as $item) {
@@ -14,7 +14,7 @@ $exchangeTotel += isset($item['exchange_charge']) ? (float)$item['exchange_charg
 }
 
 $total = $cartItems['total'] + $cartItems['totalTax'] - $cartItems['couponDiscount'] + $installationTotel - $exchangeTotel;
-$branch_id = request()->get('branch_id', '');
+$branch_id = (int)($branchId ?? request()->get('branch_id', 1));
 @endphp
 
 
@@ -111,7 +111,7 @@ $branch_id = request()->get('branch_id', '');
                 <div class="d-flex gap-2 justify-content-between">
                     <dt class="title-color text-capitalize font-weight-normal">{{ translate('product_Discount') }} :
                     </dt>
-                    <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($cartItems['discountOnProduct'],
+                    <dd>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: round(abs((float)$cartItems['discountOnProduct']),
                         2)), currencyCode: getCurrencyCode()) }}</dd>
                 </div>
 
@@ -122,7 +122,7 @@ $branch_id = request()->get('branch_id', '');
                             data-target="#add-discount">
                             <i class="tio-edit"></i>
                         </button>
-                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $cartItems['extraDiscount']),
+                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$cartItems['extraDiscount'])),
                         currencyCode: getCurrencyCode())}}
                     </dd>
                 </div>
@@ -135,7 +135,7 @@ $branch_id = request()->get('branch_id', '');
                             data-target="#add-coupon-discount">
                             <i class="tio-edit"></i>
                         </button>
-                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:$cartItems['couponDiscount']),
+                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$cartItems['couponDiscount'])),
                         currencyCode: getCurrencyCode())}}
                     </dd>
                 </div>
@@ -159,7 +159,7 @@ $branch_id = request()->get('branch_id', '');
                 @if($exchangeTotel > 0)
                 <div class="d-flex gap-2 justify-content-between">
                     <dt class="title-color text-capitalize font-weight-normal">{{ translate('Exchange_Total') }} :</dt>
-                    <dd>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: round($exchangeTotel, 2)),
+                    <dd>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: round(abs((float)$exchangeTotel), 2)),
                         currencyCode: getCurrencyCode()) }}</dd>
                 </div>
                 @endif
