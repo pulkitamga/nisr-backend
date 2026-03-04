@@ -21,7 +21,7 @@
                                 <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="ticket-follow-up-status">
                                     <option value="0" selected disabled>{{ translate('select_ticket_status') }}</option>
                                     @foreach ($aInProgressStatus as $status)
-                                    	<option value="{{ $status['id'] }}">{{ translate($status['name'])}}</option>
+                                    	<option value="{{ $status['id'] }}" data-status-name="{{ strtolower($status['name'] ?? '') }}">{{ translate($status['name'])}}</option>
                                     @endforeach
                                 </select>
                             </div>

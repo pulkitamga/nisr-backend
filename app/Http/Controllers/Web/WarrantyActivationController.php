@@ -197,10 +197,11 @@ class WarrantyActivationController extends Controller
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'flagged' => $flagged,
-                'flagged_reason' => $flaggedReason, // ← Array save karo, implode mat karo!
+                'flagged_reason' => $flaggedReason,
                 'contact_for_otp' => $contact,
                 'otp_method' => $otpMethod,
                 'otp_session' => $otpSession,
+                'activation_ip' => $request->ip(),
             ]);
 
             if ($request->hasFile('receipt')) {
@@ -241,7 +242,7 @@ class WarrantyActivationController extends Controller
             $isValid = ($response['status'] === 'success');
         } else {
             $storedOtp = Cache::get("otp:{$email}");
-            $isValid = ($request->otp == $storedOtp || $request->otp == '0000');
+            $isValid = filled($storedOtp) && hash_equals((string)$storedOtp, (string)$request->otp);
         }
 
         if (!$isValid) {
@@ -272,6 +273,7 @@ class WarrantyActivationController extends Controller
             'name' => Session::get('name'),
             'phone' => Session::get('phone'),
             'email' => Session::get('email'),
+            'activation_ip' => Session::get('activation_ip'),
         ]);
 
         $this->commitActivation($warranty, $sessionData, $isGuest, $flagged, $flaggedReason);
@@ -291,7 +293,8 @@ class WarrantyActivationController extends Controller
             'contact_for_otp',
             'receipt_path',
             'otp_method',
-            'otp_session'
+            'otp_session',
+            'activation_ip',
         ]);
 
         return redirect()->route('warranty.success', ['serial' => $warranty->serial_number]);
@@ -310,6 +313,8 @@ class WarrantyActivationController extends Controller
 
         $status = ($flagged && $autoApprove != '1') ? 'pending_review' : 'active';
 
+        $activationIp = $request->input('activation_ip') ?: request()->ip();
+
         $warranty->update([
             'status' => $status,
             'activation_date' => now(),
@@ -319,12 +324,12 @@ class WarrantyActivationController extends Controller
             'retailer_branch_id' => $request->retailer_branch_id ?? null,
             'retailer_name' => $request->retailer_name ?? null,
             'invoice_number' => $request->invoice_number,
-            'activated_ip' => $request->ip(),
+            'activated_ip' => $activationIp,
             'activation_method' => 'user_public_form',
             'policy_version' => Policy::published()->orderByDesc('published_at')->first()?->version,
             'consent_checked' => true,
             'consent_timestamp' => now(),
-            'consent_ip' => $request->ip(),
+            'consent_ip' => $activationIp,
             'activated_by_name' => $request->name,
             'activated_by_phone' => $request->phone ?? null,
             'activated_by_email' => $request->email,

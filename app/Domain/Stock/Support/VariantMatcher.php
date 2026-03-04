@@ -35,7 +35,19 @@ class VariantMatcher
             return empty($leftSignatures) && empty($rightSignatures);
         }
 
-        return count(array_intersect($leftSignatures, $rightSignatures)) > 0;
+        $leftComposite = array_values(array_filter($leftSignatures, fn($signature) => $this->isCompositeSignature((string)$signature)));
+        $rightComposite = array_values(array_filter($rightSignatures, fn($signature) => $this->isCompositeSignature((string)$signature)));
+
+        if (!empty($leftComposite) && !empty($rightComposite)) {
+            return count(array_intersect($leftComposite, $rightComposite)) > 0;
+        }
+
+        return ($leftSignatures[0] ?? null) === ($rightSignatures[0] ?? null);
+    }
+
+    private function isCompositeSignature(string $signature): bool
+    {
+        return str_contains($signature, '-') || str_contains($signature, ':') || str_contains($signature, '|');
     }
 
     public function canonicalFromProduct(mixed $variant, mixed $productVariationPayload): ?string

@@ -106,8 +106,8 @@
                                     <th>{{ translate('item_details') }}</th>
                                     <th>{{ translate('item_price') }}</th>
                                     <th>{{ translate('tax') }}</th>
-                                    <th>{{translate('Inst._Charges')}}</th>
-                                    <th>{{translate('Exc._Charges')}}</th>
+                                    <th>{{ translate('installation_charge') }}</th>
+                                    <th>{{ translate('exchange_charge') }}</th>
                                     <th>{{ translate('item_discount') }}</th>
                                     <th>{{ translate('total_price') }}</th>
                                 </tr>
@@ -160,7 +160,7 @@
                                         </div>
                                         @if(isset($productDetails->digital_product_type) && $productDetails->digital_product_type == 'ready_after_sell')
                                         <button type="button" class="btn btn-sm btn--primary mt-2"
-                                            title="File Upload" data-toggle="modal"
+                                            title="{{ translate('file_upload') }}" data-toggle="modal"
                                             data-target="#fileUploadModal-{{ $detail->id }}">
                                             <i class="tio-file-outlined"></i> {{ translate('file') }}
                                         </button>
@@ -218,9 +218,9 @@
                                                             {{ translate('uploaded_file').':' }}
                                                             <a href="{{ asset('storage/app/public/product/digital-product/'.$productDetails->digital_file_ready) }}"
                                                                 class="btn btn-success btn-sm"
-                                                                title="Download"><i
+                                                                title="{{ translate('download') }}"><i
                                                                     class="tio-download"></i>
-                                                                {{translate('Download')}}</a>
+                                                                {{ translate('download') }}</a>
                                                         </div>
                                                         @endif
 
@@ -367,7 +367,7 @@
             <div class="modal-header">
                 <h4 class="modal-title"
                     id="locationModalLabel">{{ translate('location_Data') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}"><span
                         aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">

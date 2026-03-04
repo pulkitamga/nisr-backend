@@ -37,7 +37,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                             </form>
                         </div>
                         <div>
-                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end">
+                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end ticket-filter-controls">
                                 @php
                                 $priority = request()->has('priority') ? request()->input('priority') : '';
                                 $statusId = request()->has('status') ? request()->input('status') : '27';
@@ -45,7 +45,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                                 @endphp
 
                                 <!-- Priority -->
-                                <select class="form-control border-color-c1 w-160 filter-tickets" name="priority" onchange="this.form.submit()">
+                                <select class="form-control border-color-c1 w-160 filter-tickets" name="priority">
                                     <option value="all">{{ translate('all_priority') }}</option>
                                     @foreach(['low','medium','high','urgent'] as $p)
                                     <option value="{{ $p }}" {{ $priority === $p ? 'selected' : '' }}>{{ translate($p) }}</option>
@@ -53,7 +53,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                                 </select>
 
                                 <!-- Status -->
-                                <select class="form-control border-color-c1 w-160 filter-tickets" name="status" onchange="this.form.submit()">
+                                <select class="form-control border-color-c1 w-160 filter-tickets" name="status">
                                     <option value="all">{{ translate('all_status') }}</option>
                                     @foreach($statuses as $status)
                                     <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
@@ -63,11 +63,14 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                                 </select>
 
                                 <!-- Talent Pool Filter -->
-                                <select class="form-control border-color-c1 w-160 filter-tickets" name="talent_pool" onchange="this.form.submit()">
+                                <select class="form-control border-color-c1 w-160 filter-tickets" name="talent_pool">
                                     <option value="all" {{ $talentPoolFilter === 'all' ? 'selected' : '' }}>{{ translate('all_talent_pool') }}</option>
                                     <option value="yes" {{ $talentPoolFilter === 'yes' ? 'selected' : '' }}>{{ translate('talent_pool_yes') }}</option>
                                     <option value="no" {{ $talentPoolFilter === 'no' ? 'selected' : '' }}>{{ translate('talent_pool_no') }}</option>
                                 </select>
+                                <button type="button" class="btn btn--primary text-nowrap apply-career-filters">
+                                    {{ translate('apply') }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -452,15 +455,23 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 @push('script')
 
 <script>
-    $('.filter-tickets').on('change', function() {
-        let param = $(this).attr('name');
-        let value = $(this).val();
+    $('.apply-career-filters').on('click', function() {
         let url = new URL(window.location.href);
+        $('.ticket-filter-controls .filter-tickets').each(function() {
+            let param = $(this).attr('name');
+            if (!param) {
+                return;
+            }
 
-        url.searchParams.set(param, value);
+            let value = $(this).val();
+            if (value === undefined || value === null || value === '') {
+                url.searchParams.delete(param);
+                return;
+            }
 
+            url.searchParams.set(param, value);
+        });
         url.searchParams.delete('page');
-
         window.location.href = url.toString();
     });
 
@@ -573,5 +584,3 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
     });
 </script>
 @endpush
-
-

@@ -22,8 +22,8 @@
                             <?php $totalHoldOrdersCount++; ?>
                         <td>
                             @if (isset(session()->get($key)['add_to_cart_time']))
-                                <div>{{ session()->get($key)['add_to_cart_time']->format('d/m/Y') ?? 'N/a' }}</div>
-                                <div>{{ session()->get($key)['add_to_cart_time']->format('h:m A') ?? '' }}</div>
+                                <div>{{ session()->get($key)['add_to_cart_time']->format('d/m/Y') ?? translate('not_available') }}</div>
+                                <div>{{ session()->get($key)['add_to_cart_time']->format('h:i A') ?? '' }}</div>
                             @else
                                 <div>{{ translate('now') }}</div>
                             @endif

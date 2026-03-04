@@ -123,6 +123,10 @@ class CareerTicketController extends BaseController
     $request->validate(['id' => 'required|exists:support_tickets,id']);
 
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
+    if (!$ticket) {
+        return response()->json(['message' => translate('ticket_not_found')], 404);
+    }
+
     $currentStatusId = $ticket->status;
 
     /**
@@ -144,6 +148,13 @@ class CareerTicketController extends BaseController
     }
 
     $nextStatus = SupportTicketStatusMaster::find($nextStatusId);
+    if (!$nextStatus) {
+        return response()->json(['message' => translate('invalid_status')], 422);
+    }
+
+    if (strcasecmp((string)$nextStatus->name, 'assigned') === 0 && (int)($ticket->employee_id ?? 0) <= 0) {
+        return response()->json(['message' => translate('assign_employee_before_setting_assigned_status')], 422);
+    }
 
     $updateData = ['status' => $nextStatusId];
 

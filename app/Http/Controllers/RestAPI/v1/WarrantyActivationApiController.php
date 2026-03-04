@@ -270,7 +270,7 @@ class WarrantyActivationApiController extends Controller
 
             $storedOtp = Cache::get("otp:{$request->serial_number}:{$request->email}");
 
-            $isValid = ($request->otp == $storedOtp || $request->otp == '0000');
+            $isValid = filled($storedOtp) && hash_equals((string)$storedOtp, (string)$request->otp);
         }
 
         if (!$isValid) {

@@ -619,12 +619,12 @@ class WarrantyController extends Controller
         $warranty->timelineEvents()->create([
             'warranty_id' => $warranty->id,
             'event_type' => 'activation_approved',
-            'description' => 'Activation approved by admin',
+            'description' => translate('Activation approved by admin'),
             'timestamp' => now(),
             'user_id' => auth('admin')->id(),
         ]);
 
-        Toastr::success('Activation approved successfully.');
+        Toastr::success(translate('Activation approved successfully.'));
         return back();
     }
 
@@ -651,12 +651,12 @@ class WarrantyController extends Controller
         $warranty->timelineEvents()->create([
             'warranty_id' => $warranty->id,
             'event_type' => 'activation_rejected',
-            'description' => 'Activation rejected: ' . $request->review_notes,
+            'description' => translate('Activation rejected') . ': ' . $request->review_notes,
             'timestamp' => now(),
             'user_id' => auth('admin')->id(),
         ]);
 
-        Toastr::success('Activation rejected.');
+        Toastr::success(translate('Activation rejected.'));
         return back();
     }
 }

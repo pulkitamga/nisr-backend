@@ -34,7 +34,7 @@
                             </form>
                         </div>
                         <div class="">
-                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end">
+                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end ticket-filter-controls">
                                 @php
                                 $priority = request()->has('priority') ? request()->input('priority') : '';
                                 $statusId = request()->has('status') ? request()->input('status') : '36';
@@ -65,6 +65,9 @@
                                     </option>
                                     @endforeach
                                 </select>
+                                <button type="button" class="btn btn--primary text-nowrap apply-ticket-filters">
+                                    {{ translate('apply') }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -206,7 +209,7 @@
                             @endif
                             @endif
                             @if(!empty($ticket->status_details) && trim(strtolower($ticket->status_details->name)) != 'closed')
-                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showComplainFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" title="Follow-up details">
+                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showComplainFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" title="Follow-up details">
                                 {{ translate('change_Status') }}
                             </a>
                             @endif
@@ -261,7 +264,7 @@
                                     ['id' => 41, 'name' => 'Resolved'],
                                     ['id' => 42, 'name' => 'Closed']
                                     ] as $status)
-                                    <option value="{{ $status['id'] }}">{{ translate($status['name']) }}</option>
+                                    <option value="{{ $status['id'] }}" data-status-name="{{ strtolower($status['name'] ?? '') }}">{{ translate($status['name']) }}</option>
                                     @endforeach
                                 </select>
                             </div>

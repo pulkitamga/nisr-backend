@@ -88,6 +88,7 @@ class CartController extends BaseController
                 product: $product,
                 branchId: (int)($request['branch_id'] ?? 0),
                 sellerId: (int)auth('seller')->id(),
+                cartId: $cartId,
             );
             $cartItems = $this->getCartData(cartName: $cartId);
             if ($product['product_type'] == 'physical' && $quantity < 0) {
@@ -181,7 +182,8 @@ class CartController extends BaseController
                         price: $price,
                         discount: $discount,
                         variant: $variant,
-                        variations: $variations
+                        variations: $variations,
+                        cartId: $cartId
                     );
                     unset($cartData[$key]);
                     $cartData[] = $cartItem;
@@ -237,7 +239,8 @@ class CartController extends BaseController
             price: $price,
             discount: $discount,
             variant: $variant,
-            variations: $variations
+            variations: $variations,
+            cartId: $cartId
         );
         $cartItems = $this->getCartData(cartName: $cartId);
         return response()->json([

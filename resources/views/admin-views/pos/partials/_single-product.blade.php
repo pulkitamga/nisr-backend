@@ -24,14 +24,14 @@
                 <span class="fz-22 text-capitalize">
                     @if ($product['product_type'] == 'physical')
                     @if ($resolvedBranchId === 1)
-                    {{ $product['current_stock'] > 0 ? $product['current_stock'].' '.$product['unit'].($product['current_stock']>1 ? 's' : '') : translate('out_of_stock').'.' }}
+                    {{ $product['current_stock'] > 0 ? $product['current_stock'].' '.$product['unit'] : translate('out_of_stock').'.' }}
                     @else
                     @php
                     $branchStock = \App\Models\ManageBranchProductStock::where('branch_id', $resolvedBranchId)
                     ->where('product_id', $product->id)
-                    ->value('current_stock');
+                    ->sum('current_stock');
                     @endphp
-                    {{ $branchStock > 0 ? $branchStock.' '.$product['unit'].($branchStock>1 ? 's' : '') : translate('out_of_stock').'.' }}
+                    {{ $branchStock > 0 ? $branchStock.' '.$product['unit'] : translate('out_of_stock').'.' }}
                     @endif
                     @else
                     {{ translate('click_for_details').'.' }}

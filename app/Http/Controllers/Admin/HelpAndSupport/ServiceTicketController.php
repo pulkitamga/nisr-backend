@@ -175,8 +175,15 @@ class ServiceTicketController extends BaseController
         ]);
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
+        if (!$ticket) {
+            return response()->json(['message' => translate('ticket_not_found')], 404);
+        }
+
         $currentStatusId = $ticket->status;
         $currentStatus = SupportTicketStatusMaster::find($currentStatusId);
+        if (!$currentStatus) {
+            return response()->json(['message' => translate('invalid_status')], 422);
+        }
 
         $statusFlow = [
             'new' => 'assigned',
@@ -193,6 +200,13 @@ class ServiceTicketController extends BaseController
         $nextStatus = SupportTicketStatusMaster::where('master_id', $currentStatus->master_id)
             ->where('name', 'like', ucfirst($nextStatusName))
             ->first();
+        if (!$nextStatus) {
+            return response()->json(['message' => translate('invalid_status')], 422);
+        }
+
+        if (strcasecmp((string)$nextStatus->name, 'assigned') === 0 && (int)($ticket->employee_id ?? 0) <= 0) {
+            return response()->json(['message' => translate('assign_employee_before_setting_assigned_status')], 422);
+        }
 
         $updateData = [
             'status' => $nextStatus?->id ?? $ticket->status,

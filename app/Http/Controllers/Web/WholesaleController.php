@@ -93,7 +93,7 @@ class WholesaleController extends Controller
             ->get();
 
         if ($wholesaleProducts->isEmpty()) {
-            return redirect()->back()->with('error', 'No wholesale variations found for this product.');
+            return redirect()->back()->with('error', translate('No wholesale variations found for this product.'));
         }
 
         // MOQ override logic
@@ -797,29 +797,19 @@ class WholesaleController extends Controller
         }
 
         $quantity = (int)$validated['quantity'];
-        $maxQty = is_null($requestedRange->max_qty) ? null : (int)$requestedRange->max_qty;
-        $quantityInsideRange = $quantity >= (int)$requestedRange->min_qty
-            && (is_null($maxQty) || $maxQty === 0 || $quantity <= $maxQty);
+        $requestedRange = $this->resolveWholesalePriceRangeForQuantity(
+            wholesaleId: (int)$wholesaleProduct->id,
+            tier: $tier,
+            quantity: $quantity,
+            moqOverrideEnabled: (bool)$user->moq_override_enabled,
+            preferredRange: $requestedRange
+        );
 
-        if (!$quantityInsideRange) {
-            if (!$user->moq_override_enabled) {
-                Toastr::error(translate('Selected quantity does not match the requested price range.'));
-                return redirect()->back();
-            }
-
-            $requestedRange = WholesaleProductPriceRange::query()
-                ->where('wholesale_id', $wholesaleProduct->id)
-                ->where('tier', $tier)
-                ->orderBy('min_qty')
-                ->first();
-
-            if (!$requestedRange) {
-                Toastr::error(translate('No valid wholesale price range was found.'));
-                return redirect()->back();
-            }
+        if (!$requestedRange) {
+            Toastr::error(translate('Selected quantity does not match the requested price range.'));
+            return redirect()->back();
         }
 
-        $pricePerUnit = (float)$requestedRange->price_per_piece;
         $serverTax = is_numeric($product->tax) ? (float)$product->tax : 0;
 
         $cartGroupId = $this->getOrCreateCartGroupId($user);
@@ -843,62 +833,192 @@ class WholesaleController extends Controller
         }
 
         $color = $this->extractColorValueFromPairs($variationsArray);
+        $existingCartLine = $this->findExistingWholesaleCartLine(
+            customerId: (int)$user->id,
+            cartGroupId: $cartGroupId,
+            productId: (int)$product->id,
+            variationKey: $variationKey,
+            variationType: $variantForColumn
+        );
+
+        $finalQuantity = $quantity;
+        if ($existingCartLine) {
+            $finalQuantity += (int)$existingCartLine->quantity;
+            $requestedRange = $this->resolveWholesalePriceRangeForQuantity(
+                wholesaleId: (int)$wholesaleProduct->id,
+                tier: $tier,
+                quantity: $finalQuantity,
+                moqOverrideEnabled: (bool)$user->moq_override_enabled,
+                preferredRange: null
+            );
+
+            if (!$requestedRange) {
+                Toastr::error(translate('No valid wholesale price range was found.'));
+                return redirect()->back();
+            }
+        }
+
+        $pricePerUnit = (float)$requestedRange->price_per_piece;
 
         $sellerId = ($product->added_by == 'admin') ? 1 : $product->user_id;
         $sellerIs = ($product->added_by == 'admin') ? 'admin' : 'seller';
         $shopInfo = ($product->added_by == 'admin') ? 'Dynamic Logic' : null;
 
-        $slug = $product->slug . '-' . Str::random(8);
+        $payload = [
+            'customer_id' => $user->id,
+            'cart_group_id' => $cartGroupId,
+            'product_id' => $product->id,
+            'product_type' => 'physical',
+            'digital_product_type' => null,
+            'color' => $color,
+            'choices' => !empty($choicesArray) ? json_encode($choicesArray, JSON_UNESCAPED_SLASHES) : null,
+            'variations' => !empty($variationsArray) ? json_encode($variationsArray, JSON_UNESCAPED_SLASHES) : null,
+            'variant' => $variantForColumn,
+            'quantity' => $finalQuantity,
+            'price' => $pricePerUnit,
+            'tax' => $serverTax,
+            'discount' => 0,
+            'installtion_charges' => 0,
+            'exchange_qty' => 0,
+            'exchange_charges' => 0,
+            'tax_model' => $product->tax_model ?? 'exclude',
+            'is_checked' => 1,
+            'name' => $product->name,
+            'thumbnail' => $product->thumbnail,
+            'seller_id' => $sellerId,
+            'seller_is' => $sellerIs,
+            'shop_info' => $shopInfo,
+            'shipping_cost' => 0,
+            'shipping_type' => 'area_wise',
+            'is_guest' => 0,
+        ];
 
-        $cart = new Cart();
-        $cart->customer_id = $user->id;
-        $cart->customer_type = 0; // Default for wholesale
-        $cart->cart_group_id = $cartGroupId;
-        $cart->product_id = $product->id;
-        $cart->product_type = 'physical';
-        $cart->digital_product_type = null;
-        $cart->color = $color;
+        if ($existingCartLine) {
+            $existingCartLine->fill($payload);
+            $existingCartLine->customer_type = 0;
+            $existingCartLine->wholesale_discount = 0.000000;
+            $existingCartLine->wholesale_spacial_discount = 0.000000;
+            $existingCartLine->save();
 
-        $cart->choices = !empty($choicesArray) ? json_encode($choicesArray, JSON_UNESCAPED_SLASHES) : null;
+            Log::info('Wholesale cart item updated', [
+                'cart_id' => $existingCartLine->id,
+                'quantity' => $existingCartLine->quantity,
+                'variant' => $existingCartLine->variant,
+                'variation_key' => $variationKey,
+            ]);
 
-        $cart->variations = !empty($variationsArray) ? json_encode($variationsArray, JSON_UNESCAPED_SLASHES) : null;
+            Toastr::success(translate('Cart updated successfully!'));
+            return redirect()->back();
+        }
 
-        $cart->variant = $variantForColumn;
+        $payload['slug'] = $product->slug . '-' . Str::random(8);
 
-        $cart->quantity = $validated['quantity'];
-        $cart->price = $pricePerUnit;
-        $cart->tax = $serverTax;
-        $cart->discount = 0;
+        $cart = new Cart($payload);
+        $cart->customer_type = 0;
         $cart->wholesale_discount = 0.000000;
         $cart->wholesale_spacial_discount = 0.000000;
-        $cart->installtion_charges = 0;
-        $cart->exchange_qty = 0;
-        $cart->exchange_charges = 0;
-        $cart->tax_model = $product->tax_model ?? 'exclude';
-        $cart->is_checked = 1;
-        $cart->slug = $slug;
-        $cart->name = $product->name;
-        $cart->thumbnail = $product->thumbnail;
-        $cart->seller_id = $sellerId;
-        $cart->seller_is = $sellerIs;
-        $cart->created_at = now();
-        $cart->updated_at = now();
-        $cart->shop_info = $shopInfo;
-        $cart->shipping_cost = 0;
-        $cart->shipping_type = 'area_wise';
-        $cart->is_guest = 0;
-
         $cart->save();
 
-        Log::info('Cart item saved', [
+        Log::info('Wholesale cart item saved', [
             'cart_id' => $cart->id,
-            'variations' => $cart->variations,
-            'choices' => $cart->choices,
+            'quantity' => $cart->quantity,
             'variant' => $cart->variant,
+            'variation_key' => $variationKey,
         ]);
 
         Toastr::success(translate('Added to cart!'));
         return redirect()->back();
+    }
+
+    private function resolveWholesalePriceRangeForQuantity(
+        int $wholesaleId,
+        string $tier,
+        int $quantity,
+        bool $moqOverrideEnabled,
+        ?WholesaleProductPriceRange $preferredRange = null
+    ): ?WholesaleProductPriceRange {
+        if ($preferredRange && (string)$preferredRange->tier === $tier) {
+            $maxQty = is_null($preferredRange->max_qty) ? null : (int)$preferredRange->max_qty;
+            $quantityInsidePreferredRange = $quantity >= (int)$preferredRange->min_qty
+                && (is_null($maxQty) || $maxQty === 0 || $quantity <= $maxQty);
+
+            if ($quantityInsidePreferredRange) {
+                return $preferredRange;
+            }
+        }
+
+        $matchedRange = WholesaleProductPriceRange::query()
+            ->where('wholesale_id', $wholesaleId)
+            ->where('tier', $tier)
+            ->where('min_qty', '<=', $quantity)
+            ->where(function ($query) use ($quantity) {
+                $query->whereNull('max_qty')
+                    ->orWhere('max_qty', 0)
+                    ->orWhere('max_qty', '>=', $quantity);
+            })
+            ->orderByDesc('min_qty')
+            ->first();
+
+        if ($matchedRange) {
+            return $matchedRange;
+        }
+
+        if ($moqOverrideEnabled) {
+            return WholesaleProductPriceRange::query()
+                ->where('wholesale_id', $wholesaleId)
+                ->where('tier', $tier)
+                ->orderBy('min_qty')
+                ->first();
+        }
+
+        return null;
+    }
+
+    private function findExistingWholesaleCartLine(
+        int $customerId,
+        string $cartGroupId,
+        int $productId,
+        string $variationKey,
+        string $variationType
+    ): ?Cart {
+        $targetVariationKey = trim((string)$variationKey);
+        $targetVariationType = trim((string)$variationType);
+        $variantMatcher = app(VariantMatcher::class);
+
+        return Cart::query()
+            ->where('customer_id', $customerId)
+            ->where('is_guest', 0)
+            ->where('cart_group_id', $cartGroupId)
+            ->where('product_id', $productId)
+            ->orderByDesc('id')
+            ->get()
+            ->first(function (Cart $cartItem) use ($targetVariationKey, $targetVariationType, $variantMatcher) {
+                $choices = json_decode($cartItem->choices ?? '[]', true) ?: [];
+                $choiceVariationKey = trim((string)($choices['original_variation_key'] ?? ''));
+
+                if ($targetVariationKey !== '' && $choiceVariationKey !== '') {
+                    return $variantMatcher->matches($choiceVariationKey, $targetVariationKey);
+                }
+
+                $cartVariationData = $this->extractVariationDataFromCart($cartItem);
+                $cartVariationKey = trim((string)($cartVariationData['variation_key'] ?? ''));
+                $cartVariationType = trim((string)($cartVariationData['variation_type'] ?? $cartItem->variant ?? ''));
+
+                if ($targetVariationKey !== '') {
+                    if ($cartVariationKey !== '') {
+                        return $variantMatcher->matches($cartVariationKey, $targetVariationKey);
+                    }
+
+                    return $targetVariationType !== '' && $variantMatcher->matches($cartVariationType, $targetVariationType);
+                }
+
+                if ($targetVariationType !== '') {
+                    return $variantMatcher->matches($cartVariationType, $targetVariationType)
+                        || ($cartVariationKey !== '' && $variantMatcher->matches($cartVariationKey, $targetVariationType));
+                }
+
+                return $cartVariationKey === '' && $cartVariationType === '';
+            });
     }
 
     // Helper function to extract variant from key

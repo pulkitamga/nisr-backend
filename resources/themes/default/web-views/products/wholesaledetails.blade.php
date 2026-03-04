@@ -185,13 +185,13 @@
                                     
                                     @if($firstRange)
                                         <span id="current-price">{{ webCurrencyConverter($firstRange->price_per_piece) }}</span>
-                                        <span class="text-muted">/ piece</span>
+                                        <span class="text-muted">/ {{ translate('piece') }}</span>
                                     @endif
                                 </div>
                                 
                                 <!-- Variation Info -->
                                 <div class="mt-2 mb-3">
-                                    <strong>Selected Variation:</strong>
+                                    <strong>{{ translate('Selected Variation') }}:</strong>
                                     <span id="selected-variation-text">
                                         @if($firstCleanVariant)
                                             {{ $firstCleanVariant }}
@@ -202,11 +202,11 @@
                                 <!-- MOQ Information -->
                                 <div class="mb-3">
                                     @if($firstRange ?? null)
-                                        <strong>MOQ:</strong>
+                                        <strong>{{ translate('MOQ') }}:</strong>
                                         <span id="moq-info">
-                                            Min: {{ $moqOverride ? 1 : $firstRange->min_qty }} pcs
+                                            {{ translate('Min') }}: {{ $moqOverride ? 1 : $firstRange->min_qty }} {{ translate('pcs') }}
                                             @if($firstRange->max_qty)
-                                                | Max: {{ $firstRange->max_qty }} pcs
+                                                | {{ translate('Max') }}: {{ $firstRange->max_qty }} {{ translate('pcs') }}
                                             @endif
                                         </span>
                                     @endif
@@ -214,7 +214,7 @@
                                 
                                 <!-- Quantity Selection -->
                                 <div class="mb-4">
-                                    <div class="mb-2"><strong>Quantity:</strong></div>
+                                    <div class="mb-2"><strong>{{ translate('quantity') }}:</strong></div>
                                     <div class="quantity-controls">
                                         <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(-1)">-</button>
                                         <input type="number" 
@@ -229,7 +229,7 @@
                                 
                                 <!-- Total Price -->
                                 <div class="mb-4">
-                                    <div><strong>Total Price:</strong></div>
+                                    <div><strong>{{ translate('total_price') }}:</strong></div>
                                     <div class="product-price" id="total-price">
                                         @if($firstRange ?? null)
                                             {{ setCurrencySymbol(amount: webCurrencyConverterOnlyDigit($firstRange->price_per_piece * $initialQuantity), currencyCode: getCurrencyCode(type: 'web'), type: 'web') }}
@@ -237,33 +237,6 @@
                                     </div>
                                 </div>
                                 
-                                {{-- <!-- Add to Cart Form -->
-                                <form action="{{ route('web.addwholesale') }}" method="POST" id="add-to-cart-form">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $baseProduct->id }}" id="product-id">
-                                    <input type="hidden" name="seller_id" value="{{ $baseProduct->added_by == 'admin' ? 1 : $baseProduct->user_id }}">
-                                    <input type="hidden" name="name" value="{{ $baseProduct->name }}">
-                                    
-                                    <!-- VARIANT: Full variation key for processing -->
-                                    <input type="hidden" name="variant" value="{{ $firstWp->variation_key ?? '' }}" id="variant-input">
-                                    
-                                    <!-- Clean variant for display -->
-                                    <input type="hidden" name="clean_variant" value="{{ $firstCleanVariant }}" id="clean-variant-input">
-                                    
-                                    <input type="hidden" name="tax" value="{{ $baseProduct->tax }}">
-                                    <input type="hidden" name="tax_model" value="{{ $baseProduct->tax_model }}">
-                                    <input type="hidden" name="thumbnail" value="{{ getStorageImages(path: $baseProduct->thumbnail_full_url, type: 'product') }}">
-                                    <input type="hidden" name="price" value="{{ $firstRange->price_per_piece ?? 0 }}" id="price-input">
-                                    <input type="hidden" value="{{ webCurrencyConverterOnlyDigit($firstRange ? $firstRange->price_per_piece : 0) }}" id="display-price-input">
-                                    <input type="hidden" name="discount" value="{{ getProductPriceByType(product: $baseProduct, type: 'discount', result: 'value') }}">
-                                    <input type="hidden" name="shipping_cost" value="0">
-                                    <input type="hidden" name="price_range_id" value="{{ $firstRange->id ?? 0 }}" id="price-range-id">
-                                    <input type="hidden" name="quantity" value="{{ $moqOverride ? 1 : ($firstRange->min_qty ?? 1) }}" id="quantity-hidden">
-                                    
-                                    <button type="submit" class="add-to-cart-btn" id="add-to-cart-btn">
-                                        <i class="fas fa-cart-plus"></i> Add to Purchase Order
-                                    </button>
-                                </form> --}}
                                 <!-- Add to Cart Form -->
                                 <form action="{{ route('web.addwholesale') }}" method="POST" id="add-to-cart-form">
                                     @csrf
@@ -278,20 +251,21 @@
                                     <input type="hidden" name="tax_model" value="{{ $baseProduct->tax_model }}">
                                     <input type="hidden" name="thumbnail" value="{{ getStorageImages(path: $baseProduct->thumbnail_full_url, type: 'product') }}">
                                     <input type="hidden" name="price" value="{{ $firstRange->price_per_piece ?? 0 }}" id="price-input">
+                                    <input type="hidden" value="{{ webCurrencyConverterOnlyDigit($firstRange ? $firstRange->price_per_piece : 0) }}" id="display-price-input">
                                     <input type="hidden" name="discount" value="{{ getProductPriceByType(product: $baseProduct, type: 'discount', result: 'value') }}">
                                     <input type="hidden" name="shipping_cost" value="0">
                                     <input type="hidden" name="price_range_id" value="{{ $firstRange->id ?? 0 }}" id="price-range-id">
                                     <input type="hidden" name="quantity" value="{{ $moqOverride ? 1 : ($firstRange->min_qty ?? 1) }}" id="quantity-hidden">
                                     
                                     <button type="submit" class="add-to-cart-btn" id="add-to-cart-btn">
-                                        <i class="fas fa-cart-plus"></i> Add to Purchase Order
+                                        <i class="fas fa-cart-plus"></i> {{ translate('Add to Purchase Order') }}
                                     </button>
                                 </form>
                             </div>
                             
                             @else
                             <div class="alert alert-warning">
-                                Wholesaler access required.
+                                {{ translate('Wholesaler access required.') }}
                             </div>
                             @endif
                             
@@ -312,6 +286,14 @@
     const webCurrencyPosition = @json(getWebConfig('currency_symbol_position') ?? 'left');
     const webCurrencySpaceEnabled = @json((string)(getWebConfig('currency_symbol_space') ?? '0') === '1');
     const webCurrencyDecimals = Number(@json((int)(getWebConfig('decimal_point_settings') ?? 2)));
+    const wholesaleI18n = {
+        min: @json(translate('Min')),
+        max: @json(translate('Max')),
+        pcs: @json(translate('pcs')),
+        pleaseSelectVariation: @json(translate('Please select a variation')),
+        pleaseEnterValidQuantity: @json(translate('Please enter a valid quantity')),
+        adding: @json(translate('adding')),
+    };
     
 // Select variation function
 function selectVariation(button) {
@@ -342,7 +324,9 @@ function selectVariation(button) {
     
     // Update MOQ info
     const moqInfo = document.getElementById('moq-info');
-    moqInfo.textContent = `Min: ${minQty} pcs${maxQty ? ` | Max: ${maxQty} pcs` : ''}`;
+    if (moqInfo) {
+        moqInfo.textContent = `${wholesaleI18n.min}: ${minQty} ${wholesaleI18n.pcs}${maxQty ? ` | ${wholesaleI18n.max}: ${maxQty} ${wholesaleI18n.pcs}` : ''}`;
+    }
     
     // Update quantity input
     const quantityInput = document.getElementById('quantity-input');
@@ -360,7 +344,10 @@ function selectVariation(button) {
     // Update hidden form fields
     document.getElementById('variant-input').value = variationKey; // Full variation key
     document.getElementById('price-input').value = price;
-    document.getElementById('display-price-input').value = displayPrice;
+    const displayPriceInput = document.getElementById('display-price-input');
+    if (displayPriceInput) {
+        displayPriceInput.value = displayPrice;
+    }
     document.getElementById('price-range-id').value = rangeId;
     
     // Calculate and update total price
@@ -394,11 +381,16 @@ function selectVariation(button) {
     // Calculate total price function
     function calculateTotalPrice() {
         const quantityInput = document.getElementById('quantity-input');
-        const displayPriceInput = document.getElementById('display-price-input');
         const totalPriceElement = document.getElementById('total-price');
+        const displayPriceInput = document.getElementById('display-price-input');
+        const priceInput = document.getElementById('price-input');
+
+        if (!quantityInput || !totalPriceElement) {
+            return;
+        }
         
         const quantity = parseInt(quantityInput.value) || parseInt(quantityInput.min);
-        const price = parseFloat(displayPriceInput.value) || 0;
+        const price = parseFloat(displayPriceInput?.value ?? priceInput?.value ?? 0) || 0;
         const total = quantity * price;
         
         totalPriceElement.textContent = formatPrice(total);
@@ -420,57 +412,63 @@ function selectVariation(button) {
         return `${webCurrencySymbol}${space}${formattedAmount}`;
     }
     
-    // Quantity input change event
-    document.getElementById('quantity-input').addEventListener('input', function() {
-        const quantityHidden = document.getElementById('quantity-hidden');
-        const min = parseInt(this.min) || 1;
-        const max = this.max ? parseInt(this.max) : null;
-        let value = parseInt(this.value) || min;
-        
-        if (value < min) {
-            value = min;
-            this.value = min;
-        }
-        
-        if (max && value > max) {
-            value = max;
-            this.value = max;
-        }
-        
-        quantityHidden.value = value;
-        calculateTotalPrice();
-    });
-    
-    // Form submission validation
-    document.getElementById('add-to-cart-form').addEventListener('submit', function(e) {
-        const variantInput = document.getElementById('variant-input');
-        const quantityInput = document.getElementById('quantity-input');
-        
-        if (!variantInput.value || variantInput.value.trim() === '') {
-            e.preventDefault();
-            Toastr.error('Please select a variation');
-            return false;
-        }
-        
-        if (!quantityInput.value || quantityInput.value < 1) {
-            e.preventDefault();
-            Toastr.error('Please enter a valid quantity');
-            return false;
-        }
-        
-        // Show loading state
-        const submitBtn = document.getElementById('add-to-cart-btn');
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-        submitBtn.disabled = true;
-    });
-    
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
+        const quantityInput = document.getElementById('quantity-input');
+        const quantityHidden = document.getElementById('quantity-hidden');
+        const addToCartForm = document.getElementById('add-to-cart-form');
+
+        if (quantityInput && quantityHidden) {
+            quantityInput.addEventListener('input', function() {
+                const min = parseInt(this.min) || 1;
+                const max = this.max ? parseInt(this.max) : null;
+                let value = parseInt(this.value) || min;
+
+                if (value < min) {
+                    value = min;
+                    this.value = min;
+                }
+
+                if (max && value > max) {
+                    value = max;
+                    this.value = max;
+                }
+
+                quantityHidden.value = value;
+                calculateTotalPrice();
+            });
+        }
+
+        if (addToCartForm) {
+            addToCartForm.addEventListener('submit', function(e) {
+                const variantInput = document.getElementById('variant-input');
+                const currentQuantityInput = document.getElementById('quantity-input');
+
+                if (!variantInput || !variantInput.value || variantInput.value.trim() === '') {
+                    e.preventDefault();
+                    Toastr.error(wholesaleI18n.pleaseSelectVariation);
+                    return false;
+                }
+
+                if (!currentQuantityInput || !currentQuantityInput.value || parseInt(currentQuantityInput.value) < 1) {
+                    e.preventDefault();
+                    Toastr.error(wholesaleI18n.pleaseEnterValidQuantity);
+                    return false;
+                }
+
+                // Show loading state
+                const submitBtn = document.getElementById('add-to-cart-btn');
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${wholesaleI18n.adding}...`;
+                    submitBtn.disabled = true;
+                }
+            });
+        }
+
         calculateTotalPrice();
         
         // Set initial values if not set
         const variantInput = document.getElementById('variant-input');
-        if (!variantInput.value) {
+        if (variantInput && !variantInput.value) {
             const firstBtn = document.querySelector('.variation-btn.active');
             if (firstBtn) {
                 const variationKey = firstBtn.getAttribute('data-variation-key');

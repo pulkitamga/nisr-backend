@@ -154,7 +154,7 @@ class WarrantyViewController extends Controller
             $isValid = ($response['status'] === 'success');
         } else {
             $storedOtp = Cache::get("warranty_lookup:{$request->warranty_id}:{$request->contact}");
-            $isValid = ($request->otp == $storedOtp || $request->otp == '0000');
+            $isValid = filled($storedOtp) && hash_equals((string)$storedOtp, (string)$request->otp);
         }
 
         if (!$isValid) {

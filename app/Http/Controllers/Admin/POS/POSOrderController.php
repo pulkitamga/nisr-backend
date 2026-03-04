@@ -28,6 +28,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class POSOrderController extends BaseController
@@ -96,115 +97,183 @@ class POSOrderController extends BaseController
      */
     public function placeOrder(Request $request): JsonResponse
     {
+        $requestBranchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
+        if ($requestBranchId <= 0) {
+            $requestBranchId = 1;
+        }
+        session()->put(SessionKey::POS_BRANCH_ID, $requestBranchId);
 
-        $installationCharge = $request['installation_charge'] ?? 0;
-        $exchangeCharge = $request['exchange_charge'] ?? 0;
-        $branchId = (int)($request['branch_id'] ?? 1);
-        $resolvedBranchId = $branchId;
-
-        $amount = $request['amount'];
-        $paidAmount = $request['type'] == 'cash' ? ($request['paid_amount'] ?? 0) : null;
+        $requestedCartId = trim((string)($request['cart_id'] ?? ''));
         $cartId = session(SessionKey::CURRENT_USER);
-        $condition = $this->POSService->checkConditions(amount: $amount, paidAmount: $paidAmount);
-        if ($condition == 'true') {
+        if (
+            $requestedCartId !== ''
+            && $this->cartService->cartBelongsToBranch($requestedCartId, $requestBranchId)
+            && session()->has($requestedCartId)
+            && is_array(session($requestedCartId))
+        ) {
+            $cartId = $requestedCartId;
+            session()->put(SessionKey::CURRENT_USER, $requestedCartId);
+        }
+        if (!is_string($cartId) || $cartId === '') {
+            Toastr::error(translate('cart_empty_warning'));
             return response()->json();
         }
+
+        $cart = session($cartId, []);
+        if (!is_array($cart)) {
+            $cart = [];
+        }
+        $cartLineItems = $this->getSessionCartLineItems(cart: $cart);
+        $orderAmountData = $this->getOrderAmountData(
+            cartId: $cartId,
+            cartLineItems: $cartLineItems
+        );
+        $amount = $orderAmountData['amount'];
+        $installationCharge = $orderAmountData['installationCharge'];
+        $exchangeCharge = $orderAmountData['exchangeCharge'];
+
+        $lineBranchIds = collect($cartLineItems)
+            ->map(fn($item) => (int)($item['branch_id'] ?? 0))
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($lineBranchIds->count() > 1) {
+            Toastr::error(translate('please_place_separate_pos_orders_per_branch'));
+            return response()->json();
+        }
+
+        $branchId = $requestBranchId > 0
+            ? $requestBranchId
+            : (int)($lineBranchIds->first() ?? 1);
+        if ($lineBranchIds->count() === 1) {
+            $branchId = (int)$lineBranchIds->first();
+        }
+
+        $resolvedBranchId = $branchId;
+        $paymentType = (string)($request['type'] ?? 'cash');
+        $paidAmount = $paymentType === 'cash' ? (float)($request['paid_amount'] ?? 0) : null;
+        $condition = $this->POSService->checkConditions(amount: $amount, paidAmount: $paidAmount);
+        if ($condition) {
+            return response()->json();
+        }
+
         $userId = $this->cartService->getUserId();
         $checkProductTypeDigital = $this->cartService->checkProductTypeDigital(cartId: $cartId);
         if ($userId == 0 && $checkProductTypeDigital) {
             return response()->json(['checkProductTypeForWalkingCustomer' => true, 'message' => translate('To_order_digital_product') . ',' . translate('_kindly_fill_up_the_“Add_New_Customer”_form') . '.']);
         }
-        if ($request['type'] == 'wallet' && $userId != 0) {
-            $customerBalance = $this->customerRepo->getFirstWhere(params: ['id' => $userId]) ?? 0;
-            if ($customerBalance['wallet_balance'] >= $amount) {
-                $this->createWalletTransaction(user_id: $userId, amount: floatval($amount), transaction_type: 'order_place', reference: 'order_place_in_pos');
-            } else {
-                Toastr::error(translate('need_Sufficient_Amount_Balance'));
-                return response()->json();
+
+        try {
+            DB::beginTransaction();
+
+            if ($paymentType == 'wallet' && $userId != 0) {
+                $customerBalance = $this->customerRepo->getFirstWhere(params: ['id' => $userId]) ?? 0;
+                if ($customerBalance['wallet_balance'] >= $amount) {
+                    $this->createWalletTransaction(user_id: $userId, amount: $amount, transaction_type: 'order_place', reference: 'order_place_in_pos');
+                } else {
+                    Toastr::error(translate('need_Sufficient_Amount_Balance'));
+                    DB::rollBack();
+                    return response()->json();
+                }
             }
-        }
-        $cart = session($cartId);
-        $orderId = OrderManager::getNextOrderId();
-        foreach ($cart as $index => $item) {
-            if (is_array($item)) {
+
+            $orderId = OrderManager::getNextOrderId();
+            $createdOrderDetails = 0;
+            foreach ($cartLineItems as $item) {
                 $product = $this->productRepo->getFirstWhere(params: ['id' => $item['id']], relations: ['clearanceSale' => function ($query) {
                     return $query->active();
                 }]);
-                if ($product) {
-                    $tax = $this->getTaxAmount($item['price'], $product['tax']);
-                    $price = $product['tax_model'] == 'include' ? $item['price'] - $tax : $item['price'];
 
-                    $productId = $item['id'];
-                    $productRequestItem = collect($request['items'])->firstWhere('product_id', $productId);
+                if (!$product) {
+                    throw new \RuntimeException(translate('Product_not_found_in_cart'));
+                }
 
-                    $installationChargeProduct = $productRequestItem['installation_charge'] ?? 0;
-                    $exchangeChargeProduct = $productRequestItem['exchange_charge'] ?? 0;
+                $tax = $this->getTaxAmount($item['price'], $product['tax']);
+                $price = $product['tax_model'] == 'include' ? $item['price'] - $tax : $item['price'];
+                $installationChargeProduct = (float)($item['installation_charge'] ?? 0);
+                $exchangeChargeProduct = (float)($item['exchange_charge'] ?? 0);
 
-                    $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(params: ['product_id' => $item['id'], 'variant_key' => $item['variant']], relations: ['storage']);
-                    if ($product['product_type'] == 'digital' && $digitalProductVariation) {
-                        $price = $product['tax_model'] == 'include' ? $digitalProductVariation['price'] - $tax : $digitalProductVariation['price'];
+                $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(params: ['product_id' => $item['id'], 'variant_key' => $item['variant']], relations: ['storage']);
+                if ($product['product_type'] == 'digital' && $digitalProductVariation) {
+                    $price = $product['tax_model'] == 'include' ? $digitalProductVariation['price'] - $tax : $digitalProductVariation['price'];
 
-                        if ($product['digital_product_type'] == 'ready_product') {
-                            $getStoragePath = $this->storageRepo->getFirstWhere(params: [
-                                'data_id' => $digitalProductVariation['id'],
-                                "data_type" => "App\Models\DigitalProductVariation",
-                            ]);
-                            $product['digital_file_ready'] = $digitalProductVariation['file'];
-                            $product['storage_path'] = $getStoragePath ? $getStoragePath['value'] : 'public';
-                        }
-                    } elseif ($product['digital_product_type'] == 'ready_product' && !empty($product['digital_file_ready'])) {
-                        $product['storage_path'] = $product['digital_file_ready_storage_type'] ?? 'public';
+                    if ($product['digital_product_type'] == 'ready_product') {
+                        $getStoragePath = $this->storageRepo->getFirstWhere(params: [
+                            'data_id' => $digitalProductVariation['id'],
+                            "data_type" => "App\Models\DigitalProductVariation",
+                        ]);
+                        $product['digital_file_ready'] = $digitalProductVariation['file'];
+                        $product['storage_path'] = $getStoragePath ? $getStoragePath['value'] : 'public';
                     }
-                    $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
-                        orderId: $orderId,
-                        item: $item,
-                        product: $product,
-                        price: $price,
-                        tax: $tax,
-                        installationCharge: $installationChargeProduct,
-                        exchangeCharge: $exchangeChargeProduct,
+                } elseif ($product['digital_product_type'] == 'ready_product' && !empty($product['digital_file_ready'])) {
+                    $product['storage_path'] = $product['digital_file_ready_storage_type'] ?? 'public';
+                }
+
+                $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
+                    orderId: $orderId,
+                    item: $item,
+                    product: $product,
+                    price: $price,
+                    tax: $tax,
+                    installationCharge: $installationChargeProduct,
+                    exchangeCharge: $exchangeChargeProduct,
+                );
+
+                if ($product['product_type'] == 'physical') {
+                    $lineBranchId = (int)($item['branch_id'] ?? 0);
+                    if ($lineBranchId <= 0) {
+                        $lineBranchId = $branchId;
+                    }
+
+                    $stockMutation = $this->inventoryMutationService->decreaseForPosLine(
+                        productId: (int)$item['id'],
+                        qty: (int)$item['quantity'],
+                        variant: $item['variant'] ?? null,
+                        branchId: $lineBranchId,
+                        sellerId: null,
+                        referenceId: (int)$orderId,
+                        context: 'Admin POS'
                     );
 
-
-                    if ($product['product_type'] == 'physical') {
-                        $stockMutation = $this->inventoryMutationService->decreaseForPosLine(
-                            productId: (int)$item['id'],
-                            qty: (int)$item['quantity'],
-                            variant: $item['variant'] ?? null,
-                            branchId: $branchId,
-                            sellerId: null,
-                            referenceId: (int)$orderId,
-                            context: 'Admin POS'
-                        );
-
-                        if (!($stockMutation['status'] ?? false)) {
-                            Toastr::error($stockMutation['message'] ?? translate('Stock_not_available_in_this_branch_for_product_and_variation'));
-                            return response()->json();
-                        }
-
-                        if (isset($stockMutation['branchId']) && (int)$stockMutation['branchId'] > 0) {
-                            $resolvedBranchId = (int)$stockMutation['branchId'];
-                        }
+                    if (!($stockMutation['status'] ?? false)) {
+                        throw new \RuntimeException($stockMutation['message'] ?? translate('Stock_not_available_in_this_branch_for_product_and_variation'));
                     }
 
-                    $this->orderDetailRepo->add(data: $orderDetail);
+                    if (isset($stockMutation['branchId']) && (int)$stockMutation['branchId'] > 0) {
+                        $resolvedBranchId = (int)$stockMutation['branchId'];
+                    }
                 }
-            }
-        }
-        $order = $this->orderService->getPOSOrderData(
-            orderId: $orderId,
-            cart: $cart,
-            amount: $amount,
-            paidAmount: $request['type'] == 'cash' ? $paidAmount : $amount,
-            paymentType: $request['type'],
-            addedBy: 'admin',
-            userId: $userId,
-            installationCharge: $installationCharge,
-            exchangeCharge: $exchangeCharge,
-            branchId: $resolvedBranchId,
-        );
 
-        $this->orderRepo->add(data: $order);
+                $this->orderDetailRepo->add(data: $orderDetail);
+                $createdOrderDetails++;
+            }
+
+            if ($createdOrderDetails === 0) {
+                throw new \RuntimeException(translate('cart_empty_warning'));
+            }
+
+            $order = $this->orderService->getPOSOrderData(
+                orderId: $orderId,
+                cart: $cart,
+                amount: $amount,
+                paidAmount: $paymentType == 'cash' ? $paidAmount : $amount,
+                paymentType: $paymentType,
+                addedBy: 'admin',
+                userId: $userId,
+                installationCharge: $installationCharge,
+                exchangeCharge: $exchangeCharge,
+                branchId: $resolvedBranchId,
+            );
+
+            $this->orderRepo->add(data: $order);
+            DB::commit();
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+            Toastr::error($exception->getMessage());
+            return response()->json();
+        }
+
         if ($checkProductTypeDigital) {
             $order = $this->orderRepo->getFirstWhere(params: ['id' => $orderId], relations: ['details.productAllStatus']);
             $data = [
@@ -219,17 +288,114 @@ class POSOrderController extends BaseController
             event(new DigitalProductDownloadEvent(email: $order->customer['email'], data: $data));
         }
         session()->forget($cartId);
-        session(['last_order' => $orderId]);
         $this->cartService->getNewCartId();
         Toastr::success(translate('order_placed_successfully'));
-        return response()->json();
+        return response()->json([
+            'orderId' => $orderId,
+            'cartId' => (string)(session(SessionKey::CURRENT_USER) ?? ''),
+        ]);
+    }
+
+    private function getSessionCartLineItems(array $cart): array
+    {
+        return collect($cart)
+            ->filter(fn($item) => is_array($item))
+            ->filter(function ($item) {
+                $productId = (int)($item['id'] ?? 0);
+                $quantity = (int)($item['quantity'] ?? 0);
+                return $productId > 0 && $quantity > 0;
+            })
+            ->values()
+            ->all();
+    }
+
+    private function getOrderAmountData(string $cartId, array $cartLineItems): array
+    {
+        $installationCharge = 0.0;
+        $exchangeCharge = 0.0;
+
+        $subTotalCalculation = [
+            'countItem' => 0,
+            'totalQuantity' => 0,
+            'taxCalculate' => 0,
+            'totalTaxShow' => 0,
+            'totalTax' => 0,
+            'totalIncludeTax' => 0,
+            'subtotal' => 0,
+            'discountOnProduct' => 0,
+            'productSubtotal' => 0,
+        ];
+
+        foreach ($cartLineItems as $lineItem) {
+            if (!is_array($lineItem)) {
+                continue;
+            }
+
+            $quantity = max(0, (int)($lineItem['quantity'] ?? 0));
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $installationCharge += (float)($lineItem['installation_charge'] ?? 0) * $quantity;
+            $exchangeCharge += (float)($lineItem['exchange_charge'] ?? 0);
+
+            $productId = (int)($lineItem['id'] ?? 0);
+            if ($productId <= 0) {
+                continue;
+            }
+
+            $product = $this->productRepo->getFirstWhere(params: ['id' => $productId], relations: ['clearanceSale' => function ($query) {
+                return $query->active();
+            }]);
+            if (!$product) {
+                continue;
+            }
+
+            $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
+                product: $product,
+                cartItem: $lineItem,
+                calculation: $subTotalCalculation
+            );
+            $subTotalCalculation['countItem'] += $cartSubTotalCalculation['countItem'];
+            $subTotalCalculation['totalQuantity'] += $cartSubTotalCalculation['totalQuantity'];
+            $subTotalCalculation['taxCalculate'] += $cartSubTotalCalculation['taxCalculate'];
+            $subTotalCalculation['totalTaxShow'] += $cartSubTotalCalculation['totalTaxShow'];
+            $subTotalCalculation['totalTax'] += $cartSubTotalCalculation['totalTax'];
+            $subTotalCalculation['totalIncludeTax'] += $cartSubTotalCalculation['totalIncludeTax'];
+            $subTotalCalculation['productSubtotal'] += $cartSubTotalCalculation['productSubtotal'];
+            $subTotalCalculation['subtotal'] += $cartSubTotalCalculation['subtotal'];
+            $subTotalCalculation['discountOnProduct'] += $cartSubTotalCalculation['discountOnProduct'];
+        }
+
+        $totalCalculation = $this->cartService->getTotalCalculation(
+            subTotalCalculation: $subTotalCalculation,
+            cartName: $cartId
+        );
+        $couponDiscount = (float)($totalCalculation['couponDiscount'] ?? 0);
+        $total = (float)($totalCalculation['total'] ?? 0)
+            + (float)$subTotalCalculation['totalTax']
+            - $couponDiscount
+            + $installationCharge
+            - $exchangeCharge;
+        $total = max(0, $total);
+
+        return [
+            'amount' => (float)usdToDefaultCurrency(amount: $total),
+            'installationCharge' => (float)usdToDefaultCurrency(amount: $installationCharge),
+            'exchangeCharge' => (float)usdToDefaultCurrency(amount: $exchangeCharge),
+        ];
     }
 
     public function cancelOrder(Request $request): JsonResponse
     {
+        $branchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
         session()->remove($request['cart_id']);
-        $totalHoldOrders = $this->POSService->getTotalHoldOrders();
-        $cartNames = $this->POSService->getCartNames();
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId);
+        $cartNames = $this->POSService->getCartNames($branchId);
         $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames);
         return response()->json([
             'message' => $request['cart_id'] . ' ' . translate('order_is_cancel'),
@@ -244,8 +410,13 @@ class POSOrderController extends BaseController
      */
     public function getAllHoldOrdersView(Request $request): JsonResponse
     {
-        $totalHoldOrders = $this->POSService->getTotalHoldOrders();
-        $cartNames = $this->POSService->getCartNames();
+        $branchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId);
+        $cartNames = $this->POSService->getCartNames($branchId);
         $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames);
         if (!empty($request['customer'])) {
             $searchValue = strtolower($request['customer']);
@@ -267,7 +438,7 @@ class POSOrderController extends BaseController
     protected function getCustomerDataFromSessionForPOS(): array
     {
         if (Str::contains(session(SessionKey::CURRENT_USER), 'walking-customer')) {
-            $currentCustomer = 'Walking Customer';
+            $currentCustomer = translate('walking_customer');
             $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => '0']);
         } else {
             $userId = explode('-', session(SessionKey::CURRENT_USER))[2];
@@ -305,7 +476,7 @@ class POSOrderController extends BaseController
         $customerCartData = [];
         if (Str::contains($cartName, 'walking-customer')) {
             $currentCustomerInfo = [
-                'customerName' => 'Walking Customer',
+                'customerName' => translate('walking_customer'),
                 'customerPhone' => "",
             ];
             $customerId = 0;
@@ -342,6 +513,9 @@ class POSOrderController extends BaseController
                     $product = $this->productRepo->getFirstWhere(params: ['id' => $cartItem['id']], relations: ['clearanceSale' => function ($query) {
                         return $query->active();
                     }]);
+                    if (!$product) {
+                        continue;
+                    }
                     $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
                         product: $product,
                         cartItem: $cartItem,

@@ -20,7 +20,7 @@
                     <div class="row gy-1">
                         <div class="col-sm-6">
                             <div class="input-group d-flex justify-content-end">
-                                <select name="category" id="category" class="form-control js-select2-custom w-100 action-category-filter" title="select category">
+                                <select name="category" id="category" class="form-control js-select2-custom w-100 action-category-filter" title="{{ translate('select_category') }}">
                                     <option value="">{{ translate('all_categories') }}</option>
                                     @foreach ($categories as $item)
                                     <option value="{{$item->id}}" {{$categoryId==$item->id?'selected':''}}>
@@ -38,7 +38,7 @@
                                             <i class="tio-search"></i>
                                         </div>
                                     </div>
-                                    <input id="search" autocomplete="off" type="text" value="{{ $searchValue }}" name="searchValue" class="form-control search-bar-input" placeholder="{{ translate('search_by_name_or_sku') }}" aria-label="Search here">
+                                    <input id="search" autocomplete="off" type="text" value="{{ $searchValue }}" name="searchValue" class="form-control search-bar-input" placeholder="{{ translate('search_by_name_or_sku') }}" aria-label="{{ translate('search') }}">
                                     <diV class="card pos-search-card w-4 position-absolute z-index-1 w-100">
                                         <div id="pos-search-box" class="card-body search-result-box d--none"></div>
                                     </diV>
@@ -71,8 +71,8 @@
 
                     <div class="d-flex justify-content-between mb-3 align-items-xxl-baseline">
                         @if($branch)
-                        <h1 class="text-center text-denger">
-                            {{ translate('Branch') }}: {{ $branch->branch_name }}
+                        <h1 class="text-center text-danger">
+                            {{ translate('branch') }}: {{ $branch->branch_name }}
                         </h1>
                         @endif
                         <button type="button" class="btn btn-outline--primary d-flex align-items-center gap-2 action-view-all-hold-orders" data-toggle="tooltip" data-placement="top" title="{{translate('please_resume_the_order_from_here')}}">
@@ -91,7 +91,7 @@
                                 $userId = explode('-', session('current_user'))[2];
                             }
                             ?>
-                        <select id='customer' name="customer_id" data-placeholder="Walking Customer" class="js-example-matcher form-control form-ellipsis action-customer-change">
+                        <select id='customer' name="customer_id" data-placeholder="{{ translate('walking_customer') }}" class="js-example-matcher form-control form-ellipsis action-customer-change">
                             <option value="0" {{ $userId == 0 ? 'selected':''}}>{{ translate('walking_customer') }}</option>
                             @foreach ($customers as $customer)
                             <option value="{{ $customer->id }}" {{ $userId == $customer->id ? 'selected':''}}>{{ $customer->f_name }} {{ $customer->l_name }}
@@ -184,13 +184,27 @@
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/libs/printThis/printThis.js') }}"></script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/country-picker-init.js') }}"></script>
-<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/pos-script.js') }}"></script>
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/pos-script.js') }}?v={{ @filemtime(public_path('assets/back-end/js/admin/pos-script.js')) }}"></script>
 <script>
     "use strict";
-    $(document).on('ready', function() {
-        @if($order)
+    $(window).on('load', function() {
+        const currentUrl = new URL(window.location.href);
+        const hasLastOrderId = currentUrl.searchParams.has('last_order_id');
+
+        @if($order && request()->has('last_order_id'))
         $('#print-invoice').modal('show');
+        setTimeout(function() {
+            const printButton = $('#print_invoice');
+            if (printButton.length) {
+                printButton.trigger('click');
+            }
+        }, 400);
         @endif
+
+        if (hasLastOrderId) {
+            currentUrl.searchParams.delete('last_order_id');
+            window.history.replaceState({}, document.title, currentUrl.toString());
+        }
     });
 
 </script>

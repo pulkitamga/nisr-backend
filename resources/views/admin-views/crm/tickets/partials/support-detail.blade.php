@@ -54,6 +54,7 @@
             'Escalation Updated' => 'escalation_updated',
             'Support Ticket Follow-Up' => 'support_ticket_follow_up',
             'Admin Reply Added' => 'admin_reply_added',
+            'Department/Employee Assignment' => 'department_employee_assignment',
         ];
 
         if (isset($titleMap[$titleText])) {
@@ -63,7 +64,7 @@
         return $translateDynamic($titleText);
     };
 
-    $translateActivityDescription = static function (?string $description) use ($translateDynamic): string {
+    $translateActivityDescription = static function (?string $description) use ($translateDynamic, $translateWithReplace): string {
         $descText = trim((string)$description);
         if ($descText === '') {
             return translate('N/A');
@@ -101,7 +102,7 @@
             ]);
         }
 
-        if (preg_match('/^Ticket #(\d+) escalated\. Reason:\s*(.+)$/i', $descText, $m)) {
+        if (preg_match('/^(?:[A-Za-z]+\s+)?Ticket #(\d+) escalated\. Reason:\s*(.+)$/i', $descText, $m)) {
             return $translateWithReplace('ticket_escalated_reason', [
                 'id' => $m[1],
                 'reason' => $m[2],
@@ -318,4 +319,3 @@
     </div>
 </div>
 @endsection
-

@@ -1,6 +1,8 @@
 @php($currentCustomerData = $summaryData['currentCustomerData'] ?? null)
 @php($cartNames = $summaryData['cartNames'] ?? [])
-@if ($summaryData['currentCustomer'] != 'Walking Customer')
+@php($activeCartId = (string)($cartId ?? session('current_user')))
+@php($isWalkingCustomer = str_contains($activeCartId, 'walking-customer'))
+@if (!$isWalkingCustomer)
     <div class="pos-home-delivery mb-4">
         <div class="d-flex justify-content-between gap-2 mb-3">
             <div class="d-flex gap-2">
@@ -38,8 +40,8 @@
 <div class="d-flex gap-2 flex-wrap mb-3">
     <div class="dropdown flex-grow-1" id="dropdown-order-select">
         <button class="form-control text-start dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-            aria-expanded="false" id="cart_id_primary">
-            {{ session('current_user') }}
+            aria-expanded="false" id="cart_id_primary" data-cart-id="{{ $activeCartId }}">
+            {{ $activeCartId }}
         </button>
         <div class="dropdown-menu px-2">
             @foreach ($cartNames as $cartName)

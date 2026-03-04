@@ -74,7 +74,9 @@ $direction = Session::get('direction') ?? 'ltr';
     <main id="content" role="main" class="main pointer-event">
         @yield('content')
         @include('layouts.back-end.partials._footer')
-        @include('admin-views.partials.call-popup')
+        @unless(request()->routeIs('admin.pos.*'))
+            @include('admin-views.partials.call-popup')
+        @endunless
         @include('layouts.back-end.partials._modals')
         @include('layouts.back-end.partials._toggle-modal')
         @include('layouts.back-end.partials._sign-out-modal')

@@ -149,7 +149,7 @@ class SupportTicketController extends BaseController
     {
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->id]);
         if (!$ticket) {
-            return response()->json(['message' => 'Ticket not found'], 404);
+            return response()->json(['message' => translate('ticket_not_found')], 404);
         }
 
         $currentStatus = SupportTicketStatusMaster::find($ticket->status);
@@ -198,6 +198,12 @@ class SupportTicketController extends BaseController
         $oldStatusSlug = strtolower($currentStatus?->name ?? '');
         $newStatusSlug = strtolower($nextStatus?->name ?? '');
         $isReopened = $oldStatusSlug === 'closed' && $newStatusSlug !== 'closed';
+
+        if ($nextStatus && strcasecmp((string)$nextStatus->name, 'assigned') === 0 && (int)($ticket->employee_id ?? 0) <= 0) {
+            return response()->json([
+                'message' => translate('assign_employee_before_setting_assigned_status'),
+            ], 422);
+        }
 
         $ticket->update([
             'status' => $nextStatus?->id ?? $ticket->status,

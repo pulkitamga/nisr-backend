@@ -14,13 +14,19 @@ class POSService
 
     public function __construct(private readonly VariantMatcher $variantMatcher) {}
 
-    public function getTotalHoldOrders(): int
+    public function getTotalHoldOrders(?int $branchId = null): int
     {
         $totalHoldOrders = 0;
+        $branchId = $this->normalizeBranchId($branchId ?? $this->getActivePosBranchId());
         if (session()->has(SessionKey::CART_NAME)) {
             foreach (session(SessionKey::CART_NAME) as $item) {
-                if (session()->has($item) && count(session($item)) > 1) {
-                    if (isset(session($item)[0]) && is_array(session($item)[0]) && isset(session($item)[0]['customerOnHold']) && session($item)[0]['customerOnHold']) {
+                if (!$this->cartBelongsToBranch((string)$item, $branchId)) {
+                    continue;
+                }
+                $cartData = session()->has($item) ? session($item) : [];
+                $cartLineItems = $this->getCartLineItems(cartData: is_array($cartData) ? $cartData : []);
+                if (count($cartLineItems) > 0) {
+                    if (($cartLineItems[0]['customerOnHold'] ?? false) === true) {
                         $totalHoldOrders++;
                     }
                 }
@@ -29,12 +35,18 @@ class POSService
         return $totalHoldOrders;
     }
 
-    public function getCartNames(): array
+    public function getCartNames(?int $branchId = null): array
     {
         $cartNames = [];
+        $branchId = $this->normalizeBranchId($branchId ?? $this->getActivePosBranchId());
         if (session()->has(SessionKey::CART_NAME)) {
             foreach (session(SessionKey::CART_NAME) as $item) {
-                if (session()->has($item) && count(session($item)) > 1) {
+                if (!$this->cartBelongsToBranch((string)$item, $branchId)) {
+                    continue;
+                }
+                $cartData = session()->has($item) ? session($item) : [];
+                $cartLineItems = $this->getCartLineItems(cartData: is_array($cartData) ? $cartData : []);
+                if (count($cartLineItems) > 0) {
                     $cartNames[] = $item;
                 }
             }
@@ -42,31 +54,29 @@ class POSService
         return $cartNames;
     }
 
-    public function UpdateSessionWhenCustomerChange(string $cartId): void
+    public function UpdateSessionWhenCustomerChange(string $cartId, ?int $branchId = null): void
     {
-        if (!in_array($cartId, session(SessionKey::CART_NAME) ?? [])) {
-            session()->push(SessionKey::CART_NAME, $cartId);
+        $resolvedBranchId = $this->normalizeBranchId($branchId);
+        session()->put(SessionKey::POS_BRANCH_ID, $resolvedBranchId);
+        $cartNames = session(SessionKey::CART_NAME) ?? [];
+        if (!is_array($cartNames)) {
+            $cartNames = [];
         }
-        $cart = session(session(SessionKey::CURRENT_USER));
+        if (!in_array($cartId, $cartNames, true)) {
+            $cartNames[] = $cartId;
+            session()->put(SessionKey::CART_NAME, $cartNames);
+        }
+        $currentCartId = session(SessionKey::CURRENT_USER);
+        $cart = is_string($currentCartId) ? session($currentCartId, []) : [];
         $cartKeeper = [];
-        if (session()->has(session(SessionKey::CURRENT_USER)) && count($cart) > 0) {
+        if (is_array($cart) && count($cart) > 0) {
             foreach ($cart as $cartItem) {
                 if (is_array($cartItem)) {
-                    $cartItem['customerId'] = Str::contains($cartId, 'walking-customer') ? '0' : explode('-', $cartId)[2];
+                    $cartItem['customerId'] = $this->resolveCustomerIdFromCartId(cartId: $cartId);
                 }
                 $cartKeeper[] = $cartItem;
             }
         }
-        if (session(SessionKey::CURRENT_USER) != $cartId) {
-            $tempCartName = [];
-            foreach (session(SessionKey::CART_NAME) as $cartName) {
-                if ($cartName != session(SessionKey::CURRENT_USER)) {
-                    $tempCartName[] = $cartName;
-                }
-            }
-            session()->put(SessionKey::CART_NAME, $tempCartName);
-        }
-        session()->forget(session(SessionKey::CURRENT_USER));
         session()->put($cartId, $cartKeeper);
         session()->put(SessionKey::CURRENT_USER, $cartId);
     }
@@ -76,21 +86,22 @@ class POSService
         $condition = false;
         $cartId = session(SessionKey::CURRENT_USER);
         if (session()->has($cartId)) {
-            if (count(session()->get($cartId)) < 1) {
+            $cartData = session()->get($cartId);
+            if (!is_array($cartData) || count($this->getCartLineItems(cartData: $cartData)) < 1) {
                 Toastr::error(translate('cart_empty_warning'));
-                $condition = true;
+                return true;
             }
         } else {
             Toastr::error(translate('cart_empty_warning'));
-            $condition = true;
+            return true;
         }
         if ($amount <= 0) {
             Toastr::error(translate('amount_cannot_be_lees_then_0'));
-            $condition = true;
+            return true;
         }
         if (!is_null($paidAmount) && $paidAmount < $amount) {
             Toastr::error(translate('paid_amount_is_less_than_total_amount'));
-            $condition = true;
+            return true;
         }
         return $condition;
     }
@@ -103,14 +114,39 @@ class POSService
         } else {
             $discount = $coupon['discount'];
         }
-        if (isset($carts['ext_discount_type'])) {
-            $extraDiscount = $this->getDiscountAmount(price: $totalProductPrice, discount: $carts['ext_discount'], discountType: $carts['ext_discount_type']);
+
+        $cartId = session(SessionKey::CURRENT_USER);
+        $cartData = is_string($cartId) ? session($cartId, []) : [];
+        if (is_array($cartData) && isset($cartData['ext_discount_type']) && (float)($cartData['ext_discount'] ?? 0) > 0) {
+            $extraDiscount = $this->getDiscountAmount(
+                price: $totalProductPrice,
+                discount: (float)$cartData['ext_discount'],
+                discountType: (string)$cartData['ext_discount_type']
+            );
         }
         $total = $totalProductPrice - $productDiscount + $productTax - $discount - $extraDiscount;
         return [
             'total' => $total,
             'discount' => $discount,
         ];
+    }
+
+    private function getCartLineItems(array $cartData): array
+    {
+        return collect($cartData)
+            ->filter(fn($item) => is_array($item) && isset($item['id']))
+            ->values()
+            ->all();
+    }
+
+    private function resolveCustomerIdFromCartId(string $cartId): string
+    {
+        if (Str::contains($cartId, 'walking-customer')) {
+            return '0';
+        }
+
+        $segments = explode('-', $cartId);
+        return isset($segments[2]) ? (string)$segments[2] : '0';
     }
 
     public function putCouponDataOnSession($cartId, $discount, $couponTitle, $couponBearer, $couponCode): void
@@ -135,13 +171,40 @@ class POSService
         return $variationData;
     }
 
-    public function getSummaryData(): array
+    public function getSummaryData(?int $branchId = null): array
     {
+        $branchId = $this->normalizeBranchId($branchId ?? $this->getActivePosBranchId());
         return [
             'cartName' => session(SessionKey::CART_NAME),
             'currentUser' => session(SessionKey::CURRENT_USER),
-            'totalHoldOrders' => $this->getTotalHoldOrders(),
-            'cartNames' => $this->getCartNames(),
+            'totalHoldOrders' => $this->getTotalHoldOrders($branchId),
+            'cartNames' => $this->getCartNames($branchId),
         ];
+    }
+
+    private function getActivePosBranchId(): int
+    {
+        return $this->normalizeBranchId((int)(session(SessionKey::POS_BRANCH_ID) ?? 0));
+    }
+
+    private function normalizeBranchId(?int $branchId): int
+    {
+        $resolved = (int)($branchId ?? 0);
+        return $resolved > 0 ? $resolved : 1;
+    }
+
+    private function cartBelongsToBranch(string $cartId, int $branchId): bool
+    {
+        $cartId = trim($cartId);
+        if ($cartId === '') {
+            return false;
+        }
+
+        $suffix = '-b' . $branchId;
+        if (str_ends_with($cartId, $suffix)) {
+            return true;
+        }
+
+        return $branchId === 1 && !preg_match('/-b\d+$/', $cartId);
     }
 }

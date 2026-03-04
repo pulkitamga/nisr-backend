@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class CartController extends BaseController
+class CartControllerOld extends BaseController
 {
     use CalculatorTrait;
 

@@ -1,6 +1,7 @@
 @php
 $installationTotel = 0;
 $exchangeTotel = 0;
+$activeCartId = (string)($cartId ?? session('current_user'));
 
 if (!empty($cartItems['cartItemValue'])) {
 foreach ($cartItems['cartItemValue'] as $item) {
@@ -26,6 +27,7 @@ $branch_id = request()->get('branch_id', '');
     <input type="hidden" name="installation_charge" value="{{ usdToDefaultCurrency(amount: $installationTotel) }}">
     <input type="hidden" name="exchange_charge" value="{{ usdToDefaultCurrency(amount: $exchangeTotel) }}">
     <input type="hidden" name="branch_id" value="{{ $branch_id }}">
+    <input type="hidden" name="cart_id" value="{{ $activeCartId }}">
 
 
     <div id="cart">
@@ -73,7 +75,8 @@ $branch_id = request()->get('branch_id', '');
                         <td>
                             <input type="number" data-key="{{$key}}" class="form-control qty action-pos-update-quantity"
                                 value="{{$item['quantity']}}" min="1" data-product-key="{{ $item['id'] }}"
-                                data-product-variant="{{ $item['variant'] }}">
+                                data-product-variant="{{ $item['variant'] }}"
+                                data-line-key="{{ $item['line_key'] ?? '' }}">
                         </td>
                         <td>
                             <div>
@@ -84,6 +87,7 @@ $branch_id = request()->get('branch_id', '');
                         <td>
                             <div class="d-flex justify-content-center">
                                 <a href="javascript:" data-id="{{$item['id']}}" data-variant="{{$item['variant']}}"
+                                    data-line-key="{{ $item['line_key'] ?? '' }}"
                                     class="btn btn-sm rounded-circle remove-from-cart">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/pos-delete-icon.svg') }}"
                                         alt="">
@@ -193,7 +197,7 @@ $branch_id = request()->get('branch_id', '');
                         </li>
                         @php( $walletStatus = getWebConfig('wallet_status') ?? 0)
                         @if ($walletStatus)
-                        <li class="{{ (str_contains(session('current_user'), 'walking-customer')) ? 'd-none':'' }}">
+                        <li class="{{ (str_contains($activeCartId, 'walking-customer')) ? 'd-none':'' }}">
                             <input type="radio" value="wallet" id="wallet" name="type" hidden>
                             <label for="wallet" class="btn btn--bordered btn--bordered-black px-4 mb-0">{{
                                 translate('wallet') }}</label>
@@ -271,7 +275,7 @@ $branch_id = request()->get('branch_id', '');
                 <i class="fa fa-times-circle"></i>
                 {{ translate('cancel_Order') }}
             </span>
-            <button type="button" class="btn btn--primary btn-block m-0 action-empty-alert-show">
+            <button type="button" class="btn btn--primary btn-block m-0" disabled>
                 <i class="fa fa-shopping-bag"></i>
                 {{ translate('place_Order') }}
             </button>

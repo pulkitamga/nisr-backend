@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ translate('coupon_discount') }}</h5>
-                <button id="coupon_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button id="coupon_close" type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -11,7 +11,7 @@
                 <div class="form-group">
                     <label class="title-color">{{ translate('coupon_code') }}</label>
                     <input type="text" id="coupon_code" class="form-control" name="coupon_code"
-                           placeholder="SULTAN200">
+                           placeholder="{{ translate('write_coupon_code_here') }}">
                 </div>
 
                 <div class="form-group">

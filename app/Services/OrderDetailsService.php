@@ -7,6 +7,10 @@ class OrderDetailsService
 
     public function getPOSOrderDetailsData(int|string $orderId, array $item, object $product, float $price, float $tax, $exchangeCharge, $installationCharge): array
     {
+        $variationPayload = collect($item['variations'] ?? [])
+            ->filter(fn($variationValue) => !blank($variationValue))
+            ->all();
+
         return [
             'order_id' => $orderId,
             'product_id' => $item['id'],
@@ -23,7 +27,7 @@ class OrderDetailsService
             'delivery_status' => 'delivered',
             'payment_status' => 'paid',
             'variant' => $item['variant'],
-            'variation' => json_encode($item['variations']),
+            'variation' => json_encode($variationPayload),
             'created_at' => now(),
             'updated_at' => now()
         ];

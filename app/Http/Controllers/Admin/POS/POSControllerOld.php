@@ -31,7 +31,7 @@ use App\Models\ManageBranchProductStock;
 
 
 
-class POSController extends BaseController
+class POSControllerOld extends BaseController
 {
     use CalculatorTrait, CommonTrait;
 

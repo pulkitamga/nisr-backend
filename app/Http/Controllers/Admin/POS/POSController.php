@@ -8,6 +8,7 @@ use App\Contracts\Repositories\CustomerRepositoryInterface;
 use App\Contracts\Repositories\DeliveryZipCodeRepositoryInterface;
 use App\Contracts\Repositories\OrderRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\SessionKey;
 use App\Enums\ViewPaths\Admin\POS;
 use App\Http\Controllers\BaseController;
@@ -23,10 +24,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use App\Models\Branch;
 use App\Models\ManageExtraCharge;
 use App\Models\ManageBranchProductStock;
-use Illuminate\Support\Facades\Log;
 
 
 
@@ -54,6 +55,7 @@ class POSController extends BaseController
         private readonly CartService                        $cartService,
         private readonly POSService                         $POSService,
         private readonly DeliveryZipCodeRepositoryInterface $deliveryZipCodeRepo,
+        private readonly VariantMatcher                     $variantMatcher,
     ) {}
 
     public function index(?Request $request, string $type = null): View|Collection|LengthAwarePaginator|null|callable|RedirectResponse
@@ -67,7 +69,11 @@ class POSController extends BaseController
     public function getPOSView(object $request): View
     {
         $categoryId = $request['category_id'];
-        $branchId = $request['branch_id'] ?? null;
+        $branchId = (int)($request['branch_id'] ?? 1);
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
         $categories = $this->categoryRepo->getListWhere(orderBy: ['id' => 'desc'], filters: ['position' => 0]);
 
         $searchValue = $request['searchValue'] ?? null;
@@ -121,17 +127,20 @@ class POSController extends BaseController
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        $cartId = 'walking-customer-' . rand(10, 1000);
-        $this->cartService->getNewCartSession(cartId: $cartId);
+        $cartId = $this->ensureCurrentPosCartSession(
+            branchId: $branchId,
+            requestedCartId: (string)$request->input('cart_id', '')
+        );
         $customers = $this->customerRepo->getListWhereNotIn(ids: [0])
             ->filter(fn($c) => $c->id != 0 && $c->user_type != 1)
             ->values();
         $getCurrentCustomerData = $this->getCustomerDataFromSessionForPOS();
-        $summaryData = array_merge($this->POSService->getSummaryData(), $getCurrentCustomerData);
-        Log::info('session user' , ['session'=> session(SessionKey::CURRENT_USER)]);
-        Log::info('session order' , ['session'=> session(SessionKey::LAST_ORDER)]);
+        $summaryData = array_merge($this->POSService->getSummaryData($branchId), $getCurrentCustomerData);
         $cartItems = $this->getCartData(cartName: session(SessionKey::CURRENT_USER));
-        $order = $this->orderRepo->getFirstWhere(params: ['id' => session(SessionKey::LAST_ORDER)]);
+        $lastOrderId = (int)($request->input('last_order_id') ?? 0);
+        $order = $lastOrderId > 0
+            ? $this->orderRepo->getFirstWhere(params: ['id' => $lastOrderId])
+            : null;
         $totalHoldOrder = $summaryData['totalHoldOrders'];
         $countries = getWebConfig(name: 'delivery_country_restriction') ? $this->get_delivery_country_array() : COUNTRIES;
         $zipCodes = getWebConfig(name: 'delivery_zip_code_area_restriction') ? $this->deliveryZipCodeRepo->getListWhere(dataLimit: 'all') : 0;
@@ -165,10 +174,38 @@ class POSController extends BaseController
      */
     public function changeCustomer(Request $request): JsonResponse
     {
-        $cartId = ($request['user_id'] != 0 ? 'saved-customer-' . $request['user_id'] : 'walking-customer-' . rand(10, 1000));
-        $this->POSService->UpdateSessionWhenCustomerChange(cartId: $cartId);
+        $branchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
+        $requestedCurrentCartId = trim((string)($request['cart_id'] ?? ''));
+        $currentCartId = $requestedCurrentCartId !== ''
+            ? $requestedCurrentCartId
+            : (string)(session(SessionKey::CURRENT_USER) ?? '');
+
+        if (
+            $currentCartId !== ''
+            && $this->cartService->cartBelongsToBranch($currentCartId, $branchId)
+            && session()->has($currentCartId)
+            && is_array(session($currentCartId))
+        ) {
+            session()->put(SessionKey::CURRENT_USER, $currentCartId);
+        }
+
+        if ((int)$request['user_id'] !== 0) {
+            $cartId = $this->cartService->makeSavedCustomerCartId((int)$request['user_id'], $branchId);
+        } elseif (
+            $this->cartService->cartBelongsToBranch($currentCartId, $branchId)
+            && Str::contains($currentCartId, 'walking-customer-')
+        ) {
+            $cartId = $currentCartId;
+        } else {
+            $cartId = $this->cartService->generateWalkingCustomerCartId($branchId);
+        }
+        $this->POSService->UpdateSessionWhenCustomerChange(cartId: $cartId, branchId: $branchId);
         $getCurrentCustomerData = $this->getCustomerDataFromSessionForPOS();
-        $summaryData = array_merge($this->POSService->getSummaryData(), $getCurrentCustomerData);
+        $summaryData = array_merge($this->POSService->getSummaryData($branchId), $getCurrentCustomerData);
         $cartItems = $this->getCartData(cartName: $cartId);
         return response()->json([
             'view' => view(POS::SUMMARY[VIEW], compact('summaryData', 'cartItems'))->render()
@@ -181,11 +218,27 @@ class POSController extends BaseController
      */
     public function updateDiscount(Request $request): JsonResponse
     {
+        $branchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
         $cartId = session(SessionKey::CURRENT_USER);
+        $requestedCartId = trim((string)($request['cart_id'] ?? ''));
+        if (
+            $requestedCartId !== ''
+            && $this->cartService->cartBelongsToBranch($requestedCartId, $branchId)
+            && session()->has($requestedCartId)
+            && is_array(session($requestedCartId))
+        ) {
+            $cartId = $requestedCartId;
+            session()->put(SessionKey::CURRENT_USER, $requestedCartId);
+        }
         if ($request['type'] == 'percent' && ($request['discount'] < 0 || $request['discount'] > 100)) {
             $cartItems = $this->getCartData(cartName: $cartId);
-            $text = $request['discount'] > 0 ? 'Extra_discount_can_not_be_less_than_0_percent' :
-                'Extra_discount_can_not_be_more_than_100_percent';
+            $text = $request['discount'] < 0
+                ? 'Extra_discount_can_not_be_less_than_0_percent'
+                : 'Extra_discount_can_not_be_more_than_100_percent';
             Toastr::error(translate($text));
             return response()->json([
                 'extraDiscount' => "amount_low",
@@ -251,7 +304,22 @@ class POSController extends BaseController
     public function getCouponDiscount(Request $request): JsonResponse
     {
 
+        $branchId = (int)($request['branch_id'] ?? session(SessionKey::POS_BRANCH_ID) ?? 1);
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+        session()->put(SessionKey::POS_BRANCH_ID, $branchId);
         $cartId = session(SessionKey::CURRENT_USER);
+        $requestedCartId = trim((string)($request['cart_id'] ?? ''));
+        if (
+            $requestedCartId !== ''
+            && $this->cartService->cartBelongsToBranch($requestedCartId, $branchId)
+            && session()->has($requestedCartId)
+            && is_array(session($requestedCartId))
+        ) {
+            $cartId = $requestedCartId;
+            session()->put(SessionKey::CURRENT_USER, $requestedCartId);
+        }
         $userId = $this->cartService->getUserId();
         if ($userId != 0) {
             $usedCoupon = $this->orderRepo->getListWhere(filters: ['customer_type' => 'customer', 'coupon_code' => $request['coupon_code']])->count();
@@ -347,66 +415,104 @@ class POSController extends BaseController
      * @return JsonResponse
      */
     public function getQuickView(Request $request): JsonResponse
-{
-    $branchId = $request->branch_id ?? null;
-    Log::info('QuickView Request', ['product_id' => $request->product_id, 'branch_id' => $branchId]);
+    {
+        $branchId = (int)($request->branch_id ?? 0);
+        Log::info('QuickView Request', ['product_id' => $request->product_id, 'branch_id' => $branchId]);
 
-    $product = $this->productRepo->getFirstWhereWithCount(
-        params: ['id' => $request['product_id']],
-        withCount: ['reviews'],
-        relations: ['brand', 'category', 'rating', 'tags', 'digitalVariation', 'clearanceSale' => fn($q)=>$q->active()]
-    );
-
-    // Filter choice_options according to branch
-    if ($branchId && !empty($product->choice_options)) {
-        $choiceOptions = json_decode($product->choice_options, true);
-        Log::info('Original choice_options', ['choice_options' => $choiceOptions]);
-
-        $branchVariations = ManageBranchProductStock::where('branch_id', $branchId)
-            ->where('product_id', $product->id)
-            ->where('current_stock', '>', 0)
-            ->pluck('variation_type')
-            ->toArray();
-        Log::info('Branch Variations', ['branch_variations' => $branchVariations]);
-
-       $branchOptions = array_filter($branchVariations);
-
-
-        Log::info('Filtered branchOptions', ['branch_options' => $branchOptions]);
-
-        foreach ($choiceOptions as $key => $choice) {
-            $choiceOptions[$key]['options'] = array_values(array_filter(
-                $choice['options'],
-                fn($opt) => in_array($opt, $branchOptions)
-            ));
+        $product = $this->productRepo->getFirstWhereWithCount(
+            params: ['id' => $request['product_id']],
+            withCount: ['reviews'],
+            relations: ['brand', 'category', 'rating', 'tags', 'digitalVariation', 'clearanceSale' => fn($q) => $q->active()]
+        );
+        if (!$product) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('product_not_found'),
+            ]);
         }
 
-        $product->filtered_choice_options = json_encode($choiceOptions); // use this in Quick View
-        Log::info('Filtered choice_options', ['filtered_choice_options' => $choiceOptions]);
+        $product->selected_branch_id = $branchId;
+
+        if ($branchId > 0 && !empty($product->choice_options)) {
+            $choiceOptions = json_decode($product->choice_options, true) ?? [];
+            $branchVariationRows = ManageBranchProductStock::query()
+                ->where('branch_id', $branchId)
+                ->where('product_id', $product->id)
+                ->where('current_stock', '>', 0)
+                ->get(['variation_type', 'variation_key']);
+
+            $branchVariations = [];
+            foreach ($branchVariationRows as $branchVariationRow) {
+                foreach ([$branchVariationRow->variation_type, $branchVariationRow->variation_key] as $variationValue) {
+                    $rawValue = trim((string)$variationValue);
+                    if ($rawValue === '' || $this->variantMatcher->isDefault($rawValue)) {
+                        continue;
+                    }
+                    $branchVariations[] = $rawValue;
+                }
+            }
+            $branchVariations = array_values(array_unique($branchVariations));
+
+            $hasSingleChoiceOption = count($choiceOptions) === 1;
+            foreach ($choiceOptions as $key => $choice) {
+                $existingOptions = $choice['options'] ?? [];
+                if (empty($existingOptions) || empty($branchVariations)) {
+                    continue;
+                }
+
+                $filteredOptions = array_values(array_filter($existingOptions, function ($option) use ($branchVariations) {
+                    foreach ($branchVariations as $branchVariation) {
+                        if ($this->variantMatcher->matches($option, $branchVariation)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }));
+
+                if (!empty($filteredOptions)) {
+                    $choiceOptions[$key]['options'] = $filteredOptions;
+                    continue;
+                }
+
+                if ($hasSingleChoiceOption) {
+                    $dynamicBranchOptions = array_values(array_unique(array_filter(array_map(function ($branchVariation) use ($existingOptions) {
+                        foreach ($existingOptions as $existingOption) {
+                            if ($this->variantMatcher->matches($existingOption, $branchVariation)) {
+                                return $existingOption;
+                            }
+                        }
+                        return $branchVariation;
+                    }, $branchVariations))));
+
+                    if (!empty($dynamicBranchOptions)) {
+                        $choiceOptions[$key]['options'] = $dynamicBranchOptions;
+                    }
+                }
+            }
+
+            $product->filtered_choice_options = json_encode($choiceOptions);
+        }
+
+        $charges = ManageExtraCharge::whereIn('type', ['exchange', 'installation'])
+            ->where('status', 1)
+            ->whereIn('category_id', [$product->category_id, $product->sub_category_id, $product->sub_sub_category_id])
+            ->get();
+
+        $extraCharges = [];
+        foreach ($charges as $charge) {
+            $extraCharges[$charge->type] = $charge->charges;
+        }
+        $extraCharges['exchange'] = $extraCharges['exchange'] ?? 0;
+        $extraCharges['installation'] = $extraCharges['installation'] ?? 0;
+        $product->extraCharges = $extraCharges;
+
+        return response()->json([
+            'success' => 1,
+            'view' => view(POS::QUICK_VIEW[VIEW], compact('product'))->render(),
+            'extraCharges' => $extraCharges,
+            'product' => $product,
+        ]);
     }
-
-    $charges = ManageExtraCharge::whereIn('type', ['exchange', 'installation'])
-        ->where('status', 1)
-        ->whereIn('category_id', [$product->category_id, $product->sub_category_id, $product->sub_sub_category_id])
-        ->get();
-
-    $extraCharges = [];
-    foreach ($charges as $charge) {
-        $extraCharges[$charge->type] = $charge->charges;
-    }
-    $extraCharges['exchange'] = $extraCharges['exchange'] ?? 0;
-    $extraCharges['installation'] = $extraCharges['installation'] ?? 0;
-    $product->extraCharges = $extraCharges;
-
-    Log::info('Extra Charges', ['extra_charges' => $extraCharges]);
-
-    return response()->json([
-        'success' => 1,
-        'view' => view(POS::QUICK_VIEW[VIEW], compact('product'))->render(),
-        'extraCharges' => $extraCharges,
-        'product' => $product,
-    ]);
-}
 
 
 
@@ -417,7 +523,7 @@ class POSController extends BaseController
     protected function getCustomerDataFromSessionForPOS(): array
     {
         if (Str::contains(session(SessionKey::CURRENT_USER), 'walking-customer')) {
-            $currentCustomerInfo = ['customerName' => 'Walking Customer'];
+            $currentCustomerInfo = ['customerName' => translate('walking_customer')];
             $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => '0']);
         } else {
             $userId = explode('-', session(SessionKey::CURRENT_USER))[2];
@@ -439,7 +545,7 @@ class POSController extends BaseController
         $customerCartData = [];
         if (Str::contains($cartName, 'walking-customer')) {
             $currentCustomerInfo = [
-                'customerName' => 'Walking Customer',
+                'customerName' => translate('walking_customer'),
                 'customerPhone' => "",
             ];
             $customerId = 0;
@@ -528,8 +634,70 @@ class POSController extends BaseController
         return array_merge($customerCartData[$cartName], $cartItemData);
     }
 
+    protected function ensureCurrentPosCartSession(int $branchId = 1, string $requestedCartId = ''): string
+    {
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+
+        $requestedCartId = trim($requestedCartId);
+        if (
+            $requestedCartId !== ''
+            && $this->cartService->cartBelongsToBranch($requestedCartId, $branchId)
+        ) {
+            $cartNames = session(SessionKey::CART_NAME) ?? [];
+            if (!is_array($cartNames)) {
+                $cartNames = [];
+            }
+            if (!in_array($requestedCartId, $cartNames, true)) {
+                $cartNames[] = $requestedCartId;
+                session()->put(SessionKey::CART_NAME, $cartNames);
+            }
+            if (!session()->has($requestedCartId) || !is_array(session($requestedCartId))) {
+                session()->put($requestedCartId, []);
+            }
+            session()->put(SessionKey::CURRENT_USER, $requestedCartId);
+            return $requestedCartId;
+        }
+
+        $currentCartId = session(SessionKey::CURRENT_USER);
+        if (
+            is_string($currentCartId)
+            && $currentCartId !== ''
+            && $this->cartService->cartBelongsToBranch($currentCartId, $branchId)
+            && session()->has($currentCartId)
+            && is_array(session($currentCartId))
+        ) {
+            $cartNames = session(SessionKey::CART_NAME) ?? [];
+            if (!is_array($cartNames)) {
+                $cartNames = [];
+            }
+            if (!in_array($currentCartId, $cartNames, true)) {
+                $cartNames[] = $currentCartId;
+                session()->put(SessionKey::CART_NAME, $cartNames);
+            }
+
+            return $currentCartId;
+        }
+
+        $cartId = $this->cartService->generateWalkingCustomerCartId($branchId);
+        session()->put(SessionKey::CURRENT_USER, $cartId);
+        $cartNames = session(SessionKey::CART_NAME) ?? [];
+        if (!is_array($cartNames)) {
+            $cartNames = [];
+        }
+        if (!in_array($cartId, $cartNames, true)) {
+            $cartNames[] = $cartId;
+        }
+        session()->put(SessionKey::CART_NAME, $cartNames);
+        session()->put($cartId, []);
+
+        return $cartId;
+    }
+
     public function getSearchedProductsView(Request $request): JsonResponse
     {
+        $branchId = (int)($request['branch_id'] ?? 0);
         $products = $this->productRepo->getListWithScope(
             scope: 'active',
             filters: [
@@ -539,6 +707,21 @@ class POSController extends BaseController
             ],
             dataLimit: 'all'
         );
+
+        if ($branchId > 1) {
+            $availableProductIds = ManageBranchProductStock::query()
+                ->where('branch_id', $branchId)
+                ->whereNotNull('product_id')
+                ->groupBy('product_id')
+                ->havingRaw('SUM(current_stock) > 0')
+                ->pluck('product_id')
+                ->all();
+
+            $products = $products->whereIn('id', $availableProductIds)->values();
+        } else {
+            $products = $products->filter(fn($product) => (int)($product->current_stock ?? 0) > 0)->values();
+        }
+
         $data = [
             'count' => $products->count(),
             'result' => view(POS::SEARCH[VIEW], compact('products'))->render()

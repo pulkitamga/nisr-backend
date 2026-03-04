@@ -2,7 +2,7 @@
 @section('title', translate('Verify_Warranty_OTP'))
 
 @section('content')
-<div class="container my-5">
+<div class="container my-5 text-align-direction">
     <div class="card border-0 box-shadow-lg">
         <div class="card-body py-5">
             <div class="mw-500 mx-auto text-center">

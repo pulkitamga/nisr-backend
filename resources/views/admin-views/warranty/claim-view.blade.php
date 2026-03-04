@@ -58,8 +58,8 @@
             </div>
 
             <div class="d-flex justify-content-between mt-2">
-                <button type="button" class="btn btn-sm btn-secondary" id="prevAtt">Prev</button>
-                <button type="button" class="btn btn-sm btn-secondary" id="nextAtt">Next</button>
+                <button type="button" class="btn btn-sm btn-secondary" id="prevAtt">{{ translate('Previous') }}</button>
+                <button type="button" class="btn btn-sm btn-secondary" id="nextAtt">{{ translate('Next') }}</button>
             </div>
             @endif
         </div>
@@ -71,7 +71,7 @@
                 <div class="mt-4 d-flex flex-wrap gap-2">
 
                     @if($claim->status === 'new')
-                    <button class="btn btn-primary btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.decide', $claim->id) }}" data-url="{{ route('admin.warranty.claim.decide', $claim->id) }}" data-target="#decideModal">
+                    <button class="btn btn-primary btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.decide', $claim->id) }}" data-target="#decideModal">
                         {{ translate('Decide') }}
                     </button>
                     @endif
@@ -166,7 +166,7 @@
                             <td>{{ translate($e->event_type) }}</td>
                             <td>{{ $e->description }}</td>
                             <td>{{ $e->timestamp->format('Y-m-d H:i A') }}</td>
-                            <td>{{ $e->user?->name ?? 'Admin' }}</td>
+                            <td>{{ $e->user?->name ?? translate('Admin') }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -202,6 +202,12 @@
 @endsection
 @push('script')
 <script>
+    const claimWorkflowI18n = {
+        processing: @json(translate('Processing...')),
+        success: @json(translate('Success!')),
+        error: @json(translate('Something went wrong.'))
+    };
+
     $(document).on('click', '[data-toggle="modal"]', function() {
         const button = $(this);
         const url = button.data('url');
@@ -217,7 +223,8 @@
         e.preventDefault();
         let form = $(this);
         let btn = form.find('button[type=submit]');
-        btn.prop('disabled', true).html('<i class="tio-loading"></i> Processing...');
+        const originalLabel = btn.html();
+        btn.prop('disabled', true).html('<i class="tio-loading"></i> ' + claimWorkflowI18n.processing);
 
         $.ajax({
             url: form.attr('action'),
@@ -226,12 +233,14 @@
             contentType: false,
             processData: false,
             success: function(res) {
-                toastr.success(res.message || 'Success!');
+                toastr.success(res.message || claimWorkflowI18n.success);
                 location.reload();
             },
             error: function(xhr) {
-                toastr.error(xhr.responseJSON?.message || 'Error!');
-                btn.prop('disabled', false).html('Submit');
+                const validationErrors = xhr.responseJSON?.errors || {};
+                const firstValidationError = Object.values(validationErrors)[0]?.[0];
+                toastr.error(xhr.responseJSON?.message || firstValidationError || claimWorkflowI18n.error);
+                btn.prop('disabled', false).html(originalLabel);
             }
         });
     });
