@@ -2,6 +2,10 @@
 
 @section('title', 'CRM Sales Report')
 
+@push('css_or_js')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush
+
 @section('content')
     <div class="content container-fluid">
         <div class="mb-3">
@@ -18,7 +22,7 @@
                         <label class="form-label">Year</label>
                         <select class="form-control" name="year" id="crm-year" required>
                             @foreach ($years as $year)
-                                <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>
+                                <option value="{{ $year }}" {{ (int) $year === (int) date('Y') ? 'selected' : '' }}>
                                     {{ $year }}
                                 </option>
                             @endforeach
@@ -35,7 +39,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Sale Type</label>
                         <select class="form-control" name="sale_type" id="crm-sale-type">
                             <option value="">All</option>
@@ -44,13 +48,14 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Agents</label>
                         <select class="form-control" name="agent_ids[]" id="crm-agent-ids" multiple>
                             @foreach ($agents as $agent)
-                                <option value="{{ $agent->id }}" selected>{{ $agent->name }}</option>
+                                <option value="{{ $agent->id }}">{{ $agent->name }}</option>
                             @endforeach
                         </select>
+                        <small class="text-muted">Leave empty to include all agents.</small>
                     </div>
 
                     <div class="col-md-2">
@@ -115,13 +120,15 @@
                             <th class="text-end">Retail Sales</th>
                             <th class="text-end">Wholesale Sales</th>
                             <th class="text-end">Total Sales</th>
+                            <th class="text-end">Retail Orders</th>
+                            <th class="text-end">Wholesale Orders</th>
                             <th class="text-end">Total Orders</th>
                             <th class="text-end">Total Quantity</th>
                         </tr>
                     </thead>
                     <tbody id="crm-sales-table-body">
                         <tr>
-                            <td colspan="6" class="text-center py-4">Loading...</td>
+                            <td colspan="8" class="text-center py-4">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -139,7 +146,7 @@
             const form = document.getElementById('crm-sales-filter-form');
             const loadBtn = document.getElementById('crm-load-btn');
             const tableBody = document.getElementById('crm-sales-table-body');
-            const csrfToken = '{{ csrf_token() }}';
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
             const chartCtx = document.getElementById('crm-sales-chart').getContext('2d');
             let crmChart = null;
 
@@ -149,7 +156,9 @@
             });
 
             const selectedValues = (selectElement) => {
-                return Array.from(selectElement.selectedOptions).map((option) => Number(option.value)).filter(Boolean);
+                return Array.from(selectElement.selectedOptions)
+                    .map((option) => Number(option.value))
+                    .filter((value) => Number.isInteger(value) && value > 0);
             };
 
             const setLoading = (loading) => {
@@ -175,7 +184,7 @@
                     borderColor: dataset.borderColor || '#2563eb',
                     backgroundColor: dataset.backgroundColor || 'rgba(37, 99, 235, 0.2)',
                     borderWidth: dataset.borderWidth || 2,
-                    fill: !!dataset.fill,
+                    fill: Boolean(dataset.fill),
                     tension: dataset.tension !== undefined ? dataset.tension : 0.3
                 }));
 
@@ -200,7 +209,7 @@
             const renderTable = (pivotData) => {
                 const rows = Object.values(pivotData || {});
                 if (!rows.length) {
-                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No data found.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No data found.</td></tr>';
                     return;
                 }
 
@@ -212,7 +221,9 @@
                             <td class="text-end">${fmt(totals.retail_sales)}</td>
                             <td class="text-end">${fmt(totals.wholesale_sales)}</td>
                             <td class="text-end">${fmt(totals.total_sales)}</td>
-                            <td class="text-end">${fmt(totals.total_orders)}</td>
+                            <td class="text-end">${totals.retail_orders || 0}</td>
+                            <td class="text-end">${totals.wholesale_orders || 0}</td>
+                            <td class="text-end">${totals.total_orders || 0}</td>
                             <td class="text-end">${fmt(totals.total_quantity)}</td>
                         </tr>
                     `;
@@ -221,7 +232,7 @@
 
             const loadReport = async () => {
                 setLoading(true);
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Loading...</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Loading...</td></tr>';
 
                 try {
                     const payload = {
@@ -242,7 +253,7 @@
                         body: JSON.stringify(payload)
                     });
 
-                    const data = await response.json();
+                    const data = await response.json().catch(() => ({}));
                     if (!response.ok || !data.success) {
                         throw new Error(data.message || 'Failed to load report.');
                     }
@@ -251,7 +262,7 @@
                     renderChart(data.chartData || {});
                     renderTable(data.pivotData || {});
                 } catch (error) {
-                    tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">${error.message}</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">${error.message || 'Failed to load report.'}</td></tr>`;
                 } finally {
                     setLoading(false);
                 }
