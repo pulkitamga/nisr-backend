@@ -106,8 +106,8 @@
                                     <th>{{ translate('item_details') }}</th>
                                     <th>{{ translate('item_price') }}</th>
                                     <th>{{ translate('tax') }}</th>
-                                    <th>{{translate('Inst._Charges')}}</th>
-                                    <th>{{translate('Exc._Charges')}}</th>
+                                    <th>{{ translate('installation_charge') }}</th>
+                                    <th>{{ translate('exchange_charge') }}</th>
                                     <th>{{ translate('item_discount') }}</th>
                                     <th>{{ translate('total_price') }}</th>
                                 </tr>
@@ -144,7 +144,7 @@
                                                 </div>
                                                 <div>
                                                     <strong>{{ translate('unit_price') }} :</strong>
-                                                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'] + ($detail->tax_model =='include' ? ($detail['tax'] / $detail['qty']) :0))) }}
+                                                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'])) }}
                                                     @if ($detail->tax_model =='include')
                                                     ({{ translate('tax_incl.') }})
                                                     @else
@@ -160,7 +160,7 @@
                                         </div>
                                         @if(isset($productDetails->digital_product_type) && $productDetails->digital_product_type == 'ready_after_sell')
                                         <button type="button" class="btn btn-sm btn--primary mt-2"
-                                            title="File Upload" data-toggle="modal"
+                                            title="{{ translate('file_upload') }}" data-toggle="modal"
                                             data-target="#fileUploadModal-{{ $detail->id }}">
                                             <i class="tio-file-outlined"></i> {{ translate('file') }}
                                         </button>
@@ -172,14 +172,20 @@
                                         {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $detail['tax']), currencyCode: getCurrencyCode()) }}
                                     </td>
                                     <td>
-                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['installtion_charges']), currencyCode: getCurrencyCode()) }}
+                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: (float)$detail['installtion_charges']), currencyCode: getCurrencyCode()) }}
                                     </td>
                                     <td>
-                                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['exchange_charges']), currencyCode: getCurrencyCode()) }}
+                                        @php($lineExchangeQty = (int)($detail['exchange_qty'] ?? 0))
+                                        @php($lineExchangeCharge = abs((float)($detail['exchange_charges'] ?? 0)))
+                                        @php($lineExchangeTotal = $lineExchangeQty > 0 ? $lineExchangeCharge * $lineExchangeQty : $lineExchangeCharge)
+                                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $lineExchangeTotal), currencyCode: getCurrencyCode()) }}
                                     </td>
-                                    <td>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $detail['discount']), currencyCode: getCurrencyCode()) }}</td>
+                                    <td>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$detail['discount'])), currencyCode: getCurrencyCode()) }}</td>
                                     @php($item_price+=$detail['price']*$detail['qty'])
-                                    @php($subtotal=($detail['price']*$detail['qty'])+$detail['tax']-$detail['discount'])
+                                    @php($lineInstallation = (float)($detail['installtion_charges'] ?? 0))
+                                    @php($lineExchange = $lineExchangeTotal)
+                                    @php($lineDiscount = abs((float)($detail['discount'] ?? 0)))
+                                    @php($subtotal=max(0, ($detail['price']*$detail['qty']) + $detail['tax'] + $lineInstallation - $lineDiscount - $lineExchange))
                                     @php($product_price = $detail['price']*$detail['qty'])
                                     @php($total_product_price+=$product_price)
                                     <td>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $subtotal), currencyCode: getCurrencyCode()) }}</td>
@@ -218,9 +224,9 @@
                                                             {{ translate('uploaded_file').':' }}
                                                             <a href="{{ asset('storage/app/public/product/digital-product/'.$productDetails->digital_file_ready) }}"
                                                                 class="btn btn-success btn-sm"
-                                                                title="Download"><i
+                                                                title="{{ translate('download') }}"><i
                                                                     class="tio-download"></i>
-                                                                {{translate('Download')}}</a>
+                                                                {{ translate('download') }}</a>
                                                         </div>
                                                         @endif
 
@@ -270,17 +276,17 @@
                                 <dt class="col-5 text-capitalize">{{ translate('item_discount') }}</dt>
                                 <dd class="col-6 title-color">
                                     -
-                                    <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['itemDiscount']), currencyCode: getCurrencyCode()) }}</strong>
+                                    <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
                                 <dt class="col-sm-5">{{ translate('extra_discount') }}</dt>
                                 <dd class="col-sm-6 title-color">
-                                    <strong>- {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['extraDiscount']), currencyCode: getCurrencyCode()) }}</strong>
+                                    <strong>- {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  abs((float)$orderTotalPriceSummary['extraDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
 
                                  @if($orderTotalPriceSummary['totalExchangePrice'] > 0)
                                 <dt class="col-5 text-capitalize">{{translate('exchange_charge')}}</dt>
                                 <dd class="col-6 title-color">
-                                    <strong>-{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalExchangePrice']), currencyCode: getCurrencyCode())}}</strong>
+                                    <strong>-{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['totalExchangePrice'])), currencyCode: getCurrencyCode())}}</strong>
                                 </dd>
                                 @endif
                                 @if($orderTotalPriceSummary['totalInstallationPrice'] > 0)
@@ -289,13 +295,9 @@
                                     <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalInstallationPrice']), currencyCode: getCurrencyCode())}}</strong>
                                 </dd>
                                 @endif
-                                <dt class="col-5 text-capitalize">{{ translate('sub_total') }}</dt>
-                                <dd class="col-6 title-color">
-                                    <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['subTotal']), currencyCode: getCurrencyCode()) }}</strong>
-                                </dd>
                                 <dt class="col-sm-5">{{ translate('coupon_discount') }}</dt>
                                 <dd class="col-sm-6 title-color">
-                                    <strong>- {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['couponDiscount']), currencyCode: getCurrencyCode()) }}</strong>
+                                    <strong>- {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
                                 <dt class="col-5 text-uppercase">{{ translate('vat') }}/{{ translate('tax') }}</dt>
                                 <dd class="col-6 title-color">
@@ -367,7 +369,7 @@
             <div class="modal-header">
                 <h4 class="modal-title"
                     id="locationModalLabel">{{ translate('location_Data') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}"><span
                         aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">

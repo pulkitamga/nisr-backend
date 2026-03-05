@@ -3,7 +3,7 @@
 @section('title', translate('Warranty Details'))
 
 @section('content')
-<div class="container my-5">
+<div class="container my-5 text-align-direction">
     <h2>{{ translate('Warranty Details') }}</h2>
     <div class="card mb-4">
         <div class="card-body">

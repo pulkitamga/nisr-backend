@@ -44,7 +44,7 @@
                     <!-- Notes -->
                     <div class="form-group">
                         <label>{{ translate('Notes') }}</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="e.g. Paid via cash on 2025-04-05"></textarea>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="{{ translate('e.g. Paid via cash on 2025-04-05') }}"></textarea>
                     </div>
 
                 </div>
@@ -62,6 +62,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('paymentHandlingModal');
+        if (!modal) return;
+
         const actionSelect = modal.querySelector('#paymentAction');
         const chargeCheckboxes = modal.querySelectorAll('input[name="charge_ids[]"]');
         const pendingWrapper = modal.querySelector('#pendingChargesWrapper');
@@ -70,7 +72,9 @@
             const action = actionSelect.value;
             const required = action === 'paid';
 
-            pendingWrapper.style.display = required ? 'block' : 'none';
+            if (pendingWrapper) {
+                pendingWrapper.style.display = required ? 'block' : 'none';
+            }
 
             chargeCheckboxes.forEach(cb => {
                 cb.required = required;

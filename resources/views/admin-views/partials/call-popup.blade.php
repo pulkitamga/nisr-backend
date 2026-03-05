@@ -6,7 +6,14 @@
 
 @push('script')
 <script>
+    let ucmPollInFlight = false;
+
     function fetchCalls() {
+        if (ucmPollInFlight || document.hidden) {
+            return;
+        }
+
+        ucmPollInFlight = true;
         $.ajax({
             url: '{{ route("admin.ucm.calls") }}',
             method: 'GET',
@@ -54,12 +61,20 @@
                         container.append(html);
                     }
                 });
+            },
+            complete: function() {
+                ucmPollInFlight = false;
             }
         });
     }
 
-    // Poll every 3 seconds
-    setInterval(fetchCalls, 3000);
+    // Poll every 5 seconds, skip hidden tab and overlapping requests.
+    setInterval(fetchCalls, 5000);
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            fetchCalls();
+        }
+    });
     fetchCalls(); // Initial load
 
     function postCallAction(url, payload, onSuccess) {

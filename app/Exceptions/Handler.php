@@ -4,6 +4,8 @@ namespace App\Exceptions;
 
 use App\Traits\ErrorLogsTrait;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -53,6 +55,18 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        if ($exception instanceof UnauthorizedException) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
+
+            // In test/minimal bootstrap contexts the error view stack can query business settings.
+            // Return a plain 403 fallback when those tables are unavailable.
+            if (app()->runningUnitTests() || !Schema::hasTable('business_settings')) {
+                return response('Forbidden', 403);
+            }
+        }
+
         if ($this->isHttpException($exception) && $exception?->getStatusCode() == 404) {
             $redirectUrl = $this->storeErrorLogsUrl(url: $request->fullUrl(), statusCode: $exception->getStatusCode());
             if ($redirectUrl && isset($redirectUrl['redirect_url'])) {

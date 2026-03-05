@@ -24,7 +24,6 @@ use App\Models\SupportTicketStatusMaster;
 use App\Models\SupportTicketNotification;
 use App\Models\CronConfiguration;
 use App\Models\CronSenderDetail;
-use App\Models\InboxTask;
 use App\Models\SupportTicketActivity; // Add this import
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
@@ -64,6 +63,55 @@ class ComplaintController extends BaseController
             'noted_at' => now(),
         ]);
     }
+
+    private function resolveTicketId(Request $request): ?int
+    {
+        $rawTicketId = $request->input('ticket_id', $request->input('id', $request->input('support_ticket_id')));
+        if ($rawTicketId === null || $rawTicketId === '') {
+            return null;
+        }
+
+        $ticketId = (int)$rawTicketId;
+        return $ticketId > 0 ? $ticketId : null;
+    }
+
+    private function isAssignedStatusForMaster(int $statusId, int $masterId): bool
+    {
+        return SupportTicketStatusMaster::query()
+            ->where('id', $statusId)
+            ->where('master_id', $masterId)
+            ->where('status', 'active')
+            ->whereRaw('LOWER(name) = ?', ['assigned'])
+            ->exists();
+    }
+
+    private function resolveStatusMasterIdByTicketType(?string $ticketType): int
+    {
+        return match (strtolower(trim((string)$ticketType))) {
+            'support' => 1,
+            'service' => 2,
+            'career' => 3,
+            'complaint' => 4,
+            'retail' => 5,
+            'wholesale' => 6,
+            default => 0,
+        };
+    }
+
+    private function resolveAssignedStatusIdByTicketType(?string $ticketType): int
+    {
+        $masterId = $this->resolveStatusMasterIdByTicketType($ticketType);
+        if ($masterId <= 0) {
+            return 0;
+        }
+
+        return (int)(SupportTicketStatusMaster::query()
+            ->where('master_id', $masterId)
+            ->where('status', 'active')
+            ->whereRaw('LOWER(name) = ?', ['assigned'])
+            ->value('id') ?? 0);
+    }
+
     public function getListView(Request $request): View
     {
         $status = $request->get('status', 36);
@@ -102,8 +150,13 @@ class ComplaintController extends BaseController
         }
 
         $oldStatus = $ticket['status'];
-        $newStatus = $request->input('status', $oldStatus); // Assuming status comes in request
-        $statusName = SupportTicketStatusMaster::find($newStatus)?->name ?? 'Unknown';
+        $newStatus = (int)$request->input('status', $oldStatus); // Assuming status comes in request
+        $status = SupportTicketStatusMaster::find($newStatus);
+        $statusName = $status?->name ?? 'Unknown';
+
+        if ($status && strcasecmp($statusName, 'assigned') === 0 && (int)($ticket->employee_id ?? 0) <= 0) {
+            return response()->json(['message' => translate('assign_employee_before_setting_assigned_status')], 422);
+        }
 
         $this->supportTicketRepo->update(id: $ticket['id'], data: ['status' => $newStatus]);
 
@@ -179,10 +232,16 @@ class ComplaintController extends BaseController
      */
     public function updateTicketDepartment(Request $request): JsonResponse
     {
-        $ticketId = $request->input('ticket_id');
+        $ticketId = $this->resolveTicketId($request);
+        if (!$ticketId) {
+            return response()->json([
+                'success' => false,
+                'message' => translate('Ticket ID is required.'),
+            ], 422);
+        }
+
         $departmentId = $request->input('department_id') ?? 0;
         $deptEmployeeId = $request->input('employee_id') ?? 0;
-        $iTicketStatus = $deptEmployeeId != 0 ? 2 : 0;
         $success = 1;
 
         if ($departmentId == 0 || $departmentId == '') {
@@ -203,8 +262,13 @@ class ComplaintController extends BaseController
             return redirect()->route('admin.complaints.index');
         }
 
-        $oldDepartmentId = $custRequestTicket->first()->department_id ?? 0;
-        $oldEmployeeId = $custRequestTicket->first()->employee_id ?? 0;
+        $ticket = $custRequestTicket->first();
+        $oldDepartmentId = $ticket->department_id ?? 0;
+        $oldEmployeeId = $ticket->employee_id ?? 0;
+        $assignedStatusId = $this->resolveAssignedStatusIdByTicketType((string)$ticket->type);
+        $historyStatusId = $deptEmployeeId != 0
+            ? ($assignedStatusId > 0 ? $assignedStatusId : (int)($ticket->status ?? 0))
+            : (int)($ticket->status ?? 0);
 
         $updateData = ['department_id' => $departmentId, 'employee_id' => $deptEmployeeId];
         $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
@@ -213,8 +277,8 @@ class ComplaintController extends BaseController
             'ticket_id' => $ticketId,
             'department_id' => $departmentId,
             'employee_id' => $deptEmployeeId,
-            'status_id' => $iTicketStatus,
-            'status_type_id' => 0,
+            'status_id' => $historyStatusId,
+            'status_type_id' => $historyStatusId,
             'created_by' => auth('admin')->check() ? auth('admin')->id() : 0
         ]);
 
@@ -228,7 +292,9 @@ class ComplaintController extends BaseController
             if ($oldEmployeeId != $deptEmployeeId) {
                 $description .= ". Changed from employee ID {$oldEmployeeId}";
             }
-            $this->supportTicketRepo->update(id: $ticketId, data: ['status' => 45]);
+            if ($assignedStatusId > 0) {
+                $this->supportTicketRepo->update(id: $ticketId, data: ['status' => $assignedStatusId]);
+            }
             SupportTicketNotification::create([
                 'ticket_id' => $ticketId,
                 'notification_for' => 1,
@@ -299,7 +365,14 @@ class ComplaintController extends BaseController
      */
     public function updateTicketFollowUp(Request $request)
     {
-        $iTicketId = $request->input('ticket_id');
+        $iTicketId = $this->resolveTicketId($request);
+        if (!$iTicketId) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('Ticket ID is required.')
+            ], 422);
+        }
+
         $iDepartmentId = $request->input('department_id');
         $iEmployeeId = $request->input('employee_id');
         $success = 1;
@@ -314,7 +387,7 @@ class ComplaintController extends BaseController
         }
 
         $oldTicket = $custRequestTicket->first();
-        $iTicketStatus = $request->input('ticket-follow-up-status');
+        $iTicketStatus = (int)$request->input('ticket-follow-up-status');
         $dTicketFollowUpDate = $request->input('ticket-next-follow-up-date');
         $iTicketNote = $request->input('ticket-follow-up-note');
         $iTicketRemainderDayAfter = $request->input('ticket-remainder-days-after');
@@ -339,6 +412,13 @@ class ComplaintController extends BaseController
                 'success' => 0,
                 'message' => translate("Invalid ticket status for Retail.")
             ], 400);
+        }
+
+        if ($this->isAssignedStatusForMaster($iTicketStatus, 5) && (int)($oldTicket->employee_id ?? 0) <= 0) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('assign_employee_before_setting_assigned_status')
+            ], 422);
         }
 
         if ($iTicketStatus == 46 && empty($dTicketFollowUpDate)) {
@@ -597,183 +677,146 @@ class ComplaintController extends BaseController
      * Update support ticket follow-up and log activity
      */
     public function updateSupportTicketFollowUp(Request $request)
-{
-    $ticketId      = $request->input('ticket_id');
-    $departmentId  = $request->input('department_id');
-    $employeeId    = $request->input('employee_id');
-    $followUpDate  = $request->input('ticket-next-follow-up-date');
-    $note          = $request->input('ticket-follow-up-note');
-    $addToCalendar = $request->boolean('add_to_calendar');
-    $taskName      = trim((string)$request->input('task_name', ''));
-    $taskDescription = trim((string)$request->input('task_description', ''));
-    $taskDueDate   = $request->input('task_due_date');
-    $taskStatus    = strtolower(trim((string)$request->input('task_status', 'pending')));
-    if (!in_array($taskStatus, ['pending', 'in_progress', 'complete'], true)) {
-        $taskStatus = 'pending';
-    }
-
-    $oldTicket = $this->supportTicketRepo->getFirstWhere(
-        params: ['id' => $ticketId],
-        relations: ['relatedInboxMessages']
-    );
-    if (!$oldTicket) {
-        return response()->json(['success' => 0, 'message' => translate('ticket_not_found')], 400);
-    }
-
-    $statusId = (int)($request->input('ticket-follow-up-status') ?: $oldTicket->status);
-
-    // Validate status
-    if (!SupportTicketStatusMaster::where(['id' => $statusId, 'master_id' => 1, 'status' => 'active'])->exists()) {
-        return response()->json(['success' => 0, 'message' => translate('invalid_status')], 400);
-    }
-
-    if (empty($note)) {
-        return response()->json(['success' => 0, 'message' => translate('note_required')], 400);
-    }
-
-    if ($addToCalendar && empty($taskName)) {
-        return response()->json(['success' => 0, 'message' => translate('task_name_required_when_add_to_calendar')], 400);
-    }
-    if ($addToCalendar && empty($taskDueDate)) {
-        return response()->json(['success' => 0, 'message' => translate('task_due_date_required_when_add_to_calendar')], 400);
-    }
-
-    SupportTicketDepartmentEmployee::create([
-        'ticket_id'      => $ticketId,
-        'department_id'  => $departmentId,
-        'employee_id'    => $employeeId,
-        'status_id'      => $statusId,
-        'status_type_id' => $statusId,
-        'created_by'     => auth('admin')->id()
-    ]);
-
-    // Update ticket
-    $updateData = ['status' => $statusId];
-    if (!empty($followUpDate)) {
-        $updateData['follow_up_date'] = date('Y-m-d', strtotime($followUpDate));
-    }
-    $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
-
-    // Add conversation
-    $this->supportTicketConvRepo->add([
-        'support_ticket_id' => $ticketId,
-        'admin_message'     => $note,
-        'admin_id'          => auth('admin')->id(),
-        'created_at'        => now(),
-        'updated_at'        => now()
-    ]);
-
-    // Activity log
-    $statusName  = SupportTicketStatusMaster::find($statusId)?->name ?? 'Unknown';
-    $description = "Support follow-up - Status: {$statusName} ({$statusId}), Note: " . substr($note, 0, 150);
-
-    if ($followUpDate) {
-        $description .= ", Follow-up Date: {$followUpDate}";
-    }
-    if ($oldTicket->status != $statusId) {
-        $description .= ". Status changed from {$oldTicket->status}";
-    }
-
-    $reminderWarning = null;
-    if ($addToCalendar) {
-        $sourceInboxMessageId = (int)($oldTicket->source_id ?? 0);
-        if ($sourceInboxMessageId === 0) {
-            $sourceInboxMessageId = (int)($oldTicket->relatedInboxMessages->first()->id ?? 0);
+    {
+        $ticketId = $this->resolveTicketId($request);
+        if (!$ticketId) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('Ticket ID is required.')
+            ], 422);
         }
 
-        if ($sourceInboxMessageId > 0) {
-            $effectiveDepartmentId = (int)($departmentId ?: $oldTicket->department_id);
-            $effectiveEmployeeId = (int)($employeeId ?: auth('admin')->id());
-            $taskDueAt = Carbon::parse($taskDueDate);
+        $departmentId = $request->input('department_id');
+        $employeeId = $request->input('employee_id');
+        $statusId = (int)$request->input('ticket-follow-up-status');
+        $followUpDate = $request->input('ticket-next-follow-up-date');
+        $note = $request->input('ticket-follow-up-note');
 
-            InboxTask::create([
-                'massage_id' => $sourceInboxMessageId,
-                'employee_id' => $effectiveEmployeeId,
-                'department_id' => $effectiveDepartmentId,
-                'name' => $taskName,
-                'description' => $taskDescription ?: $note,
-                'due_date' => $taskDueAt->toDateString(),
-                'status' => $taskStatus,
-            ]);
-
-            $description .= ", Task added: {$taskName}, Due: " . $taskDueAt->format('Y-m-d');
-        } else {
-            $reminderWarning = translate('task_skipped_ticket_not_linked_to_inbox');
+        $ticket = $this->supportTicketRepo->getListWhere(filters: ['id' => $ticketId]);
+        if ($ticket->isEmpty()) {
+            return response()->json(['success' => 0, 'message' => translate('ticket_not_found')], 404);
         }
-    }
 
-    $this->activityRepo->add([
-        'support_ticket_id' => $ticketId,
-        'employee_id'       => auth('admin')->id(),
-        'title'             => 'Support Ticket Follow-Up',
-        'description'       => $description,
-        'noted_at'          => now(),
-    ]);
+        $oldTicket = $ticket->first();
+        $oldStatusName = SupportTicketStatusMaster::find((int)$oldTicket->status)?->name ?? (string)$oldTicket->status;
 
-    /* ---------------------------------------------------
-     *  🔔 Notification System (EXACT SAME PATTERN)
-     * --------------------------------------------------- */
-    $title   = "Support Ticket Updated";
-    $message = "Support Ticket #{$ticketId} updated. Status changed & follow-up added.";
-    $link    = route('admin.support-ticket.details', $ticketId);
-
-    $recipients = [];
-
-    if ($employeeId) {
-        $recipients[] = ['type' => 'employee', 'id' => $employeeId];
-    }
-    if ($departmentId) {
-        $recipients[] = ['type' => 'department', 'id' => $departmentId];
-    }
-
-    if (!empty($recipients)) {
-        $this->notificationRepo->notifyRecipients(
-            $ticketId,
-            \App\Models\SupportTicket::class,
-            $title,
-            $message,
-            $link,
-            $recipients
-        );
-    }
-
-    /* ---------------------------------------------------
-     *  ⏳ Cron Jobs (NOT REMOVED — SAME FLOW)
-     * --------------------------------------------------- */
-    $cronData = [];
-    $cronConfigs = CronConfiguration::where(['ticket_status_id' => $statusId, 'status' => 'active'])->get();
-
-    foreach ($cronConfigs as $config) {
-        if ($statusId == 5) { // In Progress
-            $cronData[] = [
-                'ticket_id'     => $ticketId,
-                'send_for'      => 1,
-                'sender_id'     => $employeeId ?? 0,
-                'title'         => 'Follow-up Reminder',
-                'message'       => 'Please follow up on the support ticket.',
-                'send_date'     => Carbon::parse($followUpDate)->copy()->addHours($config['duration']),
-                'ticket_status' => $statusId,
-                'status'        => 0,
-                'is_active'     => 0,
-            ];
+        if (!SupportTicketStatusMaster::where(['id' => $statusId, 'master_id' => 1, 'status' => 'active'])->exists()) {
+            return response()->json(['success' => 0, 'message' => translate('invalid_status')], 422);
         }
-    }
 
-    if (!empty($cronData)) {
-        CronSenderDetail::insert($cronData);
-    }
+        if ($this->isAssignedStatusForMaster($statusId, 1) && (int)($oldTicket->employee_id ?? 0) <= 0) {
+            return response()->json([
+                'success' => 0,
+                'message' => translate('assign_employee_before_setting_assigned_status')
+            ], 422);
+        }
 
-    $responseMessage = translate('support_ticket_follow_up_updated');
-    if ($reminderWarning) {
-        $responseMessage .= '. ' . $reminderWarning;
-    }
+        if (empty($note)) {
+            return response()->json(['success' => 0, 'message' => translate('note_required')], 422);
+        }
 
-    return response()->json(['success' => 1, 'message' => $responseMessage]);
-}
+        if ($statusId === 5 && empty($followUpDate)) {
+            return response()->json(['success' => 0, 'message' => translate('follow_up_date_required_for_in_progress')], 422);
+        }
+
+        SupportTicketDepartmentEmployee::create([
+            'ticket_id' => $ticketId,
+            'department_id' => $departmentId,
+            'employee_id' => $employeeId,
+            'status_id' => $statusId,
+            'status_type_id' => $statusId,
+            'created_by' => auth('admin')->id()
+        ]);
+
+        $updateData = [
+            'status' => $statusId,
+            // Keep follow-up date only while ticket is In Progress.
+            'follow_up_date' => $statusId === 5 ? date('Y-m-d', strtotime($followUpDate)) : null,
+        ];
+        $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
+
+        $this->supportTicketConvRepo->add([
+            'support_ticket_id' => $ticketId,
+            'admin_message' => $note,
+            'admin_id' => auth('admin')->id(),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $statusName = SupportTicketStatusMaster::find($statusId)?->name ?? 'Unknown';
+        $description = "Support follow-up - Status: {$statusName} ({$statusId}), Note: " . substr($note, 0, 150);
+
+        if ($statusId === 5 && $followUpDate) {
+            $description .= ", Follow-up Date: {$followUpDate}";
+        }
+        if ($oldTicket->status != $statusId) {
+            $description .= ". Status changed from {$oldStatusName}";
+        }
+
+        $this->activityRepo->add([
+            'support_ticket_id' => $ticketId,
+            'employee_id' => auth('admin')->id(),
+            'title' => 'Support Ticket Follow-Up',
+            'description' => $description,
+            'noted_at' => now(),
+        ]);
+
+        $title = "Support Ticket Updated";
+        $message = "Support Ticket #{$ticketId} updated. Status changed & follow-up added.";
+        $link = route('admin.support-ticket.details', $ticketId);
+
+        $recipients = [];
+        if ($employeeId) {
+            $recipients[] = ['type' => 'employee', 'id' => $employeeId];
+        }
+        if ($departmentId) {
+            $recipients[] = ['type' => 'department', 'id' => $departmentId];
+        }
+
+        if (!empty($recipients)) {
+            $this->notificationRepo->notifyRecipients(
+                $ticketId,
+                \App\Models\SupportTicket::class,
+                $title,
+                $message,
+                $link,
+                $recipients
+            );
+        }
+
+        $cronData = [];
+        $cronConfigs = CronConfiguration::where(['ticket_status_id' => $statusId, 'status' => 'active'])->get();
+
+        foreach ($cronConfigs as $config) {
+            if ($statusId == 5) {
+                $cronData[] = [
+                    'ticket_id' => $ticketId,
+                    'send_for' => 1,
+                    'sender_id' => $employeeId ?? 0,
+                    'title' => 'Follow-up Reminder',
+                    'message' => 'Please follow up on the support ticket.',
+                    'send_date' => Carbon::parse($followUpDate)->copy()->addHours($config['duration']),
+                    'ticket_status' => $statusId,
+                    'status' => 0,
+                    'is_active' => 0,
+                ];
+            }
+        }
+
+        if (!empty($cronData)) {
+            CronSenderDetail::insert($cronData);
+        }
+
+        return response()->json(['success' => 1, 'message' => translate('support_ticket_follow_up_updated')]);
+    }
 
    public function updateComplainTicketFollowUp(Request $request)
 {
-    $ticketId     = $request->input('ticket_id');
+    $ticketId     = $this->resolveTicketId($request);
+    if (!$ticketId) {
+        return response()->json(['success' => 0, 'message' => translate('Ticket ID is required.')], 422);
+    }
+
     $departmentId = $request->input('department_id');
     $employeeId   = $request->input('employee_id');
     $statusId     = $request->input('ticket-follow-up-status');
@@ -797,6 +840,13 @@ class ComplaintController extends BaseController
     ])->exists()) 
     {
         return response()->json(['success' => 0, 'message' => 'Invalid complaint status'], 400);
+    }
+
+    if ($this->isAssignedStatusForMaster((int)$statusId, $complaintMasterId) && (int)($oldTicket->employee_id ?? 0) <= 0) {
+        return response()->json([
+            'success' => 0,
+            'message' => translate('assign_employee_before_setting_assigned_status')
+        ], 422);
     }
 
     if (empty($note)) {
@@ -941,7 +991,11 @@ class ComplaintController extends BaseController
      */
    public function updateWholesaleFollowUp(Request $request)
 {
-    $ticketId      = $request->input('ticket_id');
+    $ticketId      = $this->resolveTicketId($request);
+    if (!$ticketId) {
+        return response()->json(['success' => 0, 'message' => translate('Ticket ID is required.')], 422);
+    }
+
     $departmentId  = $request->input('department_id');
     $employeeId    = $request->input('employee_id');
     $statusId      = $request->input('ticket-follow-up-status');
@@ -965,6 +1019,13 @@ class ComplaintController extends BaseController
         'status'    => 'active'
     ])->exists()) {
         return response()->json(['success' => 0, 'message' => 'Invalid wholesale status'], 400);
+    }
+
+    if ($this->isAssignedStatusForMaster((int)$statusId, $wholesaleMasterId) && (int)($oldTicket->employee_id ?? 0) <= 0) {
+        return response()->json([
+            'success' => 0,
+            'message' => translate('assign_employee_before_setting_assigned_status')
+        ], 422);
     }
 
     if (empty($note)) {

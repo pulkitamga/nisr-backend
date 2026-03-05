@@ -19,7 +19,7 @@
                         {{ translate('Deal Details') }} :{{ $deal->id }}
                     </h2>
                     <div class="d-flex flex-wrap gap-2">
-                        @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($deal->owner_id))
+                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_retail_view') || auth('admin')->user()->id == ($deal->owner_id))
                         <a href="{{ route('admin.orders.details',['id'=>$deal['order_id']]) }}"
                             class="btn btn-sm btn-primary create-quotation-btn"
                             data-id="{{ $deal->id }}">

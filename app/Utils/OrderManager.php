@@ -1593,14 +1593,15 @@ class OrderManager
         $deliveryFeeDiscount = 0;
         $totalItemQuantity = 0;
         $deliveryExchangeAmt = 0;
-        $totalExchangePrice = (float)($order['exchange_charge'] ?? 0);
-        $totalInstallationPrice = (float)($order['installation_charge'] ?? 0);
+        $totalExchangePrice = abs((float)($order['exchange_charge'] ?? 0));
+        $totalInstallationPrice = max(0, (float)($order['installation_charge'] ?? 0));
 
         foreach ($order->details as $detail) {
             $itemPrice += ($detail['price'] * $detail['qty']);
             $productPrice = ($detail['price'] * $detail['qty']);
             $totalProductPrice += $productPrice;
-            $itemDiscount += $detail['discount'];
+            $lineDiscount = abs((float)($detail['discount'] ?? 0));
+            $itemDiscount += $lineDiscount;
             $totalItemQuantity += $detail['qty'];
         }
 
@@ -1608,26 +1609,32 @@ class OrderManager
 
 
         if ($order['extra_discount_type'] == 'percent') {
-            $extraDiscount = (($totalProductPrice) / 100) * $order['extra_discount'];
+            $extraDiscount = (($totalProductPrice) / 100) * abs((float)$order['extra_discount']);
         } else {
-            $extraDiscount = (float)($order['extra_discount'] ?? 0);
+            $extraDiscount = abs((float)($order['extra_discount'] ?? 0));
         }
+        $extraDiscount = max(0, $extraDiscount);
         if (isset($order['discount_amount'])) {
-            $couponDiscount = (float)$order['discount_amount'];
+            $couponDiscount = abs((float)$order['discount_amount']);
         }
         if ($order['is_shipping_free'] == 1) {
             $deliveryFeeDiscount = $shipping;
         }
 
         if ($order['exchange_status'] == 1) {
-            $deliveryExchangeAmt = (float)$order['exchange_amount'];
+            $deliveryExchangeAmt = abs((float)$order['exchange_amount']);
         }
 
         $orderSummary = self::order_summary($order);
         $netBeforeVat = $orderSummary['net_before_tax_after_coupon'];
-        $taxTotal = $orderSummary['total_tax'];
+        $taxTotal = max(0, (float)$orderSummary['total_tax']);
         $subTotalWithVat = $orderSummary['subtotal_with_tax_after_coupon'];
-        $couponDiscountOnShipping = $orderSummary['coupon_discount_on_shipping'];
+        $couponDiscountOnShipping = abs((float)$orderSummary['coupon_discount_on_shipping']);
+
+        // Sub total should be tax-model aware item subtotal after product/coupon discounts.
+        // - tax exclude: net + VAT
+        // - tax include: gross (VAT already included)
+        $displaySubTotal = max(0, (float)$subTotalWithVat);
 
         $calculatedTotalAmount = $subTotalWithVat
             + $shipping
@@ -1635,14 +1642,14 @@ class OrderManager
             - $totalExchangePrice
             - $extraDiscount
             - $couponDiscountOnShipping;
-        $totalAmount = isset($order['order_amount']) ? (float)$order['order_amount'] : $calculatedTotalAmount;
+        $totalAmount = max(0, (float)$calculatedTotalAmount);
 
         return [
             'itemPrice' => $itemPrice,
             'itemDiscount' => $itemDiscount,
             'extraDiscount' => $extraDiscount,
             'exchangeProductAmount' => $deliveryExchangeAmt,
-            'subTotal' => max(0, $subTotalWithVat - $deliveryExchangeAmt),
+            'subTotal' => $displaySubTotal,
             'subTotalWithVat' => $subTotalWithVat,
             'netBeforeVat' => $netBeforeVat,
             'couponDiscount' => $couponDiscount,

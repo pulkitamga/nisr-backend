@@ -1,10 +1,9 @@
-@php(session(['last_order'=> false]))
 <div class="modal fade py-5" id="print-invoice" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ translate('print_Invoice') }}</h5>
-                <button id="invoice_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button id="invoice_close" type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>

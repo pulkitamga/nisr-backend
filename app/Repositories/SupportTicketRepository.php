@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Contracts\Repositories\SupportTicketRepositoryInterface;
+use App\Models\SupportTicketStatusMaster;
 use App\Models\SupportTicket;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -81,7 +82,26 @@ class SupportTicketRepository implements SupportTicketRepositoryInterface
                 $query->where('request_type', $filters['request_type']);
             })
             ->when(isset($filters['status']) && $filters['status'] != 'all', function ($query) use ($filters) {
-                $query->where('status', $filters['status']);
+                $statusFilter = (string)$filters['status'];
+                $statusName = null;
+
+                if (is_numeric($statusFilter)) {
+                    $statusName = strtolower(trim((string)(SupportTicketStatusMaster::query()
+                        ->where('id', (int)$statusFilter)
+                        ->value('name') ?? '')));
+                }
+
+                $query->where(function ($statusQuery) use ($statusFilter, $statusName) {
+                    $statusQuery->where('status', $statusFilter);
+
+                    // Compatibility for older tickets that carried a cross-master status ID
+                    // while still representing the same status name (e.g. "Assigned").
+                    if (!empty($statusName)) {
+                        $statusQuery->orWhereHas('status_details', function ($statusDetailsQuery) use ($statusName) {
+                            $statusDetailsQuery->whereRaw('LOWER(name) = ?', [$statusName]);
+                        });
+                    }
+                });
             })
             ->when(!empty($filters['type']) && $filters['type'] != 'all', function ($query) use ($filters) {
                 Log::info('Applying type filter', ['type' => $filters['type']]);

@@ -198,6 +198,18 @@
                                 <!-- <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary reply-btn" data-id="{{ $msg['id'] }}">
                                     {{ translate('Reply') }}
                                 </a> -->
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'inbox_assign_owner'))
+                                <a href="javascript:void(0)"
+                                    class="btn btn-sm btn-outline-secondary assign-owner-btn"
+                                    data-id="{{ $msg->id }}"
+                                    data-owner-id="{{ $msg->owner_id ?? '' }}"
+                                    data-department-id="{{ $msg->department_id ?? '' }}"
+                                    data-bs-toggle="false"
+                                    data-bs-target="none">
+                                    {{ $msg->owner_id ? translate('Re-Assign Owner') : translate('Assign Owner') }}
+                                </a>
+                                @endif
+
                                 @if($msg->status != 'ignored' && $msg->status != 'spam' && $msg->status != 'converted')
                                 <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-id="{{ $msg['id'] }}" data-bs-target="#convertModal">
                                     🔀 {{ translate('Convert') }}
@@ -210,18 +222,6 @@
                                     class="btn btn-sm btn-outline-dark ignore-btn"
                                     data-id="{{ $msg['id'] }}">
                                     {{ translate('Ignore') }}
-                                </a>
-                                @endif
-
-                                @if(auth('admin')->user()->admin_role_id == 1)
-                                <a href="javascript:void(0)"
-                                    class="btn btn-sm btn-outline-secondary assign-owner-btn"
-                                    data-id="{{ $msg->id }}"
-                                    data-owner-id="{{ $msg->owner_id ?? '' }}"
-                                    data-department-id="{{ $msg->department_id ?? '' }}"
-                                    data-bs-toggle="false"
-                                    data-bs-target="none">
-                                    {{ translate('Assign Owner') }}
                                 </a>
                                 @endif
 

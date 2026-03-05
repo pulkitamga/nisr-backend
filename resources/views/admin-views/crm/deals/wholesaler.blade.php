@@ -245,18 +245,18 @@
                         <td>
                             <div class="d-flex flex-wrap gap-1">
                                 <a href="{{ route('admin.crm.deals.wholesale.view', $deal->id) }}" class="btn btn-sm btn-info">View</a>
-                                <!-- @if(auth('admin')->user()->admin_role_id == 1)
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_owner'))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-owner-btn"
                                     data-id="{{ $deal->id }}"
+                                    data-owner-id="{{ $deal->owner_id ?? '' }}"
                                     data-bs-toggle="false"
                                     data-bs-target="none">
                                     {{ translate('Assign Owner') }}
                                 </a>
-                                @endif -->
+                                @endif
 
-
-                                @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($deal->department?->head_id) || auth('admin')->user()->id == ($deal->owner_id))
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_employee'))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-employee-btn"
                                     data-id="{{ $deal->id }}"
@@ -268,13 +268,11 @@
                                 <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                                 @endif
                                 @endif
-
-<!-- 
-                                @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($deal->owner_id))
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_department'))
                                 <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary assign-dept-btn" data-id="{{ $deal->id }}" data-department-id="{{ $deal->department->id ?? 0 }}" data-department-employee-id="0">
                                     {{ translate('Assign Department') }}
                                 </a>
-                                @endif -->
+                                @endif
 
 
                                 @if(\App\Utils\Helpers::module_permission_check('wholesaler_section', 'create_quotation') && is_null($deal->po_id))

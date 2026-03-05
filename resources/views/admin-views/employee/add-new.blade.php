@@ -103,7 +103,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="identify_number" class="title-color">{{translate('identify_number')}}</label>
-                                    <input type="number" name="identify_number" value="{{old('identity_number')}}" class="form-control"
+                                    <input type="text" name="identify_number" value="{{old('identify_number')}}" class="form-control"
                                         placeholder="{{translate('ex').':'.'9876123123'}}" id="identify_number">
                                 </div>
                             </div>
@@ -228,4 +228,27 @@
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/select-multiple-image.js')}}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/country-picker-init.js') }}"></script>
+    <script>
+        (function () {
+            const identifyType = document.getElementById('identify_type');
+            const identifyNumber = document.getElementById('identify_number');
+            if (!identifyType || !identifyNumber) {
+                return;
+            }
+
+            const applyIdentifyInputMode = () => {
+                const selectedType = (identifyType.value || '').toLowerCase();
+                if (selectedType === 'passport') {
+                    identifyNumber.setAttribute('inputmode', 'text');
+                    identifyNumber.setAttribute('placeholder', 'Ex: A1234567');
+                } else {
+                    identifyNumber.setAttribute('inputmode', 'numeric');
+                    identifyNumber.setAttribute('placeholder', "{{translate('ex').':'.'9876123123'}}");
+                }
+            };
+
+            identifyType.addEventListener('change', applyIdentifyInputMode);
+            applyIdentifyInputMode();
+        })();
+    </script>
 @endpush

@@ -25,7 +25,7 @@
                         <label>{{ translate('reason_code') }}</label>
                         <input type="text" name="reason_code"
                                class="form-control"
-                               placeholder="e.g. DEFECT-001"
+                               placeholder="{{ translate('e.g. DEFECT-001') }}"
                                maxlength="50"
                                required>
                     </div>

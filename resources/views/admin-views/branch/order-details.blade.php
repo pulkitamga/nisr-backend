@@ -197,7 +197,7 @@
                                                         </div>
                                                         <div>
                                                             <strong>{{translate('unit_price')}} :</strong>
-                                                            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price']+($detail->tax_model =='include' ? $detail['tax']:0)), currencyCode: getCurrencyCode())}}
+                                                            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price']), currencyCode: getCurrencyCode())}}
                                                             @if ($detail->tax_model =='include')
                                                                 ({{translate('tax_incl.')}})
                                                             @else
@@ -304,7 +304,7 @@
                             </table>
                         </div>
                         @php($shipping=$order['shipping_cost'])
-                        @php($coupon_discount=$order['discount_amount'])
+                        @php($coupon_discount=abs((float)($order['discount_amount'] ?? 0)))
                         <hr/>
                         <div class="row justify-content-md-end mb-3">
                             <div class="col-md-9 col-lg-8">

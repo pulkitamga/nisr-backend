@@ -12,7 +12,7 @@ class BranchHelper
     {
         $admin = Auth::guard('admin')->user();
 
-        if ($admin->admin_role_id == 1) {
+        if ($admin?->isSuperAdmin()) {
             return Branch::all();
         }
 

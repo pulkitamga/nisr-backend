@@ -56,21 +56,21 @@
                         </div>
                       
                         <div class="col-12">
-                            <label class="form-label">{{ translate('Details') }} <span class="input-required-icon">*</span>
+                            <label class="form-label">{{ translate('Details') }}
                             </label>
                             <textarea class="form-control" name="details" rows="3"></textarea>
                         </div>
 
                         <!-- Message -->
                         <div class="col-12">
-                            <label class="form-label">{{ translate('Note') }} <span class="input-required-icon">*</span>
+                            <label class="form-label">{{ translate('Note') }}
                             </label>
                             <textarea class="form-control" name="message" rows="3"></textarea>
                         </div>
 
                         <!-- Attachment -->
                         <div class="col-12">
-                            <label class="form-label">{{ translate('Attachment') }} <span class="input-required-icon">*</span>
+                            <label class="form-label">{{ translate('Attachment') }}
                             </label>
                             <input type="file" class="form-control" name="attachment">
                         </div>

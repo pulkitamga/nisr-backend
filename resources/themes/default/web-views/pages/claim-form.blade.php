@@ -4,7 +4,7 @@
 @section('title', translate('Claim Warranty'))
 
 @section('content')
-<div class="container my-5">
+<div class="container my-5 text-align-direction">
     <div class="card">
         <div class="card-body">
             <h3>{{ translate('Submit Warranty Claim') }}</h3>

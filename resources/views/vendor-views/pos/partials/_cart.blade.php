@@ -66,7 +66,7 @@
 
                 <div class="d-flex gap-2 justify-content-between">
                     <dt class="title-color text-capitalize font-weight-normal">{{ translate('product_Discount') }} :</dt>
-                    <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $cartItems['discountOnProduct']), currencyCode: getCurrencyCode()) }}</dd>
+                    <dd>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$cartItems['discountOnProduct'])), currencyCode: getCurrencyCode()) }}</dd>
                 </div>
 
                 <div class="d-flex gap-2 justify-content-between">
@@ -75,7 +75,7 @@
                         <button id="extra_discount" class="btn btn-sm p-0" type="button" data-toggle="modal" data-target="#add-discount">
                             <i class="tio-edit"></i>
                         </button>
-                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:$cartItems['extraDiscount']), currencyCode: getCurrencyCode())}}
+                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$cartItems['extraDiscount'])), currencyCode: getCurrencyCode()) }}
                     </dd>
                 </div>
 
@@ -85,7 +85,7 @@
                         <button id="coupon_discount" class="btn btn-sm p-0" type="button" data-toggle="modal" data-target="#add-coupon-discount">
                             <i class="tio-edit"></i>
                         </button>
-                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:$cartItems['couponDiscount']), currencyCode: getCurrencyCode())}}
+                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$cartItems['couponDiscount'])), currencyCode: getCurrencyCode()) }}
                     </dd>
                 </div>
 

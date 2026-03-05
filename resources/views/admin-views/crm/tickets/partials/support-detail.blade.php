@@ -25,6 +25,20 @@
         return $translated !== $normalized ? $translated : $text;
     };
 
+    $translateWithReplace = static function (string $key, array $replace = []): string {
+        $message = (string) translate($key);
+        if (empty($replace)) {
+            return $message;
+        }
+
+        $pairs = [];
+        foreach ($replace as $placeholder => $value) {
+            $pairs[':' . $placeholder] = (string) $value;
+        }
+
+        return strtr($message, $pairs);
+    };
+
     $translateActivityTitle = static function (?string $title) use ($translateDynamic): string {
         $titleText = trim((string)$title);
         if ($titleText === '') {
@@ -40,6 +54,7 @@
             'Escalation Updated' => 'escalation_updated',
             'Support Ticket Follow-Up' => 'support_ticket_follow_up',
             'Admin Reply Added' => 'admin_reply_added',
+            'Department/Employee Assignment' => 'department_employee_assignment',
         ];
 
         if (isset($titleMap[$titleText])) {
@@ -49,7 +64,7 @@
         return $translateDynamic($titleText);
     };
 
-    $translateActivityDescription = static function (?string $description) use ($translateDynamic): string {
+    $translateActivityDescription = static function (?string $description) use ($translateDynamic, $translateWithReplace): string {
         $descText = trim((string)$description);
         if ($descText === '') {
             return translate('N/A');
@@ -60,14 +75,14 @@
         }
 
         if (preg_match('/^Priority changed from (.+) to (.+)\.$/i', $descText, $m)) {
-            return translate('priority_changed_from_to', [
+            return $translateWithReplace('priority_changed_from_to', [
                 'from' => $translateDynamic($m[1]),
                 'to' => $translateDynamic($m[2]),
             ]);
         }
 
         if (preg_match('/^Status changed from (.+) to (.+)\. Reopened: (Yes|No)$/i', $descText, $m)) {
-            return translate('status_changed_from_to_reopened', [
+            return $translateWithReplace('status_changed_from_to_reopened', [
                 'from' => $translateDynamic($m[1]),
                 'to' => $translateDynamic($m[2]),
                 'reopened' => $m[3] === 'Yes' ? translate('yes') : translate('no'),
@@ -75,27 +90,27 @@
         }
 
         if (preg_match('/^Task added: (.+), Due: (.+)$/i', $descText, $m)) {
-            return translate('task_added_due', [
+            return $translateWithReplace('task_added_due', [
                 'task' => $m[1],
                 'due' => $m[2],
             ]);
         }
 
         if (preg_match('/^Status changed from (.+)$/i', $descText, $m)) {
-            return translate('status_changed_from_only', [
+            return $translateWithReplace('status_changed_from_only', [
                 'from' => $translateDynamic($m[1]),
             ]);
         }
 
-        if (preg_match('/^Ticket #(\d+) escalated\. Reason:\s*(.+)$/i', $descText, $m)) {
-            return translate('ticket_escalated_reason', [
+        if (preg_match('/^(?:[A-Za-z]+\s+)?Ticket #(\d+) escalated\. Reason:\s*(.+)$/i', $descText, $m)) {
+            return $translateWithReplace('ticket_escalated_reason', [
                 'id' => $m[1],
                 'reason' => $m[2],
             ]);
         }
 
         if (preg_match('/^Escalation #(\d+) status changed from (.+) to (.+)\.$/i', $descText, $m)) {
-            return translate('escalation_status_changed_from_to', [
+            return $translateWithReplace('escalation_status_changed_from_to', [
                 'id' => $m[1],
                 'from' => $translateDynamic($m[2]),
                 'to' => $translateDynamic($m[3]),
@@ -103,7 +118,7 @@
         }
 
         if (preg_match('/^Support follow-up - Status:\s*(.+?)\s*\((\d+)\),\s*Note:\s*(.+?)(?:,\s*Follow-up Date:\s*([^,.]+))?(?:\.\s*Status changed from\s*([^,.]+))?(?:,\s*Task added:\s*(.+?),\s*Due:\s*(.+))?$/i', $descText, $m)) {
-            $translated = translate('support_follow_up_status_note', [
+            $translated = $translateWithReplace('support_follow_up_status_note', [
                 'status' => $translateDynamic($m[1]),
                 'status_id' => $m[2],
                 'note' => trim($m[3]),
@@ -114,13 +129,13 @@
             }
 
             if (!empty($m[5])) {
-                $translated .= '. ' . translate('status_changed_from_only', [
+                $translated .= '. ' . $translateWithReplace('status_changed_from_only', [
                     'from' => $translateDynamic($m[5]),
                 ]);
             }
 
             if (!empty($m[6]) || !empty($m[7])) {
-                $translated .= ', ' . translate('task_added_due', [
+                $translated .= ', ' . $translateWithReplace('task_added_due', [
                     'task' => trim((string)$m[6]),
                     'due' => trim((string)$m[7]),
                 ]);
@@ -304,5 +319,3 @@
     </div>
 </div>
 @endsection
-
-

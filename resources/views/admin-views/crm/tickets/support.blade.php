@@ -34,7 +34,7 @@
                             </form>
                         </div>
                         <div class="">
-                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end">
+                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end ticket-filter-controls">
                                 @php
                                 $priority = request()->has('priority') ? request()->input('priority') : '';
                                 $statusId = request()->has('status') ? request()->input('status') : '1';
@@ -65,6 +65,9 @@
                                     </option>
                                     @endforeach
                                 </select>
+                                <button type="button" class="btn btn--primary text-nowrap apply-ticket-filters">
+                                    {{ translate('apply') }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -108,40 +111,48 @@
                 <tbody>
                     @foreach($tickets as $key => $ticket)
                     @php
+                    $priorityClass = '';
                     $statusClass = '';
 
-                    switch ($ticket->status ?? 0) {
-                    case 1: // new
-                    $statusClass = 'badge-soft-primary';
-                    break;
+                    switch(strtolower($ticket->priority)) {
+                    case 'low': $priorityClass='badge-soft-primary'; break;
+                    case 'medium': $priorityClass='badge-soft-info'; break;
+                    case 'high': $priorityClass='badge-soft-warning'; break;
+                    case 'urgent': $priorityClass='badge-soft-danger'; break;
+                    default: $priorityClass='badge-soft-dark'; break;
+                    }
 
-                    case 2: // open
-                    $statusClass = 'badge-soft-info';
-                    break;
-
-                    case 3: // assigned
-                    $statusClass = 'badge-soft-success';
-                    break;
-
-                    case 4: // triage
-                    $statusClass = 'badge-soft-secondary';
-                    break;
-
-                    case 5: // inprogress
-                    $statusClass = 'badge-soft-warning';
-                    break;
-
-                    case 10: // resolved
-                    $statusClass = 'badge-soft-success';
-                    break;
-
-                    case 19: // closed
-                    $statusClass = 'badge-soft-dark';
-                    break;
-
+                    $statusNameForBadge = strtolower(trim($ticket->status_details?->name ?? ''));
+                    switch ($statusNameForBadge) {
+                    case 'new':
+                        $statusClass = 'badge-soft-primary';
+                        break;
+                    case 'open':
+                        $statusClass = 'badge-soft-info';
+                        break;
+                    case 'assigned':
+                        $statusClass = 'badge-soft-success';
+                        break;
+                    case 'triage':
+                        $statusClass = 'badge-soft-secondary';
+                        break;
+                    case 'in progress':
+                    case 'in_progress':
+                        $statusClass = 'badge-soft-warning';
+                        break;
+                    case 'resolved':
+                        $statusClass = 'badge-soft-success';
+                        break;
+                    case 'closed':
+                        $statusClass = 'badge-soft-dark';
+                        break;
+                    case 'awaiting customer response':
+                    case 'awaiting_customer_response':
+                        $statusClass = 'badge-soft-warning';
+                        break;
                     default:
-                    $statusClass = 'badge-soft-dark';
-                    break;
+                        $statusClass = 'badge-soft-dark';
+                        break;
                     }
 
                     @endphp
@@ -156,35 +167,43 @@
                             {{ translate('Customer Not Found') }}
                             @endif
                         </td>
-                        <td>
-                            @php($ticketPriority = strtolower($ticket->priority ?? 'normal'))
-                            <select class="form-control form-control-sm support-ticket-priority-select"
-                                data-ticket-id="{{ $ticket->id }}"
-                                data-current-priority="{{ $ticketPriority }}">
-                                @foreach(['normal','low','medium','high','urgent','critical'] as $priorityOption)
-                                <option value="{{ $priorityOption }}" {{ $ticketPriority === $priorityOption ? 'selected' : '' }}>
-                                    {{ translate($priorityOption) }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </td>
-                        <td>
-                            <select class="form-control form-control-sm support-ticket-status-select"
-                                data-ticket-id="{{ $ticket->id }}"
-                                data-current-status="{{ (int)$ticket->status }}">
-                                @foreach($aAllStatus as $statusOption)
-                                <option value="{{ $statusOption->id }}" {{ (int)$ticket->status === (int)$statusOption->id ? 'selected' : '' }}>
-                                    {{ translate($statusOption->name) }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </td>
+                        <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
+                        <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->name ?? $ticket->status }}</span></td>
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         <td class="text-center">
                             <a href="{{ route('admin.support-ticket.details', $ticket->id) }}"
                                 class="btn btn-sm btn-outline-success">{{ translate('View') }}</a>
                             <a href="{{ route('admin.support-ticket.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('Chat')}}</a>
-                            @if(auth('admin')->user()->admin_role_id == 1 || auth('admin')->user()->id == ($ticket->department?->head_id))
+                            @php
+                            $statusName = strtolower($ticket->status_details?->name ?? '');
+                            @endphp
+                            @if(in_array($statusName, ['new', 'closed']))
+                            <form action="{{ route('admin.support-ticket.status') }}" method="POST" class="d-inline statusForm">
+                                @csrf
+                                <input type="hidden" name="id" value="{{ $ticket->id }}">
+
+                                @php
+                                switch ($statusName) {
+                                case 'new':
+                                $statusBtnText = 'Open';
+                                break;
+                                case 'closed':
+                                $statusBtnText = 'Reopen';
+                                break;
+                                default:
+                                $statusBtnText = '';
+                                break;
+                                }
+                                @endphp
+
+                                @if($statusBtnText)
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    {{ translate($statusBtnText) }}
+                                </button>
+                                @endif
+                            </form>
+                            @endif
+                            @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_employee_update') || auth('admin')->user()->id == ($ticket->department?->head_id))
                             <a href="javascript:void(0)"
                                 class="btn btn-sm btn-outline-secondary assign-employee-btn"
                                 data-id="{{ $ticket->id }}"
@@ -193,14 +212,14 @@
                                 {{ $ticket->employee_id ? translate('Re-Assign Employee') : translate('Assign Employee') }}
                             </a>
 
-                            @if((int)auth('admin')->user()?->admin_role_id !== 1)
+                            @if(!auth('admin')->user()?->isSuperAdmin())
                             <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                             @endif
                             @endif
                             @if(strtolower($ticket->status_details?->name ?? '') !== 'closed')
                             <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showSupportFollowUpModal"
                                 data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}"
-                                data-employee-id="{{ $ticket->employee_id }}" title="Follow-up details">
+                                data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" title="Follow-up details">
                                 {{ translate('Follow Up') }}
                             </a>
                             @endif
@@ -227,12 +246,12 @@
     </div>
 </div>
 
-<div class="modal fade" id="showSupportFollowUpModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="showSupportFollowUpModal" aria-hidden="true">
+<div class="modal fade" id="showSupportFollowUpModal" data-backdrop="static" tabindex="-1" aria-labelledby="showSupportFollowUpModal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
                 <h3>{{ translate('Support Follow Up') }}</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
                     <i class="tio-clear"></i>
                 </button>
             </div>
@@ -242,53 +261,32 @@
                     <input type="hidden" name="ticket_id" id="support-follow-up-ticket-id">
                     <input type="hidden" name="department_id" id="support-follow-up-department-id">
                     <input type="hidden" name="employee_id" id="support-follow-up-employee-id">
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label" for="support-follow-up-status">{{ translate('Select Status') }}</label>
+                                <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="support-follow-up-status">
+                                    <option value="0" selected disabled>{{ translate('Select Status') }}</option>
+                                    @foreach ($aAllStatus as $statusOption)
+                                    <option value="{{ $statusOption['id'] }}" data-status-name="{{ strtolower($statusOption['name'] ?? '') }}">{{ translate($statusOption['name']) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row d-none" id="support-ticket-next-follow-up-date-row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label" for="support-ticket-next-follow-up-date">{{ translate('Next Follow-Up Date') }}</label>
+                                <input type="date" name="ticket-next-follow-up-date" id="support-ticket-next-follow-up-date" class="form-control">
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" for="support-follow-up-note">{{ translate('Note') }}</label>
                                 <textarea rows="3" class="form-control" name="ticket-follow-up-note" id="support-follow-up-note" placeholder="{{ translate('Enter follow-up note') }}"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border rounded p-3 mt-3">
-                        <h5 class="mb-3">{{ translate('Add/Edit Task') }}</h5>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label class="control-label" for="support-task-name">{{ translate('Name') }}</label>
-                                    <input type="text" class="form-control" name="task_name" id="support-task-name" placeholder="{{ translate('Enter name') }}">
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label class="control-label" for="support-task-description">{{ translate('Description') }}</label>
-                                    <textarea rows="3" class="form-control" name="task_description" id="support-task-description" placeholder="{{ translate('Enter description') }}"></textarea>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label" for="support-task-due-date">{{ translate('Due Date') }}</label>
-                                    <input type="date" class="form-control" name="task_due_date" id="support-task-due-date">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label" for="support-task-status">{{ translate('Status') }}</label>
-                                    <select class="form-control" name="task_status" id="support-task-status">
-                                        <option value="pending">{{ translate('Pending') }}</option>
-                                        <option value="in_progress">{{ translate('In Progress') }}</option>
-                                        <option value="complete">{{ translate('Complete') }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="1" id="support-add-to-calendar" name="add_to_calendar">
-                                    <label class="form-check-label" for="support-add-to-calendar">
-                                        {{ translate('add_to_calendar') }}
-                                    </label>
-                                    <small class="text-muted d-block">{{ translate('task_will_appear_in_crm_calendar') }}</small>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -331,8 +329,9 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
-<span id="support-ticket-status-route" data-url="{{ route('admin.support-ticket.status') }}"></span>
-<span id="support-ticket-priority-route" data-url="{{ route('admin.support-ticket.priority') }}"></span>
+<span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
+<span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
+<span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
 @endsection
 
 @push('script')

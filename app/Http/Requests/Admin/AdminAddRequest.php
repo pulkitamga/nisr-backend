@@ -33,6 +33,31 @@ class AdminAddRequest extends FormRequest
             'phone'=>'required|min:4|max:20',
             'is_supervisor' => 'nullable|boolean',
             'is_department_head' => 'nullable|boolean',
+            'identify_type' => 'nullable|in:nid,passport',
+            'identify_number' => [
+                'nullable',
+                'string',
+                'max:50',
+                function ($attribute, $value, $fail) {
+                    $identifyType = strtolower((string)$this->input('identify_type', ''));
+                    $identifyNumber = trim((string)$value);
+
+                    if ($identifyNumber === '') {
+                        return;
+                    }
+
+                    if ($identifyType === 'passport') {
+                        if (!preg_match('/^[A-Za-z0-9\-\/\s]+$/', $identifyNumber)) {
+                            $fail(translate('passport_identify_number_must_be_alphanumeric'));
+                        }
+                        return;
+                    }
+
+                    if (!preg_match('/^[0-9]+$/', $identifyNumber)) {
+                        $fail(translate('identify_number_must_be_numeric_for_nid'));
+                    }
+                }
+            ],
         ];
     }
 

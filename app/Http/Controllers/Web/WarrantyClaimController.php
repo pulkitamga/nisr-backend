@@ -90,7 +90,7 @@ class WarrantyClaimController extends Controller
             'warranty_id' => $warranty->id,
             'warranty_claim_id' => $claim->id,
             'event_type' => 'claim_submitted',
-            'description' => 'Claim submitted by customer',
+            'description' => translate('Claim submitted by customer'),
             'timestamp' => now(),
         ]);
 

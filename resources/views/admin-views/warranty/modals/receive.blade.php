@@ -20,7 +20,7 @@ $branches = \App\Models\Branch::where('id','!=',1)->get();
                                     {{ translate('Enter Serial Number') }} <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" name="serial_number" class="form-control" 
-                                       placeholder="e.g. ABC123XYZ" required autocomplete="off">
+                                       placeholder="{{ translate('e.g. ABC123XYZ') }}" required autocomplete="off">
                                 <small class="text-muted">{{ translate('Must match RMA issued serial') }}</small>
                             </div>
                         </div>

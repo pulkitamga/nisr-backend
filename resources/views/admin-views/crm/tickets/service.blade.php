@@ -41,7 +41,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                             </form>
                         </div>
                         <div>
-                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end">
+                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end ticket-filter-controls">
                                 @php
                                 $priority = request()->has('priority') ? request()->input('priority') : '';
                                 $statusId = request()->has('status') ? request()->input('status') : 'all';
@@ -60,6 +60,9 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                                     </option>
                                     @endforeach
                                 </select>
+                                <button type="button" class="btn btn--primary text-nowrap apply-ticket-filters">
+                                    {{ translate('apply') }}
+                                </button>
                             </div>
                         </div>
                     </div>

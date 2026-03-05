@@ -20,6 +20,7 @@ composer-setup.php
 *.log
 /- private/
 /docs/
+/nisr-customer-app-main/
 AGENTS.md
 *.zip
 *.md

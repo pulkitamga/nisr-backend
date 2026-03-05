@@ -38,9 +38,32 @@ $(document).on("ready", function () {
         const ticketId = button.data('ticket-id');
         const ticketDeprtmentId = button.data('department-id');
         const ticketEmployeeId = button.data('employee-id');
+        const ticketStatusId = Number(button.data('status-id') || 0);
+        const ticketStatusName = String(button.data('status-name') || '').trim().toLowerCase();
         $('#follow-up-ticket-id').val(ticketId);
         $('#follow-up-department-id').val(ticketDeprtmentId);
         $('#follow-up-employee-id').val(ticketEmployeeId);
+
+        if (ticketStatusId > 0 && $('#ticket-follow-up-status').find('option[value="' + ticketStatusId + '"]').length) {
+            $('#ticket-follow-up-status').val(String(ticketStatusId)).trigger('change');
+        } else if (ticketStatusName !== '') {
+            const matchedOption = $('#ticket-follow-up-status').find('option').filter(function () {
+                const optionRawStatusName = String($(this).data('status-name') || '').trim().toLowerCase();
+                if (optionRawStatusName !== '') {
+                    return optionRawStatusName === ticketStatusName;
+                }
+
+                return $(this).text().trim().toLowerCase() === ticketStatusName;
+            }).first();
+
+            if (matchedOption.length) {
+                $('#ticket-follow-up-status').val(String(matchedOption.val())).trigger('change');
+            } else {
+                $('#ticket-follow-up-status').prop('selectedIndex', 0).trigger('change');
+            }
+        } else {
+            $('#ticket-follow-up-status').prop('selectedIndex', 0).trigger('change');
+        }
     });
 
     // Handling form submission

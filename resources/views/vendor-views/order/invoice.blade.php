@@ -729,7 +729,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                 <tr>
                                     <td class="text-left font-bold">{{ translate('product_Discount')}}</td>
                                     <td class="text-right">
-                                        - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemDiscount']), currencyCode: getCurrencyCode()) }}
+                                        - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode()) }}
                                     </td>
                                 </tr>
                                 @if($orderTotalPriceSummary['totalInstallationPrice'] > 0)
@@ -742,9 +742,9 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                 @endif
                                 @if($orderTotalPriceSummary['totalExchangePrice'] > 0)
                                     <tr>
-                                        <td class="text-left font-bold">{{translate('exchange_Price')}}</td>
+                                        <td class="text-left font-bold">{{translate('exchange_charge')}}</td>
                                         <td class="text-right">
-                                            - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalExchangePrice']), currencyCode: getCurrencyCode()) }}
+                                            - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['totalExchangePrice'])), currencyCode: getCurrencyCode()) }}
                                         </td>
                                     </tr>
                                 @endif
@@ -752,7 +752,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                     <tr>
                                         <td class="text-left font-bold">{{ translate('extra_Discount')}}</td>
                                         <td class="text-right">
-                                            - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['extraDiscount']), currencyCode: getCurrencyCode()) }}
+                                            - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['extraDiscount'])), currencyCode: getCurrencyCode()) }}
                                         </td>
                                     </tr>
                                 @endif
@@ -779,7 +779,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                 <tr>
                                     <td class="text-left font-bold">{{ translate('coupon_Discount')}}</td>
                                     <td class="text-right">
-                                        - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['couponDiscount']), currencyCode: getCurrencyCode()) }}
+                                        - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -839,4 +839,3 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
 </div>
 </body>
 </html>
-

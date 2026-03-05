@@ -1,17 +1,73 @@
 'use strict';
+
+function getDataText(id, fallback = '') {
+    const node = document.getElementById(id);
+    return node?.dataset?.text?.trim() || fallback;
+}
+
+const uiText = {
+    areYouSure: getDataText('message-are-you-sure', 'Are you sure?'),
+    yes: getDataText('message-yes-word', 'Yes'),
+    no: getDataText('message-no-word', 'No'),
+    cancel: getDataText('message-cancel-word', 'Cancel'),
+    somethingWentWrong: getDataText('support-ticket-something-went-wrong', 'Something went wrong'),
+    escalateWarning: getDataText('support-ticket-escalate-warning', 'This will notify the department and owner.'),
+    yesEscalate: getDataText('support-ticket-yes-escalate', 'Yes, Escalate'),
+};
+
+function applyTicketFilters($controls) {
+    const url = new URL(window.location.href);
+    const $filterInputs = $controls.find('.filter-tickets');
+
+    $filterInputs.each(function () {
+        const $input = $(this);
+        const param = $input.data('value') || $input.attr('name');
+        if (!param) {
+            return;
+        }
+
+        const value = $input.val();
+        if (value === undefined || value === null || value === '') {
+            url.searchParams.delete(param);
+            return;
+        }
+
+        url.searchParams.set(param, value);
+    });
+
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+
 $('.filter-tickets').on('change', function () {
-    let param = $(this).data('value');
-    let value = $(this).val();
-    let text = window.location;
+    const $controls = $(this).closest('.ticket-filter-controls');
+    if ($controls.find('.apply-ticket-filters').length) {
+        return;
+    }
+
+    const param = $(this).data('value') || $(this).attr('name');
+    if (!param) {
+        return;
+    }
+
+    const value = $(this).val();
+    const text = window.location;
     let redirectTo = '';
-    let polished = removeURLParameter(text.toString(), param);
+    const polished = removeURLParameter(text.toString(), param);
     if (polished.includes('?')) {
         redirectTo = polished + '&' + param + '=' + value;
     } else {
         redirectTo = polished + '?' + param + '=' + value;
     }
     location.href = redirectTo;
-})
+});
+
+$(document).on('click', '.apply-ticket-filters', function (event) {
+    event.preventDefault();
+    const $controls = $(this).closest('.ticket-filter-controls');
+    applyTicketFilters($controls);
+});
+
 function removeURLParameter(url, parameter) {
     let urlParts = url.split('?');
     if (urlParts.length >= 2) {
@@ -27,216 +83,201 @@ function removeURLParameter(url, parameter) {
     return url;
 }
 
-$(document).on('change', '.support-ticket-status-select', function () {
-    const select = $(this);
-    const ticketId = select.data('ticket-id');
-    const selectedStatusId = select.val();
-    const previousStatusId = select.data('current-status');
-    const selectedStatusName = select.find('option:selected').text().trim();
-    const updateRoute = $('#support-ticket-status-route').data('url');
-    const confirmTextSource = $('#get-confirm-and-cancel-button-text');
-
-    if (!updateRoute || !ticketId || !selectedStatusId) {
-        return;
-    }
-
-    if (String(previousStatusId) === String(selectedStatusId)) {
-        return;
-    }
-
-    Swal.fire({
-        title: confirmTextSource.data('sure') || 'Are you sure?',
-        text: selectedStatusName,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: confirmTextSource.data('confirm') || 'Yes',
-        cancelButtonText: confirmTextSource.data('cancel') || 'No',
-    }).then((result) => {
-        if (!result.isConfirmed) {
-            select.val(previousStatusId);
-            return;
-        }
-
-        select.prop('disabled', true);
-        $.ajax({
-            url: updateRoute,
-            method: 'POST',
-            data: {
-                id: ticketId,
-                status: selectedStatusId,
-                _token: $('meta[name="csrf-token"]').attr('content'),
-            },
-            success: function (response) {
-                toastr.success(response?.message || 'Status updated successfully.');
-                select.data('current-status', selectedStatusId);
-            },
-            error: function (jqXHR) {
-                select.val(previousStatusId);
-                toastr.error(jqXHR.responseJSON?.message || 'Request failed.');
-            },
-            complete: function () {
-                select.prop('disabled', false);
-            }
-        });
-    });
-});
-
-$(document).on('change', '.support-ticket-priority-select', function () {
-    const select = $(this);
-    const ticketId = select.data('ticket-id');
-    const selectedPriority = String(select.val() || '').toLowerCase();
-    const previousPriority = String(select.data('current-priority') || '').toLowerCase();
-    const selectedPriorityName = select.find('option:selected').text().trim();
-    const updateRoute = $('#support-ticket-priority-route').data('url');
-    const confirmTextSource = $('#get-confirm-and-cancel-button-text');
-
-    if (!updateRoute || !ticketId || !selectedPriority) {
-        return;
-    }
-
-    if (selectedPriority === previousPriority) {
-        return;
-    }
-
-    Swal.fire({
-        title: confirmTextSource.data('sure') || 'Are you sure?',
-        text: selectedPriorityName,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: confirmTextSource.data('confirm') || 'Yes',
-        cancelButtonText: confirmTextSource.data('cancel') || 'No',
-    }).then((result) => {
-        if (!result.isConfirmed) {
-            select.val(previousPriority);
-            return;
-        }
-
-        select.prop('disabled', true);
-        $.ajax({
-            url: updateRoute,
-            method: 'POST',
-            data: {
-                id: ticketId,
-                priority: selectedPriority,
-                _token: $('meta[name="csrf-token"]').attr('content'),
-            },
-            success: function (response) {
-                toastr.success(response?.message || 'Priority updated successfully.');
-                select.data('current-priority', selectedPriority);
-            },
-            error: function (jqXHR) {
-                select.val(previousPriority);
-                toastr.error(jqXHR.responseJSON?.message || 'Request failed.');
-            },
-            complete: function () {
-                select.prop('disabled', false);
-            }
-        });
-    });
-});
-
-
-document.querySelectorAll('.statusForm').forEach(form => {
+document.querySelectorAll('.statusForm').forEach((form) => {
     form.addEventListener('submit', function (e) {
-        e.preventDefault(); // prevent normal submit
+        e.preventDefault();
+        const btn = this.querySelector('button');
+        const actionText = btn ? btn.textContent.trim() : '';
 
-        let btn = this.querySelector('button');
-        let actionText = btn.textContent.trim(); // Close / Open
         Swal.fire({
-            title: `Are you sure you want to ${actionText.toLowerCase()} this ticket?`,
+            title: uiText.areYouSure,
+            text: actionText,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'No',
+            confirmButtonText: uiText.yes,
+            cancelButtonText: uiText.no,
         }).then((result) => {
-            if (result.isConfirmed) {
-                // AJAX submit
-                let formData = new FormData(this);
-                fetch(this.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': formData.get('_token'),
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                })
-                    .then(res => res.json())
-                    .then(res => {
-                        Swal.fire({
-                            title: 'Success',
-                            text: res.message,
-                            icon: 'success'
-                        }).then(() => {
-                            location.reload(); // reload to update status button
-                        });
-                    })
-                    .catch(err => {
-                        Swal.fire('Error', 'Something went wrong', 'error');
-                    });
+            if (!result.isConfirmed) {
+                return;
             }
+
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': formData.get('_token'),
+                    Accept: 'application/json',
+                },
+                body: formData,
+            })
+                .then(async (response) => {
+                    let payload = {};
+                    try {
+                        payload = await response.json();
+                    } catch (error) {
+                        payload = {};
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(payload.message || uiText.somethingWentWrong);
+                    }
+
+                    return payload;
+                })
+                .then((response) => {
+                    const successMessage = response.message || '';
+                    Swal.fire({
+                        text: successMessage,
+                        icon: 'success',
+                        confirmButtonText: uiText.yes,
+                    }).then(() => {
+                        location.reload();
+                    });
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        text: error.message || uiText.somethingWentWrong,
+                        icon: 'error',
+                        confirmButtonText: uiText.yes,
+                    });
+                });
         });
     });
 });
-$(document).on('click', '[data-target="#showSupportFollowUpModal"]', function () {
+
+function handleFollowUpSubmit(formSelector, modalSelector) {
+    const $form = $(formSelector);
+    if (!$form.length) {
+        return;
+    }
+
+    $form.off('submit.supportTickets').on('submit.supportTickets', function (event) {
+        event.preventDefault();
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            },
+        });
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message || '');
+                    $(modalSelector).modal('hide');
+                    location.reload();
+                    return;
+                }
+
+                toastr.error(response.message || uiText.somethingWentWrong);
+            },
+            error: function (jqXHR) {
+                toastr.error(jqXHR.responseJSON?.message || uiText.somethingWentWrong);
+            },
+        });
+    });
+}
+
+function prefillFollowUpStatus(selectSelector, statusId, statusName = '') {
+    const $statusField = $(selectSelector);
+    if (!$statusField.length) {
+        return;
+    }
+
+    const normalizedStatusId = Number(statusId || 0);
+    if (
+        normalizedStatusId > 0 &&
+        $statusField.find('option[value="' + normalizedStatusId + '"]').length
+    ) {
+        $statusField.val(String(normalizedStatusId));
+        $statusField.trigger('change');
+        return;
+    }
+
+    const normalizedStatusName = String(statusName || '').trim().toLowerCase();
+    if (normalizedStatusName !== '') {
+        const matchedOption = $statusField.find('option').filter(function () {
+            const optionRawStatusName = String($(this).data('status-name') || '').trim().toLowerCase();
+            if (optionRawStatusName !== '') {
+                return optionRawStatusName === normalizedStatusName;
+            }
+
+            return $(this).text().trim().toLowerCase() === normalizedStatusName;
+        }).first();
+
+        if (matchedOption.length) {
+            $statusField.val(String(matchedOption.val()));
+            $statusField.trigger('change');
+            return;
+        }
+    }
+
+    $statusField.prop('selectedIndex', 0);
+    $statusField.trigger('change');
+}
+
+$(document).on('click', '[data-target="#showSupportFollowUpModal"], [data-bs-target="#showSupportFollowUpModal"]', function () {
     let ticketId = $(this).data('ticket-id');
     let departmentId = $(this).data('department-id');
     let employeeId = $(this).data('employee-id');
+    let statusId = $(this).data('status-id');
+    let statusName = $(this).data('status-name');
 
-    // set values inside modal hidden fields
-    $('#support-follow-up-ticket-id').val(ticketId);
-    $('#support-follow-up-department-id').val(departmentId);
-    $('#support-follow-up-employee-id').val(employeeId);
+    $('#support-follow-up-ticket-id').val(ticketId || '');
+    $('#support-follow-up-department-id').val(departmentId || '');
+    $('#support-follow-up-employee-id').val(employeeId || '');
+    prefillFollowUpStatus('#support-follow-up-status', statusId, statusName);
 });
 
-$(document).on("ready", function () {
+$(document).on('click', '[data-target="#showComplainFollowUpModal"], [data-bs-target="#showComplainFollowUpModal"]', function () {
+    let ticketId = $(this).data('ticket-id');
+    let departmentId = $(this).data('department-id');
+    let employeeId = $(this).data('employee-id');
+    let statusId = $(this).data('status-id');
+    let statusName = $(this).data('status-name');
+
+    $('#support-follow-up-ticket-id').val(ticketId || '');
+    $('#support-follow-up-department-id').val(departmentId || '');
+    $('#support-follow-up-employee-id').val(employeeId || '');
+    prefillFollowUpStatus('#complain-follow-up-status', statusId, statusName);
+});
+
+$(document).on('click', '[data-target="#showWholesaleFollowUpModal"], [data-bs-target="#showWholesaleFollowUpModal"]', function () {
+    let button = $(this);
+    $('#wholesale-follow-up-ticket-id').val(button.data('ticket-id') || '');
+    $('#wholesale-follow-up-department-id').val(button.data('department-id') || '');
+    $('#wholesale-follow-up-employee-id').val(button.data('employee-id') || '');
+    prefillFollowUpStatus('#wholesale-follow-up-status', button.data('status-id'), button.data('status-name'));
+});
+
+$(function () {
+    $('#support-follow-up-status').on('change', function () {
+        let status = Number($(this).val() || 0);
+        $('#support-ticket-next-follow-up-date-row').removeClass().addClass('row d-none');
+        if (status === 5) {
+            $('#support-ticket-next-follow-up-date-row').removeClass().addClass('row');
+        }
+    });
+
     $('#showSupportFollowUpModal').on('show.bs.modal', function (event) {
         const button = $(event.relatedTarget);
         const ticketId = button.data('ticket-id');
         const departmentId = button.data('department-id');
         const employeeId = button.data('employee-id');
-        $('#support-follow-up-ticket-id').val(ticketId);
-        $('#support-follow-up-department-id').val(departmentId);
-        $('#support-follow-up-employee-id').val(employeeId);
-        $('#support-task-name').val('');
-        $('#support-task-description').val('');
-        $('#support-task-due-date').val('');
-        $('#support-task-status').val('pending');
-        $('#support-add-to-calendar').prop('checked', false);
+        const statusId = button.data('status-id');
+        const statusName = button.data('status-name');
+        $('#support-follow-up-ticket-id').val(ticketId || '');
+        $('#support-follow-up-department-id').val(departmentId || '');
+        $('#support-follow-up-employee-id').val(employeeId || '');
+        prefillFollowUpStatus('#support-follow-up-status', statusId, statusName);
     });
 
-    $('#updateSupportTicketFollowUpForm').on('submit', function (event) {
-        event.preventDefault();
-        $.ajaxSetup({
-            headers: {
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-            }
-        });
-
-        $.ajax({
-            url: $(this).attr('action'),
-            method: "POST",
-            data: $(this).serialize(),
-            success: function (response) {
-                if (response.success) {
-                    toastr.success(response.message || 'Follow-up updated successfully!');
-                    $('#showSupportFollowUpModal').modal('hide');
-                    location.reload();
-                } else {
-                    toastr.error(response.message || 'Something went wrong.');
-                }
-            },
-            error: function (jqXHR) {
-                toastr.error(jqXHR.responseJSON?.message || 'Request failed.');
-            }
-        });
-    });
-});
-
-$(document).on("ready", function () {
     $('#complain-follow-up-status').on('change', function () {
-        var status = $(this).val();
+        let status = Number($(this).val() || 0);
         $('#complain-ticket-next-follow-up-date-row').removeClass().addClass('row d-none');
-        if (status == 5 || status == 39) { // In Progress
+        if (status === 39) {
             $('#complain-ticket-next-follow-up-date-row').removeClass().addClass('row');
         }
     });
@@ -246,78 +287,39 @@ $(document).on("ready", function () {
         const ticketId = button.data('ticket-id');
         const departmentId = button.data('department-id');
         const employeeId = button.data('employee-id');
-        $('#support-follow-up-ticket-id').val(ticketId);
-        $('#support-follow-up-department-id').val(departmentId);
-        $('#support-follow-up-employee-id').val(employeeId);
+        const statusId = button.data('status-id');
+        const statusName = button.data('status-name');
+        $('#support-follow-up-ticket-id').val(ticketId || '');
+        $('#support-follow-up-department-id').val(departmentId || '');
+        $('#support-follow-up-employee-id').val(employeeId || '');
+        prefillFollowUpStatus('#complain-follow-up-status', statusId, statusName);
     });
 
-    $('#updateComplainTicketFollowUpForm').on('submit', function (event) {
-        event.preventDefault();
-        $.ajaxSetup({
-            headers: {
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-            }
-        });
-
-        $.ajax({
-            url: $(this).attr('action'),
-            method: "POST",
-            data: $(this).serialize(),
-            success: function (response) {
-                if (response.success) {
-                    toastr.success(response.message || 'Follow-up updated successfully!');
-                    $('#showComplainFollowUpModal').modal('hide');
-                    location.reload();
-                } else {
-                    toastr.error(response.message || 'Something went wrong.');
-                }
-            },
-            error: function (jqXHR) {
-                toastr.error(jqXHR.responseJSON?.message || 'Request failed.');
-            }
-        });
+    $('#showWholesaleFollowUpModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const ticketId = button.data('ticket-id');
+        const departmentId = button.data('department-id');
+        const employeeId = button.data('employee-id');
+        const statusId = button.data('status-id');
+        const statusName = button.data('status-name');
+        $('#wholesale-follow-up-ticket-id').val(ticketId || '');
+        $('#wholesale-follow-up-department-id').val(departmentId || '');
+        $('#wholesale-follow-up-employee-id').val(employeeId || '');
+        prefillFollowUpStatus('#wholesale-follow-up-status', statusId, statusName);
     });
-});
 
-
-$(document).on('click', '[data-target="#showWholesaleFollowUpModal"]', function () {
-    let button = $(this);
-    $('#wholesale-follow-up-ticket-id').val(button.data('ticket-id'));
-    $('#wholesale-follow-up-department-id').val(button.data('department-id'));
-    $('#wholesale-follow-up-employee-id').val(button.data('employee-id'));
-});
-
-$('#wholesale-follow-up-status').on('change', function () {
-    let status = $(this).val();
-    $('#wholesale-ticket-next-follow-up-date-row').addClass('d-none');
-    if (status == 59) { // In Progress
-        $('#wholesale-ticket-next-follow-up-date-row').removeClass('d-none');
-    }
-});
-
-$('#updateWholesaleFollowUpForm').on('submit', function (e) {
-    e.preventDefault();
-    let form = $(this);
-
-    $.ajax({
-        url: form.attr('action'),
-        method: 'POST',
-        data: form.serialize(),
-        success: function (response) {
-            if (response.success) {
-                toastr.success('Follow-up updated successfully!');
-                $('#showWholesaleFollowUpModal').modal('hide');
-                location.reload();
-            } else {
-                toastr.error(response.message || 'Something went wrong.');
-            }
-        },
-        error: function (jqXHR) {
-            toastr.error(jqXHR.responseJSON?.message || 'Request failed.');
+    $('#wholesale-follow-up-status').on('change', function () {
+        let status = Number($(this).val() || 0);
+        $('#wholesale-ticket-next-follow-up-date-row').addClass('d-none');
+        if (status === 59) {
+            $('#wholesale-ticket-next-follow-up-date-row').removeClass('d-none');
         }
     });
-});
 
+    handleFollowUpSubmit('#updateSupportTicketFollowUpForm', '#showSupportFollowUpModal');
+    handleFollowUpSubmit('#updateComplainTicketFollowUpForm', '#showComplainFollowUpModal');
+    handleFollowUpSubmit('#updateWholesaleFollowUpForm', '#showWholesaleFollowUpModal');
+});
 
 $(document).on('click', '.escalate-btn', function () {
     let ticketId = $(this).data('ticket-id');
@@ -325,20 +327,20 @@ $(document).on('click', '.escalate-btn', function () {
     $('#escalateTicketModal').modal('show');
 });
 
-// Form submission with confirmation
-$('#escalateTicketForm').submit(function (e) {
+$('#escalateTicketForm').off('submit.supportTickets').on('submit.supportTickets', function (e) {
     e.preventDefault();
-    let form = $(this);
+    const form = $(this);
+
     Swal.fire({
-        title: 'Are you sure?',
-        text: 'This will notify the department and owner.',
+        title: uiText.areYouSure,
+        text: uiText.escalateWarning,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Yes, Escalate',
-        cancelButtonText: 'Cancel'
+        confirmButtonText: uiText.yesEscalate,
+        cancelButtonText: uiText.cancel,
     }).then((result) => {
         if (result.isConfirmed) {
-            form.off('submit').submit(); // Submit without further prevention
+            form.off('submit').submit();
         }
     });
 });

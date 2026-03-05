@@ -617,8 +617,19 @@ class InboxMessageController extends BaseController
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
-            $path = $file->store('attachments', 'public');
-            $data['attachment'] = $path;
+
+            if ($file && $file->isValid() && is_string($file->getPathname()) && trim($file->getPathname()) !== '' && is_file($file->getPathname())) {
+                try {
+                    $path = $file->store('attachments', 'public');
+                    if (is_string($path) && trim($path) !== '') {
+                        $data['attachment'] = $path;
+                    }
+                } catch (\Throwable $exception) {
+                    logger()->warning('CRM inbox attachment upload failed', [
+                        'message' => $exception->getMessage(),
+                    ]);
+                }
+            }
         }
 
         $message = InboxMessage::create($data);
@@ -1203,7 +1214,7 @@ class InboxMessageController extends BaseController
             'all'
         );
         $employees = $employees
-            ->filter(fn($employee) => (int)($employee->admin_role_id ?? 0) !== 1)
+            ->filter(fn($employee) => !$this->isSuperAdmin($employee))
             ->values();
         if ($isOwnerAssignment) {
             $employees = $employees
@@ -1219,7 +1230,7 @@ class InboxMessageController extends BaseController
 
     private function isSuperAdmin(?Admin $admin): bool
     {
-        return (int)($admin?->admin_role_id ?? 0) === 1;
+        return $admin?->isSuperAdmin() === true;
     }
 
     private function supervisorRoleId(): int

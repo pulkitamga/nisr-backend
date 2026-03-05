@@ -196,4 +196,23 @@ return [
 
     'same_site' => null,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Session Request Blocking
+    |--------------------------------------------------------------------------
+    |
+    | Enabling blocking serializes concurrent requests that use the same
+    | session ID. This prevents lost updates when multiple AJAX requests
+    | try to read/write session data at the same time (e.g. POS cart state).
+    |
+    */
+
+    'block' => env('SESSION_BLOCK', false),
+
+    'block_store' => env('SESSION_BLOCK_STORE', null),
+
+    'block_lock_seconds' => env('SESSION_BLOCK_LOCK_SECONDS', 15),
+
+    'block_wait_seconds' => env('SESSION_BLOCK_WAIT_SECONDS', 15),
+
 ];

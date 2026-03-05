@@ -1,6 +1,7 @@
 @php
 $installationTotel = 0;
 $exchangeTotel = 0;
+$activeCartId = (string)($cartId ?? '');
 
 if (!empty($cartItems['cartItemValue'])) {
 foreach ($cartItems['cartItemValue'] as $item) {
@@ -13,7 +14,7 @@ $exchangeTotel += isset($item['exchange_charge']) ? (float)$item['exchange_charg
 }
 
 $total = $cartItems['total'] + $cartItems['totalTax'] - $cartItems['couponDiscount'] + $installationTotel - $exchangeTotel;
-$branch_id = request()->get('branch_id', '');
+$branch_id = (int)($branchId ?? request()->get('branch_id', 1));
 @endphp
 
 
@@ -26,6 +27,7 @@ $branch_id = request()->get('branch_id', '');
     <input type="hidden" name="installation_charge" value="{{ usdToDefaultCurrency(amount: $installationTotel) }}">
     <input type="hidden" name="exchange_charge" value="{{ usdToDefaultCurrency(amount: $exchangeTotel) }}">
     <input type="hidden" name="branch_id" value="{{ $branch_id }}">
+    <input type="hidden" name="cart_id" value="{{ $activeCartId }}">
 
 
     <div id="cart">
@@ -73,7 +75,8 @@ $branch_id = request()->get('branch_id', '');
                         <td>
                             <input type="number" data-key="{{$key}}" class="form-control qty action-pos-update-quantity"
                                 value="{{$item['quantity']}}" min="1" data-product-key="{{ $item['id'] }}"
-                                data-product-variant="{{ $item['variant'] }}">
+                                data-product-variant="{{ $item['variant'] }}"
+                                data-line-key="{{ $item['line_key'] ?? '' }}">
                         </td>
                         <td>
                             <div>
@@ -84,6 +87,7 @@ $branch_id = request()->get('branch_id', '');
                         <td>
                             <div class="d-flex justify-content-center">
                                 <a href="javascript:" data-id="{{$item['id']}}" data-variant="{{$item['variant']}}"
+                                    data-line-key="{{ $item['line_key'] ?? '' }}"
                                     class="btn btn-sm rounded-circle remove-from-cart">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/pos-delete-icon.svg') }}"
                                         alt="">
@@ -107,7 +111,7 @@ $branch_id = request()->get('branch_id', '');
                 <div class="d-flex gap-2 justify-content-between">
                     <dt class="title-color text-capitalize font-weight-normal">{{ translate('product_Discount') }} :
                     </dt>
-                    <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($cartItems['discountOnProduct'],
+                    <dd>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: round(abs((float)$cartItems['discountOnProduct']),
                         2)), currencyCode: getCurrencyCode()) }}</dd>
                 </div>
 
@@ -118,7 +122,7 @@ $branch_id = request()->get('branch_id', '');
                             data-target="#add-discount">
                             <i class="tio-edit"></i>
                         </button>
-                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $cartItems['extraDiscount']),
+                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$cartItems['extraDiscount'])),
                         currencyCode: getCurrencyCode())}}
                     </dd>
                 </div>
@@ -131,7 +135,7 @@ $branch_id = request()->get('branch_id', '');
                             data-target="#add-coupon-discount">
                             <i class="tio-edit"></i>
                         </button>
-                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:$cartItems['couponDiscount']),
+                        -{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$cartItems['couponDiscount'])),
                         currencyCode: getCurrencyCode())}}
                     </dd>
                 </div>
@@ -155,7 +159,7 @@ $branch_id = request()->get('branch_id', '');
                 @if($exchangeTotel > 0)
                 <div class="d-flex gap-2 justify-content-between">
                     <dt class="title-color text-capitalize font-weight-normal">{{ translate('Exchange_Total') }} :</dt>
-                    <dd>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: round($exchangeTotel, 2)),
+                    <dd>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: round(abs((float)$exchangeTotel), 2)),
                         currencyCode: getCurrencyCode()) }}</dd>
                 </div>
                 @endif
@@ -193,7 +197,7 @@ $branch_id = request()->get('branch_id', '');
                         </li>
                         @php( $walletStatus = getWebConfig('wallet_status') ?? 0)
                         @if ($walletStatus)
-                        <li class="{{ (str_contains(session('current_user'), 'walking-customer')) ? 'd-none':'' }}">
+                        <li class="{{ (str_contains($activeCartId, 'walking-customer')) ? 'd-none':'' }}">
                             <input type="radio" value="wallet" id="wallet" name="type" hidden>
                             <label for="wallet" class="btn btn--bordered btn--bordered-black px-4 mb-0">{{
                                 translate('wallet') }}</label>
@@ -271,7 +275,7 @@ $branch_id = request()->get('branch_id', '');
                 <i class="fa fa-times-circle"></i>
                 {{ translate('cancel_Order') }}
             </span>
-            <button type="button" class="btn btn--primary btn-block m-0 action-empty-alert-show">
+            <button type="button" class="btn btn--primary btn-block m-0" disabled>
                 <i class="fa fa-shopping-bag"></i>
                 {{ translate('place_Order') }}
             </button>

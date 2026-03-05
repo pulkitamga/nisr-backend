@@ -7,19 +7,20 @@ use App\Models\CrmCall;
 use App\Models\User;
 use App\Services\UcmApiService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class UcmController extends Controller
 {
+    private const LIVE_CALLS_CACHE_KEY = 'ucm:live_calls:snapshot:v1';
+    private const LIVE_CALLS_REFRESH_LOCK_KEY = 'ucm:live_calls:refresh_lock:v1';
+
     public function calls(): JsonResponse
     {
-        $ucm = $this->ucm();
-        if (!$ucm->isAvailable()) {
-            return response()->json([]);
-        }
-
-        $activeCalls = $ucm->getLiveCalls();
+        $activeCalls = $this->getCachedLiveCalls();
         $adminUser = auth('admin')->user();
         $agentId = (int)($adminUser->id ?? 0);
         $employeeExtension = $this->normalizeDigits((string)($adminUser->extension ?? ''));
@@ -52,6 +53,47 @@ class UcmController extends Controller
         })->values();
 
         return response()->json($calls);
+    }
+
+    private function getCachedLiveCalls(): array
+    {
+        $cached = Cache::get(self::LIVE_CALLS_CACHE_KEY);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $lock = Cache::lock(self::LIVE_CALLS_REFRESH_LOCK_KEY, 1);
+        if (!$lock->get()) {
+            return is_array($cached) ? $cached : [];
+        }
+
+        try {
+            $fresh = $this->fetchLiveCallsFromUcm();
+            Cache::put(self::LIVE_CALLS_CACHE_KEY, $fresh, now()->addSeconds(5));
+            return $fresh;
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function fetchLiveCallsFromUcm(): array
+    {
+        $ucm = $this->ucm();
+        if (!$ucm->isAvailable()) {
+            $fallback = Cache::get(self::LIVE_CALLS_CACHE_KEY, []);
+            return is_array($fallback) ? $fallback : [];
+        }
+
+        try {
+            $activeCalls = $ucm->getLiveCalls();
+            return is_array($activeCalls) ? $activeCalls : [];
+        } catch (Throwable $exception) {
+            Log::warning('UCM live calls fetch failed; using cached snapshot', [
+                'error' => $exception->getMessage(),
+            ]);
+            $fallback = Cache::get(self::LIVE_CALLS_CACHE_KEY, []);
+            return is_array($fallback) ? $fallback : [];
+        }
     }
 
     public function accept(Request $request): JsonResponse

@@ -5,10 +5,9 @@
 </style>
 
 <div class="modal-body">
-    <button class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-        type="button" data-bs-dismiss="modal" aria-label="Close">
+    <button class="radius-50 border-0 font-weight-bold text-black-50 position-absolute top-3 z-index-99"
+        style="inset-inline-end: .75rem;" type="button" data-bs-dismiss="modal" aria-label="{{ translate('close') }}">
         <span aria-hidden="true">×</span>
-    </button>
     </button>
     <div class="row gy-3">
         <div class="col-md-5">
@@ -84,19 +83,9 @@
                         </div>
                     </div>
 
-                    <?php
-                    $cart = false;
-                    if (session()->has('cart')) {
-                        foreach (session()->get('cart') as $key => $cartItem) {
-                            if (is_array($cartItem) && $cartItem['id'] == $product['id']) {
-                                $cart = $cartItem;
-                            }
-                        }
-                    }
-                    
-                    ?>
-
                     <input type="hidden" name="id" value="{{ $product->id }}">
+                    <input type="hidden" name="branch_id" value="{{ (int)($product->selected_branch_id ?? 0) }}">
+                    <input type="hidden" name="line_key" id="line-key" value="">
                     <div class="variant-change">
                         <div class="position-relative mb-4">
                             <!-- Color Selection -->
@@ -121,76 +110,19 @@
                                 </div>
                             @endif
 
-                            <!-- Left/Right Selection -->
                             @php
-                                // Extract L/R options from variations
-                                $lrOptions = [];
-                                $variations = json_decode($product->variation);
-
-                                foreach ($variations as $variation) {
-                                    if (isset($variation->type)) {
-                                        $parts = explode('-', $variation->type);
-                                        if (count($parts) > 1) {
-                                            $lrPart = end($parts); // Get the last part (left/right)
-                                            if (
-                                                in_array(strtolower($lrPart), ['left', 'right']) &&
-                                                !in_array($lrPart, $lrOptions)
-                                            ) {
-                                                $lrOptions[] = $lrPart;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // If no L/R found in variations, check if we have separate choice options
-                                if (empty($lrOptions)) {
-                                    foreach (
-                                        json_decode($product->filtered_choice_options ?? $product->choice_options)
-                                        as $choice
-                                    ) {
-                                        if (
-                                            strtolower($choice->title) == 'side' ||
-                                            strtolower($choice->title) == 'lr' ||
-                                            strtolower($choice->title) == 'left/right'
-                                        ) {
-                                            $lrOptions = $choice->options;
-                                            break;
-                                        }
-                                    }
-                                }
+                                $choiceOptionsPayload = json_decode($product->filtered_choice_options ?? $product->choice_options) ?? [];
                             @endphp
 
-                            @if (!empty($lrOptions))
-                                <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
-                                    <strong class="text-dark">{{ translate('side') }}</strong>
-                                    <div class="d-flex gap-2 flex-wrap">
-                                        @foreach ($lrOptions as $index => $option)
-                                            <input class="btn-check" type="radio" id="side-{{ $option }}"
-                                                name="side" value="{{ $option }}"
-                                                @if ($index == 0) checked @endif autocomplete="off">
-                                            <label class="btn btn-sm check-label border-0 mb-0 w-auto pos-check-label"
-                                                for="side-{{ $option }}">{{ ucfirst($option) }}</label>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            <!-- Other choice options (excluding L/R if already shown) -->
-                            @foreach (json_decode($product->filtered_choice_options ?? $product->choice_options) as $key => $choice)
-                                @php
-                                    $choiceTitle = strtolower($choice->title);
-                                    // Skip if this is the L/R option since we already showed it separately
-                                    $skipOptions = ['side', 'lr', 'left/right', 'left-right', 'left right'];
-                                @endphp
-
-                                @if (!in_array($choiceTitle, $skipOptions))
+                            @foreach ($choiceOptionsPayload as $key => $choice)
+                                @if (!empty($choice->options ?? []))
                                     <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
                                         <div class="my-2 w-43px">
                                             <strong class="text-dark">{{ ucfirst($choice->title) }}</strong>
                                         </div>
 
                                         <div class="d-flex gap-2 flex-wrap">
-                                            @foreach ($choice->options as $index => $option)
+                                            @foreach (($choice->options ?? []) as $index => $option)
                                                 <input class="btn-check" type="radio"
                                                     id="{{ $choice->name }}-{{ $option }}"
                                                     name="{{ $choice->name }}" value="{{ $option }}"
@@ -293,8 +225,7 @@
                                     <input type="checkbox" id="installation-charge-checkbox"
                                         name="installation_charge"
                                         data-price="{{ $product->extraCharges['installation'] }}" />
-                                    <label for="installation-charge-checkbox"><strong>Installation
-                                            Charge:</strong>
+                                    <label for="installation-charge-checkbox"><strong>{{ translate('installation_charge') }}:</strong>
                                         {{ webCurrencyConverter(amount: $product->extraCharges['installation']) }}</label>
                                 </p>
                             @endif
@@ -304,10 +235,11 @@
                                     <div class="mb-2">
                                         <input type="checkbox" id="exchange-charge-checkbox" name="exchange_charge"
                                             data-price="{{ $product->extraCharges['exchange'] }}" />
-                                        <label for="exchange-charge-checkbox"><strong>Exchange Charge:</strong>
+                                        <label for="exchange-charge-checkbox"><strong>{{ translate('exchange_charge') }}:</strong>
                                             {{ webCurrencyConverter(amount: $product->extraCharges['exchange']) }}</label>
                                     </div>
-                                    <div class="product-quantity d-flex align-items-center">
+                                    <div class="product-quantity d-flex align-items-center d-none"
+                                        id="exchange-qty-wrapper">
                                         <div class="d-flex align-items-center gap-2">
                                             <strong class="text-dark">{{ translate('Exchange_qty') }}:</strong>
 
@@ -318,14 +250,15 @@
                                                     disabled="disabled">
                                                     <i class="tio-remove"></i>
                                                 </button>
-                                                <input type="text" name="exchange_quantity" type="number"
+                                                <input type="text" name="exchange_quantity"
                                                     id="exchange-quantity"
                                                     class=" form-control input-number text-center exchange-qty-field"
                                                     placeholder="1" value="1" min="1" max="100"
+                                                    disabled
                                                     data-price="{{ $product->extraCharges['exchange'] }}">
                                                 <button type="button"
                                                     class="btn-number bg-transparent exchange-qty-field-plus"
-                                                    data-type="plus" data-field="exchange_quantity">
+                                                    data-type="plus" data-field="exchange_quantity" disabled="disabled">
                                                     <i class="tio-add"></i>
                                                 </button>
                                             </span>

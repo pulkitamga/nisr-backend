@@ -286,6 +286,12 @@ class WarrantyClaimController extends Controller
             }
         }
 
+        $claim->timelineEvents()->create([
+            'event_type' => 'claim_submitted',
+            'description' => translate('Claim submitted by admin') . ' | ' . translate('Serial Number') . ': ' . $claim->serial_number,
+            'user_id' => auth('admin')->id(),
+        ]);
+
         TriageClaimJob::dispatch($claim);
 
         Toastr::success(translate('Claim submitted successfully.'));
@@ -295,7 +301,6 @@ class WarrantyClaimController extends Controller
     // Receive
     public function receive(Request $request, WarrantyClaim $claim)
     {
-        // Agar AJAX request hai → JSON return karo
         $isAjax = $request->ajax() || $request->wantsJson();
 
         if ($claim->status !== 'rma_issued') {
@@ -431,7 +436,7 @@ class WarrantyClaimController extends Controller
                 ->get();
 
             if ($paidCharges->isEmpty()) {
-                return back()->withErrors(['charge_ids' => 'No valid unpaid charges selected.']);
+                return back()->withErrors(['charge_ids' => translate('No valid unpaid charges selected.')]);
             }
 
             $paidCharges->each->update(['is_paid' => true]);
@@ -665,7 +670,7 @@ class WarrantyClaimController extends Controller
             'user_id'     => auth('admin')->id(),
         ]);
 
-        return response()->json(['message' => translate('Mark as Dispatched.')]);
+        return response()->json(['message' => translate('Claim marked as dispatched.')]);
     }
 
     public function issueRma(Request $request, WarrantyClaim $claim)
@@ -687,9 +692,11 @@ class WarrantyClaimController extends Controller
             'branch_id'      => $request->branch_id,
         ]);
 
+        $branchName = \App\Models\Branch::find($request->branch_id)?->branch_name ?? 'N/A';
+
         $claim->timelineEvents()->create([
             'event_type'  => 'rma_issued',
-            'description' => "RMA {$rma} issued – deadline {$deadline->format('Y-m-d')}",
+            'description' => "RMA {$rma} issued | Branch: {$branchName} | Deadline: {$deadline->format('Y-m-d')} | Instructions: {$request->instructions}",
             'user_id'     => auth('admin')->id(),
         ]);
 
@@ -699,6 +706,11 @@ class WarrantyClaimController extends Controller
 
     public function resume(Request $request, WarrantyClaim $claim)
     {
+        $request->validate([
+            'target_status' => 'required|string',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
         $allowed = [
             'waiting_customer' => 'received',
             'waiting_parts'    => 'repair_pending',
@@ -745,12 +757,12 @@ class WarrantyClaimController extends Controller
                         ->first();
 
                     if (!$newWarranty) {
-                        $fail('Serial number is invalid, already activated, or not preactivated.');
+                        $fail(translate('Serial number is invalid, already activated, or not preactivated.'));
                         return;
                     }
 
                     if ((int)$newWarranty->product_id !== (int)$oldWarranty->product_id) {
-                        $fail('Serial number belongs to a different product and cannot be used for this replacement.');
+                        $fail(translate('Serial number belongs to a different product and cannot be used for this replacement.'));
                     }
                 },
             ],
