@@ -338,7 +338,19 @@
                         @forelse($posRows as $index => $row)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $row->period_label }}</td> {{-- NEW COLUMN --}}
+                                <td>
+                                    @if (($filters['date_type'] ?? 'this_year') == 'this_year')
+                                        {{ $row->period_label }} {{ now()->format('Y') }}
+                                    @elseif(($filters['date_type'] ?? '') == 'this_month')
+                                        {{ translate('day') }} {{ $row->period_label }}
+                                    @elseif(($filters['date_type'] ?? '') == 'this_week')
+                                        {{ $row->period_label }}
+                                    @elseif(($filters['date_type'] ?? '') == 'today')
+                                        {{ translate('today') }}
+                                    @else
+                                        {{ $row->period_label }}
+                                    @endif
+                                </td>
                                 <td>{{ $row->product_name }}</td>
                                 <td>{{ $row->branch_name }}</td>
                                 <td class="text-center">{{ $row->total_qty }}</td>
