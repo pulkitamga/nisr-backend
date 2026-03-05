@@ -98,7 +98,8 @@
         <div class="card mb-3">
             <div class="card-body">
                 <form method="GET" action="{{ url()->current() }}">
-                    <div class="row g-2 align-items-end">
+                    <div class="row g-2 align-items-start">
+
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('department') }}</label>
                             <select class="js-select2-custom form-control" name="department_ids[]" multiple>
@@ -111,6 +112,7 @@
                             </select>
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
+
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('employee') }}</label>
                             <select class="js-select2-custom form-control" name="employee_ids[]" multiple>
@@ -123,9 +125,9 @@
                             </select>
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('date_range') }}</label>
 
+                        <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_range" id="date_range">
                                 <option value="today" {{ ($filters['date_range'] ?? '') == 'today' ? 'selected' : '' }}>
                                     Today</option>
@@ -143,31 +145,36 @@
                             </select>
                         </div>
 
-                        <div class="col-md-2 custom-range">
+                        <div class="col-md-2 custom-date d-none">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] }}">
                         </div>
 
-                        <div class="col-md-2 custom-range">
+                        <div class="col-md-2 custom-date d-none">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] }}">
                         </div>
-                        <div class="col-md-4">
-                            <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                                <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                                <a href="{{ route('admin.report.crm-agent-sales-matrix') }}"
-                                    class="btn btn-outline-secondary">{{ translate('reset') }}</a>
-                                <a href="{{ route('admin.report.crm-agent-sales-matrix-export-excel', request()->query()) }}"
-                                    class="btn btn-outline-success">
-                                    <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ translate('excel') }}
-                                </a>
-                                <a href="{{ route('admin.report.crm-agent-sales-matrix-export-pdf', request()->query()) }}"
-                                    class="btn btn-outline-danger">
-                                    <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i> {{ translate('PDF') }}
-                                </a>
-                            </div>
+
+                        <div class="col-12 d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+
+                            <a href="{{ route('admin.report.crm-agent-sales-matrix') }}" class="btn btn-outline-secondary">
+                                {{ translate('reset') }}
+                            </a>
+
+                            <a href="{{ route('admin.report.crm-agent-sales-matrix-export-excel', request()->query()) }}"
+                                class="btn btn-outline-success">
+                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ translate('excel') }}
+                            </a>
+
+                            <a href="{{ route('admin.report.crm-agent-sales-matrix-export-pdf', request()->query()) }}"
+                                class="btn btn-outline-danger">
+                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ translate('PDF') }}
+                            </a>
                         </div>
+
                     </div>
                 </form>
             </div>
@@ -357,21 +364,19 @@
     </div>
 @endsection
 @push('script')
-<script>
+    <script>
+        function toggleCustomRange() {
+            let range = document.getElementById('date_range').value;
 
-function toggleCustomRange() {
-    let range = document.getElementById('date_range').value;
+            if (range === 'custom') {
+                document.querySelectorAll('.custom-range').forEach(el => el.style.display = 'block');
+            } else {
+                document.querySelectorAll('.custom-range').forEach(el => el.style.display = 'none');
+            }
+        }
 
-    if(range === 'custom'){
-        document.querySelectorAll('.custom-range').forEach(el => el.style.display = 'block');
-    } else {
-        document.querySelectorAll('.custom-range').forEach(el => el.style.display = 'none');
-    }
-}
+        document.getElementById('date_range').addEventListener('change', toggleCustomRange);
 
-document.getElementById('date_range').addEventListener('change', toggleCustomRange);
-
-window.onload = toggleCustomRange;
-
-</script>
+        window.onload = toggleCustomRange;
+    </script>
 @endpush
