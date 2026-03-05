@@ -8,11 +8,11 @@ enum Crm
         URI => 'index',
         VIEW => 'admin-views.crm.index'
     ];
- const SHOW = [
-        URI => 'massage-show',
+    const SHOW = [
+        URI => 'message-show',
         VIEW => 'admin-views.crm.index-view'
     ];
- const EXPORT = [
+    const EXPORT = [
         URI => 'export',
         VIEW => ''
     ];
@@ -34,17 +34,18 @@ enum Crm
         URI => 'get-departments',
         VIEW => ''
     ];
-    const ADD_NEW_MASSAGE = [
-        URI => 'add-new-massage',
+    const ADD_NEW_MESSAGE = [
+        URI => 'add-new-message',
         VIEW => ''
     ];
+    const ADD_NEW_MASSAGE = self::ADD_NEW_MESSAGE; // Legacy typo alias.
 
     const DEPARTMENT_EMPLOYEE = [
         URI => 'get-department-employee',
         VIEW => ''
     ];
     const CONVERT_INQUIRY = [
-        URI => 'inquiry-convertd',
+        URI => 'inquiry-convert',
         VIEW => ''
     ];
     const CONVERT_BULK_INQUIRY = [
@@ -52,13 +53,14 @@ enum Crm
         VIEW => ''
     ];
     const TYPE_CHANGE = [
-        URI => 'massage-type-change',
+        URI => 'message-type-change',
         VIEW => ''
     ];
-    const MASSAGE_IGNORE = [
-        URI => 'massage-ignore',
+    const MESSAGE_IGNORE = [
+        URI => 'message-ignore',
         VIEW => ''
     ];
+    const MASSAGE_IGNORE = self::MESSAGE_IGNORE; // Legacy typo alias.
     const ASSIGN_OWNER = [
         URI => 'owner-assign',
         VIEW => ''
@@ -67,14 +69,16 @@ enum Crm
         URI => 'employee-assign',
         VIEW => ''
     ];
-    const SPAM_MASSAGE = [
-        URI => 'spam-massage',
+    const SPAM_MESSAGE = [
+        URI => 'spam-message',
         VIEW => ''
     ];
-    const MASSAGE_DELETE = [
-        URI => 'massages-destroy',
+    const SPAM_MASSAGE = self::SPAM_MESSAGE; // Legacy typo alias.
+    const MESSAGE_DELETE = [
+        URI => 'messages-destroy',
         VIEW => ''
     ];
+    const MASSAGE_DELETE = self::MESSAGE_DELETE; // Legacy typo alias.
 
     const TICKET_DEPARTMENT = [
         URI => 'update-ticket-department',

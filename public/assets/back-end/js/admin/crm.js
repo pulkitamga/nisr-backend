@@ -337,16 +337,6 @@ function loadOwners(deptId, selectedOwnerId = null) {
     });
 }
 
-$(document).on('click', '.assign-employee-btn', function () {
-    let ticketId = $(this).data('id');
-    let form = $('#updateTicketEmployeeForm');
-    form.find('#employee_ticket_id').val(ticketId);
-    $('#showEmployeeModal').modal('show');
-});
-
-
-
-
 $('#updateTicketEmployeeForm').on('submit', function (e) {
     e.preventDefault();
 
@@ -1183,6 +1173,5 @@ $(function () {
         });
     });
 });
-
 
 

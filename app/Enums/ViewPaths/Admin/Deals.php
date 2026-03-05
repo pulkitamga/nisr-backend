@@ -49,10 +49,11 @@ enum  Deals
         VIEW => ''
     ];
 
-    const DESQUALIFY = [
-        URI => 'desqualify',
+    const DISQUALIFY = [
+        URI => 'disqualify',
         VIEW => ''
     ];
+    const DESQUALIFY = self::DISQUALIFY; // Legacy typo alias.
 
   
     const CONVERT_INQUIRY = [
@@ -64,22 +65,25 @@ enum  Deals
         VIEW => ''
     ];
     const TYPE_CHANGE = [
-        URI => 'massage-type-change',
+        URI => 'message-type-change',
         VIEW => ''
     ];
-    const MASSAGE_IGNORE = [
-        URI => 'massage-ignore',
+    const MESSAGE_IGNORE = [
+        URI => 'message-ignore',
         VIEW => ''
     ];
+    const MASSAGE_IGNORE = self::MESSAGE_IGNORE; // Legacy typo alias.
  
-    const SPAM_MASSAGE = [
-        URI => 'spam-massage',
+    const SPAM_MESSAGE = [
+        URI => 'spam-message',
         VIEW => ''
     ];
-    const MASSAGE_DELETE = [
-        URI => 'massages-destroy',
+    const SPAM_MASSAGE = self::SPAM_MESSAGE; // Legacy typo alias.
+    const MESSAGE_DELETE = [
+        URI => 'messages-destroy',
         VIEW => ''
     ];
+    const MASSAGE_DELETE = self::MESSAGE_DELETE; // Legacy typo alias.
 
 
     const TICKET_FOLLOW_UP = [

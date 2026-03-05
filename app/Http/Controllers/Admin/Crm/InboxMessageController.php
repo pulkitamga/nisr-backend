@@ -105,8 +105,9 @@ class InboxMessageController extends BaseController
 
 
         // 📅 Date filter
-        if ($request->filled('fhilter_date')) {
-            $dateRange = explode(' - ', $request->fhilter_date);
+        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        if (!empty($filterDate)) {
+            $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
                 $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
                 $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
@@ -164,18 +165,36 @@ class InboxMessageController extends BaseController
         $query = InboxMessage::with(['department', 'employee', 'owner']);
 
         if ($request->filled('searchValue')) {
-            $search = $request->searchValue;
+            $search = trim($request->searchValue);
             $query->where(function ($q) use ($search) {
                 $q->where('sender_name', 'like', "%{$search}%")
                     ->orWhere('sender_email', 'like', "%{$search}%")
                     ->orWhere('sender_phone', 'like', "%{$search}%")
                     ->orWhere('subject', 'like', "%{$search}%")
-                    ->orWhere('body', 'like', "%{$search}%");
+                    ->orWhere('body', 'like', "%{$search}%")
+                    ->orWhereExists(function ($exists) use ($search) {
+                        $exists->select(DB::raw(1))
+                            ->from('users')
+                            ->where(function ($w) {
+                                $w->whereColumn('users.id', 'inbox_messages.contact_id')
+                                    ->orWhereColumn('users.email', 'inbox_messages.sender_email')
+                                    ->orWhereRaw("REPLACE(users.phone, '+', '') = REPLACE(inbox_messages.sender_phone, '+', '')")
+                                    ->orWhereRaw("REPLACE(users.phone, ' ', '') = REPLACE(inbox_messages.sender_phone, ' ', '')");
+                            })
+                            ->where(function ($w) use ($search) {
+                                $w->where('users.f_name', 'LIKE', "%{$search}%")
+                                    ->orWhere('users.l_name', 'LIKE', "%{$search}%")
+                                    ->orWhere('users.email', 'LIKE', "%{$search}%")
+                                    ->orWhere('users.phone', 'LIKE', "%{$search}%")
+                                    ->orWhereRaw("CONCAT(TRIM(users.f_name), ' ', TRIM(users.l_name)) LIKE ?", ["%{$search}%"]);
+                            });
+                    });
             });
         }
 
-        if ($request->filled('fhilter_date')) {
-            $dateRange = explode(' - ', $request->fhilter_date);
+        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        if (!empty($filterDate)) {
+            $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
                 $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
                 $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
@@ -183,8 +202,12 @@ class InboxMessageController extends BaseController
             }
         }
 
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+        if ($request->has('status')) {
+            if ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+        } else {
+            $query->where('status', 'new');
         }
 
         if ($request->filled('Channel')) {
@@ -252,54 +275,68 @@ class InboxMessageController extends BaseController
             }
         }
 
-        if ($message->status === 'converted' && $message->convert_type === $request->type) {
+        if (!in_array((string)$message->status, ['new', 'processing'], true)) {
             return response()->json([
                 'status'  => false,
-                'message' => 'This inquiry is already converted to ' . $request->type,
+                'message' => 'Only new or processing inquiries can be converted.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($request, $message, $authUser) {
+            if ($request->type === 'lead') {
+                if ($message->related_lead_id) {
+                    $lead = Lead::find($message->related_lead_id);
+                    if (!$lead) {
+                        $lead = LeadConvert::fromInboxMessage($message, $request->sub_type, $request->department_id);
+                        $message->related_lead_id = $lead->id;
+                    }
+                } else {
+                    $lead = LeadConvert::fromInboxMessage($message, $request->sub_type, $request->department_id);
+                    $message->related_lead_id = $lead->id;
+                }
+            }
+
+            if ($request->type === 'ticket') {
+                if ($message->related_ticket_id) {
+                    $ticket = SupportTicket::find($message->related_ticket_id);
+                    if (!$ticket) {
+                        $ticket = TicketConvert::fromInboxMessage($message, $request->sub_type, $request->reason, $request->department_id, $request->priority);
+                        $message->related_ticket_id = $ticket->id;
+                    }
+                } else {
+                    $ticket = TicketConvert::fromInboxMessage($message, $request->sub_type, $request->reason, $request->department_id, $request->priority);
+                    $message->related_ticket_id = $ticket->id;
+                }
+            }
+
+            $message->convert_type = $request->type;
+            $message->convert_sub_type = $request->sub_type;
+            $message->status = 'converted';
+            if ($request->filled('department_id')) {
+                $message->department_id = $request->department_id;
+            }
+            if ($request->filled('priority')) {
+                $message->priority = $request->priority;
+            }
+            $message->save();
+
+            $activity = new InboxActivities();
+            $activity->massage_id = $message->id;
+            $activity->activity_type = 'conversion';
+            $activity->title = 'Inquiry Converted to ' . ucfirst($request->type);
+            $activity->subject = 'Converted by ' . $authUser->name;
+            $activity->note_date = now();
+            $activity->employee_id = $authUser->id;
+            $activity->details = [
+                'message_id' => $message->id,
+                'type' => $request->type,
+                'sub_type' => $request->sub_type,
                 'lead_id' => $message->related_lead_id ?? null,
-            ], 400);
-        }
+                'status' => 'converted',
+            ];
+            $activity->save();
+        });
 
-        if ($request->type === 'lead') {
-            if ($message->related_lead_id) {
-                $lead = Lead::find($message->related_lead_id);
-            } else {
-                $lead = LeadConvert::fromInboxMessage($message, $request->sub_type, $request->department_id);
-                $message->related_lead_id = $lead->id;
-            }
-        }
-
-        if ($request->type === 'ticket') {
-            if ($message->related_ticket_id) {
-                $ticket = SupportTicket::find($message->related_ticket_id);
-            } else {
-                $ticket = TicketConvert::fromInboxMessage($message, $request->sub_type, $request->reason, $request->department_id, $request->priority);
-                $message->related_ticket_id = $ticket->id;
-            }
-        }
-
-        $message->convert_type    = $request->type;
-        $message->convert_sub_type = $request->sub_type;
-        $message->status          = 'converted';
-        $message->department_id    = $request->department_id;
-        $message->priority         = $request->priority;
-        $message->save();
-
-        $activity = new InboxActivities();
-        $activity->massage_id   = $message->id;
-        $activity->activity_type = 'conversion';
-        $activity->title         = 'Inquiry Converted to ' . ucfirst($request->type);
-        $activity->subject       = 'Converted by ' . $authUser->name;
-        $activity->note_date     = now();
-        $activity->employee_id   = $authUser->id;
-        $activity->details       = [
-            'message_id' => $message->id,
-            'type'       => $request->type,
-            'sub_type'   => $request->sub_type,
-            'lead_id'    => $message->related_lead_id ?? null,
-            'status'     => 'converted',
-        ];
-        $activity->save();
         return response()->json([
             'status'  => true,
             'message' => 'Inquiry converted successfully!',
@@ -350,46 +387,71 @@ class InboxMessageController extends BaseController
                 }
             }
 
-            // ✅ Status check (only new & processing can be converted)
-            if (!in_array($message->status, ['new', 'processing'])) {
+            if (!in_array((string)$message->status, ['new', 'processing'], true)) {
                 $skipped[] = $id;
                 continue;
             }
 
-            // 🔄 Conversion
-            if ($request->type === 'lead') {
-                $lead = LeadConvert::fromInboxMessage($message, $request->sub_type, $request->department_id);
-                $message->related_lead_id = $lead->id;
+            try {
+                DB::transaction(function () use ($request, $message, $authUser) {
+                    if ($request->type === 'lead') {
+                        if ($message->related_lead_id) {
+                            $lead = Lead::find($message->related_lead_id);
+                            if (!$lead) {
+                                $lead = LeadConvert::fromInboxMessage($message, $request->sub_type, $request->department_id);
+                                $message->related_lead_id = $lead->id;
+                            }
+                        } else {
+                            $lead = LeadConvert::fromInboxMessage($message, $request->sub_type, $request->department_id);
+                            $message->related_lead_id = $lead->id;
+                        }
+                    }
+
+                    if ($request->type === 'ticket') {
+                        if ($message->related_ticket_id) {
+                            $ticket = SupportTicket::find($message->related_ticket_id);
+                            if (!$ticket) {
+                                $ticket = TicketConvert::fromInboxMessage($message, $request->sub_type, $request->reason, $request->department_id, $request->priority);
+                                $message->related_ticket_id = $ticket->id;
+                            }
+                        } else {
+                            $ticket = TicketConvert::fromInboxMessage($message, $request->sub_type, $request->reason, $request->department_id, $request->priority);
+                            $message->related_ticket_id = $ticket->id;
+                        }
+                    }
+
+                    $message->convert_type = $request->type;
+                    $message->convert_sub_type = $request->sub_type;
+                    $message->status = 'converted';
+                    if ($request->filled('department_id')) {
+                        $message->department_id = $request->department_id;
+                    }
+                    if ($request->filled('priority')) {
+                        $message->priority = $request->priority;
+                    }
+                    $message->save();
+
+                    $activity = new InboxActivities();
+                    $activity->massage_id = $message->id;
+                    $activity->activity_type = 'conversion';
+                    $activity->title = 'Inquiry Converted to ' . ucfirst($request->type);
+                    $activity->subject = 'Converted by ' . $authUser->name;
+                    $activity->note_date = now();
+                    $activity->employee_id = $authUser->id;
+                    $activity->details = [
+                        'message_id' => $message->id,
+                        'type' => $request->type,
+                        'sub_type' => $request->sub_type,
+                        'lead_id' => $message->related_lead_id ?? null,
+                        'status' => 'converted',
+                    ];
+                    $activity->save();
+                });
+                $converted[] = $id;
+            } catch (\Throwable) {
+                $skipped[] = $id;
+                continue;
             }
-
-
-            if ($request->type === 'ticket') {
-                $ticket = TicketConvert::fromInboxMessage($message, $request->sub_type, $request->reason, $request->department_id, $request->priority);
-                $message->related_ticket_id = $ticket->id;
-            }
-
-            $message->convert_type     = $request->type;
-            $message->convert_sub_type = $request->sub_type;
-            $message->status           = 'converted';
-            $message->save();
-
-            $activity = new InboxActivities();
-            $activity->massage_id    = $message->id;
-            $activity->activity_type = 'conversion';
-            $activity->title         = 'Inquiry Converted to ' . ucfirst($request->type);
-            $activity->subject       = 'Converted by ' . $authUser->name;
-            $activity->note_date     = now();
-            $activity->employee_id   = $authUser->id;
-            $activity->details       = [
-                'message_id' => $message->id,
-                'type'       => $request->type,
-                'sub_type'   => $request->sub_type,
-                'lead_id'    => $message->related_lead_id ?? null,
-                'status'     => 'converted',
-            ];
-            $activity->save();
-
-            $converted[] = $id;
         }
 
         return response()->json([
@@ -971,98 +1033,35 @@ class InboxMessageController extends BaseController
 
     public function updateTicketDepartment(Request $request): JsonResponse
     {
-        $request->validate([
-            'ticket_id'     => 'required|exists:inbox_messages,id',
-            'department_id' => 'required|exists:departments,id',
-            'priority'      => 'required',
-            'reply'         => 'nullable|string'
-        ]);
+        return $this->handleInboxAssignmentUpdate($request);
+    }
 
-        $ticket = InboxMessage::find($request->ticket_id);
-        if (!$ticket) {
-            return response()->json(['status' => false, 'message' => 'Ticket not found'], 404);
-        }
-        $ticket->department_id = $request->department_id;
-        $ticket->priority      = $request->priority;
-
-        if ($request->filled('reply')) {
-            $ticket->message = $request->reply;
-        }
-        $ticket->save();
-        $departmentName = $ticket->department?->name ?? 'N/A';
-        $activity = new InboxActivities();
-        $activity->massage_id    = $ticket->id;
-        $activity->activity_type = 'department update';
-        $activity->title         = 'Ticket Department Updated';
-        $activity->subject       = 'Department changed to ' . $departmentName . ' by ' . auth('admin')->user()->name;
-        $activity->note_date     = now();
-        $activity->employee_id   = auth('admin')->id();
-        $activity->details       = [
-            'ticket_id'     => $ticket->id,
-            'department_id' => $request->department_id,
-            'department_name' => $departmentName,
-            'priority'      => $ticket->priority,
-            'reply'         => $ticket->message,
-        ];
-        $activity->save();
-        return response()->json([
-            'status'  => true,
-            'message' => 'Department assigned successfully!'
-        ]);
+    public function updateAssignment(Request $request): JsonResponse
+    {
+        return $this->handleInboxAssignmentUpdate($request);
     }
     public function assignEmployee(Request $request): JsonResponse
     {
-        $request->validate([
-            'ticket_id' => 'required|exists:inbox_messages,id',
-            'employee_id' => 'required|exists:admins,id'
-        ]);
-
-        $ticket = InboxMessage::find($request->ticket_id);
-        if (!$ticket) {
-            return response()->json(['status' => false, 'message' => 'Ticket not found'], 404);
-        }
-
-        if (empty($ticket->department_id)) {
-            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
-        }
-
-        $employee = Admin::find($request->employee_id);
-        if (!$employee) {
-            return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
-        }
-
-        if ((int)$employee->department_id !== (int)$ticket->department_id) {
-            return response()->json(['status' => false, 'message' => 'Employee must belong to the selected department.'], 422);
-        }
-
-        $ticket->employee_id = $request->employee_id;
-        $ticket->save();
-
-        // Create activity
-        $activity = new InboxActivities();
-        $activity->massage_id    = $ticket->id;
-        $activity->activity_type = 'Assign Employee';
-        $activity->title         = 'Employee Assigned';
-        $activity->subject       = 'Ticket assigned to ' . optional($ticket->employee)->name;
-        $activity->note_date     = now();
-        $activity->employee_id   = auth('admin')->id();
-        $activity->details       = [
-            'ticket_id'   => $ticket->id,
-            'employee_id' => $request->employee_id,
-        ];
-        $activity->save();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Employee assigned successfully!'
-        ]);
+        return $this->handleInboxAssignmentUpdate($request);
     }
 
     public function assignOwner(Request $request): JsonResponse
     {
+        if (!$request->filled('owner_id') && $request->filled('employee_id')) {
+            $request->merge(['owner_id' => $request->input('employee_id')]);
+        }
+        return $this->handleInboxAssignmentUpdate($request);
+    }
+
+    private function handleInboxAssignmentUpdate(Request $request): JsonResponse
+    {
         $request->validate([
             'ticket_id' => 'required|exists:inbox_messages,id',
-            'employee_id' => 'required|exists:admins,id'
+            'department_id' => 'nullable|exists:departments,id',
+            'owner_id' => 'nullable|exists:admins,id',
+            'employee_id' => 'nullable|exists:admins,id',
+            'priority' => 'nullable|in:low,medium,high,urgent',
+            'reply' => 'nullable|string',
         ]);
 
         $ticket = InboxMessage::find($request->ticket_id);
@@ -1070,38 +1069,129 @@ class InboxMessageController extends BaseController
             return response()->json(['status' => false, 'message' => 'Ticket not found'], 404);
         }
 
-        $owner = Admin::find($request->employee_id);
-        if (!$owner) {
-            return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
+        $hasDepartmentUpdate = $request->filled('department_id');
+        $hasOwnerUpdate = $request->filled('owner_id');
+        $hasEmployeeUpdate = $request->filled('employee_id');
+        $hasPriorityUpdate = $request->filled('priority');
+        $hasReplyUpdate = $request->filled('reply');
+
+        if (
+            !$hasDepartmentUpdate &&
+            !$hasOwnerUpdate &&
+            !$hasEmployeeUpdate &&
+            !$hasPriorityUpdate &&
+            !$hasReplyUpdate
+        ) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Provide at least one field to update.',
+            ], 422);
         }
 
-        if (!$this->isSupervisor($owner)) {
-            return response()->json(['status' => false, 'message' => 'Owner must be marked as supervisor in employee profile.'], 422);
+        $effectiveDepartmentId = $hasDepartmentUpdate
+            ? (int)$request->department_id
+            : (int)($ticket->department_id ?? 0);
+
+        $owner = null;
+        if ($hasOwnerUpdate) {
+            $owner = Admin::find($request->owner_id);
+            if (!$owner) {
+                return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
+            }
+            if (!$this->isSupervisor($owner)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Owner must be marked as supervisor in employee profile.',
+                ], 422);
+            }
+            if ($effectiveDepartmentId > 0 && (int)$owner->department_id !== $effectiveDepartmentId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Owner must belong to the selected department.',
+                ], 422);
+            }
         }
 
-        if (!empty($ticket->department_id) && (int)$owner->department_id !== (int)$ticket->department_id) {
-            return response()->json(['status' => false, 'message' => 'Owner must belong to the selected department.'], 422);
+        $employee = null;
+        if ($hasEmployeeUpdate) {
+            $employee = Admin::find($request->employee_id);
+            if (!$employee) {
+                return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
+            }
+            if ($effectiveDepartmentId <= 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Assign department first.',
+                ], 422);
+            }
+            if ((int)$employee->department_id !== $effectiveDepartmentId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Employee must belong to the selected department.',
+                ], 422);
+            }
         }
 
-        $ticket->owner_id = $request->employee_id;
+        $details = [
+            'ticket_id' => $ticket->id,
+            'updated_fields' => [],
+        ];
+
+        if ($hasDepartmentUpdate) {
+            $ticket->department_id = (int)$request->department_id;
+            $details['department_id'] = (int)$request->department_id;
+            $details['updated_fields'][] = 'department_id';
+        }
+        if ($hasPriorityUpdate) {
+            $ticket->priority = $request->priority;
+            $details['priority'] = $ticket->priority;
+            $details['updated_fields'][] = 'priority';
+        }
+        if ($hasReplyUpdate) {
+            $ticket->message = $request->reply;
+            $details['reply'] = $ticket->message;
+            $details['updated_fields'][] = 'reply';
+        }
+        if ($hasOwnerUpdate && $owner) {
+            $ticket->owner_id = $owner->id;
+            $details['owner_id'] = $owner->id;
+            $details['owner_name'] = $owner->name;
+            $details['updated_fields'][] = 'owner_id';
+        }
+        if ($hasEmployeeUpdate && $employee) {
+            $ticket->employee_id = $employee->id;
+            $details['employee_id'] = $employee->id;
+            $details['employee_name'] = $employee->name;
+            $details['updated_fields'][] = 'employee_id';
+        }
+
+        // If department changed and current owner/employee no longer matches, clear stale assignments.
+        if ($hasDepartmentUpdate) {
+            if (!$hasOwnerUpdate && $ticket->owner && (int)$ticket->owner->department_id !== (int)$ticket->department_id) {
+                $ticket->owner_id = null;
+                $details['owner_reset'] = true;
+            }
+            if (!$hasEmployeeUpdate && $ticket->employee && (int)$ticket->employee->department_id !== (int)$ticket->department_id) {
+                $ticket->employee_id = null;
+                $details['employee_reset'] = true;
+            }
+        }
+
         $ticket->save();
 
         $activity = new InboxActivities();
-        $activity->massage_id    = $ticket->id;
-        $activity->activity_type = 'Assign Owner';
-        $activity->title         = 'Owner Assigned';
-        $activity->subject       = 'Ticket assigned to ' . optional($ticket->owner)->name;
-        $activity->note_date     = now();
-        $activity->employee_id   = auth('admin')->id();
-        $activity->details       = [
-            'ticket_id'   => $ticket->id,
-            'owner_id' => $request->employee_id,
-        ];
+        $activity->massage_id = $ticket->id;
+        $activity->activity_type = 'assignment_update';
+        $activity->title = 'Assignment Updated';
+        $activity->subject = 'Assignment updated by ' . auth('admin')->user()->name;
+        $activity->note_date = now();
+        $activity->employee_id = auth('admin')->id();
+        $activity->details = $details;
         $activity->save();
 
         return response()->json([
             'status' => true,
-            'message' => 'Owner assigned successfully!'
+            'message' => 'Assignment updated successfully!',
         ]);
     }
 

@@ -23,6 +23,7 @@ use App\Models\WholesaleQuotation;
 use App\Models\WholesalePurchaseOrderItem;
 use App\Models\QuotationMeta;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Admin;
 use App\Models\WholesaleProductPriceRange;
 use App\Models\WholesaleConfirmOrderItem;
 use App\Domain\Stock\Support\VariantMatcher;
@@ -342,25 +343,30 @@ class WholesaleController extends Controller
                     throw new \RuntimeException('No valid wholesale items were found to place this order.');
                 }
 
-                try {
-                    $userWithBusiness = \App\Models\User::with('wholesalerBusiness')->find($wholeseller->id);
-                    if ($userWithBusiness && $userWithBusiness->wholesalerBusiness) {
-                        Lead::create([
-                            'party_type'  => 'wholesale',
-                            'company_id'  => $userWithBusiness->wholesalerBusiness->id,
-                            'source_id'   => $order->id,
-                            'po_id'       => $order->id,
-                            'status'      => 'new',
-                            'priority'    => 'high',
-                            'employee_id' => 1,
-                        ]);
-                    }
-                } catch (\Throwable $leadException) {
-                    Log::warning('Lead creation skipped for wholesale order', [
-                        'order_id' => $order->id,
-                        'error' => $leadException->getMessage(),
-                    ]);
+                $userWithBusiness = \App\Models\User::with('wholesalerBusiness')->find($wholeseller->id);
+                if (!$userWithBusiness || !$userWithBusiness->wholesalerBusiness) {
+                    throw new \RuntimeException('Unable to create CRM lead: wholesaler business profile not found.');
                 }
+                $defaultOwner = Admin::query()
+                    ->where('status', 1)
+                    ->where('is_supervisor', 1)
+                    ->orderBy('id')
+                    ->first();
+                if (!$defaultOwner) {
+                    throw new \RuntimeException('Unable to create CRM lead: no active supervisor available for ownership.');
+                }
+
+                Lead::create([
+                    'party_type' => 'wholesale',
+                    'company_id' => $userWithBusiness->wholesalerBusiness->id,
+                    'source_id' => $order->id,
+                    'po_id' => $order->id,
+                    'status' => 'new',
+                    'priority' => 'high',
+                    'department_id' => $defaultOwner->department_id,
+                    'owner_id' => $defaultOwner->id,
+                    'employee_id' => null,
+                ]);
 
                 return $order;
             }, 3);
