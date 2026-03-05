@@ -95,6 +95,7 @@ class CrmAgentSalesMatrixReportController extends BaseController
             'employees' => $employees,
             'employeesForMatrix' => $employeeListForMatrix,
             'filters' => [
+                'date_range' => $request->input('date_range', 'this_year'),
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
                 'department_ids' => $departmentIds,
@@ -107,19 +108,47 @@ class CrmAgentSalesMatrixReportController extends BaseController
 
     private function resolveDateRange(Request $request): array
     {
-        $from = $request->input('from');
-        $to = $request->input('to');
+        $range = $request->input('date_range', 'this_year');
 
-        try {
-            $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->startOfYear()->startOfDay();
-        } catch (\Throwable) {
-            $fromDate = now()->startOfYear()->startOfDay();
-        }
+        switch ($range) {
 
-        try {
-            $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfYear()->endOfDay();
-        } catch (\Throwable) {
-            $toDate = now()->endOfYear()->endOfDay();
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+
+            case 'this_week':
+                $fromDate = now()->startOfWeek();
+                $toDate = now()->endOfWeek();
+                break;
+
+            case 'this_month':
+                $fromDate = now()->startOfMonth();
+                $toDate = now()->endOfMonth();
+                break;
+
+            case 'this_year':
+                $fromDate = now()->startOfYear();
+                $toDate = now()->endOfYear();
+                break;
+
+            case 'custom':
+                try {
+                    $fromDate = Carbon::parse($request->input('from'))->startOfDay();
+                } catch (\Throwable) {
+                    $fromDate = now()->startOfMonth()->startOfDay();
+                }
+
+                try {
+                    $toDate = Carbon::parse($request->input('to'))->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfMonth()->endOfDay();
+                }
+                break;
+
+            default:
+                $fromDate = now()->startOfYear();
+                $toDate = now()->endOfYear();
         }
 
         if ($fromDate->gt($toDate)) {
@@ -128,6 +157,29 @@ class CrmAgentSalesMatrixReportController extends BaseController
 
         return [$fromDate, $toDate];
     }
+    // private function resolveDateRange(Request $request): array
+    // {
+    //     $from = $request->input('from');
+    //     $to = $request->input('to');
+
+    //     try {
+    //         $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->startOfYear()->startOfDay();
+    //     } catch (\Throwable) {
+    //         $fromDate = now()->startOfYear()->startOfDay();
+    //     }
+
+    //     try {
+    //         $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfYear()->endOfDay();
+    //     } catch (\Throwable) {
+    //         $toDate = now()->endOfYear()->endOfDay();
+    //     }
+
+    //     if ($fromDate->gt($toDate)) {
+    //         [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+    //     }
+
+    //     return [$fromDate, $toDate];
+    // }
 
     private function getMonthlyEmployeeRows(
         Carbon $fromDate,
