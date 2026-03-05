@@ -66,10 +66,7 @@
                             </div>
                         </td>
                         <td>
-                            @if ($singleCart['discountOnProduct']>0)
-                                <del>{{setCurrencySymbol(amount:usdToDefaultCurrency(amount: round($singleCart['subtotal']+$singleCart['discountOnProduct']+$singleCart['totalTax'], 2)), currencyCode: getCurrencyCode())}}</del>
-                            @endif
-                            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: round($singleCart['total']+$singleCart['totalTax'], 2)), currencyCode: getCurrencyCode())}}
+                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: round((float)($singleCart['total'] ?? 0), 2)), currencyCode: getCurrencyCode()) }}
                         </td>
                         <td>
                             <div class="d-flex justify-content-center gap-2">

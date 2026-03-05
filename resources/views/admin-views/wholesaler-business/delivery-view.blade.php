@@ -174,7 +174,7 @@
                                             data-requested-qty="{{ $delivery->product_quantity }}"
                                             data-sent-qty="{{ $delivery->quantity_sent }}"
                                             data-remaining="{{ $delivery->remaining }}"
-                                            data-is-warranty="{{ $delivery->product->is_warranty ?? 0 }}">
+                                            data-is-traceable="{{ $delivery->product->is_traceable ?? 0 }}">
                                             <i class="tio-truck me-1"></i> Add Delivery
                                         </button>
 
@@ -388,7 +388,7 @@
             const confirmId = $(this).data('order-id');
             remainingQty = parseInt($(this).data('remaining'));
             const variationType = $(this).data('variation-type') || '';
-            const isWarranty = parseInt($(this).data('is-warranty'));
+            const isTraceable = parseInt($(this).data('is-traceable'));
 
             $('#modalProductId').val(productId);
             $('#modalProductName').text(productName);
@@ -407,7 +407,7 @@
             $('#csvError').hide();
             $('#submitDeliveryBtn').prop('disabled', false);
 
-            if (isWarranty === 1) {
+            if (isTraceable === 1) {
                 $('#serialCsv').closest('.mb-3').show();
                 $('#download_sample').show();
                 $('#serialCsv').prop('required', true);

@@ -2,7 +2,7 @@
 	<div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 1000px;">
 		<div class="modal-content">
 			<div class="modal-header border-0 pb-2 d-flex justify-content-between">
-				<h3>Select Branch & Upload Serials (Warranty)</h3>  <div>
+				<h3>Select Branch & Upload Serials (Traceability)</h3>  <div>
                         <a href="{{ asset('sample.csv') }}" class="btn btn-primary" download>
                             {{ translate('Download_Sample_Csv') }}
                         </a>
@@ -20,9 +20,9 @@
 					<input type="hidden" name="product_id" id="product_id">
 					<input type="hidden" name="request_id" id="request_id">
 
-					<!-- Warranty Info -->
-					<div class="alert alert-info d-none" id="warranty-alert">
-						<strong>Warranty Product:</strong> Upload CSV with <span id="required-qty"></span> serials.
+					<!-- Traceability Info -->
+					<div class="alert alert-info d-none" id="traceability-alert">
+						<strong>Traceable Product:</strong> Upload CSV with <span id="required-qty"></span> serials.
 					</div>
 
 					<div class="table-responsive">
@@ -40,7 +40,7 @@
 						</table>
 					</div>
 
-					<!-- CSV Upload (Only for Warranty) -->
+					<!-- CSV Upload (Only for Traceability) -->
 					<div class="mt-3 csv-upload-section" id="csv-upload-section" style="display:none;">
 						<label class="form-label">
 							<strong>Upload Serials CSV</strong>

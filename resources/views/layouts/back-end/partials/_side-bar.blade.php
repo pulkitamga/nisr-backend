@@ -468,7 +468,6 @@
                                 Request::is('admin/products/' . Product::ADD[URI]) ||
                                 Request::is('admin/products/' . Product::VIEW[URI] . '/in-house/*') ||
                                 Request::is('admin/products/' . Product::STOCK_LIMIT_PRODUCTS[URI]) ||
-                                Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ||
                                 Request::is('admin/products/' . Product::BARCODE_GENERATE[URI] . '/*') ||
                                 (Request::is('admin/products/' . Product::UPDATE[URI] . '/*') && request()->has('product-gallery'))
                                     ? 'active'
@@ -481,7 +480,7 @@
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
-                                    style="display: {{ Request::is('admin/products/' . Product::ADD[URI] . '/in-house') || Request::is('admin/products/' . Product::LIST[URI] . '/in-house') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::STOCK_LIMIT[URI] . '/in-house') || Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::BULK_IMPORT[URI]) || Request::is('admin/stock-transfer/' . StockTransfer::ADD[URI]) || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::ADD[URI]) || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::VIEW[URI] . '/in-house/*') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::BARCODE_GENERATE[URI] . '/*') || (Request::is('admin/products/' . Product::UPDATE[URI] . '/*') && request()->has('product-gallery')) ? 'block' : '' }}">
+                                    style="display: {{ Request::is('admin/products/' . Product::ADD[URI] . '/in-house') || Request::is('admin/products/' . Product::LIST[URI] . '/in-house') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::STOCK_LIMIT[URI] . '/in-house') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::BULK_IMPORT[URI]) || Request::is('admin/stock-transfer/' . StockTransfer::ADD[URI]) || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::ADD[URI]) || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::VIEW[URI] . '/in-house/*') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::BARCODE_GENERATE[URI] . '/*') || (Request::is('admin/products/' . Product::UPDATE[URI] . '/*') && request()->has('product-gallery')) ? 'block' : '' }}">
                                     <li
                                         class="nav-item {{ Request::is('admin/products/' . Product::LIST[URI] . '/in-house') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::VIEW[URI] . '/in-house/*') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::STOCK_LIMIT[URI] . '/in-house') || Request::is('admin/products/' . \App\Enums\ViewPaths\Admin\Product::BARCODE_GENERATE[URI] . '/*') ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.products.list', ['in-house']) }}"
@@ -518,16 +517,6 @@
                                             title="{{ translate('product_stock') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('product_stock') }}</span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
-                                        <a class="nav-link "
-                                            href="{{ route('admin.products.request-restock-list') }}"
-                                            title="{{ translate('Request_Restock_List') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span
-                                                class="text-truncate">{{ translate('Request_Restock_List') }}</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -752,41 +741,6 @@
                             </li>
 
                             <li
-                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/report*') ? 'active' : '' }}">
-                                <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="{{ translate('reports') }}">
-                                    <i class="tio-chart-bar-4 nav-icon"></i>
-                                    <span
-                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('reports') }}</span>
-                                </a>
-                                <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
-                                    style="display: {{ Request::is('admin/warranty/report*') ? 'block' : 'none' }}">
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/report/claims') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.report.claims') }}"
-                                            title="{{ translate('claims_report') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('claims_report') }}</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/report/sla') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.report.sla') }}"
-                                            title="{{ translate('sla_compliance') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('sla_compliance') }}</span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/report/activations') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.report.activations') }}"
-                                            title="{{ translate('activation_report') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('activation_report') }}</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/serial-transaction*') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
                                     href="{{ route('admin.warranty.serial-transaction.list') }}"
@@ -799,6 +753,223 @@
                                         </span>
                                     </span>
                                 </a>
+                            </li>
+                            <li
+                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/claim*') ? 'active' : '' }}">
+                                <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                    href="javascript:" title="{{ translate('warranty_Claims') }}">
+                                    <i class="tio-receipt nav-icon"></i>
+                                    <span
+                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('warranty_Claims') }}</span>
+                                </a>
+                                <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
+                                    style="display: {{ Request::is('admin/warranty/claim*') ? 'block' : 'none' }}">
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/all') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.all') }}"
+                                            title="{{ translate('all') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('all') }}
+                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/new') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.new') }}"
+                                            title="{{ translate('new') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('new') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'new')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/triage-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.triage-pending') }}" title="{{ translate('triage_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('triage_pending') }}
+                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'triage_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/warranty/claim/approved') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.approved') }}"
+                                            title="{{ translate('approved') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('approved') }}
+                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'approved')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/warranty/claim/rma-issued') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.rma-issued') }}"
+                                            title="{{ translate('rma_issued') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('rma_issued') }}
+                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'rma_issued')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/warranty/claim/received') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.received') }}"
+                                            title="{{ translate('received') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('received') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'received')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/warranty/claim/repair-pending') ? 'active' : '' }}">
+                                        <a class="nav-link"
+                                            href="{{ route('admin.warranty.claim.repair-pending') }}"
+                                            title="{{ translate('repair_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('repair_pending') }}
+                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'repair_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/replacement-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.replacement-pending') }}"
+                                            title="{{ translate('replacement_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('replacement_pending') }}
+                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'replacement_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-customer') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-customer') }}"
+                                            title="{{ translate('waiting_customer') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('waiting_customer') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_customer')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-parts') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-parts') }}"
+                                            title="{{ translate('waiting_parts') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('waiting_parts') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_parts')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-payment') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-payment') }}"
+                                            title="{{ translate('waiting_payment') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('waiting_payment') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_payment')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/diagnosis-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.diagnosis-pending') }}"
+                                            title="{{ translate('diagnosis_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('diagnosis_pending') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'diagnosis_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/qc-pending') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.qc-pending') }}"
+                                            title="{{ translate('qc_pending') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('qc_pending') }}
+                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'qc_pending')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/shipped-ready') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.shipped-ready') }}"
+                                            title="{{ translate('shipped_ready') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('shipped_ready') }}
+                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'shipped_ready')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/warranty/claim/dispatched') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.dispatched') }}"
+                                            title="{{ translate('dispatched') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('dispatched') }}
+                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'dispatched')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/warranty/claim/resolved') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.resolved') }}"
+                                            title="{{ translate('resolved') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('resolved') }}
+                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'resolved')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/warranty/claim/closed') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.closed') }}"
+                                            title="{{ translate('closed') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('closed') }}
+                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'closed')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/warranty/claim/rejected') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.warranty.claim.rejected') }}"
+                                            title="{{ translate('rejected') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('rejected') }}
+                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                    {{ \App\Models\WarrantyClaim::where('status', 'rejected')->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         @endif
                         @if (Helpers::module_permission_check('promotion_management'))
@@ -988,26 +1159,32 @@
                             @endif
                         @endif
 
-                        @if (Helpers::module_permission_check('report'))
+                        @if (
+                                Helpers::module_permission_check('report') ||
+                                    Helpers::module_permission_check('branch_management') ||
+                                    Helpers::module_permission_check('crm_section') ||
+                                    Helpers::module_permission_check('wholesaler_section') ||
+                                    Helpers::module_permission_check('warranty_section'))
                             <li
-                                class="nav-item {{ Request::is('admin/report/earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/list') || Request::is('admin/refund-section/refund-list') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/reviews*') || Request::is('admin/stock/product-stock') || Request::is('admin/transaction/wallet-bonus') || Request::is('admin/report/order') ? 'scroll-here' : '' }}">
+                                class="nav-item {{ Request::is('admin/report/*') || Request::is('admin/transaction/*') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/stock/product-stock') || Request::is('admin/stock/transfer-report*') || Request::is('admin/reports/*') || Request::is('admin/branch/sales*') || Request::is('admin/crm/sales-report*') || Request::is('admin/crm/chart-view') || Request::is('admin/warranty/report*') || Request::is('admin/wholesale/dashboard*') ? 'scroll-here' : '' }}">
                                 <small class="nav-subtitle" title="">
                                     {{ translate('reports_&_Analysis') }}
                                 </small>
                                 <small class="tio-more-horizontal nav-subtitle-replacer"></small>
                             </li>
+                            @if (Helpers::module_permission_check('report'))
 
                             <li
-                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'active' : '' }}">
+                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="{{ translate('sales_&_Transaction_Report') }}">
+                                    href="javascript:" title="Sales">
                                     <i class="tio-chart-bar-4 nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('sales_&_Transaction_Report') }}
+                                        Sales
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
-                                    style="display: {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'block' : 'none' }}">
+                                    style="display: {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'block' : 'none' }}">
                                     <li
                                         class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') ? 'active' : '' }}">
                                         <a class="js-navbar-vertical-aside-menu-link nav-link"
@@ -1027,36 +1204,6 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('inhouse_Sales') }}
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.report.crm-sales-performance') }}"
-                                            title="{{ translate('crm_sales_report') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">
-                                                {{ translate('crm_sales_report') }}
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.report.crm-agent-sales-matrix') }}"
-                                            title="{{ translate('crm_agent_sales_matrix') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">
-                                                {{ translate('crm_agent_sales_matrix') }}
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.report.crm-employee-channel-assignment') }}"
-                                            title="{{ translate('crm_employee_channel_report') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">
-                                                {{ translate('crm_employee_channel_report') }}
                                             </span>
                                         </a>
                                     </li>
@@ -1086,29 +1233,244 @@
                             </li>
 
                             <li
-                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/all-product') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/stock/product-stock') ? 'active' : '' }}">
-                                <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                    href="{{ route('admin.report.all-product') }}"
-                                    title="{{ translate('product_Report') }}">
+                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/order') ? 'active' : '' }}">
+                                <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                    href="javascript:" title="Orders">
+                                    <i class="tio-shopping-cart-outlined nav-icon"></i>
+                                    <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                        Orders
+                                    </span>
+                                </a>
+                                <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
+                                    style="display: {{ Request::is('admin/report/order') ? 'block' : 'none' }}">
+                                    <li class="nav-item {{ Request::is('admin/report/order') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.report.order') }}"
+                                            title="{{ translate('order_Report') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('order_Report') }}</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li
+                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/all-product') || Request::is('admin/report/order') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/stock/product-stock') || Request::is('admin/products/' . Product::STOCK_LIMIT_PRODUCTS[URI] . '*') || Request::is('admin/products/' . Product::STOCK_REPORT[URI] . '*') || Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
+                                <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                    href="javascript:" title="Products">
                                     <i class="tio-chart-bar-4 nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        <span class="position-relative">
-                                            {{ translate('product_Report') }}
+                                        Products
+                                    </span>
+                                </a>
+                                <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
+                                    style="display: {{ Request::is('admin/report/all-product') || Request::is('admin/report/order') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/stock/product-stock') || Request::is('admin/products/' . Product::STOCK_LIMIT_PRODUCTS[URI] . '*') || Request::is('admin/products/' . Product::STOCK_REPORT[URI] . '*') || Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'block' : 'none' }}">
+                                    <li
+                                        class="nav-item {{ Request::is('admin/report/all-product') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/stock/product-stock') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.report.all-product') }}"
+                                            title="{{ translate('product_Report') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('product_Report') }}</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/products/' . Product::STOCK_REPORT[URI] . '*') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.products.stock-report') }}"
+                                            title="product stoch">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">product stoch</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.products.request-restock-list') }}"
+                                            title="{{ translate('Request_Restock_List') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('Request_Restock_List') }}</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ Request::is('admin/report/order') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('admin.report.order') }}"
+                                            title="{{ translate('order_Report') }}2">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('order_Report') }}2</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            @endif
+
+                            @if (Helpers::module_permission_check('report') || Helpers::module_permission_check('branch_management'))
+                                <li
+                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/reports/unified') || Request::is('admin/branch/sales*') || Request::is('admin/stock/transfer-report*') ? 'active' : '' }}">
+                                    <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                        href="javascript:" title="Branchs">
+                                        <i class="tio-chart-bar-1 nav-icon"></i>
+                                        <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                            Branchs
                                         </span>
-                                    </span>
-                                </a>
-                            </li>
-                            <li
-                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/order') ? 'active' : '' }}">
-                                <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                    href="{{ route('admin.report.order') }}"
-                                    title="{{ translate('order_Report') }}">
-                                    <i class="tio-chart-bar-1 nav-icon"></i>
-                                    <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('order_Report') }}
-                                    </span>
-                                </a>
-                            </li>
+                                    </a>
+                                    <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
+                                        style="display: {{ Request::is('admin/reports/unified') || Request::is('admin/branch/sales*') || Request::is('admin/stock/transfer-report*') ? 'block' : 'none' }}">
+                                        <li class="nav-item {{ Request::is('admin/reports/unified') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.reports.unified') }}"
+                                                title="{{ translate('reports_&_analysis') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">
+                                                    {{ translate('reports_&_analysis') }}
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item {{ Request::is('admin/branch/sales*') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.branch.sales-chart') }}"
+                                                title="{{ translate('Branches_Charts') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">
+                                                    {{ translate('Branches_Charts') }}
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item {{ Request::is('admin/stock/transfer-report*') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.stock.transfer-report') }}"
+                                                title="{{ translate('stock transfers') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">
+                                                    {{ translate('stock transfers') }}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            @endif
+
+                            @if (Helpers::module_permission_check('report') || Helpers::module_permission_check('crm_section'))
+                                <li
+                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/sales-report*') || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/crm/chart-view') ? 'active' : '' }}">
+                                    <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                        href="javascript:" title="CRM">
+                                        <i class="tio-chart-pie-1 nav-icon"></i>
+                                        <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                            CRM
+                                        </span>
+                                    </a>
+                                    <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
+                                        style="display: {{ Request::is('admin/crm/sales-report*') || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/crm/chart-view') ? 'block' : 'none' }}">
+                                        @if (Helpers::module_permission_check('report'))
+                                            <li class="nav-item {{ Request::is('admin/crm/sales-report*') ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.crm.sales-report') }}"
+                                                    title="{{ translate('crm_sales_report') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span class="text-truncate">{{ translate('crm_sales_report') }}</span>
+                                                </a>
+                                            </li>
+                                            <li
+                                                class="nav-item {{ Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.report.crm-sales-performance') }}"
+                                                    title="{{ translate('crm_sales_performance_report') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span
+                                                        class="text-truncate">{{ translate('crm_sales_performance_report') }}</span>
+                                                </a>
+                                            </li>
+                                            <li
+                                                class="nav-item {{ Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.report.crm-agent-sales-matrix') }}"
+                                                    title="{{ translate('crm_agent_sales_matrix_report') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span
+                                                        class="text-truncate">{{ translate('crm_agent_sales_matrix_report') }}</span>
+                                                </a>
+                                            </li>
+                                            <li
+                                                class="nav-item {{ Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.report.crm-employee-channel-assignment') }}"
+                                                    title="{{ translate('crm_employee_channel_assignment_report') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span
+                                                        class="text-truncate">{{ translate('crm_employee_channel_assignment_report') }}</span>
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if (Helpers::module_permission_check('crm_section'))
+                                            <li class="nav-item {{ Request::is('admin/crm/chart-view') ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.crm.chart.view') }}"
+                                                    title="{{ translate('crm_charts') }}">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span class="text-truncate">{{ translate('crm_charts') }}</span>
+                                                </a>
+                                            </li>
+                                        @endif
+                                    </ul>
+                                </li>
+                            @endif
+
+                            @if (Helpers::module_permission_check('warranty_section'))
+                                <li
+                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/report*') || Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
+                                    <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                        href="javascript:" title="Warranty">
+                                        <i class="tio-chart-bar-2 nav-icon"></i>
+                                        <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                            Warranty
+                                        </span>
+                                    </a>
+                                    <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
+                                        style="display: {{ Request::is('admin/warranty/report*') || Request::is('admin/warranty/claim-chart') ? 'block' : 'none' }}">
+                                        <li class="nav-item {{ Request::is('admin/warranty/report/claims') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.warranty.report.claims') }}"
+                                                title="{{ translate('claims_report') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">{{ translate('claims_report') }}</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item {{ Request::is('admin/warranty/report/sla') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.warranty.report.sla') }}"
+                                                title="{{ translate('sla_compliance') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">{{ translate('sla_compliance') }}</span>
+                                            </a>
+                                        </li>
+                                        <li
+                                            class="nav-item {{ Request::is('admin/warranty/report/activations') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.warranty.report.activations') }}"
+                                                title="{{ translate('activation_report') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">{{ translate('activation_report') }}</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item {{ Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.warranty.claim.chart') }}"
+                                                title="{{ translate('warranty_claims_chart') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">{{ translate('warranty_claims_chart') }}</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            @endif
+
+                            @if (Helpers::module_permission_check('wholesaler_section'))
+                                <li
+                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/wholesale/dashboard*') ? 'active' : '' }}">
+                                    <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                        href="javascript:" title="Wholesale">
+                                        <i class="tio-graph-up nav-icon"></i>
+                                        <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
+                                            Wholesale
+                                        </span>
+                                    </a>
+                                    <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
+                                        style="display: {{ Request::is('admin/wholesale/dashboard*') ? 'block' : 'none' }}">
+                                        <li class="nav-item {{ Request::is('admin/wholesale/dashboard*') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.wholesale.dashboard.index') }}"
+                                                title="{{ translate('wholesaler_business_analytics') }}">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">
+                                                    {{ translate('wholesaler_business_analytics') }}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            @endif
+
                         @endif
                         @if (Helpers::module_permission_check('branch_management'))
                             <li class="nav-item {{ Request::is('admin/branch*') ? 'scroll-here' : '' }}">
@@ -1158,36 +1520,6 @@
                                             </span>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('admin.branch.sales-chart') }}"
-                                            title="{{ translate('Branches_Charts') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">
-                                                {{ translate('Branches_Charts') }}
-                                            </span>
-                                        </a>
-                                    </li>
-                                    {{-- <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('admin.reports.crm') }}"
-                                            title="{{ translate('crm_Charts') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">
-                                                {{ translate('crm_reports') }}
-                                            </span>
-                                        </a>
-                                    </li> --}}
-                                    <li
-                                        class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/chart-view') ? 'active' : '' }}">
-                                        <a class="nav-link" title="{{ translate('chart') }}"
-                                            href="{{ route('admin.crm.chart.view') }}">
-                                            <i class="tio-chart-bar-1 nav-icon"></i>
-                                            <span
-                                                class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                                {{ translate('crm_charts') }}
-                                            </span>
-                                        </a>
-                                    </li>
-
                                 </ul>
                             </li>
 
@@ -1741,232 +2073,6 @@
                                 </ul>
                             </li>
                             <li
-                                class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/claim*') ? 'active' : '' }}">
-                                <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="{{ translate('warranty_Claims') }}">
-                                    <i class="tio-receipt nav-icon"></i>
-                                    <span
-                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('warranty_Claims') }}</span>
-                                </a>
-                                <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
-                                    style="display: {{ Request::is('admin/warranty/claim*') ? 'block' : 'none' }}">
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/all') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.all') }}"
-                                            title="{{ translate('all') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('all') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/new') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.new') }}"
-                                            title="{{ translate('new') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('new') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'new')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/triage-pending') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.triage-pending') }}" title="{{ translate('triage_pending') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('triage_pending') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'triage_pending')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/claim/approved') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.approved') }}"
-                                            title="{{ translate('approved') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('approved') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'approved')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/claim/rma-issued') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.rma-issued') }}"
-                                            title="{{ translate('rma_issued') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('rma_issued') }}
-                                                <span class="badge badge-soft-primary badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'rma_issued')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/claim/received') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.received') }}"
-                                            title="{{ translate('received') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('received') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'received')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/claim/repair-pending') ? 'active' : '' }}">
-                                        <a class="nav-link"
-                                            href="{{ route('admin.warranty.claim.repair-pending') }}"
-                                            title="{{ translate('repair_pending') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('repair_pending') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'repair_pending')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/replacement-pending') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.replacement-pending') }}"
-                                            title="{{ translate('replacement_pending') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('replacement_pending') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'replacement_pending')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-customer') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-customer') }}"
-                                            title="{{ translate('waiting_customer') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('waiting_customer') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_customer')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-parts') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-parts') }}"
-                                            title="{{ translate('waiting_parts') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('waiting_parts') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_parts')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/waiting-payment') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.waiting-payment') }}"
-                                            title="{{ translate('waiting_payment') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('waiting_payment') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'waiting_payment')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/diagnosis-pending') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.diagnosis-pending') }}"
-                                            title="{{ translate('diagnosis_pending') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('diagnosis_pending') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'diagnosis_pending')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/qc-pending') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.qc-pending') }}"
-                                            title="{{ translate('qc_pending') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('qc_pending') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'qc_pending')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/shipped-ready') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.shipped-ready') }}"
-                                            title="{{ translate('shipped_ready') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('shipped_ready') }}
-                                                <span class="badge badge-soft-primary badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'shipped_ready')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ Request::is('admin/warranty/claim/dispatched') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.dispatched') }}"
-                                            title="{{ translate('dispatched') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('dispatched') }}
-                                                <span class="badge badge-soft-primary badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'dispatched')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/claim/resolved') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.resolved') }}"
-                                            title="{{ translate('resolved') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('resolved') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'resolved')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/claim/closed') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.closed') }}"
-                                            title="{{ translate('closed') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('closed') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'closed')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li
-                                        class="nav-item {{ Request::is('admin/warranty/claim/rejected') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.warranty.claim.rejected') }}"
-                                            title="{{ translate('rejected') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('rejected') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
-                                                    {{ \App\Models\WarrantyClaim::where('status', 'rejected')->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                              <li class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
-                                <a class="nav-link" title="{{ translate('warranty_claims_chart') }}"
-                                href="{{ route('admin.warranty.claim.chart') }}">
-                                    <i class="tio-chart-bar-1 nav-icon"></i>
-                                    <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('warranty_claims_chart') }}
-                                    </span>
-                                </a>
-                            </li>
-                            <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/messages*') ? 'active' : '' }}">
                                 <a class="nav-link" title="{{ translate('chat_Box') }}"
                                     href="{{ route('admin.messages.index', ['type' => 'customer']) }}">
@@ -2493,6 +2599,26 @@
                                         </a>
                                     </li>
                                 </ul>
+                            </li>
+
+                            <li
+                                class="nav-item {{ Request::is('admin/business-settings/' . Pages::TERMS_CONDITION[URI]) ||
+                                Request::is('admin/business-settings/' . Pages::VIEW[URI] . '*') ||
+                                Request::is('admin/business-settings/' . Pages::PRIVACY_POLICY[URI]) ||
+                                Request::is('admin/business-settings/' . Pages::ABOUT_US[URI]) ||
+                                Request::is('admin/business-settings/' . Pages::COOKIE_SETTINGS[URI]) ||
+                                Request::is('admin/helpTopic/' . HelpTopic::LIST[URI]) ||
+                                Request::is('admin/business-settings/' . FeaturesSection::VIEW[URI]) ||
+                                Request::is('admin/business-settings/vendor-registration-settings/*') ||
+                                Request::is('admin/business-settings/' . FeaturesSection::COMPANY_RELIABILITY[URI]) ||
+                                Request::is('admin/content-management*') ||
+                                Request::is('admin/file-manager*') ||
+                                Request::is('admin/business-settings/' . SocialMedia::VIEW[URI]) ||
+                                Request::is('admin/blog*')
+                                    ? 'scroll-here'
+                                    : '' }}">
+                                <small class="nav-subtitle" title="">Contant Management</small>
+                                <small class="tio-more-horizontal nav-subtitle-replacer"></small>
                             </li>
 
                             <li

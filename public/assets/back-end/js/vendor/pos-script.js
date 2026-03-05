@@ -396,13 +396,72 @@ function basicFunctionalityForCartSummary() {
         $('.pos-change-amount-element').text(result);
     });
 }
+
+function getVendorPosActiveCartId() {
+    const byHiddenInput = ($("#order-place input[name='cart_id']").val() || "").toString().trim();
+    if (byHiddenInput.length > 0) {
+        return byHiddenInput;
+    }
+
+    const cartIdElement = $("#cart_id_primary");
+    const byData = (cartIdElement.data("cart-id") || "").toString().trim();
+    if (byData.length > 0) {
+        return byData;
+    }
+
+    return (cartIdElement.text() || "").toString().trim();
+}
+
+function refreshVendorPosCartAfterDiscount(viewHtml) {
+    if (typeof viewHtml !== "string" || viewHtml.trim().length === 0) {
+        return;
+    }
+
+    if ($("#order-place").length) {
+        $("#order-place").replaceWith(viewHtml);
+    } else {
+        const fallbackOrderForm = $("#cart").closest("form");
+        if (fallbackOrderForm.length) {
+            fallbackOrderForm.replaceWith(viewHtml);
+        }
+    }
+
+    basicFunctionalityForCartSummary();
+    posUpdateQuantityFunctionality();
+    viewAllHoldOrders("keyup");
+    removeFromCart();
+    renderCustomerAmountForPay();
+    $("#search").focus();
+}
+
+function closeVendorPosDiscountModal(modalSelector) {
+    const modalElement = $(modalSelector);
+    if (!modalElement.length) {
+        return;
+    }
+
+    if (typeof modalElement.modal === "function") {
+        modalElement.modal("hide");
+    }
+
+    modalElement
+        .removeClass("show")
+        .attr("aria-hidden", "true")
+        .css("display", "none");
+
+    $("body").removeClass("modal-open").css("padding-right", "");
+    $(".modal-backdrop").remove();
+}
+
 $(".action-extra-discount").on("click", function (event) {
-    let discount = $("#dis_amount").val();
+    event.preventDefault();
+
+    let discount = ($("#dis_amount").val() || "").toString().trim();
     let type = $("#type_ext_dis").val();
     if(discount.length === 0) {
         toastr.error($(this).data('error-message'));
-        event.preventDefault();
-    }else if (discount > 0) {
+        return;
+    }else if (parseFloat(discount) > 0) {
         $.ajaxSetup({
             headers: {
                 "X-CSRF-TOKEN": $('meta[name="_token"]').attr("content"),
@@ -413,6 +472,7 @@ $(".action-extra-discount").on("click", function (event) {
             data: {
                 discount: discount,
                 type: type,
+                cart_id: getVendorPosActiveCartId(),
             },
             beforeSend: function () {
                 $("#loading").fadeIn();
@@ -444,18 +504,11 @@ $(".action-extra-discount").on("click", function (event) {
                         }
                     );
                 }
-                $('#add-discount').modal('hide');
-                $(".modal-backdrop").addClass("d-none");
-                $("#cart").empty().html(data.view);
-                basicFunctionalityForCartSummary();
-                posUpdateQuantityFunctionality();
-                viewAllHoldOrders("keyup");
-                removeFromCart();
-                $("#search").focus();
+
+                closeVendorPosDiscountModal("#add-discount");
+                refreshVendorPosCartAfterDiscount(data.view);
             },
             complete: function () {
-                $(".modal-backdrop").addClass("d-none");
-                $(".footer-offset").removeClass("modal-open");
                 $("#loading").fadeOut();
             },
         });
@@ -471,10 +524,12 @@ $(".action-extra-discount").on("click", function (event) {
 });
 
 $(".action-coupon-discount").on("click", function (event) {
-    let couponCode = $("#coupon_code").val();
+    event.preventDefault();
+
+    let couponCode = ($("#coupon_code").val() || "").trim();
     if(couponCode.length === 0) {
         toastr.error($(this).data('error-message'));
-        event.preventDefault();
+        return;
     }else {
         $.ajaxSetup({
             headers: {
@@ -485,12 +540,12 @@ $(".action-coupon-discount").on("click", function (event) {
             url: $("#route-vendor-pos-coupon-discount").data("url"),
             data: {
                 coupon_code: couponCode,
+                cart_id: getVendorPosActiveCartId(),
             },
             beforeSend: function () {
                 $("#loading").fadeIn();
             },
             success: function (data) {
-                console.log(data);
                 if (data.coupon === "success") {
                     toastr.success(
                         $("#message-coupon-added-successfully").data("text"),
@@ -520,17 +575,11 @@ $(".action-coupon-discount").on("click", function (event) {
                         ProgressBar: true,
                     });
                 }
-                $('#add-coupon-discount').modal('hide');
-                $("#cart").empty().html(data.view);
-                $("#search").focus();
-                basicFunctionalityForCartSummary();
-                posUpdateQuantityFunctionality();
-                viewAllHoldOrders("keyup");
-                removeFromCart();
+
+                closeVendorPosDiscountModal("#add-coupon-discount");
+                refreshVendorPosCartAfterDiscount(data.view);
             },
             complete: function () {
-                $(".modal-backdrop").addClass("d-none");
-                $(".footer-offset").removeClass("modal-open");
                 $("#loading").fadeOut();
             },
         });

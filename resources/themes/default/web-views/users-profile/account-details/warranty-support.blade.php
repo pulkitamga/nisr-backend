@@ -38,7 +38,7 @@
                                         $activatedCount = (int)($warrantyData['activated_count'] ?? 0);
                                         $remainingCount = (int)($warrantyData['remaining_count'] ?? (int)$detail->qty);
                                         $isDeliveredItem = $order->order_status === 'delivered' && $detail->delivery_status === 'delivered';
-                                        $isWarrantyEnabled = (bool)($detail?->product?->is_warranty);
+                                        $isWarrantyEnabled = (bool)($detail?->product?->is_traceable);
                                         $withinActivationWindow = $deliveredDays <= $warrantyActivationDays;
                                         $canActivateWarranty = $isDeliveredItem && $isWarrantyEnabled && $withinActivationWindow && $remainingCount > 0;
                                         $defaultTicketType = ($isWarrantyEnabled && $warranty) ? 'service' : 'retail';

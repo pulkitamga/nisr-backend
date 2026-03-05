@@ -370,13 +370,13 @@ $includedParts = is_array($product->service->parts_included ?? null)
                             </div>
                             {{-- WARRANTY --}}
 <div>
-    <span class="key text-nowrap">{{ translate('Warranty') }}</span>
+    <span class="key text-nowrap">Product Traceability</span>
     <span>:</span>
     <span class="value">
-        @if($product->is_warranty == 1)
-            {{ translate('Available') }}
+        @if($product->is_traceable == 1)
+            Traceable
         @else
-            {{ translate('No_Warranty') }}
+            Not Traceable
         @endif
     </span>
 </div>

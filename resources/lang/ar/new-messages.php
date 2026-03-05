@@ -11857,4 +11857,10 @@ return [
 	"L/R" => "L/R",
 	"shiping_charge" => "Shiping charge",
 	"invalid_request" => "Invalid request",
+	"view_internal_branch_transfers" => "View internal branch transfers",
+	"returns" => "Returns",
+	"sales_pos" => "Sales pos",
+	"sales_online" => "Sales online",
+	"manual_adjust_negative" => "Manual adjust negative",
+	"internal_transfers_do_not_change_net_general_stock" => "Internal transfers do not change net general stock",
 ];

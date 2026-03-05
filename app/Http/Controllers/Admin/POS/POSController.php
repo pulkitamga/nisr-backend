@@ -16,6 +16,7 @@ use App\Services\PosCartStateService;
 use App\Services\POSService;
 use App\Traits\CalculatorTrait;
 use App\Traits\CommonTrait;
+use App\Utils\OrderManager;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -573,6 +574,10 @@ class POSController extends BaseController
     protected function calculateCartItemsData(string $cartName, array $customerCartData, int $branchId): array
     {
         $cartItemValue = [];
+        $installationTotal = 0.0;
+        $exchangeTotal = 0.0;
+        $hasIncludeTaxModel = false;
+        $hasExcludeTaxModel = false;
         $subTotalCalculation = [
             'countItem' => 0,
             'totalQuantity' => 0,
@@ -597,6 +602,12 @@ class POSController extends BaseController
                         return $query->active();
                     }]);
                     if ($product) {
+                        $lineTaxModel = strtolower((string)($product['tax_model'] ?? ($cartItem['tax_model'] ?? 'exclude')));
+                        if ($lineTaxModel === 'include') {
+                            $hasIncludeTaxModel = true;
+                        } else {
+                            $hasExcludeTaxModel = true;
+                        }
                         $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
                             product: $product,
                             cartItem: $cartItem,
@@ -604,6 +615,8 @@ class POSController extends BaseController
                         );
                         if ($cartItem['customerId'] == $customerCartData[$cartName]['customerId']) {
                             $cartItem['productSubtotal'] = $cartSubTotalCalculation['productSubtotal'];
+                            $installationTotal += (float)($cartItem['installation_charge'] ?? 0) * (int)($cartItem['quantity'] ?? 0);
+                            $exchangeTotal += (float)($cartItem['exchange_charge'] ?? 0);
                             $cartItemValue[] = $cartItem;
                             $subTotalCalculation['customerOnHold'] = $cartItem['customerOnHold'];
 
@@ -621,23 +634,43 @@ class POSController extends BaseController
                 }
             }
         }
+
+        $taxModel = ($hasIncludeTaxModel && !$hasExcludeTaxModel) ? 'include' : 'exclude';
+        $summary = OrderManager::calculatePosRetailVatSummary(
+            itemPrice: (float)$subTotalCalculation['subtotal'] + (float)$subTotalCalculation['discountOnProduct'],
+            itemDiscount: (float)$subTotalCalculation['discountOnProduct'],
+            extraDiscountInput: abs((float)($cartPayload['ext_discount'] ?? 0)),
+            extraDiscountType: (string)($cartPayload['ext_discount_type'] ?? 'amount'),
+            couponDiscount: abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            totalInstallationPrice: $installationTotal,
+            totalExchangePrice: $exchangeTotal,
+            taxModel: $taxModel
+        );
+
         $totalCalculation = $this->cartService->getTotalCalculation(
             subTotalCalculation: $subTotalCalculation,
-            cartName: $cartName
+            cartName: $cartName,
+            installationCharge: $installationTotal,
+            exchangeCharge: $exchangeTotal
         );
         return [
             'countItem' => $subTotalCalculation['countItem'],
-            'total' => $totalCalculation['total'],
+            'total' => $summary['totalAmount'],
             'subtotal' => $subTotalCalculation['subtotal'],
-            'taxCalculate' => $subTotalCalculation['taxCalculate'],
-            'totalTaxShow' => $subTotalCalculation['totalTaxShow'],
-            'totalTax' => $subTotalCalculation['totalTax'],
+            'taxableBase' => $summary['taxableBase'],
+            'subTotalWithVat' => $summary['subTotalWithVat'],
+            'taxCalculate' => $summary['taxTotal'],
+            'totalTaxShow' => $summary['taxTotal'],
+            'totalTax' => $summary['taxTotal'],
             'discountOnProduct' => $subTotalCalculation['discountOnProduct'],
             'productSubtotal' => $subTotalCalculation['productSubtotal'],
             'cartItemValue' => $cartItemValue,
             'customerOnHold' => $subTotalCalculation['customerOnHold'] ?? false,
-            'couponDiscount' => $totalCalculation['couponDiscount'],
-            'extraDiscount' => $totalCalculation['extraDiscount'],
+            'couponDiscount' => abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            'extraDiscount' => $summary['extraDiscount'],
+            'totalInstallationPrice' => $installationTotal,
+            'totalExchangePrice' => $exchangeTotal,
+            'legacyTotalBeforeVat' => $totalCalculation['total'],
         ];
     }
 

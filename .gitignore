@@ -26,3 +26,9 @@ AGENTS.md
 *.md
 generate_license.php
 generate_keys.php
+alnisr2/.specify/scripts/powershell/check-prerequisites.ps1
+alnisr2/.specify/scripts/powershell/check-prerequisites.ps1
+alnisr2/.specify/scripts/powershell/common.ps1
+alnisr2/.specify/scripts/powershell/create-new-feature.ps1
+alnisr2/.specify/scripts/powershell/setup-plan.ps1
+alnisr2/.specify/scripts/powershell/update-agent-context.ps1

@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Models\ManageBranchProductStock;
 use App\Models\PosCartState;
 use App\Traits\CalculatorTrait;
+use App\Utils\OrderManager;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -539,29 +540,64 @@ class CartService
         ];
     }
 
-    public function getTotalCalculation(array $subTotalCalculation, string $cartName): array
+    public function getTotalCalculation(
+        array $subTotalCalculation,
+        string $cartName,
+        float $installationCharge = 0.0,
+        float $exchangeCharge = 0.0
+    ): array
     {
-        $total = $subTotalCalculation['subtotal'];
         $payload = $this->getCartPayloadById(
             cartId: $cartName,
             branchId: $this->resolveBranchIdFromCartId($cartName, null)
         );
-        $extraDiscount = $payload['ext_discount'] ?? 0;
-        $extraDiscountType = $payload['ext_discount_type'] ?? 'amount';
-        if ($extraDiscountType == 'percent' && $extraDiscount > 0) {
-            $extraDiscount = (($subTotalCalculation['subtotal'] + $subTotalCalculation['discountOnProduct'] - $subTotalCalculation['totalIncludeTax']) * $extraDiscount) / 100;
+
+        $itemPrice = (float)$subTotalCalculation['subtotal'] + (float)$subTotalCalculation['discountOnProduct'];
+        $itemDiscount = (float)$subTotalCalculation['discountOnProduct'];
+        $legacyExtraDiscount = abs((float)($payload['ext_discount'] ?? 0));
+        $legacyExtraDiscountType = (string)($payload['ext_discount_type'] ?? 'amount');
+        if ($legacyExtraDiscountType === 'percent' && $legacyExtraDiscount > 0) {
+            $legacyExtraDiscount = (($subTotalCalculation['subtotal'] + $subTotalCalculation['discountOnProduct'] - $subTotalCalculation['totalIncludeTax']) * $legacyExtraDiscount) / 100;
         }
-        if ($extraDiscount) {
-            $total -= $extraDiscount;
+        $legacyTotal = (float)$subTotalCalculation['subtotal'] - $legacyExtraDiscount;
+
+        $hasIncludeTaxModel = false;
+        $hasExcludeTaxModel = false;
+        foreach ($payload as $payloadItem) {
+            if (!is_array($payloadItem)) {
+                continue;
+            }
+            $lineTaxModel = strtolower((string)($payloadItem['tax_model'] ?? 'exclude'));
+            if ($lineTaxModel === 'include') {
+                $hasIncludeTaxModel = true;
+            } else {
+                $hasExcludeTaxModel = true;
+            }
         }
-        $couponDiscount = 0;
-        if (isset($payload['coupon_discount'])) {
-            $couponDiscount = $payload['coupon_discount'];
-        }
+        $taxModel = ($hasIncludeTaxModel && !$hasExcludeTaxModel) ? 'include' : 'exclude';
+
+        $summary = OrderManager::calculatePosRetailVatSummary(
+            itemPrice: $itemPrice,
+            itemDiscount: $itemDiscount,
+            extraDiscountInput: abs((float)($payload['ext_discount'] ?? 0)),
+            extraDiscountType: (string)($payload['ext_discount_type'] ?? 'amount'),
+            couponDiscount: abs((float)($payload['coupon_discount'] ?? 0)),
+            totalInstallationPrice: $installationCharge,
+            totalExchangePrice: $exchangeCharge,
+            taxModel: $taxModel
+        );
+
+        $couponDiscount = abs((float)($payload['coupon_discount'] ?? 0));
+        $extraDiscount = (float)$legacyExtraDiscount;
+
         return [
-            'total' => $total,
+            'total' => $legacyTotal,
             'couponDiscount' => $couponDiscount,
-            'extraDiscount' => $extraDiscount
+            'extraDiscount' => $extraDiscount,
+            'taxableBase' => (float)$summary['taxableBase'],
+            'taxTotal' => (float)$summary['taxTotal'],
+            'subTotalWithVat' => (float)$summary['subTotalWithVat'],
+            'totalAmount' => (float)$summary['totalAmount'],
         ];
     }
 
@@ -823,9 +859,9 @@ class CartService
 
     private function resolveBranchIdFromCartId(string $cartId, ?int $branchId): int
     {
-        $resolvedBranchId = $this->normalizeBranchId($branchId);
-        if ($resolvedBranchId > 0) {
-            return $resolvedBranchId;
+        $requestedBranchId = (int)($branchId ?? 0);
+        if ($requestedBranchId > 0) {
+            return $requestedBranchId;
         }
 
         if (preg_match('/-b(\d+)$/', trim($cartId), $matches)) {
@@ -835,7 +871,7 @@ class CartService
             }
         }
 
-        return $this->normalizeBranchId(null);
+        return $this->normalizeBranchId($branchId);
     }
 
     private function getVariantMatcher(): VariantMatcher

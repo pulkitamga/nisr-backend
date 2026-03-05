@@ -97,7 +97,7 @@
                                     @foreach($products as $p)
                                     <option value="{{ $p['id'] }}"
                                         data-variation='@json($p->variation ? json_decode($p->variation, true) : [])'
-                                        data-is-warranty="{{ $p->is_warranty }}">
+                                        data-is-traceable="{{ $p->is_traceable }}">
                                         {{ $p['name'] }}
                                     </option>
                                     @endforeach
@@ -149,11 +149,11 @@
     const $input = $wrapper.find('.serial-csv');
 
     // Yeh line debug ke liye — console mein dekh sakte ho
-    console.log(`Row ${rowId} | is_warranty =`, $productSelect.find('option:selected').data('is-warranty'));
+    console.log(`Row ${rowId} | is_traceable =`, $productSelect.find('option:selected').data('is-traceable'));
 
-    const isWarranty = $productSelect.find('option:selected').data('is-warranty') == 1;
+    const isTraceable = $productSelect.find('option:selected').data('is-traceable') == 1;
 
-    if (isWarranty) {
+    if (isTraceable) {
         $wrapper.slideDown(200);
         $input.prop('required', true);
     } else {
@@ -282,7 +282,7 @@
                 @foreach($products as $p)
                     <option value="{{ $p['id'] }}"
                         data-variation='@json($p->variation ? json_decode($p->variation, true) : [])'
-                        data-is-warranty="{{ $p->is_warranty }}">
+                        data-is-traceable="{{ $p->is_traceable }}">
                         {{ $p['name'] }}
                     </option>
                 @endforeach

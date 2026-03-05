@@ -1,19 +1,8 @@
 @php
-$installationTotel = 0;
-$exchangeTotel = 0;
+$installationTotel = (float)($cartItems['totalInstallationPrice'] ?? 0);
+$exchangeTotel = (float)($cartItems['totalExchangePrice'] ?? 0);
 $activeCartId = (string)($cartId ?? '');
-
-if (!empty($cartItems['cartItemValue'])) {
-foreach ($cartItems['cartItemValue'] as $item) {
-$installationTotel += isset($item['installation_charge'], $item['quantity'])
-? ((float)$item['installation_charge'] * (int)$item['quantity'])
-: 0;
-
-$exchangeTotel += isset($item['exchange_charge']) ? (float)$item['exchange_charge'] : 0;
-}
-}
-
-$total = $cartItems['total'] + $cartItems['totalTax'] - $cartItems['couponDiscount'] + $installationTotel - $exchangeTotel;
+$total = (float)($cartItems['total'] ?? 0);
 $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
 @endphp
 
@@ -244,7 +233,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                         <dd>
                             <input type="number" class="form-control text-end wallet-balance-input"
                                 placeholder="{{ translate('ex') }}: 1000"
-                                value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}"
+                                value="{{ usdToDefaultCurrency(amount: $total) }}"
                                 disabled>
                         </dd>
                     </div>

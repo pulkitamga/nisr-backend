@@ -12354,4 +12354,6 @@ return [
 	"please_place_separate_pos_orders_per_branch" => "Please place separate POS orders per branch.",
 	"period" => "Period",
 	"monthly_breakdown" => "Monthly breakdown",
+	"invalid_request" => "Invalid request",
+	"Enter_adjustment" => "Enter adjustment",
 ];

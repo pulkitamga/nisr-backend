@@ -343,9 +343,9 @@ class StockTransferController extends BaseController
     //             $csvPath = null;
     //             $serials = [];
 
-    //             if ($product->is_warranty == 1) {
+    //             if ($product->is_traceable == 1) {
     //                 if (!$csvFile) {
-    //                     throw new \Exception("Row " . ($index + 1) . ": CSV file is required for warranty product.");
+    //                     throw new \Exception("Row " . ($index + 1) . ": CSV file is required for traceable product.");
     //                 }
 
     //                 $errors = [];
@@ -431,7 +431,7 @@ class StockTransferController extends BaseController
     //                 'serial_csv_path'    => $csvPath,
     //             ]);
 
-    //             if ($product->is_warranty == 1 && !empty($serials)) {
+    //             if ($product->is_traceable == 1 && !empty($serials)) {
     //                 Warranty::whereIn('serial_number', $serials)
     //                     ->update(['branch_id' => $toBranchId]);
 
@@ -505,14 +505,15 @@ class StockTransferController extends BaseController
             $attributes        = $selectedVariation['attributes'] ?? null;
             $variationType     = $selectedVariation['type'] ?? $variationType;
 
-            // Handle CSV/warranty
+            // Handle CSV/traceability
             $csvFile = $request->file("products.{$index}.serial_csv");
             $csvPath = null;
             $serials = [];
+            $isTraceable = (int)$product->is_traceable === 1;
 
-            if ($product->is_warranty == 1) {
+            if ($isTraceable) {
                 if (!$csvFile) {
-                    throw new \Exception("Row " . ($index + 1) . ": CSV file is required for warranty product.");
+                    throw new \Exception("Row " . ($index + 1) . ": CSV file is required for traceable product.");
                 }
 
                 $errors = [];
@@ -582,8 +583,8 @@ class StockTransferController extends BaseController
                 'serial_csv_path'    => $csvPath,
             ]);
 
-            // Update Warranty & SerialTransferHistory
-            if ($product->is_warranty == 1 && !empty($serials)) {
+            // Update serial ownership and serial transfer history
+            if ($isTraceable && !empty($serials)) {
                 Warranty::whereIn('serial_number', $serials)
                     ->update(['branch_id' => $toBranchId]);
 
