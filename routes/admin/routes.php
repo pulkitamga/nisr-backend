@@ -1023,7 +1023,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
     Route::group(['prefix' => 'report', 'as' => 'report.'], function () {
         Route::controller(InhouseProductSaleController::class)->group(function () {
-            Route::get(InhouseProductSale::VIEW[URI], 'index')->name('inhouse-product-sale');
+            Route::get(InhouseProductSale::VIEW[URI], 'index')
+                ->middleware('permission:report.access_sales_inhouse_product|report.read,admin')
+                ->name('inhouse-product-sale');
             Route::get(InhouseProductSale::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_sales_inhouse_product|report.export,admin')
                 ->name('inhouse-product-sale-export-excel');
