@@ -1,3 +1,4 @@
+'use strict';
 
 $(document).on('click', '.assign-owner-btn', function () {
     let ticketId = $(this).data('id');
@@ -164,32 +165,23 @@ $('#updateTicketDepartmentForm').on('submit', function (e) {
             );
         }
     });
-});
 
+    $(document).on('submit', '#escalateLeadForm', function (e) {
+        e.preventDefault();
+        const form = this;
 
-
-
-$(document).ready(function () {
-    $(document).on("click", ".assign-employee-btn", function () {
-        let ticketId = $(this).data("id");
-        let deptId = $(this).data("department-id") || "";
-        let headId = $(this).data("head-id") || "";
-
-        $("#modal_ticket_id").val(ticketId);
-
-        if ($("#ticket-department-id").length) {
-            if (deptId) {
-                $("#ticket-department-id").val(deptId).trigger("change", [headId]);
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This will notify the department and owner.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Escalate',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
             }
-        }
-        else {
-            let fixedDeptId = $("#fixed-department-id").val() || deptId; // 👈 fallback bhi de diya
-            if (fixedDeptId) {
-                loadEmployees(fixedDeptId, headId);
-            }
-        }
-
-        $("#showEmployeeModal").modal("show");
+        });
     });
 });
 

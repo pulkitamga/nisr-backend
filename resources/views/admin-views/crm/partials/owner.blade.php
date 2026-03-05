@@ -13,7 +13,7 @@
                     <input type="hidden" name="ticket_id" id="owner_ticket_id">
                     <div class="form-group mt-2">
                         <label>{{ translate('Select Supervisor') }}</label>
-                        <select class="form-control" name="employee_id" id="owner-employee-id">
+                        <select class="form-control" name="owner_id" id="owner-employee-id">
                             <option value="">{{ translate('Select Supervisor') }}</option>
                         </select>
                     </div>

@@ -277,12 +277,18 @@ class DashboardChartController extends Controller
             ['key'=>'ignored','label'=>'Ignored','data'=>$allData->pluck('ignored'),'backgroundColor'=>'#e74c3c'],
             ['key'=>'spam','label'=>'Spam','data'=>$allData->pluck('spam'),'backgroundColor'=>'#95a5a6'],
         ];
+        $legend = collect($datasets)->map(fn($dataset) => [
+            'key' => $dataset['key'],
+            'label' => $dataset['label'],
+            'color' => $dataset['backgroundColor'],
+        ])->values();
 
         return response()->json([
             'success' => true,
             'data' => [
                 'labels'   => $labels,
                 'datasets' => $datasets,
+                'legend' => $legend,
                 'summary'  => [
                     'total'     => $allData->sum('total'),
                     'assigned'  => $allData->sum('assigned'),

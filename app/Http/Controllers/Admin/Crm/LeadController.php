@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Admin\Crm;
 
-use App\Models\InboxMessage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\Enums\WebConfigKey;
 use App\Traits\PaginatorTrait;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
-use App\Enums\ViewPaths\Admin\Crm;
 use App\Enums\ViewPaths\Admin\Leads;
 use App\Contracts\Repositories\SupportTicketConvRepositoryInterface;
 use App\Contracts\Repositories\SupportTicketRepositoryInterface;
@@ -18,7 +16,6 @@ use App\Contracts\Repositories\AdminRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Brian2694\Toastr\Facades\Toastr;
-use App\Services\LeadConvert;
 use App\Models\Lead;
 use App\Models\WholeSalerBusiness;
 use App\Models\User;
@@ -105,8 +102,9 @@ class LeadController extends BaseController
             });
         });
     }
-        if ($request->filled('fhilter_date')) {
-            $dateRange = explode(' - ', $request->fhilter_date);
+        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        if (!empty($filterDate)) {
+            $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
                 $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
                 $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
@@ -154,20 +152,42 @@ class LeadController extends BaseController
         ]);
 
         if ($request->filled('searchValue')) {
-            $search = $request->searchValue;
+            $search = trim($request->searchValue);
             $query->where(function ($q) use ($search) {
-                $q->whereHas('inboxMessages', function ($subQ) use ($search) {
+                $q->orWhereHas('user', function ($sub) use ($search) {
+                    $sub->where('f_name', 'LIKE', "%{$search}%")
+                        ->orWhere('l_name', 'LIKE', "%{$search}%")
+                        ->orWhere('email', 'LIKE', "%{$search}%")
+                        ->orWhere('phone', 'LIKE', "%{$search}%")
+                        ->orWhereRaw("CONCAT(f_name, ' ', l_name) LIKE ?", ["%{$search}%"])
+                        ->orWhereRaw("REPLACE(phone, '+', '') LIKE REPLACE(?, '+', '')", [$search]);
+                });
+
+                $q->orWhereHas('inboxMessages', function ($subQ) use ($search) {
                     $subQ->where('sender_name', 'like', "%{$search}%")
                         ->orWhere('sender_email', 'like', "%{$search}%")
                         ->orWhere('sender_phone', 'like', "%{$search}%")
                         ->orWhere('subject', 'like', "%{$search}%")
                         ->orWhere('body', 'like', "%{$search}%");
                 });
+
+                $q->orWhereExists(function ($exists) use ($search) {
+                    $exists->select(DB::raw(1))
+                        ->from('inbox_messages')
+                        ->whereColumn('inbox_messages.related_lead_id', 'leads.id')
+                        ->where(function ($w) use ($search) {
+                            $w->where('sender_name', 'LIKE', "%{$search}%")
+                                ->orWhere('sender_email', 'LIKE', "%{$search}%")
+                                ->orWhere('sender_phone', 'LIKE', "%{$search}%")
+                                ->orWhere('subject', 'LIKE', "%{$search}%");
+                        });
+                });
             });
         }
 
-        if ($request->filled('fhilter_date')) {
-            $dateRange = explode(' - ', $request->fhilter_date);
+        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        if (!empty($filterDate)) {
+            $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
                 $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
                 $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
@@ -823,55 +843,26 @@ public function getUserOrders(Request $request)
     }
     public function assignEmployee(Request $request): JsonResponse
     {
-        $request->validate([
-            'ticket_id' => 'required|exists:leads,id',
-            'employee_id' => 'required|exists:admins,id'
-        ]);
-
-        $lead = Lead::find($request->ticket_id);
-        if (!$lead) {
-            return response()->json(['status' => false, 'message' => 'Lead not found'], 404);
-        }
-
-        if (empty($lead->department_id)) {
-            return response()->json(['status' => false, 'message' => 'Assign department first.'], 422);
-        }
-
-        $employee = Admin::find($request->employee_id);
-        if (!$employee) {
-            return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
-        }
-
-        if ((int)$employee->department_id !== (int)$lead->department_id) {
-            return response()->json(['status' => false, 'message' => 'Employee must belong to the selected department.'], 422);
-        }
-
-        $lead->employee_id = $request->employee_id;
-        $lead->save();
-
-        $activity = new LeadActivity();
-        $activity->lead_id = $lead->id;
-        $activity->activity_type = 'Employee Assign';
-        $activity->title = ' Assign To : ' . ($employee->name ?? 'N/A');
-        $activity->subject = 'Employee assigned to this lead';
-        $activity->note_date = now();
-        $activity->employee_id = Auth::guard('admin')->id();
-        $activity->details = [
-            'assigned_employee_id' => $employee->id ?? null,
-            'assigned_employee_name' => $employee->name ?? 'N/A',
-        ];
-        $activity->save();
-        return response()->json([
-            'status' => true,
-            'message' => 'Employee assigned successfully!'
-        ]);
+        return $this->handleLeadAssignmentUpdate($request);
     }
 
     public function assignOwner(Request $request): JsonResponse
     {
+        if (!$request->filled('owner_id') && $request->filled('employee_id')) {
+            $request->merge(['owner_id' => $request->input('employee_id')]);
+        }
+        return $this->handleLeadAssignmentUpdate($request);
+    }
+
+    private function handleLeadAssignmentUpdate(Request $request): JsonResponse
+    {
         $request->validate([
             'ticket_id' => 'required|exists:leads,id',
-            'employee_id' => 'required|exists:admins,id'
+            'department_id' => 'nullable|exists:departments,id',
+            'owner_id' => 'nullable|exists:admins,id',
+            'employee_id' => 'nullable|exists:admins,id',
+            'priority' => 'nullable|in:low,medium,high,urgent',
+            'reply' => 'nullable|string',
         ]);
 
         $lead = Lead::find($request->ticket_id);
@@ -879,38 +870,127 @@ public function getUserOrders(Request $request)
             return response()->json(['status' => false, 'message' => 'Lead not found'], 404);
         }
 
-        $owner = Admin::find($request->employee_id);
-        if (!$owner) {
-            return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
+        $hasDepartmentUpdate = $request->filled('department_id');
+        $hasOwnerUpdate = $request->filled('owner_id');
+        $hasEmployeeUpdate = $request->filled('employee_id');
+        $hasPriorityUpdate = $request->filled('priority');
+        $hasReplyUpdate = $request->filled('reply');
+
+        if (
+            !$hasDepartmentUpdate &&
+            !$hasOwnerUpdate &&
+            !$hasEmployeeUpdate &&
+            !$hasPriorityUpdate &&
+            !$hasReplyUpdate
+        ) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Provide at least one field to update.',
+            ], 422);
         }
 
-        if (!$this->isSupervisor($owner)) {
-            return response()->json(['status' => false, 'message' => 'Owner must be marked as supervisor in employee profile.'], 422);
+        $effectiveDepartmentId = $hasDepartmentUpdate
+            ? (int)$request->department_id
+            : (int)($lead->department_id ?? 0);
+
+        $owner = null;
+        if ($hasOwnerUpdate) {
+            $owner = Admin::find($request->owner_id);
+            if (!$owner) {
+                return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
+            }
+            if (!$this->isSupervisor($owner)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Owner must be marked as supervisor in employee profile.',
+                ], 422);
+            }
+            if ($effectiveDepartmentId > 0 && (int)$owner->department_id !== $effectiveDepartmentId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Owner must belong to the selected department.',
+                ], 422);
+            }
         }
 
-        if (!empty($lead->department_id) && (int)$owner->department_id !== (int)$lead->department_id) {
-            return response()->json(['status' => false, 'message' => 'Owner must belong to the selected department.'], 422);
+        $employee = null;
+        if ($hasEmployeeUpdate) {
+            $employee = Admin::find($request->employee_id);
+            if (!$employee) {
+                return response()->json(['status' => false, 'message' => 'Employee not found'], 404);
+            }
+            if ($effectiveDepartmentId <= 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Assign department first.',
+                ], 422);
+            }
+            if ((int)$employee->department_id !== $effectiveDepartmentId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Employee must belong to the selected department.',
+                ], 422);
+            }
         }
 
-        $lead->owner_id = $request->employee_id;
+        $details = [
+            'lead_id' => $lead->id,
+            'updated_fields' => [],
+        ];
+
+        if ($hasDepartmentUpdate) {
+            $lead->department_id = (int)$request->department_id;
+            $details['department_id'] = (int)$request->department_id;
+            $details['updated_fields'][] = 'department_id';
+        }
+        if ($hasPriorityUpdate) {
+            $lead->priority = $request->priority;
+            $details['priority'] = $lead->priority;
+            $details['updated_fields'][] = 'priority';
+        }
+        if ($hasReplyUpdate) {
+            $details['reply'] = $request->reply;
+            $details['updated_fields'][] = 'reply';
+        }
+        if ($hasOwnerUpdate && $owner) {
+            $lead->owner_id = $owner->id;
+            $details['owner_id'] = $owner->id;
+            $details['owner_name'] = $owner->name;
+            $details['updated_fields'][] = 'owner_id';
+        }
+        if ($hasEmployeeUpdate && $employee) {
+            $lead->employee_id = $employee->id;
+            $details['employee_id'] = $employee->id;
+            $details['employee_name'] = $employee->name;
+            $details['updated_fields'][] = 'employee_id';
+        }
+
+        if ($hasDepartmentUpdate) {
+            if (!$hasOwnerUpdate && $lead->owner && (int)$lead->owner->department_id !== (int)$lead->department_id) {
+                $lead->owner_id = null;
+                $details['owner_reset'] = true;
+            }
+            if (!$hasEmployeeUpdate && $lead->employee && (int)$lead->employee->department_id !== (int)$lead->department_id) {
+                $lead->employee_id = null;
+                $details['employee_reset'] = true;
+            }
+        }
+
         $lead->save();
 
         $activity = new LeadActivity();
         $activity->lead_id = $lead->id;
-        $activity->activity_type = 'Owner Assign';
-        $activity->title = ' Assign To : ' . ($owner->name ?? 'N/A');
-        $activity->subject = 'Owner assigned to this lead';
+        $activity->activity_type = 'assignment_update';
+        $activity->title = 'Assignment Updated';
+        $activity->subject = 'Assignment updated by ' . auth('admin')->user()->name;
         $activity->note_date = now();
-        $activity->employee_id = Auth::guard('admin')->id();
-        $activity->details = [
-            'assigned_owner_id' => $owner->id ?? null,
-            'assigned_owner_name' => $owner->name ?? 'N/A',
-        ];
+        $activity->employee_id = auth('admin')->id();
+        $activity->details = $details;
         $activity->save();
 
         return response()->json([
             'status' => true,
-            'message' => 'Owner assigned successfully!'
+            'message' => 'Assignment updated successfully!',
         ]);
     }
 

@@ -30,7 +30,7 @@
                         <label class="form-label">{{ translate('Select_Date') }}</label>
                         <div class="position-relative">
                             <span class="tio-calendar icon-absolute-on-right"></span>
-                            <input type="text" name="fhilter_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{request('fhilter_date')}}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
+                            <input type="text" name="filter_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{ request('filter_date', request('fhilter_date')) }}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -81,7 +81,7 @@
             </h5>
 
             <form action="{{ url()->current() }}" method="GET">
-                <input type="hidden" name="fhilter_date" value="{{request('fhilter_date')}}">
+                <input type="hidden" name="filter_date" value="{{ request('filter_date', request('fhilter_date')) }}">
                 <input type="hidden" name="Channel" value="{{request('Channel')}}">
                 <input type="hidden" name="status" value="{{request('status')}}">
                 <input type="hidden" name="choose_first" value="{{request('choose_first')}}">
@@ -98,7 +98,7 @@
             </form>
             <div class="dropdown">
                 <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.crm.deals.retail.export', [
-                    'fhilter_date' => request('fhilter_date'),
+                    'filter_date' => request('filter_date', request('fhilter_date')),
                     'status' => request('status'),
                     'choose_first' => request('choose_first'),
                     'searchValue' => request('searchValue')
@@ -295,7 +295,7 @@
     changeInputTypeForDateRangePicker($('input[name="order_date"]'));
     changeInputTypeForDateRangePicker($('input[name="customer_joining_date"]'));
 </script>
-<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/lead.js') }}"></script>
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 
 
 <script>

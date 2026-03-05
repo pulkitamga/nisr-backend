@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Admin\Crm;
 
-use App\Models\InboxMessage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\Enums\WebConfigKey;
 use App\Traits\PaginatorTrait;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
-use App\Enums\ViewPaths\Admin\Crm;
 use App\Enums\ViewPaths\Admin\Deals;
 use App\Contracts\Repositories\SupportTicketConvRepositoryInterface;
 use App\Contracts\Repositories\SupportTicketRepositoryInterface;
@@ -24,7 +22,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Log;
-use App\Services\LeadConvert;
 use App\Models\Lead;
 use App\Models\Deal;
 use App\Models\WholeSalerBusiness;
@@ -90,8 +87,9 @@ class DealController extends BaseController
         });
     });
 }
-        if ($request->filled('fhilter_date')) {
-            $dateRange = explode(' - ', $request->fhilter_date);
+        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        if (!empty($filterDate)) {
+            $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
                 $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
                 $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
@@ -153,8 +151,9 @@ class DealController extends BaseController
             });
         }
 
-        if ($request->filled('fhilter_date')) {
-            $dateRange = explode(' - ', $request->fhilter_date);
+        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        if (!empty($filterDate)) {
+            $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
                 $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
                 $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
@@ -265,12 +264,21 @@ class DealController extends BaseController
                             ->where('deals.related_party_type', 'company')
                             ->where('wholesaler_businesses.company_name', 'LIKE', "%{$search}%");
                     });
+                } else {
+                    $q->orWhereHas('lead.inboxMessages', function ($subQ) use ($search) {
+                        $subQ->where('sender_name', 'LIKE', "%{$search}%")
+                            ->orWhere('sender_email', 'LIKE', "%{$search}%")
+                            ->orWhere('sender_phone', 'LIKE', "%{$search}%")
+                            ->orWhere('subject', 'LIKE', "%{$search}%")
+                            ->orWhere('body', 'LIKE', "%{$search}%");
+                    });
                 }
             });
         }
 
-        if ($request->filled('fhilter_date')) {
-            $dateRange = explode(' - ', $request->fhilter_date);
+        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        if (!empty($filterDate)) {
+            $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
                 $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
                 $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
@@ -400,12 +408,12 @@ class DealController extends BaseController
 
     public function destroy($id)
     {
-        $message = InboxMessage::findOrFail($id);
-        $message->delete(); // Soft delete
+        $deal = Deal::findOrFail($id);
+        $deal->delete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Message deleted successfully!'
+            'message' => 'Deal deleted successfully!'
         ]);
     }
 
@@ -422,7 +430,7 @@ class DealController extends BaseController
                 'title'       => 'Quotation Request',
                 'message'     => 'A new quotation request has been made for Deal ID: ' . $deal->id,
                 'status'      => 'unread',
-                'created_by'  => auth()->id() ?? null,
+                'created_by'  => auth('admin')->id() ?? null,
             ]);
         }
         return response()->json([
@@ -827,15 +835,20 @@ class DealController extends BaseController
     {
         $request->validate([
             'ticket_id' => 'required|exists:deals,id',
-            'employee_id' => 'required|exists:admins,id'
+            'owner_id' => 'nullable|exists:admins,id',
+            'employee_id' => 'nullable|exists:admins,id'
         ]);
+        $ownerId = (int)($request->owner_id ?? $request->employee_id ?? 0);
+        if ($ownerId <= 0) {
+            return response()->json(['status' => false, 'message' => 'Owner is required'], 422);
+        }
 
         $deal = Deal::find($request->ticket_id);
         if (!$deal) {
             return response()->json(['status' => false, 'message' => 'Deal not found'], 404);
         }
 
-        $owner = Admin::find($request->employee_id);
+        $owner = Admin::find($ownerId);
         if (!$owner) {
             return response()->json(['status' => false, 'message' => 'Owner not found'], 404);
         }
@@ -848,7 +861,7 @@ class DealController extends BaseController
             return response()->json(['status' => false, 'message' => 'Owner must belong to the selected department.'], 422);
         }
 
-        $deal->owner_id = $request->employee_id;
+        $deal->owner_id = $ownerId;
         $deal->save();
 
         $activity = new DealActivity();
@@ -1004,6 +1017,11 @@ class DealController extends BaseController
     }
     public function linkOrder(Request $request)
     {
+        $request->validate([
+            'deal_id' => 'required|exists:deals,id',
+            'order_id' => 'required|exists:orders,id',
+        ]);
+
         $deal = Deal::findOrFail($request->deal_id);
 
         if ($deal->order_id) {
@@ -1011,6 +1029,18 @@ class DealController extends BaseController
         }
 
         $order = Order::findOrFail($request->order_id);
+        if ($deal->related_party_type !== 'contact') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only retail deals can be linked with customer orders.',
+            ], 422);
+        }
+        if ((int)$deal->related_party_id !== (int)$order->customer_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order does not belong to this deal customer.',
+            ], 422);
+        }
 
         $deal->order_id = $order->id;
         $deal->value = $order->order_amount;

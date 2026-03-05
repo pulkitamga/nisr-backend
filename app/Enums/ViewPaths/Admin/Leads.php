@@ -37,10 +37,11 @@ enum Leads
         VIEW => ''
     ];
 
-    const DESQUALIFY = [
-        URI => 'desqualify',
+    const DISQUALIFY = [
+        URI => 'disqualify',
         VIEW => ''
     ];
+    const DESQUALIFY = self::DISQUALIFY; // Legacy typo alias.
 
     const DEPARTMENT = [
         URI => 'get-departments',
