@@ -422,17 +422,20 @@ class POSController extends BaseController
         );
         return [
             'countItem' => $subTotalCalculation['countItem'],
-            'total' => $totalCalculation['total'],
+            'total' => (float)($totalCalculation['totalAmount'] ?? 0),
             'subtotal' => $subTotalCalculation['subtotal'],
-            'taxCalculate' => $subTotalCalculation['taxCalculate'],
-            'totalTaxShow' => $subTotalCalculation['totalTaxShow'],
-            'totalTax' => $subTotalCalculation['totalTax'],
+            'taxableBase' => (float)($totalCalculation['taxableBase'] ?? 0),
+            'subTotalWithVat' => (float)($totalCalculation['subTotalWithVat'] ?? 0),
+            'taxCalculate' => (float)($totalCalculation['taxTotal'] ?? 0),
+            'totalTaxShow' => (float)($totalCalculation['taxTotal'] ?? 0),
+            'totalTax' => (float)($totalCalculation['taxTotal'] ?? 0),
             'discountOnProduct' => $subTotalCalculation['discountOnProduct'],
             'productSubtotal' => $subTotalCalculation['productSubtotal'],
             'cartItemValue' => $cartItemValue,
             'customerOnHold' => $subTotalCalculation['customerOnHold'] ?? false,
             'couponDiscount' => $totalCalculation['couponDiscount'],
             'extraDiscount' => $totalCalculation['extraDiscount'],
+            'legacyTotalBeforeVat' => $totalCalculation['total'],
         ];
     }
 

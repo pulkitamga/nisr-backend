@@ -41,14 +41,14 @@ $(document).on("ready", function () {
             beforeSend: () => $("#loading").fadeIn(),
             success: function (response) {
                 const { branchesStock, product } = response.data;
-                const isWarranty = product.is_warranty === 1;
+                const isTraceable = product.is_traceable === 1;
                 const requiredQty = product.quantity;
 
                 // Update UI
                 $('#required-qty').text(requiredQty);
-                $('#warranty-alert').toggleClass('d-none', !isWarranty);
-                $('#csv-upload-section').toggle(isWarranty);
-                $('input[name="serial_csv"]').prop('required', isWarranty);
+                $('#traceability-alert').toggleClass('d-none', !isTraceable);
+                $('#csv-upload-section').toggle(isTraceable);
+                $('input[name="serial_csv"]').prop('required', isTraceable);
 
                 const tbody = $('#branches-tbody').empty();
                 branchesStock.forEach((branch, index) => {

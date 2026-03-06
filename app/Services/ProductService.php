@@ -461,6 +461,7 @@ class ProductService
             'match_makes' => $request->match_makes ?? null,
             'match_models' => $request->match_models ?? null,
             'match_years' => $request->match_years ?? null,
+            'is_traceable' => $request->has('is_traceable') ? 1 : 0,
             'is_warranty' => $request->has('is_warranty') ? 1 : 0,
         ];
     }
@@ -560,6 +561,7 @@ class ProductService
             'match_makes'  => $request->match_makes ?? null,
             'match_models' => $request->match_models ?? null,
             'match_years'  => $request->match_years ?? null,
+            'is_traceable' => $request->has('is_traceable') ? 1 : 0,
             'is_warranty' => $request->has('is_warranty') ? 1 : 0,
             'meta_image' => $request->file('meta_image') ? $this->update(dir: 'product/meta/', oldImage: $product['meta_image'], format: 'png', image: $request['meta_image']) : $product['meta_image'],
         ];

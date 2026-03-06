@@ -170,7 +170,7 @@ class WarrantyActivationController extends Controller
             $otpSession = null;
 
             if ($otpMethod === 'email') {
-                $otp = rand(1000, 9999);
+                $otp = $this->generateWarrantyOtp();
                 Cache::put("otp:{$email}", $otp, now()->addMinutes(5));
                 $mailConfig = getWebConfig(name: 'mail_config');
                 $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
@@ -243,6 +243,10 @@ class WarrantyActivationController extends Controller
         } else {
             $storedOtp = Cache::get("otp:{$email}");
             $isValid = filled($storedOtp) && hash_equals((string)$storedOtp, (string)$request->otp);
+        }
+
+        if (!$isValid && $this->isWarrantyTestOtpAllowed()) {
+            $isValid = hash_equals($this->warrantyTestOtp(), (string)$request->otp);
         }
 
         if (!$isValid) {
@@ -387,7 +391,7 @@ class WarrantyActivationController extends Controller
                     return back()->withErrors(['otp' => translate('Failed to resend OTP. Please try again.')]);
                 }
             } else {
-                $otp = rand(1000, 9999);
+                $otp = $this->generateWarrantyOtp();
                 Cache::put("otp:{$email}", $otp, now()->addMinutes(5));
                 $mailConfig = getWebConfig(name: 'mail_config');
                 $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
@@ -413,6 +417,23 @@ class WarrantyActivationController extends Controller
     {
         $warranty = Warranty::where('serial_number', $serial)->firstOrFail();
         return view(VIEW_FILE_NAMES['warranty_success'], compact('warranty'));
+    }
+
+    private function generateWarrantyOtp(): string
+    {
+        return $this->isWarrantyTestOtpAllowed()
+            ? $this->warrantyTestOtp()
+            : (string) rand(1000, 9999);
+    }
+
+    private function isWarrantyTestOtpAllowed(): bool
+    {
+        return env('APP_MODE') !== 'live';
+    }
+
+    private function warrantyTestOtp(): string
+    {
+        return '0000';
     }
 
     public function activateFromOrder(Request $request)

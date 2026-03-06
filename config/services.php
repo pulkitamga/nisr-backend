@@ -49,6 +49,7 @@ return [
     ],
     'bosta' => [
         'key' => env('BOSTA_API_KEY'),
+        'base_url' => env('BOSTA_BASE_URL', 'https://app.bosta.co/api/v2'),
     ],
 
 ];

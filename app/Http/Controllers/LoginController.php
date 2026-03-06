@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Utils\Helpers;
 use App\Models\Admin;
+use App\Support\AdminPermissionRegistry;
 use App\Models\BusinessSetting;
 use Brian2694\Toastr\Facades\Toastr;
 use Gregwar\Captcha\CaptchaBuilder;
@@ -77,28 +78,25 @@ class LoginController extends Controller
             return back();
         }
 
-        if ($request->role == 'admin') {
-            $data = Admin::where('email', $request->email)->where('admin_role_id', 1)->first();
+        $data = Admin::where('email', $request->email)->first();
+        if (!isset($data)) {
+            return redirect()->back()->withInput($request->only('email', 'remember'))
+                        ->withErrors(['Credentials does not match.']);
+        } else if ($data->status != 1) {
+            return redirect()->back()->withInput($request->only('email', 'remember'))
+                ->withErrors(['You are blocked!!, contact with admin.']);
+        }
 
-            if (!isset($data)) {
+        if ($request->role == 'admin') {
+            if (!$data->hasRole(AdminPermissionRegistry::superAdminRole())) {
                 return redirect()->back()->withInput($request->only('email', 'remember'))
                             ->withErrors(['Credentials does not match.']);
-            }else if (isset($data) && $data->status != 1) {
-                return redirect()->back()->withInput($request->only('email', 'remember'))
-                    ->withErrors(['You are blocked!!, contact with admin.']);
             }
         } elseif ($request->role == 'employee') {
-
-            $data = Admin::where('email', $request->email)->where('admin_role_id','!=' ,1)->first();
-
-            if (!isset($data)) {
+            if ($data->hasRole(AdminPermissionRegistry::superAdminRole())) {
                 return redirect()->back()->withInput($request->only('email', 'remember'))
                             ->withErrors(['Credentials does not match.']);
-            }else if (isset($data) && $data->status != 1) {
-                return redirect()->back()->withInput($request->only('email', 'remember'))
-                    ->withErrors(['You are blocked!!, contact with admin.']);
             }
-
         } else {
             Toastr::error(translate('role_missing'));
             return back();

@@ -129,6 +129,7 @@ class Product extends Model
         'match_makes',
         'match_models',
         'match_years',
+        'is_traceable',
         'is_warranty',
     ];
 
@@ -188,6 +189,7 @@ class Product extends Model
         'match_makes' => 'array',
         'match_models' => 'array',
         'match_years' => 'array',
+        'is_traceable' => 'boolean',
         'is_warranty' => 'boolean',
     ];
 

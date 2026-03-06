@@ -1,6 +1,6 @@
 @php
 $cart = \App\Utils\CartManager::getCartListQuery();
-$cartList = \App\Utils\CartManager::getCartListQuery(type: 'checked');
+$cartSummary = \App\Utils\CartManager::getCartPriceSummary(type: 'checked');
 
 $user = auth('customer')->user();
 $isLoggedIn = auth('customer')->check();
@@ -18,7 +18,7 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
 
         @if(!($user && $user->user_type == 1))
         <span class="cart-total-price font-bold fs-14">
-            {{ webCurrencyConverter(amount: \App\Utils\CartManager::getCartListTotalAppliedDiscount($cartList)) }}
+            {{ webCurrencyConverter(amount: $cartSummary['subTotal'] ?? 0) }}
         </span>
         @endif
     </a>
@@ -48,26 +48,12 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
 
             if ($user && $user->user_type == 1) {
                 // Wholesaler ke liye sab 0
-                $totalDiscountOnProduct = 0;
                 $totalSavedAmount = 0;
+                $sub_total = 0;
             } else {
-                // Retail user ke liye existing logic
-                $getShippingCostSavedForFreeDelivery = \App\Utils\CartManager::getShippingCostSavedForFreeDelivery();
-
-                $totalDiscountOnProduct = 0;
-                foreach ($cart as $cartItem) {
-                    $totalDiscountOnProduct += $cartItem->discount * $cartItem->quantity;
-                }
-
-                $totalSavedAmount = $totalDiscountOnProduct;
-
-                if (session()->has('coupon_discount') && session('coupon_discount') > 0 && session('coupon_type') != 'free_delivery') {
-                    $totalSavedAmount += session('coupon_discount');
-                }
-
-                if ($getShippingCostSavedForFreeDelivery > 0) {
-                    $totalSavedAmount += $getShippingCostSavedForFreeDelivery;
-                }
+                // Retail users use the shared cart summary calculation path.
+                $totalSavedAmount = (float)($cartSummary['totalSavedAmount'] ?? 0);
+                $sub_total = (float)($cartSummary['subTotal'] ?? 0);
             }
             ?>
 
@@ -83,8 +69,9 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
                 </small>
             </div>
             <div class="__h-20rem" data-simplebar data-simplebar-auto-hide="false">
+                @if($user && $user->user_type == 1)
                 @php($sub_total=0)
-                @php($total_tax=0)
+                @endif
                 @php($stockCheckStatus=getWebConfig(name: 'stock_check'))
                 @foreach($cart as $cartItem)
                 @php($product=\App\Models\Product::where(['id' => $cartItem['product_id']])->with(['clearanceSale' =>
@@ -207,11 +194,8 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
 
                 if ($user && $user->user_type == 1) {
                     $sub_total += $cartItem['price'] * $cartItem['quantity'];
-                } else {
-                    $sub_total += ($cartItem['price'] - $cartItem['discount']) * $cartItem['quantity'];
                 }
                 ?>
-                @php($total_tax+=$cartItem['tax']*$cartItem['quantity'])
                 @endforeach
             </div>
             @php($free_delivery_status =

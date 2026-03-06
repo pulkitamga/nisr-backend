@@ -40,7 +40,7 @@ class CareerTicketExport implements FromCollection, WithHeadings, WithMapping, S
         }
 
         // Talent pool filter
-        if ($this->request->filled('talent_pool')) {
+        if ($this->request->filled('talent_pool') && in_array($this->request->talent_pool, ['yes', 'no'], true)) {
             $query->whereHas('careerTalentPool', function ($q) {
                 if ($this->request->talent_pool === 'yes') {
                     $q->where('consent', 1);

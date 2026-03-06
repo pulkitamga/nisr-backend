@@ -127,7 +127,8 @@ class POSOrderController extends BaseController
                 $cartLineItems = $this->getSessionCartLineItems(cart: $cart);
                 $orderAmountData = $this->getOrderAmountData(
                     cartId: $cartId,
-                    cartLineItems: $cartLineItems
+                    cartLineItems: $cartLineItems,
+                    branchId: $branchId
                 );
                 $amount = $orderAmountData['amount'];
                 $installationCharge = $orderAmountData['installationCharge'];
@@ -198,14 +199,13 @@ class POSOrderController extends BaseController
                             throw new \RuntimeException(translate('Product_not_found_in_cart'));
                         }
 
-                        $tax = $this->getTaxAmount($item['price'], $product['tax']);
-                        $price = $product['tax_model'] == 'include' ? $item['price'] - $tax : $item['price'];
+                        $lineUnitPrice = (float)($item['price'] ?? 0);
                         $installationChargeProduct = (float)($item['installation_charge'] ?? 0);
                         $exchangeChargeProduct = (float)($item['exchange_charge'] ?? 0);
 
                         $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(params: ['product_id' => $item['id'], 'variant_key' => $item['variant']], relations: ['storage']);
                         if ($product['product_type'] == 'digital' && $digitalProductVariation) {
-                            $price = $product['tax_model'] == 'include' ? $digitalProductVariation['price'] - $tax : $digitalProductVariation['price'];
+                            $lineUnitPrice = (float)$digitalProductVariation['price'];
 
                             if ($product['digital_product_type'] == 'ready_product') {
                                 $getStoragePath = $this->storageRepo->getFirstWhere(params: [
@@ -218,6 +218,18 @@ class POSOrderController extends BaseController
                         } elseif ($product['digital_product_type'] == 'ready_product' && !empty($product['digital_file_ready'])) {
                             $product['storage_path'] = $product['digital_file_ready_storage_type'] ?? 'public';
                         }
+
+                        $lineDiscount = max(0, (float)($item['discount'] ?? 0));
+                        $lineTaxRate = max(0, (float)($product['tax'] ?? 0));
+                        $taxableUnitAmount = max(0, $lineUnitPrice - $lineDiscount);
+                        if ((string)($product['tax_model'] ?? 'exclude') === 'include') {
+                            $tax = $lineTaxRate > 0
+                                ? ($taxableUnitAmount * $lineTaxRate) / (100 + $lineTaxRate)
+                                : 0.0;
+                        } else {
+                            $tax = $this->getTaxAmount($taxableUnitAmount, $lineTaxRate);
+                        }
+                        $price = $lineUnitPrice;
 
                         $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
                             orderId: $orderId,
@@ -353,10 +365,12 @@ class POSOrderController extends BaseController
             ->all();
     }
 
-    private function getOrderAmountData(string $cartId, array $cartLineItems): array
+    private function getOrderAmountData(string $cartId, array $cartLineItems, int $branchId): array
     {
         $installationCharge = 0.0;
         $exchangeCharge = 0.0;
+        $hasIncludeTaxModel = false;
+        $hasExcludeTaxModel = false;
 
         $subTotalCalculation = [
             'countItem' => 0,
@@ -394,6 +408,12 @@ class POSOrderController extends BaseController
             if (!$product) {
                 continue;
             }
+            $lineTaxModel = strtolower((string)($product['tax_model'] ?? ($lineItem['tax_model'] ?? 'exclude')));
+            if ($lineTaxModel === 'include') {
+                $hasIncludeTaxModel = true;
+            } else {
+                $hasExcludeTaxModel = true;
+            }
 
             $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
                 product: $product,
@@ -410,18 +430,25 @@ class POSOrderController extends BaseController
             $subTotalCalculation['subtotal'] += $cartSubTotalCalculation['subtotal'];
             $subTotalCalculation['discountOnProduct'] += $cartSubTotalCalculation['discountOnProduct'];
         }
-
-        $totalCalculation = $this->cartService->getTotalCalculation(
-            subTotalCalculation: $subTotalCalculation,
-            cartName: $cartId
+        $cartPayload = $this->posCartStateService->getPayload(
+            cartId: $cartId,
+            branchId: $branchId,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id()
         );
-        $couponDiscount = (float)($totalCalculation['couponDiscount'] ?? 0);
-        $total = (float)($totalCalculation['total'] ?? 0)
-            + (float)$subTotalCalculation['totalTax']
-            - $couponDiscount
-            + $installationCharge
-            - $exchangeCharge;
-        $total = max(0, $total);
+        $itemPrice = (float)$subTotalCalculation['subtotal'] + (float)$subTotalCalculation['discountOnProduct'];
+        $taxModel = ($hasIncludeTaxModel && !$hasExcludeTaxModel) ? 'include' : 'exclude';
+        $summary = OrderManager::calculatePosRetailVatSummary(
+            itemPrice: $itemPrice,
+            itemDiscount: (float)$subTotalCalculation['discountOnProduct'],
+            extraDiscountInput: abs((float)($cartPayload['ext_discount'] ?? 0)),
+            extraDiscountType: (string)($cartPayload['ext_discount_type'] ?? 'amount'),
+            couponDiscount: abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            totalInstallationPrice: $installationCharge,
+            totalExchangePrice: $exchangeCharge,
+            taxModel: $taxModel
+        );
+        $total = (float)$summary['totalAmount'];
 
         return [
             'amount' => (float)usdToDefaultCurrency(amount: $total),
@@ -544,6 +571,10 @@ class POSOrderController extends BaseController
     protected function calculateCartItemsData(string $cartName, array $customerCartData, int $branchId): array
     {
         $cartItemValue = [];
+        $installationTotal = 0.0;
+        $exchangeTotal = 0.0;
+        $hasIncludeTaxModel = false;
+        $hasExcludeTaxModel = false;
         $subTotalCalculation = [
             'countItem' => 0,
             'totalQuantity' => 0,
@@ -570,6 +601,12 @@ class POSOrderController extends BaseController
                     if (!$product) {
                         continue;
                     }
+                    $lineTaxModel = strtolower((string)($product['tax_model'] ?? ($cartItem['tax_model'] ?? 'exclude')));
+                    if ($lineTaxModel === 'include') {
+                        $hasIncludeTaxModel = true;
+                    } else {
+                        $hasExcludeTaxModel = true;
+                    }
                     $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
                         product: $product,
                         cartItem: $cartItem,
@@ -578,6 +615,8 @@ class POSOrderController extends BaseController
                     if ($cartItem['customerId'] == $customerCartData[$cartName]['customerId']) {
                         $cartItem['productSubtotal'] = $cartSubTotalCalculation['productSubtotal'];
                         $subTotalCalculation['customerOnHold'] = $cartItem['customerOnHold'];
+                        $installationTotal += (float)($cartItem['installation_charge'] ?? 0) * (int)($cartItem['quantity'] ?? 0);
+                        $exchangeTotal += (float)($cartItem['exchange_charge'] ?? 0);
                         $cartItemValue[] = $cartItem;
 
                         $subTotalCalculation['countItem'] += $cartSubTotalCalculation['countItem'];
@@ -593,23 +632,43 @@ class POSOrderController extends BaseController
                 }
             }
         }
+
+        $taxModel = ($hasIncludeTaxModel && !$hasExcludeTaxModel) ? 'include' : 'exclude';
+        $summary = OrderManager::calculatePosRetailVatSummary(
+            itemPrice: (float)$subTotalCalculation['subtotal'] + (float)$subTotalCalculation['discountOnProduct'],
+            itemDiscount: (float)$subTotalCalculation['discountOnProduct'],
+            extraDiscountInput: abs((float)($cartPayload['ext_discount'] ?? 0)),
+            extraDiscountType: (string)($cartPayload['ext_discount_type'] ?? 'amount'),
+            couponDiscount: abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            totalInstallationPrice: $installationTotal,
+            totalExchangePrice: $exchangeTotal,
+            taxModel: $taxModel
+        );
+
         $totalCalculation = $this->cartService->getTotalCalculation(
             subTotalCalculation: $subTotalCalculation,
-            cartName: $cartName
+            cartName: $cartName,
+            installationCharge: $installationTotal,
+            exchangeCharge: $exchangeTotal
         );
         return [
             'countItem' => $subTotalCalculation['countItem'],
-            'total' => $totalCalculation['total'],
+            'total' => $summary['totalAmount'],
             'subtotal' => $subTotalCalculation['subtotal'],
-            'taxCalculate' => $subTotalCalculation['taxCalculate'],
-            'totalTaxShow' => $subTotalCalculation['totalTaxShow'],
-            'totalTax' => $subTotalCalculation['totalTax'],
+            'taxableBase' => $summary['taxableBase'],
+            'subTotalWithVat' => $summary['subTotalWithVat'],
+            'taxCalculate' => $summary['taxTotal'],
+            'totalTaxShow' => $summary['taxTotal'],
+            'totalTax' => $summary['taxTotal'],
             'discountOnProduct' => $subTotalCalculation['discountOnProduct'],
             'productSubtotal' => $subTotalCalculation['productSubtotal'],
             'cartItemValue' => $cartItemValue,
-            'couponDiscount' => $totalCalculation['couponDiscount'],
-            'extraDiscount' => $totalCalculation['extraDiscount'],
+            'couponDiscount' => abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            'extraDiscount' => $summary['extraDiscount'],
             'customerOnHold' => $subTotalCalculation['customerOnHold'] ?? false,
+            'totalInstallationPrice' => $installationTotal,
+            'totalExchangePrice' => $exchangeTotal,
+            'legacyTotalBeforeVat' => $totalCalculation['total'],
         ];
     }
 

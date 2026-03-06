@@ -36,6 +36,7 @@ use Illuminate\Support\Str;
 
 class OrderManager
 {
+    private const POS_DEFAULT_VAT_RATE = 14.0;
     use CommonTrait, PdfGenerator;
 
     // public static function track_order($order_id)
@@ -202,6 +203,85 @@ class OrderManager
         }
 
         return 0;
+    }
+
+    public static function calculatePosRetailVatSummary(
+        float $itemPrice,
+        float $itemDiscount,
+        float $extraDiscountInput,
+        ?string $extraDiscountType,
+        float $couponDiscount,
+        float $totalInstallationPrice = 0.0,
+        float $totalExchangePrice = 0.0,
+        float $shippingTotal = 0.0,
+        ?string $couponType = null,
+        bool $isShippingFree = false,
+        string $taxModel = 'exclude'
+    ): array {
+        $itemPrice = max(0, $itemPrice);
+        $itemDiscount = max(0, $itemDiscount);
+        $totalInstallationPrice = max(0, $totalInstallationPrice);
+        $totalExchangePrice = max(0, $totalExchangePrice);
+        $shippingTotal = max(0, $shippingTotal);
+        $couponDiscount = max(0, $couponDiscount);
+        $extraDiscountInput = max(0, $extraDiscountInput);
+        $taxModel = strtolower(trim((string)$taxModel)) === 'include' ? 'include' : 'exclude';
+
+        // Egypt POS workflow:
+        // taxable goods/services base before order-level reductions.
+        $baseBeforeExtraDiscount = max(
+            0,
+            $itemPrice
+            - $itemDiscount
+            - $totalExchangePrice
+            + $totalInstallationPrice
+        );
+
+        // Keep historical POS behavior: percent extra discount uses item price basis.
+        $extraDiscount = $extraDiscountType === 'percent'
+            ? ($itemPrice * $extraDiscountInput) / 100
+            : $extraDiscountInput;
+        $extraDiscount = min(max(0, $extraDiscount), $baseBeforeExtraDiscount);
+
+        $baseAfterExtraDiscount = max(0, $baseBeforeExtraDiscount - $extraDiscount);
+
+        $couponDiscountOnShipping = $couponType == 'free_delivery'
+            ? min($couponDiscount, $shippingTotal)
+            : 0.0;
+        $couponDiscountOnProduct = $couponType == 'free_delivery'
+            ? 0.0
+            : min($couponDiscount, $baseAfterExtraDiscount);
+
+        $taxableBase = max(0, $baseAfterExtraDiscount - $couponDiscountOnProduct);
+        $vatRate = self::POS_DEFAULT_VAT_RATE;
+        if ($taxModel === 'include') {
+            // Gross amount already includes VAT.
+            $taxTotal = round(($taxableBase * $vatRate) / (100 + $vatRate), 2);
+            $subTotalWithVat = round($taxableBase, 2);
+        } else {
+            $taxTotal = round(($taxableBase * $vatRate) / 100, 2);
+            $subTotalWithVat = round($taxableBase + $taxTotal, 2);
+        }
+        $deliveryFeeDiscount = $isShippingFree ? $shippingTotal : 0.0;
+        $totalAmount = round(
+            max(0, $subTotalWithVat + $shippingTotal - $couponDiscountOnShipping - $deliveryFeeDiscount),
+            2
+        );
+
+        return [
+            'baseBeforeExtraDiscount' => round($baseBeforeExtraDiscount, 2),
+            'extraDiscount' => round($extraDiscount, 2),
+            'baseAfterExtraDiscount' => round($baseAfterExtraDiscount, 2),
+            'couponDiscountOnProduct' => round($couponDiscountOnProduct, 2),
+            'couponDiscountOnShipping' => round($couponDiscountOnShipping, 2),
+            'taxableBase' => round($taxableBase, 2),
+            'taxTotal' => $taxTotal,
+            'subTotalWithVat' => $subTotalWithVat,
+            'vatRate' => $vatRate,
+            'deliveryFeeDiscount' => round($deliveryFeeDiscount, 2),
+            'totalAmount' => $totalAmount,
+            'taxModel' => $taxModel,
+        ];
     }
 
     public static function order_summary_before_place_order($cart, $coupon_discount)
@@ -1584,6 +1664,10 @@ class OrderManager
 
     public static function getOrderTotalPriceSummary($order): array
     {
+        if (strtolower((string)($order['order_type'] ?? '')) == 'pos') {
+            return self::getPosOrderTotalPriceSummary(order: $order);
+        }
+
         $itemPrice = 0;
         $itemDiscount = 0;
         $totalProductPrice = 0;
@@ -1662,6 +1746,83 @@ class OrderManager
             'totalAmount' => $totalAmount,
             'paidAmount' => $order['paid_amount'],
             'changeAmount' => ((float)$order['paid_amount'] - $totalAmount),
+        ];
+    }
+
+    private static function getPosOrderTotalPriceSummary($order): array
+    {
+        $itemPrice = 0.0;
+        $itemDiscount = 0.0;
+        $totalItemQuantity = 0;
+        $hasIncludeTaxModel = false;
+        $hasExcludeTaxModel = false;
+
+        foreach ($order->details as $detail) {
+            $qty = max(0, (float)($detail['qty'] ?? 0));
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $lineItemPrice = max(0, (float)($detail['price'] ?? 0) * $qty);
+            $lineItemDiscount = max(0, abs((float)($detail['discount'] ?? 0)));
+            $lineTaxModel = strtolower((string)($detail['tax_model'] ?? 'exclude'));
+            if ($lineTaxModel === 'include') {
+                $hasIncludeTaxModel = true;
+            } else {
+                $hasExcludeTaxModel = true;
+            }
+
+            $itemPrice += $lineItemPrice;
+            $itemDiscount += $lineItemDiscount;
+            $totalItemQuantity += (int)$qty;
+        }
+
+        $totalExchangePrice = abs((float)($order['exchange_charge'] ?? 0));
+        $totalInstallationPrice = max(0, (float)($order['installation_charge'] ?? 0));
+        $shipping = (float)($order['shipping_cost'] ?? 0);
+        $couponDiscount = abs((float)($order['discount_amount'] ?? 0));
+        $couponType = self::getOrderCouponType($order);
+        $taxModel = ($hasIncludeTaxModel && !$hasExcludeTaxModel) ? 'include' : 'exclude';
+        $calculatedSummary = self::calculatePosRetailVatSummary(
+            itemPrice: $itemPrice,
+            itemDiscount: $itemDiscount,
+            extraDiscountInput: abs((float)($order['extra_discount'] ?? 0)),
+            extraDiscountType: (string)($order['extra_discount_type'] ?? 'amount'),
+            couponDiscount: $couponDiscount,
+            totalInstallationPrice: $totalInstallationPrice,
+            totalExchangePrice: $totalExchangePrice,
+            shippingTotal: $shipping,
+            couponType: $couponType,
+            isShippingFree: (int)($order['is_shipping_free'] ?? 0) == 1,
+            taxModel: $taxModel
+        );
+
+        $deliveryExchangeAmt = (int)($order['exchange_status'] ?? 0) == 1
+            ? abs((float)($order['exchange_amount'] ?? 0))
+            : 0.0;
+
+        return [
+            'itemPrice' => $itemPrice,
+            'itemDiscount' => $itemDiscount,
+            'extraDiscount' => $calculatedSummary['extraDiscount'],
+            'exchangeProductAmount' => $deliveryExchangeAmt,
+            'subTotal' => $calculatedSummary['taxableBase'],
+            'subTotalWithVat' => $calculatedSummary['subTotalWithVat'],
+            'netBeforeVat' => $calculatedSummary['taxableBase'],
+            'couponDiscount' => $couponDiscount,
+            'taxTotal' => $calculatedSummary['taxTotal'],
+            'shippingTotal' => $shipping,
+            'deliveryFeeDiscount' => $calculatedSummary['deliveryFeeDiscount'],
+            'totalItemQuantity' => $totalItemQuantity,
+            'totalExchangePrice' => $totalExchangePrice,
+            'totalInstallationPrice' => $totalInstallationPrice,
+            'totalAmount' => $calculatedSummary['totalAmount'],
+            'paidAmount' => (float)($order['paid_amount'] ?? 0),
+            'changeAmount' => ((float)($order['paid_amount'] ?? 0) - $calculatedSummary['totalAmount']),
+            'vatRate' => $calculatedSummary['vatRate'],
+            'taxableBase' => $calculatedSummary['taxableBase'],
+            'baseBeforeExtraDiscount' => $calculatedSummary['baseBeforeExtraDiscount'],
+            'baseAfterExtraDiscount' => $calculatedSummary['baseAfterExtraDiscount'],
         ];
     }
 }

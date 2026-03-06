@@ -13,10 +13,6 @@ class CareerJob extends Model
 
     protected $fillable = ['title', 'location', 'experience', 'skills', 'job_description', 'is_active'];
 
-    protected $casts = [
-        'skills' => 'array',
-    ];
-
      public function translations(): MorphMany
     {
         return $this->morphMany('App\Models\Translation', 'translationable');

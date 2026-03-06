@@ -411,7 +411,6 @@ class CartController extends Controller
     // Updated the quantity for a cart item
     public function updateQuantity_guest(Request $request): JsonResponse
     {
-        $sub_total = 0;
         $response = CartManager::update_cart_qty($request);
         $cart = CartManager::getCartListQuery();
         $this->refreshCouponSessionAfterCartChange();
@@ -430,13 +429,21 @@ class CartController extends Controller
 
         $quantity_price = webCurrencyConverter($product['price'] * (int)$product['quantity']);
         $discount_price = webCurrencyConverter(($product['price'] - $product['discount']) * (int)$product['quantity']);
-        $total_discount = 0;
-        foreach ($cart as $cartItem) {
-            $sub_total += ($cartItem['price'] - $cartItem['discount']) * $cartItem['quantity'];
-            $total_discount += $cartItem['discount'] * $cartItem['quantity'];
+
+        $user = auth('customer')->user();
+        $summarySubTotal = 0;
+        $summarySavedAmount = 0;
+        if ($user && (int)$user->user_type === 1) {
+            foreach ($cart as $cartItem) {
+                $summarySubTotal += (float)$cartItem['price'] * (float)$cartItem['quantity'];
+            }
+        } else {
+            $cartSummary = CartManager::getCartPriceSummary(type: 'checked');
+            $summarySubTotal = (float)($cartSummary['subTotal'] ?? 0);
+            $summarySavedAmount = (float)($cartSummary['totalSavedAmount'] ?? 0);
         }
-        $total_price = webCurrencyConverter($sub_total);
-        $total_discount_price = webCurrencyConverter($total_discount);
+        $total_price = webCurrencyConverter($summarySubTotal);
+        $total_discount_price = webCurrencyConverter($summarySavedAmount);
 
         if ($response['status'] == 0) {
             return response()->json([
@@ -446,7 +453,13 @@ class CartController extends Controller
             ]);
         }
         /** for default theme nav cart ,showing free delivery amount */
-        $free_delivery_status = OrderManager::getFreeDeliveryOrderAmountArray($cart[0]->cart_group_id);
+        $free_delivery_status = [
+            'amount_need' => 0,
+            'percentage' => 0,
+        ];
+        if ($cart->isNotEmpty()) {
+            $free_delivery_status = OrderManager::getFreeDeliveryOrderAmountArray($cart[0]->cart_group_id);
+        }
 
         return response()->json([
             'status' => $response['status'],

@@ -2,6 +2,7 @@
     use App\Enums\ViewPaths\Admin\FirebaseOTPVerification;
     use App\Enums\ViewPaths\Admin\Recaptcha;
     use App\Enums\ViewPaths\Admin\SMSModule;
+    use App\Enums\ViewPaths\Admin\ShippingProvider;
     use App\Enums\ViewPaths\Admin\SocialMediaChat;
     use App\Enums\ViewPaths\Admin\SocialLoginSettings;
     use App\Enums\ViewPaths\Admin\BusinessSettings;
@@ -24,6 +25,9 @@
         <li class="{{ Request::is('admin/business-settings/'.SMSModule::VIEW[URI]) ?'active':'' }}"><a
                 class="text-capitalize"
                 href="{{route('admin.business-settings.sms-module')}}">{{translate('SMS_config')}}</a></li>
+        <li class="{{ Request::is('admin/business-settings/'.ShippingProvider::VIEW[URI]) ?'active':'' }}">
+            <a class="text-capitalize" href="{{route('admin.business-settings.shipping-provider')}}">{{translate('shipping')}}</a>
+        </li>
         <li class="{{ Request::is('admin/business-settings/'.Recaptcha::VIEW[URI]) ?'active':'' }}"><a
                 class="text-capitalize"
                 href="{{route('admin.business-settings.captcha')}}">{{translate('recaptcha')}}</a></li>

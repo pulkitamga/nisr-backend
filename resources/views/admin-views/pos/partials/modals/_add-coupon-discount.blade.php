@@ -15,7 +15,7 @@
                 </div>
 
                 <div class="form-group">
-                    <button class="btn btn--primary action-coupon-discount" data-error-message="{{translate('please_enter_coupon_code')}}">
+                    <button type="button" class="btn btn--primary action-coupon-discount" data-error-message="{{translate('please_enter_coupon_code')}}">
                         {{ translate('submit') }}
                     </button>
                 </div>

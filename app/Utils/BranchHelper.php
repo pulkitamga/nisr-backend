@@ -2,21 +2,28 @@
 
 namespace App\Utils;
 
-use App\Utils\Helpers;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Auth;
 
 class BranchHelper
 {
- public static function getAccessibleBranches()
+    public static function getAccessibleBranches()
     {
         $admin = Auth::guard('admin')->user();
 
-        if ($admin?->isSuperAdmin()) {
+        if (!$admin) {
+            return collect();
+        }
+
+        if ($admin->isSuperAdmin()) {
             return Branch::all();
         }
 
-        $branchIdRaw = $admin->branch_id;
+        $branchIdRaw = (string)($admin->branch_id ?? '');
+
+        if ($branchIdRaw === '') {
+            return collect();
+        }
 
         if (is_string($branchIdRaw) && str_starts_with($branchIdRaw, '[') && str_ends_with($branchIdRaw, ']')) {
             $branchIds = json_decode($branchIdRaw, true);
@@ -24,7 +31,12 @@ class BranchHelper
             $branchIds = str_contains($branchIdRaw, ',') ? explode(',', $branchIdRaw) : [$branchIdRaw];
         }
 
-        $branchIds = array_map('intval', $branchIds);
+        $branchIds = array_values(array_filter(array_map('intval', (array)$branchIds), fn ($id) => $id > 0));
+
+        if (empty($branchIds)) {
+            return collect();
+        }
+
         return Branch::whereIn('id', $branchIds)->get();
     }
 }

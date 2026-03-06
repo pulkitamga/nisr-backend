@@ -1588,14 +1588,15 @@ class WholeSalerController extends BaseController
         ]);
 
         $product = Product::findOrFail($request->product_id);
+        $isTraceable = (int)$product->is_traceable === 1;
         $variationRequested = $request->filled('variation_type') ? trim($request->variation_type) : null;
         $qtyToSend = (int) $request->quantity_sent;
         $serialCsvPath = null;
         $serials = [];
 
-        if ((int)$product->is_warranty === 1) {
+        if ($isTraceable) {
             if (!$request->hasFile('serial_csv')) {
-                Toastr::error(translate('Serial CSV is required for warranty products.'));
+                Toastr::error(translate('Serial CSV is required for traceable products.'));
                 return redirect()->back()->withInput();
             }
 
@@ -1645,7 +1646,7 @@ class WholeSalerController extends BaseController
                 throw new \RuntimeException('Quantity exceeds remaining quantity for this order item.');
             }
 
-            if ((int)$product->is_warranty === 1 && !empty($serials)) {
+            if ($isTraceable && !empty($serials)) {
                 $warranties = Warranty::query()
                     ->whereIn('serial_number', $serials)
                     ->lockForUpdate()
@@ -1708,7 +1709,7 @@ class WholeSalerController extends BaseController
                 'delivery_date' => now(),
             ]);
 
-            if ((int)$product->is_warranty === 1 && !empty($serials)) {
+            if ($isTraceable && !empty($serials)) {
                 Warranty::query()
                     ->whereIn('serial_number', $serials)
                     ->update([
@@ -1830,8 +1831,8 @@ class WholeSalerController extends BaseController
     //         $csvPath = null;
     //         $serials = [];
 
-    //         // Warranty / CSV logic (unchanged)
-    //         if ($product->is_warranty == 1) {
+    //         // Traceability / CSV logic (unchanged)
+    //         if ($product->is_traceable == 1) {
     //             $request->validate([
     //                 'serial_csv' => 'required|mimes:csv,txt'
     //             ]);
@@ -1990,7 +1991,7 @@ class WholeSalerController extends BaseController
     //         }
 
     //         // 6) Warranty transfers for serials (unchanged)
-    //         if ($product->is_warranty == 1 && !empty($serials)) {
+    //         if ($product->is_traceable == 1 && !empty($serials)) {
     //             $distributorId = $confirmOrder->wholesaler_id;
 
     //             Warranty::whereIn('serial_number', $serials)

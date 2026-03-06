@@ -1,3 +1,5 @@
+@php($total = (float)($cartItems['total'] ?? 0))
+
 <form action="{{route('vendor.pos.order-place')}}" id='order-place' method="post" >
     @csrf
     <div id="cart">
@@ -97,14 +99,14 @@
                 <div class="d-flex gap-2 border-top justify-content-between pt-2">
                     <dt class="title-color text-capitalize font-weight-bold title-color">{{ translate('total') }} : </dt>
                     <dd class="font-weight-bold title-color">
-                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: ($cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])), currencyCode: getCurrencyCode()) }}
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $total), currencyCode: getCurrencyCode()) }}
                     </dd>
                 </div>
             </dl>
 
             <div class="form-group col-12">
                 <input type="hidden" class="form-control total-amount" name="amount" min="0" step="0.01"
-                       value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}"
+                       value="{{ usdToDefaultCurrency(amount: $total) }}"
                        readonly>
             </div>
             <div class="pt-4 mb-4">
@@ -132,9 +134,9 @@
                     <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : </dt>
                     <dd>
                         <input type="number" class="form-control text-end pos-paid-amount-element" placeholder="{{ translate('ex') }}: 1000"
-                               value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}"
+                               value="{{ usdToDefaultCurrency(amount: $total) }}"
                                name="paid_amount"
-                               min="{{ usdToDefaultCurrency(amount: ($cartItems['total'] + $cartItems['totalTax'] - $cartItems['couponDiscount'])) }}"
+                               min="{{ usdToDefaultCurrency(amount: $total) }}"
                                data-currency-position="{{ getWebConfig('currency_symbol_position') }}"
                                data-currency-symbol="{{ getCurrencySymbol() }}">
                     </dd>
@@ -149,7 +151,7 @@
                     <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : </dt>
                     <dd>
                         <input type="number" class="form-control text-end" placeholder="{{ translate('ex') }}: 1000"
-                               value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}" disabled>
+                               value="{{ usdToDefaultCurrency(amount: $total) }}" disabled>
                     </dd>
                 </div>
                 <div class="d-flex gap-2 justify-content-between align-items-center">
@@ -162,7 +164,7 @@
                     <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : <span class="badge badge-soft-danger" id="message-insufficient-balance" data-text="{{ translate('insufficient_balance') }}"></span></dt>
                     <dd>
                         <input type="number" class="form-control text-end wallet-balance-input" placeholder="{{ translate('ex') }}: 1000"
-                               value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}" disabled>
+                               value="{{ usdToDefaultCurrency(amount: $total) }}" disabled>
                     </dd>
                 </div>
                 <div class="d-flex gap-2 justify-content-between align-items-center">

@@ -113,7 +113,7 @@
                         <td>{{ $item->location }}</td>
                         <td>{{ $item->experience }}</td>
                         <td>{{ strip_tags($item->skills) }}</td>
-                        <td>{{ Str::limit(strip_tags($item->description), 80) }}</td>
+                        <td>{{ Str::limit(strip_tags($item->job_description), 80) }}</td>
                         @break
 
                         @case('why_join_us')

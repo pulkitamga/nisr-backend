@@ -27,7 +27,9 @@ class CareerController extends Controller
 
     public function show($slug)
     {
-        $job = CareerJob::where('id', $slug)->firstOrFail();
+        $job = CareerJob::where('id', $slug)
+            ->where('is_active', 1)
+            ->firstOrFail();
         $careerSection = CareerSection::where('is_active', 1)->get();
 
         return view('default.web-views.pages.career-detail', compact('job', 'careerSection'));

@@ -299,12 +299,31 @@
                     <div class="col-md-3 physical_product_show">
                         <div class="form-group">
                             <label class="title-color">
-                                {{ translate('Warranty') }}
+                                Product Traceability
                             </label>
                             <div class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
 
                                 <label class="title-color mb-0">
-                                    {{ translate('is_warranty') }}</label>
+                                    Is Traceable</label>
+
+                                <label class="switcher">
+                                    <input type="checkbox"
+                                        class="switcher_input"
+                                        name="is_traceable"
+                                        value="1" {{ old('is_traceable') ? 'checked' : '' }}>
+                                    <span class="switcher_control"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 physical_product_show">
+                        <div class="form-group">
+                            <label class="title-color">
+                                Product Warranty
+                            </label>
+                            <div class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
+                                <label class="title-color mb-0">
+                                    Is Warranty</label>
 
                                 <label class="switcher">
                                     <input type="checkbox"

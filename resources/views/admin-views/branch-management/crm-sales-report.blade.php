@@ -9,53 +9,61 @@
 @section('content')
     <div class="content container-fluid">
         <div class="mb-3">
-            <h2 class="h1 mb-0 d-flex align-items-center gap-2">
-                <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/customer.png') }}" alt="">
+            <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
+                <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/order_report.png') }}" alt="">
                 CRM Sales Report
             </h2>
         </div>
 
         <div class="card mb-3">
             <div class="card-body">
-                <div class="row g-2 align-items-end">
+                <form id="crm-sales-filter-form" class="row g-2 align-items-end">
                     <div class="col-md-2">
                         <label class="form-label">Year</label>
-                        <select class="form-control" id="yearFilter">
-                            @foreach($years as $year)
-                                <option value="{{ $year }}" {{ (int)$year === (int)date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                        <select class="form-control" name="year" id="crm-year" required>
+                            @foreach ($years as $year)
+                                <option value="{{ $year }}" {{ (int) $year === (int) date('Y') ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">Month</label>
-                        <select class="form-control" id="monthFilter">
+                        <select class="form-control" name="month" id="crm-month">
                             <option value="">All Months</option>
-                            @foreach($months as $monthIndex => $monthName)
-                                <option value="{{ $monthIndex }}">{{ $monthName }}</option>
+                            @foreach ($months as $monthNumber => $monthName)
+                                <option value="{{ $monthNumber }}">{{ $monthName }}</option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">Sale Type</label>
-                        <select class="form-control" id="saleTypeFilter">
+                        <select class="form-control" name="sale_type" id="crm-sale-type">
                             <option value="">All</option>
                             <option value="retail">Retail</option>
                             <option value="wholesale">Wholesale</option>
                         </select>
                     </div>
+
                     <div class="col-md-4">
                         <label class="form-label">Agents</label>
-                        <select class="form-control" id="agentFilter" multiple>
-                            @foreach($agents as $agent)
+                        <select class="form-control" name="agent_ids[]" id="crm-agent-ids" multiple>
+                            @foreach ($agents as $agent)
                                 <option value="{{ $agent->id }}">{{ $agent->name }}</option>
                             @endforeach
                         </select>
                         <small class="text-muted">Leave empty to include all agents.</small>
                     </div>
+
                     <div class="col-md-2">
-                        <button type="button" class="btn btn--primary w-100" id="loadReportBtn">Load Report</button>
+                        <button type="submit" id="crm-load-btn" class="btn btn--primary w-100">
+                            Load Report
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -63,32 +71,32 @@
             <div class="col-md-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-muted">Total Sales</div>
-                        <h3 class="mb-0" id="statTotalSales">0.00</h3>
+                        <small class="text-muted d-block">Total Sales</small>
+                        <h4 class="mb-0" id="crm-total-sales">0.00</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-muted">Retail Sales</div>
-                        <h3 class="mb-0" id="statRetailSales">0.00</h3>
+                        <small class="text-muted d-block">Retail Sales</small>
+                        <h4 class="mb-0" id="crm-retail-sales">0.00</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-muted">Wholesale Sales</div>
-                        <h3 class="mb-0" id="statWholesaleSales">0.00</h3>
+                        <small class="text-muted d-block">Wholesale Sales</small>
+                        <h4 class="mb-0" id="crm-wholesale-sales">0.00</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-muted">Top Agent</div>
-                        <h5 class="mb-0" id="statTopAgent">-</h5>
+                        <small class="text-muted d-block">Top Agent</small>
+                        <h6 class="mb-0" id="crm-top-agent">-</h6>
                     </div>
                 </div>
             </div>
@@ -96,26 +104,32 @@
 
         <div class="card mb-3">
             <div class="card-body">
-                <canvas id="salesChart" height="110"></canvas>
+                <canvas id="crm-sales-chart" height="110"></canvas>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-body table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
+            <div class="card-header border-0">
+                <h4 class="mb-0">Period Summary</h4>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
+                    <thead class="thead-light">
                         <tr>
                             <th>Period</th>
-                            <th>Retail Sales</th>
-                            <th>Wholesale Sales</th>
-                            <th>Total Sales</th>
-                            <th>Retail Orders</th>
-                            <th>Wholesale Orders</th>
-                            <th>Total Orders</th>
+                            <th class="text-end">Retail Sales</th>
+                            <th class="text-end">Wholesale Sales</th>
+                            <th class="text-end">Total Sales</th>
+                            <th class="text-end">Retail Orders</th>
+                            <th class="text-end">Wholesale Orders</th>
+                            <th class="text-end">Total Orders</th>
+                            <th class="text-end">Total Quantity</th>
                         </tr>
                     </thead>
-                    <tbody id="pivotTableBody">
-                        <tr><td colspan="7" class="text-center text-muted">Load report to view data.</td></tr>
+                    <tbody id="crm-sales-table-body">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">Loading...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -124,106 +138,142 @@
 @endsection
 
 @push('script')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/vendor/chart.js/dist/Chart.min.js') }}"></script>
     <script>
-        let salesChart = null;
+        'use strict';
 
-        function toMoney(value) {
-            return Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        (function () {
+            const form = document.getElementById('crm-sales-filter-form');
+            const loadBtn = document.getElementById('crm-load-btn');
+            const tableBody = document.getElementById('crm-sales-table-body');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+            const chartCtx = document.getElementById('crm-sales-chart').getContext('2d');
+            let crmChart = null;
 
-        function getPayload() {
-            const selectedAgents = Array.from(document.getElementById('agentFilter').selectedOptions).map(option => option.value);
-            return {
-                year: document.getElementById('yearFilter').value,
-                month: document.getElementById('monthFilter').value || null,
-                sale_type: document.getElementById('saleTypeFilter').value || null,
-                agent_ids: selectedAgents
+            const fmt = (value) => Number(value || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            const selectedValues = (selectElement) => {
+                return Array.from(selectElement.selectedOptions)
+                    .map((option) => Number(option.value))
+                    .filter((value) => Number.isInteger(value) && value > 0);
             };
-        }
 
-        function renderStats(statistics) {
-            document.getElementById('statTotalSales').textContent = toMoney(statistics.total_sales);
-            document.getElementById('statRetailSales').textContent = toMoney(statistics.retail_sales);
-            document.getElementById('statWholesaleSales').textContent = toMoney(statistics.wholesale_sales);
-            document.getElementById('statTopAgent').textContent = statistics.top_agent || '-';
-        }
+            const setLoading = (loading) => {
+                loadBtn.disabled = loading;
+                loadBtn.textContent = loading ? 'Loading...' : 'Load Report';
+            };
 
-        function renderTable(pivotData) {
-            const body = document.getElementById('pivotTableBody');
-            const rows = Object.values(pivotData || {});
-            if (!rows.length) {
-                body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No data found.</td></tr>';
-                return;
-            }
+            const renderStats = (stats) => {
+                document.getElementById('crm-total-sales').textContent = fmt(stats.total_sales);
+                document.getElementById('crm-retail-sales').textContent = fmt(stats.retail_sales);
+                document.getElementById('crm-wholesale-sales').textContent = fmt(stats.wholesale_sales);
+                document.getElementById('crm-top-agent').textContent = stats.top_agent || '-';
+            };
 
-            body.innerHTML = rows.map(row => `
-                <tr>
-                    <td>${row.period}</td>
-                    <td>${toMoney(row.totals.retail_sales)}</td>
-                    <td>${toMoney(row.totals.wholesale_sales)}</td>
-                    <td>${toMoney(row.totals.total_sales)}</td>
-                    <td>${row.totals.retail_orders || 0}</td>
-                    <td>${row.totals.wholesale_orders || 0}</td>
-                    <td>${row.totals.total_orders || 0}</td>
-                </tr>
-            `).join('');
-        }
+            const renderChart = (chartData) => {
+                if (crmChart) {
+                    crmChart.destroy();
+                }
 
-        function renderChart(chartData) {
-            const ctx = document.getElementById('salesChart');
-            if (salesChart) {
-                salesChart.destroy();
-            }
+                const datasets = (chartData.datasets || []).map((dataset) => ({
+                    label: dataset.label,
+                    data: dataset.data || [],
+                    borderColor: dataset.borderColor || '#2563eb',
+                    backgroundColor: dataset.backgroundColor || 'rgba(37, 99, 235, 0.2)',
+                    borderWidth: dataset.borderWidth || 2,
+                    fill: Boolean(dataset.fill),
+                    tension: dataset.tension !== undefined ? dataset.tension : 0.3
+                }));
 
-            salesChart = new Chart(ctx, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                crmChart = new Chart(chartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.labels || [],
+                        datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
                         }
                     }
-                }
-            });
-        }
-
-        async function loadReport() {
-            const button = document.getElementById('loadReportBtn');
-            button.disabled = true;
-            button.textContent = 'Loading...';
-
-            try {
-                const response = await fetch('{{ route('admin.crm.sales-report-data') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify(getPayload())
                 });
-                const result = await response.json();
+            };
 
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Failed to load report data.');
+            const renderTable = (pivotData) => {
+                const rows = Object.values(pivotData || {});
+                if (!rows.length) {
+                    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No data found.</td></tr>';
+                    return;
                 }
 
-                renderStats(result.statistics || {});
-                renderChart(result.chartData || { labels: [], datasets: [] });
-                renderTable(result.pivotData || {});
-            } catch (error) {
-                toastr.error(error.message || 'Failed to load report');
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Load Report';
-            }
-        }
+                tableBody.innerHTML = rows.map((row) => {
+                    const totals = row.totals || {};
+                    return `
+                        <tr>
+                            <td>${row.period !== undefined && row.period !== null ? row.period : '-'}</td>
+                            <td class="text-end">${fmt(totals.retail_sales)}</td>
+                            <td class="text-end">${fmt(totals.wholesale_sales)}</td>
+                            <td class="text-end">${fmt(totals.total_sales)}</td>
+                            <td class="text-end">${totals.retail_orders || 0}</td>
+                            <td class="text-end">${totals.wholesale_orders || 0}</td>
+                            <td class="text-end">${totals.total_orders || 0}</td>
+                            <td class="text-end">${fmt(totals.total_quantity)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            };
 
-        document.getElementById('loadReportBtn').addEventListener('click', loadReport);
-        loadReport();
+            const loadReport = async () => {
+                setLoading(true);
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Loading...</td></tr>';
+
+                try {
+                    const payload = {
+                        year: Number(document.getElementById('crm-year').value),
+                        month: document.getElementById('crm-month').value || null,
+                        sale_type: document.getElementById('crm-sale-type').value || null,
+                        agent_ids: selectedValues(document.getElementById('crm-agent-ids'))
+                    };
+
+                    const response = await fetch('{{ route('admin.crm.sales-report-data') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || 'Failed to load report.');
+                    }
+
+                    renderStats(data.statistics || {});
+                    renderChart(data.chartData || {});
+                    renderTable(data.pivotData || {});
+                } catch (error) {
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">${error.message || 'Failed to load report.'}</td></tr>`;
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                loadReport();
+            });
+
+            loadReport();
+        })();
     </script>
 @endpush
-

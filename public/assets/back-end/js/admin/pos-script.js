@@ -580,82 +580,122 @@ function checkedPaidAmount() {
     return true;
 }
 
-$(".action-coupon-discount").on("click", function (event) {
-    let couponCode = $("#coupon_code").val();
-    if (couponCode.length === 0) {
-        toastr.error($(this).data('error-message'));
-        event.preventDefault();
-    } else {
-        $.ajaxSetup({
-            headers: {
-                "X-CSRF-TOKEN": $('meta[name="_token"]').attr("content"),
-            },
-        });
-        $.post({
-            url: $("#route-admin-pos-coupon-discount").data("url"),
-            data: {
-                coupon_code: couponCode,
-                cart_id: getPosActiveCartId(),
-                branch_id: $('#branch_id').data('branch') || '',
-            },
-            beforeSend: function () {
-                $("#loading").fadeIn();
-            },
-            success: function (data) {
-                if (data.coupon === "success") {
-                    toastr.success(
-                        $("#message-coupon-added-successfully").data("text"),
-                        {
-                            CloseButton: true,
-                            ProgressBar: true,
-                        }
-                    );
-                } else if (data.coupon === "amount_low") {
-                    toastr.warning(
-                        $(
-                            "#message-this-discount-is-not-applied-for-this-amount"
-                        ).data("text"),
-                        {
-                            CloseButton: true,
-                            ProgressBar: true,
-                        }
-                    );
-                } else if (data.coupon === "cart_empty") {
-                    toastr.warning($("#message-cart-is-empty").data("text"), {
-                        CloseButton: true,
-                        ProgressBar: true,
-                    });
-                } else {
-                    toastr.warning($("#message-coupon-is-invalid").data("text"), {
-                        CloseButton: true,
-                        ProgressBar: true,
-                    });
-                }
-                $('#add-coupon-discount').modal('hide');
-                $("#order-place").replaceWith(data.view);
-                basicFunctionalityForCartSummary();
-                posUpdateQuantityFunctionality();
-                viewAllHoldOrders("keyup");
-                removeFromCart();
-                $("#search").focus();
-            },
-            complete: function () {
-                $(".modal-backdrop").addClass("d-none");
-                $(".footer-offset").removeClass("modal-open");
-                $("#loading").fadeOut();
-            },
-        });
+function refreshPosCartAfterDiscount(viewHtml) {
+    if (typeof viewHtml !== "string" || viewHtml.trim().length === 0) {
+        return;
     }
 
+    if ($("#order-place").length) {
+        $("#order-place").replaceWith(viewHtml);
+    } else {
+        const fallbackOrderForm = $("#cart").closest("form");
+        if (fallbackOrderForm.length) {
+            fallbackOrderForm.replaceWith(viewHtml);
+        }
+    }
+
+    basicFunctionalityForCartSummary();
+    posUpdateQuantityFunctionality();
+    viewAllHoldOrders("keyup");
+    removeFromCart();
+    renderCustomerAmountForPay();
+    $("#search").focus();
+}
+
+function closePosDiscountModal(modalSelector) {
+    const modalElement = $(modalSelector);
+    if (!modalElement.length) {
+        return;
+    }
+
+    if (typeof modalElement.modal === "function") {
+        modalElement.modal("hide");
+    }
+
+    modalElement
+        .removeClass("show")
+        .attr("aria-hidden", "true")
+        .css("display", "none");
+
+    $("body").removeClass("modal-open").css("padding-right", "");
+    $(".modal-backdrop").remove();
+}
+
+$(".action-coupon-discount").on("click", function (event) {
+    event.preventDefault();
+
+    let couponCode = ($("#coupon_code").val() || "").trim();
+    if (couponCode.length === 0) {
+        toastr.error($(this).data('error-message'));
+        return;
+    }
+
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="_token"]').attr("content"),
+        },
+    });
+    $.post({
+        url: $("#route-admin-pos-coupon-discount").data("url"),
+        data: {
+            coupon_code: couponCode,
+            cart_id: getPosActiveCartId(),
+            branch_id: $('#branch_id').data('branch') || '',
+        },
+        beforeSend: function () {
+            $("#loading").fadeIn();
+        },
+        success: function (data) {
+            if (data.coupon === "success") {
+                toastr.success(
+                    $("#message-coupon-added-successfully").data("text"),
+                    {
+                        CloseButton: true,
+                        ProgressBar: true,
+                    }
+                );
+            } else if (data.coupon === "amount_low") {
+                toastr.warning(
+                    $(
+                        "#message-this-discount-is-not-applied-for-this-amount"
+                    ).data("text"),
+                    {
+                        CloseButton: true,
+                        ProgressBar: true,
+                    }
+                );
+            } else if (data.coupon === "cart_empty") {
+                toastr.warning($("#message-cart-is-empty").data("text"), {
+                    CloseButton: true,
+                    ProgressBar: true,
+                });
+            } else {
+                toastr.warning($("#message-coupon-is-invalid").data("text"), {
+                    CloseButton: true,
+                    ProgressBar: true,
+                });
+            }
+
+            closePosDiscountModal("#add-coupon-discount");
+            refreshPosCartAfterDiscount(data.view);
+        },
+        complete: function () {
+            $("#loading").fadeOut();
+        },
+    });
 });
 
 $(".action-extra-discount").on("click", function (event) {
-    let discount = $("#dis_amount").val();
+    event.preventDefault();
+
+    let discount = ($("#dis_amount").val() || "").toString().trim();
     let type = $("#type_ext_dis").val();
     if (discount.length === 0) {
         toastr.error($(this).data('error-message'));
-        event.preventDefault();
-    } else if (discount > 0) {
+        return;
+    }
+
+    if (parseFloat(discount) > 0) {
         $.ajaxSetup({
             headers: {
                 "X-CSRF-TOKEN": $('meta[name="_token"]').attr("content"),
@@ -699,17 +739,11 @@ $(".action-extra-discount").on("click", function (event) {
                         }
                     );
                 }
-                $('#add-discount').modal('hide');
-                $(".modal-backdrop").addClass("d-none");
-                $("#order-place").replaceWith(data.view);
-                basicFunctionalityForCartSummary();
-                posUpdateQuantityFunctionality();
-                removeFromCart();
-                $("#search").focus();
+
+                closePosDiscountModal("#add-discount");
+                refreshPosCartAfterDiscount(data.view);
             },
             complete: function () {
-                $(".modal-backdrop").addClass("d-none");
-                $(".footer-offset").removeClass("modal-open");
                 $("#loading").fadeOut();
             },
         });

@@ -163,12 +163,11 @@
                                                             title="{{ translate('update_quantity') }}">
                                                             <i class="tio-add-circle"></i>
                                                         </button>
-                                                        <button class="btn btn-outline-primary btn-sm action-view-stock-report"
-                                                            data-url="{{ route('admin.products.stock-report') . '?product_id=' . $product->id . '&variation=' . urlencode($variation['type']) }}"
-                                                            data-target="#stock-report-modal"
+                                                        <a class="btn btn-outline-primary btn-sm"
+                                                            href="{{ route('admin.products.stock-report', ['product_id' => $product->id, 'variation' => $variation['type']]) }}"
                                                             title="{{ translate('stock_report') }}">
                                                             <i class="tio-file-text"></i>
-                                                        </button>
+                                                        </a>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -233,12 +232,11 @@
                                                     title="{{ translate('update_quantity') }}">
                                                         <i class="tio-add-circle"></i>
                                                     </button>
-                                                    <button class="btn btn-outline-primary btn-sm action-view-stock-report"
-                                                        data-url="{{ route('admin.products.stock-report') . '?product_id=' . $product->id }}"
-                                                        data-target="#stock-report-modal"
+                                                    <a class="btn btn-outline-primary btn-sm"
+                                                        href="{{ route('admin.products.stock-report', ['product_id' => $product->id]) }}"
                                                         title="{{ translate('stock_report') }}">
                                                         <i class="tio-file-text"></i>
-                                                    </button>
+                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -287,47 +285,4 @@
         </div>
     </div>
 
-    <div class="modal fade" id="stock-report-modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="stock-report-content-wrapper"></div>
-            </div>
-        </div>
-    </div>
 @endsection
-
-@push('script')
-    <script>
-        "use strict";
-
-        function loadAdminProductStockReport(url, targetModalSelector) {
-            $.ajax({
-                method: "get",
-                url: url,
-                dataType: "json",
-                beforeSend: function() {
-                    $("#loading").fadeIn();
-                },
-                success: function(response) {
-                    $(".stock-report-content-wrapper").empty().html(response.view);
-                    $(targetModalSelector).modal("show");
-                },
-                complete: function() {
-                    $("#loading").fadeOut();
-                },
-            });
-        }
-
-        $(document).on("click", ".action-view-stock-report", function() {
-            const targetModalSelector = $(this).data("target") || "#stock-report-modal";
-            loadAdminProductStockReport($(this).data("url"), targetModalSelector);
-        });
-
-        $(document).on("change", ".action-toggle-internal-transfer", function() {
-            const baseUrl = $(this).data("base-url");
-            const include = $(this).is(":checked") ? 1 : 0;
-            const requestUrl = `${baseUrl}&include_internal_transfer=${include}`;
-            loadAdminProductStockReport(requestUrl, "#stock-report-modal");
-        });
-    </script>
-@endpush

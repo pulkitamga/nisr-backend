@@ -134,12 +134,11 @@ class POSOrderController extends BaseController
                     return $query->active();
                 }]);
                 if ($product) {
-                    $tax = $this->getTaxAmount($item['price'], $product['tax']);
-                    $price = $product['tax_model'] == 'include' ? $item['price'] - $tax : $item['price'];
+                    $lineUnitPrice = (float)($item['price'] ?? 0);
 
                     $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(params: ['product_id' => $item['id'], 'variant_key' => $item['variant']], relations: ['storage']);
                     if ($product['product_type'] == 'digital' && $digitalProductVariation) {
-                        $price = $product['tax_model'] == 'include' ? $digitalProductVariation['price'] - $tax : $digitalProductVariation['price'];
+                        $lineUnitPrice = (float)$digitalProductVariation['price'];
 
                         if ($product['digital_product_type'] == 'ready_product') {
                             $getStoragePath = $this->storageRepo->getFirstWhere(params: [
@@ -152,6 +151,18 @@ class POSOrderController extends BaseController
                     } elseif ($product['digital_product_type'] == 'ready_product' && !empty($product['digital_file_ready'])) {
                         $product['storage_path'] = $product['digital_file_ready_storage_type'] ?? 'public';
                     }
+
+                    $lineDiscount = max(0, (float)($item['discount'] ?? 0));
+                    $lineTaxRate = max(0, (float)($product['tax'] ?? 0));
+                    $taxableUnitAmount = max(0, $lineUnitPrice - $lineDiscount);
+                    if ((string)($product['tax_model'] ?? 'exclude') === 'include') {
+                        $tax = $lineTaxRate > 0
+                            ? ($taxableUnitAmount * $lineTaxRate) / (100 + $lineTaxRate)
+                            : 0.0;
+                    } else {
+                        $tax = $this->getTaxAmount($taxableUnitAmount, $lineTaxRate);
+                    }
+                    $price = $lineUnitPrice;
 
                     $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
                         orderId: $orderId, item: $item,
@@ -339,17 +350,20 @@ class POSOrderController extends BaseController
         );
         return [
             'countItem' => $subTotalCalculation['countItem'],
-            'total' => $totalCalculation['total'],
+            'total' => (float)($totalCalculation['totalAmount'] ?? 0),
             'subtotal' => $subTotalCalculation['subtotal'],
-            'taxCalculate' => $subTotalCalculation['taxCalculate'],
-            'totalTaxShow' => $subTotalCalculation['totalTaxShow'],
-            'totalTax' => $subTotalCalculation['totalTax'],
+            'taxableBase' => (float)($totalCalculation['taxableBase'] ?? 0),
+            'subTotalWithVat' => (float)($totalCalculation['subTotalWithVat'] ?? 0),
+            'taxCalculate' => (float)($totalCalculation['taxTotal'] ?? 0),
+            'totalTaxShow' => (float)($totalCalculation['taxTotal'] ?? 0),
+            'totalTax' => (float)($totalCalculation['taxTotal'] ?? 0),
             'discountOnProduct' => $subTotalCalculation['discountOnProduct'],
             'productSubtotal' => $subTotalCalculation['productSubtotal'],
             'cartItemValue' => $cartItemValue,
             'couponDiscount' => $totalCalculation['couponDiscount'],
             'extraDiscount' => $totalCalculation['extraDiscount'],
             'customerOnHold' => $subTotalCalculation['customerOnHold'] ?? false,
+            'legacyTotalBeforeVat' => $totalCalculation['total'],
         ];
     }
 

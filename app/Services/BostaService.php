@@ -2,13 +2,37 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class BostaService
 {
+    private function resolveCredentials(): array
+    {
+        $setting = Setting::where([
+            'settings_type' => 'shipping_config',
+            'key_name' => 'bosta',
+        ])->first();
+
+        $stored = ($setting && (int)$setting->is_active === 1) ? ($setting->live_values ?? []) : [];
+
+        $apiKey = $stored['api_key'] ?? config('services.bosta.key');
+        $baseUrl = rtrim($stored['base_url'] ?? config('services.bosta.base_url', 'https://app.bosta.co/api/v2'), '/');
+
+        return [
+            'api_key' => $apiKey,
+            'base_url' => $baseUrl,
+        ];
+    }
+
     public function createShipment($order)
     {
+        $credentials = $this->resolveCredentials();
+        if (empty($credentials['api_key'])) {
+            throw new \Exception('Bosta API key is missing');
+        }
+
         $address = json_decode(json_encode($order->shipping_address_data), true);
 
         Log::info('Order Address Data:', $address);
@@ -48,10 +72,10 @@ class BostaService
         Log::info('Bosta API Request:', $payload);
 
         $response = Http::withHeaders([
-            'Authorization' => config('services.bosta.key'),
+            'Authorization' => $credentials['api_key'],
             'Content-Type'  => 'application/json',
             'Accept'        => 'application/json',
-        ])->timeout(30)->post('https://app.bosta.co/api/v2/deliveries', $payload);
+        ])->timeout(30)->post($credentials['base_url'] . '/deliveries', $payload);
 
         Log::info('Bosta Response:', [
             'status' => $response->status(),
@@ -105,14 +129,19 @@ class BostaService
     //Track order
     public function trackShipment($trackingNumber)
     {
+        $credentials = $this->resolveCredentials();
+        if (empty($credentials['api_key'])) {
+            throw new \Exception('Bosta API key is missing');
+        }
+
         Log::info('Tracking Bosta shipment:', ['trackingNumber' => $trackingNumber]);
 
         $response = Http::withHeaders([
-            'Authorization' => config('services.bosta.key'), // ✅ BUSINESS KEY
+            'Authorization' => $credentials['api_key'],
             'Accept'        => 'application/json',
         ])
             ->timeout(30)
-            ->get("https://app.bosta.co/api/v2/deliveries/business/{$trackingNumber}");
+            ->get($credentials['base_url'] . "/deliveries/business/{$trackingNumber}");
 
         Log::info('Bosta Tracking Response:', [
             'status' => $response->status(),

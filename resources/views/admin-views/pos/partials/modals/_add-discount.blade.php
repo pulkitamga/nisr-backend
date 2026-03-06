@@ -25,7 +25,7 @@
                     <input type="number" id="dis_amount" class="form-control" name="discount" placeholder="{{translate('ex').':500'}}">
                 </div>
                 <div class="form-group">
-                    <button class="btn btn--primary action-extra-discount" data-error-message="{{translate('please_enter_discount_amount')}}">
+                    <button type="button" class="btn btn--primary action-extra-discount" data-error-message="{{translate('please_enter_discount_amount')}}">
                         {{ translate('submit') }}
                     </button>
                 </div>

@@ -82,10 +82,14 @@ class InstallController extends Controller
 
     public function system_settings(Request $request)
     {
+        $legacySuperAdminRoleId = DB::table('admin_roles')
+            ->where('name', 'Master Admin')
+            ->value('id');
+
         DB::table('admins')->insertOrIgnore([
             'name' => $request['admin_name'],
             'email' => $request['admin_email'],
-            'admin_role_id' => 1,
+            'admin_role_id' => $legacySuperAdminRoleId,
             'password' => bcrypt($request['admin_password']),
             'phone' => $request['admin_phone'],
             'status' => 1,

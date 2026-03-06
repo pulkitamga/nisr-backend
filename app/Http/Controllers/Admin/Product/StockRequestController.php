@@ -402,7 +402,7 @@ class StockRequestController extends BaseController
                 'stockRequestProduct' => $stockRequestProduct,
                 'branchesStock'       => $branchesStock,
                 'product' => [
-                    'is_warranty' => (int)$stockRequestProduct->product->is_warranty,
+                    'is_traceable' => (int)$stockRequestProduct->product->is_traceable,
                     'quantity'    => (int)$stockRequestProduct->quantity
                 ]
             ]
@@ -419,7 +419,7 @@ class StockRequestController extends BaseController
 
         $request->validate([
             'selected_branches.*' => 'exists:branches,id',
-            'serial_csv' => 'required_if:is_warranty,1|file|mimes:csv,txt',
+            'serial_csv' => 'nullable|file|mimes:csv,txt',
         ]);
 
         $selectedBranches = $request->input('selected_branches', []);
@@ -449,7 +449,7 @@ class StockRequestController extends BaseController
         $variationKey    = $stockRequestProduct->variation_key;      // NEW
         $attributes      = $stockRequestProduct->attributes;         // NEW
         $hasVariation    = !empty($variationType);
-        $isWarranty      = $stockRequestProduct->product->is_warranty == 1;
+        $isTraceable     = (int)$stockRequestProduct->product->is_traceable === 1;
 
         // Get the ProductStock row for this product and variation
         $productStock = ProductStock::where('product_id', $realProductId)
@@ -467,10 +467,10 @@ class StockRequestController extends BaseController
         $serials = [];
         $errors = [];
         $csvPath = null;
-        if ($isWarranty) {
+        if ($isTraceable) {
             $csvFile = $request->file('serial_csv');
             if (!$csvFile) {
-                return response()->json(['success' => false, 'message' => 'CSV file is required for warranty product.'], 400);
+                return response()->json(['success' => false, 'message' => 'CSV file is required for traceable product.'], 400);
             }
 
             $parseResult = $this->parseCsvSerials($csvFile, $errors);
@@ -627,7 +627,7 @@ class StockRequestController extends BaseController
                 ]);
 
 
-                if ($isWarranty && !empty($serials)) {
+                if ($isTraceable && !empty($serials)) {
 
                     $branchSerials = Warranty::whereIn('serial_number', $serials)
                         ->where(function ($q) use ($fromBranchId) {
@@ -727,7 +727,7 @@ class StockRequestController extends BaseController
 
     //     $request->validate([
     //         'selected_branches.*' => 'exists:branches,id',
-    //         'serial_csv' => 'required_if:is_warranty,1|file|mimes:csv,txt',
+    //         'serial_csv' => 'required_if:is_traceable,1|file|mimes:csv,txt',
     //     ]);
 
     //     $selectedBranches = $request->input('selected_branches', []);
@@ -757,16 +757,16 @@ class StockRequestController extends BaseController
     //     $variationKey    = $stockRequestProduct->variation_key;      // NEW
     //     $attributes      = $stockRequestProduct->attributes;         // NEW
     //     $hasVariation    = !empty($variationType);
-    //     $isWarranty      = $stockRequestProduct->product->is_warranty == 1;
+    //     $isTraceable     = $stockRequestProduct->product->is_traceable == 1;
 
 
     //     $serials = [];
     //     $errors = [];
     //     $csvPath = null;
-    //     if ($isWarranty) {
+    //     if ($isTraceable) {
     //         $csvFile = $request->file('serial_csv');
     //         if (!$csvFile) {
-    //             return response()->json(['success' => false, 'message' => 'CSV file is required for warranty product.'], 400);
+    //             return response()->json(['success' => false, 'message' => 'CSV file is required for traceable product.'], 400);
     //         }
 
     //         $parseResult = $this->parseCsvSerials($csvFile, $errors);
@@ -903,7 +903,7 @@ class StockRequestController extends BaseController
     //             ]);
 
 
-    //             if ($isWarranty && !empty($serials)) {
+    //             if ($isTraceable && !empty($serials)) {
 
     //                 $branchSerials = Warranty::whereIn('serial_number', $serials)
     //                     ->where(function ($q) use ($fromBranchId) {

@@ -1187,17 +1187,77 @@ public function getVariations(Request $request): JsonResponse
     ]);
 }
 
-public function getStockReport(Request $request): JsonResponse
+public function getStockReport(Request $request): JsonResponse|View
 {
+    $isJsonRequest = $request->ajax() || $request->expectsJson();
+
     $request->validate([
-        'product_id' => 'required|integer|exists:products,id',
+        'product_id' => ($isJsonRequest ? 'required' : 'nullable') . '|integer|exists:products,id',
+        'category_id' => 'nullable|integer|exists:categories,id',
         'variation' => 'nullable|string',
+        'from_date' => 'nullable|date',
+        'to_date' => 'nullable|date|after_or_equal:from_date',
         'include_internal_transfer' => 'nullable|boolean',
     ]);
 
-    $product = $this->productRepo->getFirstWhere(params: ['id' => (int)$request->product_id]);
+    $selectedCategoryId = !empty($request->category_id) ? (int)$request->category_id : null;
+    $selectedProductId = !empty($request->product_id) ? (int)$request->product_id : null;
+    $fromDate = $request->input('from_date');
+    $toDate = $request->input('to_date');
+
+    $categories = $this->categoryRepo->getListWhere(filters: ['position' => 0], dataLimit: 'all');
+    $productsForFilter = Products::query()
+        ->select(['id', 'name', 'category_id', 'added_by'])
+        ->when($selectedCategoryId, fn($query) => $query->where('category_id', $selectedCategoryId))
+        ->orderBy('name')
+        ->get();
+
+    if ($selectedProductId && !$productsForFilter->contains('id', $selectedProductId)) {
+        $selectedProduct = Products::query()
+            ->select(['id', 'name', 'category_id', 'added_by'])
+            ->where('id', $selectedProductId)
+            ->first();
+
+        if ($selectedProduct) {
+            $productsForFilter->prepend($selectedProduct);
+        }
+    }
+
+    if (!$selectedProductId) {
+        return view('admin-views.product.stock-report', [
+            'reportReady' => false,
+            'categories' => $categories,
+            'productsForFilter' => $productsForFilter,
+            'filters' => [
+                'category_id' => $selectedCategoryId,
+                'product_id' => null,
+                'variation' => null,
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
+                'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
+            ],
+        ]);
+    }
+
+    $product = $this->productRepo->getFirstWhere(params: ['id' => $selectedProductId]);
     if (!$product) {
-        return response()->json(['view' => ''], 404);
+        if ($isJsonRequest) {
+            return response()->json(['view' => ''], 404);
+        }
+
+        return view('admin-views.product.stock-report', [
+            'reportReady' => false,
+            'categories' => $categories,
+            'productsForFilter' => $productsForFilter,
+            'filters' => [
+                'category_id' => $selectedCategoryId,
+                'product_id' => null,
+                'variation' => null,
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
+                'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
+            ],
+        ]);
     }
 
     $variation = $this->normalizeReportVariation((string)$request->query('variation', ''));
@@ -1219,6 +1279,14 @@ public function getStockReport(Request $request): JsonResponse
         ->with(['fromBranch:id,branch_name', 'toBranch:id,branch_name'])
         ->whereIn('product_stock_id', $stockIds)
         ->orderByDesc('id');
+
+    if (!empty($fromDate)) {
+        $transactionsQuery->where('created_at', '>=', Carbon::parse($fromDate)->startOfDay());
+    }
+
+    if (!empty($toDate)) {
+        $transactionsQuery->where('created_at', '<=', Carbon::parse($toDate)->endOfDay());
+    }
 
     if (!$includeInternalTransfer) {
         $transactionsQuery->where('reason', '!=', StockReason::BRANCH_TRANSFER);
@@ -1278,9 +1346,18 @@ public function getStockReport(Request $request): JsonResponse
     if ($variation !== null) {
         $baseParams['variation'] = $variation;
     }
+    if ($selectedCategoryId) {
+        $baseParams['category_id'] = $selectedCategoryId;
+    }
+    if (!empty($fromDate)) {
+        $baseParams['from_date'] = $fromDate;
+    }
+    if (!empty($toDate)) {
+        $baseParams['to_date'] = $toDate;
+    }
     $reportBaseUrl = route('admin.products.stock-report') . '?' . http_build_query($baseParams);
 
-    $view = view(Product::STOCK_REPORT[VIEW], [
+    $stockReportData = [
         'product' => $product,
         'variation' => $variation,
         'currentStock' => $currentStock,
@@ -1288,9 +1365,25 @@ public function getStockReport(Request $request): JsonResponse
         'historyRows' => $historyRows,
         'includeInternalTransfer' => $includeInternalTransfer,
         'reportBaseUrl' => $reportBaseUrl,
-    ])->render();
+        'categories' => $categories,
+        'productsForFilter' => $productsForFilter,
+        'filters' => [
+            'category_id' => $selectedCategoryId,
+            'product_id' => $selectedProductId,
+            'variation' => $variation,
+            'from_date' => $fromDate,
+            'to_date' => $toDate,
+            'include_internal_transfer' => $includeInternalTransfer,
+        ],
+        'reportReady' => true,
+    ];
 
-    return response()->json(['view' => $view]);
+    if ($request->ajax() || $request->expectsJson()) {
+        $view = view(Product::STOCK_REPORT[VIEW], $stockReportData)->render();
+        return response()->json(['view' => $view]);
+    }
+
+    return view('admin-views.product.stock-report', $stockReportData);
 }
      
 public function updateQuantity(Request $request): RedirectResponse

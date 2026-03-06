@@ -35,10 +35,10 @@
                             <div class="form-group">
                                 <label class="title-color d-flex">{{translate('app_debug')}}</label>
                                 <select name="app_debug" class="form-control js-select2-custom">
-                                    <option value="true" {{env('APP_DEBUG')==1?'selected':''}}>
+                                    <option value="true" {{filter_var(env('APP_DEBUG'), FILTER_VALIDATE_BOOLEAN) ? 'selected' : ''}}>
                                         {{translate('true')}}
                                     </option>
-                                    <option value="false" {{env('APP_DEBUG')==0?'selected':''}}>
+                                    <option value="false" {{!filter_var(env('APP_DEBUG'), FILTER_VALIDATE_BOOLEAN) ? 'selected' : ''}}>
                                         {{translate('false')}}
                                     </option>
                                 </select>
@@ -144,10 +144,10 @@
                                     <div class="form-group">
                                         <label class="title-color d-flex">{{ translate('Force_HTTPS') }}</label>
                                         <select name="force_https" class="form-control js-select2-custom">
-                                            <option value="true" {{ env('FORCE_HTTPS') ? 'selected' : '' }}>
+                                            <option value="true" {{ filter_var(env('FORCE_HTTPS'), FILTER_VALIDATE_BOOLEAN) ? 'selected' : '' }}>
                                                 {{ translate('true') }}
                                             </option>
-                                            <option value="false" {{ !env('APP_DEBUG') ? 'selected' : '' }}>
+                                            <option value="false" {{ !filter_var(env('FORCE_HTTPS'), FILTER_VALIDATE_BOOLEAN) ? 'selected' : '' }}>
                                                 {{ translate('false') }}
                                             </option>
                                         </select>

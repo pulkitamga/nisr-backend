@@ -264,7 +264,7 @@
                                     data-head-id="{{ $deal->department->head_id ?? '' }}">
                                     {{ translate('Assign Employee') }}
                                 </a>
-                                @if((int)auth('admin')->user()?->admin_role_id !== 1)
+                                @if(!auth('admin')->user()?->isSuperAdmin())
                                 <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
                                 @endif
                                 @endif
@@ -432,4 +432,3 @@
 
 
 @endpush
-
