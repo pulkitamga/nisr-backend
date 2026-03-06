@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class EnvironmentSettingsController extends BaseController
 {
@@ -39,11 +40,17 @@ class EnvironmentSettingsController extends BaseController
             return back();
         }
 
+        $request->validate([
+            'app_debug' => ['nullable', 'in:true,false'],
+            'app_mode' => ['nullable', 'in:live,dev'],
+        ]);
+
         try {
             $this->setEnvironmentValue(envKey: 'APP_DEBUG', envValue: $request['app_debug'] ?? env('APP_DEBUG'));
             $this->setEnvironmentValue(envKey: 'APP_MODE', envValue: $request['app_mode'] ?? env('APP_MODE'));
             Toastr::success(translate('environment_variables_updated_successfully'));
         } catch (Exception $exception) {
+            Log::error('Environment settings update failed', ['exception' => $exception->getMessage()]);
             Toastr::error(translate('environment_variables_updated_failed'));
         }
         return back();
@@ -56,10 +63,15 @@ class EnvironmentSettingsController extends BaseController
             return back();
         }
 
+        $request->validate([
+            'force_https' => ['nullable', 'in:true,false'],
+        ]);
+
         try {
             $this->setEnvironmentValue(envKey: 'FORCE_HTTPS', envValue: $request['force_https'] ?? env('FORCE_HTTPS', false));
             Toastr::success(translate('environment_variables_updated_successfully'));
         } catch (Exception $exception) {
+            Log::error('Force HTTPS update failed', ['exception' => $exception->getMessage()]);
             Toastr::error(translate('environment_variables_updated_failed'));
         }
         return back();
@@ -86,8 +98,14 @@ class EnvironmentSettingsController extends BaseController
             return back();
         }
 
-        shell_exec('php ../artisan passport:install');
-        Toastr::success(translate('Passport_install_successfully'));
+        try {
+            Artisan::call('passport:install', ['--force' => true]);
+            Toastr::success(translate('Passport_install_successfully'));
+        } catch (Exception $exception) {
+            Log::error('Passport install failed', ['exception' => $exception->getMessage()]);
+            Toastr::error(translate('environment_variables_updated_failed'));
+        }
+
         return back();
     }
 }

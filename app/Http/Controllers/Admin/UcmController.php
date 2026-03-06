@@ -7,7 +7,9 @@ use App\Models\CrmCall;
 use App\Models\User;
 use App\Services\UcmApiService;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,6 +55,211 @@ class UcmController extends Controller
         })->values();
 
         return response()->json($calls);
+    }
+
+    public function insightsReport(): View
+    {
+        $snapshotFrom = now()->subDays(89)->startOfDay();
+        $snapshotTo = now()->endOfDay();
+        $trendStart = now()->copy()->startOfMonth()->subMonths(11);
+        $trendEnd = now()->endOfDay();
+
+        $snapshotQuery = CrmCall::query()
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+
+        $totalCalls = (clone $snapshotQuery)->count();
+        $inboundCalls = (clone $snapshotQuery)->where('direction', 'inbound')->count();
+        $outboundCalls = (clone $snapshotQuery)->where('direction', 'outbound')->count();
+        $completedCalls = (clone $snapshotQuery)->where('status', 'completed')->count();
+        $ongoingCalls = (clone $snapshotQuery)->where('status', 'ongoing')->count();
+        $ringingCalls = (clone $snapshotQuery)->where('status', 'ringing')->count();
+        $avgDurationSeconds = (float)((clone $snapshotQuery)->where('status', 'completed')->avg('call_duration') ?? 0);
+        $totalDurationSeconds = (int)((clone $snapshotQuery)->sum(DB::raw('COALESCE(call_duration, 0)')));
+        $answerRate = $totalCalls > 0 ? ($completedCalls / $totalCalls) * 100 : 0;
+        $uniqueContacts = (clone $snapshotQuery)
+            ->whereNotNull('customer_id')
+            ->distinct()
+            ->count('customer_id');
+        $activeAgents = (clone $snapshotQuery)
+            ->whereNotNull('agent_id')
+            ->distinct()
+            ->count('agent_id');
+
+        $trendRows = CrmCall::query()
+            ->whereBetween('created_at', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month')
+            ->selectRaw('COUNT(*) as total_calls')
+            ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_calls")
+            ->selectRaw('AVG(COALESCE(call_duration, 0)) as avg_duration')
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get()
+            ->keyBy(fn($row) => sprintf('%04d-%02d', (int)$row->year, (int)$row->month));
+
+        $trendLabels = [];
+        $trendCalls = [];
+        $trendCompleted = [];
+        $trendAvgDuration = [];
+        for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
+            $monthDate = $trendStart->copy()->addMonths($monthIndex);
+            $monthKey = $monthDate->format('Y-m');
+            $row = $trendRows->get($monthKey);
+
+            $trendLabels[] = $monthDate->format('M Y');
+            $trendCalls[] = (int)($row->total_calls ?? 0);
+            $trendCompleted[] = (int)($row->completed_calls ?? 0);
+            $trendAvgDuration[] = round((float)($row->avg_duration ?? 0), 1);
+        }
+
+        $statusRows = (clone $snapshotQuery)
+            ->selectRaw("COALESCE(NULLIF(status, ''), 'unknown') as status_name")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(status, ''), 'unknown')"))
+            ->orderByDesc('total')
+            ->get();
+
+        $directionRows = (clone $snapshotQuery)
+            ->selectRaw("COALESCE(NULLIF(direction, ''), 'unknown') as direction_name")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(direction, ''), 'unknown')"))
+            ->orderByDesc('total')
+            ->get();
+
+        $hourlyRows = CrmCall::query()
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw('HOUR(created_at) as hour_slot, COUNT(*) as total')
+            ->groupBy('hour_slot')
+            ->orderBy('hour_slot')
+            ->get()
+            ->pluck('total', 'hour_slot')
+            ->all();
+
+        $hourlyLabels = [];
+        $hourlyCounts = [];
+        for ($hour = 0; $hour < 24; $hour++) {
+            $hourlyLabels[] = sprintf('%02d:00', $hour);
+            $hourlyCounts[] = (int)($hourlyRows[$hour] ?? 0);
+        }
+
+        $topAgents = CrmCall::query()
+            ->leftJoin('admins', 'admins.id', '=', 'crm_calls.agent_id')
+            ->whereBetween('crm_calls.created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw('crm_calls.agent_id')
+            ->selectRaw("COALESCE(admins.name, 'Unassigned') as agent_name")
+            ->selectRaw('COUNT(*) as calls_count')
+            ->selectRaw('SUM(COALESCE(crm_calls.call_duration, 0)) as total_duration')
+            ->selectRaw('AVG(COALESCE(crm_calls.call_duration, 0)) as avg_duration')
+            ->groupBy('crm_calls.agent_id', 'admins.name')
+            ->orderByDesc('calls_count')
+            ->limit(8)
+            ->get();
+
+        $kpi = [
+            'total_calls' => $totalCalls,
+            'inbound_calls' => $inboundCalls,
+            'outbound_calls' => $outboundCalls,
+            'completed_calls' => $completedCalls,
+            'ongoing_calls' => $ongoingCalls,
+            'ringing_calls' => $ringingCalls,
+            'answer_rate' => $answerRate,
+            'avg_duration_seconds' => $avgDurationSeconds,
+            'total_duration_seconds' => $totalDurationSeconds,
+            'unique_contacts' => $uniqueContacts,
+            'active_agents' => $activeAgents,
+        ];
+
+        $trendChartData = [
+            'labels' => $trendLabels,
+            'calls' => $trendCalls,
+            'completed' => $trendCompleted,
+            'avg_duration' => $trendAvgDuration,
+        ];
+
+        $statusChartData = [
+            'labels' => $statusRows->pluck('status_name')->map(fn($value) => ucwords(str_replace('_', ' ', (string)$value)))->values()->all(),
+            'counts' => $statusRows->pluck('total')->map(fn($value) => (int)$value)->values()->all(),
+        ];
+
+        $directionChartData = [
+            'labels' => $directionRows->pluck('direction_name')->map(fn($value) => ucwords(str_replace('_', ' ', (string)$value)))->values()->all(),
+            'counts' => $directionRows->pluck('total')->map(fn($value) => (int)$value)->values()->all(),
+        ];
+
+        $hourlyChartData = [
+            'labels' => $hourlyLabels,
+            'counts' => $hourlyCounts,
+        ];
+
+        $insights = $this->buildVoipInsights(
+            kpi: $kpi,
+            trendLabels: $trendLabels,
+            trendCalls: $trendCalls,
+            trendCompleted: $trendCompleted,
+            hourlyLabels: $hourlyLabels,
+            hourlyCounts: $hourlyCounts
+        );
+
+        return view('admin-views.crm.reports.voip', compact(
+            'kpi',
+            'trendChartData',
+            'statusChartData',
+            'directionChartData',
+            'hourlyChartData',
+            'topAgents',
+            'insights',
+            'snapshotFrom',
+            'snapshotTo'
+        ));
+    }
+
+    private function buildVoipInsights(
+        array $kpi,
+        array $trendLabels,
+        array $trendCalls,
+        array $trendCompleted,
+        array $hourlyLabels,
+        array $hourlyCounts
+    ): array {
+        if (($kpi['total_calls'] ?? 0) === 0) {
+            return ['No VOIP calls were found in the last 90 days.'];
+        }
+
+        $insights = [];
+        $insights[] = 'Answer rate is ' . number_format((float)$kpi['answer_rate'], 1) . '% with ' . number_format((int)$kpi['completed_calls']) . ' completed calls.';
+        $insights[] = 'Inbound vs outbound split is ' . number_format((int)$kpi['inbound_calls']) . ' / ' . number_format((int)$kpi['outbound_calls']) . '.';
+        $insights[] = 'Average handled call duration is ' . $this->formatDurationSeconds((float)$kpi['avg_duration_seconds']) . ', with total talk time of ' . $this->formatDurationSeconds((float)$kpi['total_duration_seconds']) . '.';
+
+        $maxTrendCalls = max($trendCalls);
+        if ($maxTrendCalls > 0) {
+            $peakMonthIndex = array_search($maxTrendCalls, $trendCalls, true);
+            if ($peakMonthIndex !== false && isset($trendLabels[$peakMonthIndex])) {
+                $peakCompleted = (int)($trendCompleted[$peakMonthIndex] ?? 0);
+                $insights[] = 'Peak call volume was in ' . $trendLabels[$peakMonthIndex] . ' with ' . $maxTrendCalls . ' calls (' . $peakCompleted . ' completed).';
+            }
+        }
+
+        $maxHourly = max($hourlyCounts);
+        if ($maxHourly > 0) {
+            $peakHourIndex = array_search($maxHourly, $hourlyCounts, true);
+            if ($peakHourIndex !== false && isset($hourlyLabels[$peakHourIndex])) {
+                $insights[] = 'Peak call hour is around ' . $hourlyLabels[$peakHourIndex] . ' with ' . $maxHourly . ' calls.';
+            }
+        }
+
+        return $insights;
+    }
+
+    private function formatDurationSeconds(float $seconds): string
+    {
+        $seconds = max(0, (int)round($seconds));
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+        if ($hours > 0) {
+            return $hours . 'h ' . $minutes . 'm';
+        }
+
+        return $minutes . 'm';
     }
 
     private function getCachedLiveCalls(): array

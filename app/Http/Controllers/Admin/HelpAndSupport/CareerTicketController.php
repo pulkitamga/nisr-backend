@@ -70,10 +70,12 @@ class CareerTicketController extends BaseController
             ])
             ->where('type', 'career')
             ->when($request->filled('searchValue'), function ($q) use ($request) {
-                $q->where('support_tickets.subject', 'like', '%' . $request->get('searchValue') . '%')
-                    ->orWhereHas('status_details', function ($sq) use ($request) {
-                        $sq->where('name', 'like', '%' . $request->get('searchValue') . '%');
-                    });
+                $q->where(function ($searchQuery) use ($request) {
+                    $searchQuery->where('support_tickets.subject', 'like', '%' . $request->get('searchValue') . '%')
+                        ->orWhereHas('status_details', function ($sq) use ($request) {
+                            $sq->where('name', 'like', '%' . $request->get('searchValue') . '%');
+                        });
+                });
             })
             ->when($priority !== 'all', function ($q) use ($priority) {
                 $q->where('support_tickets.priority', $priority);
@@ -213,7 +215,7 @@ class CareerTicketController extends BaseController
             'message' => "Your ticket #{$ticket->id} is now in status: {$nextStatus->name}.",
         ];
     }
-    $link = route('admin.support-ticket.details', $ticket->id);
+    $link = route('admin.support-ticket.career.single', $ticket->id);
 
     foreach ($recipients as $rec) {
         $this->notificationRepo->notifyRecipients(
@@ -296,7 +298,7 @@ class CareerTicketController extends BaseController
 
     // 🔔 Notifications for Employee and Customer
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
-    $link = route('admin.support-ticket.details', $ticket->id);
+    $link = route('admin.support-ticket.career.single', $ticket->id);
 
     $recipients = [];
 
@@ -355,7 +357,7 @@ class CareerTicketController extends BaseController
         'description' => $ticket->description . "\nScreening Notes: " . $request->notes
     ]);
 
-    $link = route('admin.support-ticket.details', $ticketId); // Ticket link for notifications
+    $link = route('admin.support-ticket.career.single', $ticketId);
     $recipients = [];
 
     if (!$request->qualified) {
@@ -482,7 +484,7 @@ class CareerTicketController extends BaseController
         'admin_id' => auth('admin')->id(),
     ]);
 
-    $link = route('admin.support-ticket.details', $ticketId);
+    $link = route('admin.support-ticket.career.single', $ticketId);
     $recipients = [];
 
     // Panel members notifications
@@ -543,7 +545,7 @@ public function conductInterview(Request $request): RedirectResponse
         'conducted_at' => now(),
     ]);
 
-    $link = route('admin.support-ticket.details', $ticketId);
+    $link = route('admin.support-ticket.career.single', $ticketId);
     $recipients = [];
 
     if ($request->outcome === 'pass') {
@@ -667,7 +669,7 @@ public function conductInterview(Request $request): RedirectResponse
     $this->supportTicketRepo->update($ticketId, ['status' => 33]); // Hired
     $this->logCareerActivity($ticketId, 'offer_signed', "Signed offer attached, start date: {$request->start_date}");
 
-    $link = route('admin.support-ticket.details', $ticketId);
+    $link = route('admin.support-ticket.career.single', $ticketId);
     $recipients = [];
 
     // Customer notification
@@ -731,7 +733,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
     $this->supportTicketRepo->update($ticketId, ['status' => 35]); // Closed
     $this->logCareerActivity($ticketId, 'offer_declined', $request->reason);
 
-    $link = route('admin.support-ticket.details', $ticketId);
+    $link = route('admin.support-ticket.career.single', $ticketId);
     $recipients = [];
 
     // Customer notification
@@ -790,7 +792,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
     $this->supportTicketRepo->update($ticketId, ['status' => 34]); // Rejected
     $this->logCareerActivity($ticketId, 'rejected', $request->closure_message);
 
-    $link = route('admin.support-ticket.details', $ticketId);
+    $link = route('admin.support-ticket.career.single', $ticketId);
 
     $recipients = [];
 
@@ -840,7 +842,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
         ]);
 
         $ticketId = $request->ticket_id;
-        CareerTalentPool::create([
+        CareerTalentPool::updateOrCreate(['ticket_id' => $ticketId], [
             'ticket_id' => $ticketId,
             'consent' => $request->consent,
             'recontact_date' => $request->recontact_date,

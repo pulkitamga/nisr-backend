@@ -4,6 +4,7 @@ namespace App\Traits;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use RuntimeException;
 
 trait SettingsTrait
 {
@@ -11,22 +12,48 @@ trait SettingsTrait
     public function setEnvironmentValue($envKey, $envValue): mixed
     {
         $envFile = app()->environmentFilePath();
-        $str = file_get_contents($envFile);
-        if (is_bool(env($envKey))) {
-            $oldValue = var_export(env($envKey), true);
-        } else {
-            $oldValue = env($envKey);
+        if (!is_file($envFile) || !is_writable($envFile)) {
+            throw new RuntimeException('Environment file is missing or not writable.');
         }
 
-        if (strpos($str, $envKey) !== false) {
-            $str = str_replace("{$envKey}={$oldValue}", "{$envKey}={$envValue}", $str);
-        } else {
-            $str .= "{$envKey}={$envValue}\n";
+        $currentContent = file_get_contents($envFile);
+        if ($currentContent === false) {
+            throw new RuntimeException('Unable to read environment file.');
         }
-        $fp = fopen($envFile, 'w');
-        fwrite($fp, $str);
-        fclose($fp);
+
+        $formattedValue = $this->formatEnvironmentValue($envValue);
+        $line = "{$envKey}={$formattedValue}";
+        $pattern = '/^' . preg_quote($envKey, '/') . '=.*/m';
+
+        if (preg_match($pattern, $currentContent)) {
+            $updatedContent = preg_replace($pattern, $line, $currentContent, 1);
+        } else {
+            $updatedContent = rtrim($currentContent) . PHP_EOL . $line . PHP_EOL;
+        }
+
+        if ($updatedContent === null || file_put_contents($envFile, $updatedContent, LOCK_EX) === false) {
+            throw new RuntimeException('Unable to write environment file.');
+        }
+
         return $envValue;
+    }
+
+    private function formatEnvironmentValue(mixed $value): string
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        $stringValue = (string)$value;
+        if ($stringValue === '') {
+            return '""';
+        }
+
+        if (preg_match('/^[A-Za-z0-9_\-.:\/]+$/', $stringValue)) {
+            return $stringValue;
+        }
+
+        return '"' . str_replace('"', '\"', $stringValue) . '"';
     }
 
     public function getSettings($object, $type)

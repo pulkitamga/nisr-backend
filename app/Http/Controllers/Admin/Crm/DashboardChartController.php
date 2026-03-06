@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Admin\Crm;
 
 use Carbon\Carbon;
 use App\Models\Admin;
+use App\Models\Deal;
 use App\Models\Departments;
 use App\Models\InboxMessage;
+use App\Models\Lead;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use App\Exports\CRMAnalyticsExport;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\View\View;
 use App\Http\Controllers\Controller;
+use App\Support\AdminPermissionRegistry;
 
 
 class DashboardChartController extends Controller
@@ -79,7 +83,10 @@ class DashboardChartController extends Controller
                 $join->on('admins.id', '=', 'inbox_messages.employee_id')
                     ->whereBetween('inbox_messages.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
             })
-            ->where('admins.admin_role_id', '!=', 1)
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('roles.name', AdminPermissionRegistry::superAdminRole())
+                    ->where('roles.guard_name', config('permissions_admin.guard', 'admin'));
+            })
             ->groupBy('admins.id', 'admins.name', 'departments.name')
             ->get();
 
@@ -330,8 +337,17 @@ class DashboardChartController extends Controller
                 })->count(),
         ];
 
-        $employeeCount = Admin::where('admin_role_id', '!=', 1)->count();
-        $activeEmployees = Admin::where('admin_role_id', '!=', 1)
+        $employeeCount = Admin::query()
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('roles.name', AdminPermissionRegistry::superAdminRole())
+                    ->where('roles.guard_name', config('permissions_admin.guard', 'admin'));
+            })
+            ->count();
+        $activeEmployees = Admin::query()
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('roles.name', AdminPermissionRegistry::superAdminRole())
+                    ->where('roles.guard_name', config('permissions_admin.guard', 'admin'));
+            })
             ->where('status', 1)
             ->count();
 
@@ -348,6 +364,163 @@ class DashboardChartController extends Controller
     {
         $departments = Departments::all();
         return view('admin-views.crm.charts', compact('departments'));
+    }
+
+    public function insightsReport(): View
+    {
+        $snapshotFrom = now()->subDays(89)->startOfDay();
+        $snapshotTo = now()->endOfDay();
+        $trendStart = now()->copy()->startOfMonth()->subMonths(11);
+        $trendEnd = now()->endOfDay();
+
+        $messageQuery = InboxMessage::query()->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        $leadQuery = Lead::query()->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        $dealQuery = Deal::query()->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+
+        $messageCount = (clone $messageQuery)->count();
+        $newMessages = (clone $messageQuery)->where('status', 'new')->count();
+        $convertedMessages = (clone $messageQuery)->where('status', 'converted')->count();
+        $spamMessages = (clone $messageQuery)->where('status', 'spam')->count();
+
+        $leadCount = (clone $leadQuery)->count();
+        $qualifiedLeads = (clone $leadQuery)->where('status', 'qualified')->count();
+        $convertedLeads = (clone $leadQuery)->where('status', 'converted')->count();
+
+        $dealCount = (clone $dealQuery)->count();
+        $openDeals = (clone $dealQuery)->where('status', 'open')->count();
+        $wonDeals = (clone $dealQuery)->where('status', 'won')->count();
+        $lostDeals = (clone $dealQuery)->where('status', 'lost')->count();
+        $totalDealValue = (float)(clone $dealQuery)->sum(DB::raw('COALESCE(value, 0)'));
+        $avgDealValue = $dealCount > 0 ? $totalDealValue / $dealCount : 0;
+        $leadToDealRate = $leadCount > 0 ? ($dealCount / $leadCount) * 100 : 0;
+        $dealWinRate = $dealCount > 0 ? ($wonDeals / $dealCount) * 100 : 0;
+        $messageConversionRate = $messageCount > 0 ? ($convertedMessages / $messageCount) * 100 : 0;
+
+        $messageTrendRows = InboxMessage::query()
+            ->whereBetween('created_at', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
+            ->groupBy('year', 'month')
+            ->get();
+        $leadTrendRows = Lead::query()
+            ->whereBetween('created_at', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
+            ->groupBy('year', 'month')
+            ->get();
+        $dealTrendRows = Deal::query()
+            ->whereBetween('created_at', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
+            ->groupBy('year', 'month')
+            ->get();
+        $wonDealTrendRows = Deal::query()
+            ->where('status', 'won')
+            ->whereBetween('created_at', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
+            ->groupBy('year', 'month')
+            ->get();
+
+        $messageTrendMap = $this->buildMonthlyCountMap($messageTrendRows->toArray());
+        $leadTrendMap = $this->buildMonthlyCountMap($leadTrendRows->toArray());
+        $dealTrendMap = $this->buildMonthlyCountMap($dealTrendRows->toArray());
+        $wonDealTrendMap = $this->buildMonthlyCountMap($wonDealTrendRows->toArray());
+
+        $trendLabels = [];
+        $messageTrend = [];
+        $leadTrend = [];
+        $dealTrend = [];
+        $wonDealTrend = [];
+        for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
+            $monthDate = $trendStart->copy()->addMonths($monthIndex);
+            $monthKey = $monthDate->format('Y-m');
+            $trendLabels[] = $monthDate->format('M Y');
+            $messageTrend[] = (int)($messageTrendMap[$monthKey] ?? 0);
+            $leadTrend[] = (int)($leadTrendMap[$monthKey] ?? 0);
+            $dealTrend[] = (int)($dealTrendMap[$monthKey] ?? 0);
+            $wonDealTrend[] = (int)($wonDealTrendMap[$monthKey] ?? 0);
+        }
+
+        $dealStageRows = (clone $dealQuery)
+            ->selectRaw("COALESCE(NULLIF(stage, ''), 'unassigned') as stage_name")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(stage, ''), 'unassigned')"))
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get();
+
+        $messageStatusRows = (clone $messageQuery)
+            ->selectRaw("COALESCE(NULLIF(status, ''), 'new') as status_name")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(status, ''), 'new')"))
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get();
+
+        $topOwners = Deal::query()
+            ->leftJoin('admins', 'admins.id', '=', 'deals.owner_id')
+            ->whereBetween('deals.created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw('deals.owner_id')
+            ->selectRaw("COALESCE(admins.name, 'Unassigned') as owner_name")
+            ->selectRaw('COUNT(*) as deals_count')
+            ->selectRaw('SUM(COALESCE(deals.value, 0)) as total_value')
+            ->groupBy('deals.owner_id', 'admins.name')
+            ->orderByDesc('total_value')
+            ->limit(8)
+            ->get();
+
+        $kpi = [
+            'message_count' => $messageCount,
+            'new_messages' => $newMessages,
+            'converted_messages' => $convertedMessages,
+            'spam_messages' => $spamMessages,
+            'lead_count' => $leadCount,
+            'qualified_leads' => $qualifiedLeads,
+            'converted_leads' => $convertedLeads,
+            'deal_count' => $dealCount,
+            'open_deals' => $openDeals,
+            'won_deals' => $wonDeals,
+            'lost_deals' => $lostDeals,
+            'total_deal_value' => $totalDealValue,
+            'avg_deal_value' => $avgDealValue,
+            'lead_to_deal_rate' => $leadToDealRate,
+            'deal_win_rate' => $dealWinRate,
+            'message_conversion_rate' => $messageConversionRate,
+        ];
+
+        $trendChartData = [
+            'labels' => $trendLabels,
+            'messages' => $messageTrend,
+            'leads' => $leadTrend,
+            'deals' => $dealTrend,
+            'won_deals' => $wonDealTrend,
+        ];
+
+        $dealStageChartData = [
+            'labels' => $dealStageRows->pluck('stage_name')->map(fn($value) => ucwords(str_replace('_', ' ', (string)$value)))->values()->all(),
+            'counts' => $dealStageRows->pluck('total')->map(fn($value) => (int)$value)->values()->all(),
+        ];
+
+        $messageStatusChartData = [
+            'labels' => $messageStatusRows->pluck('status_name')->map(fn($value) => ucwords(str_replace('_', ' ', (string)$value)))->values()->all(),
+            'counts' => $messageStatusRows->pluck('total')->map(fn($value) => (int)$value)->values()->all(),
+        ];
+
+        $insights = $this->buildCrmInsights(
+            kpi: $kpi,
+            trendLabels: $trendLabels,
+            dealTrend: $dealTrend,
+            wonDealTrend: $wonDealTrend,
+            dealStageRows: $dealStageRows->toArray()
+        );
+
+        return view('admin-views.crm.reports.insights', compact(
+            'kpi',
+            'trendChartData',
+            'dealStageChartData',
+            'messageStatusChartData',
+            'topOwners',
+            'insights',
+            'snapshotFrom',
+            'snapshotTo'
+        ));
     }
     
     private function resolveDateRange(Request $request)
@@ -555,5 +728,58 @@ public function exportPdf(Request $request)
     return $pdf->download('crm-report.pdf');
 }
 
+    private function buildMonthlyCountMap(array $rows): array
+    {
+        $map = [];
+        foreach ($rows as $row) {
+            $year = (int)data_get($row, 'year', 0);
+            $month = (int)data_get($row, 'month', 0);
+            if ($year > 0 && $month > 0) {
+                $map[sprintf('%04d-%02d', $year, $month)] = (int)data_get($row, 'total', 0);
+            }
+        }
+
+        return $map;
+    }
+
+    private function buildCrmInsights(
+        array $kpi,
+        array $trendLabels,
+        array $dealTrend,
+        array $wonDealTrend,
+        array $dealStageRows
+    ): array {
+        if (($kpi['message_count'] ?? 0) === 0 && ($kpi['lead_count'] ?? 0) === 0 && ($kpi['deal_count'] ?? 0) === 0) {
+            return ['No CRM activity was found in the last 90 days.'];
+        }
+
+        $insights = [];
+        $insights[] = 'Lead-to-deal conversion is ' . number_format((float)$kpi['lead_to_deal_rate'], 1) . '%, while deal win rate is ' . number_format((float)$kpi['deal_win_rate'], 1) . '%.';
+        $insights[] = 'Message conversion rate is ' . number_format((float)$kpi['message_conversion_rate'], 1) . '% with ' . number_format((int)$kpi['new_messages']) . ' new messages still entering the queue.';
+        $insights[] = 'Pipeline value for the period is ' . $this->formatMoney((float)$kpi['total_deal_value']) . ' across ' . number_format((int)$kpi['deal_count']) . ' deals.';
+
+        $maxDeals = max($dealTrend);
+        if ($maxDeals > 0) {
+            $bestMonthIndex = array_search($maxDeals, $dealTrend, true);
+            if ($bestMonthIndex !== false && isset($trendLabels[$bestMonthIndex])) {
+                $wonInBestMonth = (int)($wonDealTrend[$bestMonthIndex] ?? 0);
+                $insights[] = 'Peak deal volume was in ' . $trendLabels[$bestMonthIndex] . ' with ' . $maxDeals . ' deals (' . $wonInBestMonth . ' won).';
+            }
+        }
+
+        if (!empty($dealStageRows)) {
+            $topStage = $dealStageRows[0];
+            $stageName = ucwords(str_replace('_', ' ', (string)data_get($topStage, 'stage_name', 'unassigned')));
+            $stageCount = (int)data_get($topStage, 'total', 0);
+            $insights[] = 'Most populated deal stage is ' . $stageName . ' with ' . $stageCount . ' deals.';
+        }
+
+        return $insights;
+    }
+
+    private function formatMoney(float $value): string
+    {
+        return number_format($value, 2);
+    }
 
 }

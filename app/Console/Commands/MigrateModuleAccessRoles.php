@@ -117,8 +117,7 @@ class MigrateModuleAccessRoles extends Command
             $migrated++;
             $this->line("Migrated role: {$roleName} (permissions=" . count($mappedPermissions) . ")");
 
-            // Legacy id=1 / master admin gets protected Super Admin role.
-            if ((int)$legacyRole->id === 1 || in_array(strtolower($roleName), ['master admin', 'super admin'], true)) {
+            if (in_array(strtolower($roleName), ['super admin'], true)) {
                 $this->assignRoleToAdminsByLegacyRoleId((int)$legacyRole->id, $superAdminRoleName);
             }
         }

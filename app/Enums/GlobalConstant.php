@@ -1167,6 +1167,10 @@ enum GlobalConstant
         'sms_com_eg',
     ];
 
+    const DEFAULT_SHIPPING_PROVIDERS = [
+        'bosta',
+    ];
+
 
     const TIMEZONE_ARRAY = [
         ["value" => "UTC", "name" => "UTC"],

@@ -120,12 +120,12 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                     <tr>
                         <td>{{ $tickets->firstItem() + $index }}</td>
                         <td>{{ $ticket->subject }}</td>
-                        <td>{{ $ticket->relatedInboxMessage->sender_name ?? $ticket->relatedInboxMessage->sender_email }}</td>
+                        <td>{{ optional($ticket->relatedInboxMessage)->sender_name ?? optional($ticket->relatedInboxMessage)->sender_email ?? translate('N/A') }}</td>
                         <td>{{ $ticket->status_details->name ?? translate('N/A') }}</td>
                         <td>{{ $ticket->employee->name ?? translate('Unassigned') }}</td>
                         <td>{{ $ticket->created_at->format('d-m-Y H:i') }}</td>
                         @php
-                        $pendingInterview = $ticket->careerInterviews->whereNull('scheduled_at')->first();
+                        $pendingInterview = $ticket->careerInterviews->whereNull('conducted_at')->first();
                         @endphp
                         <td>
                             <div class="d-flex flex-wrap gap-2">
@@ -202,7 +202,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="assignRecruiterModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="assignRecruiterForm" method="POST">
+            <form id="assignRecruiterForm" method="POST" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('assign_recruiter') }}</h5>
@@ -239,7 +239,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="screenModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="screenForm" method="POST">
+            <form id="screenForm" method="POST" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('screen_candidate') }}</h5>
@@ -276,7 +276,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="scheduleInterviewModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="scheduleInterviewForm" method="POST">
+            <form id="scheduleInterviewForm" method="POST" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('schedule_interview') }}</h5>
@@ -308,7 +308,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="conductInterviewModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="conductInterviewForm" method="POST">
+            <form id="conductInterviewForm" method="POST" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('conduct_interview') }}</h5>
@@ -341,7 +341,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="attachOfferModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="attachOfferForm" method="POST" enctype="multipart/form-data">
+            <form id="attachOfferForm" method="POST" enctype="multipart/form-data" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('attach_signed_offer') }}</h5>
@@ -369,7 +369,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="declineOfferModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="declineOfferForm" method="POST">
+            <form id="declineOfferForm" method="POST" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('decline_offer') }}</h5>
@@ -393,7 +393,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="rejectModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="rejectForm" method="POST">
+            <form id="rejectForm" method="POST" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('reject_candidate') }}</h5>
@@ -421,7 +421,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
 <div class="modal fade" id="talentPoolModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="talentPoolForm" method="POST">
+            <form id="talentPoolForm" method="POST" class="confirm-submit-form">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('add_to_talent_pool') }}</h5>
@@ -568,7 +568,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
             }
         });
 
-        $('form').submit(function(e) {
+        $('.confirm-submit-form').submit(function(e) {
             e.preventDefault();
             var form = $(this);
             Swal.fire({

@@ -1,0 +1,429 @@
+@extends('layouts.back-end.app')
+
+@section('title', 'Wholesale Pipeline Report')
+
+@push('css_or_js')
+    <style>
+        .wholesale-pipeline-page {
+            --wp-primary: #1d4ed8;
+            --wp-primary-soft: rgba(29, 78, 216, 0.12);
+            --wp-muted: #5f6672;
+        }
+
+        .wholesale-pipeline-page .report-hero {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 28px rgba(37, 99, 235, 0.26);
+        }
+
+        .wholesale-pipeline-page .kpi-card {
+            border: 1px solid rgba(37, 99, 235, 0.12);
+            border-radius: 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .wholesale-pipeline-page .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(29, 78, 216, 0.12);
+        }
+
+        .wholesale-pipeline-page .kpi-label {
+            color: var(--wp-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+        }
+
+        .wholesale-pipeline-page .kpi-value {
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .wholesale-pipeline-page .badge-soft {
+            background: var(--wp-primary-soft);
+            color: var(--wp-primary);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px 10px;
+        }
+
+        .wholesale-pipeline-page .insight-list li {
+            border-bottom: 1px dashed #d8dee8;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            color: #243046;
+        }
+
+        .wholesale-pipeline-page .insight-list li:last-child {
+            border-bottom: 0;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .wholesale-pipeline-page .table thead th {
+            border-top: none;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 0.76rem;
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div class="content container-fluid wholesale-pipeline-page">
+        <div class="report-hero mb-3">
+            <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
+                <div>
+                    <h2 class="h1 mb-1">Wholesale Pipeline Report</h2>
+                    <p class="mb-0 opacity-75">
+                        Flow, conversion, and product momentum from {{ $snapshotFrom->format('M d, Y') }} to {{ $snapshotTo->format('M d, Y') }}
+                    </p>
+                </div>
+                <span class="badge badge-light text-dark">Updated {{ now()->format('M d, Y h:i A') }}</span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <p class="kpi-label mb-2">Purchase Orders</p>
+                        <p class="kpi-value">{{ number_format((int) $kpi['purchase_count']) }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <p class="kpi-label mb-2">Quotations</p>
+                        <p class="kpi-value">{{ number_format((int) $kpi['quotation_count']) }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <p class="kpi-label mb-2">Confirmed Orders</p>
+                        <p class="kpi-value">{{ number_format((int) $kpi['confirmed_count']) }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <p class="kpi-label mb-2">End-to-End Conversion</p>
+                        <p class="kpi-value">{{ number_format((float) $kpi['end_to_end_rate'], 1) }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <p class="kpi-label mb-2">PO to Quote</p>
+                        <p class="kpi-value">{{ number_format((float) $kpi['purchase_to_quotation_rate'], 1) }}%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <p class="kpi-label mb-2">Quote to Confirmed</p>
+                        <p class="kpi-value">{{ number_format((float) $kpi['quotation_to_confirmed_rate'], 1) }}%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <p class="kpi-label mb-2">Cycle Time</p>
+                        <p class="kpi-value">
+                            {{ $kpi['avg_po_to_quote_hours'] !== null ? number_format((float) $kpi['avg_po_to_quote_hours'], 1) . 'h' : 'n/a' }}
+                            / {{ $kpi['avg_quote_to_confirm_hours'] !== null ? number_format((float) $kpi['avg_quote_to_confirm_hours'], 1) . 'h' : 'n/a' }}
+                        </p>
+                        <small class="text-muted">PO→Quote / Quote→Confirmed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-xl-8">
+                <div class="card h-100">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Stage Trend (Last 6 Months)</h4>
+                        <span class="badge-soft">Pipeline Velocity</span>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="wholesale-pipeline-trend" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Stage Snapshot</h4>
+                        <span class="badge-soft">90D</span>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="wholesale-stage-snapshot" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-xl-7">
+                <div class="card h-100">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Top Product Volume</h4>
+                        <span class="badge-soft">Share {{ number_format((float) $kpi['top_product_share'], 1) }}%</span>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="wholesale-product-volume" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-5">
+                <div class="card h-100">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Wholesaler Tier Mix</h4>
+                        <span class="badge-soft">Active Accounts</span>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="wholesale-tier-mix" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-xl-8">
+                <div class="card h-100">
+                    <div class="card-header border-0">
+                        <h4 class="mb-0">Tier Revenue Breakdown (90D)</h4>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Tier</th>
+                                    <th class="text-end">Orders</th>
+                                    <th class="text-end">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($tierRevenue as $row)
+                                    <tr>
+                                        <td>{{ $row->tier_name }}</td>
+                                        <td class="text-end">{{ number_format((int) $row->orders_count) }}</td>
+                                        <td class="text-end">{{ number_format((float) $row->total_revenue, 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No tier revenue data in this period.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Insights</h4>
+                        <span class="badge-soft">Auto Summary</span>
+                    </div>
+                    <div class="card-body">
+                        <ol class="insight-list pl-3 mb-0">
+                            @foreach ($insights as $insight)
+                                <li>{{ $insight }}</li>
+                            @endforeach
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('script')
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/vendor/chart.js/dist/Chart.min.js') }}"></script>
+    <script>
+        'use strict';
+
+        (function() {
+            const stageData = @json($pipelineStageChartData);
+            const trendData = @json($pipelineTrendChartData);
+            const productData = @json($topProductsChartData);
+            const tierMixData = @json($tierMixChartData);
+
+            const stageCtx = document.getElementById('wholesale-stage-snapshot');
+            if (stageCtx) {
+                new Chart(stageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: stageData.labels || [],
+                        datasets: [{
+                            label: 'Count',
+                            data: stageData.counts || [],
+                            backgroundColor: ['#1d4ed8', '#2563eb', '#38bdf8'],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const trendCtx = document.getElementById('wholesale-pipeline-trend');
+            if (trendCtx) {
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: trendData.labels || [],
+                        datasets: [{
+                                label: 'Purchase Orders',
+                                data: trendData.purchase || [],
+                                borderColor: '#1d4ed8',
+                                backgroundColor: 'rgba(29, 78, 216, 0.16)',
+                                tension: 0.32,
+                                borderWidth: 2,
+                                fill: false
+                            },
+                            {
+                                label: 'Quotations',
+                                data: trendData.quotation || [],
+                                borderColor: '#2563eb',
+                                backgroundColor: 'rgba(37, 99, 235, 0.16)',
+                                tension: 0.32,
+                                borderWidth: 2,
+                                fill: false
+                            },
+                            {
+                                label: 'Confirmed Orders',
+                                data: trendData.confirmed || [],
+                                borderColor: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.18)',
+                                tension: 0.32,
+                                borderWidth: 2,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const productCtx = document.getElementById('wholesale-product-volume');
+            if (productCtx) {
+                const labels = (productData.labels || []).length ? productData.labels : ['No Data'];
+                const quantities = (productData.quantities || []).length ? productData.quantities : [0];
+
+                new Chart(productCtx, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Units',
+                            data: quantities,
+                            backgroundColor: 'rgba(14, 165, 233, 0.55)',
+                            borderColor: '#0284c7',
+                            borderWidth: 1.5,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const tierCtx = document.getElementById('wholesale-tier-mix');
+            if (tierCtx) {
+                const labels = (tierMixData.labels || []).length ? tierMixData.labels : ['No Data'];
+                const counts = (tierMixData.counts || []).length ? tierMixData.counts : [1];
+
+                new Chart(tierCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+@endpush

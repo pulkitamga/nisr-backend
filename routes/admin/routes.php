@@ -72,6 +72,7 @@ use App\Enums\ViewPaths\Admin\Review;
 use App\Enums\ViewPaths\Admin\RobotsMetaContent;
 use App\Enums\ViewPaths\Admin\SEOSettings;
 use App\Enums\ViewPaths\Admin\ShippingMethod;
+use App\Enums\ViewPaths\Admin\ShippingProvider;
 use App\Enums\ViewPaths\Admin\ShippingType;
 use App\Enums\ViewPaths\Admin\SiteMap;
 use App\Enums\ViewPaths\Admin\SMSModule;
@@ -232,6 +233,7 @@ use App\Http\Controllers\Admin\ThirdParty\MailController;
 use App\Http\Controllers\Admin\ThirdParty\PaymentMethodController;
 use App\Http\Controllers\Admin\ThirdParty\RecaptchaController;
 use App\Http\Controllers\Admin\ThirdParty\SMSModuleController;
+use App\Http\Controllers\Admin\ThirdParty\ShippingProviderController;
 use App\Http\Controllers\Admin\ThirdParty\SocialLoginSettingsController;
 use App\Http\Controllers\Admin\ThirdParty\SocialMediaChatController;
 use App\Http\Controllers\Admin\ThirdParty\UcmConfigController;
@@ -280,6 +282,9 @@ Route::get('/admin/crm/sales-report', [CrmSalesReportController::class, 'index']
 Route::post('/admin/crm/sales-report-data', [CrmSalesReportController::class, 'getSalesData'])
     ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.sales-report-data');
+Route::get('/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
+    ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
+    ->name('admin.crm.insights-report');
 
 //Webhook
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])
@@ -326,6 +331,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     Route::controller(UcmController::class)->group(function () {
         Route::group(['prefix' => 'ucm', 'as' => 'ucm.'], function () {
             Route::get('calls',  'calls')->middleware('permission:crm_section.read,admin')->name('calls');
+            Route::get('insights-report',  'insightsReport')->middleware('permission:crm_section.read,admin')->name('insights-report');
             Route::post('accept',  'accept')->middleware('permission:crm_section.update,admin')->name('accept');
             Route::post('reject',  'reject')->middleware('permission:crm_section.update,admin')->name('reject');
             Route::post('end',  'end')->middleware('permission:crm_section.update,admin')->name('end');
@@ -594,6 +600,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get('/report/claims', 'reportClaims')->name('report.claims')->middleware('permission:warranty_section.warranty_report_claims,admin');
             Route::get('/report/sla', 'reportSLA')->name('report.sla')->middleware('permission:warranty_section.warranty_report_sla,admin');
             Route::get('/report/activations', 'reportActivations')->name('report.activations')->middleware('permission:warranty_section.warranty_report_activations,admin');
+            Route::get('/report/analytics', 'reportAnalytics')->name('report.analytics')->middleware('permission:warranty_section.warranty_report_claims,admin');
         });
 
 
@@ -2217,6 +2224,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->group(function () {
                 Route::controller(WholesaleDashboardController::class)->group(function () {
                     Route::get(WholeSaler::DASHBOARD[URI], 'index')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('index');
+                    Route::get('reports/revenue', 'revenueReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.revenue');
+                    Route::get('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline');
                     Route::post(WholeSaler::ORDER_STATUS[URI], 'getOrderStatus')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-status');
                     Route::get(WholeSaler::EARNING_STATISTICS[URI], 'getEarningStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('earning-statistics');
                     Route::get(WholeSaler::ORDER_STATISTICS[URI], 'getOrderStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-statistics');
@@ -2802,6 +2811,20 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('permission:system_settings.update,admin')->group(function () {
                 Route::middleware('permission:system_settings.access_sms_module|system_settings.access_third_party|system_settings.access,admin')->controller(SMSModuleController::class)->group(function () {
                     Route::put(SMSModule::UPDATE[URI], 'update')->name('addon-sms-set');
+                });
+            });
+
+            // ----------- Read Permission -----------
+            Route::middleware('permission:system_settings.read,admin')->group(function () {
+                Route::controller(ShippingProviderController::class)->group(function () {
+                    Route::get(ShippingProvider::VIEW[URI], 'index')->name('shipping-provider');
+                });
+            });
+
+            // ----------- Update Permission -----------
+            Route::middleware('permission:system_settings.update,admin')->group(function () {
+                Route::controller(ShippingProviderController::class)->group(function () {
+                    Route::put(ShippingProvider::UPDATE[URI], 'update')->name('shipping-provider-update');
                 });
             });
         });

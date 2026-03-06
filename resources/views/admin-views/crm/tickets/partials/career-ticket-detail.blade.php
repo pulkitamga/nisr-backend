@@ -12,7 +12,7 @@
                 <div class="card-header">{{ translate('candidate_details') }}</div>
                 <div class="card-body">
                     <p><strong>{{ translate('name') }}:</strong> {{ $supportTicket->customer->name ?? translate('N/A') }}</p>
-                    <p><strong>{{ translate('email') }}:</strong> {{ $supportTicket->customer->email }}</p>
+                    <p><strong>{{ translate('email') }}:</strong> {{ $supportTicket->customer->email ?? translate('N/A') }}</p>
                     <p><strong>{{ translate('phone') }}:</strong> {{ $supportTicket->customer->phone ?? translate('N/A') }}</p>
                     @if($supportTicket->conversations->whereNotNull('attachment')->count() > 0)
                     <p><strong>{{ translate('cv') }}:</strong>
@@ -92,7 +92,7 @@
                             <tr>
                                 <td>{{ $interview->scheduled_at }}</td>
                                 <td>{{ $interview->outcome ?? translate('Scheduled') }}</td>
-                                <td>{{ implode(', ', json_decode($interview->panel)) }}</td>
+                                <td>{{ implode(', ', (array) ($interview->panel ?? [])) }}</td>
                                 <td>{{ $interview->notes }}</td>
                             </tr>
                             @endforeach
@@ -148,9 +148,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                            $pool = optional($supportTicket->careerTalentPool)->first();
-                            @endphp
+                            @php($pool = $supportTicket->careerTalentPool)
 
                             @if($pool)
                             <tr>
@@ -170,6 +168,4 @@
     </div>
 </div>
 @endsection
-
-
 

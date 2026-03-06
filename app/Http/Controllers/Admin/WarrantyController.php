@@ -16,6 +16,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\WarrantyClaim;
+use App\Models\WarrantyClaimCharge;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -593,6 +595,209 @@ class WarrantyController extends Controller
         return view('admin-views.warranty.report-activations', compact('rate', 'methodCounts'));
     }
 
+    public function reportAnalytics(): View
+    {
+        $snapshotFrom = now()->subDays(89)->startOfDay();
+        $snapshotTo = now()->endOfDay();
+        $trendStart = now()->copy()->startOfMonth()->subMonths(11);
+        $trendEnd = now()->endOfDay();
+
+        $warrantyQuery = Warranty::query()
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        $claimQuery = WarrantyClaim::query()
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+
+        $totalWarranties = (clone $warrantyQuery)->count();
+        $activeWarranties = (clone $warrantyQuery)->where('status', 'active')->count();
+        $activatedInPeriod = Warranty::query()
+            ->whereNotNull('activation_date')
+            ->whereBetween('activation_date', [$snapshotFrom, $snapshotTo])
+            ->count();
+        $activationRate = $totalWarranties > 0 ? ($activeWarranties / $totalWarranties) * 100 : 0;
+
+        $totalClaims = (clone $claimQuery)->count();
+        $resolvedClaims = (clone $claimQuery)->whereIn('status', ['resolved', 'closed'])->count();
+        $rejectedClaims = (clone $claimQuery)->where('status', 'rejected')->count();
+        $openClaims = max(0, $totalClaims - $resolvedClaims - $rejectedClaims);
+        $claimRate = $totalWarranties > 0 ? ($totalClaims / $totalWarranties) * 100 : 0;
+        $closureRate = $totalClaims > 0 ? ($resolvedClaims / $totalClaims) * 100 : 0;
+
+        $slaTrackedClaims = (clone $claimQuery)
+            ->whereNotNull('resolution_due')
+            ->count();
+        $slaOnTimeClaims = (clone $claimQuery)
+            ->whereNotNull('resolution_due')
+            ->where(function ($query) {
+                $query->where(function ($pendingQuery) {
+                    $pendingQuery->whereNull('resolved_at')
+                        ->where('resolution_due', '>', now());
+                })->orWhere(function ($resolvedQuery) {
+                    $resolvedQuery->whereNotNull('resolved_at')
+                        ->whereColumn('resolved_at', '<=', 'resolution_due');
+                });
+            })
+            ->count();
+        $slaCompliance = $slaTrackedClaims > 0 ? ($slaOnTimeClaims / $slaTrackedClaims) * 100 : 0;
+
+        $avgResolutionHoursRaw = (clone $claimQuery)
+            ->whereNotNull('submitted_at')
+            ->whereNotNull('resolved_at')
+            ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, submitted_at, resolved_at)) as avg_hours')
+            ->value('avg_hours');
+        $avgResolutionHours = $avgResolutionHoursRaw !== null ? round((float)$avgResolutionHoursRaw, 1) : null;
+
+        $chargeRows = WarrantyClaimCharge::query()
+            ->join('warranty_claims', 'warranty_claims.id', '=', 'warranty_claim_charges.warranty_claim_id')
+            ->whereBetween('warranty_claims.created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw("COALESCE(NULLIF(warranty_claim_charges.charge_type, ''), 'other') as charge_type")
+            ->selectRaw('COUNT(*) as charges_count')
+            ->selectRaw('SUM(COALESCE(warranty_claim_charges.amount, 0)) as total_amount')
+            ->groupBy(DB::raw("COALESCE(NULLIF(warranty_claim_charges.charge_type, ''), 'other')"))
+            ->orderByDesc('total_amount')
+            ->limit(8)
+            ->get();
+        $totalChargeAmount = (float)$chargeRows->sum('total_amount');
+
+        $activationTrendRows = Warranty::query()
+            ->whereNotNull('activation_date')
+            ->whereBetween('activation_date', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(activation_date) as year, MONTH(activation_date) as month, COUNT(*) as total')
+            ->groupBy('year', 'month')
+            ->get();
+        $claimTrendRows = WarrantyClaim::query()
+            ->whereBetween('created_at', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
+            ->groupBy('year', 'month')
+            ->get();
+        $resolvedTrendRows = WarrantyClaim::query()
+            ->whereNotNull('resolved_at')
+            ->whereBetween('resolved_at', [$trendStart, $trendEnd])
+            ->selectRaw('YEAR(resolved_at) as year, MONTH(resolved_at) as month, COUNT(*) as total')
+            ->groupBy('year', 'month')
+            ->get();
+
+        $activationTrendMap = $this->buildMonthlyCountMap($activationTrendRows->toArray());
+        $claimTrendMap = $this->buildMonthlyCountMap($claimTrendRows->toArray());
+        $resolvedTrendMap = $this->buildMonthlyCountMap($resolvedTrendRows->toArray());
+
+        $trendLabels = [];
+        $activationTrend = [];
+        $claimTrend = [];
+        $resolvedTrend = [];
+        for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
+            $monthDate = $trendStart->copy()->addMonths($monthIndex);
+            $monthKey = $monthDate->format('Y-m');
+            $trendLabels[] = $monthDate->format('M Y');
+            $activationTrend[] = (int)($activationTrendMap[$monthKey] ?? 0);
+            $claimTrend[] = (int)($claimTrendMap[$monthKey] ?? 0);
+            $resolvedTrend[] = (int)($resolvedTrendMap[$monthKey] ?? 0);
+        }
+
+        $statusRows = (clone $claimQuery)
+            ->selectRaw("COALESCE(NULLIF(status, ''), 'new') as status_name")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(status, ''), 'new')"))
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        $agingBuckets = [
+            '0-2 Days' => 0,
+            '3-7 Days' => 0,
+            '8-14 Days' => 0,
+            '15+ Days' => 0,
+        ];
+        $openClaimsAging = WarrantyClaim::query()
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->whereNotIn('status', ['resolved', 'closed', 'rejected'])
+            ->select(['submitted_at', 'created_at'])
+            ->get();
+        foreach ($openClaimsAging as $claim) {
+            $referenceDate = $claim->submitted_at ?: $claim->created_at;
+            if (!$referenceDate) {
+                continue;
+            }
+            $ageDays = $referenceDate->diffInDays($snapshotTo);
+            if ($ageDays <= 2) {
+                $agingBuckets['0-2 Days']++;
+            } elseif ($ageDays <= 7) {
+                $agingBuckets['3-7 Days']++;
+            } elseif ($ageDays <= 14) {
+                $agingBuckets['8-14 Days']++;
+            } else {
+                $agingBuckets['15+ Days']++;
+            }
+        }
+
+        $topProducts = WarrantyClaim::query()
+            ->join('warranties', 'warranties.id', '=', 'warranty_claims.warranty_id')
+            ->leftJoin('products', 'products.id', '=', 'warranties.product_id')
+            ->whereBetween('warranty_claims.created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw("COALESCE(products.name, 'Unknown Product') as product_name")
+            ->selectRaw('COUNT(*) as claims_count')
+            ->groupBy('warranties.product_id', 'products.name')
+            ->orderByDesc('claims_count')
+            ->limit(8)
+            ->get();
+
+        $kpi = [
+            'total_warranties' => $totalWarranties,
+            'active_warranties' => $activeWarranties,
+            'activated_in_period' => $activatedInPeriod,
+            'activation_rate' => $activationRate,
+            'total_claims' => $totalClaims,
+            'open_claims' => $openClaims,
+            'resolved_claims' => $resolvedClaims,
+            'claim_rate' => $claimRate,
+            'closure_rate' => $closureRate,
+            'sla_compliance' => $slaCompliance,
+            'avg_resolution_hours' => $avgResolutionHours,
+            'total_charge_amount' => $totalChargeAmount,
+        ];
+
+        $trendChartData = [
+            'labels' => $trendLabels,
+            'activations' => $activationTrend,
+            'claims' => $claimTrend,
+            'resolved' => $resolvedTrend,
+        ];
+
+        $statusChartData = [
+            'labels' => $statusRows->pluck('status_name')->map(fn($value) => ucwords(str_replace('_', ' ', (string)$value)))->values()->all(),
+            'counts' => $statusRows->pluck('total')->map(fn($value) => (int)$value)->values()->all(),
+        ];
+
+        $agingChartData = [
+            'labels' => array_keys($agingBuckets),
+            'counts' => array_values($agingBuckets),
+        ];
+
+        $chargeChartData = [
+            'labels' => $chargeRows->pluck('charge_type')->map(fn($value) => ucwords(str_replace('_', ' ', (string)$value)))->values()->all(),
+            'amounts' => $chargeRows->pluck('total_amount')->map(fn($value) => (float)$value)->values()->all(),
+        ];
+
+        $insights = $this->buildWarrantyInsights(
+            kpi: $kpi,
+            trendLabels: $trendLabels,
+            claimTrend: $claimTrend,
+            resolvedTrend: $resolvedTrend,
+            statusRows: $statusRows->toArray()
+        );
+
+        return view('admin-views.warranty.report-analytics', compact(
+            'kpi',
+            'trendChartData',
+            'statusChartData',
+            'agingChartData',
+            'chargeChartData',
+            'topProducts',
+            'insights',
+            'snapshotFrom',
+            'snapshotTo'
+        ));
+    }
+
     public function blacklistAddView()
     {
         return view('admin-views.warranty.blacklist-add');
@@ -658,5 +863,57 @@ class WarrantyController extends Controller
 
         Toastr::success(translate('Activation rejected.'));
         return back();
+    }
+
+    private function buildMonthlyCountMap(array $rows): array
+    {
+        $map = [];
+        foreach ($rows as $row) {
+            $year = (int)data_get($row, 'year', 0);
+            $month = (int)data_get($row, 'month', 0);
+            if ($year > 0 && $month > 0) {
+                $map[sprintf('%04d-%02d', $year, $month)] = (int)data_get($row, 'total', 0);
+            }
+        }
+
+        return $map;
+    }
+
+    private function buildWarrantyInsights(
+        array $kpi,
+        array $trendLabels,
+        array $claimTrend,
+        array $resolvedTrend,
+        array $statusRows
+    ): array {
+        if (($kpi['total_warranties'] ?? 0) === 0 && ($kpi['total_claims'] ?? 0) === 0) {
+            return ['No warranty activity was found in the last 90 days.'];
+        }
+
+        $insights = [];
+        $insights[] = 'Claim rate is ' . number_format((float)$kpi['claim_rate'], 1) . '% with closure rate at ' . number_format((float)$kpi['closure_rate'], 1) . '%.';
+        $insights[] = 'SLA compliance is ' . number_format((float)$kpi['sla_compliance'], 1) . '% and open claims are currently ' . number_format((int)$kpi['open_claims']) . '.';
+
+        if (($kpi['avg_resolution_hours'] ?? null) !== null) {
+            $insights[] = 'Average claim resolution time is ' . number_format((float)$kpi['avg_resolution_hours'], 1) . ' hours.';
+        }
+
+        $peakClaims = max($claimTrend);
+        if ($peakClaims > 0) {
+            $peakIndex = array_search($peakClaims, $claimTrend, true);
+            if ($peakIndex !== false && isset($trendLabels[$peakIndex])) {
+                $resolved = (int)($resolvedTrend[$peakIndex] ?? 0);
+                $insights[] = 'Highest claim month was ' . $trendLabels[$peakIndex] . ' with ' . $peakClaims . ' claims (' . $resolved . ' resolved).';
+            }
+        }
+
+        if (!empty($statusRows)) {
+            $topStatus = $statusRows[0];
+            $statusName = ucwords(str_replace('_', ' ', (string)data_get($topStatus, 'status_name', 'new')));
+            $statusCount = (int)data_get($topStatus, 'total', 0);
+            $insights[] = 'Most common claim status is ' . $statusName . ' with ' . $statusCount . ' claims.';
+        }
+
+        return $insights;
     }
 }

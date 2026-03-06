@@ -1342,7 +1342,7 @@
 
                             @if (Helpers::module_permission_check('report') || Helpers::module_permission_check('crm_section'))
                                 <li
-                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/sales-report*') || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/crm/chart-view') ? 'active' : '' }}">
+                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/sales-report*') || Request::is('admin/crm/insights-report') || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/crm/chart-view') || Request::is('admin/ucm/insights-report') ? 'active' : '' }}">
                                     <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
                                         href="javascript:" title="CRM">
                                         <i class="tio-chart-pie-1 nav-icon"></i>
@@ -1351,13 +1351,20 @@
                                         </span>
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
-                                        style="display: {{ Request::is('admin/crm/sales-report*') || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/crm/chart-view') ? 'block' : 'none' }}">
+                                        style="display: {{ Request::is('admin/crm/sales-report*') || Request::is('admin/crm/insights-report') || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/crm/chart-view') || Request::is('admin/ucm/insights-report') ? 'block' : 'none' }}">
                                         @if (Helpers::module_permission_check('report'))
                                             <li class="nav-item {{ Request::is('admin/crm/sales-report*') ? 'active' : '' }}">
                                                 <a class="nav-link" href="{{ route('admin.crm.sales-report') }}"
                                                     title="{{ translate('crm_sales_report') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
                                                     <span class="text-truncate">{{ translate('crm_sales_report') }}</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item {{ Request::is('admin/crm/insights-report') ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.crm.insights-report') }}"
+                                                    title="CRM Insights Report">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span class="text-truncate">CRM Insights Report</span>
                                                 </a>
                                             </li>
                                             <li
@@ -1394,6 +1401,13 @@
                                                     title="{{ translate('crm_charts') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
                                                     <span class="text-truncate">{{ translate('crm_charts') }}</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item {{ Request::is('admin/ucm/insights-report') ? 'active' : '' }}">
+                                                <a class="nav-link" href="{{ route('admin.ucm.insights-report') }}"
+                                                    title="VOIP Insights Report">
+                                                    <span class="tio-circle nav-indicator-icon"></span>
+                                                    <span class="text-truncate">VOIP Insights Report</span>
                                                 </a>
                                             </li>
                                         @endif
@@ -1435,6 +1449,13 @@
                                                 <span class="text-truncate">{{ translate('activation_report') }}</span>
                                             </a>
                                         </li>
+                                        <li class="nav-item {{ Request::is('admin/warranty/report/analytics') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.warranty.report.analytics') }}"
+                                                title="Warranty Analytics Report">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">Warranty Analytics Report</span>
+                                            </a>
+                                        </li>
                                         <li class="nav-item {{ Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.warranty.claim.chart') }}"
                                                 title="{{ translate('warranty_claims_chart') }}">
@@ -1458,12 +1479,30 @@
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
                                         style="display: {{ Request::is('admin/wholesale/dashboard*') ? 'block' : 'none' }}">
-                                        <li class="nav-item {{ Request::is('admin/wholesale/dashboard*') ? 'active' : '' }}">
+                                        <li class="nav-item {{ Request::is('admin/wholesale/dashboard') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.wholesale.dashboard.index') }}"
                                                 title="{{ translate('wholesaler_business_analytics') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
                                                 <span class="text-truncate">
                                                     {{ translate('wholesaler_business_analytics') }}
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item {{ Request::is('admin/wholesale/dashboard/reports/revenue') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.wholesale.dashboard.reports.revenue') }}"
+                                                title="Wholesale Revenue Report">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">
+                                                    Wholesale Revenue Report
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item {{ Request::is('admin/wholesale/dashboard/reports/pipeline') ? 'active' : '' }}">
+                                            <a class="nav-link" href="{{ route('admin.wholesale.dashboard.reports.pipeline') }}"
+                                                title="Wholesale Pipeline Report">
+                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <span class="text-truncate">
+                                                    Wholesale Pipeline Report
                                                 </span>
                                             </a>
                                         </li>

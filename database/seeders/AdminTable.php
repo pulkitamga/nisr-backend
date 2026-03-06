@@ -17,12 +17,16 @@ class AdminTable extends Seeder
      */
     public function run()
     {
+        $legacySuperAdminRoleId = DB::table('admin_roles')
+            ->where('name', 'Master Admin')
+            ->value('id');
+
         DB::table('admins')->insert([
             'id' => 1,
             'name' => 'Master Admin',
             'phone' => '01759412381',
             'email' => 'admin@admin.com',
-            'admin_role_id' => 1,
+            'admin_role_id' => $legacySuperAdminRoleId,
             'image' => 'def.png',
             'password' => bcrypt(12345678),
             'remember_token' =>Str::random(10),
