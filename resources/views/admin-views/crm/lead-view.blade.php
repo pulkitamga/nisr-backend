@@ -19,10 +19,22 @@
         color: #2c3e50;
         font-weight: 600;
     }
+
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
 </style>
 @endpush
 
 @section('content')
+@php($isRtl = Session::get('direction') === 'rtl')
 <div class="content container-fluid">
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -33,7 +45,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <div class="card mb-4 shadow-sm detail-card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
+            <div class="card mb-4 shadow-sm detail-card" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">{{ translate('Message Details') }}</h5>
                 </div>
@@ -42,11 +54,11 @@
                     $inbox = $lead->latestInboxMessage;
                     @endphp
                     @if($inbox)
-                    <p><strong>{{ translate('Subject') }}:</strong> {{ $inbox->subject ?? translate('No Subject') }}</p>
-                    <p><strong>{{ translate('Sender') }}:</strong> {{ $inbox->sender_name ?? translate('Unassigned') }} ({{ $inbox->sender_email ?? translate('Not Available') }})</p>
-                    <p><strong>{{ translate('Phone') }}:</strong> {{ $inbox->sender_phone ?? translate('Not Available') }}</p>
-                    <p><strong>{{ translate('Message') }}:</strong> {{ $inbox->body ?? translate('No Message') }}</p>
-                    <p><strong>{{ translate('Received At') }}:</strong> {{ $lead->created_at->format('d M, Y H:i A') }}</p>
+                    <p><strong>{{ translate('Subject') }}:</strong> <span class="bidi-auto">{{ $inbox->subject ?? translate('No Subject') }}</span></p>
+                    <p><strong>{{ translate('Sender') }}:</strong> <span class="bidi-auto">{{ $inbox->sender_name ?? translate('Unassigned') }}</span> (<span class="bidi-ltr">{{ $inbox->sender_email ?? translate('Not Available') }}</span>)</p>
+                    <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $inbox->sender_phone ?? translate('Not Available') }}</span></p>
+                    <p><strong>{{ translate('Message') }}:</strong> <span class="bidi-auto">{{ $inbox->body ?? translate('No Message') }}</span></p>
+                    <p><strong>{{ translate('Received At') }}:</strong> <span class="bidi-ltr">{{ $lead->created_at->format('d M, Y H:i A') }}</span></p>
                     @if(is_array($inbox->details))
                     <div class="mb-3">
                         <strong>{{ translate('Details') }}:</strong>
@@ -62,7 +74,7 @@
                         </ul>
                     </div>
                     @else
-                    <p><strong>{{ translate('Details') }}:</strong> {{ $inbox->details ?? '-' }}</p>
+                    <p><strong>{{ translate('Details') }}:</strong> <span class="bidi-auto">{{ $inbox->details ?? '-' }}</span></p>
                     @endif
                     @else
                     <p class="text-muted">{{ translate('No message details available') }}</p>
@@ -78,14 +90,14 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
-                            <p><strong>{{ translate('company') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->wholesalerBusiness?->company_name ?? translate('Unknown')}}</p>
-                            <p><strong>{{ translate('Email') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->email ?? translate('N/A') }}</p>
-                            <p><strong>{{ translate('Phone') }}:</strong> {{ $lead->purchaseOrder?->wholeseller?->phone ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('company') }}:</strong> <span class="bidi-auto">{{ $lead->purchaseOrder?->wholeseller?->wholesalerBusiness?->company_name ?? translate('Unknown')}}</span></p>
+                            <p><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder?->wholeseller?->email ?? translate('N/A') }}</span></p>
+                            <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder?->wholeseller?->phone ?? translate('N/A') }}</span></p>
                         </div>
                         <div class="col-6">
-                            <p><strong>{{ translate('Purchase Order No') }}:</strong> {{ $lead->purchaseOrder->purchase_order_no ?? translate('Not Assigned') }}</p>
-                            <p><strong>{{ translate('Status') }}:</strong> {{ $lead->purchaseOrder->status ?? translate('N/A') }}</p>
-                            <p><strong>{{ translate('Created_At') }}:</strong> {{ $lead->purchaseOrder?->created_at?->format('d M, Y H:i A') ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Purchase Order No') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder->purchase_order_no ?? translate('Not Assigned') }}</span></p>
+                            <p><strong>{{ translate('Status') }}:</strong> <span class="bidi-auto">{{ $lead->purchaseOrder->status ?? translate('N/A') }}</span></p>
+                            <p><strong>{{ translate('Created_At') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder?->created_at?->format('d M, Y H:i A') ?? translate('N/A') }}</span></p>
                         </div>
                     </div>
                     @if($lead->purchaseOrder->items && $lead->purchaseOrder->items->count() > 0)
@@ -371,6 +383,4 @@
     });
 </script>
 @endpush
-
-
 

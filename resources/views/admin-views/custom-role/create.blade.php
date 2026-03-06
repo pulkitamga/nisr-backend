@@ -125,30 +125,14 @@ use Illuminate\Support\Facades\Session;
                             <td>{{$key+1}}</td>
                             <td>{{$role['name']}}</td>
                             <td class="text-capitalize">
-                                @if($role['module_access'] != null)
-                                @foreach((array)json_decode($role['module_access'], true) as $mod_name => $actions)
-                                @if($mod_name == 'report')
-                                {{translate('reports_and_analytics')}}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> <br>
-                                @elseif($mod_name == 'user_section')
-                                {{translate('user_management')}}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> <br>
-                                @elseif($mod_name == 'support_section')
-                                {{translate('Help_&_Support_Section')}}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> <br>
-                                @else
-                                {{ translate(str_replace('_',' ', $mod_name)) }}
-                                <small class="text-muted">
-                                    ({{ is_array($actions) ? implode(', ', $actions) : $actions }})
-                                </small> @endif
+                                @php($permissionsByModule = $role->permissions->groupBy(fn($permission) => explode('.', $permission->name)[0] ?? 'misc'))
+                                @foreach($permissionsByModule as $moduleName => $modulePermissions)
+                                    {{ translate(str_replace('_',' ', $moduleName)) }}
+                                    <small class="text-muted">
+                                        ({{ $modulePermissions->map(fn($permission) => explode('.', $permission->name)[1] ?? $permission->name)->implode(', ') }})
+                                    </small>
+                                    <br>
                                 @endforeach
-                                @endif
                             </td>
 
                             <td>{{date('d-M-y',strtotime($role['created_at']))}}</td>

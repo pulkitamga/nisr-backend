@@ -3,8 +3,16 @@
 return [
     'guard' => 'admin',
 
-    // This role is treated as protected and receives global authorization bypass.
+    // Canonical system roles (single source of truth for role names).
+    'system_roles' => [
+        'super_admin' => 'Super Admin',
+        'branch_manager' => 'Operations Manager',
+        'crm_agent' => 'CRM Agent',
+    ],
+    // Legacy aliases kept for existing call sites.
     'super_admin_role' => 'Super Admin',
+    'branch_manager_role' => 'Operations Manager',
+    'crm_agent_role' => 'CRM Agent',
 
     // Legacy module aliases that appear in older Blade templates/config.
     'module_aliases' => [

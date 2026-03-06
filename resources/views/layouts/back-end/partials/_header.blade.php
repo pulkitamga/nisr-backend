@@ -244,7 +244,7 @@ use Carbon\Carbon;
                                    }'>
                                 <div class="d-none d-md-block media-body text-right">
                                     <h5 class="profile-name mb-0">{{auth('admin')->user()->name}}</h5>
-                                    <span class="fz-12">{{ auth('admin')->user()->role->name ?? '' }}</span>
+                                    <span class="fz-12">{{ auth('admin')->user()->roles->first()?->name ?? '' }}</span>
                                 </div>
                                 <div class="avatar border avatar-circle">
                                     <img class="avatar-img"

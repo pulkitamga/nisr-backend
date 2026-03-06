@@ -10,13 +10,17 @@ use App\Models\InboxMessage;
 use App\Models\Lead;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use App\Services\ReportPdfService;
 use Illuminate\Support\Facades\DB;
 use App\Exports\CRMAnalyticsExport;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\View\View;
 use App\Http\Controllers\Controller;
 use App\Support\AdminPermissionRegistry;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 
 class DashboardChartController extends Controller
@@ -366,16 +370,37 @@ class DashboardChartController extends Controller
         return view('admin-views.crm.charts', compact('departments'));
     }
 
-    public function insightsReport(): View
+    public function insightsReport(Request $request): View|BinaryFileResponse|Response
     {
-        $snapshotFrom = now()->subDays(89)->startOfDay();
-        $snapshotTo = now()->endOfDay();
-        $trendStart = now()->copy()->startOfMonth()->subMonths(11);
-        $trendEnd = now()->endOfDay();
+        [$snapshotFrom, $snapshotTo] = $this->resolveInsightsDateRange($request);
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $snapshotFrom->toDateString(),
+            'to' => $snapshotTo->toDateString(),
+            'department_id' => (int)$request->input('department_id', 0),
+            'owner_id' => (int)$request->input('owner_id', 0),
+            'message_status' => (string)$request->input('message_status', ''),
+            'deal_status' => (string)$request->input('deal_status', ''),
+        ];
+        $trendGrouping = $this->resolveInsightsTrendGrouping($snapshotFrom, $snapshotTo);
+        $periodKeys = $this->buildInsightsPeriodKeys($snapshotFrom, $snapshotTo, $trendGrouping['unit']);
 
         $messageQuery = InboxMessage::query()->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        if ($filters['department_id'] > 0) {
+            $messageQuery->where('department_id', $filters['department_id']);
+        }
+        if ($filters['message_status'] !== '') {
+            $messageQuery->where('status', $filters['message_status']);
+        }
+
         $leadQuery = Lead::query()->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
         $dealQuery = Deal::query()->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        if ($filters['owner_id'] > 0) {
+            $dealQuery->where('owner_id', $filters['owner_id']);
+        }
+        if ($filters['deal_status'] !== '') {
+            $dealQuery->where('status', $filters['deal_status']);
+        }
 
         $messageCount = (clone $messageQuery)->count();
         $newMessages = (clone $messageQuery)->where('status', 'new')->count();
@@ -397,45 +422,48 @@ class DashboardChartController extends Controller
         $messageConversionRate = $messageCount > 0 ? ($convertedMessages / $messageCount) * 100 : 0;
 
         $messageTrendRows = InboxMessage::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['department_id'] > 0, fn($query) => $query->where('department_id', $filters['department_id']))
+            ->when($filters['message_status'] !== '', fn($query) => $query->where('status', $filters['message_status']))
+            ->selectRaw($trendGrouping['select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
         $leadTrendRows = Lead::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw($trendGrouping['select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
         $dealTrendRows = Deal::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['owner_id'] > 0, fn($query) => $query->where('owner_id', $filters['owner_id']))
+            ->when($filters['deal_status'] !== '', fn($query) => $query->where('status', $filters['deal_status']))
+            ->selectRaw($trendGrouping['select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
         $wonDealTrendRows = Deal::query()
             ->where('status', 'won')
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['owner_id'] > 0, fn($query) => $query->where('owner_id', $filters['owner_id']))
+            ->selectRaw($trendGrouping['select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
 
-        $messageTrendMap = $this->buildMonthlyCountMap($messageTrendRows->toArray());
-        $leadTrendMap = $this->buildMonthlyCountMap($leadTrendRows->toArray());
-        $dealTrendMap = $this->buildMonthlyCountMap($dealTrendRows->toArray());
-        $wonDealTrendMap = $this->buildMonthlyCountMap($wonDealTrendRows->toArray());
+        $messageTrendMap = $messageTrendRows->pluck('total', 'period_key')->all();
+        $leadTrendMap = $leadTrendRows->pluck('total', 'period_key')->all();
+        $dealTrendMap = $dealTrendRows->pluck('total', 'period_key')->all();
+        $wonDealTrendMap = $wonDealTrendRows->pluck('total', 'period_key')->all();
 
         $trendLabels = [];
         $messageTrend = [];
         $leadTrend = [];
         $dealTrend = [];
         $wonDealTrend = [];
-        for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
-            $monthDate = $trendStart->copy()->addMonths($monthIndex);
-            $monthKey = $monthDate->format('Y-m');
-            $trendLabels[] = $monthDate->format('M Y');
-            $messageTrend[] = (int)($messageTrendMap[$monthKey] ?? 0);
-            $leadTrend[] = (int)($leadTrendMap[$monthKey] ?? 0);
-            $dealTrend[] = (int)($dealTrendMap[$monthKey] ?? 0);
-            $wonDealTrend[] = (int)($wonDealTrendMap[$monthKey] ?? 0);
+        foreach ($periodKeys as $periodKey) {
+            $trendLabels[] = $this->formatInsightsPeriodLabel($periodKey, $trendGrouping['unit']);
+            $messageTrend[] = (int)($messageTrendMap[$periodKey] ?? 0);
+            $leadTrend[] = (int)($leadTrendMap[$periodKey] ?? 0);
+            $dealTrend[] = (int)($dealTrendMap[$periodKey] ?? 0);
+            $wonDealTrend[] = (int)($wonDealTrendMap[$periodKey] ?? 0);
         }
 
         $dealStageRows = (clone $dealQuery)
@@ -457,6 +485,8 @@ class DashboardChartController extends Controller
         $topOwners = Deal::query()
             ->leftJoin('admins', 'admins.id', '=', 'deals.owner_id')
             ->whereBetween('deals.created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['owner_id'] > 0, fn($query) => $query->where('deals.owner_id', $filters['owner_id']))
+            ->when($filters['deal_status'] !== '', fn($query) => $query->where('deals.status', $filters['deal_status']))
             ->selectRaw('deals.owner_id')
             ->selectRaw("COALESCE(admins.name, 'Unassigned') as owner_name")
             ->selectRaw('COUNT(*) as deals_count')
@@ -511,6 +541,37 @@ class DashboardChartController extends Controller
             dealStageRows: $dealStageRows->toArray()
         );
 
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $topOwners->map(function ($owner) {
+                $avgValue = (int)$owner->deals_count > 0 ? (float)$owner->total_value / (int)$owner->deals_count : 0;
+                return [
+                    (string)$owner->owner_name,
+                    (int)$owner->deals_count,
+                    round((float)$owner->total_value, 2),
+                    round($avgValue, 2),
+                ];
+            })->values()->all();
+
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array { return ['Owner', 'Deals', 'Total Value', 'Avg Value']; }
+            }, 'crm-insights-report.xlsx');
+        }
+
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.crm.reports.insights-pdf',
+                data: compact('kpi', 'topOwners', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                fileName: 'crm-insights-report.pdf'
+            );
+        }
+
+        $departments = Departments::query()->orderBy('name')->get(['id', 'name']);
+        $owners = Admin::query()->orderBy('name')->get(['id', 'name']);
+
         return view('admin-views.crm.reports.insights', compact(
             'kpi',
             'trendChartData',
@@ -519,8 +580,105 @@ class DashboardChartController extends Controller
             'topOwners',
             'insights',
             'snapshotFrom',
-            'snapshotTo'
+            'snapshotTo',
+            'filters',
+            'departments',
+            'owners'
         ));
+    }
+
+    private function resolveInsightsDateRange(Request $request): array
+    {
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+            case 'custom_date':
+                $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                break;
+            case 'this_year':
+            default:
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                break;
+        }
+
+        if ($fromDate->gt($toDate)) {
+            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+        }
+
+        return [$fromDate, $toDate];
+    }
+
+    private function resolveInsightsTrendGrouping(Carbon $fromDate, Carbon $toDate): array
+    {
+        $days = $fromDate->diffInDays($toDate);
+        if ($days <= 31) {
+            return ['unit' => 'day', 'select' => 'DATE(created_at)'];
+        }
+        if ($days <= 180) {
+            return ['unit' => 'week', 'select' => "DATE_FORMAT(created_at, '%x-W%v')"];
+        }
+        return ['unit' => 'month', 'select' => "DATE_FORMAT(created_at, '%Y-%m')"];
+    }
+
+    private function buildInsightsPeriodKeys(Carbon $fromDate, Carbon $toDate, string $unit): array
+    {
+        $keys = [];
+        $cursor = $fromDate->copy();
+        if ($unit === 'day') {
+            while ($cursor->lte($toDate)) {
+                $keys[] = $cursor->format('Y-m-d');
+                $cursor->addDay();
+            }
+            return $keys;
+        }
+
+        if ($unit === 'week') {
+            $cursor = $fromDate->copy()->startOfWeek();
+            $limit = $toDate->copy()->endOfWeek();
+            while ($cursor->lte($limit)) {
+                $keys[] = $cursor->format('o-\WW');
+                $cursor->addWeek();
+            }
+            return $keys;
+        }
+
+        $cursor = $fromDate->copy()->startOfMonth();
+        $limit = $toDate->copy()->endOfMonth();
+        while ($cursor->lte($limit)) {
+            $keys[] = $cursor->format('Y-m');
+            $cursor->addMonth();
+        }
+
+        return $keys;
+    }
+
+    private function formatInsightsPeriodLabel(string $periodKey, string $unit): string
+    {
+        if ($unit === 'day') {
+            return Carbon::parse($periodKey)->format('M d');
+        }
+        if ($unit === 'week') {
+            [$year, $week] = explode('-W', $periodKey);
+            return 'W' . $week . ' ' . $year;
+        }
+
+        return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
     }
     
     private function resolveDateRange(Request $request)
@@ -715,17 +873,12 @@ public function exportPdf(Request $request)
     ->orderBy('date')
     ->get();
 
-    $pdf = Pdf::loadView('admin-views.crm.export-pdf', [
-        'data' => $dailyData
-    ])
-    ->setPaper('a4', 'landscape')
-    ->setOptions([
-        'defaultFont' => 'DejaVu Sans',
-        'isHtml5ParserEnabled' => true,
-        'isRemoteEnabled' => true
-    ]);
-
-    return $pdf->download('crm-report.pdf');
+    return app(ReportPdfService::class)->download(
+        view: 'admin-views.crm.export-pdf',
+        data: ['data' => $dailyData],
+        fileName: 'crm-report.pdf',
+        orientation: 'landscape'
+    );
 }
 
     private function buildMonthlyCountMap(array $rows): array
@@ -750,20 +903,33 @@ public function exportPdf(Request $request)
         array $dealStageRows
     ): array {
         if (($kpi['message_count'] ?? 0) === 0 && ($kpi['lead_count'] ?? 0) === 0 && ($kpi['deal_count'] ?? 0) === 0) {
-            return ['No CRM activity was found in the last 90 days.'];
+            return [translate('no_crm_activity_found_in_last_90_days')];
         }
 
         $insights = [];
-        $insights[] = 'Lead-to-deal conversion is ' . number_format((float)$kpi['lead_to_deal_rate'], 1) . '%, while deal win rate is ' . number_format((float)$kpi['deal_win_rate'], 1) . '%.';
-        $insights[] = 'Message conversion rate is ' . number_format((float)$kpi['message_conversion_rate'], 1) . '% with ' . number_format((int)$kpi['new_messages']) . ' new messages still entering the queue.';
-        $insights[] = 'Pipeline value for the period is ' . $this->formatMoney((float)$kpi['total_deal_value']) . ' across ' . number_format((int)$kpi['deal_count']) . ' deals.';
+        $insights[] = strtr(translate('crm_insight_conversion_and_win_rate'), [
+            ':lead_to_deal_rate' => number_format((float)$kpi['lead_to_deal_rate'], 1),
+            ':deal_win_rate' => number_format((float)$kpi['deal_win_rate'], 1),
+        ]);
+        $insights[] = strtr(translate('crm_insight_message_conversion'), [
+            ':message_conversion_rate' => number_format((float)$kpi['message_conversion_rate'], 1),
+            ':new_messages' => number_format((int)$kpi['new_messages']),
+        ]);
+        $insights[] = strtr(translate('crm_insight_pipeline_value'), [
+            ':total_deal_value' => $this->formatMoney((float)$kpi['total_deal_value']),
+            ':deal_count' => number_format((int)$kpi['deal_count']),
+        ]);
 
         $maxDeals = max($dealTrend);
         if ($maxDeals > 0) {
             $bestMonthIndex = array_search($maxDeals, $dealTrend, true);
             if ($bestMonthIndex !== false && isset($trendLabels[$bestMonthIndex])) {
                 $wonInBestMonth = (int)($wonDealTrend[$bestMonthIndex] ?? 0);
-                $insights[] = 'Peak deal volume was in ' . $trendLabels[$bestMonthIndex] . ' with ' . $maxDeals . ' deals (' . $wonInBestMonth . ' won).';
+                $insights[] = strtr(translate('crm_insight_peak_deal_month'), [
+                    ':period' => $trendLabels[$bestMonthIndex],
+                    ':deals' => (string)$maxDeals,
+                    ':won' => (string)$wonInBestMonth,
+                ]);
             }
         }
 
@@ -771,7 +937,10 @@ public function exportPdf(Request $request)
             $topStage = $dealStageRows[0];
             $stageName = ucwords(str_replace('_', ' ', (string)data_get($topStage, 'stage_name', 'unassigned')));
             $stageCount = (int)data_get($topStage, 'total', 0);
-            $insights[] = 'Most populated deal stage is ' . $stageName . ' with ' . $stageCount . ' deals.';
+            $insights[] = strtr(translate('crm_insight_top_deal_stage'), [
+                ':stage_name' => $stageName,
+                ':deals' => (string)$stageCount,
+            ]);
         }
 
         return $insights;

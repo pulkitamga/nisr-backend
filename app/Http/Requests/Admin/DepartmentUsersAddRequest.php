@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Support\AdminPermissionRegistry;
 use App\Traits\ResponseHandler;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 
 class DepartmentUsersAddRequest extends FormRequest
 {
@@ -26,10 +29,16 @@ class DepartmentUsersAddRequest extends FormRequest
      */
     public function rules(): array
     {
+        $roleRule = Rule::exists('roles', 'id')
+            ->where(fn($query) => $query->where('guard_name', AdminPermissionRegistry::guard()));
+        if (Schema::hasColumn('roles', 'status')) {
+            $roleRule = $roleRule->where(fn($query) => $query->where('status', 1));
+        }
+
         return [
             'dept_id' => 'required',
             'email' => 'required|unique:department_users',
-            'user_type' => 'required',
+            'role_id' => ['required', $roleRule],
             'user_name' => 'required',
             'password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)(?!.*\s).{8,}$/|same:confirm_password',
         ];
@@ -41,7 +50,7 @@ class DepartmentUsersAddRequest extends FormRequest
             'dept_id.required' => translate('The_department_field_is_required'),
             'email.required' => translate('The_email_field_is_required'),
             'email.unique' => translate('The_email_has_already_been_taken'),
-            'user_type.required' => translate('The_user_type_field_is_required'),
+            'role_id.required' => translate('role_id_is_required'),
             'user_name.required' => translate('The_user_name_field_is_required'),
             'password.required' => translate('The_password_field_is_required'),
             'password.same' => translate('The_password_and_confirm_password_must_match'),

@@ -42,8 +42,8 @@
                 <div class="row">
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
-                            <label class="title-color d-flex">{{translate('User_Type')}} </label>
-                            <select id="user_type" name="user_type" class="form-control js-select2-custom">
+                            <label class="title-color d-flex">{{translate('role')}} </label>
+                            <select id="role_id" name="role_id" class="form-control js-select2-custom">
                                 <option value="0" selected="" disabled="">---Select---</option>
                                 @foreach ($aRoles as $key => $role)
                                     <option value="{{ $role->id }}">{{ $role->name}}</option>                                    

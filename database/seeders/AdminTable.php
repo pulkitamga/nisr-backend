@@ -4,8 +4,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
+use App\Support\AdminPermissionRegistry;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class AdminTable extends Seeder
@@ -17,19 +19,25 @@ class AdminTable extends Seeder
      */
     public function run()
     {
-        $legacySuperAdminRoleId = DB::table('admin_roles')
-            ->where('name', 'Master Admin')
-            ->value('id');
+        $admin = Admin::query()->updateOrCreate(
+            ['id' => 1],
+            [
+                'name' => 'Master Admin',
+                'phone' => '01759412381',
+                'email' => 'admin@admin.com',
+                'image' => 'def.png',
+                'password' => bcrypt(12345678),
+                'remember_token' => Str::random(10),
+                'status' => 1,
+            ]
+        );
 
-        DB::table('admins')->insert([
-            'id' => 1,
-            'name' => 'Master Admin',
-            'phone' => '01759412381',
-            'email' => 'admin@admin.com',
-            'admin_role_id' => $legacySuperAdminRoleId,
-            'image' => 'def.png',
-            'password' => bcrypt(12345678),
-            'remember_token' =>Str::random(10),
-        ]);
+        if (Schema::hasTable('roles')) {
+            \Spatie\Permission\Models\Role::query()->firstOrCreate([
+                'name' => AdminPermissionRegistry::superAdminRole(),
+                'guard_name' => config('permissions_admin.guard', 'admin'),
+            ]);
+            $admin->syncRoles([AdminPermissionRegistry::superAdminRole()]);
+        }
     }
 }

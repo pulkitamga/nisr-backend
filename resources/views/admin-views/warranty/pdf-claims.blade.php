@@ -127,6 +127,12 @@
             margin: 10px 0;
         }
         .text-left { text-align: left; }
+        .bidi-ltr {
+            direction: ltr;
+            unicode-bidi: isolate;
+            display: inline-block;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -135,7 +141,7 @@
     <div class="header">
         <h2>{{ translate('warranty_claims_report') }}</h2>
         <p>
-            {{ translate('generated_on') }}: {{ now()->format('d M Y H:i A') }} &nbsp; | &nbsp;
+            {{ translate('generated_on') }}: <span class="bidi-ltr">{{ now()->format('d M Y H:i A') }}</span> &nbsp; | &nbsp;
             {{ translate('By') }}: System
         </p>
     </div>
@@ -144,7 +150,7 @@
     <div class="filters-section">
         <h4>🔍 {{ translate('filters_applied') }}</h4>
         <div class="filters-grid">
-            <div class="filter-item"><strong>{{ translate('date_range') }}:</strong> {{ $filters['date_range'] }}</div>
+            <div class="filter-item"><strong>{{ translate('date_range') }}:</strong> <span class="bidi-ltr">{{ $filters['date_range'] }}</span></div>
             <div class="filter-item"><strong>{{ translate('branch') }}:</strong> {{ $filters['branch'] }}</div>
                         <div class="filter-item"><strong>{{ translate('product') }}:</strong> {{ $filters['product'] }}</div>
             <div class="filter-item"><strong>{{ translate('status') }}:</strong> {{ $filters['status'] }}</div>
@@ -152,7 +158,7 @@
             <div class="filter-item"><strong>{{ translate('search') }}:</strong> {{ $filters['search'] }}</div>
             @endif
         </div>
-        <div style="margin-top:8px;"><strong>{{ translate('report_period') }}:</strong> {{ $start->format('d M Y') }} - {{ $end->format('d M Y') }}</div>
+        <div style="margin-top:8px;"><strong>{{ translate('report_period') }}:</strong> <span class="bidi-ltr">{{ $start->format('d M Y') }} - {{ $end->format('d M Y') }}</span></div>
     </div>
 
     <!-- समरी स्टैटिस्टिक्स (रंगीन कार्ड) -->

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
 <meta charset="UTF-8">
 <title>{{ translate('inhouse_product_sale_report') }}</title>
@@ -9,6 +9,9 @@
         font-family: DejaVu Sans, sans-serif;
         font-size: 11px;
         color: #000;
+        direction: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }};
+        text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
+        unicode-bidi: plaintext;
     }
 
     h2 { margin-bottom: 10px; }

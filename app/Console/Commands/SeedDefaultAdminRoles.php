@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\AdminRole;
 use App\Support\AdminPermissionRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -105,7 +104,6 @@ class SeedDefaultAdminRoles extends Command
             }
 
             $role->syncPermissions($permissions);
-            $this->syncLegacyRoleMirror($roleName, $permissions);
 
             $seeded++;
             $this->line("Seeded role: {$roleName} ({$role->permissions()->count()} permissions)");
@@ -186,44 +184,6 @@ class SeedDefaultAdminRoles extends Command
         return $permissions;
     }
 
-    private function syncLegacyRoleMirror(string $roleName, array $permissions): void
-    {
-        if (!Schema::hasTable('admin_roles')) {
-            return;
-        }
-
-        $legacy = AdminRole::query()->firstOrNew(['name' => $roleName]);
-        $legacy->status = 1;
-        $legacy->module_access = json_encode($this->permissionsToLegacyModuleAccess($permissions));
-        $legacy->save();
-    }
-
-    private function permissionsToLegacyModuleAccess(array $permissions): array
-    {
-        $grouped = [];
-        foreach ($permissions as $permission) {
-            if (!str_contains($permission, '.')) {
-                continue;
-            }
-
-            [$module, $action] = explode('.', $permission, 2);
-            if ($module === 'rbac') {
-                continue;
-            }
-            $grouped[$module] ??= [];
-            $grouped[$module][] = $action;
-        }
-
-        foreach ($grouped as $module => $actions) {
-            $actions = array_values(array_unique($actions));
-            sort($actions);
-            $grouped[$module] = $actions;
-        }
-
-        ksort($grouped);
-        return $grouped;
-    }
-
     private function roleHasStatusColumn(): bool
     {
         static $hasStatus = null;
@@ -244,4 +204,3 @@ class SeedDefaultAdminRoles extends Command
         return [];
     }
 }
-

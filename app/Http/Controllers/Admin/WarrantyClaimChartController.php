@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\WarrantyClaimsExport;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportPdfService;
 
 class WarrantyClaimChartController extends Controller
 {
@@ -314,8 +314,11 @@ class WarrantyClaimChartController extends Controller
             'search'     => $request->search ?? '',
         ];
 
-        $pdf = Pdf::loadView('admin-views.warranty.pdf-claims', compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end'));
-        return $pdf->download('warranty-claims.pdf');
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.warranty.pdf-claims',
+            data: compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end'),
+            fileName: 'warranty-claims.pdf'
+        );
     }
 
     private function getDailyBreakdown($start, $end, Request $request = null)

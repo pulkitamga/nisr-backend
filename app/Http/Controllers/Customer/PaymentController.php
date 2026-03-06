@@ -16,6 +16,7 @@ use App\Models\ShippingType;
 use App\Models\BusinessSetting;
 use App\Models\Cart;
 use App\Models\ServiceInvoice;
+use App\Models\WarrantyClaimPayment;
 use App\Models\CartShipping;
 use App\Models\Currency;
 use App\Traits\Payment;
@@ -27,6 +28,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use function App\Utils\payment_gateways;
 use App\Services\ServiceInvoicePaymentService;
@@ -220,10 +222,42 @@ class PaymentController extends Controller
     public function web_payment_success(Request $request)
     {
         $paymentRequest = $this->getPaymentRequestFromToken($request->query('token'));
+
+        $warrantyClaimPaymentId = $this->resolveWarrantyClaimPaymentId($paymentRequest);
+        $isWarrantyClaimPayment = $warrantyClaimPaymentId !== null
+            || session('payment_type') === 'warranty_claim_payment'
+            || ($paymentRequest && $paymentRequest->attribute === 'warranty_claim_payment');
+
         $serviceInvoiceId = $this->resolveServiceInvoiceId($paymentRequest);
-        $isServiceInvoicePayment = $serviceInvoiceId !== null || session('payment_type') === 'service_invoice' || ($paymentRequest && $paymentRequest->attribute === 'service_invoice');
+        $isServiceInvoicePayment = $serviceInvoiceId !== null
+            || session('payment_type') === 'service_invoice'
+            || ($paymentRequest && $paymentRequest->attribute === 'service_invoice');
 
         if ($request->flag == 'success') {
+            if ($isWarrantyClaimPayment) {
+                if (!$this->isValidWarrantyClaimPaymentSuccess($paymentRequest, $warrantyClaimPaymentId)) {
+                    session()->forget(['payment_type', 'warranty_claim_payment_id']);
+                    Toastr::error(translate('Payment verification failed'));
+                    return redirect(url('/'));
+                }
+
+                $warrantyPayment = $warrantyClaimPaymentId
+                    ? WarrantyClaimPayment::with(['claim.charges'])->find($warrantyClaimPaymentId)
+                    : null;
+
+                if (!$warrantyPayment) {
+                    session()->forget(['payment_type', 'warranty_claim_payment_id']);
+                    Toastr::error(translate('Warranty claim payment not found'));
+                    return redirect(url('/'));
+                }
+
+                $this->afterWarrantyClaimPaymentSuccess($warrantyPayment, $paymentRequest);
+                session()->forget(['payment_type', 'warranty_claim_payment_id']);
+
+                Toastr::success(translate('Payment_success'));
+                return view(VIEW_FILE_NAMES['service_payment_success']);
+            }
+
             if ($isServiceInvoicePayment) {
                 if (!$this->isValidServicePaymentSuccess($paymentRequest, $serviceInvoiceId)) {
                     session()->forget(['payment_type', 'invoice_id']);
@@ -239,7 +273,12 @@ class PaymentController extends Controller
                 }
 
                 if ($invoice->payment_status !== 'paid') {
-                    $invoice->update(['payment_status' => 'paid']);
+                    $invoice->update([
+                        'payment_status' => 'paid',
+                        'paid_at' => now(),
+                        'gateway_payment_method' => $paymentRequest?->payment_method,
+                        'gateway_transaction_id' => $paymentRequest?->transaction_id,
+                    ]);
                 }
 
                 $this->afterServiceInvoicePaymentSuccess($invoice);
@@ -257,6 +296,10 @@ class PaymentController extends Controller
             $isNewCustomerInSession = session('newCustomerRegister');
             session()->forget('newCustomerRegister');
             return view(VIEW_FILE_NAMES['order_complete'], compact('isNewCustomerInSession'));
+        }
+
+        if ($isWarrantyClaimPayment) {
+            session()->forget(['payment_type', 'warranty_claim_payment_id']);
         }
 
         if ($isServiceInvoicePayment) {
@@ -504,13 +547,31 @@ class PaymentController extends Controller
         }
 
         $invoice = ServiceInvoice::with('ticket')->find($id);
-        if (!$invoice || $invoice->payment_status !== 'pending' || !$invoice->ticket) {
+        if (!$invoice || !$invoice->ticket) {
             Toastr::error(translate('Invoice not found or already paid'));
             return redirect('/');
         }
 
         if ((int)$invoice->ticket->customer_id !== (int)auth('customer')->id()) {
             Toastr::error(translate('you_have_no_access_to_this_invoice'));
+            return redirect('/');
+        }
+
+        $serviceInvoiceExpiresAt = $invoice->payment_link_expires_at
+            ?? ($invoice->generated_at ? $invoice->generated_at->copy()->addHours(24) : null);
+
+        if (
+            $invoice->payment_status === 'pending'
+            && $serviceInvoiceExpiresAt
+            && now()->gt($serviceInvoiceExpiresAt)
+        ) {
+            $invoice->update(['payment_status' => 'expired']);
+            Toastr::error(translate('Payment link has expired'));
+            return redirect('/');
+        }
+
+        if ($invoice->payment_status !== 'pending') {
+            Toastr::error(translate('Invoice not found or already paid'));
             return redirect('/');
         }
 
@@ -541,13 +602,31 @@ class PaymentController extends Controller
         }
 
         $invoice = ServiceInvoice::with('ticket')->find($request->invoice_id);
-        if (!$invoice || $invoice->payment_status !== 'pending' || !$invoice->ticket) {
+        if (!$invoice || !$invoice->ticket) {
             Toastr::error(translate('Invoice not found or already paid'));
             return back();
         }
 
         if ((int)$invoice->ticket->customer_id !== (int)auth('customer')->id()) {
             Toastr::error(translate('you_have_no_access_to_this_invoice'));
+            return back();
+        }
+
+        $serviceInvoiceExpiresAt = $invoice->payment_link_expires_at
+            ?? ($invoice->generated_at ? $invoice->generated_at->copy()->addHours(24) : null);
+
+        if (
+            $invoice->payment_status === 'pending'
+            && $serviceInvoiceExpiresAt
+            && now()->gt($serviceInvoiceExpiresAt)
+        ) {
+            $invoice->update(['payment_status' => 'expired']);
+            Toastr::error(translate('Payment link has expired'));
+            return back();
+        }
+
+        if ($invoice->payment_status !== 'pending') {
+            Toastr::error(translate('Invoice not found or already paid'));
             return back();
         }
 
@@ -614,6 +693,178 @@ class PaymentController extends Controller
         return redirect($redirect_link);
     }
 
+    public function warrantyClaimPayment(string $token)
+    {
+        if (!auth('customer')->check()) {
+            Toastr::error(translate('please_login_first'));
+            return redirect()->route('customer.auth.login');
+        }
+
+        $payment = WarrantyClaimPayment::with(['claim.warranty'])->where('payment_link_token', $token)->latest('id')->first();
+        if (!$payment || $payment->payment_channel !== 'online_link') {
+            Toastr::error(translate('Payment link not found'));
+            return redirect('/');
+        }
+
+        if ($payment->payment_status !== 'pending') {
+            Toastr::error(translate('Payment link is no longer active'));
+            return redirect('/');
+        }
+
+        if ($payment->payment_link_expires_at && now()->gt($payment->payment_link_expires_at)) {
+            $payment->update(['payment_status' => 'expired']);
+            Toastr::error(translate('Payment link has expired'));
+            return redirect('/');
+        }
+
+        $claim = $payment->claim;
+        if (!$claim || !$claim->warranty) {
+            Toastr::error(translate('Warranty claim not found'));
+            return redirect('/');
+        }
+
+        if ((int)$claim->warranty->final_user_id !== (int)auth('customer')->id()) {
+            Toastr::error(translate('you_have_no_access_to_this_payment'));
+            return redirect('/');
+        }
+
+        if ((float)$payment->amount <= 0) {
+            Toastr::error(translate('No payable amount found for this payment link'));
+            return redirect('/');
+        }
+
+        $payment_gateways_list = payment_gateways();
+        $digital_payment = getWebConfig(name: 'digital_payment');
+
+        return view('web-views.pages.warranty-claim-payment', compact('payment', 'claim', 'payment_gateways_list', 'digital_payment'));
+    }
+
+    public function warranty_claim_payment_request(Request $request)
+    {
+        if (!auth('customer')->check()) {
+            Toastr::error(translate('please_login_first'));
+            return redirect()->route('customer.auth.login');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'payment_id' => 'required|exists:warranty_claim_payments,id',
+            'payment_method' => 'required',
+            'payment_platform' => 'required|in:web,app',
+        ]);
+
+        if ($validator->fails()) {
+            foreach ($validator->errors()->all() as $error) {
+                Toastr::error($error);
+            }
+            return back();
+        }
+
+        $payment = WarrantyClaimPayment::with(['claim.warranty', 'claim.charges'])->find($request->payment_id);
+        if (
+            !$payment ||
+            $payment->payment_channel !== 'online_link' ||
+            $payment->payment_status !== 'pending'
+        ) {
+            Toastr::error(translate('Payment link is no longer active'));
+            return back();
+        }
+
+        if ($payment->payment_link_expires_at && now()->gt($payment->payment_link_expires_at)) {
+            $payment->update(['payment_status' => 'expired']);
+            Toastr::error(translate('Payment link has expired'));
+            return back();
+        }
+
+        $claim = $payment->claim;
+        if (!$claim || !$claim->warranty) {
+            Toastr::error(translate('Warranty claim not found'));
+            return back();
+        }
+
+        if ((int)$claim->warranty->final_user_id !== (int)auth('customer')->id()) {
+            Toastr::error(translate('you_have_no_access_to_this_payment'));
+            return back();
+        }
+
+        $chargeIds = is_array($payment->charge_ids) ? $payment->charge_ids : [];
+        $payableChargesCount = $claim->charges()
+            ->whereIn('id', $chargeIds)
+            ->where('is_paid', false)
+            ->count();
+
+        if ($payableChargesCount <= 0) {
+            $payment->update(['payment_status' => 'paid', 'paid_at' => now()]);
+            Toastr::error(translate('All selected charges are already paid'));
+            return back();
+        }
+
+        if ((float)$payment->amount <= 0) {
+            Toastr::error(translate('No payable amount found for this payment link'));
+            return back();
+        }
+
+        $customer = auth('customer')->user();
+        session([
+            'payment_type' => 'warranty_claim_payment',
+            'warranty_claim_payment_id' => $payment->id,
+        ]);
+
+        $additional_data = [
+            'business_name' => getWebConfig('company_name'),
+            'business_logo' => getStorageImages(path: getWebConfig('company_web_logo'), type: 'shop'),
+            'payment_mode' => $request->payment_platform,
+            'warranty_claim_payment_id' => $payment->id,
+            'warranty_claim_id' => $claim->id,
+            'customer_id' => $customer->id,
+            'is_guest' => 0,
+            'is_guest_in_order' => 0,
+            'new_customer_id' => null,
+            'address_id' => null,
+            'billing_address_id' => null,
+            'order_note' => 'Warranty Claim Payment - Claim #' . $claim->claim_number,
+            'payment_request_from' => 'warranty_claim',
+        ];
+
+        $payer = new Payer(
+            $customer->f_name . ' ' . $customer->l_name,
+            $customer->email,
+            $customer->phone,
+            ''
+        );
+
+        $currency_model = getWebConfig(name: 'currency_model');
+        if ($currency_model == 'multi_currency') {
+            $currency_code = 'USD';
+        } else {
+            $default = getWebConfig(name: 'system_default_currency');
+            $currency_code = Currency::find($default)->code;
+        }
+
+        $payment_info = new PaymentInfo(
+            success_hook: 'warranty_claim_payment_success',
+            failure_hook: 'warranty_claim_payment_fail',
+            currency_code: $currency_code,
+            payment_method: $request->payment_method,
+            payment_platform: $request->payment_platform,
+            payer_id: $customer->id,
+            receiver_id: '100',
+            additional_data: $additional_data,
+            payment_amount: (float)$payment->amount,
+            external_redirect_link: route('web-payment-success'),
+            attribute: 'warranty_claim_payment',
+            attribute_id: $payment->id
+        );
+
+        $receiver_info = new Receiver('receiver_name', 'example.png');
+        $redirect_link = $this->generate_link($payer, $payment_info, $receiver_info);
+
+        if ($request->payment_platform === 'app') {
+            return response()->json(['redirect_link' => $redirect_link], 200);
+        }
+
+        return redirect($redirect_link);
+    }
+
     private function getPaymentRequestFromToken(?string $token): ?PaymentRequest
     {
         if (!$token) {
@@ -645,6 +896,111 @@ class PaymentController extends Controller
             ->where('transaction_id', $transactionReference)
             ->latest('updated_at')
             ->first();
+    }
+
+    private function resolveWarrantyClaimPaymentId(?PaymentRequest $paymentRequest): ?int
+    {
+        if ($paymentRequest) {
+            $fromPaymentRequest = $this->resolveWarrantyClaimPaymentIdFromPaymentRequest($paymentRequest);
+            if ($fromPaymentRequest) {
+                return $fromPaymentRequest;
+            }
+        }
+
+        $sessionPaymentId = session('warranty_claim_payment_id');
+        return $sessionPaymentId ? (int)$sessionPaymentId : null;
+    }
+
+    private function resolveWarrantyClaimPaymentIdFromPaymentRequest(PaymentRequest $paymentRequest): ?int
+    {
+        if ($paymentRequest->attribute === 'warranty_claim_payment' && $paymentRequest->attribute_id) {
+            return (int)$paymentRequest->attribute_id;
+        }
+
+        if ($paymentRequest->additional_data) {
+            $additionalData = json_decode($paymentRequest->additional_data, true);
+            if (is_array($additionalData)) {
+                $paymentId = $additionalData['warranty_claim_payment_id'] ?? null;
+                if ($paymentId) {
+                    return (int)$paymentId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidWarrantyClaimPaymentSuccess(?PaymentRequest $paymentRequest, ?int $resolvedPaymentId): bool
+    {
+        if (!$paymentRequest || (int)$paymentRequest->is_paid !== 1) {
+            return false;
+        }
+
+        if ($paymentRequest->attribute !== 'warranty_claim_payment') {
+            return false;
+        }
+
+        $expectedPaymentId = $this->resolveWarrantyClaimPaymentIdFromPaymentRequest($paymentRequest);
+        if (!$expectedPaymentId || !$resolvedPaymentId) {
+            return false;
+        }
+
+        return $expectedPaymentId === (int)$resolvedPaymentId;
+    }
+
+    private function afterWarrantyClaimPaymentSuccess(WarrantyClaimPayment $payment, ?PaymentRequest $paymentRequest = null): void
+    {
+        DB::transaction(function () use ($payment, $paymentRequest) {
+            $payment->refresh();
+            if ($payment->payment_status === 'paid') {
+                return;
+            }
+
+            $claim = $payment->claim()->with('charges')->first();
+            if (!$claim) {
+                return;
+            }
+
+            $chargeIds = is_array($payment->charge_ids) ? $payment->charge_ids : [];
+            if (empty($chargeIds)) {
+                $chargeIds = $claim->charges()->where('is_paid', false)->pluck('id')->all();
+            }
+
+            $chargesToPay = $claim->charges()
+                ->whereIn('id', $chargeIds)
+                ->where('is_paid', false)
+                ->get();
+
+            if ($chargesToPay->isNotEmpty()) {
+                $chargesToPay->each->update(['is_paid' => true]);
+            }
+
+            $paymentUpdate = [
+                'payment_status' => 'paid',
+                'paid_at' => now(),
+                'gateway_payment_method' => $paymentRequest?->payment_method,
+                'gateway_transaction_id' => $paymentRequest?->transaction_id,
+            ];
+            $payment->update($paymentUpdate);
+
+            if (!$claim->charges()->where('is_paid', false)->exists() && $claim->status === 'waiting_payment') {
+                $nextStatus = $claim->repair_or_replace === 'repair' ? 'repair_pending' : 'replacement_pending';
+                $claim->update(['status' => $nextStatus]);
+            }
+
+            $description = 'Online payment received'
+                . " | Amount: {$payment->amount}"
+                . " | Payment ID: {$payment->id}";
+            if ($paymentRequest?->transaction_id) {
+                $description .= " | Gateway TX: {$paymentRequest->transaction_id}";
+            }
+
+            $claim->timelineEvents()->create([
+                'event_type' => 'payment_handled',
+                'description' => $description,
+                'user_id' => null,
+            ]);
+        });
     }
 
     private function resolveServiceInvoiceId(?PaymentRequest $paymentRequest): ?int

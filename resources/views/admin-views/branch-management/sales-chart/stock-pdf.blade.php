@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app()->getLocale() }}" dir="{{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
-    <title>Branch Stock Report</title>
+    <title>{{ translate('branch_stock_report') }}</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 12px;
+            direction: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }};
+            text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
+            unicode-bidi: embed;
         }
         .header {
             text-align: center;
@@ -58,12 +61,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            direction: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }};
         }
         th {
             background-color: #4e73df;
             color: white;
             padding: 10px;
-            text-align: left;
+            text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
             border: 1px solid #ddd;
         }
         td {
@@ -110,25 +114,25 @@
 </head>
 <body>
     <div class="header">
-        <h1>Branch Stock Report</h1>
-        <div class="subtitle">Generated on: {{ $exportDate }}</div>
+        <h1>{{ translate('branch_stock_report') }}</h1>
+        <div class="subtitle">{{ translate('generated_on') }}: <span dir="ltr">{{ $exportDate }}</span></div>
     </div>
 
     <div class="filter-info">
         <table>
             <tr>
-                <td class="label">Date Range:</td>
-                <td>{{ $dateRange }}</td>
+                <td class="label">{{ translate('date_range') }}:</td>
+                <td><span dir="ltr">{{ $dateRange }}</span></td>
             </tr>
             @if(isset($product))
             <tr>
-                <td class="label">Product:</td>
+                <td class="label">{{ translate('product') }}:</td>
                 <td>{{ $product->name }}</td>
             </tr>
             @endif
             @if(!empty($filters['variation_type']))
             <tr>
-                <td class="label">Variation:</td>
+                <td class="label">{{ translate('variation') }}:</td>
                 <td>{{ $filters['variation_type'] }}</td>
             </tr>
             @endif
@@ -137,8 +141,8 @@
                 @php
                     $branch = \App\Models\Branch::find($filters['branch_id']);
                 @endphp
-                <td class="label">Branch:</td>
-                <td>{{ $branch ? $branch->branch_name : 'Selected Branch' }}</td>
+                <td class="label">{{ translate('branch') }}:</td>
+                <td>{{ $branch ? $branch->branch_name : translate('selected_branch') }}</td>
             </tr>
             @endif
         </table>
@@ -148,18 +152,18 @@
         <div class="content-wrapper">
             <!-- Stock Details Section -->
             <div class="data-section">
-                <div class="section-title">Stock Details</div>
+                <div class="section-title">{{ translate('stock_details') }}</div>
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Branch Name</th>
-                            <th>Stock Quantity</th>
+                            <th>{{ translate('branch_name') }}</th>
+                            <th>{{ translate('stock_quantity') }}</th>
                             @if(isset($product))
-                            <th>Product</th>
+                            <th>{{ translate('product') }}</th>
                             @endif
                             @if(!empty($filters['variation_type']))
-                            <th>Variation</th>
+                            <th>{{ translate('variation') }}</th>
                             @endif
                         </tr>
                     </thead>
@@ -180,7 +184,7 @@
                             </tr>
                         @endforeach
                         <tr class="total-row">
-                            <td colspan="2"><strong>Total</strong></td>
+                            <td colspan="2"><strong>{{ translate('total') }}</strong></td>
                             <td><strong>{{ number_format($totalStock) }}</strong></td>
                             @if(isset($product))
                             <td></td>
@@ -195,25 +199,25 @@
 
             <!-- Chart Section - AFTER THE TABLE -->
             @if($hasChart)
-                <div class="section-title">Stock Visualization</div>
+                <div class="section-title">{{ translate('stock_visualization') }}</div>
                 <div class="chart-container">
-                    <div class="chart-title">Branch Stock Distribution Chart</div>
-                    <img src="{{ $chartImage }}" alt="Stock Chart" />
+                    <div class="chart-title">{{ translate('branch_stock_distribution_chart') }}</div>
+                    <img src="{{ $chartImage }}" alt="{{ translate('stock_chart') }}" />
                     <p style="font-size: 11px; color: #666; margin-top: 5px;">
-                        Chart shows stock distribution across branches. Higher bars indicate more stock.
+                        {{ translate('chart_shows_stock_distribution_across_branches_higher_bars_indicate_more_stock') }}
                     </p>
                 </div>
             @endif
         </div>
     @else
         <div class="no-data">
-            <h3>No Stock Data Found</h3>
-            <p>No stock records match the selected filters.</p>
+            <h3>{{ translate('no_stock_data_found') }}</h3>
+            <p>{{ translate('no_stock_records_match_the_selected_filters') }}</p>
         </div>
     @endif
 
     <div class="footer">
-        <p>Generated by Sales Central System | Page 1 of 1</p>
+        <p>{{ translate('generated_by_sales_central_system') }} | {{ translate('page') }} 1 {{ translate('of') }} 1</p>
     </div>
 </body>
 </html>

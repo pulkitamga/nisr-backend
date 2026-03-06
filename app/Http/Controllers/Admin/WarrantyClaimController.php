@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\WarrantyClaim;
+use App\Models\WarrantyClaimPayment;
 use App\Models\Warranty;
 use App\Models\WarrantyReplacement;
 use App\Models\WorkOrder;
@@ -12,12 +13,14 @@ use App\Services\RMAService;
 use App\Services\RepairService;
 use App\Services\ReplacementService;
 use App\Services\ClaimResolutionService;
+use App\Services\WarrantyPaymentLinkNotificationService;
 use App\Jobs\TriageClaimJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Utils\Helpers;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class WarrantyClaimController extends Controller
@@ -244,7 +247,7 @@ class WarrantyClaimController extends Controller
     // View Claim
     public function view(WarrantyClaim $claim)
     {
-        $claim->load('warranty.user', 'workOrder', 'attachments'); // ← change 'photos' to 'attachments'
+        $claim->load('warranty.user', 'workOrder', 'attachments', 'charges', 'payments'); // ← change 'photos' to 'attachments'
         $timeline = $claim->timelineEvents()->latest()->paginate(10);
 
         return view('admin-views.warranty.claim-view', compact('claim', 'timeline'));
@@ -417,83 +420,307 @@ class WarrantyClaimController extends Controller
     }
 
     // WarrantyClaimController.php
-    public function paymentHandle(Request $request, WarrantyClaim $claim)
+    public function paymentHandle(
+        Request $request,
+        WarrantyClaim $claim,
+        WarrantyPaymentLinkNotificationService $paymentLinkNotificationService
+    )
     {
         $request->validate([
-            'action'      => 'required|in:remind,paid,waive,reject',
-            'charge_ids'  => 'required_if:action,paid|array',
+            'action'       => 'required|in:remind,pos,cod,online_link,cod_collect,waive,reject',
+            'charge_ids'   => 'required_if:action,pos,cod,online_link,cod_collect|array',
             'charge_ids.*' => 'exists:warranty_claim_charges,id,warranty_claim_id,' . $claim->id,
-            'notes'       => 'nullable|string',
+            'payment_reference' => 'nullable|required_if:action,pos,cod_collect|string|max:100',
+            'link_expire_hours' => 'nullable|required_if:action,online_link|integer|min:1|max:168',
+            'notes'        => 'nullable|string',
         ]);
 
-        $description = "Payment handling: {$request->action} | Notes: {$request->notes}";
+        $action = $request->action;
+        $adminId = auth('admin')->id();
+        $notes = $request->notes;
+        $description = "Payment handling: {$action}" . ($notes ? " | Notes: {$notes}" : '');
+        $generatedLink = null;
+        $dispatchStatus = null;
 
-        if ($request->action === 'paid') {
-            // Mark selected charges as paid
-            $paidCharges = $claim->charges()
-                ->whereIn('id', $request->charge_ids)
+        if ($action === 'remind') {
+            $activeLink = $claim->payments()
+                ->where('payment_channel', 'online_link')
+                ->where('payment_status', 'pending')
+                ->where(function ($q) {
+                    $q->whereNull('payment_link_expires_at')
+                        ->orWhere('payment_link_expires_at', '>', now());
+                })
+                ->latest('id')
+                ->first();
+
+            if (!$activeLink) {
+                $message = translate('Payment link is no longer active');
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->withErrors(['action' => $message]);
+            }
+
+            $dispatchStatus = $paymentLinkNotificationService->dispatchCustomerOnlineLink(
+                payment: $activeLink,
+                isReminder: true
+            );
+
+            $description .= ' | Reminder dispatched to customer';
+            $description .= ' | Dispatch: ' . $this->formatPaymentDispatchSummary($dispatchStatus);
+            if ($activeLink?->payment_link) {
+                $description .= " | Active link: {$activeLink->payment_link}";
+            }
+        } elseif ($action === 'reject') {
+            $claim->update([
+                'status' => 'rejected',
+                'diagnosis_notes' => 'Rejected due to non-payment: ' . ($notes ?? ''),
+            ]);
+            $description .= ' | Claim rejected';
+        } elseif ($action === 'waive') {
+            $waived = $claim->charges()->where('is_paid', false)->get();
+            $wasWaitingPayment = $claim->status === 'waiting_payment';
+
+            if ($waived->isEmpty()) {
+                $message = translate('No pending charges to waive.');
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->withErrors(['action' => $message]);
+            }
+
+            DB::transaction(function () use ($claim, $waived, $notes, $adminId, $wasWaitingPayment) {
+                $waived->each->update(['is_paid' => true]);
+
+                $this->createClaimPaymentRecord(
+                    claim: $claim,
+                    channel: 'waive',
+                    status: 'waived',
+                    amount: (float)$waived->sum('amount'),
+                    chargeIds: $waived->pluck('id')->map(fn($id) => (int)$id)->values()->all(),
+                    notes: $notes,
+                    paidAt: now(),
+                    paidByUserId: $adminId
+                );
+
+                $update = [
+                    'is_fee_waived' => true,
+                    'is_admin_override' => true,
+                    'override_reason' => $notes,
+                    'override_by_user_id' => $adminId,
+                ];
+
+                if ($wasWaitingPayment) {
+                    $update['status'] = $this->nextStatusAfterPayment($claim);
+                }
+
+                $claim->update($update);
+            });
+
+            $description .= ' | All unpaid charges waived';
+            if ($wasWaitingPayment) {
+                $description .= ' | Resumed from waiting payment';
+            } else {
+                $description .= ' | Charges waived without status transition';
+            }
+        } else {
+            $selectedCharges = $claim->charges()
+                ->whereIn('id', $request->charge_ids ?? [])
                 ->where('is_paid', false)
                 ->get();
 
-            if ($paidCharges->isEmpty()) {
-                return back()->withErrors(['charge_ids' => translate('No valid unpaid charges selected.')]);
+            if ($selectedCharges->isEmpty()) {
+                $message = translate('No valid unpaid charges selected.');
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->withErrors(['charge_ids' => $message]);
             }
 
-            $paidCharges->each->update(['is_paid' => true]);
+            $selectedAmount = (float)$selectedCharges->sum('amount');
+            $selectedIds = $selectedCharges->pluck('id')->map(fn($id) => (int)$id)->values()->all();
+            $selectedList = $selectedCharges->map(fn($c) => "{$c->charge_type}: {$c->amount}")->implode(', ');
 
-            $paidList = $paidCharges->map(fn($c) => "{$c->charge_type}: {$c->amount}")->implode(', ');
-            $description .= " | Paid: {$paidList}";
+            if ($action === 'pos') {
+                DB::transaction(function () use ($selectedCharges, $claim, $selectedIds, $selectedAmount, $request, $notes, $adminId) {
+                    $selectedCharges->each->update(['is_paid' => true]);
 
-            // Check if all charges are now paid → resume workflow
-            $allPaid = $claim->charges()->where('is_paid', false)->count() === 0;
+                    $this->createClaimPaymentRecord(
+                        claim: $claim,
+                        channel: 'pos',
+                        status: 'paid',
+                        amount: $selectedAmount,
+                        chargeIds: $selectedIds,
+                        notes: $notes,
+                        paidAt: now(),
+                        paidByUserId: $adminId,
+                        paymentReference: $request->payment_reference
+                    );
 
-            if ($allPaid) {
-                $nextStatus = $claim->repair_or_replace === 'repair'
-                    ? 'repair_pending'
-                    : 'replacement_pending';
+                    if ($claim->status === 'waiting_payment' && !$this->claimHasUnpaidCharges($claim)) {
+                        $claim->update(['status' => $this->nextStatusAfterPayment($claim)]);
+                    }
+                });
 
+                $description .= " | POS payment recorded: {$selectedList}";
+            } elseif ($action === 'cod') {
+                if ($claim->status !== 'waiting_payment') {
+                    $message = translate('Cash on delivery approval is only allowed from waiting payment.');
+                    if ($request->ajax() || $request->wantsJson()) {
+                        return response()->json(['message' => $message], 422);
+                    }
+                    return back()->withErrors(['action' => $message]);
+                }
+
+                $this->createClaimPaymentRecord(
+                    claim: $claim,
+                    channel: 'cod',
+                    status: 'pending_cod',
+                    amount: $selectedAmount,
+                    chargeIds: $selectedIds,
+                    notes: $notes
+                );
+
+                $nextStatus = $this->nextStatusAfterPayment($claim);
                 $claim->update(['status' => $nextStatus]);
-                $description .= " | All charges paid. Resumed to {$nextStatus}";
+
+                $description .= " | COD approved: {$selectedList} | Resumed to {$nextStatus}";
+            } elseif ($action === 'cod_collect') {
+                DB::transaction(function () use ($selectedCharges, $claim, $selectedIds, $selectedAmount, $request, $notes, $adminId) {
+                    $selectedCharges->each->update(['is_paid' => true]);
+
+                    $this->createClaimPaymentRecord(
+                        claim: $claim,
+                        channel: 'cod',
+                        status: 'paid',
+                        amount: $selectedAmount,
+                        chargeIds: $selectedIds,
+                        notes: $notes,
+                        paidAt: now(),
+                        paidByUserId: $adminId,
+                        paymentReference: $request->payment_reference
+                    );
+
+                    if ($claim->status === 'waiting_payment' && !$this->claimHasUnpaidCharges($claim)) {
+                        $claim->update(['status' => $this->nextStatusAfterPayment($claim)]);
+                    }
+                });
+
+                $description .= " | COD payment collected: {$selectedList}";
+            } elseif ($action === 'online_link') {
+                $customerId = (int)($claim->warranty?->final_user_id ?? 0);
+                if ($customerId <= 0) {
+                    $message = translate('No linked customer account found for this warranty. Use POS or COD instead.');
+                    if ($request->ajax() || $request->wantsJson()) {
+                        return response()->json(['message' => $message], 422);
+                    }
+                    return back()->withErrors(['action' => $message]);
+                }
+
+                $expireHours = (int)($request->link_expire_hours ?? 24);
+                $token = (string)Str::uuid();
+                $generatedLink = route('pay-warranty-claim', ['token' => $token]);
+
+                $paymentRecord = $this->createClaimPaymentRecord(
+                    claim: $claim,
+                    channel: 'online_link',
+                    status: 'pending',
+                    amount: $selectedAmount,
+                    chargeIds: $selectedIds,
+                    notes: $notes,
+                    paymentLink: $generatedLink,
+                    paymentLinkToken: $token,
+                    paymentLinkExpiresAt: now()->addHours($expireHours),
+                    metadata: [
+                        'expires_in_hours' => $expireHours,
+                    ]
+                );
+
+                $dispatchStatus = $paymentLinkNotificationService->dispatchCustomerOnlineLink(
+                    payment: $paymentRecord,
+                    isReminder: false
+                );
+
+                $description .= " | Online payment link generated: {$generatedLink}";
+                $description .= ' | Dispatch: ' . $this->formatPaymentDispatchSummary($dispatchStatus);
             }
-        } elseif ($request->action === 'waive') {
-            // Waive ALL unpaid charges
-            $waived = $claim->charges()->where('is_paid', false)->get();
-            $waived->each->update(['is_paid' => true]);
-
-            $waivedList = $waived->map(fn($c) => "{$c->charge_type}: {$c->amount}")->implode(', ');
-            $description .= " | Waived: {$waivedList}";
-
-            $nextStatus = $claim->repair_or_replace === 'repair'
-                ? 'repair_pending'
-                : 'replacement_pending';
-
-            $claim->update([
-                'status' => $nextStatus,
-                'is_fee_waived' => true,
-                'is_admin_override' => true,
-                'override_reason' => $request->notes,
-                'override_by_user_id' => auth('admin')->id(),
-            ]);
-            $description .= " | Resumed to {$nextStatus}";
-        } elseif ($request->action === 'reject') {
-            $claim->update([
-                'status' => 'rejected',
-                'diagnosis_notes' => 'Rejected due to non-payment: ' . $request->notes,
-            ]);
-            $description .= " | Claim rejected";
-        } elseif ($request->action === 'remind') {
-            $description .= " | Reminder sent to customer";
-            // TODO: Send email/SMS
         }
 
         $claim->timelineEvents()->create([
             'event_type'  => 'payment_handled',
             'description' => $description,
-            'user_id'     => auth('admin')->id(),
+            'user_id'     => $adminId,
         ]);
 
-        Toastr::success(translate('Payment handled successfully.'));
+        $message = translate('Payment handled successfully.');
+        if ($generatedLink) {
+            $message = translate('Payment link generated successfully.');
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'payment_link' => $generatedLink,
+                'dispatch' => $dispatchStatus,
+            ]);
+        }
+
+        Toastr::success($message);
         return redirect()->route('admin.warranty.claim.view', $claim);
+    }
+
+    private function nextStatusAfterPayment(WarrantyClaim $claim): string
+    {
+        return $claim->repair_or_replace === 'repair' ? 'repair_pending' : 'replacement_pending';
+    }
+
+    private function claimHasUnpaidCharges(WarrantyClaim $claim): bool
+    {
+        return $claim->charges()->where('is_paid', false)->exists();
+    }
+
+    private function createClaimPaymentRecord(
+        WarrantyClaim $claim,
+        string $channel,
+        string $status,
+        float $amount,
+        array $chargeIds = [],
+        ?string $notes = null,
+        ?Carbon $paidAt = null,
+        ?int $paidByUserId = null,
+        ?string $paymentReference = null,
+        ?string $paymentLink = null,
+        ?string $paymentLinkToken = null,
+        ?Carbon $paymentLinkExpiresAt = null,
+        ?array $metadata = null
+    ): WarrantyClaimPayment {
+        return WarrantyClaimPayment::create([
+            'warranty_claim_id' => $claim->id,
+            'payment_channel' => $channel,
+            'payment_status' => $status,
+            'amount' => $amount,
+            'charge_ids' => $chargeIds,
+            'payment_reference' => $paymentReference,
+            'payment_link' => $paymentLink,
+            'payment_link_token' => $paymentLinkToken,
+            'payment_link_expires_at' => $paymentLinkExpiresAt,
+            'paid_at' => $paidAt,
+            'paid_by_user_id' => $paidByUserId,
+            'notes' => $notes,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    private function formatPaymentDispatchSummary(?array $dispatchStatus): string
+    {
+        if (!$dispatchStatus) {
+            return 'sms=skipped, email=skipped';
+        }
+
+        $sms = $dispatchStatus['sms'] ?? 'skipped';
+        $email = $dispatchStatus['email'] ?? 'skipped';
+
+        return "sms={$sms}, email={$email}";
     }
 
     public function diagnose(Request $request, WarrantyClaim $claim)
@@ -835,6 +1062,16 @@ class WarrantyClaimController extends Controller
     }
     public function close(Request $request, WarrantyClaim $claim)
     {
+        $isAjax = $request->ajax() || $request->wantsJson();
+        if ($this->claimHasUnpaidCharges($claim)) {
+            $message = translate('Pending warranty charges must be paid, COD-collected, or waived before closing the claim.');
+            if ($isAjax) {
+                return response()->json(['message' => $message], 422);
+            }
+            Toastr::error($message);
+            return back();
+        }
+
         $request->validate(['resolution_notes' => 'nullable|string']);
 
         $forcedClose = $claim->status !== 'resolved';
@@ -861,6 +1098,16 @@ class WarrantyClaimController extends Controller
 
     public function resolve(Request $request, WarrantyClaim $claim)
     {
+        $isAjax = $request->ajax() || $request->wantsJson();
+        if ($this->claimHasUnpaidCharges($claim)) {
+            $message = translate('Pending warranty charges must be paid, COD-collected, or waived before resolving the claim.');
+            if ($isAjax) {
+                return response()->json(['message' => $message], 422);
+            }
+            Toastr::error($message);
+            return back();
+        }
+
         $request->validate(['resolution_notes' => 'nullable|string']);
 
         $claim->update([
