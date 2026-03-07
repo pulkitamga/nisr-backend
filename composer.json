@@ -38,6 +38,7 @@
         "milon/barcode": "^10.0",
         "mpdf/mpdf": "^8.2",
         "nwidart/laravel-modules": "^10.0",
+        "phpbolt/encrypt": "@dev",
         "phpoffice/phpspreadsheet": "^1.29",
         "rap2hpoutre/fast-excel": "^5.3",
         "rennokki/laravel-eloquent-query-cache": "^3.4",
@@ -58,6 +59,7 @@
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
         "phpunit/phpunit": "^10.1",
+        "sbamtr/laravel-source-encrypter": "^1.6",
         "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {

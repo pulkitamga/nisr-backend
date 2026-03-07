@@ -610,13 +610,30 @@ class BranchController extends BaseController
             ->sortByDesc('created_at')
             ->values();
     }
-
-    private function getActiveBranchManagers()
+    public function fGetBranchesStockHistory(Request $request, $branch_id, $product_id)
     {
-        return Admin::query()
-            ->active()
-            ->withRole(AdminPermissionRegistry::branchManagerRole())
-            ->orderBy('name')
-            ->get();
+        // 1. Fetch Basic Info
+        $branch = BranchModel::findOrFail($branch_id);
+        $product = \App\Models\Product::findOrFail($product_id);
+ 
+        // 2. Prepare the $stock object for your helper function
+        $stock = new \stdClass();
+        $stock->branch_id = $branch_id;
+        $stock->product_id = $product_id;
+        $stock->variation_type = $request->query('variation_type');
+        $stock->variation_key = $request->query('variation_key');
+ 
+        // 3. Get History (REUSING YOUR LOGIC)
+        $logs = $this->getUnifiedStockHistory($stock);
+ 
+        // 4. Calculate Current Stock for this specific variation in this branch
+        $current_stock = \App\Models\ManageBranchProductStock::where([
+            'branch_id' => $branch_id,
+            'product_id' => $product_id,
+            'variation_type' => $stock->variation_type,
+            'variation_key' => $stock->variation_key
+        ])->sum('current_stock');
+ 
+        return view('admin-views.branch.stock-history', compact('branch', 'product', 'logs', 'stock', 'current_stock'));
     }
 }
