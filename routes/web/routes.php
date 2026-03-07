@@ -19,6 +19,7 @@ use App\Http\Controllers\EncryptionController;
 use App\Http\Controllers\EncTest\EncryptionTestController;
 use App\Http\Controllers\Payment_Methods\PaymobController;
 use App\Http\Controllers\Payment_Methods\PaytabsController;
+use App\Http\Controllers\TestUser\TestingUserController;
 use App\Http\Controllers\TmpUse\TestController;
 use App\Http\Controllers\UcmWebhookController;
 use App\Http\Controllers\Web\BlogController;
@@ -68,7 +69,9 @@ use VentureDrake\LaravelCrm\LaravelCrm;
 |
 */
 
-Route::get('/test-hello-user',[EncryptionTestController::class,'index']);
+// Route::get('/test-hello-user',[EncryptionTestController::class,'index']);
+Route::get('/hello-user',[TestingUserController::class,'index']);
+
 Route::get('/test-hello', function() {
     // This will load your encrypted controller
    return EncryptedControllerLoader::load('TestEncryptionController', 'index');
