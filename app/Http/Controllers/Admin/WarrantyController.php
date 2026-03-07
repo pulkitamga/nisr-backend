@@ -9,18 +9,23 @@ use App\Models\ActivationReview;
 use App\Models\Blacklist;
 use App\Models\Product;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimCharge;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Services\ReportPdfService;
 
 class ValidationHeading implements WithHeadingRow {}
 
@@ -499,119 +504,606 @@ class WarrantyController extends Controller
     }
 
     // Reports (Claims)
-    public function reportClaims()
+    public function reportClaims(Request $request): View|BinaryFileResponse|Response
     {
-        $reports = [
-            'claim_rate' => \App\Models\WarrantyClaim::count() / max(1, \App\Models\Warranty::count()) * 100,
+        [$fromDate, $toDate] = $this->resolveAnalyticsDateRange($request);
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $fromDate->toDateString(),
+            'to' => $toDate->toDateString(),
+            'status' => (string)$request->input('status', 'all'),
+            'search' => trim((string)$request->input('search', '')),
         ];
 
+        $claimsQuery = WarrantyClaim::query()
+            ->where(function ($query) use ($fromDate, $toDate) {
+                $query->whereBetween('submitted_at', [$fromDate, $toDate])
+                    ->orWhere(function ($fallbackQuery) use ($fromDate, $toDate) {
+                        $fallbackQuery->whereNull('submitted_at')
+                            ->whereBetween('created_at', [$fromDate, $toDate]);
+                    });
+            });
+
+        if ($filters['status'] !== '' && $filters['status'] !== 'all') {
+            $claimsQuery->where('status', $filters['status']);
+        }
+
+        if ($filters['search'] !== '') {
+            $search = $filters['search'];
+            $claimsQuery->where(function ($query) use ($search) {
+                $query->where('claim_number', 'like', '%' . $search . '%')
+                    ->orWhere('serial_number', 'like', '%' . $search . '%');
+            });
+        }
+
+        $totalClaims = (clone $claimsQuery)->count();
+        $resolvedClaims = (clone $claimsQuery)->whereIn('status', ['resolved', 'closed'])->count();
+        $rejectedClaims = (clone $claimsQuery)->where('status', 'rejected')->count();
+        $openClaims = max(0, $totalClaims - $resolvedClaims - $rejectedClaims);
+        $totalWarranties = Warranty::query()
+            ->whereBetween('created_at', [$fromDate, $toDate])
+            ->count();
+
+        $kpi = [
+            'total_claims' => $totalClaims,
+            'claim_rate' => $totalWarranties > 0 ? ($totalClaims / $totalWarranties) * 100 : 0,
+            'open_claims' => $openClaims,
+            'resolved_claims' => $resolvedClaims,
+        ];
+
+        $statusRows = (clone $claimsQuery)
+            ->selectRaw("COALESCE(NULLIF(status, ''), 'unknown') as status_name")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(status, ''), 'unknown')"))
+            ->orderByDesc('total')
+            ->get();
+
+        $trendUnit = $this->resolveReportTrendUnit($fromDate, $toDate);
+        $periodKeys = $this->buildAnalyticsPeriodKeys($fromDate, $toDate, $trendUnit);
+        $trendSelect = $this->resolveTrendSelectExpression('COALESCE(submitted_at, created_at)', $trendUnit);
+
+        $trendRows = (clone $claimsQuery)
+            ->selectRaw($trendSelect . ' as period_key')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('period_key')
+            ->get();
+        $trendMap = $trendRows->pluck('total', 'period_key')->all();
+
+        $trendLabels = [];
+        $trendValues = [];
+        foreach ($periodKeys as $periodKey) {
+            $trendLabels[] = $this->formatAnalyticsPeriodLabel($periodKey, $trendUnit);
+            $trendValues[] = (int)($trendMap[$periodKey] ?? 0);
+        }
+
+        $statusChartData = [
+            'labels' => $statusRows
+                ->pluck('status_name')
+                ->map(fn($value) => ucwords(str_replace('_', ' ', (string)$value)))
+                ->values()
+                ->all(),
+            'counts' => $statusRows
+                ->pluck('total')
+                ->map(fn($value) => (int)$value)
+                ->values()
+                ->all(),
+        ];
+
+        $trendChartData = [
+            'labels' => $trendLabels,
+            'counts' => $trendValues,
+        ];
+
+        $detailQuery = (clone $claimsQuery)
+            ->with(['warranty.user', 'warranty.product', 'branch'])
+            ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
+
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $detailQuery->get()->map(function (WarrantyClaim $claim) {
+                return [
+                    (string)$claim->claim_number,
+                    (string)$claim->serial_number,
+                    ucwords(str_replace('_', ' ', (string)$claim->status)),
+                    $this->resolveClaimCustomerName($claim),
+                    optional($claim->submitted_at ?? $claim->created_at)->format('Y-m-d H:i:s'),
+                    optional($claim->resolution_due)->format('Y-m-d H:i:s') ?? '-',
+                    $claim->branch?->branch_name ?? '-',
+                ];
+            })->values()->all();
+
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array
+                {
+                    return ['Claim Number', 'Serial', 'Status', 'Customer', 'Submitted At', 'Resolution Due', 'Branch'];
+                }
+            }, 'warranty-claims-report.xlsx');
+        }
+
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            $claimsForPdf = $detailQuery->get();
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.warranty.report-claims-pdf',
+                data: compact('kpi', 'claimsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
+                fileName: 'warranty-claims-report.pdf',
+                orientation: 'landscape'
+            );
+        }
+
         $dataLimit = getWebConfig('pagination_limit') ?? 10;
+        $claims = $detailQuery->paginate($dataLimit)->withQueryString();
 
-        $claimsByStatus = \App\Models\WarrantyClaim::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->orderBy('count', 'desc')
-            ->paginate($dataLimit);
-
-        return view('admin-views.warranty.report-claims', compact('reports', 'claimsByStatus'));
+        return view('admin-views.warranty.report-claims', compact(
+            'kpi',
+            'filters',
+            'claims',
+            'statusChartData',
+            'trendChartData',
+            'fromDate',
+            'toDate'
+        ));
     }
 
     // Reports (SLA)
-    public function reportSLA()
+    public function reportSLA(Request $request): View|BinaryFileResponse|Response
     {
-        $totalClaims = WarrantyClaim::count();
-        $onTimeClaims = WarrantyClaim::where('resolution_due', '>', now())->count();
-        $breached = $totalClaims - $onTimeClaims;
-
-        $sla = [
-            'compliance' => $totalClaims > 0 ? ($onTimeClaims / $totalClaims) * 100 : 0,
+        [$fromDate, $toDate] = $this->resolveAnalyticsDateRange($request);
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $fromDate->toDateString(),
+            'to' => $toDate->toDateString(),
+            'sla_type' => (string)$request->input('sla_type', 'all'),
         ];
 
-        $firstResponseDetails = WarrantyClaim::select(
-            'claim_number',
-            'warranty_id',
-            DB::raw('(select serial_number from warranties where warranties.id = warranty_claims.warranty_id) as serial_number'),
-            DB::raw('response_due as due_date'),
-            DB::raw('"response_due" as type'),
-            DB::raw('IF(response_due > NOW(), 1, 0) as is_within_sla')
-        )->whereNotNull('response_due');
+        if (!in_array($filters['sla_type'], ['all', 'response', 'resolution'], true)) {
+            $filters['sla_type'] = 'all';
+        }
 
-        $decisionDetails = WarrantyClaim::select(
-            'claim_number',
-            'warranty_id',
-            DB::raw('(select serial_number from warranties where warranties.id = warranty_claims.warranty_id) as serial_number'),
-            DB::raw('resolution_due as due_date'),
-            DB::raw('"decision" as type'),
-            DB::raw('IF(resolution_due > NOW(), 1, 0) as is_within_sla')
-        )->whereNotNull('resolution_due');
+        if ($filters['sla_type'] === 'response') {
+            $slaRowsQuery = DB::query()->fromSub(
+                $this->buildSlaDeadlineQuery($fromDate, $toDate, 'response'),
+                'sla_rows'
+            );
+        } elseif ($filters['sla_type'] === 'resolution') {
+            $slaRowsQuery = DB::query()->fromSub(
+                $this->buildSlaDeadlineQuery($fromDate, $toDate, 'resolution'),
+                'sla_rows'
+            );
+        } else {
+            $allDeadlinesQuery = $this->buildSlaDeadlineQuery($fromDate, $toDate, 'response')
+                ->unionAll($this->buildSlaDeadlineQuery($fromDate, $toDate, 'resolution'));
+            $slaRowsQuery = DB::query()->fromSub($allDeadlinesQuery, 'sla_rows');
+        }
+
+        $slaSummaryRows = (clone $slaRowsQuery)->orderByDesc('due_date')->get();
+        $totalDeadlines = $slaSummaryRows->count();
+        $onTime = $slaSummaryRows->where('is_within_sla', 1)->count();
+        $breached = max(0, $totalDeadlines - $onTime);
+
+        $lateRows = $slaSummaryRows->where('is_within_sla', 0);
+        $averageBreachHours = null;
+        if ($lateRows->isNotEmpty()) {
+            $totalLateHours = $lateRows->sum(function ($row) {
+                try {
+                    $dueDate = Carbon::parse((string)$row->due_date);
+                    $reference = $row->completed_at ? Carbon::parse((string)$row->completed_at) : now();
+                    return $reference->gt($dueDate) ? $dueDate->diffInHours($reference) : 0;
+                } catch (\Throwable $exception) {
+                    return 0;
+                }
+            });
+            $averageBreachHours = round($totalLateHours / $lateRows->count(), 1);
+        }
+
+        $kpi = [
+            'total_deadlines' => $totalDeadlines,
+            'on_time' => $onTime,
+            'breached' => $breached,
+            'compliance' => $totalDeadlines > 0 ? ($onTime / $totalDeadlines) * 100 : 0,
+            'avg_breach_hours' => $averageBreachHours,
+        ];
+
+        $typeRows = (clone $slaRowsQuery)
+            ->selectRaw("COALESCE(NULLIF(sla_type_key, ''), 'unknown') as sla_type_key")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(sla_type_key, ''), 'unknown')"))
+            ->orderByDesc('total')
+            ->get();
+
+        $trendUnit = $this->resolveReportTrendUnit($fromDate, $toDate);
+        $periodKeys = $this->buildAnalyticsPeriodKeys($fromDate, $toDate, $trendUnit);
+        $trendSelect = $this->resolveTrendSelectExpression('due_date', $trendUnit);
+
+        $trendRows = (clone $slaRowsQuery)
+            ->selectRaw($trendSelect . ' as period_key')
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN is_within_sla = 0 THEN 1 ELSE 0 END) as breached_total')
+            ->groupBy('period_key')
+            ->get();
+        $totalMap = $trendRows->pluck('total', 'period_key')->all();
+        $breachedMap = $trendRows->pluck('breached_total', 'period_key')->all();
+
+        $trendLabels = [];
+        $trendTotals = [];
+        $trendBreached = [];
+        foreach ($periodKeys as $periodKey) {
+            $trendLabels[] = $this->formatAnalyticsPeriodLabel($periodKey, $trendUnit);
+            $trendTotals[] = (int)($totalMap[$periodKey] ?? 0);
+            $trendBreached[] = (int)($breachedMap[$periodKey] ?? 0);
+        }
+
+        $slaComplianceChartData = [
+            'labels' => [translate('on_time'), translate('breached')],
+            'counts' => [(int)$onTime, (int)$breached],
+        ];
+
+        $slaTypeChartData = [
+            'labels' => $typeRows
+                ->pluck('sla_type_key')
+                ->map(function ($type) {
+                    return $type === 'response'
+                        ? translate('first_response_sla')
+                        : ($type === 'resolution' ? translate('resolution_sla') : ucwords(str_replace('_', ' ', (string)$type)));
+                })
+                ->values()
+                ->all(),
+            'counts' => $typeRows
+                ->pluck('total')
+                ->map(fn($value) => (int)$value)
+                ->values()
+                ->all(),
+        ];
+
+        $slaTrendChartData = [
+            'labels' => $trendLabels,
+            'total' => $trendTotals,
+            'breached' => $trendBreached,
+        ];
+
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $slaSummaryRows->map(function ($row) {
+                $slaLabel = $row->sla_type_key === 'response'
+                    ? translate('first_response_sla')
+                    : translate('resolution_sla');
+                return [
+                    (string)$row->claim_number,
+                    (string)$row->serial_number,
+                    (string)$row->product_name,
+                    $slaLabel,
+                    Carbon::parse((string)$row->due_date)->format('Y-m-d H:i:s'),
+                    $row->completed_at ? Carbon::parse((string)$row->completed_at)->format('Y-m-d H:i:s') : '-',
+                    ((int)$row->is_within_sla === 1) ? translate('on_time') : translate('breached'),
+                    ucwords(str_replace('_', ' ', (string)$row->status)),
+                ];
+            })->values()->all();
+
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array
+                {
+                    return ['Claim Number', 'Serial', 'Product', 'SLA Type', 'Due Date', 'Completed At', 'SLA Status', 'Claim Status'];
+                }
+            }, 'warranty-sla-report.xlsx');
+        }
+
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            $slaRowsForPdf = $slaSummaryRows->values();
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.warranty.report-sla-pdf',
+                data: compact('kpi', 'slaRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
+                fileName: 'warranty-sla-report.pdf',
+                orientation: 'landscape'
+            );
+        }
 
         $dataLimit = getWebConfig('pagination_limit') ?? 10;
+        $slaDetails = (clone $slaRowsQuery)
+            ->orderByDesc('due_date')
+            ->paginate($dataLimit)
+            ->withQueryString();
 
-        $slaDetails = $firstResponseDetails->union($decisionDetails)
-            ->orderBy('due_date', 'asc')
-            ->paginate($dataLimit);
-
-        return view('admin-views.warranty.report-sla', compact('sla', 'breached', 'slaDetails'));
+        return view('admin-views.warranty.report-sla', compact(
+            'kpi',
+            'filters',
+            'slaDetails',
+            'slaComplianceChartData',
+            'slaTypeChartData',
+            'slaTrendChartData',
+            'fromDate',
+            'toDate'
+        ));
     }
 
     // Reports (Activations)
-    public function reportActivations()
+    public function reportActivations(Request $request): View|BinaryFileResponse|Response
     {
-        $total = Warranty::count();
-        $active = Warranty::where('status', 'active')->count();
-        $rate = $total > 0 ? ($active / $total) * 100 : 0;
-
-        $activationMethods = [
-            'user_public_form' => 'Public Form',
-            'admin_manual'     => 'Admin Panel',
-            'auto_activation'  => 'Auto Activation',
-            'mobile_app'       => 'Mobile App',
-            'order_activation' => 'Order Activation',
-            'replacement'      => 'Replacement',
+        [$fromDate, $toDate] = $this->resolveAnalyticsDateRange($request);
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $fromDate->toDateString(),
+            'to' => $toDate->toDateString(),
+            'activation_method' => (string)$request->input('activation_method', 'all'),
+            'search' => trim((string)$request->input('search', '')),
         ];
 
-        $methodCounts = [];
+        $activationQuery = Warranty::query()
+            ->whereNotNull('activation_date')
+            ->whereBetween('activation_date', [$fromDate, $toDate]);
 
-        foreach ($activationMethods as $key => $label) {
-            $count = Warranty::where('status', 'active')->where('activation_method', $key)->count();
-            $methodCounts[] = [
-                'label' => $label,
-                'count' => $count,
-                'percentage' => $active > 0 ? round(($count / $active) * 100, 2) : 0
-            ];
+        if ($filters['activation_method'] !== '' && $filters['activation_method'] !== 'all') {
+            $activationQuery->where('activation_method', $filters['activation_method']);
         }
 
-        $knownMethods = array_keys($activationMethods);
-        $otherCount = Warranty::where('status', 'active')
-            ->whereNotIn('activation_method', $knownMethods)
+        if ($filters['search'] !== '') {
+            $search = $filters['search'];
+            $activationQuery->where(function ($query) use ($search) {
+                $query->where('serial_number', 'like', '%' . $search . '%')
+                    ->orWhereHas('product', function ($productQuery) use ($search) {
+                        $productQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalActivations = (clone $activationQuery)->count();
+        $activeWarranties = (clone $activationQuery)
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            })
             ->count();
-        if ($otherCount > 0) {
-            $methodCounts[] = [
-                'label' => 'Other',
-                'count' => $otherCount,
-                'percentage' => $active > 0 ? round(($otherCount / $active) * 100, 2) : 0,
+        $expiredWarranties = (clone $activationQuery)
+            ->whereNotNull('end_date')
+            ->where('end_date', '<', now())
+            ->count();
+        $averageMonthsRaw = (clone $activationQuery)->avg('warranty_months');
+
+        $kpi = [
+            'total_activations' => $totalActivations,
+            'active_warranties' => $activeWarranties,
+            'expired_warranties' => $expiredWarranties,
+            'activation_rate' => $totalActivations > 0 ? ($activeWarranties / $totalActivations) * 100 : 0,
+            'avg_warranty_months' => $averageMonthsRaw !== null ? round((float)$averageMonthsRaw, 1) : null,
+        ];
+
+        $methodRows = (clone $activationQuery)
+            ->selectRaw("COALESCE(NULLIF(activation_method, ''), 'unknown') as method_key")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(NULLIF(activation_method, ''), 'unknown')"))
+            ->orderByDesc('total')
+            ->get();
+
+        $methodBreakdown = $methodRows->map(function ($row) use ($totalActivations) {
+            $count = (int)$row->total;
+            return [
+                'method_key' => (string)$row->method_key,
+                'label' => $this->resolveActivationMethodLabel((string)$row->method_key),
+                'count' => $count,
+                'percentage' => $totalActivations > 0 ? round(($count / $totalActivations) * 100, 2) : 0.0,
             ];
+        })->values();
+
+        $trendUnit = $this->resolveReportTrendUnit($fromDate, $toDate);
+        $periodKeys = $this->buildAnalyticsPeriodKeys($fromDate, $toDate, $trendUnit);
+        $trendSelect = $this->resolveTrendSelectExpression('activation_date', $trendUnit);
+
+        $trendRows = (clone $activationQuery)
+            ->selectRaw($trendSelect . ' as period_key')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('period_key')
+            ->get();
+        $trendMap = $trendRows->pluck('total', 'period_key')->all();
+
+        $trendLabels = [];
+        $trendValues = [];
+        foreach ($periodKeys as $periodKey) {
+            $trendLabels[] = $this->formatAnalyticsPeriodLabel($periodKey, $trendUnit);
+            $trendValues[] = (int)($trendMap[$periodKey] ?? 0);
         }
 
-        return view('admin-views.warranty.report-activations', compact('rate', 'methodCounts'));
+        $activationTrendChartData = [
+            'labels' => $trendLabels,
+            'counts' => $trendValues,
+        ];
+
+        $activationMethodChartData = [
+            'labels' => $methodBreakdown->pluck('label')->values()->all(),
+            'counts' => $methodBreakdown->pluck('count')->map(fn($value) => (int)$value)->values()->all(),
+        ];
+
+        $topProducts = (clone $activationQuery)
+            ->leftJoin('products', 'products.id', '=', 'warranties.product_id')
+            ->selectRaw("COALESCE(products.name, 'Unknown') as product_name")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw("COALESCE(products.name, 'Unknown')"))
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get();
+
+        $detailQuery = (clone $activationQuery)
+            ->with(['product', 'user', 'branch'])
+            ->orderByDesc('activation_date');
+
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $detailQuery->get()->map(function (Warranty $warranty) {
+                return [
+                    (string)$warranty->serial_number,
+                    $warranty->product?->name ?? '-',
+                    $this->resolveWarrantyCustomerName($warranty),
+                    $warranty->branch?->branch_name ?? '-',
+                    $this->resolveActivationMethodLabel((string)$warranty->activation_method),
+                    optional($warranty->activation_date)->format('Y-m-d H:i:s') ?? '-',
+                    ucwords(str_replace('_', ' ', (string)$warranty->status)),
+                    optional($warranty->end_date)->format('Y-m-d') ?? '-',
+                ];
+            })->values()->all();
+
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array
+                {
+                    return ['Serial', 'Product', 'Customer', 'Branch', 'Activation Method', 'Activated At', 'Status', 'Warranty End'];
+                }
+            }, 'warranty-activations-report.xlsx');
+        }
+
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            $activationRowsForPdf = $detailQuery->get();
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.warranty.report-activations-pdf',
+                data: compact('kpi', 'methodBreakdown', 'topProducts', 'activationRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
+                fileName: 'warranty-activations-report.pdf',
+                orientation: 'landscape'
+            );
+        }
+
+        $dataLimit = getWebConfig('pagination_limit') ?? 10;
+        $activations = $detailQuery->paginate($dataLimit)->withQueryString();
+
+        return view('admin-views.warranty.report-activations', compact(
+            'kpi',
+            'filters',
+            'methodBreakdown',
+            'topProducts',
+            'activations',
+            'activationTrendChartData',
+            'activationMethodChartData',
+            'fromDate',
+            'toDate'
+        ));
     }
 
-    public function reportAnalytics(): View
+    private function buildSlaDeadlineQuery(Carbon $fromDate, Carbon $toDate, string $slaType)
     {
-        $snapshotFrom = now()->subDays(89)->startOfDay();
-        $snapshotTo = now()->endOfDay();
-        $trendStart = now()->copy()->startOfMonth()->subMonths(11);
-        $trendEnd = now()->endOfDay();
+        $isResponse = $slaType === 'response';
+        $dueColumn = $isResponse ? 'warranty_claims.response_due' : 'warranty_claims.resolution_due';
+        $completedColumn = $isResponse ? 'warranty_claims.first_response_at' : 'warranty_claims.resolved_at';
+        $typeLiteral = $isResponse ? 'response' : 'resolution';
+
+        return WarrantyClaim::query()
+            ->leftJoin('warranties', 'warranties.id', '=', 'warranty_claims.warranty_id')
+            ->leftJoin('products', 'products.id', '=', 'warranties.product_id')
+            ->selectRaw('warranty_claims.id as claim_id')
+            ->selectRaw('warranty_claims.claim_number as claim_number')
+            ->selectRaw("COALESCE(warranty_claims.serial_number, warranties.serial_number, '-') as serial_number")
+            ->selectRaw("COALESCE(products.name, '-') as product_name")
+            ->selectRaw('warranty_claims.status as status')
+            ->selectRaw("'" . $typeLiteral . "' as sla_type_key")
+            ->selectRaw($dueColumn . ' as due_date')
+            ->selectRaw($completedColumn . ' as completed_at')
+            ->selectRaw(
+                'CASE ' .
+                'WHEN ' . $completedColumn . ' IS NOT NULL THEN IF(' . $completedColumn . ' <= ' . $dueColumn . ', 1, 0) ' .
+                'ELSE IF(' . $dueColumn . ' >= NOW(), 1, 0) ' .
+                'END as is_within_sla'
+            )
+            ->whereNotNull($dueColumn)
+            ->whereBetween($dueColumn, [$fromDate, $toDate]);
+    }
+
+    private function resolveReportTrendUnit(Carbon $fromDate, Carbon $toDate): string
+    {
+        $days = $fromDate->diffInDays($toDate);
+        if ($days <= 31) {
+            return 'day';
+        }
+        if ($days <= 180) {
+            return 'week';
+        }
+        return 'month';
+    }
+
+    private function resolveTrendSelectExpression(string $columnExpression, string $unit): string
+    {
+        return match ($unit) {
+            'day' => 'DATE(' . $columnExpression . ')',
+            'week' => "DATE_FORMAT(" . $columnExpression . ", '%x-W%v')",
+            default => "DATE_FORMAT(" . $columnExpression . ", '%Y-%m')",
+        };
+    }
+
+    private function resolveActivationMethodLabel(string $methodKey): string
+    {
+        $normalized = trim($methodKey) !== '' ? $methodKey : 'unknown';
+        $translated = translate($normalized);
+        if ($translated === $normalized) {
+            return ucwords(str_replace('_', ' ', $normalized));
+        }
+        return $translated;
+    }
+
+    private function resolveWarrantyCustomerName(?Warranty $warranty): string
+    {
+        if (!$warranty) {
+            return '-';
+        }
+
+        $customer = $warranty->user;
+        if ($customer) {
+            $fullName = trim(((string)($customer->f_name ?? '')) . ' ' . ((string)($customer->l_name ?? '')));
+            if ($fullName !== '') {
+                return $fullName;
+            }
+            if (!empty($customer->name)) {
+                return (string)$customer->name;
+            }
+        }
+
+        return (string)($warranty->activated_by_name ?: '-');
+    }
+
+    private function resolveClaimCustomerName(WarrantyClaim $claim): string
+    {
+        $resolvedName = $this->resolveWarrantyCustomerName($claim->warranty);
+        if ($resolvedName !== '-') {
+            return $resolvedName;
+        }
+
+        return (string)($claim->activated_by_name ?? '-');
+    }
+
+    public function reportAnalytics(Request $request): View|BinaryFileResponse|Response
+    {
+        [$snapshotFrom, $snapshotTo] = $this->resolveAnalyticsDateRange($request);
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $snapshotFrom->toDateString(),
+            'to' => $snapshotTo->toDateString(),
+            'claim_status' => (string)$request->input('claim_status', ''),
+            'product_id' => (int)$request->input('product_id', 0),
+        ];
+        $trendGrouping = $this->resolveAnalyticsTrendGrouping($snapshotFrom, $snapshotTo);
+        $periodKeys = $this->buildAnalyticsPeriodKeys($snapshotFrom, $snapshotTo, $trendGrouping['unit']);
 
         $warrantyQuery = Warranty::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        if ($filters['product_id'] > 0) {
+            $warrantyQuery->where('product_id', $filters['product_id']);
+        }
         $claimQuery = WarrantyClaim::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        if ($filters['claim_status'] !== '') {
+            $claimQuery->where('status', $filters['claim_status']);
+        }
+        if ($filters['product_id'] > 0) {
+            $claimQuery->whereHas('warranty', fn($query) => $query->where('product_id', $filters['product_id']));
+        }
 
         $totalWarranties = (clone $warrantyQuery)->count();
         $activeWarranties = (clone $warrantyQuery)->where('status', 'active')->count();
         $activatedInPeriod = Warranty::query()
             ->whereNotNull('activation_date')
             ->whereBetween('activation_date', [$snapshotFrom, $snapshotTo])
+            ->when($filters['product_id'] > 0, fn($query) => $query->where('product_id', $filters['product_id']))
             ->count();
         $activationRate = $totalWarranties > 0 ? ($activeWarranties / $totalWarranties) * 100 : 0;
 
@@ -660,37 +1152,40 @@ class WarrantyController extends Controller
 
         $activationTrendRows = Warranty::query()
             ->whereNotNull('activation_date')
-            ->whereBetween('activation_date', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(activation_date) as year, MONTH(activation_date) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('activation_date', [$snapshotFrom, $snapshotTo])
+            ->when($filters['product_id'] > 0, fn($query) => $query->where('product_id', $filters['product_id']))
+            ->selectRaw($trendGrouping['activation_select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
         $claimTrendRows = WarrantyClaim::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['claim_status'] !== '', fn($query) => $query->where('status', $filters['claim_status']))
+            ->when($filters['product_id'] > 0, fn($query) => $query->whereHas('warranty', fn($subQuery) => $subQuery->where('product_id', $filters['product_id'])))
+            ->selectRaw($trendGrouping['created_select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
         $resolvedTrendRows = WarrantyClaim::query()
             ->whereNotNull('resolved_at')
-            ->whereBetween('resolved_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(resolved_at) as year, MONTH(resolved_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('resolved_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['claim_status'] !== '', fn($query) => $query->where('status', $filters['claim_status']))
+            ->when($filters['product_id'] > 0, fn($query) => $query->whereHas('warranty', fn($subQuery) => $subQuery->where('product_id', $filters['product_id'])))
+            ->selectRaw($trendGrouping['resolved_select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
 
-        $activationTrendMap = $this->buildMonthlyCountMap($activationTrendRows->toArray());
-        $claimTrendMap = $this->buildMonthlyCountMap($claimTrendRows->toArray());
-        $resolvedTrendMap = $this->buildMonthlyCountMap($resolvedTrendRows->toArray());
+        $activationTrendMap = $activationTrendRows->pluck('total', 'period_key')->all();
+        $claimTrendMap = $claimTrendRows->pluck('total', 'period_key')->all();
+        $resolvedTrendMap = $resolvedTrendRows->pluck('total', 'period_key')->all();
 
         $trendLabels = [];
         $activationTrend = [];
         $claimTrend = [];
         $resolvedTrend = [];
-        for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
-            $monthDate = $trendStart->copy()->addMonths($monthIndex);
-            $monthKey = $monthDate->format('Y-m');
-            $trendLabels[] = $monthDate->format('M Y');
-            $activationTrend[] = (int)($activationTrendMap[$monthKey] ?? 0);
-            $claimTrend[] = (int)($claimTrendMap[$monthKey] ?? 0);
-            $resolvedTrend[] = (int)($resolvedTrendMap[$monthKey] ?? 0);
+        foreach ($periodKeys as $periodKey) {
+            $trendLabels[] = $this->formatAnalyticsPeriodLabel($periodKey, $trendGrouping['unit']);
+            $activationTrend[] = (int)($activationTrendMap[$periodKey] ?? 0);
+            $claimTrend[] = (int)($claimTrendMap[$periodKey] ?? 0);
+            $resolvedTrend[] = (int)($resolvedTrendMap[$periodKey] ?? 0);
         }
 
         $statusRows = (clone $claimQuery)
@@ -733,6 +1228,8 @@ class WarrantyController extends Controller
             ->join('warranties', 'warranties.id', '=', 'warranty_claims.warranty_id')
             ->leftJoin('products', 'products.id', '=', 'warranties.product_id')
             ->whereBetween('warranty_claims.created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['claim_status'] !== '', fn($query) => $query->where('warranty_claims.status', $filters['claim_status']))
+            ->when($filters['product_id'] > 0, fn($query) => $query->where('warranties.product_id', $filters['product_id']))
             ->selectRaw("COALESCE(products.name, 'Unknown Product') as product_name")
             ->selectRaw('COUNT(*) as claims_count')
             ->groupBy('warranties.product_id', 'products.name')
@@ -785,6 +1282,27 @@ class WarrantyController extends Controller
             statusRows: $statusRows->toArray()
         );
 
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $topProducts->map(fn($row) => [(string)$row->product_name, (int)$row->claims_count])->values()->all();
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array { return ['Product', 'Claims']; }
+            }, 'warranty-analytics-report.xlsx');
+        }
+
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.warranty.report-analytics-pdf',
+                data: compact('kpi', 'topProducts', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                fileName: 'warranty-analytics-report.pdf'
+            );
+        }
+
+        $products = Product::query()->select('id', 'name')->orderBy('name')->get();
+
         return view('admin-views.warranty.report-analytics', compact(
             'kpi',
             'trendChartData',
@@ -794,8 +1312,100 @@ class WarrantyController extends Controller
             'topProducts',
             'insights',
             'snapshotFrom',
-            'snapshotTo'
+            'snapshotTo',
+            'filters',
+            'products'
         ));
+    }
+
+    private function resolveAnalyticsDateRange(Request $request): array
+    {
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+            case 'custom_date':
+                $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                break;
+            case 'this_year':
+            default:
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                break;
+        }
+
+        if ($fromDate->gt($toDate)) {
+            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+        }
+
+        return [$fromDate, $toDate];
+    }
+
+    private function resolveAnalyticsTrendGrouping(Carbon $fromDate, Carbon $toDate): array
+    {
+        $days = $fromDate->diffInDays($toDate);
+        if ($days <= 31) {
+            return ['unit' => 'day', 'created_select' => 'DATE(created_at)', 'activation_select' => 'DATE(activation_date)', 'resolved_select' => 'DATE(resolved_at)'];
+        }
+        if ($days <= 180) {
+            return ['unit' => 'week', 'created_select' => "DATE_FORMAT(created_at, '%x-W%v')", 'activation_select' => "DATE_FORMAT(activation_date, '%x-W%v')", 'resolved_select' => "DATE_FORMAT(resolved_at, '%x-W%v')"];
+        }
+        return ['unit' => 'month', 'created_select' => "DATE_FORMAT(created_at, '%Y-%m')", 'activation_select' => "DATE_FORMAT(activation_date, '%Y-%m')", 'resolved_select' => "DATE_FORMAT(resolved_at, '%Y-%m')"];
+    }
+
+    private function buildAnalyticsPeriodKeys(Carbon $fromDate, Carbon $toDate, string $unit): array
+    {
+        $keys = [];
+        $cursor = $fromDate->copy();
+        if ($unit === 'day') {
+            while ($cursor->lte($toDate)) {
+                $keys[] = $cursor->format('Y-m-d');
+                $cursor->addDay();
+            }
+            return $keys;
+        }
+        if ($unit === 'week') {
+            $cursor = $fromDate->copy()->startOfWeek();
+            $limit = $toDate->copy()->endOfWeek();
+            while ($cursor->lte($limit)) {
+                $keys[] = $cursor->format('o-\WW');
+                $cursor->addWeek();
+            }
+            return $keys;
+        }
+        $cursor = $fromDate->copy()->startOfMonth();
+        $limit = $toDate->copy()->endOfMonth();
+        while ($cursor->lte($limit)) {
+            $keys[] = $cursor->format('Y-m');
+            $cursor->addMonth();
+        }
+        return $keys;
+    }
+
+    private function formatAnalyticsPeriodLabel(string $periodKey, string $unit): string
+    {
+        if ($unit === 'day') {
+            return Carbon::parse($periodKey)->format('M d');
+        }
+        if ($unit === 'week') {
+            [$year, $week] = explode('-W', $periodKey);
+            return 'W' . $week . ' ' . $year;
+        }
+        return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
     }
 
     public function blacklistAddView()
@@ -887,15 +1497,23 @@ class WarrantyController extends Controller
         array $statusRows
     ): array {
         if (($kpi['total_warranties'] ?? 0) === 0 && ($kpi['total_claims'] ?? 0) === 0) {
-            return ['No warranty activity was found in the last 90 days.'];
+            return [translate('no_warranty_activity_found_in_last_90_days')];
         }
 
         $insights = [];
-        $insights[] = 'Claim rate is ' . number_format((float)$kpi['claim_rate'], 1) . '% with closure rate at ' . number_format((float)$kpi['closure_rate'], 1) . '%.';
-        $insights[] = 'SLA compliance is ' . number_format((float)$kpi['sla_compliance'], 1) . '% and open claims are currently ' . number_format((int)$kpi['open_claims']) . '.';
+        $insights[] = strtr(translate('warranty_insight_claim_and_closure_rate'), [
+            ':claim_rate' => number_format((float)$kpi['claim_rate'], 1),
+            ':closure_rate' => number_format((float)$kpi['closure_rate'], 1),
+        ]);
+        $insights[] = strtr(translate('warranty_insight_sla_open_claims'), [
+            ':sla_compliance' => number_format((float)$kpi['sla_compliance'], 1),
+            ':open_claims' => number_format((int)$kpi['open_claims']),
+        ]);
 
         if (($kpi['avg_resolution_hours'] ?? null) !== null) {
-            $insights[] = 'Average claim resolution time is ' . number_format((float)$kpi['avg_resolution_hours'], 1) . ' hours.';
+            $insights[] = strtr(translate('warranty_insight_avg_resolution_time'), [
+                ':hours' => number_format((float)$kpi['avg_resolution_hours'], 1),
+            ]);
         }
 
         $peakClaims = max($claimTrend);
@@ -903,7 +1521,11 @@ class WarrantyController extends Controller
             $peakIndex = array_search($peakClaims, $claimTrend, true);
             if ($peakIndex !== false && isset($trendLabels[$peakIndex])) {
                 $resolved = (int)($resolvedTrend[$peakIndex] ?? 0);
-                $insights[] = 'Highest claim month was ' . $trendLabels[$peakIndex] . ' with ' . $peakClaims . ' claims (' . $resolved . ' resolved).';
+                $insights[] = strtr(translate('warranty_insight_peak_claim_month'), [
+                    ':period' => $trendLabels[$peakIndex],
+                    ':claims' => (string)$peakClaims,
+                    ':resolved' => (string)$resolved,
+                ]);
             }
         }
 
@@ -911,7 +1533,10 @@ class WarrantyController extends Controller
             $topStatus = $statusRows[0];
             $statusName = ucwords(str_replace('_', ' ', (string)data_get($topStatus, 'status_name', 'new')));
             $statusCount = (int)data_get($topStatus, 'total', 0);
-            $insights[] = 'Most common claim status is ' . $statusName . ' with ' . $statusCount . ' claims.';
+            $insights[] = strtr(translate('warranty_insight_top_claim_status'), [
+                ':status_name' => $statusName,
+                ':claims' => (string)$statusCount,
+            ]);
         }
 
         return $insights;

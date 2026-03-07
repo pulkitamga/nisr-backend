@@ -6,6 +6,7 @@ use App\Models\Admin;
 use App\Models\State;
 use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\WebConfigKey;
+use App\Support\AdminPermissionRegistry;
 use App\Traits\CommonTrait;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -126,7 +127,7 @@ class BranchController extends BaseController
                 ];
             });
 
-        $admins = Admin::where('admin_role_id', 2)->where('status', 1)->get();
+        $admins = $this->getActiveBranchManagers();
 
         $states = State::all();
 
@@ -144,7 +145,10 @@ class BranchController extends BaseController
     public function addManager(ManagerAddRequest $request, $seller_id): JsonResponse
     {
         $this->branchRepo->addManager(data: $this->branchService->getAddManager($request));
-        $this->branchRepo->addToAdmin(data: $this->branchService->getAddDataToLogin($request));
+        $admin = $this->branchRepo->addToAdmin(data: $this->branchService->getAddDataToLogin($request));
+        if ($admin instanceof Admin) {
+            $admin->syncRoles([AdminPermissionRegistry::branchManagerRole()]);
+        }
         return response()->json(['message' => translate('Manager_added_successfully')]);
     }
     public function updateManager(ManagerUpdateRequest $request, $seller_id): JsonResponse
@@ -310,7 +314,7 @@ class BranchController extends BaseController
             });
         $states = State::all();
 
-        $admins = Admin::where('admin_role_id', 2)->where('status', 1)->get();
+        $admins = $this->getActiveBranchManagers();
 
         return view(Branch::UPDATE[VIEW], compact('aBranchDetails', 'aShippingMethodArea', 'aDeliveryRestriction', 'shipping_methods_area', 'delivery_restriction', 'aUniqueCities', 'admins', 'states'));
     }

@@ -9,6 +9,18 @@
         color: #377dff;
         border-bottom: 2px solid;
     }
+    .field-colon {
+        margin-inline: .75rem;
+    }
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
 </style>
 @endpush
 
@@ -53,26 +65,26 @@
                         <div class="customer-details-new-card-content">
                             <h6 class="name line--limit-2">{{ $business->company_name }}</h6>
                             <ul class="customer-details-new-card-content-list">
-                                <li><span class="key">{{translate('contact')}}</span><span class="mr-3">:</span><strong
-                                        class="value">{{ $wholesaler->phone ?? translate('no_data_found') }}</strong>
+                                <li><span class="key">{{translate('contact')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-ltr">{{ $wholesaler->phone ?? translate('no_data_found') }}</strong>
                                 </li>
-                                <li><span class="key">{{translate('email')}}</span><span class="mr-3">:</span><strong
-                                        class="value">{{ $wholesaler->email ?? translate('no_data_found') }}</strong>
+                                <li><span class="key">{{translate('email')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-ltr">{{ $wholesaler->email ?? translate('no_data_found') }}</strong>
                                 </li>
                                 <li><span class="key text-capitalize">{{translate('joined_date')}}</span><span
-                                        class="mr-3">:</span><strong class="value">{{ date('d M Y',
+                                        class="field-colon">:</span><strong class="value bidi-ltr">{{ date('d M Y',
                                         strtotime($wholesaler->created_at)) }}</strong></li>
                                 <li><span class="key">{{translate('reffer by')}}</span><span
-                                        class="mr-3">:</span><strong class="value">{{ $wholesaler->refferd_by ??
+                                        class="field-colon">:</span><strong class="value bidi-auto">{{ $wholesaler->refferd_by ??
                                         translate('no_data_found') }}</strong></li>
-                                <li><span class="key">{{translate('tier')}}</span><span class="mr-3">:</span><strong
-                                        class="value">{{ $wholesaler->tier ?? translate('no_data_found') }}</strong>
+                                <li><span class="key">{{translate('tier')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-auto">{{ $wholesaler->tier ?? translate('no_data_found') }}</strong>
                                 </li>
-                                <li><span class="key">{{translate('discount')}}</span><span class="mr-3">:</span><strong
-                                        class="value">{{ $wholesaler->wholesaler_discount ?? translate('no_data_found')
+                                <li><span class="key">{{translate('discount')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-ltr">{{ $wholesaler->wholesaler_discount ?? translate('no_data_found')
                                         }}%</strong></li>
                                 <li><span class="key">{{translate('MOQ Override')}}</span><span
-                                        class="mr-3">:</span><strong class="value">{{ $wholesaler->moq_override_enabled
+                                        class="field-colon">:</span><strong class="value bidi-auto">{{ $wholesaler->moq_override_enabled
                                         ? 'Yes' : 'No'}}</strong></li>
 
 
@@ -91,15 +103,15 @@
                         translate('Company_information') }}</h4>
                     <div>
                         <ul class="customer-details-new-card-content-list">
-                            <li><strong class="key">Company</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">Company</strong><span class="field-colon">:</span><span class="value bidi-auto">{{
                                     $business->company_name }}</span></li>
-                            <li><strong class="key">Trade Name</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">Trade Name</strong><span class="field-colon">:</span><span class="value bidi-auto">{{
                                     $business->trade_name }}</span></li>
-                            <li><strong class="key">Reg. No.</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">Reg. No.</strong><span class="field-colon">:</span><span class="value bidi-ltr">{{
                                     $business->registration_number }}</span></li>
-                            <li><strong class="key">Tax ID</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">Tax ID</strong><span class="field-colon">:</span><span class="value bidi-ltr">{{
                                     $business->tax_id }}</span></li>
-                            <li><strong class="key">VAT No</strong><span class="mr-3">:</span><span class="value">{{
+                            <li><strong class="key">VAT No</strong><span class="field-colon">:</span><span class="value bidi-ltr">{{
                                     $business->vat_number }}</span></li>
                         </ul>
                         <div class="mt-3">
@@ -138,16 +150,16 @@
                             </h6>
                             <div class="row g-2">
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('name') }}:</strong> {{
-                                        $address['contact_person_name'] }}</p>
+                                    <p class="mb-1"><strong>{{ translate('name') }}:</strong> <span class="bidi-auto">{{
+                                        $address['contact_person_name'] }}</span></p>
                                 </div>
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('phone') }}:</strong> {{ $address['phone'] }}
+                                    <p class="mb-1"><strong>{{ translate('phone') }}:</strong> <span class="bidi-ltr">{{ $address['phone'] }}</span>
                                     </p>
                                 </div>
                                 <div class="col-12">
-                                    <p class="mb-1"><strong>{{ translate('address') }}:</strong> {{ $address['address']
-                                        }}</p>
+                                    <p class="mb-1"><strong>{{ translate('address') }}:</strong> <span class="bidi-auto">{{ $address['address']
+                                        }}</span></p>
                                 </div>
                             </div>
                         </div>
@@ -164,16 +176,16 @@
                             </h6>
                             <div class="row g-2">
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('name') }}:</strong> {{
-                                        $address['contact_person_name'] }}</p>
+                                    <p class="mb-1"><strong>{{ translate('name') }}:</strong> <span class="bidi-auto">{{
+                                        $address['contact_person_name'] }}</span></p>
                                 </div>
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('phone') }}:</strong> {{ $address['phone'] }}
+                                    <p class="mb-1"><strong>{{ translate('phone') }}:</strong> <span class="bidi-ltr">{{ $address['phone'] }}</span>
                                     </p>
                                 </div>
                                 <div class="col-12">
-                                    <p class="mb-1"><strong>{{ translate('address') }}:</strong> {{ $address['address']
-                                        }}</p>
+                                    <p class="mb-1"><strong>{{ translate('address') }}:</strong> <span class="bidi-auto">{{ $address['address']
+                                        }}</span></p>
                                 </div>
                             </div>
                         </div>
@@ -217,29 +229,27 @@
                         <div class="row card-body g-3">
                             <div class="col-md-6">
 
-                                <p class="mb-2"><strong>Name:</strong> {{ $contact->first_name }} {{ $contact->last_name
-                                    }}
-                                </p>
+                                <p class="mb-2"><strong>Name:</strong> <span class="bidi-auto">{{ $contact->first_name }} {{ $contact->last_name }}</span></p>
                                 @if($contact->job_title)
-                                <p class="mb-2"><strong>Job Title:</strong> {{ $contact->job_title }}</p>
+                                <p class="mb-2"><strong>Job Title:</strong> <span class="bidi-auto">{{ $contact->job_title }}</span></p>
                                 @endif
-                                <p class="mb-2"><strong>Email:</strong> {{ $contact->email }}</p>
-                                <p class="mb-2"><strong>Phone:</strong> {{ $contact->phone_number }}</p>
-                                <p class="mb-2"><strong>Mobile 1:</strong> {{ $contact->mobile_number_1 }}</p>
-                                <p class="mb-2"><strong>Mobile 2:</strong> {{ $contact->mobile_number_2 }}</p>
-                                <p class="mb-2"><strong>Preferred Contact Method:</strong> {{
-                                    $contact->preferred_contact_method }}</p>
+                                <p class="mb-2"><strong>Email:</strong> <span class="bidi-ltr">{{ $contact->email }}</span></p>
+                                <p class="mb-2"><strong>Phone:</strong> <span class="bidi-ltr">{{ $contact->phone_number }}</span></p>
+                                <p class="mb-2"><strong>Mobile 1:</strong> <span class="bidi-ltr">{{ $contact->mobile_number_1 }}</span></p>
+                                <p class="mb-2"><strong>Mobile 2:</strong> <span class="bidi-ltr">{{ $contact->mobile_number_2 }}</span></p>
+                                <p class="mb-2"><strong>Preferred Contact Method:</strong> <span class="bidi-auto">{{
+                                    $contact->preferred_contact_method }}</span></p>
                             </div>
                             <div class="col-md-6">
                                 <p class="mb-2"><strong>Address:</strong><br>
-                                    {{ $contact->address }}<br>
-                                    {{ $contact->city }}, {{ $contact->state }}<br>
-                                    {{ $contact->country }}
+                                    <span class="bidi-auto">{{ $contact->address }}</span><br>
+                                    <span class="bidi-auto">{{ $contact->city }}, {{ $contact->state }}</span><br>
+                                    <span class="bidi-auto">{{ $contact->country }}</span>
                                 </p>
-                                <p class="mb-2"><strong>Notes:</strong> {{ $contact->notes }}</p>
-                                <p class="mb-2"><strong>Tags:</strong> {{ $contact->tags }}</p>
-                                <p class="mb-2"><strong>Active:</strong> {{ $contact->is_active ? 'Yes' : 'No' }}</p>
-                                <p class="mb-2"><strong>Last Contacted:</strong> {{ $contact->last_contacted_at }}</p>
+                                <p class="mb-2"><strong>Notes:</strong> <span class="bidi-auto">{{ $contact->notes }}</span></p>
+                                <p class="mb-2"><strong>Tags:</strong> <span class="bidi-auto">{{ $contact->tags }}</span></p>
+                                <p class="mb-2"><strong>Active:</strong> <span class="bidi-auto">{{ $contact->is_active ? 'Yes' : 'No' }}</span></p>
+                                <p class="mb-2"><strong>Last Contacted:</strong> <span class="bidi-ltr">{{ $contact->last_contacted_at }}</span></p>
 
                                 <div class="modal fade" id="editContactModal-{{ $contact->id }}" tabindex="-1">
                                     <div class="modal-dialog modal-lg">

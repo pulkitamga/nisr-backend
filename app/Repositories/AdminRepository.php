@@ -46,9 +46,6 @@ class AdminRepository implements AdminRepositoryInterface
                 $query->where('name', 'like', "%$searchValue%")
                     ->orWhere('phone', 'like', "%$searchValue%")
                     ->orWhere('email', 'like', "%$searchValue%");
-            })
-            ->when($filters['admin_role_id'] && $filters['admin_role_id'] != 'all', function ($query) use ($filters) {
-                $query->where('admin_role_id', $filters['admin_role_id']);
             });
 
         $filters += ['searchValue' => $searchValue];
@@ -82,18 +79,19 @@ class AdminRepository implements AdminRepositoryInterface
                     ->orWhere('phone', 'like', "%$searchValue%")
                     ->orWhere('email', 'like', "%$searchValue%");
             })
-            ->when(isset($filters['admin_role_id']) && $filters['admin_role_id'] != 'all', function ($query) use ($filters) {
-                $query->where('admin_role_id', $filters['admin_role_id']);
-            })
+            ->active()
             ->when(isset($filters['role_id']) && $filters['role_id'] != 'all', function ($query) use ($filters) {
                 $query->whereHas('roles', function ($roleQuery) use ($filters) {
                     $roleQuery->where('roles.id', $filters['role_id'])
                         ->where('guard_name', config('permissions_admin.guard', 'admin'));
                 });
             })
+            ->when(!empty($filters['role_name']), function ($query) use ($filters) {
+                $query->withRole($filters['role_name']);
+            })
 
             ->when(!empty($filters['department_id']), function ($query) use ($filters) {
-                $query->where('department_id', $filters['department_id']);
+                $query->inDepartment($filters['department_id']);
             })
             ->when(!empty($filters['branch_id']), function ($query) use ($filters) {
                 $query->where('branch_id', $filters['branch_id']);

@@ -55,6 +55,10 @@ function getQuickViewSelectedQuantity() {
     return qty;
 }
 
+function getQuickViewMaxExchangeQuantity() {
+    return Math.max(getQuickViewSelectedQuantity() - 1, 0);
+}
+
 function syncExchangeQuantityState() {
     const exchangeCheckbox = $("#exchange-charge-checkbox");
     const exchangeQtyWrapper = $("#exchange-qty-wrapper");
@@ -66,23 +70,36 @@ function syncExchangeQuantityState() {
         return;
     }
 
-    const exchangeEnabled = exchangeCheckbox.is(":checked");
-    const selectedQty = getQuickViewSelectedQuantity();
+    const maxExchangeQty = getQuickViewMaxExchangeQuantity();
+    const canUseExchange = maxExchangeQty > 0;
+    if (!canUseExchange) {
+        exchangeCheckbox.prop("checked", false);
+    }
+    exchangeCheckbox.prop("disabled", !canUseExchange);
+
+    const exchangeEnabled = exchangeCheckbox.is(":checked") && canUseExchange;
     let exchangeQty = parseInt(exchangeQtyInput.val(), 10);
-    if (!Number.isFinite(exchangeQty) || exchangeQty < 1) {
+    if (!Number.isFinite(exchangeQty) || exchangeQty < 0) {
+        exchangeQty = 0;
+    }
+    if (exchangeQty > maxExchangeQty) {
+        exchangeQty = maxExchangeQty;
+    }
+    if (exchangeEnabled && exchangeQty < 1) {
         exchangeQty = 1;
     }
-    if (exchangeQty > selectedQty) {
-        exchangeQty = selectedQty;
+    if (!exchangeEnabled) {
+        exchangeQty = 0;
     }
 
     exchangeQtyInput.val(exchangeQty);
-    exchangeQtyInput.attr("max", selectedQty);
+    exchangeQtyInput.attr("min", 0);
+    exchangeQtyInput.attr("max", maxExchangeQty);
 
     exchangeQtyWrapper.toggleClass("d-none", !exchangeEnabled);
-    exchangeQtyInput.prop("disabled", !exchangeEnabled);
-    exchangeMinusBtn.prop("disabled", !exchangeEnabled || exchangeQty <= 1);
-    exchangePlusBtn.prop("disabled", !exchangeEnabled || exchangeQty >= selectedQty);
+    exchangeQtyInput.prop("disabled", !exchangeEnabled || !canUseExchange);
+    exchangeMinusBtn.prop("disabled", !exchangeEnabled || exchangeQty <= 0);
+    exchangePlusBtn.prop("disabled", !exchangeEnabled || exchangeQty >= maxExchangeQty);
 }
 
 document.addEventListener("keydown", function (event) {
@@ -1210,15 +1227,23 @@ function addToCart(form_id = "add-to-cart-form") {
 
         if ($("#exchange-charge-checkbox").prop('checked')) {
             let exchangeQuantity = parseInt($("#exchange-quantity").val(), 10);
-            if (!Number.isFinite(exchangeQuantity) || exchangeQuantity < 1) {
-                exchangeQuantity = 1;
+            const maxExchangeQuantity = getQuickViewMaxExchangeQuantity();
+
+            if (maxExchangeQuantity <= 0) {
+                exchangeQuantity = 0;
             }
-            if (exchangeQuantity > selectedQty) {
-                exchangeQuantity = selectedQty;
+            if (!Number.isFinite(exchangeQuantity) || exchangeQuantity < 0) {
+                exchangeQuantity = 0;
+            }
+            if (exchangeQuantity > maxExchangeQuantity) {
+                exchangeQuantity = maxExchangeQuantity;
+            }
+            if (exchangeQuantity > 0 && exchangeQuantity >= selectedQty) {
+                exchangeQuantity = Math.max(selectedQty - 1, 0);
             }
             $("#exchange-quantity").val(exchangeQuantity);
             let exchangePrice = $("#exchange-quantity").data("price");
-            exchangeCharge = (exchangeQuantity * exchangePrice).toFixed(2);
+            exchangeCharge = exchangeQuantity > 0 ? (exchangeQuantity * exchangePrice).toFixed(2) : 0;
         }
 
         if ($("#installation-charge-checkbox").prop('checked')) {
@@ -1226,6 +1251,7 @@ function addToCart(form_id = "add-to-cart-form") {
         }
         let finalData = $("#" + form_id).serializeArray().concat([
             { name: 'exchange_charge', value: exchangeCharge },
+            { name: 'exchange_quantity', value: parseInt($("#exchange-quantity").val(), 10) || 0 },
             { name: 'installation_charge', value: installationCharge },
             { name: 'branch_id', value: branch_id },
             { name: 'cart_id', value: getPosActiveCartId() },

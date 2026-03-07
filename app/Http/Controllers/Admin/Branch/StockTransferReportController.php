@@ -2,274 +2,355 @@
 
 namespace App\Http\Controllers\Admin\Branch;
 
+use App\Exports\StockTransferReportExport;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\StockTransfers;
-use App\Models\StockTransferProduct;
 use App\Models\Branch;
+use App\Models\StockTransfers;
+use App\Services\ReportPdfService;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class StockTransferReportController extends Controller
 {
-    /**
-     * Display the stock transfer report view
-     */
-    public function index()
+    public function index(): View
     {
-        $branches = Branch::where('status', 'active')->get();
-        
-        // Get years for dropdown
-        $currentYear = date('Y');
-        $years = [];
-        for ($y = $currentYear - 5; $y <= $currentYear; $y++) {
-            $years[] = $y;
-        }
-        
-        // Get months for dropdown
-        $months = [];
-        for ($m = 1; $m <= 12; $m++) {
-            $months[$m] = Carbon::create()->month($m)->format('F');
-        }
-        
-        return view('admin-views.branch-management.stock-transfer-report', compact('branches', 'years', 'months'));
+        $branches = Branch::where('status', 'active')->orderBy('branch_name')->get();
+
+        return view('admin-views.branch-management.stock-transfer-report', compact('branches'));
     }
 
-    /**
-     * Get stock transfer data via AJAX
-     */
-    public function getTransferData(Request $request)
+    public function getTransferData(Request $request): JsonResponse
     {
-        Log::info('Stock transfer data request received:', $request->all());
-        
         try {
             $validator = Validator::make($request->all(), [
-                'year' => 'required|integer|min:2020|max:' . (date('Y') + 1),
-                'month' => 'nullable|integer|min:1|max:12',
+                'date_type' => 'nullable|in:this_year,this_month,this_week,today,custom_date',
+                'from' => 'nullable|date',
+                'to' => 'nullable|date',
                 'from_branch_id' => 'nullable|exists:branches,id',
                 'to_branch_id' => 'nullable|exists:branches,id',
-                'status' => 'nullable|in:pending,approved,rejected'
+                'status' => 'nullable|in:pending,approved,rejected',
             ]);
-            
+
             if ($validator->fails()) {
-                Log::error('Validation failed:', $validator->errors()->toArray());
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'message' => translate('validation_failed'),
+                    'errors' => $validator->errors(),
                 ], 422);
             }
-            
-            $year = $request->year;
-            $month = $request->month;
-            $fromBranchId = $request->from_branch_id;
-            $toBranchId = $request->to_branch_id;
-            $status = $request->status;
-            
-            // Build query
-            $query = StockTransfers::with([
-                'fromBranch',
-                'toBranch',
-                'products.product',
-                'products.category'
-            ]);
-            
-            // Filter by year and month
-            if ($month) {
-                $startDate = Carbon::create($year, $month, 1)->startOfMonth();
-                $endDate = Carbon::create($year, $month, 1)->endOfMonth();
-                $query->whereBetween('transfer_date', [$startDate, $endDate]);
-            } else {
-                $startDate = Carbon::create($year, 1, 1)->startOfYear();
-                $endDate = Carbon::create($year, 12, 31)->endOfYear();
-                $query->whereBetween('transfer_date', [$startDate, $endDate]);
-            }
-            
-            // Filter by from branch
-            if ($fromBranchId) {
-                $query->where('from_branch_id', $fromBranchId);
-            }
-            
-            // Filter by to branch
-            if ($toBranchId) {
-                $query->where('to_branch_id', $toBranchId);
-            }
-            
-            // Filter by status
-            if ($status) {
-                $query->whereHas('products', function($q) use ($status) {
-                    $q->where('status', $status);
-                });
-            }
-            
-            // Get transfers
-            $transfers = $query->orderBy('transfer_date', 'desc')->get();
-            
-            // Process data for chart
-            $chartData = $this->prepareChartData($transfers, $month ? 'daily' : 'monthly');
-            
-            // Calculate statistics
-            $statistics = $this->calculateStatistics($transfers);
-            
+
+            $report = $this->buildReportData($request);
+
             return response()->json([
                 'success' => true,
-                'transfers' => $transfers,
-                'chartData' => $chartData,
-                'statistics' => $statistics,
-                'periodType' => $month ? 'daily' : 'monthly'
+                'transfers' => $report['transfers'],
+                'chartData' => $report['chartData'],
+                'statistics' => $report['statistics'],
+                'periodType' => $report['periodType'],
+                'filters' => $report['filters'],
             ]);
-            
-        } catch (\Exception $e) {
-            Log::error('Error in getTransferData:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+        } catch (\Throwable $exception) {
+            Log::error('Stock transfer report load failed', [
+                'message' => $exception->getMessage(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Server error: ' . $e->getMessage()
+                'message' => translate('failed_to_load_report_data'),
             ], 500);
         }
     }
 
-    /**
-     * Prepare chart data
-     */
-    private function prepareChartData($transfers, $periodType)
+    public function exportExcel(Request $request): BinaryFileResponse
     {
-        $data = [
-            'labels' => [],
-            'datasets' => []
-        ];
-        
-        // Group transfers by period
-        if ($periodType === 'daily') {
-            $grouped = $transfers->groupBy(function($item) {
-                return Carbon::parse($item->transfer_date)->format('d M');
-            });
-            
-            foreach ($grouped as $day => $dayTransfers) {
-                $data['labels'][] = $day;
-            }
-        } else {
-            // Group by month
-            $grouped = $transfers->groupBy(function($item) {
-                return Carbon::parse($item->transfer_date)->format('M');
-            });
-            
-            // Ensure all months
-            $allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            foreach ($allMonths as $month) {
-                $data['labels'][] = $month;
-            }
-        }
-        
-        // Prepare datasets for different statuses
-        $statuses = ['pending', 'approved', 'rejected'];
-        $colors = ['#f39c12', '#2ecc71', '#e74c3c'];
-        
-        foreach ($statuses as $index => $status) {
-            $statusData = [];
-            
-            if ($periodType === 'daily') {
-                foreach ($grouped as $day => $dayTransfers) {
-                    $count = $dayTransfers->filter(function($transfer) use ($status) {
-                        return $transfer->products->where('status', $status)->count() > 0;
-                    })->count();
-                    $statusData[] = $count;
-                }
-            } else {
-                foreach ($allMonths as $month) {
-                    $monthTransfers = $transfers->filter(function($transfer) use ($month) {
-                        return Carbon::parse($transfer->transfer_date)->format('M') === $month;
-                    });
-                    
-                    $count = $monthTransfers->filter(function($transfer) use ($status) {
-                        return $transfer->products->where('status', $status)->count() > 0;
-                    })->count();
-                    $statusData[] = $count;
-                }
-            }
-            
-            $data['datasets'][] = [
-                'label' => ucfirst($status),
-                'data' => $statusData,
-                'backgroundColor' => $colors[$index] . '80',
-                'borderColor' => $colors[$index],
-                'borderWidth' => 3,
-                'tension' => 0.1
-            ];
-        }
-        
-        return $data;
+        $data = $this->buildReportData($request);
+        $data['exportedAt'] = now();
+
+        return Excel::download(
+            new StockTransferReportExport($data),
+            'stock-transfer-report.xlsx'
+        );
     }
 
-    /**
-     * Calculate statistics
-     */
-    private function calculateStatistics($transfers)
+    public function exportPdf(Request $request): Response
+    {
+        $data = $this->buildReportData($request);
+        $data['exportedAt'] = now();
+
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.branch-management.stock-transfer-report-pdf',
+            data: $data,
+            fileName: 'stock-transfer-report.pdf',
+            orientation: 'landscape'
+        );
+    }
+
+    private function buildReportData(Request $request): array
+    {
+        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
+
+        $fromBranchId = $request->input('from_branch_id');
+        $toBranchId = $request->input('to_branch_id');
+        $status = strtolower((string)$request->input('status', ''));
+
+        $query = StockTransfers::query()
+            ->with([
+                'fromBranch',
+                'toBranch',
+                'products' => function ($builder) use ($status) {
+                    if ($status !== '') {
+                        $builder->where('status', $status);
+                    }
+
+                    $builder->with(['product', 'category']);
+                },
+            ])
+            ->whereDate('transfer_date', '>=', $fromDate->toDateString())
+            ->whereDate('transfer_date', '<=', $toDate->toDateString())
+            ->when(!empty($fromBranchId), fn($builder) => $builder->where('from_branch_id', (int)$fromBranchId))
+            ->when(!empty($toBranchId), fn($builder) => $builder->where('to_branch_id', (int)$toBranchId))
+            ->when($status !== '', fn($builder) => $builder->whereHas('products', fn($products) => $products->where('status', $status)));
+
+        $transfers = $query->orderBy('transfer_date', 'desc')->get();
+        $periodType = $this->resolvePeriodType($fromDate, $toDate);
+
+        return [
+            'transfers' => $transfers,
+            'chartData' => $this->prepareChartData($transfers, $fromDate, $toDate, $periodType),
+            'statistics' => $this->calculateStatistics($transfers),
+            'periodType' => $periodType,
+            'filters' => [
+                'date_type' => $dateType,
+                'from' => $fromDate->toDateString(),
+                'to' => $toDate->toDateString(),
+                'from_branch_id' => $fromBranchId ? (int)$fromBranchId : null,
+                'to_branch_id' => $toBranchId ? (int)$toBranchId : null,
+                'status' => $status,
+            ],
+        ];
+    }
+
+    private function resolveDateRange(Request $request): array
+    {
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
+
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+
+            case 'custom_date':
+                try {
+                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                } catch (\Throwable) {
+                    $fromDate = now()->subDays(29)->startOfDay();
+                }
+
+                try {
+                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfDay();
+                }
+                break;
+
+            case 'this_year':
+            default:
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                $dateType = 'this_year';
+                break;
+        }
+
+        if ($fromDate->gt($toDate)) {
+            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+        }
+
+        return [$fromDate, $toDate, $dateType];
+    }
+
+    private function resolvePeriodType(Carbon $fromDate, Carbon $toDate): string
+    {
+        $daysDifference = $fromDate->diffInDays($toDate);
+
+        if ($daysDifference > 60) {
+            return 'month';
+        }
+
+        if ($daysDifference <= 7) {
+            return 'weekday';
+        }
+
+        if ($daysDifference <= 31) {
+            return 'day';
+        }
+
+        return 'date';
+    }
+
+    private function buildPeriodBuckets(Carbon $fromDate, Carbon $toDate, string $periodType): array
+    {
+        $keys = [];
+        $labels = [];
+
+        if ($periodType === 'month') {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfMonth(), '1 month', $toDate->copy()->endOfMonth());
+            foreach ($period as $date) {
+                $keys[] = $date->format('Y-m');
+                $labels[] = $date->locale(app()->getLocale())->translatedFormat('M');
+            }
+
+            return [$keys, $labels];
+        }
+
+        $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay());
+        foreach ($period as $date) {
+            $keys[] = $date->format('Y-m-d');
+
+            $labels[] = match ($periodType) {
+                'weekday' => $date->locale(app()->getLocale())->translatedFormat('l'),
+                'day' => $date->format('j'),
+                default => $date->locale(app()->getLocale())->translatedFormat('j M'),
+            };
+        }
+
+        return [$keys, $labels];
+    }
+
+    private function prepareChartData(Collection $transfers, Carbon $fromDate, Carbon $toDate, string $periodType): array
+    {
+        [$keys, $labels] = $this->buildPeriodBuckets($fromDate, $toDate, $periodType);
+        $keyIndex = array_flip($keys);
+
+        $statuses = ['pending', 'approved', 'rejected'];
+        $statusSeries = [
+            'pending' => array_fill(0, count($keys), 0),
+            'approved' => array_fill(0, count($keys), 0),
+            'rejected' => array_fill(0, count($keys), 0),
+        ];
+
+        foreach ($transfers as $transfer) {
+            $transferDate = Carbon::parse((string)$transfer->transfer_date);
+            $bucketKey = $periodType === 'month' ? $transferDate->format('Y-m') : $transferDate->format('Y-m-d');
+            $position = $keyIndex[$bucketKey] ?? null;
+            if ($position === null) {
+                continue;
+            }
+
+            $statusValues = collect($transfer->products ?? [])
+                ->pluck('status')
+                ->filter()
+                ->map(fn($value) => strtolower((string)$value))
+                ->unique();
+
+            foreach ($statuses as $status) {
+                if ($statusValues->contains($status)) {
+                    $statusSeries[$status][$position] += 1;
+                }
+            }
+        }
+
+        $colors = [
+            'pending' => '#f39c12',
+            'approved' => '#2ecc71',
+            'rejected' => '#e74c3c',
+        ];
+
+        return [
+            'labels' => $labels,
+            'datasets' => collect($statuses)->map(function (string $status) use ($statusSeries, $colors) {
+                return [
+                    'label' => translate($status),
+                    'data' => $statusSeries[$status],
+                    'backgroundColor' => ($colors[$status] ?? '#2563eb') . '80',
+                    'borderColor' => $colors[$status] ?? '#2563eb',
+                    'borderWidth' => 3,
+                    'tension' => 0.1,
+                ];
+            })->values()->all(),
+        ];
+    }
+
+    private function calculateStatistics(Collection $transfers): array
     {
         $stats = [
-            'total_transfers' => $transfers->count(),
+            'total_transfers' => (int)$transfers->count(),
             'pending_transfers' => 0,
             'approved_transfers' => 0,
             'rejected_transfers' => 0,
             'total_quantity' => 0,
             'top_from_branch' => null,
-            'top_to_branch' => null
+            'top_to_branch' => null,
         ];
-        
+
         $fromBranchCounts = [];
         $toBranchCounts = [];
-        
+
         foreach ($transfers as $transfer) {
-            // Count by status
-            foreach ($transfer->products as $product) {
-                switch ($product->status) {
-                    case 'pending':
-                        $stats['pending_transfers']++;
-                        break;
-                    case 'approved':
-                        $stats['approved_transfers']++;
-                        $stats['total_quantity'] += $product->quantity;
-                        break;
-                    case 'rejected':
-                        $stats['rejected_transfers']++;
-                        break;
+            foreach (($transfer->products ?? []) as $product) {
+                $status = strtolower((string)($product->status ?? ''));
+                if ($status === 'pending') {
+                    $stats['pending_transfers']++;
+                } elseif ($status === 'approved') {
+                    $stats['approved_transfers']++;
+                    $stats['total_quantity'] += (int)($product->quantity ?? 0);
+                } elseif ($status === 'rejected') {
+                    $stats['rejected_transfers']++;
                 }
             }
-            
-            // Count by from branch
+
             if ($transfer->fromBranch) {
-                $fromBranchCounts[$transfer->fromBranch->id] = [
-                    'name' => $transfer->fromBranch->branch_name,
-                    'count' => ($fromBranchCounts[$transfer->fromBranch->id]['count'] ?? 0) + 1
-                ];
+                $branchId = (int)$transfer->fromBranch->id;
+                if (!isset($fromBranchCounts[$branchId])) {
+                    $fromBranchCounts[$branchId] = [
+                        'name' => (string)$transfer->fromBranch->branch_name,
+                        'count' => 0,
+                    ];
+                }
+                $fromBranchCounts[$branchId]['count']++;
             }
-            
-            // Count by to branch
+
             if ($transfer->toBranch) {
-                $toBranchCounts[$transfer->toBranch->id] = [
-                    'name' => $transfer->toBranch->branch_name,
-                    'count' => ($toBranchCounts[$transfer->toBranch->id]['count'] ?? 0) + 1
-                ];
+                $branchId = (int)$transfer->toBranch->id;
+                if (!isset($toBranchCounts[$branchId])) {
+                    $toBranchCounts[$branchId] = [
+                        'name' => (string)$transfer->toBranch->branch_name,
+                        'count' => 0,
+                    ];
+                }
+                $toBranchCounts[$branchId]['count']++;
             }
         }
-        
-        // Find top branches
+
         if (!empty($fromBranchCounts)) {
-            $topFrom = collect($fromBranchCounts)->sortByDesc('count')->first();
-            $stats['top_from_branch'] = $topFrom['name'] . ' (' . $topFrom['count'] . ' transfers)';
+            $stats['top_from_branch'] = collect($fromBranchCounts)->sortByDesc('count')->first();
         }
-        
+
         if (!empty($toBranchCounts)) {
-            $topTo = collect($toBranchCounts)->sortByDesc('count')->first();
-            $stats['top_to_branch'] = $topTo['name'] . ' (' . $topTo['count'] . ' transfers)';
+            $stats['top_to_branch'] = collect($toBranchCounts)->sortByDesc('count')->first();
         }
-        
+
         return $stats;
     }
 }

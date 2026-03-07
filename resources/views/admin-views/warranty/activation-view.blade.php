@@ -1,13 +1,27 @@
 @extends('layouts.back-end.app')
 @section('title', translate('Warranty Details') . ' - ' . $warranty->serial_number)
 
+@push('css_or_js')
+<style>
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="content container-fluid">
     <div class="page-header">
         <div class="row align-items-center">
             <div class="col-sm mb-2 mb-sm-0">
                 <h1 class="page-header-title">
-                    <span class="text-uppercase">{{ $warranty->serial_number }}</span>
+                    <span class="text-uppercase bidi-ltr">{{ $warranty->serial_number }}</span>
                     <span class="badge badge-soft-{{ $warranty->status == 'active' ? 'success' : ($warranty->status == 'expired' ? 'danger' : 'warning') }} ml-2">
                         {{ ucfirst($warranty->statusLabel()) }}
                     </span>
@@ -30,17 +44,17 @@
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled list-unstyled-py-3">
-                        <li><strong>{{ translate('Product') }}:</strong> {{ $warranty->product?->name ?? 'N/A' }}</li>
-                        <li><strong>{{ translate('Warranty Duration') }}:</strong> {{ $warranty->warranty_months }} {{ translate('months') }}</li>
-                        <li><strong>{{ translate('Start Date') }}:</strong> {{ $warranty->start_date?->format('d M, Y') ?? 'Not Started' }}</li>
-                        <li><strong>{{ translate('End Date') }}:</strong> {{ $warranty->end_date?->format('d M, Y') ?? 'N/A' }}</li>
+                        <li><strong>{{ translate('Product') }}:</strong> <span class="bidi-auto">{{ $warranty->product?->name ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Warranty Duration') }}:</strong> <span class="bidi-ltr">{{ $warranty->warranty_months }}</span> {{ translate('months') }}</li>
+                        <li><strong>{{ translate('Start Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->start_date?->format('d M, Y') ?? 'Not Started' }}</span></li>
+                        <li><strong>{{ translate('End Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->end_date?->format('d M, Y') ?? 'N/A' }}</span></li>
                         <li><strong>{{ translate('Remaining Days') }}:</strong>
                             <span class="text-{{ $warranty->remaining_days > 30 ? 'success' : 'warning' }}">
-                                {{ $warranty->remaining_days }} {{ translate('days') }}
+                                <span class="bidi-ltr">{{ $warranty->remaining_days }}</span> {{ translate('days') }}
                             </span>
                         </li>
                         <li><strong>{{ translate('Activation Method') }}:</strong>
-                            <span class="badge badge-soft-info">{{ ucfirst(str_replace('_', ' ', $warranty->activation_method)) }}</span>
+                            <span class="badge badge-soft-info bidi-auto">{{ ucfirst(str_replace('_', ' ', $warranty->activation_method)) }}</span>
                         </li>
                     </ul>
                 </div>
@@ -55,11 +69,11 @@
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled list-unstyled-py-3">
-                        <li><strong>{{ translate('Name') }}:</strong> {{ $warranty->user?->f_name ?? $warranty->activated_by_name ?? 'N/A' }}</li>
-                        <li><strong>{{ translate('Email') }}:</strong> {{ $warranty->user?->email ?? $warranty->activated_by_email ?? 'N/A' }}</li>
-                        <li><strong>{{ translate('Phone') }}:</strong> {{ $warranty->user?->phone ?? $warranty->activated_by_phone ?? 'N/A' }}</li>
-                        <li><strong>{{ translate('Activated IP') }}:</strong> {{ $warranty->activated_ip ?? 'N/A' }}</li>
-                        <li><strong>{{ translate('Purchase Date') }}:</strong> {{ $warranty->purchase_date?->format('d M, Y') ?? 'N/A' }}</li>
+                        <li><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{ $warranty->user?->f_name ?? $warranty->activated_by_name ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->email ?? $warranty->activated_by_email ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->phone ?? $warranty->activated_by_phone ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Activated IP') }}:</strong> <span class="bidi-ltr">{{ $warranty->activated_ip ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Purchase Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->purchase_date?->format('d M, Y') ?? 'N/A' }}</span></li>
                     </ul>
                 </div>
             </div>
@@ -77,7 +91,7 @@
                     <div class="alert alert-warning soft">
                         <strong>{{ translate('This is a replacement of') }}:</strong><br>
                         <a href="{{ route('admin.warranty.activation.view', $warranty->originalWarranty->id) }}">
-                            {{ $warranty->originalWarranty->serial_number }}
+                            <span class="bidi-ltr">{{ $warranty->originalWarranty->serial_number }}</span>
                         </a>
                     </div>
                     @endif
@@ -86,10 +100,10 @@
                     <div class="alert soft mb-2">
                         <strong>{{ translate('Replaced With') }}:</strong><br>
                         <a href="{{ route('admin.warranty.activation.view', $replacement->newWarranty->id) }}">
-                            {{ $replacement->newWarranty->serial_number }}
+                            <span class="bidi-ltr">{{ $replacement->newWarranty->serial_number }}</span>
                         </a><br>
                         <small>
-                            {{ translate('On') }}: {{ $replacement->replaced_at->format('d M, Y h:i A') }}
+                            {{ translate('On') }}: <span class="bidi-ltr">{{ $replacement->replaced_at->format('d M, Y h:i A') }}</span>
                         </small>
                     </div>
                     @endforeach
@@ -150,8 +164,8 @@
                         <tr>
                             <td>
                                 <div class="text-nowrap">
-                                    <strong>{{ $event->timestamp->format('d M, Y') }}</strong><br>
-                                    <small class="text-muted">{{ $event->timestamp->format('h:i A') }}</small>
+                                    <strong class="bidi-ltr">{{ $event->timestamp->format('d M, Y') }}</strong><br>
+                                    <small class="text-muted bidi-ltr">{{ $event->timestamp->format('h:i A') }}</small>
                                     <div class="text-success small">{{ $event->timestamp->diffForHumans() }}</div>
                                 </div>
                             </td>

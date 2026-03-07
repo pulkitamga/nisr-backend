@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', 'CRM Insights Report')
+@section('title', translate('crm_insights_report'))
 
 @push('css_or_js')
     <style>
@@ -76,16 +76,93 @@
 @endpush
 
 @section('content')
-    <div class="content container-fluid crm-insights-page">
+    @php
+        $isRtl = session('direction') === 'rtl'
+            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+    @endphp
+    <div class="content container-fluid crm-insights-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
                 <div>
-                    <h2 class="h1 mb-1">CRM Insights Report</h2>
+                    <h2 class="h1 mb-1">{{ translate('crm_insights_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        Message, lead, and deal intelligence from {{ $snapshotFrom->format('M d, Y') }} to {{ $snapshotTo->format('M d, Y') }}
+                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
                     </p>
                 </div>
-                <span class="badge badge-light text-dark">Updated {{ now()->format('M d, Y h:i A') }}</span>
+                <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET" action="{{ url()->current() }}">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('date_range') }}</label>
+                            <select class="form-control" name="date_type" id="date_type">
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
+                        </div>
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('department') }}</label>
+                            <select class="form-control" name="department_id">
+                                <option value="0">{{ translate('all') }}</option>
+                                @foreach($departments as $department)
+                                    <option value="{{ $department->id }}" {{ (int)($filters['department_id'] ?? 0) === (int)$department->id ? 'selected' : '' }}>
+                                        {{ $department->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('owner') }}</label>
+                            <select class="form-control" name="owner_id">
+                                <option value="0">{{ translate('all') }}</option>
+                                @foreach($owners as $owner)
+                                    <option value="{{ $owner->id }}" {{ (int)($filters['owner_id'] ?? 0) === (int)$owner->id ? 'selected' : '' }}>
+                                        {{ $owner->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('message_status') }}</label>
+                            <select class="form-control" name="message_status">
+                                <option value="">{{ translate('all') }}</option>
+                                <option value="new" {{ ($filters['message_status'] ?? '') === 'new' ? 'selected' : '' }}>{{ translate('new') }}</option>
+                                <option value="converted" {{ ($filters['message_status'] ?? '') === 'converted' ? 'selected' : '' }}>{{ translate('converted') }}</option>
+                                <option value="spam" {{ ($filters['message_status'] ?? '') === 'spam' ? 'selected' : '' }}>{{ translate('spam') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('deal_status') }}</label>
+                            <select class="form-control" name="deal_status">
+                                <option value="">{{ translate('all') }}</option>
+                                <option value="open" {{ ($filters['deal_status'] ?? '') === 'open' ? 'selected' : '' }}>{{ translate('open') }}</option>
+                                <option value="won" {{ ($filters['deal_status'] ?? '') === 'won' ? 'selected' : '' }}>{{ translate('won') }}</option>
+                                <option value="lost" {{ ($filters['deal_status'] ?? '') === 'lost' ? 'selected' : '' }}>{{ translate('lost') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <a href="{{ route('admin.crm.insights-report') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.crm.insights-report', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <a href="{{ route('admin.crm.insights-report', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -93,7 +170,7 @@
             <div class="col-sm-6 col-xl-2">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Messages</p>
+                        <p class="kpi-label mb-2">{{ translate('messages') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['message_count']) }}</p>
                     </div>
                 </div>
@@ -101,7 +178,7 @@
             <div class="col-sm-6 col-xl-2">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Leads</p>
+                        <p class="kpi-label mb-2">{{ translate('leads') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['lead_count']) }}</p>
                     </div>
                 </div>
@@ -109,7 +186,7 @@
             <div class="col-sm-6 col-xl-2">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Deals</p>
+                        <p class="kpi-label mb-2">{{ translate('deals') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['deal_count']) }}</p>
                     </div>
                 </div>
@@ -117,7 +194,7 @@
             <div class="col-sm-6 col-xl-2">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Pipeline Value</p>
+                        <p class="kpi-label mb-2">{{ translate('pipeline_value') }}</p>
                         <p class="kpi-value">{{ number_format((float) $kpi['total_deal_value'], 2) }}</p>
                     </div>
                 </div>
@@ -125,7 +202,7 @@
             <div class="col-sm-6 col-xl-2">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Lead to Deal</p>
+                        <p class="kpi-label mb-2">{{ translate('lead_to_deal') }}</p>
                         <p class="kpi-value">{{ number_format((float) $kpi['lead_to_deal_rate'], 1) }}%</p>
                     </div>
                 </div>
@@ -133,7 +210,7 @@
             <div class="col-sm-6 col-xl-2">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Win Rate</p>
+                        <p class="kpi-label mb-2">{{ translate('win_rate') }}</p>
                         <p class="kpi-value">{{ number_format((float) $kpi['deal_win_rate'], 1) }}%</p>
                     </div>
                 </div>
@@ -144,8 +221,8 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">CRM Trend (Last 12 Months)</h4>
-                        <span class="badge-soft">Messages, Leads, Deals</span>
+                        <h4 class="mb-0">{{ translate('crm_trend_last_12_months') }}</h4>
+                        <span class="badge-soft">{{ translate('messages_leads_deals') }}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="crm-trend-chart" height="120"></canvas>
@@ -155,7 +232,7 @@
             <div class="col-xl-4">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Deal Stage Mix</h4>
+                        <h4 class="mb-0">{{ translate('deal_stage_mix') }}</h4>
                         <span class="badge-soft">90D</span>
                     </div>
                     <div class="card-body">
@@ -169,8 +246,8 @@
             <div class="col-xl-7">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Message Status Distribution</h4>
-                        <span class="badge-soft">Queue Health</span>
+                        <h4 class="mb-0">{{ translate('message_status_distribution') }}</h4>
+                        <span class="badge-soft">{{ translate('queue_health') }}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="crm-message-status-chart" height="220"></canvas>
@@ -180,8 +257,8 @@
             <div class="col-xl-5">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Insights</h4>
-                        <span class="badge-soft">Auto Summary</span>
+                        <h4 class="mb-0">{{ translate('insights') }}</h4>
+                        <span class="badge-soft">{{ translate('auto_summary') }}</span>
                     </div>
                     <div class="card-body">
                         <ol class="insight-list pl-3 mb-0">
@@ -196,17 +273,17 @@
 
         <div class="card">
             <div class="card-header border-0">
-                <h4 class="mb-0">Top Deal Owners by Value (90D)</h4>
+                <h4 class="mb-0">{{ translate('top_deal_owners_by_value_90d') }}</h4>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
-                            <th>Owner</th>
-                            <th class="text-end">Deals</th>
-                            <th class="text-end">Total Value</th>
-                            <th class="text-end">Avg Value</th>
+                            <th>{{ translate('owner') }}</th>
+                            <th class="text-end">{{ translate('deals') }}</th>
+                            <th class="text-end">{{ translate('total_value') }}</th>
+                            <th class="text-end">{{ translate('avg_value') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -223,7 +300,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">No owner activity in this period.</td>
+                                <td colspan="5" class="text-center text-muted py-4">{{ translate('no_owner_activity_in_this_period') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -250,7 +327,7 @@
                     data: {
                         labels: trendData.labels || [],
                         datasets: [{
-                                label: 'Messages',
+                                label: @json(translate('messages')),
                                 data: trendData.messages || [],
                                 borderColor: '#0f766e',
                                 backgroundColor: 'rgba(15, 118, 110, 0.14)',
@@ -259,7 +336,7 @@
                                 fill: false
                             },
                             {
-                                label: 'Leads',
+                                label: @json(translate('leads')),
                                 data: trendData.leads || [],
                                 borderColor: '#14b8a6',
                                 backgroundColor: 'rgba(20, 184, 166, 0.14)',
@@ -268,7 +345,7 @@
                                 fill: false
                             },
                             {
-                                label: 'Deals',
+                                label: @json(translate('deals')),
                                 data: trendData.deals || [],
                                 borderColor: '#1d4ed8',
                                 backgroundColor: 'rgba(29, 78, 216, 0.14)',
@@ -277,7 +354,7 @@
                                 fill: false
                             },
                             {
-                                label: 'Won Deals',
+                                label: @json(translate('won_deals')),
                                 data: trendData.won_deals || [],
                                 borderColor: '#f59e0b',
                                 backgroundColor: 'rgba(245, 158, 11, 0.14)',
@@ -337,7 +414,7 @@
                     data: {
                         labels: statusData.labels || [],
                         datasets: [{
-                            label: 'Messages',
+                            label: @json(translate('messages')),
                             data: statusData.counts || [],
                             backgroundColor: 'rgba(15, 118, 110, 0.75)',
                             borderRadius: 8
@@ -363,5 +440,15 @@
                 });
             }
         })();
+
+        $(document).ready(function() {
+            $('#date_type').on('change', function() {
+                if ($(this).val() === 'custom_date') {
+                    $('.custom-date-range').show();
+                } else {
+                    $('.custom-date-range').hide();
+                }
+            });
+        });
     </script>
 @endpush

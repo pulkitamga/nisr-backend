@@ -4,16 +4,28 @@
 @section('title', translate('retail_Deal_View'))
 
 @push('css_or_js')
+<style>
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
 
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
+</style>
 @endpush
 
 @section('content')
+@php($isRtl = Session::get('direction') === 'rtl')
 
 
 <div class="content container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
+            <div class="card" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header">
                     <h2 class="h1 mb-0 text-capitalize">
                         {{ translate('Deal Details') }} :{{ $deal->id }}
@@ -31,20 +43,20 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h4>{{ translate('Customer Information') }}</h4>
-                            <p><strong>{{ translate('Name') }}:</strong> {{ $deal->user->name ?? translate('N/A') }}</p>
-                            <p><strong>{{ translate('Email') }}:</strong> {{ $deal->user->email ?? translate('N/A') }}</p>
-                            <p><strong>{{ translate('Phone') }}:</strong> {{ $deal->user->phone ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{ $deal->user->name ?? translate('N/A') }}</span></p>
+                            <p><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $deal->user->email ?? translate('N/A') }}</span></p>
+                            <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $deal->user->phone ?? translate('N/A') }}</span></p>
                         </div>
                         <div class="col-md-6">
 
                             <h4>{{ translate('Deal Information') }}</h4>
-                            <p><strong>{{ translate('Created At') }}:</strong> {{ $deal->created_at->format('d M, Y H:i A') }}</p>
-                            <p><strong>{{ translate('Employee') }}:</strong> {{ $deal->employee->name ?? translate('N/A') }}</p>
+                            <p><strong>{{ translate('Created At') }}:</strong> <span class="bidi-ltr">{{ $deal->created_at->format('d M, Y H:i A') }}</span></p>
+                            <p><strong>{{ translate('Employee') }}:</strong> <span class="bidi-auto">{{ $deal->employee->name ?? translate('N/A') }}</span></p>
                             <p><strong>{{ translate('Order Status') }}:</strong>
-                                <span class="text-primary bg-soft-dark font-weight-bold px-3 py-1 mb-0 fz-12">{{ ucfirst($deal->order->order_status) }}</span>
+                                <span class="text-primary bg-soft-dark font-weight-bold px-3 py-1 mb-0 fz-12 bidi-auto">{{ ucfirst($deal->order->order_status) }}</span>
                             </p>
                             <p><strong>{{ translate('Status') }}:</strong>
-                                <span class="text-success bg-soft-success font-weight-bold px-3 py-1 mb-0 fz-12">{{ ucfirst($deal->status) }}</span>
+                                <span class="text-success bg-soft-success font-weight-bold px-3 py-1 mb-0 fz-12 bidi-auto">{{ ucfirst($deal->status) }}</span>
                             </p>
                         </div>
                     </div>

@@ -502,9 +502,11 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
     Route::group(['namespace' => 'Customer', 'prefix' => 'customer', 'as' => 'customer.'], function () {
         Route::controller(PaymentController::class)->group(function () {
             Route::post('/service-payment-request', 'service_payment_request')->name('service-payment-request')->middleware('customer');
+            Route::post('/warranty-claim-payment-request', 'warranty_claim_payment_request')->name('warranty-claim-payment-request')->middleware('customer');
         });
     });
     Route::get('/pay-service-invoice/{id}', [PaymentController::class, 'servicePayment'])->name('pay-service-invoice')->middleware('customer');
+    Route::get('/pay-warranty-claim/{token}', [PaymentController::class, 'warrantyClaimPayment'])->name('pay-warranty-claim')->middleware('customer');
     Route::controller(PaymentController::class)->group(function () {
         Route::get('web-payment', 'web_payment_success')->name('web-payment-success');
         Route::get('payment-success', 'success')->name('payment-success');

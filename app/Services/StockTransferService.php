@@ -91,7 +91,6 @@ class StockTransferService
             'name'              => $request['name'],
             'phone'             => $request['phone'],
             'branch_id'         => $request['branch_id'],
-            'admin_role_id'     => 2,
             'email'             => $request['email'],
             'password'          => bcrypt($request['password']),
 

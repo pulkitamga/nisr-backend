@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', 'Wholesale Pipeline Report')
+@section('title', translate('wholesale_pipeline_report'))
 
 @push('css_or_js')
     <style>
@@ -76,16 +76,73 @@
 @endpush
 
 @section('content')
-    <div class="content container-fluid wholesale-pipeline-page">
+    @php
+        $isRtl = session('direction') === 'rtl'
+            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+    @endphp
+    <div class="content container-fluid wholesale-pipeline-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
                 <div>
-                    <h2 class="h1 mb-1">Wholesale Pipeline Report</h2>
+                    <h2 class="h1 mb-1">{{ translate('wholesale_pipeline_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        Flow, conversion, and product momentum from {{ $snapshotFrom->format('M d, Y') }} to {{ $snapshotTo->format('M d, Y') }}
+                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
                     </p>
                 </div>
-                <span class="badge badge-light text-dark">Updated {{ now()->format('M d, Y h:i A') }}</span>
+                <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET" action="{{ url()->current() }}">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label mb-1">{{ translate('date_range') }}</label>
+                            <select class="form-control" name="date_type" id="date_type">
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
+                        </div>
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label mb-1">{{ translate('wholesaler') }}</label>
+                            <select class="form-control" name="wholesaler_id">
+                                <option value="0">{{ translate('all') }}</option>
+                                @foreach($wholesalers as $wholesaler)
+                                    <option value="{{ $wholesaler->id }}" {{ (int)($filters['wholesaler_id'] ?? 0) === (int)$wholesaler->id ? 'selected' : '' }}>
+                                        {{ $wholesaler->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('tier') }}</label>
+                            <select class="form-control" name="tier">
+                                <option value="">{{ translate('all') }}</option>
+                                @foreach($tiers as $tier)
+                                    <option value="{{ $tier }}" {{ ($filters['tier'] ?? '') === $tier ? 'selected' : '' }}>{{ $tier }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -93,7 +150,7 @@
             <div class="col-sm-6 col-xl-3">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Purchase Orders</p>
+                        <p class="kpi-label mb-2">{{ translate('purchase_orders') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['purchase_count']) }}</p>
                     </div>
                 </div>
@@ -101,7 +158,7 @@
             <div class="col-sm-6 col-xl-3">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Quotations</p>
+                        <p class="kpi-label mb-2">{{ translate('quotations') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['quotation_count']) }}</p>
                     </div>
                 </div>
@@ -109,7 +166,7 @@
             <div class="col-sm-6 col-xl-3">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Confirmed Orders</p>
+                        <p class="kpi-label mb-2">{{ translate('confirmed_orders') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['confirmed_count']) }}</p>
                     </div>
                 </div>
@@ -117,7 +174,7 @@
             <div class="col-sm-6 col-xl-3">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">End-to-End Conversion</p>
+                        <p class="kpi-label mb-2">{{ translate('end_to_end_conversion') }}</p>
                         <p class="kpi-value">{{ number_format((float) $kpi['end_to_end_rate'], 1) }}%</p>
                     </div>
                 </div>
@@ -128,7 +185,7 @@
             <div class="col-md-4">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">PO to Quote</p>
+                        <p class="kpi-label mb-2">{{ translate('po_to_quote') }}</p>
                         <p class="kpi-value">{{ number_format((float) $kpi['purchase_to_quotation_rate'], 1) }}%</p>
                     </div>
                 </div>
@@ -136,7 +193,7 @@
             <div class="col-md-4">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Quote to Confirmed</p>
+                        <p class="kpi-label mb-2">{{ translate('quote_to_confirmed') }}</p>
                         <p class="kpi-value">{{ number_format((float) $kpi['quotation_to_confirmed_rate'], 1) }}%</p>
                     </div>
                 </div>
@@ -144,12 +201,12 @@
             <div class="col-md-4">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">Cycle Time</p>
+                        <p class="kpi-label mb-2">{{ translate('cycle_time') }}</p>
                         <p class="kpi-value">
-                            {{ $kpi['avg_po_to_quote_hours'] !== null ? number_format((float) $kpi['avg_po_to_quote_hours'], 1) . 'h' : 'n/a' }}
-                            / {{ $kpi['avg_quote_to_confirm_hours'] !== null ? number_format((float) $kpi['avg_quote_to_confirm_hours'], 1) . 'h' : 'n/a' }}
+                            {{ $kpi['avg_po_to_quote_hours'] !== null ? number_format((float) $kpi['avg_po_to_quote_hours'], 1) . 'h' : translate('na') }}
+                            / {{ $kpi['avg_quote_to_confirm_hours'] !== null ? number_format((float) $kpi['avg_quote_to_confirm_hours'], 1) . 'h' : translate('na') }}
                         </p>
-                        <small class="text-muted">PO→Quote / Quote→Confirmed</small>
+                        <small class="text-muted">{{ translate('po_to_quote_slash_quote_to_confirmed') }}</small>
                     </div>
                 </div>
             </div>
@@ -159,8 +216,8 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Stage Trend (Last 6 Months)</h4>
-                        <span class="badge-soft">Pipeline Velocity</span>
+                        <h4 class="mb-0">{{ translate('stage_trend_last_6_months') }}</h4>
+                        <span class="badge-soft">{{ translate('pipeline_velocity') }}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="wholesale-pipeline-trend" height="120"></canvas>
@@ -170,7 +227,7 @@
             <div class="col-xl-4">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Stage Snapshot</h4>
+                        <h4 class="mb-0">{{ translate('stage_snapshot') }}</h4>
                         <span class="badge-soft">90D</span>
                     </div>
                     <div class="card-body">
@@ -184,8 +241,8 @@
             <div class="col-xl-7">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Top Product Volume</h4>
-                        <span class="badge-soft">Share {{ number_format((float) $kpi['top_product_share'], 1) }}%</span>
+                        <h4 class="mb-0">{{ translate('top_product_volume') }}</h4>
+                        <span class="badge-soft">{{ translate('share') }} {{ number_format((float) $kpi['top_product_share'], 1) }}%</span>
                     </div>
                     <div class="card-body">
                         <canvas id="wholesale-product-volume" height="220"></canvas>
@@ -195,8 +252,8 @@
             <div class="col-xl-5">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Wholesaler Tier Mix</h4>
-                        <span class="badge-soft">Active Accounts</span>
+                        <h4 class="mb-0">{{ translate('wholesaler_tier_mix') }}</h4>
+                        <span class="badge-soft">{{ translate('active_accounts') }}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="wholesale-tier-mix" height="220"></canvas>
@@ -209,15 +266,15 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0">
-                        <h4 class="mb-0">Tier Revenue Breakdown (90D)</h4>
+                        <h4 class="mb-0">{{ translate('tier_revenue_breakdown_90d') }}</h4>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Tier</th>
-                                    <th class="text-end">Orders</th>
-                                    <th class="text-end">Revenue</th>
+                                    <th>{{ translate('tier') }}</th>
+                                    <th class="text-end">{{ translate('orders') }}</th>
+                                    <th class="text-end">{{ translate('revenue') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -229,7 +286,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">No tier revenue data in this period.</td>
+                                        <td colspan="3" class="text-center text-muted py-4">{{ translate('no_tier_revenue_data_in_this_period') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -240,8 +297,8 @@
             <div class="col-xl-4">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Insights</h4>
-                        <span class="badge-soft">Auto Summary</span>
+                        <h4 class="mb-0">{{ translate('insights') }}</h4>
+                        <span class="badge-soft">{{ translate('auto_summary') }}</span>
                     </div>
                     <div class="card-body">
                         <ol class="insight-list pl-3 mb-0">
@@ -274,7 +331,7 @@
                     data: {
                         labels: stageData.labels || [],
                         datasets: [{
-                            label: 'Count',
+                            label: @json(translate('count')),
                             data: stageData.counts || [],
                             backgroundColor: ['#1d4ed8', '#2563eb', '#38bdf8'],
                             borderRadius: 8
@@ -307,7 +364,7 @@
                     data: {
                         labels: trendData.labels || [],
                         datasets: [{
-                                label: 'Purchase Orders',
+                                label: @json(translate('purchase_orders')),
                                 data: trendData.purchase || [],
                                 borderColor: '#1d4ed8',
                                 backgroundColor: 'rgba(29, 78, 216, 0.16)',
@@ -316,7 +373,7 @@
                                 fill: false
                             },
                             {
-                                label: 'Quotations',
+                                label: @json(translate('quotations')),
                                 data: trendData.quotation || [],
                                 borderColor: '#2563eb',
                                 backgroundColor: 'rgba(37, 99, 235, 0.16)',
@@ -325,7 +382,7 @@
                                 fill: false
                             },
                             {
-                                label: 'Confirmed Orders',
+                                label: @json(translate('confirmed_orders')),
                                 data: trendData.confirmed || [],
                                 borderColor: '#38bdf8',
                                 backgroundColor: 'rgba(56, 189, 248, 0.18)',
@@ -361,7 +418,7 @@
 
             const productCtx = document.getElementById('wholesale-product-volume');
             if (productCtx) {
-                const labels = (productData.labels || []).length ? productData.labels : ['No Data'];
+                const labels = (productData.labels || []).length ? productData.labels : [@json(translate('no_data'))];
                 const quantities = (productData.quantities || []).length ? productData.quantities : [0];
 
                 new Chart(productCtx, {
@@ -369,7 +426,7 @@
                     data: {
                         labels,
                         datasets: [{
-                            label: 'Units',
+                            label: @json(translate('units')),
                             data: quantities,
                             backgroundColor: 'rgba(14, 165, 233, 0.55)',
                             borderColor: '#0284c7',
@@ -400,7 +457,7 @@
 
             const tierCtx = document.getElementById('wholesale-tier-mix');
             if (tierCtx) {
-                const labels = (tierMixData.labels || []).length ? tierMixData.labels : ['No Data'];
+                const labels = (tierMixData.labels || []).length ? tierMixData.labels : [@json(translate('no_data'))];
                 const counts = (tierMixData.counts || []).length ? tierMixData.counts : [1];
 
                 new Chart(tierCtx, {
@@ -425,5 +482,15 @@
                 });
             }
         })();
+
+        $(document).ready(function() {
+            $('#date_type').on('change', function() {
+                if ($(this).val() === 'custom_date') {
+                    $('.custom-date-range').show();
+                } else {
+                    $('.custom-date-range').hide();
+                }
+            });
+        });
     </script>
 @endpush

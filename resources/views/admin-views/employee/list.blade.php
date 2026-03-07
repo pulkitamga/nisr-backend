@@ -108,7 +108,7 @@
                                     {{$employee['email']}}
                                 </td>
                                 <td>{{$employee['phone']}}</td>
-                                <td>{{ $employee->roles->first()?->name ?? $employee?->role['name'] ?? translate('role_not_found') }}</td>
+                                <td>{{ $employee->roles->first()?->name ?? translate('role_not_found') }}</td>
                               
                                 <td>
                                     @if($isSuperAdminEmployee)

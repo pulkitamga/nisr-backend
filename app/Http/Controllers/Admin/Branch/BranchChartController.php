@@ -13,7 +13,7 @@ use App\Models\OrderDetail;
 use App\Models\ProductStock;
 use Illuminate\Http\Request;
 use App\Models\StockTransfers;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportPdfService;
 use Illuminate\Http\JsonResponse;
 use App\Exports\BranchStockExport;
 use Illuminate\Contracts\View\View;
@@ -495,25 +495,26 @@ class BranchChartController extends BaseAdminController
         $chartImage = null,
         $totalStats = []
     ) {
-        $pdf = Pdf::loadView(
-            'admin-views.branch-management.sales-chart.stock-pdf',
-            [
-                'branches'    => $branches,
-                'totalStats'  => $totalStats,
-                'product'     => $product,
-                'filters'     => $filters,
-                'chartImage'  => $chartImage,
-                'exportDate'  => now()->format('d M Y H:i'),
-                'dateRange'   =>
-                !empty($filters['from_date']) && !empty($filters['to_date'])
-                    ? Carbon::parse($filters['from_date'])->format('d M Y')
-                    . ' - ' .
-                    Carbon::parse($filters['to_date'])->format('d M Y')
-                    : 'All Time',
-                'hasChart' => !empty($chartImage),
-            ]
-        );
+        $data = [
+            'branches'    => $branches,
+            'totalStats'  => $totalStats,
+            'product'     => $product,
+            'filters'     => $filters,
+            'chartImage'  => $chartImage,
+            'exportDate'  => now()->format('d M Y H:i'),
+            'dateRange'   =>
+            !empty($filters['from_date']) && !empty($filters['to_date'])
+                ? Carbon::parse($filters['from_date'])->format('d M Y')
+                . ' - ' .
+                Carbon::parse($filters['to_date'])->format('d M Y')
+                : 'All Time',
+            'hasChart' => !empty($chartImage),
+        ];
 
-        return $pdf->download($fileName . '.pdf');
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.branch-management.sales-chart.stock-pdf',
+            data: $data,
+            fileName: $fileName . '.pdf'
+        );
     }
 }

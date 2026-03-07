@@ -41,9 +41,6 @@ class AdminRoleRepository implements AdminRoleRepositoryInterface
         $query = $this->adminRole
                 ->when($searchValue, function ($query) use($searchValue){
                     $query->where('name', 'like', "%$searchValue%");
-                })
-                ->when(isset($filters['admin_role_id']) && $filters['admin_role_id'] != 'all', function($query)use ($filters){
-                    $query->where('admin_role_id', $filters['admin_role_id']);
                 });
 
         $filters += ['searchValue' =>$searchValue];
@@ -74,9 +71,6 @@ class AdminRoleRepository implements AdminRoleRepositoryInterface
                     $query->orderBy(array_key_first($orderBy),array_values($orderBy)[0]);
                 })->when($searchValue, function ($query) use($searchValue){
                     $query->where('name', 'like', "%$searchValue%");
-                })
-                ->when(isset($filters['admin_role_id']) && $filters['admin_role_id'] != 'all', function($query)use ($filters){
-                    $query->where('admin_role_id', $filters['admin_role_id']);
                 });
         return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit);
     }

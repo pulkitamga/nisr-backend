@@ -64,7 +64,7 @@
                             
                                 <tr>
                                     <td>{{$aDepartmentUsers->firstItem()+$key}}</td>
-                                    <td class="text-capitalize">{{translate($user->user_role->name)}}</td>      
+                                    <td class="text-capitalize">{{ $user->roles->first()?->name ?? translate('role_not_found') }}</td>      
                                     <td>
                                         <div class="mb-1">
                                             <strong><a class="title-color hover-c1" href="mailto:{{$user->name}}">{{$user->name}}</a></strong>

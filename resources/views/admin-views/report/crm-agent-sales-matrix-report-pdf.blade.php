@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ (session('direction') === 'rtl' || app()->getLocale() === 'ar') ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('crm_agent_sales_matrix_report') }}</title>
@@ -8,7 +8,7 @@
             font-family: DejaVu Sans, sans-serif;
             font-size: 10px;
             color: #1f2937;
-            text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }};
+            text-align: {{ (session('direction') === 'rtl' || app()->getLocale() === 'ar') ? 'right' : 'left' }};
         }
         h2 { margin: 0 0 8px; }
         .meta { margin-bottom: 10px; }
@@ -17,8 +17,8 @@
         th { background: #f1f5f9; }
         .group-header { background: #e2e8f0; font-weight: 700; }
         .group-separator { border-right: 2px solid #334155 !important; }
-        .left { text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }}; }
-        @if(session('direction') === 'rtl')
+        .left { text-align: {{ (session('direction') === 'rtl' || app()->getLocale() === 'ar') ? 'right' : 'left' }}; }
+        @if((session('direction') === 'rtl' || app()->getLocale() === 'ar'))
         .group-separator {
             border-right: 0 !important;
             border-left: 2px solid #334155 !important;
@@ -51,7 +51,7 @@
     <table>
         <thead>
         <tr>
-            <th rowspan="2">{{ translate('month') }}</th>
+            <th rowspan="2">{{ translate('period') }}</th>
             @foreach($employeesForMatrix as $employee)
                 <th class="group-header {{ !$loop->last ? 'group-separator' : '' }}" colspan="4">{{ $employee->name }}</th>
             @endforeach

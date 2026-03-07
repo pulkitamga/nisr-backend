@@ -20,6 +20,10 @@ class ServiceInvoice extends Model
         'total',
         'payment_status',
         'payment_link',
+        'payment_link_expires_at',
+        'gateway_payment_method',
+        'gateway_transaction_id',
+        'paid_at',
         'generated_at',
         'estimate_id',
         'is_estimate',
@@ -28,6 +32,8 @@ class ServiceInvoice extends Model
 
     protected $casts = [
         'generated_at' => 'datetime',
+        'payment_link_expires_at' => 'datetime',
+        'paid_at' => 'datetime',
         'is_estimate' => 'boolean',
         'subtotal' => 'float',
         'tax' => 'float',

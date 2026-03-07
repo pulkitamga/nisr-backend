@@ -2,18 +2,33 @@
 
 @section('title', translate('service_Ticket'))
 
+@push('css_or_js')
+<style>
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
+</style>
+@endpush
+
 @section('content')
 
+@php($isRtl = Session::get('direction') === 'rtl')
 <div class="content container-fluid">
-    <h2 class="mt-3">{{ translate('ticket_details') }} #{{ $supportTicket->id }}</h2>
+    <h2 class="mt-3">{{ translate('ticket_details') }} #<span class="bidi-ltr">{{ $supportTicket->id }}</span></h2>
     <div class="row">
         <div class="col-md-6">
-            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
+            <div class="card" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header">{{ translate('candidate_details') }}</div>
                 <div class="card-body">
-                    <p><strong>{{ translate('name') }}:</strong> {{ $supportTicket->customer->name ?? translate('N/A') }}</p>
-                    <p><strong>{{ translate('email') }}:</strong> {{ $supportTicket->customer->email ?? translate('N/A') }}</p>
-                    <p><strong>{{ translate('phone') }}:</strong> {{ $supportTicket->customer->phone ?? translate('N/A') }}</p>
+                    <p><strong>{{ translate('name') }}:</strong> <span class="bidi-auto">{{ $supportTicket->customer->name ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('email') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->customer->email ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('phone') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->customer->phone ?? translate('N/A') }}</span></p>
                     @if($supportTicket->conversations->whereNotNull('attachment')->count() > 0)
                     <p><strong>{{ translate('cv') }}:</strong>
                         @foreach($supportTicket->conversations->whereNotNull('attachment') as $conv)
@@ -25,13 +40,13 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card" style=" direction : {{Session::get('direction') === "rtl" ? 'rtl' : 'ltr'}};">
+            <div class="card" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header">{{ translate('ticket_details') }}</div>
                 <div class="card-body">
-                    <p><strong>{{ translate('subject') }}:</strong> {{ $supportTicket->subject }}</p>
-                    <p><strong>{{ translate('status') }}:</strong> {{ $supportTicket->status_details->name ?? translate('N/A') }}</p>
-                    <p><strong>{{ translate('recruiter') }}:</strong> {{ $supportTicket->employee->name ?? translate('Unassigned') }}</p>
-                    <p><strong>{{ translate('created_at') }}:</strong> {{ $supportTicket->created_at->format('d-m-Y H:i') }}</p>
+                    <p><strong>{{ translate('subject') }}:</strong> <span class="bidi-auto">{{ $supportTicket->subject }}</span></p>
+                    <p><strong>{{ translate('status') }}:</strong> <span class="bidi-auto">{{ $supportTicket->status_details->name ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('recruiter') }}:</strong> <span class="bidi-auto">{{ $supportTicket->employee->name ?? translate('Unassigned') }}</span></p>
+                    <p><strong>{{ translate('created_at') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->created_at->format('d-m-Y H:i') }}</span></p>
                 </div>
             </div>
         </div>
@@ -67,7 +82,7 @@
                                 <td>{{ $activity->activity_type }}</td>
                                 <td>{{ $activity->description }}</td>
                                 <td>{{ $activity->createdBy->name ?? translate('System') }}</td>
-                                <td>{{ $activity->created_at->format('d-m-Y H:i') }}</td>
+                                <td><span class="bidi-ltr">{{ $activity->created_at->format('d-m-Y H:i') }}</span></td>
                             </tr>
                             @empty
                             <tr>
@@ -113,7 +128,7 @@
                             <tr>
                                 <td>{{ $offer->status }}</td>
                                 <td>{{ $offer->start_date }}</td>
-                                <td><a href="{{ $offer->attachment }}" target="_blank">{{ translate('view') }}</a></td>
+                                <td><a href="{{ route('admin.support-ticket.career.offer.download', $offer->id) }}" target="_blank">{{ translate('view') }}</a></td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -133,7 +148,7 @@
                             <tr>
                                 <td>{{ $rejection->reason_code }}</td>
                                 <td>{{ $rejection->closure_message }}</td>
-                                <td>{{ $rejection->created_at }}</td>
+                                <td><span class="bidi-ltr">{{ $rejection->created_at }}</span></td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -168,4 +183,3 @@
     </div>
 </div>
 @endsection
-

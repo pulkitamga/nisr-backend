@@ -94,11 +94,22 @@
                         </div>
 
                         <div class="col-md-2">
+                            <label class="form-label mb-1">{{ translate('date_range') }}</label>
+                            <select class="form-control" name="date_type" id="product_stock_date_type">
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') === 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 custom-date-range" id="product_stock_from_div" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] }}">
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-2 custom-date-range" id="product_stock_to_div" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] }}">
                         </div>
@@ -114,10 +125,10 @@
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
                             <a href="{{ route('admin.stock.product-stock') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                             <a href="{{ route('admin.stock.product-stock-export', request()->query()) }}" class="btn btn-outline-success">
-                                <i class="tio-download-to mr-1"></i>{{ translate('excel') }}
+                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ translate('excel') }}
                             </a>
                             <a href="{{ route('admin.stock.product-stock-export-pdf', request()->query()) }}" class="btn btn-outline-danger">
-                                <i class="tio-download-to mr-1"></i>{{ translate('PDF') }}
+                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ translate('PDF') }}
                             </a>
                         </div>
                     </div>
@@ -388,6 +399,11 @@
                 xaxis: {categories: chartData.branch_product_labels || []},
                 dataLabels: {enabled: false},
                 colors: ['#7c3aed']
+            });
+
+            $('#product_stock_date_type').on('change', function () {
+                const isCustom = $(this).val() === 'custom_date';
+                $('.custom-date-range').toggle(isCustom);
             });
         })();
     </script>

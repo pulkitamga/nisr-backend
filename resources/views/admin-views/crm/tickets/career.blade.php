@@ -146,16 +146,24 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                                 @endif
                                 @endif
 
-                                @if(!in_array($ticket->status, [32, 33, 34, 35]))
+                                @if($ticket->status == 31)
+                                <button class="btn btn-sm btn-outline-primary action-btn" data-action="schedule-interview" data-route="{{ route('admin.support-ticket.career.schedule-interview') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('schedule_interview') }}</button>
+                                @endif
+                                @if($ticket->status == 32)
                                 <button class="btn btn-sm btn-outline-primary action-btn" data-action="attach-offer" data-route="{{ route('admin.support-ticket.career.attach-offer') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('attach_offer') }}</button>
                                 <button class="btn btn-sm btn-outline-danger action-btn" data-action="decline-offer" data-route="{{ route('admin.support-ticket.career.decline-offer') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('decline_offer') }}</button>
-                                <button class="btn btn-sm btn-outline-primary action-btn" data-action="schedule-interview" data-route="{{ route('admin.support-ticket.career.schedule-interview') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('schedule_interview') }}</button>
+                                @endif
+                                @if(in_array($ticket->status, [29, 30, 31, 32]))
                                 <button class="btn btn-sm btn-outline-danger action-btn" data-action="reject" data-route="{{ route('admin.support-ticket.career.reject') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('reject') }}</button>
+                                @endif
+                                @if(in_array($ticket->status, [34, 35]))
                                 <button class="btn btn-sm btn-outline-info action-btn" data-action="talent-pool" data-route="{{ route('admin.support-ticket.career.talent-pool') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('talent_pool') }}</button>
                                 @endif
+                                @if(!in_array($ticket->status, [33, 35]))
                                 <a href="javascript:void(0)" class="btn btn-sm btn-outline-warning escalate-btn" data-ticket-id="{{ $ticket->id }}">
                                     {{ translate('Escalate') }}
                                 </a>
+                                @endif
                             </div>
                         </td>
                     </tr>

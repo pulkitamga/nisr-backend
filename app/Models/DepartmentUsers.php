@@ -2,21 +2,25 @@
 
 namespace App\Models;
 
+use App\Support\AdminPermissionRegistry;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Traits\HasRoles;
 
 class DepartmentUsers extends Model
 {
-    use HasFactory;
+    use HasFactory, HasRoles;
 
     protected $fillable = [
         'name',
         'email',
         'password',
-        'user_type',
         'department_id',
         'status'
     ];
+
+    protected $guard_name = 'admin';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -44,19 +48,36 @@ class DepartmentUsers extends Model
     {
         return $this->belongsTo(Departments::class);
     }
-    /**
-     * Get the department associated with the user.
-     */
-    public function user_role()
+
+    public function scopeActive(Builder $query): Builder
     {
-        return $this->belongsTo(AdminRole::class, 'user_type');
+        return $query->where('status', 'active');
     }
 
-    /**
-     * Check if the user is an admin.
-     */
-    public function isAdmin()
+    public function scopeInDepartment(Builder $query, int|string|null $departmentId): Builder
     {
-        return $this->user_type === 'admin';
+        if (empty($departmentId)) {
+            return $query;
+        }
+
+        return $query->where('department_id', (int)$departmentId);
+    }
+
+    public function scopeWithRole(Builder $query, string|array|null $roleName): Builder
+    {
+        if (empty($roleName)) {
+            return $query;
+        }
+
+        $roles = is_array($roleName) ? array_values(array_filter($roleName)) : [$roleName];
+        if (count($roles) === 0) {
+            return $query;
+        }
+
+        return $query->whereHas('roles', function ($roleQuery) use ($roles) {
+            $roleQuery
+                ->where('guard_name', AdminPermissionRegistry::guard())
+                ->whereIn('name', $roles);
+        });
     }
 }

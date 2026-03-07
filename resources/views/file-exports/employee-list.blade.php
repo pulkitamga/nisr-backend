@@ -41,16 +41,12 @@
                     <td> {{ucwords($item->name)}}</td>
                     <td> {{$item->phone}}</td>
                     <td> {{ucwords($item->email)}}</td>
-                    <td> {{ucwords($item?->role?->name)}}</td>
+                    <td> {{ucwords($item->roles->first()?->name ?? translate('role_not_found'))}}</td>
                     <td>
-                        @if(!empty($item->role->module_access))
-                            @foreach ( json_decode($item?->role->module_access) as $value)
-                                @isset($value)
-                                    {{ucwords(str_replace('_',' ',$value))}}
-                                    <br>
-                                @endisset
-                            @endforeach
-                        @endif
+                        @foreach ($item->getAllPermissions() as $permission)
+                            {{ ucwords(str_replace(['_', '.'], ' ', $permission->name)) }}
+                            <br>
+                        @endforeach
                     </td>
                     <td> {{date('d M, Y h:i A',strtotime($item->created_at))}}</td>
                     <td> {{translate($item->status == 1 ? 'active' : 'inactive')}}</td>

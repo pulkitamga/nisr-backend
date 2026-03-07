@@ -12,6 +12,8 @@
             line-height: 1.4;
             color: #333;
             margin: 15px;
+            text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }};
+            unicode-bidi: plaintext;
         }
 
         h1 {
@@ -424,7 +426,6 @@
 </body>
 
 </html>
-
 
 
 

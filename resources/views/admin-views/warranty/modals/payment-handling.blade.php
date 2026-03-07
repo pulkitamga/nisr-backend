@@ -35,10 +35,29 @@
                         <label>{{ translate('Action') }}</label>
                         <select name="action" id="paymentAction" class="form-control" required>
                             <option value="remind">{{ translate('Send Reminder') }}</option>
-                            <option value="paid">{{ translate('Mark as Paid') }}</option>
+                            <option value="pos">{{ translate('Record POS Payment') }}</option>
+                            <option value="cod">{{ translate('Approve Cash on Delivery') }}</option>
+                            <option value="cod_collect">{{ translate('Confirm COD Collection') }}</option>
+                            <option value="online_link">{{ translate('Generate Online Payment Link') }}</option>
                             <option value="waive">{{ translate('Waive All Fees') }}</option>
                             <option value="reject">{{ translate('Reject Claim') }}</option>
                         </select>
+                    </div>
+
+                    <div class="form-group" id="paymentReferenceWrapper" style="display: none;">
+                        <label>{{ translate('Payment Reference') }}</label>
+                        <input
+                            type="text"
+                            name="payment_reference"
+                            id="paymentReference"
+                            class="form-control"
+                            placeholder="{{ translate('POS slip number or COD receipt number') }}"
+                        >
+                    </div>
+
+                    <div class="form-group" id="linkExpiryWrapper" style="display: none;">
+                        <label>{{ translate('Payment Link Expiry (Hours)') }}</label>
+                        <input type="number" min="1" max="168" name="link_expire_hours" id="linkExpireHours" class="form-control" value="24">
                     </div>
 
                     <!-- Notes -->
@@ -67,19 +86,44 @@
         const actionSelect = modal.querySelector('#paymentAction');
         const chargeCheckboxes = modal.querySelectorAll('input[name="charge_ids[]"]');
         const pendingWrapper = modal.querySelector('#pendingChargesWrapper');
+        const paymentReferenceWrapper = modal.querySelector('#paymentReferenceWrapper');
+        const paymentReferenceInput = modal.querySelector('#paymentReference');
+        const linkExpiryWrapper = modal.querySelector('#linkExpiryWrapper');
+        const linkExpireHoursInput = modal.querySelector('#linkExpireHours');
 
         function toggleChargeView() {
             const action = actionSelect.value;
-            const required = action === 'paid';
+            const chargeActions = ['pos', 'cod', 'cod_collect', 'online_link'];
+            const referenceActions = ['pos', 'cod_collect'];
+            const linkActions = ['online_link'];
+
+            const chargeRequired = chargeActions.includes(action);
+            const referenceRequired = referenceActions.includes(action);
+            const linkRequired = linkActions.includes(action);
 
             if (pendingWrapper) {
-                pendingWrapper.style.display = required ? 'block' : 'none';
+                pendingWrapper.style.display = chargeRequired ? 'block' : 'none';
             }
 
             chargeCheckboxes.forEach(cb => {
-                cb.required = required;
-                if (!required) cb.checked = false;
+                if (!chargeRequired) cb.checked = false;
             });
+
+            if (paymentReferenceWrapper && paymentReferenceInput) {
+                paymentReferenceWrapper.style.display = referenceRequired ? 'block' : 'none';
+                paymentReferenceInput.required = referenceRequired;
+                if (!referenceRequired) {
+                    paymentReferenceInput.value = '';
+                }
+            }
+
+            if (linkExpiryWrapper && linkExpireHoursInput) {
+                linkExpiryWrapper.style.display = linkRequired ? 'block' : 'none';
+                linkExpireHoursInput.required = linkRequired;
+                if (!linkRequired) {
+                    linkExpireHoursInput.value = '24';
+                }
+            }
         }
 
         actionSelect.addEventListener('change', toggleChargeView);

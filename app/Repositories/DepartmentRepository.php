@@ -110,7 +110,20 @@ class DepartmentRepository implements DepartmentRepositoryInterface
 
     public function getUsersListWhere(array $orderBy=[], string $searchValue = null, array $filters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null):  Collection|LengthAwarePaginator
     {
-        $query = $this->departmentUsers->with($relations)->where($filters)
+        $directFilters = collect($filters)->except(['status', 'department_id', 'role_name'])->all();
+        $query = $this->departmentUsers->with($relations)
+            ->when(!empty($directFilters), function ($query) use ($directFilters) {
+                $query->where($directFilters);
+            })
+            ->when(isset($filters['status']) && $filters['status'] === 'active', function ($query) {
+                $query->active();
+            })
+            ->when(!empty($filters['department_id']), function ($query) use ($filters) {
+                $query->inDepartment($filters['department_id']);
+            })
+            ->when(!empty($filters['role_name']), function ($query) use ($filters) {
+                $query->withRole($filters['role_name']);
+            })
             ->when($searchValue, function ($query) use ($searchValue) {
                 $searchTerms = explode(' ', $searchValue);
                 $query->where(function ($query) use ($searchTerms) {

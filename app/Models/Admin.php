@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\AdminRole;
+use App\Support\AdminPermissionRegistry;
 use App\Traits\StorageTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -21,7 +19,6 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int $id Primary
  * @property string $name
  * @property string $phone
- * @property int $admin_role_id
  * @property string $image
  * @property string $identify_image
  * @property string $identify_type
@@ -47,7 +44,6 @@ class Admin extends Authenticatable
         'branch_id',
         'department_id',
         'is_supervisor',
-        'admin_role_id',
         'image',
         'identify_image',
         'identify_type',
@@ -67,7 +63,6 @@ class Admin extends Authenticatable
         'phone' => 'string',
         'department_id' => 'integer',
         'is_supervisor' => 'boolean',
-        'admin_role_id' => 'integer',
         'image' => 'string',
         'identify_image' => 'string',
         'identify_type' => 'string',
@@ -83,15 +78,41 @@ class Admin extends Authenticatable
 
     protected $guard_name = 'admin';
 
-
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(AdminRole::class, 'admin_role_id');
-    }
-
     public function isSuperAdmin(): bool
     {
-        return $this->hasRole(config('permissions_admin.super_admin_role', 'Super Admin'));
+        return $this->hasRole(AdminPermissionRegistry::superAdminRole());
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 1);
+    }
+
+    public function scopeInDepartment(Builder $query, int|string|null $departmentId): Builder
+    {
+        if (empty($departmentId)) {
+            return $query;
+        }
+
+        return $query->where('department_id', (int)$departmentId);
+    }
+
+    public function scopeWithRole(Builder $query, string|array|null $roleName): Builder
+    {
+        if (empty($roleName)) {
+            return $query;
+        }
+
+        $roles = is_array($roleName) ? array_values(array_filter($roleName)) : [$roleName];
+        if (count($roles) === 0) {
+            return $query;
+        }
+
+        return $query->whereHas('roles', function ($roleQuery) use ($roles) {
+            $roleQuery
+                ->where('guard_name', AdminPermissionRegistry::guard())
+                ->whereIn('name', $roles);
+        });
     }
 
     public function branch(): BelongsTo
