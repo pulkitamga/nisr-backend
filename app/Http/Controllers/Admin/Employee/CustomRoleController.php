@@ -8,7 +8,6 @@ use App\Exports\EmployeeRoleListExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\CustomRoleRequest;
 use App\Models\Admin;
-use App\Models\AdminRole;
 use App\Support\AdminPermissionRegistry;
 use App\Traits\PaginatorTrait;
 use Brian2694\Toastr\Facades\Toastr;
@@ -71,7 +70,6 @@ class CustomRoleController extends BaseController
         }
 
         $role->syncPermissions($permissions);
-        $this->syncLegacyRoleRecord($role, $permissions);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         Toastr::success(translate('role_added_successfully'));
@@ -114,11 +112,9 @@ class CustomRoleController extends BaseController
             $permissions = AdminPermissionRegistry::all();
         }
 
-        $previousName = $role->name;
         $role->name = $request->name;
         $role->save();
         $role->syncPermissions($permissions);
-        $this->syncLegacyRoleRecord($role, $permissions, $previousName);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         Toastr::success(translate('role_updated_successfully'));
         return back();
@@ -141,12 +137,6 @@ class CustomRoleController extends BaseController
         if ($this->roleHasStatusColumn()) {
             $role->status = $request->boolean('status');
             $role->save();
-        }
-
-        $legacy = AdminRole::query()->where('name', $role->name)->first();
-        if ($legacy) {
-            $legacy->status = $request->boolean('status');
-            $legacy->save();
         }
 
         return response()->json([
@@ -187,11 +177,7 @@ class CustomRoleController extends BaseController
             ], 422);
         }
 
-        $legacyRole = AdminRole::query()->where('name', $role->name)->first();
         $role->delete();
-        if ($legacyRole) {
-            $legacyRole->delete();
-        }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
@@ -243,51 +229,6 @@ class CustomRoleController extends BaseController
             ->where($rolePivot, $role->id)
             ->where('model_type', Admin::class)
             ->count();
-    }
-
-    private function syncLegacyRoleRecord(Role $role, array $permissions, ?string $oldName = null): void
-    {
-        $legacy = null;
-        if ($oldName !== null && $oldName !== '') {
-            $legacy = AdminRole::query()->where('name', $oldName)->first();
-        }
-        if (!$legacy) {
-            $legacy = AdminRole::query()->where('name', $role->name)->first();
-        }
-        if (!$legacy) {
-            $legacy = new AdminRole();
-        }
-
-        $legacy->name = $role->name;
-        $legacy->status = $this->roleHasStatusColumn() ? (bool)$role->status : true;
-        $legacy->module_access = json_encode($this->permissionsToLegacyModuleAccess($permissions));
-        $legacy->save();
-    }
-
-    private function permissionsToLegacyModuleAccess(array $permissions): array
-    {
-        $grouped = [];
-        foreach ($permissions as $permission) {
-            if (!str_contains($permission, '.')) {
-                continue;
-            }
-
-            [$module, $action] = explode('.', $permission, 2);
-            if ($module === 'rbac') {
-                continue;
-            }
-            $grouped[$module] ??= [];
-            $grouped[$module][] = $action;
-        }
-
-        foreach ($grouped as $module => $actions) {
-            $actions = array_values(array_unique($actions));
-            sort($actions);
-            $grouped[$module] = $actions;
-        }
-
-        ksort($grouped);
-        return $grouped;
     }
 
     private function roleCreatePayload(string $name): array

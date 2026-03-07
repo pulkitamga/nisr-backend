@@ -276,12 +276,24 @@ Route::get('/admin/stock/transfer-report', [StockTransferReportController::class
 Route::post('/admin/stock/transfer-report-data', [StockTransferReportController::class, 'getTransferData'])
     ->middleware(['admin', 'permission:report.access_branch_stock_transfer|report.read,admin'])
     ->name('admin.stock.transfer-report-data');
+Route::get('/admin/stock/transfer-report-export-excel', [StockTransferReportController::class, 'exportExcel'])
+    ->middleware(['admin', 'permission:report.export_branch_stock_transfer|report.export,admin'])
+    ->name('admin.stock.transfer-report-export-excel');
+Route::get('/admin/stock/transfer-report-export-pdf', [StockTransferReportController::class, 'exportPdf'])
+    ->middleware(['admin', 'permission:report.export_branch_stock_transfer|report.export,admin'])
+    ->name('admin.stock.transfer-report-export-pdf');
 Route::get('/admin/crm/sales-report', [CrmSalesReportController::class, 'index'])
     ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.sales-report');
 Route::post('/admin/crm/sales-report-data', [CrmSalesReportController::class, 'getSalesData'])
     ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.sales-report-data');
+Route::get('/admin/crm/sales-report-export-excel', [CrmSalesReportController::class, 'exportExcel'])
+    ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
+    ->name('admin.crm.sales-report-export-excel');
+Route::get('/admin/crm/sales-report-export-pdf', [CrmSalesReportController::class, 'exportPdf'])
+    ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
+    ->name('admin.crm.sales-report-export-pdf');
 Route::get('/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
     ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.insights-report');
@@ -1786,6 +1798,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                     Route::post('schedule', 'scheduleTicket')->name('schedule')->middleware('permission:crm_section.service_ticket_schedule,admin');
                     Route::post('start-job', 'startJob')->name('start-job')->middleware('permission:crm_section.service_ticket_start_job,admin');
                     Route::post('complete-job', 'completeJob')->name('complete-job')->middleware('permission:crm_section.service_ticket_complete_job,admin');
+                    Route::post('invoice-remind', 'remindInvoicePayment')->name('invoice-remind')->middleware('permission:crm_section.update,admin');
                     Route::post('change-order', 'createChangeOrder')->name('change-order')->middleware('permission:crm_section.service_ticket_change_order,admin');
                     Route::post('qa', 'qaConfirmation')->name('qa')->middleware('permission:crm_section.service_ticket_qa,admin');
                     Route::post('close', 'closeTicket')->name('close')->middleware('permission:crm_section.service_ticket_close,admin');
@@ -1799,6 +1812,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('permission:crm_section.access,admin')->group(function () {
                 Route::controller(CareerTicketController::class)->group(function () {
                     Route::get('/', 'index')->name('index')->middleware('permission:crm_section.career_ticket_list,admin');
+                    Route::get('/offer/{offer}/download', 'downloadOffer')->name('offer.download')->middleware('permission:crm_section.career_ticket_view,admin');
                     Route::get('/{id}', 'getDetails')->name('single')->middleware('permission:crm_section.career_ticket_view,admin');
                     Route::post('/status', 'updateStatus')->name('status')->middleware('permission:crm_section.career_ticket_update_status,admin');
                     Route::post('/assign', 'assignRecruiter')->name('assign')->middleware('permission:crm_section.career_ticket_assign_recruiter,admin');

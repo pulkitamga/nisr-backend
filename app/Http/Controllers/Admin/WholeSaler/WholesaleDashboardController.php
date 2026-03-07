@@ -23,6 +23,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use App\Services\ReportPdfService;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 use App\Models\Branch;
 use App\Models\WholesaleConfirmOrder;
 use App\Models\WholesalePurchaseOrder;
@@ -193,15 +199,23 @@ class WholesaleDashboardController extends BaseController
         ]);
     }
 
-    public function revenueReport(): View
+    public function revenueReport(Request $request): View|BinaryFileResponse|Response
     {
-        $snapshotFrom = now()->subDays(89)->startOfDay();
-        $snapshotTo = now()->endOfDay();
-        $trendStart = now()->copy()->startOfMonth()->subMonths(11);
-        $trendEnd = now()->endOfDay();
+        [$snapshotFrom, $snapshotTo] = $this->resolveReportDateRange($request);
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $snapshotFrom->toDateString(),
+            'to' => $snapshotTo->toDateString(),
+            'payment_status' => (string)$request->input('payment_status', ''),
+            'delivery_status' => (string)$request->input('delivery_status', ''),
+            'wholesaler_id' => (int)$request->input('wholesaler_id', 0),
+        ];
+        $trendGrouping = $this->resolveReportTrendGrouping($snapshotFrom, $snapshotTo);
+        $periodKeys = $this->buildReportPeriodKeys($snapshotFrom, $snapshotTo, $trendGrouping['unit']);
 
         $snapshotQuery = WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        $this->applyRevenueFilters($snapshotQuery, $filters);
 
         $totalOrders = (clone $snapshotQuery)->count();
         $totalRevenue = (float)(clone $snapshotQuery)->sum('final_price');
@@ -213,27 +227,26 @@ class WholesaleDashboardController extends BaseController
         $openRevenue = max(0, $totalRevenue - $paidRevenue);
 
         $trendRows = WholesaleConfirmOrder::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw($trendGrouping['select'] . ' as period_key')
             ->selectRaw('COUNT(*) as orders_count')
             ->selectRaw('SUM(COALESCE(final_price, 0)) as total_revenue')
             ->selectRaw("SUM(CASE WHEN payment_status = 'paid' THEN COALESCE(final_price, 0) ELSE 0 END) as paid_revenue")
-            ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
+            ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
+            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
+            ->groupBy('period_key')
+            ->orderBy('period_key')
             ->get()
-            ->keyBy(fn($row) => sprintf('%04d-%02d', (int)$row->year, (int)$row->month));
+            ->keyBy('period_key');
 
         $trendLabels = [];
         $trendRevenue = [];
         $trendPaidRevenue = [];
         $trendOrders = [];
-        for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
-            $monthDate = $trendStart->copy()->addMonths($monthIndex);
-            $monthKey = $monthDate->format('Y-m');
-            $row = $trendRows->get($monthKey);
-
-            $trendLabels[] = $monthDate->format('M Y');
+        foreach ($periodKeys as $periodKey) {
+            $row = $trendRows->get($periodKey);
+            $trendLabels[] = $this->formatReportPeriodLabel($periodKey, $trendGrouping['unit']);
             $trendRevenue[] = (float)($row->total_revenue ?? 0);
             $trendPaidRevenue[] = (float)($row->paid_revenue ?? 0);
             $trendOrders[] = (int)($row->orders_count ?? 0);
@@ -248,6 +261,9 @@ class WholesaleDashboardController extends BaseController
         $topWholesalers = WholesaleConfirmOrder::query()
             ->with(['wholeseller.wholesalerBusiness'])
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
+            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->select('wholesaler_id')
             ->selectRaw('COUNT(*) as orders_count')
             ->selectRaw('SUM(COALESCE(final_price, 0)) as total_revenue')
@@ -259,9 +275,15 @@ class WholesaleDashboardController extends BaseController
 
         $recentRevenue = (float)WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [now()->subDays(29)->startOfDay(), $snapshotTo])
+            ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
+            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->sum('final_price');
         $previousRevenue = (float)WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [now()->subDays(59)->startOfDay(), now()->subDays(30)->endOfDay()])
+            ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
+            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->sum('final_price');
         $momentumRate = $previousRevenue > 0 ? (($recentRevenue - $previousRevenue) / $previousRevenue) * 100 : null;
 
@@ -297,6 +319,29 @@ class WholesaleDashboardController extends BaseController
             previousRevenue: $previousRevenue
         );
 
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $topWholesalers->map(function ($row) {
+                return [(string)($row->wholeseller?->name ?? 'N/A'), (int)$row->orders_count, round((float)$row->total_revenue, 2)];
+            })->values()->all();
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array { return ['Wholesaler', 'Orders', 'Revenue']; }
+            }, 'wholesale-revenue-report.xlsx');
+        }
+
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.wholesaler-business.reports.revenue-pdf',
+                data: compact('kpi', 'topWholesalers', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                fileName: 'wholesale-revenue-report.pdf'
+            );
+        }
+
+        $wholesalers = User::query()->where('user_type', 1)->where('wholesaler_status', 1)->select('id', 'name')->orderBy('name')->get();
+
         return view('admin-views.wholesaler-business.reports.revenue', compact(
             'kpi',
             'trendChartData',
@@ -304,25 +349,38 @@ class WholesaleDashboardController extends BaseController
             'topWholesalers',
             'insights',
             'snapshotFrom',
-            'snapshotTo'
+            'snapshotTo',
+            'filters',
+            'wholesalers'
         ));
     }
 
-    public function pipelineReport(): View
+    public function pipelineReport(Request $request): View|BinaryFileResponse|Response
     {
-        $snapshotFrom = now()->subDays(89)->startOfDay();
-        $snapshotTo = now()->endOfDay();
-        $trendStart = now()->copy()->startOfMonth()->subMonths(5);
-        $trendEnd = now()->endOfDay();
+        [$snapshotFrom, $snapshotTo] = $this->resolveReportDateRange($request);
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $snapshotFrom->toDateString(),
+            'to' => $snapshotTo->toDateString(),
+            'wholesaler_id' => (int)$request->input('wholesaler_id', 0),
+            'tier' => (string)$request->input('tier', ''),
+        ];
+        $trendGrouping = $this->resolveReportTrendGrouping($snapshotFrom, $snapshotTo);
+        $periodKeys = $this->buildReportPeriodKeys($snapshotFrom, $snapshotTo, $trendGrouping['unit']);
 
         $purchaseCount = WholesalePurchaseOrder::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholeseller_id', $filters['wholesaler_id']))
+            ->when($filters['tier'] !== '', fn($query) => $query->where('wholeseller_tier', $filters['tier']))
             ->count();
         $quotationCount = WholesaleQuotation::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholeseller_id', $filters['wholesaler_id']))
+            ->when($filters['tier'] !== '', fn($query) => $query->where('wholeseller_tier', $filters['tier']))
             ->count();
         $confirmedCount = WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->count();
 
         $purchaseToQuotationRate = $purchaseCount > 0 ? ($quotationCount / $purchaseCount) * 100 : 0;
@@ -330,37 +388,39 @@ class WholesaleDashboardController extends BaseController
         $endToEndRate = $purchaseCount > 0 ? ($confirmedCount / $purchaseCount) * 100 : 0;
 
         $purchaseTrendRows = WholesalePurchaseOrder::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholeseller_id', $filters['wholesaler_id']))
+            ->when($filters['tier'] !== '', fn($query) => $query->where('wholeseller_tier', $filters['tier']))
+            ->selectRaw($trendGrouping['select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
         $quotationTrendRows = WholesaleQuotation::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholeseller_id', $filters['wholesaler_id']))
+            ->when($filters['tier'] !== '', fn($query) => $query->where('wholeseller_tier', $filters['tier']))
+            ->selectRaw($trendGrouping['select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
         $confirmedTrendRows = WholesaleConfirmOrder::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('year', 'month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
+            ->selectRaw($trendGrouping['select'] . ' as period_key, COUNT(*) as total')
+            ->groupBy('period_key')
             ->get();
 
-        $purchaseTrendMap = $this->buildMonthlyCountMap($purchaseTrendRows->toArray());
-        $quotationTrendMap = $this->buildMonthlyCountMap($quotationTrendRows->toArray());
-        $confirmedTrendMap = $this->buildMonthlyCountMap($confirmedTrendRows->toArray());
+        $purchaseTrendMap = $purchaseTrendRows->pluck('total', 'period_key')->all();
+        $quotationTrendMap = $quotationTrendRows->pluck('total', 'period_key')->all();
+        $confirmedTrendMap = $confirmedTrendRows->pluck('total', 'period_key')->all();
 
         $trendLabels = [];
         $purchaseTrend = [];
         $quotationTrend = [];
         $confirmedTrend = [];
-        for ($monthIndex = 0; $monthIndex < 6; $monthIndex++) {
-            $monthDate = $trendStart->copy()->addMonths($monthIndex);
-            $monthKey = $monthDate->format('Y-m');
-
-            $trendLabels[] = $monthDate->format('M Y');
-            $purchaseTrend[] = (int)($purchaseTrendMap[$monthKey] ?? 0);
-            $quotationTrend[] = (int)($quotationTrendMap[$monthKey] ?? 0);
-            $confirmedTrend[] = (int)($confirmedTrendMap[$monthKey] ?? 0);
+        foreach ($periodKeys as $periodKey) {
+            $trendLabels[] = $this->formatReportPeriodLabel($periodKey, $trendGrouping['unit']);
+            $purchaseTrend[] = (int)($purchaseTrendMap[$periodKey] ?? 0);
+            $quotationTrend[] = (int)($quotationTrendMap[$periodKey] ?? 0);
+            $confirmedTrend[] = (int)($confirmedTrendMap[$periodKey] ?? 0);
         }
 
         $topProducts = DB::table('wholesale_confirmorder_item as item')
@@ -368,6 +428,7 @@ class WholesaleDashboardController extends BaseController
             ->leftJoin('products as products', 'products.id', '=', 'item.product_id')
             ->whereNull('orders.deleted_at')
             ->whereBetween('orders.created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('orders.wholesaler_id', $filters['wholesaler_id']))
             ->selectRaw('item.product_id, products.name as product_name')
             ->selectRaw('SUM(CASE WHEN COALESCE(item.quantity_sent, 0) > 0 THEN item.quantity_sent ELSE COALESCE(item.product_quantity, 0) END) as total_quantity')
             ->selectRaw('SUM(COALESCE(item.final_price, 0)) as total_value')
@@ -387,6 +448,8 @@ class WholesaleDashboardController extends BaseController
         $tierRevenue = WholesaleConfirmOrder::query()
             ->join('users', 'users.id', '=', 'wholesale_confirm_orders.wholesaler_id')
             ->whereBetween('wholesale_confirm_orders.created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesale_confirm_orders.wholesaler_id', $filters['wholesaler_id']))
+            ->when($filters['tier'] !== '', fn($query) => $query->where('users.tier', $filters['tier']))
             ->selectRaw("COALESCE(NULLIF(users.tier, ''), 'Unassigned') as tier_name")
             ->selectRaw('COUNT(*) as orders_count')
             ->selectRaw('SUM(COALESCE(wholesale_confirm_orders.final_price, 0)) as total_revenue')
@@ -469,6 +532,27 @@ class WholesaleDashboardController extends BaseController
             tierRevenue: $tierRevenue->toArray()
         );
 
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $tierRevenue->map(fn($row) => [(string)$row->tier_name, (int)$row->orders_count, round((float)$row->total_revenue, 2)])->values()->all();
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array { return ['Tier', 'Orders', 'Revenue']; }
+            }, 'wholesale-pipeline-report.xlsx');
+        }
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.wholesaler-business.reports.pipeline-pdf',
+                data: compact('kpi', 'tierRevenue', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                fileName: 'wholesale-pipeline-report.pdf'
+            );
+        }
+
+        $wholesalers = User::query()->where('user_type', 1)->where('wholesaler_status', 1)->select('id', 'name', 'tier')->orderBy('name')->get();
+        $tiers = $wholesalers->pluck('tier')->filter()->unique()->values();
+
         return view('admin-views.wholesaler-business.reports.pipeline', compact(
             'kpi',
             'pipelineStageChartData',
@@ -479,7 +563,10 @@ class WholesaleDashboardController extends BaseController
             'tierRevenue',
             'insights',
             'snapshotFrom',
-            'snapshotTo'
+            'snapshotTo',
+            'filters',
+            'wholesalers',
+            'tiers'
         ));
     }
 
@@ -534,6 +621,109 @@ class WholesaleDashboardController extends BaseController
         return $map;
     }
 
+    private function resolveReportDateRange(Request $request): array
+    {
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+            case 'custom_date':
+                $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                break;
+            case 'this_year':
+            default:
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                break;
+        }
+
+        if ($fromDate->gt($toDate)) {
+            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+        }
+
+        return [$fromDate, $toDate];
+    }
+
+    private function applyRevenueFilters($query, array $filters): void
+    {
+        if (($filters['payment_status'] ?? '') !== '') {
+            $query->where('payment_status', $filters['payment_status']);
+        }
+        if (($filters['delivery_status'] ?? '') !== '') {
+            $query->where('delivery_status', $filters['delivery_status']);
+        }
+        if (($filters['wholesaler_id'] ?? 0) > 0) {
+            $query->where('wholesaler_id', (int)$filters['wholesaler_id']);
+        }
+    }
+
+    private function resolveReportTrendGrouping(Carbon $fromDate, Carbon $toDate): array
+    {
+        $days = $fromDate->diffInDays($toDate);
+        if ($days <= 31) {
+            return ['unit' => 'day', 'select' => 'DATE(created_at)'];
+        }
+        if ($days <= 180) {
+            return ['unit' => 'week', 'select' => "DATE_FORMAT(created_at, '%x-W%v')"];
+        }
+        return ['unit' => 'month', 'select' => "DATE_FORMAT(created_at, '%Y-%m')"];
+    }
+
+    private function buildReportPeriodKeys(Carbon $fromDate, Carbon $toDate, string $unit): array
+    {
+        $keys = [];
+        $cursor = $fromDate->copy();
+        if ($unit === 'day') {
+            while ($cursor->lte($toDate)) {
+                $keys[] = $cursor->format('Y-m-d');
+                $cursor->addDay();
+            }
+            return $keys;
+        }
+        if ($unit === 'week') {
+            $cursor = $fromDate->copy()->startOfWeek();
+            $limit = $toDate->copy()->endOfWeek();
+            while ($cursor->lte($limit)) {
+                $keys[] = $cursor->format('o-\WW');
+                $cursor->addWeek();
+            }
+            return $keys;
+        }
+        $cursor = $fromDate->copy()->startOfMonth();
+        $limit = $toDate->copy()->endOfMonth();
+        while ($cursor->lte($limit)) {
+            $keys[] = $cursor->format('Y-m');
+            $cursor->addMonth();
+        }
+        return $keys;
+    }
+
+    private function formatReportPeriodLabel(string $periodKey, string $unit): string
+    {
+        if ($unit === 'day') {
+            return Carbon::parse($periodKey)->format('M d');
+        }
+        if ($unit === 'week') {
+            [$year, $week] = explode('-W', $periodKey);
+            return 'W' . $week . ' ' . $year;
+        }
+        return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
+    }
+
     private function buildRevenueInsights(
         array $kpi,
         array $trendLabels,
@@ -544,38 +734,49 @@ class WholesaleDashboardController extends BaseController
         float $previousRevenue
     ): array {
         if (($kpi['total_orders'] ?? 0) === 0) {
-            return ['No confirmed wholesale orders were found in the last 90 days.'];
+            return [translate('no_confirmed_wholesale_orders_found_in_last_90_days')];
         }
 
         $insights = [];
-        $insights[] = 'Last 90 days revenue reached ' . $this->formatMoney((float)$kpi['total_revenue'])
-            . ' from ' . (int)$kpi['total_orders'] . ' confirmed orders.';
+        $insights[] = strtr(translate('wholesale_revenue_insight_total'), [
+            ':total_revenue' => $this->formatMoney((float)$kpi['total_revenue']),
+            ':total_orders' => (string)((int)$kpi['total_orders']),
+        ]);
 
         $maxRevenue = max($trendRevenue);
         if ($maxRevenue > 0) {
             $bestMonthIndex = array_search($maxRevenue, $trendRevenue, true);
             if ($bestMonthIndex !== false && isset($trendLabels[$bestMonthIndex])) {
-                $insights[] = 'Peak month was ' . $trendLabels[$bestMonthIndex]
-                    . ' at ' . $this->formatMoney((float)$maxRevenue) . '.';
+                $insights[] = strtr(translate('wholesale_revenue_insight_peak_month'), [
+                    ':period' => $trendLabels[$bestMonthIndex],
+                    ':revenue' => $this->formatMoney((float)$maxRevenue),
+                ]);
             }
         }
 
         if ($momentumRate !== null) {
-            $direction = $momentumRate >= 0 ? 'up' : 'down';
-            $insights[] = 'Revenue momentum is ' . $direction . ' '
-                . number_format(abs($momentumRate), 1) . '% (last 30 days vs previous 30 days).';
+            $direction = $momentumRate >= 0 ? translate('up') : translate('down');
+            $insights[] = strtr(translate('wholesale_revenue_insight_momentum'), [
+                ':direction' => $direction,
+                ':rate' => number_format(abs($momentumRate), 1),
+            ]);
         } elseif ($recentRevenue > 0 && $previousRevenue == 0.0) {
-            $insights[] = 'Revenue appeared this month while the previous 30-day window had no revenue.';
+            $insights[] = translate('wholesale_revenue_insight_recent_only');
         }
 
-        $insights[] = 'Collection rate is ' . number_format((float)$kpi['collection_rate'], 1) . '%, leaving '
-            . $this->formatMoney((float)$kpi['open_revenue']) . ' still open.';
+        $insights[] = strtr(translate('wholesale_revenue_insight_collection'), [
+            ':collection_rate' => number_format((float)$kpi['collection_rate'], 1),
+            ':open_revenue' => $this->formatMoney((float)$kpi['open_revenue']),
+        ]);
 
         if (!empty($deliveryRows)) {
             $largestBucket = $deliveryRows[0];
-            $bucketStatus = ucfirst((string)data_get($largestBucket, 'delivery_status', 'pending'));
+            $bucketStatus = ucfirst((string)data_get($largestBucket, 'delivery_status', translate('pending')));
             $bucketTotal = (int)data_get($largestBucket, 'total', 0);
-            $insights[] = 'Largest delivery bucket is ' . $bucketStatus . ' with ' . $bucketTotal . ' orders.';
+            $insights[] = strtr(translate('wholesale_revenue_insight_largest_delivery_bucket'), [
+                ':status' => $bucketStatus,
+                ':orders' => (string)$bucketTotal,
+            ]);
         }
 
         return $insights;
@@ -594,40 +795,47 @@ class WholesaleDashboardController extends BaseController
         array $tierRevenue
     ): array {
         if ($purchaseCount === 0 && $quotationCount === 0 && $confirmedCount === 0) {
-            return ['No wholesale pipeline activity was found in the last 90 days.'];
+            return [translate('no_wholesale_pipeline_activity_found_in_last_90_days')];
         }
 
         $insights = [];
-        $insights[] = 'Pipeline conversion is '
-            . number_format($purchaseToQuotationRate, 1) . '% (PO to quote), '
-            . number_format($quotationToConfirmedRate, 1) . '% (quote to confirmed), and '
-            . number_format($endToEndRate, 1) . '% end-to-end.';
+        $insights[] = strtr(translate('wholesale_pipeline_insight_conversion'), [
+            ':po_to_quote_rate' => number_format($purchaseToQuotationRate, 1),
+            ':quote_to_confirmed_rate' => number_format($quotationToConfirmedRate, 1),
+            ':end_to_end_rate' => number_format($endToEndRate, 1),
+        ]);
 
         $dropFromPurchase = max(0, $purchaseCount - $quotationCount);
         $dropFromQuote = max(0, $quotationCount - $confirmedCount);
-        $insights[] = 'Current stage leakage: ' . $dropFromPurchase
-            . ' records between purchase and quotation, ' . $dropFromQuote
-            . ' between quotation and confirmation.';
+        $insights[] = strtr(translate('wholesale_pipeline_insight_stage_leakage'), [
+            ':purchase_drop' => (string)$dropFromPurchase,
+            ':quote_drop' => (string)$dropFromQuote,
+        ]);
 
         if ($avgPoToQuoteHours !== null || $avgQuoteToConfirmHours !== null) {
-            $poToQuoteText = $avgPoToQuoteHours !== null ? number_format($avgPoToQuoteHours, 1) . 'h' : 'n/a';
-            $quoteToConfirmText = $avgQuoteToConfirmHours !== null ? number_format($avgQuoteToConfirmHours, 1) . 'h' : 'n/a';
-            $insights[] = 'Cycle time averages: PO→Quote ' . $poToQuoteText
-                . ', Quote→Confirmed ' . $quoteToConfirmText . '.';
+            $poToQuoteText = $avgPoToQuoteHours !== null ? number_format($avgPoToQuoteHours, 1) . 'h' : translate('na');
+            $quoteToConfirmText = $avgQuoteToConfirmHours !== null ? number_format($avgQuoteToConfirmHours, 1) . 'h' : translate('na');
+            $insights[] = strtr(translate('wholesale_pipeline_insight_cycle_time'), [
+                ':po_to_quote' => $poToQuoteText,
+                ':quote_to_confirmed' => $quoteToConfirmText,
+            ]);
         }
 
         if (!empty($topProducts)) {
             $topProduct = $topProducts[0];
-            $topProductName = data_get($topProduct, 'product_name') ?: ('Product #' . data_get($topProduct, 'product_id', 'N/A'));
-            $insights[] = 'Top shipped product is ' . $topProductName
-                . ' with ' . number_format((float)data_get($topProduct, 'total_quantity', 0), 0)
-                . ' units in the period.';
+            $topProductName = data_get($topProduct, 'product_name') ?: (translate('product') . ' #' . data_get($topProduct, 'product_id', 'N/A'));
+            $insights[] = strtr(translate('wholesale_pipeline_insight_top_product'), [
+                ':product_name' => $topProductName,
+                ':units' => number_format((float)data_get($topProduct, 'total_quantity', 0), 0),
+            ]);
         }
 
         if (!empty($tierRevenue)) {
             $topTier = $tierRevenue[0];
-            $insights[] = 'Highest grossing tier is ' . data_get($topTier, 'tier_name', 'Unassigned')
-                . ' at ' . $this->formatMoney((float)data_get($topTier, 'total_revenue', 0)) . '.';
+            $insights[] = strtr(translate('wholesale_pipeline_insight_highest_tier'), [
+                ':tier_name' => (string)data_get($topTier, 'tier_name', translate('unassigned')),
+                ':revenue' => $this->formatMoney((float)data_get($topTier, 'total_revenue', 0)),
+            ]);
         }
 
         return $insights;

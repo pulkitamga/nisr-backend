@@ -3,6 +3,17 @@
 
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path:'public/assets/back-end/css/owl.min.css') }}">
+<style>
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
+</style>
 
 @endpush
 
@@ -51,11 +62,11 @@
                             <div class="info-block">
                                 <h6 class="text-muted mb-3">{{ translate('Business Details') }}</h6>
                                 <ul class="list-unstyled mb-0">
-                                    <li class="mb-2"><strong>Company:</strong> {{ $business->company_name }}</li>
-                                    <li class="mb-2"><strong>Trade Name:</strong> {{ $business->trade_name }}</li>
-                                    <li class="mb-2"><strong>Registration No.:</strong> {{ $business->registration_number }}</li>
-                                    <li class="mb-2"><strong>Tax ID:</strong> {{ $business->tax_id }}</li>
-                                    <li class="mb-2"><strong>VAT No:</strong> {{ $business->vat_number }}</li>
+                                    <li class="mb-2"><strong>Company:</strong> <span class="bidi-auto">{{ $business->company_name }}</span></li>
+                                    <li class="mb-2"><strong>Trade Name:</strong> <span class="bidi-auto">{{ $business->trade_name }}</span></li>
+                                    <li class="mb-2"><strong>Registration No.:</strong> <span class="bidi-ltr">{{ $business->registration_number }}</span></li>
+                                    <li class="mb-2"><strong>Tax ID:</strong> <span class="bidi-ltr">{{ $business->tax_id }}</span></li>
+                                    <li class="mb-2"><strong>VAT No:</strong> <span class="bidi-ltr">{{ $business->vat_number }}</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -65,9 +76,9 @@
                             <div class="info-block">
                                 <h6 class="text-muted mb-3">{{ translate('Wholeseller Details') }}</h6>
                                 <ul class="list-unstyled mb-0">
-                                    <li class="mb-2"><strong>{{ translate('Tier') }}:</strong> {{ $order->wholeseller->tier ?? translate('no_data_found') }}</li>
-                                    <li class="mb-2"><strong>{{ translate('Discount') }}:</strong> {{ $order->wholeseller->wholesaler_discount ?? translate('no_data_found') }}%</li>
-                                    <li class="mb-2"><strong>{{ translate('MOQ Override') }}:</strong> {{ $order->wholeseller->moq_override_enabled ? 'Yes' : 'No' }}</li>
+                                    <li class="mb-2"><strong>{{ translate('Tier') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->tier ?? translate('no_data_found') }}</span></li>
+                                    <li class="mb-2"><strong>{{ translate('Discount') }}:</strong> <span class="bidi-ltr">{{ $order->wholeseller->wholesaler_discount ?? translate('no_data_found') }}%</span></li>
+                                    <li class="mb-2"><strong>{{ translate('MOQ Override') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->moq_override_enabled ? 'Yes' : 'No' }}</span></li>
                                 </ul>
 
                                 <div class="mt-3">

@@ -11,7 +11,7 @@ use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\ProductStockTransaction;
 use App\Enums\StockReason;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportPdfService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Contracts\View\View;
@@ -49,15 +49,17 @@ class ProductStockReportController extends Controller
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        $pdf = Pdf::loadView('admin-views.report.product-stock-pdf', $data)
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->download('product-stock-analytics-report.pdf');
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.report.product-stock-pdf',
+            data: $data,
+            fileName: 'product-stock-analytics-report.pdf',
+            orientation: 'landscape'
+        );
     }
 
     private function buildReportData(Request $request): array
     {
-        [$fromDate, $toDate] = $this->resolveDateRange($request);
+        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
 
         $categoryId = (string)$request->input('category_id', 'all');
         $productIds = $this->normalizeMultiIds($request->input('product_ids', $request->input('product_id', [])));
@@ -139,6 +141,7 @@ class ProductStockReportController extends Controller
                 'category_id' => $categoryId,
                 'product_ids' => $productIds,
                 'branch_ids' => $branchIds,
+                'date_type' => $dateType,
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
                 'include_internal_transfer' => $includeInternalTransfer,
@@ -167,26 +170,53 @@ class ProductStockReportController extends Controller
 
     private function resolveDateRange(Request $request): array
     {
+        $dateType = (string)$request->input('date_type', 'this_year');
         $from = $request->input('from');
         $to = $request->input('to');
 
-        try {
-            $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
-        } catch (\Throwable) {
-            $fromDate = now()->subDays(29)->startOfDay();
-        }
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
 
-        try {
-            $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
-        } catch (\Throwable) {
-            $toDate = now()->endOfDay();
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
+
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+
+            case 'custom_date':
+                try {
+                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                } catch (\Throwable) {
+                    $fromDate = now()->subDays(29)->startOfDay();
+                }
+
+                try {
+                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfDay();
+                }
+                break;
+
+            case 'this_year':
+            default:
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                $dateType = 'this_year';
+                break;
         }
 
         if ($fromDate->gt($toDate)) {
             [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
         }
 
-        return [$fromDate, $toDate];
+        return [$fromDate, $toDate, $dateType];
     }
 
     private function normalizeMultiIds(mixed $input): array
@@ -525,18 +555,43 @@ class ProductStockReportController extends Controller
 
     private function buildDateTrend(Carbon $fromDate, Carbon $toDate, Collection $movementRows): array
     {
-        $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->startOfDay());
+        $daysDifference = $fromDate->diffInDays($toDate);
         $labels = [];
         $map = [];
 
-        foreach ($period as $date) {
-            $key = $date->format('Y-m-d');
-            $labels[] = $date->format('d M');
-            $map[$key] = ['in' => 0, 'out' => 0];
+        if ($daysDifference > 60) {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfMonth(), '1 month', $toDate->copy()->endOfMonth());
+            foreach ($period as $date) {
+                $key = $date->format('Y-m');
+                $labels[] = $date->locale(app()->getLocale())->translatedFormat('M');
+                $map[$key] = ['in' => 0, 'out' => 0];
+            }
+        } elseif ($daysDifference <= 7) {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay());
+            foreach ($period as $date) {
+                $key = $date->format('Y-m-d');
+                $labels[] = $date->locale(app()->getLocale())->translatedFormat('l');
+                $map[$key] = ['in' => 0, 'out' => 0];
+            }
+        } elseif ($daysDifference <= 31) {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay());
+            foreach ($period as $date) {
+                $key = $date->format('Y-m-d');
+                $labels[] = $date->format('j');
+                $map[$key] = ['in' => 0, 'out' => 0];
+            }
+        } else {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay());
+            foreach ($period as $date) {
+                $key = $date->format('Y-m-d');
+                $labels[] = $date->locale(app()->getLocale())->translatedFormat('j M');
+                $map[$key] = ['in' => 0, 'out' => 0];
+            }
         }
 
         foreach ($movementRows as $row) {
-            $key = Carbon::parse($row->date)->format('Y-m-d');
+            $reportDate = Carbon::parse($row->date);
+            $key = $daysDifference > 60 ? $reportDate->format('Y-m') : $reportDate->format('Y-m-d');
             if (!isset($map[$key])) {
                 continue;
             }

@@ -9,6 +9,7 @@ use App\Models\SupportTicket;
 use App\Models\User;
 use App\Utils\SMSModule;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ServiceWorkflowNotificationService
 {
@@ -21,6 +22,7 @@ class ServiceWorkflowNotificationService
         'change_order_created' => 'Ticket #{ticket_id}: change order added. {description}',
         'job_completed' => 'Ticket #{ticket_id} completed. Please check invoice.',
         'invoice_generated' => 'Ticket #{ticket_id}: invoice {amount}. Pay: {payment_link}',
+        'invoice_reminder' => 'Ticket #{ticket_id}: payment reminder. Total {amount}. Pay: {payment_link}',
         'payment_received' => 'Ticket #{ticket_id}: payment received.',
         'qa_failed' => 'Ticket #{ticket_id} reopened after QA review.',
         'ticket_closed' => 'Ticket #{ticket_id} has been closed.',
@@ -56,17 +58,21 @@ class ServiceWorkflowNotificationService
             );
         }
 
-        $template = $this->resolveSmsTemplate($eventKey);
-        if (!$template) {
-            return;
-        }
-
         $payload = array_merge([
             'ticket_id' => $ticketModel->id,
             'customer_id' => $ticketModel->customer_id,
             'employee_id' => $ticketModel->employee_id,
             'department_id' => $ticketModel->department_id,
         ], $templateData);
+
+        if ($this->shouldSendPaymentLinkEmail($eventKey, $payload)) {
+            $this->dispatchPaymentLinkEmails($eventKey, $message, $recipients, $payload);
+        }
+
+        $template = $this->resolveSmsTemplate($eventKey);
+        if (!$template) {
+            return;
+        }
 
         $smsBody = $this->renderTemplate($template, $payload);
         $phones = $this->resolveRecipientPhones($recipients);
@@ -183,6 +189,101 @@ class ServiceWorkflowNotificationService
         return array_values(array_unique($phones));
     }
 
+    private function shouldSendPaymentLinkEmail(string $eventKey, array $payload): bool
+    {
+        if (!in_array($eventKey, ['invoice_generated', 'invoice_reminder'], true)) {
+            return false;
+        }
+
+        return isset($payload['payment_link']) && is_string($payload['payment_link']) && trim($payload['payment_link']) !== '';
+    }
+
+    private function dispatchPaymentLinkEmails(string $eventKey, string $message, array $recipients, array $payload): void
+    {
+        if (!$this->isMailEnabled()) {
+            return;
+        }
+
+        $emails = $this->resolveRecipientEmails($recipients);
+        if (empty($emails)) {
+            return;
+        }
+
+        $subject = $eventKey === 'invoice_reminder'
+            ? 'Service invoice payment reminder'
+            : 'Service invoice generated';
+
+        $emailBody = $message;
+        if (isset($payload['amount'])) {
+            $emailBody .= "\nAmount: {$payload['amount']}";
+        }
+        if (isset($payload['payment_link'])) {
+            $emailBody .= "\nPayment link: {$payload['payment_link']}";
+        }
+
+        foreach ($emails as $email) {
+            try {
+                Mail::raw($emailBody, function ($mail) use ($email, $subject): void {
+                    $mail->to($email)->subject($subject);
+                });
+            } catch (\Throwable $exception) {
+                Log::warning('Service workflow email dispatch failed', [
+                    'event' => $eventKey,
+                    'email' => $email,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function resolveRecipientEmails(array $recipients): array
+    {
+        $emails = [];
+
+        foreach ($recipients as $recipient) {
+            $type = $recipient['type'] ?? null;
+            $id = $recipient['id'] ?? null;
+            if (!$type || !$id) {
+                continue;
+            }
+
+            $email = null;
+            switch ($type) {
+                case 'customer':
+                    $email = User::query()->where('id', $id)->value('email');
+                    break;
+                case 'employee':
+                case 'user':
+                    $email = Admin::query()->where('id', $id)->value('email');
+                    break;
+                case 'department':
+                    $headId = Departments::query()->where('id', $id)->value('head_id');
+                    if ($headId) {
+                        $email = Admin::query()->where('id', $headId)->value('email');
+                    }
+                    break;
+            }
+
+            $normalized = $this->normalizeEmail($email);
+            if ($normalized) {
+                $emails[] = $normalized;
+            }
+        }
+
+        return array_values(array_unique($emails));
+    }
+
+    private function isMailEnabled(): bool
+    {
+        $mailConfig = getWebConfig(name: 'mail_config');
+        if (is_array($mailConfig) && (int)($mailConfig['status'] ?? 0) === 1) {
+            return true;
+        }
+
+        $sendgridConfig = getWebConfig(name: 'mail_config_sendgrid');
+        return is_array($sendgridConfig) && (int)($sendgridConfig['status'] ?? 0) === 1;
+    }
+
     private function normalizePhone(?string $phone): ?string
     {
         if (!$phone) {
@@ -191,5 +292,15 @@ class ServiceWorkflowNotificationService
 
         $normalized = trim($phone);
         return strlen($normalized) >= 6 ? $normalized : null;
+    }
+
+    private function normalizeEmail(?string $email): ?string
+    {
+        if (!$email) {
+            return null;
+        }
+
+        $normalized = trim($email);
+        return filter_var($normalized, FILTER_VALIDATE_EMAIL) ? $normalized : null;
     }
 }

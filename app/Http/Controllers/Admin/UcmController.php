@@ -8,11 +8,18 @@ use App\Models\User;
 use App\Services\UcmApiService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Services\ReportPdfService;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class UcmController extends Controller
@@ -57,15 +64,25 @@ class UcmController extends Controller
         return response()->json($calls);
     }
 
-    public function insightsReport(): View
+    public function insightsReport(Request $request): View|BinaryFileResponse|Response
     {
-        $snapshotFrom = now()->subDays(89)->startOfDay();
-        $snapshotTo = now()->endOfDay();
-        $trendStart = now()->copy()->startOfMonth()->subMonths(11);
-        $trendEnd = now()->endOfDay();
+        [$snapshotFrom, $snapshotTo] = $this->resolveDateRange($request);
+
+        $filters = [
+            'date_type' => (string)$request->input('date_type', 'this_year'),
+            'from' => $snapshotFrom->toDateString(),
+            'to' => $snapshotTo->toDateString(),
+            'direction' => (string)$request->input('direction', ''),
+            'status' => (string)$request->input('status', ''),
+            'agent_id' => (int)$request->input('agent_id', 0),
+        ];
+
+        $trendGrouping = $this->resolveTrendGrouping($snapshotFrom, $snapshotTo);
+        $periodKeys = $this->buildPeriodKeys($snapshotFrom, $snapshotTo, $trendGrouping['unit']);
 
         $snapshotQuery = CrmCall::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
+        $this->applyVoipFilters($snapshotQuery, $filters);
 
         $totalCalls = (clone $snapshotQuery)->count();
         $inboundCalls = (clone $snapshotQuery)->where('direction', 'inbound')->count();
@@ -86,27 +103,26 @@ class UcmController extends Controller
             ->count('agent_id');
 
         $trendRows = CrmCall::query()
-            ->whereBetween('created_at', [$trendStart, $trendEnd])
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month')
+            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw($trendGrouping['select'] . ' as period_key')
             ->selectRaw('COUNT(*) as total_calls')
             ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_calls")
             ->selectRaw('AVG(COALESCE(call_duration, 0)) as avg_duration')
-            ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
+            ->when($filters['direction'] !== '', fn($query) => $query->where('direction', $filters['direction']))
+            ->when($filters['status'] !== '', fn($query) => $query->where('status', $filters['status']))
+            ->when($filters['agent_id'] > 0, fn($query) => $query->where('agent_id', $filters['agent_id']))
+            ->groupBy('period_key')
+            ->orderBy('period_key')
             ->get()
-            ->keyBy(fn($row) => sprintf('%04d-%02d', (int)$row->year, (int)$row->month));
+            ->keyBy('period_key');
 
         $trendLabels = [];
         $trendCalls = [];
         $trendCompleted = [];
         $trendAvgDuration = [];
-        for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
-            $monthDate = $trendStart->copy()->addMonths($monthIndex);
-            $monthKey = $monthDate->format('Y-m');
-            $row = $trendRows->get($monthKey);
-
-            $trendLabels[] = $monthDate->format('M Y');
+        foreach ($periodKeys as $periodKey) {
+            $row = $trendRows->get($periodKey);
+            $trendLabels[] = $this->formatPeriodLabel($periodKey, $trendGrouping['unit']);
             $trendCalls[] = (int)($row->total_calls ?? 0);
             $trendCompleted[] = (int)($row->completed_calls ?? 0);
             $trendAvgDuration[] = round((float)($row->avg_duration ?? 0), 1);
@@ -126,8 +142,7 @@ class UcmController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        $hourlyRows = CrmCall::query()
-            ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
+        $hourlyRows = (clone $snapshotQuery)
             ->selectRaw('HOUR(created_at) as hour_slot, COUNT(*) as total')
             ->groupBy('hour_slot')
             ->orderBy('hour_slot')
@@ -145,6 +160,9 @@ class UcmController extends Controller
         $topAgents = CrmCall::query()
             ->leftJoin('admins', 'admins.id', '=', 'crm_calls.agent_id')
             ->whereBetween('crm_calls.created_at', [$snapshotFrom, $snapshotTo])
+            ->when($filters['direction'] !== '', fn($query) => $query->where('crm_calls.direction', $filters['direction']))
+            ->when($filters['status'] !== '', fn($query) => $query->where('crm_calls.status', $filters['status']))
+            ->when($filters['agent_id'] > 0, fn($query) => $query->where('crm_calls.agent_id', $filters['agent_id']))
             ->selectRaw('crm_calls.agent_id')
             ->selectRaw("COALESCE(admins.name, 'Unassigned') as agent_name")
             ->selectRaw('COUNT(*) as calls_count')
@@ -200,6 +218,41 @@ class UcmController extends Controller
             hourlyCounts: $hourlyCounts
         );
 
+        $download = (string)$request->input('download', '');
+        if ($download === 'excel') {
+            $rows = $topAgents->map(function ($agent) {
+                return [
+                    (string)$agent->agent_name,
+                    (int)$agent->calls_count,
+                    round(((float)$agent->total_duration) / 60, 1),
+                    round(((float)$agent->avg_duration) / 60, 1),
+                ];
+            })->values()->all();
+
+            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+                public function __construct(private readonly array $rows) {}
+                public function array(): array { return $this->rows; }
+                public function headings(): array { return ['Agent', 'Calls', 'Total Duration (min)', 'Avg Duration (min)']; }
+            }, 'ucm-insights-report.xlsx');
+        }
+
+        if ($download === 'pdf') {
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            return app(ReportPdfService::class)->download(
+                view: 'admin-views.crm.reports.voip-pdf',
+                data: compact('kpi', 'topAgents', 'filters', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                fileName: 'ucm-insights-report.pdf'
+            );
+        }
+
+        $filterAgents = CrmCall::query()
+            ->leftJoin('admins', 'admins.id', '=', 'crm_calls.agent_id')
+            ->whereBetween('crm_calls.created_at', [$snapshotFrom, $snapshotTo])
+            ->selectRaw('crm_calls.agent_id, COALESCE(admins.name, "Unassigned") as agent_name')
+            ->groupBy('crm_calls.agent_id', 'admins.name')
+            ->orderBy('agent_name')
+            ->get();
+
         return view('admin-views.crm.reports.voip', compact(
             'kpi',
             'trendChartData',
@@ -209,8 +262,117 @@ class UcmController extends Controller
             'topAgents',
             'insights',
             'snapshotFrom',
-            'snapshotTo'
+            'snapshotTo',
+            'filters',
+            'filterAgents'
         ));
+    }
+
+    private function resolveDateRange(Request $request): array
+    {
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+            case 'custom_date':
+                $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                break;
+            case 'this_year':
+            default:
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                break;
+        }
+
+        if ($fromDate->gt($toDate)) {
+            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+        }
+
+        return [$fromDate, $toDate];
+    }
+
+    private function applyVoipFilters(Builder|\Illuminate\Database\Eloquent\Builder $query, array $filters): void
+    {
+        if (($filters['direction'] ?? '') !== '') {
+            $query->where('direction', $filters['direction']);
+        }
+        if (($filters['status'] ?? '') !== '') {
+            $query->where('status', $filters['status']);
+        }
+        if (($filters['agent_id'] ?? 0) > 0) {
+            $query->where('agent_id', (int)$filters['agent_id']);
+        }
+    }
+
+    private function resolveTrendGrouping(Carbon $fromDate, Carbon $toDate): array
+    {
+        $days = $fromDate->diffInDays($toDate);
+        if ($days <= 31) {
+            return ['unit' => 'day', 'select' => 'DATE(created_at)'];
+        }
+        if ($days <= 180) {
+            return ['unit' => 'week', 'select' => "DATE_FORMAT(created_at, '%x-W%v')"];
+        }
+        return ['unit' => 'month', 'select' => "DATE_FORMAT(created_at, '%Y-%m')"];
+    }
+
+    private function buildPeriodKeys(Carbon $fromDate, Carbon $toDate, string $unit): array
+    {
+        $keys = [];
+        $cursor = $fromDate->copy();
+
+        if ($unit === 'day') {
+            while ($cursor->lte($toDate)) {
+                $keys[] = $cursor->format('Y-m-d');
+                $cursor->addDay();
+            }
+            return $keys;
+        }
+
+        if ($unit === 'week') {
+            $cursor = $fromDate->copy()->startOfWeek();
+            $limit = $toDate->copy()->endOfWeek();
+            while ($cursor->lte($limit)) {
+                $keys[] = $cursor->format('o-\WW');
+                $cursor->addWeek();
+            }
+            return $keys;
+        }
+
+        $cursor = $fromDate->copy()->startOfMonth();
+        $limit = $toDate->copy()->endOfMonth();
+        while ($cursor->lte($limit)) {
+            $keys[] = $cursor->format('Y-m');
+            $cursor->addMonth();
+        }
+
+        return $keys;
+    }
+
+    private function formatPeriodLabel(string $periodKey, string $unit): string
+    {
+        if ($unit === 'day') {
+            return Carbon::parse($periodKey)->format('M d');
+        }
+        if ($unit === 'week') {
+            [$year, $week] = explode('-W', $periodKey);
+            return 'W' . $week . ' ' . $year;
+        }
+        return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
     }
 
     private function buildVoipInsights(
@@ -222,20 +384,33 @@ class UcmController extends Controller
         array $hourlyCounts
     ): array {
         if (($kpi['total_calls'] ?? 0) === 0) {
-            return ['No VOIP calls were found in the last 90 days.'];
+            return [translate('no_voip_calls_found_in_last_90_days')];
         }
 
         $insights = [];
-        $insights[] = 'Answer rate is ' . number_format((float)$kpi['answer_rate'], 1) . '% with ' . number_format((int)$kpi['completed_calls']) . ' completed calls.';
-        $insights[] = 'Inbound vs outbound split is ' . number_format((int)$kpi['inbound_calls']) . ' / ' . number_format((int)$kpi['outbound_calls']) . '.';
-        $insights[] = 'Average handled call duration is ' . $this->formatDurationSeconds((float)$kpi['avg_duration_seconds']) . ', with total talk time of ' . $this->formatDurationSeconds((float)$kpi['total_duration_seconds']) . '.';
+        $insights[] = strtr(translate('voip_insight_answer_rate'), [
+            ':answer_rate' => number_format((float)$kpi['answer_rate'], 1),
+            ':completed_calls' => number_format((int)$kpi['completed_calls']),
+        ]);
+        $insights[] = strtr(translate('voip_insight_direction_split'), [
+            ':inbound_calls' => number_format((int)$kpi['inbound_calls']),
+            ':outbound_calls' => number_format((int)$kpi['outbound_calls']),
+        ]);
+        $insights[] = strtr(translate('voip_insight_durations'), [
+            ':avg_duration' => $this->formatDurationSeconds((float)$kpi['avg_duration_seconds']),
+            ':total_duration' => $this->formatDurationSeconds((float)$kpi['total_duration_seconds']),
+        ]);
 
         $maxTrendCalls = max($trendCalls);
         if ($maxTrendCalls > 0) {
             $peakMonthIndex = array_search($maxTrendCalls, $trendCalls, true);
             if ($peakMonthIndex !== false && isset($trendLabels[$peakMonthIndex])) {
                 $peakCompleted = (int)($trendCompleted[$peakMonthIndex] ?? 0);
-                $insights[] = 'Peak call volume was in ' . $trendLabels[$peakMonthIndex] . ' with ' . $maxTrendCalls . ' calls (' . $peakCompleted . ' completed).';
+                $insights[] = strtr(translate('voip_insight_peak_month'), [
+                    ':period' => $trendLabels[$peakMonthIndex],
+                    ':calls' => (string)$maxTrendCalls,
+                    ':completed' => (string)$peakCompleted,
+                ]);
             }
         }
 
@@ -243,7 +418,10 @@ class UcmController extends Controller
         if ($maxHourly > 0) {
             $peakHourIndex = array_search($maxHourly, $hourlyCounts, true);
             if ($peakHourIndex !== false && isset($hourlyLabels[$peakHourIndex])) {
-                $insights[] = 'Peak call hour is around ' . $hourlyLabels[$peakHourIndex] . ' with ' . $maxHourly . ' calls.';
+                $insights[] = strtr(translate('voip_insight_peak_hour'), [
+                    ':hour' => $hourlyLabels[$peakHourIndex],
+                    ':calls' => (string)$maxHourly,
+                ]);
             }
         }
 

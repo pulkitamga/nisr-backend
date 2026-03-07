@@ -1,11 +1,55 @@
 @extends('layouts.back-end.app')
 @section('title', translate('Claim View'))
 
+@push('css_or_js')
+<style>
+    .kv-row {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: .35rem;
+        margin-bottom: .75rem;
+        direction: ltr;
+    }
+    .kv-label {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .kv-sep {
+        font-weight: 600;
+    }
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
+    .claim-rtl .kv-row {
+        justify-content: flex-end;
+        text-align: right;
+    }
+    .claim-ltr .kv-row {
+        justify-content: flex-start;
+        text-align: left;
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="content container-fluid">
+@php
+    $isRtl = Session::get('direction') === 'rtl';
+    $totalCharges = (float)$claim->charges->sum('amount');
+    $paidChargesTotal = (float)$claim->charges->where('is_paid', true)->sum('amount');
+    $outstandingCharges = max(0, $totalCharges - $paidChargesTotal);
+    $hasUnpaidCharges = $claim->charges->where('is_paid', false)->count() > 0;
+@endphp
+<div class="content container-fluid {{ $isRtl ? 'claim-rtl' : 'claim-ltr' }}">
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between">
-            <h5>{{ $claim->claim_number }} - {{ translate($claim->status) }}</h5>
+            <h5><span class="bidi-ltr">{{ $claim->claim_number }}</span> - <span class="bidi-auto">{{ translate($claim->status) }}</span></h5>
             <a href="{{ route('admin.warranty.claim.all') }}" class="btn btn-sm btn-secondary">
                 {{ translate('Back') }}
             </a>
@@ -15,24 +59,116 @@
             <div class="row mb-4">
                 <div class="col-md-6">
                     <h6 class="font-weight-bold">{{ translate('Warranty') }}</h6>
-                    <p><strong>{{ translate('serial') }}:</strong> {{ $claim->warranty->serial_number }}</p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('serial') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-ltr">{{ $claim->warranty->serial_number }}</span>
+                    </p>
                     <!-- <p><strong>{{ translate('Product') }}:</strong> {{ $claim->warranty->product->name ?? 'N/A' }}</p> -->
-                    <p><strong>{{ translate('Customer') }}:</strong> {{$claim->warranty->user->f_name ?? $claim->warranty->activated_by_name}}</p>
-                    <p><strong>{{ translate('Phone') }}:</strong> {{$claim->warranty->user->phone ?? $claim->warranty->activated_by_phone}}</p>
-                    <p><strong>{{ translate('Email') }}:</strong> {{$claim->warranty->user->email ?? $claim->warranty->activated_by_email}}</p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('Customer') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-auto">{{$claim->warranty->user->f_name ?? $claim->warranty->activated_by_name}}</span>
+                    </p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('Phone') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-ltr">{{$claim->warranty->user->phone ?? $claim->warranty->activated_by_phone}}</span>
+                    </p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('Email') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-ltr">{{$claim->warranty->user->email ?? $claim->warranty->activated_by_email}}</span>
+                    </p>
                 </div>
                 <div class="col-md-6">
                     <h6 class="font-weight-bold">{{ translate('Claim') }}</h6>
-                    <p><strong>{{ translate('Submitted') }}:</strong> {{ $claim->submitted_at->format('Y-m-d H:i A') }}</p>
-                    <p><strong>{{ translate('Description') }}:</strong> {{ $claim->description }}</p>
-                    <p><strong>{{ translate('RMA') }}:</strong> {{ $claim->rma_number ?? '—' }}</p>
-                    <p><strong>{{ translate('RMA Deadline') }}:</strong> {{ $claim->rma_deadline?->format('Y-m-d') ?? '—' }}</p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('Submitted') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-ltr">{{ $claim->submitted_at->format('Y-m-d H:i A') }}</span>
+                    </p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('Description') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-auto">{{ $claim->description }}</span>
+                    </p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('RMA') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-ltr">{{ $claim->rma_number ?? '—' }}</span>
+                    </p>
+                    <p class="kv-row">
+                        <span class="kv-label">{{ translate('RMA Deadline') }}</span>
+                        <span class="kv-sep">:</span>
+                        <span class="kv-value bidi-ltr">{{ $claim->rma_deadline?->format('Y-m-d') ?? '—' }}</span>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
     <div class="card mb-4">
         <div class="card-body mb-4">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="p-3 border rounded">
+                        <div class="text-muted">{{ translate('Total Charges') }}</div>
+                        <div class="h5 mb-0">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $totalCharges)) }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="p-3 border rounded">
+                        <div class="text-muted">{{ translate('Paid Amount') }}</div>
+                        <div class="h5 mb-0 text-success">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $paidChargesTotal)) }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded">
+                        <div class="text-muted">{{ translate('Outstanding Amount') }}</div>
+                        <div class="h5 mb-0 text-danger">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $outstandingCharges)) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <h6 class="font-weight-bold mb-3">{{ translate('Payment Records') }}</h6>
+                <table class="table table-sm table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>{{ translate('Channel') }}</th>
+                            <th>{{ translate('Status') }}</th>
+                            <th>{{ translate('Amount') }}</th>
+                            <th>{{ translate('Reference') }}</th>
+                            <th>{{ translate('Payment Link') }}</th>
+                            <th>{{ translate('Paid At') }}</th>
+                            <th>{{ translate('Created') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($claim->payments->sortByDesc('id') as $payment)
+                        <tr>
+                            <td>{{ translate($payment->payment_channel) }}</td>
+                            <td>{{ translate($payment->payment_status) }}</td>
+                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment->amount)) }}</td>
+                            <td><span class="bidi-ltr">{{ $payment->payment_reference ?? '—' }}</span></td>
+                            <td>
+                                @if($payment->payment_link)
+                                    <a href="{{ $payment->payment_link }}" target="_blank">{{ translate('Open Link') }}</a>
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td><span class="bidi-ltr">{{ $payment->paid_at?->format('Y-m-d H:i A') ?? '—' }}</span></td>
+                            <td><span class="bidi-ltr">{{ $payment->created_at?->format('Y-m-d H:i A') ?? '—' }}</span></td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="text-center">{{ translate('No payment records found') }}</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
             @if($claim->attachments->count())
             <h6 class="mt-4">{{ translate('Attachments') }}</h6>
@@ -131,12 +267,11 @@
                     <button class="btn btn-success btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.resume', $claim->id) }}" data-target="#resumeClaimModal">
                         {{ translate('Resume / Continue') }}
                     </button>
-
-                    @if($claim->status === 'waiting_payment')
+                    @endif
+                    @if($hasUnpaidCharges && !in_array($claim->status, ['closed', 'rejected']))
                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.payment-handle', $claim->id) }}" data-target="#paymentHandlingModal">
                         {{ translate('Handle Payment') }}
                     </button>
-                    @endif
                     @endif
 
                     @if(!in_array($claim->status, ['closed']))
@@ -165,7 +300,7 @@
                         <tr>
                             <td>{{ translate($e->event_type) }}</td>
                             <td>{{ $e->description }}</td>
-                            <td>{{ $e->timestamp->format('Y-m-d H:i A') }}</td>
+                            <td><span class="bidi-ltr">{{ $e->timestamp->format('Y-m-d H:i A') }}</span></td>
                             <td>{{ $e->user?->name ?? translate('Admin') }}</td>
                         </tr>
                         @empty
@@ -233,7 +368,10 @@
             contentType: false,
             processData: false,
             success: function(res) {
-                toastr.success(res.message || claimWorkflowI18n.success);
+                const successMessage = res?.payment_link
+                    ? `${res.message || claimWorkflowI18n.success} ${res.payment_link}`
+                    : (res?.message || claimWorkflowI18n.success);
+                toastr.success(successMessage);
                 location.reload();
             },
             error: function(xhr) {

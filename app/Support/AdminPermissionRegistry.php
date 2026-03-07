@@ -72,7 +72,22 @@ class AdminPermissionRegistry
 
     public static function superAdminRole(): string
     {
-        return (string)config('permissions_admin.super_admin_role', 'Super Admin');
+        return self::systemRole('super_admin', 'Super Admin');
+    }
+
+    public static function branchManagerRole(): string
+    {
+        return self::systemRole('branch_manager', 'Operations Manager');
+    }
+
+    public static function crmAgentRole(): string
+    {
+        return self::systemRole('crm_agent', 'CRM Agent');
+    }
+
+    public static function systemRole(string $key, string $fallback = ''): string
+    {
+        return (string)config("permissions_admin.system_roles.{$key}", $fallback);
     }
 
     public static function moduleAliases(): array

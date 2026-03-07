@@ -253,7 +253,7 @@
                                                 <input type="text" name="exchange_quantity"
                                                     id="exchange-quantity"
                                                     class=" form-control input-number text-center exchange-qty-field"
-                                                    placeholder="1" value="1" min="1" max="100"
+                                                    placeholder="0" value="0" min="0" max="99"
                                                     disabled
                                                     data-price="{{ $product->extraCharges['exchange'] }}">
                                                 <button type="button"

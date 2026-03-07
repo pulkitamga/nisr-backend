@@ -35,8 +35,6 @@ class DepartmentService
             'status' => $request['status'] == '0' ? '0' : '1',
         ];
 
-        // Department head is now managed from Employee form.
-        // Keep backward compatibility if head_id is still posted from legacy UI.
         if (method_exists($request, 'has') && $request->has('head_id')) {
             $data['head_id'] = !empty($request['head_id']) ? (int)$request['head_id'] : null;
         }
@@ -47,7 +45,6 @@ class DepartmentService
     public function getAddDepartmentUsers(object $request, int $iDepartmentId):array
     {
         return [
-            'user_type' => $request['user_type'],
             'name' => $request['user_name'],
             'email' => $request['email'],
             'email_verified_at' => date('Y-m-d H:i:s'),
@@ -63,7 +60,6 @@ class DepartmentService
             'name'              => $request['name'],
             'phone'             => $request['phone'],
             'branch_id'         => $request['branch_id'],
-            'admin_role_id'     => 2,
             'email'             => $request['email'],
             'password'          => bcrypt($request['password']),
              

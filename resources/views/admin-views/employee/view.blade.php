@@ -21,7 +21,7 @@
                         <div class="media-body">
                             <div class="text-capitalize mb-4">
                                 <h4 class="mb-2">{{$employee->name}}</h4>
-                                <p>{{ $employee->roles->first()?->name ?? (isset($employee->role) ? $employee->role->name : translate('role_not_found')) }}</p>
+                                <p>{{ $employee->roles->first()?->name ?? translate('role_not_found') }}</p>
                             </div>
 
                             <ul class="d-flex flex-column gap-3 px-0">

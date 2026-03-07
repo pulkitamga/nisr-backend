@@ -9,7 +9,7 @@ use App\Http\Controllers\BaseController;
 use App\Models\Branch;
 use App\Models\OrderDetail;
 use App\Models\Product;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportPdfService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Contracts\View\View;
@@ -152,10 +152,12 @@ class InhouseProductSaleController extends BaseController
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
         $data['chartImages'] = $this->generateChartImages($data['chart']);
-        $pdf = Pdf::loadView(InhouseProductSale::EXPORT_PDF[VIEW], $data)
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->download('inhouse-product-sale-report.pdf');
+        return app(ReportPdfService::class)->download(
+            view: InhouseProductSale::EXPORT_PDF[VIEW],
+            data: $data,
+            fileName: 'inhouse-product-sale-report.pdf',
+            orientation: 'landscape'
+        );
     }
 
     private function buildReportData(Request $request): array

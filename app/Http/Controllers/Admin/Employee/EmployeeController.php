@@ -13,7 +13,6 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\AdminAddRequest;
 use App\Http\Requests\Admin\AdminUpdateRequest;
 use App\Models\Admin;
-use App\Models\AdminRole;
 use App\Models\Departments;
 use App\Support\AdminPermissionRegistry;
 use App\Services\AdminService;
@@ -56,10 +55,9 @@ class EmployeeController extends BaseController
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
             filters: [
-                'admin_role_id' => 'all',
                 'role_id' => $request['role_id'] ?? 'all',
             ],
-            relations: ['role', 'roles', 'branch', 'department'],
+            relations: ['roles', 'branch', 'department'],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
         $departments = $this->departmentRepo->getListWhere(
@@ -78,10 +76,9 @@ class EmployeeController extends BaseController
         $employees = $this->adminRepo->getEmployeeListWhere(
             searchValue: $request['searchValue'],
             filters: [
-                'admin_role_id' => 'all',
                 'role_id' => $request['role'],
             ],
-            relations: ['role', 'roles'],
+            relations: ['roles'],
             dataLimit: 'all'
         );
         $active = $employees->where('status', 1)->count();
@@ -133,13 +130,10 @@ class EmployeeController extends BaseController
             return back()->withInput();
         }
 
-        $legacyRole = $this->ensureLegacyRoleMirror($role);
-
         $data = [
             'name' => $request['name'],
             'phone' => $request['phone'],
             'email' => $request['email'],
-            'admin_role_id' => $legacyRole?->id,
             'branch_id' => json_encode($request['branch_id']),
             'department_id' => $request['department_id'],
             'is_supervisor' => $request->boolean('is_supervisor'),
@@ -173,7 +167,7 @@ class EmployeeController extends BaseController
 
     public function getView(Request $request): View
     {
-        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['role', 'roles']);
+        $employee = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['roles']);
         return view(Employee::VIEW[VIEW], compact('employee'));
     }
 
@@ -219,8 +213,6 @@ class EmployeeController extends BaseController
             return back()->withInput();
         }
 
-        $legacyRole = $this->ensureLegacyRoleMirror($role);
-
         $employee = $this->adminRepo->getFirstWhere(params: ['id' => $employeeId]);
         $employee->load('roles');
 
@@ -243,7 +235,6 @@ class EmployeeController extends BaseController
             'name' => $request['name'],
             'phone' => $request['phone'],
             'email' => $request['email'],
-            'admin_role_id' => $legacyRole?->id,
             'branch_id' => $request['branch_id'],
             'department_id' => $request['department_id'],
             'is_supervisor' => $request->boolean('is_supervisor'),
@@ -386,17 +377,6 @@ class EmployeeController extends BaseController
         }
 
         return $query->first();
-    }
-
-    private function ensureLegacyRoleMirror(Role $role): AdminRole
-    {
-        return AdminRole::query()->firstOrCreate(
-            ['name' => $role->name],
-            [
-                'module_access' => '{}',
-                'status' => Schema::hasColumn('roles', 'status') ? (bool)$role->status : true,
-            ]
-        );
     }
 
     private function isSuperAdminRole(Role $role): bool

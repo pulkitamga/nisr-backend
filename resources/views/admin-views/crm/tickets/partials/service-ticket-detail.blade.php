@@ -5,7 +5,17 @@
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/css/tags-input.min.css') }}" rel="stylesheet">
 <link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
-
+<style>
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -31,14 +41,14 @@
                     </div>
                     <div class="card-body">
                         @if($supportTicket->customer)
-                        <p><strong>{{ translate('Name') }}:</strong> {{ $supportTicket->customer->f_name ?? '' }}
-                            {{ $supportTicket->customer->l_name ?? '' }}
+                        <p><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{ $supportTicket->customer->f_name ?? '' }}
+                            {{ $supportTicket->customer->l_name ?? '' }}</span>
                         </p>
                         <p><strong>{{ translate('Email') }}:</strong>
-                            {{ $supportTicket->customer->email ?? translate('Not Available') }}
+                            <span class="bidi-ltr">{{ $supportTicket->customer->email ?? translate('Not Available') }}</span>
                         </p>
                         <p><strong>{{ translate('Phone') }}:</strong>
-                            {{ $supportTicket->customer->phone ?? translate('Not Available') }}
+                            <span class="bidi-ltr">{{ $supportTicket->customer->phone ?? translate('Not Available') }}</span>
                         </p>
                         @else
                         <p>{{ translate('Customer Not Found') }}</p>
@@ -58,18 +68,18 @@
                         $service = $supportTicket->latestServiceJob?->service;
                         @endphp
                         <p><strong>{{ translate('Service') }}:</strong>
-                            {{ $service ? $service->title : translate('No Service Picked') }}
+                            <span class="bidi-auto">{{ $service ? $service->title : translate('No Service Picked') }}</span>
                         </p>
-                        <p><strong>{{ translate('Ticket ID') }}:</strong> {{ $supportTicket->id }}</p>
+                        <p><strong>{{ translate('Ticket ID') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->id }}</span></p>
                         <p><strong>{{ translate('Subject') }}:</strong>
-                            {{ $supportTicket->subject ?? translate('No Subject') }}
+                            <span class="bidi-auto">{{ $supportTicket->subject ?? translate('No Subject') }}</span>
                         </p>
-                        <p><strong>{{ translate('Priority') }}:</strong> {{ $localizedTicketPriority }}</p>
+                        <p><strong>{{ translate('Priority') }}:</strong> <span class="bidi-auto">{{ $localizedTicketPriority }}</span></p>
                         <p><strong>{{ translate('Status') }}:</strong>
-                            {{ $localizedTicketStatus }}
+                            <span class="bidi-auto">{{ $localizedTicketStatus }}</span>
                         </p>
                         <p><strong>{{ translate('Created At') }}:</strong>
-                            {{ $supportTicket->created_at->format('d M, Y H:i A') }}
+                            <span class="bidi-ltr">{{ $supportTicket->created_at->format('d M, Y H:i A') }}</span>
                         </p>
                     </div>
                 </div>
@@ -246,6 +256,7 @@
                                             <th>{{ translate('Payment Link') }}</th>
                                             <th>{{ translate('Payment Status') }}</th>
                                             <th>{{ translate('Generated At') }}</th>
+                                            <th>{{ translate('Link Expires At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -259,7 +270,21 @@
                                             <td><a href="{{ $invoice->payment_link }}">{{ $invoice->payment_link }}</a></td>
                                             <td>{{ translate($invoice->payment_status) }}</td>
                                             <td>{{ $invoice->generated_at->format('d M, Y H:i A') }}</td>
+                                            <td>{{ $invoice->payment_link_expires_at?->format('d M, Y H:i A') ?? '-' }}</td>
                                             <td class="text-center">
+                                                @if(in_array($invoice->payment_status, ['pending', 'expired'], true))
+                                                <form method="POST"
+                                                    action="{{ route('admin.support-ticket.service.invoice-remind') }}"
+                                                    class="d-inline-block">
+                                                    @csrf
+                                                    <input type="hidden" name="ticket_id" value="{{ $supportTicket->id }}">
+                                                    <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary"
+                                                        title="{{ translate('Send Reminder') }}">
+                                                        <i class="tio-email"></i>
+                                                    </button>
+                                                </form>
+                                                @endif
                                                 <button class="btn btn-sm btn-outline-info view-details"
                                                     data-details='{{ json_encode($invoice) }}' data-bs-toggle="modal"
                                                     data-bs-target="#invoiceDetailsModal">
@@ -645,6 +670,7 @@
     $paymentStatusMap = [
         'pending' => translate('pending'),
         'paid' => translate('paid'),
+        'expired' => translate('expired'),
         'failed' => translate('failed'),
         'refunded' => translate('refunded'),
         'cancelled' => translate('cancelled'),
@@ -811,4 +837,3 @@ document.addEventListener('click', function (e) {
 </script>
 
 @endpush
-

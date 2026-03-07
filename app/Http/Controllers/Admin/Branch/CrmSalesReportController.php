@@ -2,239 +2,363 @@
 
 namespace App\Http\Controllers\Admin\Branch;
 
+use App\Exports\CrmSalesReportExport;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Admin;
+use App\Support\AdminPermissionRegistry;
 use App\Models\Order;
+use App\Services\ReportPdfService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
+use Carbon\CarbonPeriod;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class CrmSalesReportController extends Controller
 {
-    /**
-     * Display CRM sales report view
-     */
-    public function index()
+    public function index(): View
     {
-        // Get sales agents (assuming admin_role_id 3 is for sales agents)
-        $agents = Admin::where('admin_role_id', 3)
-            ->where('status', 1)
+        $agents = Admin::query()
+            ->active()
+            ->withRole(AdminPermissionRegistry::crmAgentRole())
             ->orderBy('name')
-            ->get();
+            ->get(['id', 'name']);
 
-        // Get years for dropdown
-        $currentYear = date('Y');
-        $years = [];
-        for ($y = $currentYear - 5; $y <= $currentYear; $y++) {
-            $years[] = $y;
-        }
-
-        // Get months for dropdown
-        $months = [];
-        for ($m = 1; $m <= 12; $m++) {
-            $months[$m] = Carbon::create()->month($m)->format('F');
-        }
-
-        return view('admin-views.branch-management.crm-sales-report', compact('agents', 'years', 'months'));
+        return view('admin-views.branch-management.crm-sales-report', compact('agents'));
     }
 
-    /**
-     * Get CRM sales data via AJAX
-     */
-    public function getSalesData(Request $request)
+    public function getSalesData(Request $request): JsonResponse
     {
-        Log::info('CRM Sales data request received:', $request->all());
-
         try {
             $validator = Validator::make($request->all(), [
-                'year' => 'required|integer|min:2020|max:' . (date('Y') + 1),
-                'month' => 'nullable|integer|min:1|max:12',
+                'date_type' => 'nullable|in:this_year,this_month,this_week,today,custom_date',
+                'from' => 'nullable|date',
+                'to' => 'nullable|date',
                 'agent_ids' => 'nullable|array',
-                'sale_type' => 'nullable|in:retail,wholesale'
+                'agent_ids.*' => 'integer|exists:admins,id',
+                'sale_type' => 'nullable|in:retail,wholesale',
             ]);
 
             if ($validator->fails()) {
-                Log::error('Validation failed:', $validator->errors()->toArray());
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'message' => translate('validation_failed'),
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
-            $year = $request->year;
-            $month = $request->month;
-            $agentIds = $request->agent_ids ?? [];
-            $saleType = $request->sale_type;
-
-            // Get agents
-            $agentsQuery = Admin::where('admin_role_id', 3)->where('status', 1);
-            if (!empty($agentIds)) {
-                $agentsQuery->whereIn('id', $agentIds);
-            }
-            $agents = $agentsQuery->get();
-
-            // Get sales data
-            $salesData = $this->getAgentSalesData($year, $month, $agents, $saleType);
-
-            // Prepare pivot table data
-            $pivotData = $this->preparePivotData($salesData, $agents, $year, $month);
-
-            // Calculate statistics
-            $statistics = $this->calculateStatistics($salesData, $agents);
-
-            // Prepare chart data
-            $chartData = $this->prepareChartData($pivotData, $agents, $month ? 'daily' : 'monthly');
+            $report = $this->buildReportData($request);
 
             return response()->json([
                 'success' => true,
-                'agents' => $agents,
-                'pivotData' => $pivotData,
-                'chartData' => $chartData,
-                'statistics' => $statistics,
-                'periodType' => $month ? 'daily' : 'monthly'
+                'agents' => $report['agents'],
+                'pivotData' => $report['pivotData'],
+                'chartData' => $report['chartData'],
+                'statistics' => $report['statistics'],
+                'periodType' => $report['periodType'],
+                'filters' => $report['filters'],
             ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error in getSalesData:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+        } catch (\Throwable $exception) {
+            Log::error('CRM sales report load failed', [
+                'message' => $exception->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Server error: ' . $e->getMessage()
+                'message' => translate('failed_to_load_report_data'),
             ], 500);
         }
     }
 
-    /**
-     * Get agent sales data
-     */
-    private function getAgentSalesData($year, $month, $agents, $saleType = null)
+    public function exportExcel(Request $request): BinaryFileResponse
     {
-        $data = [];
+        $data = $this->buildReportData($request);
+        $data['exportedAt'] = now();
+
+        return Excel::download(
+            new CrmSalesReportExport($data),
+            'crm-sales-report.xlsx'
+        );
+    }
+
+    public function exportPdf(Request $request): Response
+    {
+        $data = $this->buildReportData($request);
+        $data['exportedAt'] = now();
+
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.branch-management.crm-sales-report-pdf',
+            data: $data,
+            fileName: 'crm-sales-report.pdf',
+            orientation: 'landscape'
+        );
+    }
+
+    private function buildReportData(Request $request): array
+    {
+        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
+        $saleType = strtolower((string)$request->input('sale_type', ''));
+        $agentIds = collect($request->input('agent_ids', []))
+            ->map(fn($value) => (int)$value)
+            ->filter(fn($value) => $value > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $agentsQuery = Admin::query()
+            ->active()
+            ->withRole(AdminPermissionRegistry::crmAgentRole())
+            ->orderBy('name');
+
+        if (!empty($agentIds)) {
+            $agentsQuery->whereIn('id', $agentIds);
+        }
+
+        $agents = $agentsQuery->get(['id', 'name']);
+        $periodType = $this->resolvePeriodType($fromDate, $toDate);
+        $salesData = $this->getAgentSalesData($fromDate, $toDate, $agents, $saleType);
+        $pivotData = $this->preparePivotData($salesData, $agents, $fromDate, $toDate, $periodType);
+
+        return [
+            'agents' => $agents,
+            'pivotData' => $pivotData,
+            'chartData' => $this->prepareChartData($pivotData),
+            'statistics' => $this->calculateStatistics($pivotData, $agents),
+            'periodType' => $periodType,
+            'filters' => [
+                'date_type' => $dateType,
+                'from' => $fromDate->toDateString(),
+                'to' => $toDate->toDateString(),
+                'sale_type' => $saleType,
+                'agent_ids' => $agentIds,
+            ],
+        ];
+    }
+
+    private function resolveDateRange(Request $request): array
+    {
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
+
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+
+            case 'custom_date':
+                try {
+                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                } catch (\Throwable) {
+                    $fromDate = now()->subDays(29)->startOfDay();
+                }
+
+                try {
+                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfDay();
+                }
+                break;
+
+            case 'this_year':
+            default:
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                $dateType = 'this_year';
+                break;
+        }
+
+        if ($fromDate->gt($toDate)) {
+            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+        }
+
+        return [$fromDate, $toDate, $dateType];
+    }
+
+    private function resolvePeriodType(Carbon $fromDate, Carbon $toDate): string
+    {
+        $daysDifference = $fromDate->diffInDays($toDate);
+
+        if ($daysDifference > 60) {
+            return 'month';
+        }
+
+        if ($daysDifference <= 7) {
+            return 'weekday';
+        }
+
+        if ($daysDifference <= 31) {
+            return 'day';
+        }
+
+        return 'date';
+    }
+
+    private function getAgentSalesData(Carbon $fromDate, Carbon $toDate, Collection $agents, string $saleType = ''): array
+    {
+        if ($agents->isEmpty()) {
+            return [];
+        }
+
         $orderDetailsQtySub = DB::table('order_details')
             ->select('order_id', DB::raw('SUM(qty) as order_total_qty'))
             ->groupBy('order_id');
 
+        $data = [];
+
         foreach ($agents as $agent) {
-            // Build query for this agent
-            $query = Order::where('sales_agent_id', $agent->id)
-                ->whereYear('created_at', $year)
-                ->where('order_status', 'delivered');
+            $query = Order::query()
+                ->from('orders')
+                ->where('sales_agent_id', (int)$agent->id)
+                ->where('order_status', 'delivered')
+                ->whereBetween('orders.created_at', [$fromDate, $toDate]);
 
-            if ($month) {
-                $query->whereMonth('created_at', $month);
+            if ($saleType === 'wholesale') {
+                $query->where(function ($subQuery) {
+                    $subQuery->where('order_amount', '>=', 10000)
+                        ->orWhereHas('details.product', function ($builder) {
+                            $builder->where('minimum_order_qty', '>=', 10);
+                        });
+                });
+            } elseif ($saleType === 'retail') {
+                $query->where(function ($subQuery) {
+                    $subQuery->where('order_amount', '<', 10000)
+                        ->whereHas('details.product', function ($builder) {
+                            $builder->where('minimum_order_qty', '<', 10);
+                        });
+                });
             }
 
-            if ($saleType) {
-                if ($saleType === 'wholesale') {
-                    $query->where(function ($subQuery) {
-                        $subQuery->where('order_amount', '>=', 10000)
-                            ->orWhereHas('details.product', function ($q) {
-                                $q->where('minimum_order_qty', '>=', 10);
-                            });
-                    });
-                } else {
-                    $query->where(function ($subQuery) {
-                        $subQuery->where('order_amount', '<', 10000)
-                            ->whereHas('details.product', function ($q) {
-                                $q->where('minimum_order_qty', '<', 10);
-                            });
-                    });
-                }
-            }
+            $results = $query
+                ->leftJoinSub($orderDetailsQtySub, 'order_detail_totals', function ($join) {
+                    $join->on('order_detail_totals.order_id', '=', 'orders.id');
+                })
+                ->select(
+                    DB::raw('DATE(orders.created_at) as report_date'),
+                    DB::raw('SUM(orders.order_amount) as total_sales'),
+                    DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                    DB::raw('SUM(COALESCE(order_detail_totals.order_total_qty, 0)) as total_quantity'),
+                    DB::raw('CASE WHEN orders.order_amount >= 10000 THEN "wholesale" ELSE "retail" END as sale_type')
+                )
+                ->groupBy(DB::raw('DATE(orders.created_at)'), DB::raw('sale_type'))
+                ->orderBy('report_date')
+                ->get();
 
-            // Group by period
-            if ($month) {
-                $results = $query
-                    ->leftJoinSub($orderDetailsQtySub, 'order_detail_totals', function ($join) {
-                        $join->on('order_detail_totals.order_id', '=', 'orders.id');
-                    })
-                    ->select(
-                        DB::raw('DAY(orders.created_at) as period'),
-                        DB::raw('SUM(orders.order_amount) as total_sales'),
-                        DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
-                        DB::raw('SUM(COALESCE(order_detail_totals.order_total_qty, 0)) as total_quantity'),
-                        DB::raw('CASE
-                            WHEN orders.order_amount >= 10000 THEN "wholesale"
-                            ELSE "retail"
-                        END as sale_type')
-                    )
-                    ->groupBy('period', DB::raw('sale_type'))
-                    ->orderBy('period')
-                    ->get();
-            } else {
-                $results = $query
-                    ->leftJoinSub($orderDetailsQtySub, 'order_detail_totals', function ($join) {
-                        $join->on('order_detail_totals.order_id', '=', 'orders.id');
-                    })
-                    ->select(
-                        DB::raw('MONTH(orders.created_at) as period'),
-                        DB::raw('SUM(orders.order_amount) as total_sales'),
-                        DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
-                        DB::raw('SUM(COALESCE(order_detail_totals.order_total_qty, 0)) as total_quantity'),
-                        DB::raw('CASE
-                            WHEN orders.order_amount >= 10000 THEN "wholesale"
-                            ELSE "retail"
-                        END as sale_type')
-                    )
-                    ->groupBy('period', DB::raw('sale_type'))
-                    ->orderBy('period')
-                    ->get();
-            }
-
-            // Process results
             $agentData = [
-                'id' => $agent->id,
-                'name' => $agent->name,
-                'period_data' => []
+                'id' => (int)$agent->id,
+                'name' => (string)$agent->name,
+                'period_data' => [],
             ];
 
             foreach ($results as $row) {
-                $agentData['period_data'][$row->period][$row->sale_type] = [
-                    'sales' => $row->total_sales,
-                    'orders' => $row->total_orders,
-                    'quantity' => $row->total_quantity
+                $periodKey = Carbon::parse((string)$row->report_date)->format('Y-m-d');
+                $typeKey = strtolower((string)$row->sale_type) === 'wholesale' ? 'wholesale' : 'retail';
+                $agentData['period_data'][$periodKey][$typeKey] = [
+                    'sales' => (float)$row->total_sales,
+                    'orders' => (int)$row->total_orders,
+                    'quantity' => (int)$row->total_quantity,
                 ];
             }
 
-            $data[$agent->id] = $agentData;
+            $data[(int)$agent->id] = $agentData;
         }
 
         return $data;
     }
 
-    /**
-     * Prepare pivot table data
-     */
-    private function preparePivotData($salesData, $agents, $year, $month)
+    private function buildPeriodBuckets(Carbon $fromDate, Carbon $toDate, string $periodType): array
     {
-        $pivotData = [];
+        $buckets = [];
 
-        // Determine periods
-        if ($month) {
-            // Daily view
-            $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
-            $periods = range(1, $daysInMonth);
-        } else {
-            // Monthly view
-            $periods = range(1, 12);
-        }
-
-        // Initialize pivot data structure
-        foreach ($periods as $period) {
-            if ($month) {
-                $periodLabel = sprintf('%02d', $period);
-            } else {
-                $periodLabel = Carbon::create($year, $period, 1)->format('M');
+        if ($periodType === 'month') {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfMonth(), '1 month', $toDate->copy()->endOfMonth());
+            foreach ($period as $date) {
+                $buckets[] = [
+                    'key' => $date->format('Y-m'),
+                    'label' => $date->locale(app()->getLocale())->translatedFormat('M'),
+                ];
             }
 
-            $pivotData[$period] = [
-                'period' => $periodLabel,
+            return $buckets;
+        }
+
+        $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay());
+        foreach ($period as $date) {
+            $buckets[] = [
+                'key' => $date->format('Y-m-d'),
+                'label' => match ($periodType) {
+                    'weekday' => $date->locale(app()->getLocale())->translatedFormat('l'),
+                    'day' => $date->format('j'),
+                    default => $date->locale(app()->getLocale())->translatedFormat('j M'),
+                },
+            ];
+        }
+
+        return $buckets;
+    }
+
+    private function extractAgentPeriodValues(array $dailyData, string $periodKey, string $periodType): array
+    {
+        $retail = ['sales' => 0, 'orders' => 0, 'quantity' => 0];
+        $wholesale = ['sales' => 0, 'orders' => 0, 'quantity' => 0];
+
+        if ($periodType === 'month') {
+            foreach ($dailyData as $dateKey => $types) {
+                if (!str_starts_with((string)$dateKey, $periodKey)) {
+                    continue;
+                }
+
+                $retail['sales'] += (float)data_get($types, 'retail.sales', 0);
+                $retail['orders'] += (int)data_get($types, 'retail.orders', 0);
+                $retail['quantity'] += (int)data_get($types, 'retail.quantity', 0);
+
+                $wholesale['sales'] += (float)data_get($types, 'wholesale.sales', 0);
+                $wholesale['orders'] += (int)data_get($types, 'wholesale.orders', 0);
+                $wholesale['quantity'] += (int)data_get($types, 'wholesale.quantity', 0);
+            }
+
+            return ['retail' => $retail, 'wholesale' => $wholesale];
+        }
+
+        $types = $dailyData[$periodKey] ?? [];
+        $retail['sales'] = (float)data_get($types, 'retail.sales', 0);
+        $retail['orders'] = (int)data_get($types, 'retail.orders', 0);
+        $retail['quantity'] = (int)data_get($types, 'retail.quantity', 0);
+
+        $wholesale['sales'] = (float)data_get($types, 'wholesale.sales', 0);
+        $wholesale['orders'] = (int)data_get($types, 'wholesale.orders', 0);
+        $wholesale['quantity'] = (int)data_get($types, 'wholesale.quantity', 0);
+
+        return ['retail' => $retail, 'wholesale' => $wholesale];
+    }
+
+    private function preparePivotData(array $salesData, Collection $agents, Carbon $fromDate, Carbon $toDate, string $periodType): array
+    {
+        $pivotData = [];
+        $periodBuckets = $this->buildPeriodBuckets($fromDate, $toDate, $periodType);
+
+        foreach ($periodBuckets as $bucket) {
+            $periodKey = (string)$bucket['key'];
+            $pivotData[$periodKey] = [
+                'period' => (string)$bucket['label'],
                 'agents' => [],
                 'totals' => [
                     'retail_sales' => 0,
@@ -245,17 +369,17 @@ class CrmSalesReportController extends Controller
                     'wholesale_quantity' => 0,
                     'total_sales' => 0,
                     'total_orders' => 0,
-                    'total_quantity' => 0
-                ]
+                    'total_quantity' => 0,
+                ],
             ];
 
             foreach ($agents as $agent) {
-                $agentData = $salesData[$agent->id]['period_data'][$period] ?? [];
+                $dailyData = data_get($salesData, (int)$agent->id . '.period_data', []);
+                $metrics = $this->extractAgentPeriodValues($dailyData, $periodKey, $periodType);
+                $retail = $metrics['retail'];
+                $wholesale = $metrics['wholesale'];
 
-                $retail = $agentData['retail'] ?? ['sales' => 0, 'orders' => 0, 'quantity' => 0];
-                $wholesale = $agentData['wholesale'] ?? ['sales' => 0, 'orders' => 0, 'quantity' => 0];
-
-                $pivotData[$period]['agents'][$agent->id] = [
+                $pivotData[$periodKey]['agents'][(int)$agent->id] = [
                     'retail_sales' => $retail['sales'],
                     'wholesale_sales' => $wholesale['sales'],
                     'retail_orders' => $retail['orders'],
@@ -264,76 +388,62 @@ class CrmSalesReportController extends Controller
                     'wholesale_quantity' => $wholesale['quantity'],
                     'total_sales' => $retail['sales'] + $wholesale['sales'],
                     'total_orders' => $retail['orders'] + $wholesale['orders'],
-                    'total_quantity' => $retail['quantity'] + $wholesale['quantity']
+                    'total_quantity' => $retail['quantity'] + $wholesale['quantity'],
                 ];
 
-                // Update totals
-                $pivotData[$period]['totals']['retail_sales'] += $retail['sales'];
-                $pivotData[$period]['totals']['wholesale_sales'] += $wholesale['sales'];
-                $pivotData[$period]['totals']['retail_orders'] += $retail['orders'];
-                $pivotData[$period]['totals']['wholesale_orders'] += $wholesale['orders'];
-                $pivotData[$period]['totals']['retail_quantity'] += $retail['quantity'];
-                $pivotData[$period]['totals']['wholesale_quantity'] += $wholesale['quantity'];
-                $pivotData[$period]['totals']['total_sales'] += $retail['sales'] + $wholesale['sales'];
-                $pivotData[$period]['totals']['total_orders'] += $retail['orders'] + $wholesale['orders'];
-                $pivotData[$period]['totals']['total_quantity'] += $retail['quantity'] + $wholesale['quantity'];
+                $pivotData[$periodKey]['totals']['retail_sales'] += $retail['sales'];
+                $pivotData[$periodKey]['totals']['wholesale_sales'] += $wholesale['sales'];
+                $pivotData[$periodKey]['totals']['retail_orders'] += $retail['orders'];
+                $pivotData[$periodKey]['totals']['wholesale_orders'] += $wholesale['orders'];
+                $pivotData[$periodKey]['totals']['retail_quantity'] += $retail['quantity'];
+                $pivotData[$periodKey]['totals']['wholesale_quantity'] += $wholesale['quantity'];
+                $pivotData[$periodKey]['totals']['total_sales'] += $retail['sales'] + $wholesale['sales'];
+                $pivotData[$periodKey]['totals']['total_orders'] += $retail['orders'] + $wholesale['orders'];
+                $pivotData[$periodKey]['totals']['total_quantity'] += $retail['quantity'] + $wholesale['quantity'];
             }
         }
 
         return $pivotData;
     }
 
-    /**
-     * Prepare chart data
-     */
-    private function prepareChartData($pivotData, $agents, $periodType)
+    private function prepareChartData(array $pivotData): array
     {
-        $data = [
-            'labels' => [],
-            'datasets' => []
-        ];
-
-        // Extract labels
-        foreach ($pivotData as $period) {
-            $data['labels'][] = $period['period'];
-        }
-
-        // Prepare retail dataset
+        $labels = [];
         $retailData = [];
         $wholesaleData = [];
 
         foreach ($pivotData as $period) {
-            $retailData[] = $period['totals']['retail_sales'];
-            $wholesaleData[] = $period['totals']['wholesale_sales'];
+            $labels[] = (string)data_get($period, 'period', '');
+            $retailData[] = (float)data_get($period, 'totals.retail_sales', 0);
+            $wholesaleData[] = (float)data_get($period, 'totals.wholesale_sales', 0);
         }
 
-        $data['datasets'][] = [
-            'label' => 'Retail Sales',
-            'data' => $retailData,
-            'borderColor' => '#3498db',
-            'backgroundColor' => '#3498db80',
-            'borderWidth' => 4,
-            'tension' => 0.3,
-            'fill' => true
+        return [
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => translate('retail_sales'),
+                    'data' => $retailData,
+                    'borderColor' => '#3498db',
+                    'backgroundColor' => '#3498db80',
+                    'borderWidth' => 4,
+                    'tension' => 0.3,
+                    'fill' => true,
+                ],
+                [
+                    'label' => translate('wholesale_sales'),
+                    'data' => $wholesaleData,
+                    'borderColor' => '#2ecc71',
+                    'backgroundColor' => '#2ecc7180',
+                    'borderWidth' => 4,
+                    'tension' => 0.3,
+                    'fill' => true,
+                ],
+            ],
         ];
-
-        $data['datasets'][] = [
-            'label' => 'Wholesale Sales',
-            'data' => $wholesaleData,
-            'borderColor' => '#2ecc71',
-            'backgroundColor' => '#2ecc7180',
-            'borderWidth' => 4,
-            'tension' => 0.3,
-            'fill' => true
-        ];
-
-        return $data;
     }
 
-    /**
-     * Calculate statistics
-     */
-    private function calculateStatistics($salesData, $agents)
+    private function calculateStatistics(array $pivotData, Collection $agents): array
     {
         $stats = [
             'total_sales' => 0,
@@ -343,46 +453,42 @@ class CrmSalesReportController extends Controller
             'wholesale_sales' => 0,
             'top_agent' => null,
             'retail_percentage' => 0,
-            'wholesale_percentage' => 0
+            'wholesale_percentage' => 0,
         ];
 
         $agentTotals = [];
-
         foreach ($agents as $agent) {
-            if (isset($salesData[$agent->id])) {
-                $agentTotal = [
-                    'retail_sales' => 0,
-                    'wholesale_sales' => 0,
-                    'total_sales' => 0
-                ];
+            $agentTotals[(int)$agent->id] = [
+                'name' => (string)$agent->name,
+                'total' => 0,
+            ];
+        }
 
-                foreach ($salesData[$agent->id]['period_data'] as $periodData) {
-                    $agentTotal['retail_sales'] += $periodData['retail']['sales'] ?? 0;
-                    $agentTotal['wholesale_sales'] += $periodData['wholesale']['sales'] ?? 0;
-                    $agentTotal['total_sales'] += ($periodData['retail']['sales'] ?? 0) + ($periodData['wholesale']['sales'] ?? 0);
+        foreach ($pivotData as $period) {
+            $stats['total_sales'] += (float)data_get($period, 'totals.total_sales', 0);
+            $stats['total_orders'] += (int)data_get($period, 'totals.total_orders', 0);
+            $stats['total_quantity'] += (int)data_get($period, 'totals.total_quantity', 0);
+            $stats['retail_sales'] += (float)data_get($period, 'totals.retail_sales', 0);
+            $stats['wholesale_sales'] += (float)data_get($period, 'totals.wholesale_sales', 0);
+
+            foreach ((array)data_get($period, 'agents', []) as $agentId => $agentRow) {
+                if (!isset($agentTotals[(int)$agentId])) {
+                    continue;
                 }
-
-                $agentTotals[$agent->id] = [
-                    'name' => $agent->name,
-                    'total' => $agentTotal['total_sales']
-                ];
-
-                $stats['total_sales'] += $agentTotal['total_sales'];
-                $stats['retail_sales'] += $agentTotal['retail_sales'];
-                $stats['wholesale_sales'] += $agentTotal['wholesale_sales'];
+                $agentTotals[(int)$agentId]['total'] += (float)data_get($agentRow, 'total_sales', 0);
             }
         }
 
-        // Find top agent
         if (!empty($agentTotals)) {
             $topAgent = collect($agentTotals)->sortByDesc('total')->first();
-            $stats['top_agent'] = $topAgent['name'] . ' (' . setCurrencySymbol(
-                amount: usdToDefaultCurrency(amount: $topAgent['total']),
-                currencyCode: getCurrencyCode()
-            ) . ')';
+            if (($topAgent['total'] ?? 0) > 0) {
+                $stats['top_agent'] = $topAgent['name'] . ' (' . setCurrencySymbol(
+                    amount: usdToDefaultCurrency(amount: (float)$topAgent['total']),
+                    currencyCode: getCurrencyCode()
+                ) . ')';
+            }
         }
 
-        // Calculate percentages
         if ($stats['total_sales'] > 0) {
             $stats['retail_percentage'] = round(($stats['retail_sales'] / $stats['total_sales']) * 100, 2);
             $stats['wholesale_percentage'] = round(($stats['wholesale_sales'] / $stats['total_sales']) * 100, 2);

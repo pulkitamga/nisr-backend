@@ -7,7 +7,7 @@ use App\Exports\CrmAgentSalesMatrixReportExport;
 use App\Http\Controllers\BaseController;
 use App\Models\Admin;
 use App\Models\Departments;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportPdfService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Contracts\View\View;
@@ -48,15 +48,18 @@ class CrmAgentSalesMatrixReportController extends BaseController
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        $pdf = Pdf::loadView(CrmAgentSalesMatrixReport::EXPORT_PDF[VIEW], $data)
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->download('crm-agent-sales-matrix-report.pdf');
+        return app(ReportPdfService::class)->download(
+            view: CrmAgentSalesMatrixReport::EXPORT_PDF[VIEW],
+            data: $data,
+            fileName: 'crm-agent-sales-matrix-report.pdf',
+            orientation: 'landscape'
+        );
     }
 
     private function buildReportData(Request $request): array
     {
-        [$fromDate, $toDate] = $this->resolveDateRange($request);
+        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
+        $periodStrategy = $this->resolvePeriodStrategy($fromDate, $toDate);
 
         $departmentIds = $this->normalizeMultiIds($request->input('department_ids', $request->input('department_id', [])));
         $employeeIds = $this->normalizeMultiIds($request->input('employee_ids', $request->input('employee_id', [])));
@@ -73,7 +76,7 @@ class CrmAgentSalesMatrixReportController extends BaseController
             ->orderBy('name')
             ->get();
 
-        $rows = $this->getMonthlyEmployeeRows(
+        $rows = $this->getEmployeeRows(
             fromDate: $fromDate,
             toDate: $toDate,
             departmentIds: $departmentIds,
@@ -81,11 +84,12 @@ class CrmAgentSalesMatrixReportController extends BaseController
         );
 
         $employeeListForMatrix = $this->resolveEmployeeListForMatrix($rows, $employees, $employeeIds);
-        $monthlyRows = $this->buildMonthlyMatrix(
+        $monthlyRows = $this->buildPeriodMatrix(
             rows: $rows,
             fromDate: $fromDate,
             toDate: $toDate,
-            employeesForMatrix: $employeeListForMatrix
+            employeesForMatrix: $employeeListForMatrix,
+            periodStrategy: $periodStrategy
         );
 
         $summary = $this->buildSummary($monthlyRows, $employeeListForMatrix);
@@ -95,11 +99,12 @@ class CrmAgentSalesMatrixReportController extends BaseController
             'employees' => $employees,
             'employeesForMatrix' => $employeeListForMatrix,
             'filters' => [
-                'date_range' => $request->input('date_range', 'this_year'),
+                'date_type' => $dateType,
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
+                'period_type' => $periodStrategy['type'],
             ],
             'monthlyRows' => $monthlyRows,
             'summary' => $summary,
@@ -108,80 +113,56 @@ class CrmAgentSalesMatrixReportController extends BaseController
 
     private function resolveDateRange(Request $request): array
     {
-        $range = $request->input('date_range', 'this_year');
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
 
-        switch ($range) {
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
 
             case 'today':
                 $fromDate = now()->startOfDay();
                 $toDate = now()->endOfDay();
                 break;
 
-            case 'this_week':
-                $fromDate = now()->startOfWeek();
-                $toDate = now()->endOfWeek();
-                break;
+            case 'custom_date':
+                try {
+                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                } catch (\Throwable) {
+                    $fromDate = now()->subDays(29)->startOfDay();
+                }
 
-            case 'this_month':
-                $fromDate = now()->startOfMonth();
-                $toDate = now()->endOfMonth();
+                try {
+                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfDay();
+                }
                 break;
 
             case 'this_year':
-                $fromDate = now()->startOfYear();
-                $toDate = now()->endOfYear();
-                break;
-
-            case 'custom':
-                try {
-                    $fromDate = Carbon::parse($request->input('from'))->startOfDay();
-                } catch (\Throwable) {
-                    $fromDate = now()->startOfMonth()->startOfDay();
-                }
-
-                try {
-                    $toDate = Carbon::parse($request->input('to'))->endOfDay();
-                } catch (\Throwable) {
-                    $toDate = now()->endOfMonth()->endOfDay();
-                }
-                break;
-
             default:
-                $fromDate = now()->startOfYear();
-                $toDate = now()->endOfYear();
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                $dateType = 'this_year';
+                break;
         }
 
         if ($fromDate->gt($toDate)) {
             [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
         }
 
-        return [$fromDate, $toDate];
+        return [$fromDate, $toDate, $dateType];
     }
-    // private function resolveDateRange(Request $request): array
-    // {
-    //     $from = $request->input('from');
-    //     $to = $request->input('to');
 
-    //     try {
-    //         $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->startOfYear()->startOfDay();
-    //     } catch (\Throwable) {
-    //         $fromDate = now()->startOfYear()->startOfDay();
-    //     }
-
-    //     try {
-    //         $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfYear()->endOfDay();
-    //     } catch (\Throwable) {
-    //         $toDate = now()->endOfYear()->endOfDay();
-    //     }
-
-    //     if ($fromDate->gt($toDate)) {
-    //         [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
-    //     }
-
-    //     return [$fromDate, $toDate];
-    // }
-
-    private function getMonthlyEmployeeRows(
+    private function getEmployeeRows(
         Carbon $fromDate,
         Carbon $toDate,
         array $departmentIds = [],
@@ -208,7 +189,7 @@ class CrmAgentSalesMatrixReportController extends BaseController
             ->when(!empty($departmentIds), fn($query) => $query->whereIn('deals.department_id', $departmentIds))
             ->when(!empty($employeeIds), fn($query) => $query->whereIn('deals.employee_id', $employeeIds))
             ->select([
-                DB::raw("DATE_FORMAT(deals.created_at, '%Y-%m-01') as report_month"),
+                DB::raw('DATE(deals.created_at) as report_date'),
                 DB::raw('COALESCE(deals.employee_id, 0) as employee_id'),
                 DB::raw("MAX(COALESCE(admins.name, '')) as employee_name"),
                 DB::raw("SUM(CASE WHEN deals.related_party_type = '" . self::RETAIL_PARTY_TYPE . "' THEN COALESCE(odq.total_qty, 0) ELSE 0 END) as retail_batteries"),
@@ -216,13 +197,13 @@ class CrmAgentSalesMatrixReportController extends BaseController
                 DB::raw("SUM(CASE WHEN deals.related_party_type = '" . self::WHOLESALE_PARTY_TYPE . "' THEN COALESCE(wpq.total_qty, 0) ELSE 0 END) as wholesale_batteries"),
                 DB::raw("COUNT(DISTINCT CASE WHEN deals.related_party_type = '" . self::WHOLESALE_PARTY_TYPE . "' THEN deals.related_party_id END) as wholesale_customers"),
             ])
-            ->groupBy(DB::raw("DATE_FORMAT(deals.created_at, '%Y-%m-01')"), DB::raw('COALESCE(deals.employee_id, 0)'))
-            ->orderBy('report_month')
+            ->groupBy(DB::raw('DATE(deals.created_at)'), DB::raw('COALESCE(deals.employee_id, 0)'))
+            ->orderBy('report_date')
             ->orderBy('employee_name')
             ->get();
 
         return collect($rows)->map(function ($row) {
-            $row->report_month = (string)$row->report_month;
+            $row->report_date = (string)$row->report_date;
             $row->employee_id = (int)$row->employee_id;
             $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
             $row->retail_batteries = (int)$row->retail_batteries;
@@ -267,21 +248,33 @@ class CrmAgentSalesMatrixReportController extends BaseController
         return $fromRows->sortBy('name')->values();
     }
 
-    private function buildMonthlyMatrix(
+    private function buildPeriodMatrix(
         Collection $rows,
         Carbon $fromDate,
         Carbon $toDate,
-        Collection $employeesForMatrix
+        Collection $employeesForMatrix,
+        array $periodStrategy
     ): Collection {
-        $rowsByMonth = $rows
-            ->groupBy('report_month')
-            ->map(fn(Collection $monthRows) => $monthRows->keyBy('employee_id'));
+        $rowsByPeriod = $rows
+            ->groupBy(fn($row) => $this->resolvePeriodKey(Carbon::parse((string)$row->report_date), $periodStrategy))
+            ->map(function (Collection $periodRows) {
+                return $periodRows
+                    ->groupBy('employee_id')
+                    ->map(function (Collection $employeeRows) {
+                        return (object)[
+                            'retail_batteries' => (int)$employeeRows->sum('retail_batteries'),
+                            'retail_customers' => (int)$employeeRows->sum('retail_customers'),
+                            'wholesale_batteries' => (int)$employeeRows->sum('wholesale_batteries'),
+                            'wholesale_customers' => (int)$employeeRows->sum('wholesale_customers'),
+                        ];
+                    });
+            });
 
         $months = [];
-        $period = CarbonPeriod::create($fromDate->copy()->startOfMonth(), '1 month', $toDate->copy()->startOfMonth());
-        foreach ($period as $monthDate) {
-            $monthKey = $monthDate->format('Y-m-01');
-            $monthLabel = $monthDate->locale(app()->getLocale())->translatedFormat('M Y');
+        $periodSequence = $this->buildPeriodSequence($fromDate, $toDate, $periodStrategy);
+        foreach ($periodSequence as $periodEntry) {
+            $monthKey = (string)$periodEntry['key'];
+            $monthLabel = (string)$periodEntry['label'];
 
             $monthEmployeeRows = [];
             $monthTotals = [
@@ -294,7 +287,7 @@ class CrmAgentSalesMatrixReportController extends BaseController
             ];
 
             foreach ($employeesForMatrix as $employee) {
-                $source = $rowsByMonth->get($monthKey)?->get($employee->id);
+                $source = $rowsByPeriod->get($monthKey)?->get((int)$employee->id);
                 $retailBatteries = (int)($source->retail_batteries ?? 0);
                 $retailCustomers = (int)($source->retail_customers ?? 0);
                 $wholesaleBatteries = (int)($source->wholesale_batteries ?? 0);
@@ -326,6 +319,70 @@ class CrmAgentSalesMatrixReportController extends BaseController
         }
 
         return collect($months);
+    }
+
+    private function resolvePeriodStrategy(Carbon $fromDate, Carbon $toDate): array
+    {
+        $daysDifference = $fromDate->diffInDays($toDate);
+
+        if ($daysDifference > 60) {
+            return ['type' => 'month'];
+        }
+
+        if ($daysDifference <= 7) {
+            return ['type' => 'weekday'];
+        }
+
+        if ($daysDifference <= 31) {
+            return ['type' => 'day'];
+        }
+
+        return ['type' => 'date'];
+    }
+
+    private function buildPeriodSequence(Carbon $fromDate, Carbon $toDate, array $periodStrategy): array
+    {
+        $periodType = (string)($periodStrategy['type'] ?? 'date');
+        $sequence = [];
+
+        if ($periodType === 'month') {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfMonth(), '1 month', $toDate->copy()->startOfMonth());
+            foreach ($period as $date) {
+                $sequence[] = [
+                    'key' => $date->format('Y-m'),
+                    'label' => $date->locale(app()->getLocale())->translatedFormat('M'),
+                ];
+            }
+
+            return $sequence;
+        }
+
+        $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->startOfDay());
+        foreach ($period as $date) {
+            $sequence[] = [
+                'key' => $date->format('Y-m-d'),
+                'label' => $this->resolvePeriodLabel($date, $periodType),
+            ];
+        }
+
+        return $sequence;
+    }
+
+    private function resolvePeriodKey(Carbon $date, array $periodStrategy): string
+    {
+        return (string)match ((string)($periodStrategy['type'] ?? 'date')) {
+            'month' => $date->format('Y-m'),
+            default => $date->format('Y-m-d'),
+        };
+    }
+
+    private function resolvePeriodLabel(Carbon $date, string $periodType): string
+    {
+        return match ($periodType) {
+            'weekday' => $date->locale(app()->getLocale())->translatedFormat('l'),
+            'day' => $date->format('j'),
+            default => $date->locale(app()->getLocale())->translatedFormat('j M'),
+        };
     }
 
     private function buildSummary(Collection $monthlyRows, Collection $employeesForMatrix): array

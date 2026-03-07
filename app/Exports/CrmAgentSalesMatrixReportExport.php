@@ -19,7 +19,7 @@ class CrmAgentSalesMatrixReportExport implements WithMultipleSheets
         $grand = data_get($this->data, 'summary.grand', []);
         $unassignedLabel = translate('unassigned');
 
-        $matrixHeadings = [translate('month')];
+        $matrixHeadings = [translate('period')];
         foreach ($employees as $employee) {
             $name = (string)($employee->name ?? $unassignedLabel);
             $matrixHeadings[] = $name . ' - ' . translate('retail_batteries');

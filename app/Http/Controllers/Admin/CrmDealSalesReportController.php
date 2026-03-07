@@ -7,7 +7,7 @@ use App\Exports\CrmDealSalesReportExport;
 use App\Http\Controllers\BaseController;
 use App\Models\Admin;
 use App\Models\Departments;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportPdfService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -39,31 +39,22 @@ class CrmDealSalesReportController extends BaseController
         );
     }
 
-    private function chartImage($config)
-    {
-        $url = "https://quickchart.io/chart?width=600&height=300&c=" . urlencode(json_encode($config));
-
-        try {
-            $image = file_get_contents($url);
-            return 'data:image/png;base64,' . base64_encode($image);
-        } catch (\Exception $e) {
-            return null;
-        }
-    }
     public function exportPdf(Request $request): Response
     {
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        $pdf = Pdf::loadView(CrmDealSalesReport::EXPORT_PDF[VIEW], $data)
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->download('crm-sales-performance-report.pdf');
+        return app(ReportPdfService::class)->download(
+            view: CrmDealSalesReport::EXPORT_PDF[VIEW],
+            data: $data,
+            fileName: 'crm-sales-performance-report.pdf',
+            orientation: 'landscape'
+        );
     }
 
     private function buildReportData(Request $request): array
     {
-        [$fromDate, $toDate] = $this->resolveDateRange($request);
+        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
 
         $departmentIds = $this->normalizeMultiIds($request->input('department_ids', $request->input('department_id', [])));
         $employeeIds = $this->normalizeMultiIds($request->input('employee_ids', $request->input('employee_id', [])));
@@ -104,77 +95,16 @@ class CrmDealSalesReportController extends BaseController
 
         $chartRows = $rows->sortByDesc('total_deals')->take(12)->values();
 
-        if ($fromDate->isSameMonth($toDate)) {
-            $periodLabel = $fromDate->format('M Y'); // Mar 2026
-        } else {
-            $periodLabel = $fromDate->format('d M Y') . ' - ' . $toDate->format('d M Y');
-        }
-        $employeeChart = $this->chartImage([
-            "type" => "bar",
-            "data" => [
-                "labels" => $chartRows->pluck('employee_name')->all(),
-                "datasets" => [
-                    [
-                        "label" => "Won",
-                        "backgroundColor" => "#22c55e",
-                        "data" => $chartRows->pluck('won_count')->all()
-                    ],
-                    [
-                        "label" => "Lost",
-                        "backgroundColor" => "#ef4444",
-                        "data" => $chartRows->pluck('lost_count')->all()
-                    ]
-                ]
-            ]
-        ]);
-
-        $statusChart = $this->chartImage([
-            "type" => "pie",
-            "data" => [
-                "labels" => ['Won', 'Lost'],
-                "datasets" => [[
-                    "backgroundColor" => ["#22c55e", "#ef4444"],
-                    "data" => [$summary['won_count'], $summary['lost_count']]
-                ]]
-            ]
-        ]);
-        $retailWholesaleChart = $this->chartImage([
-            "type" => "bar",
-            "data" => [
-                "labels" => $chartRows->pluck('employee_name')->all(),
-                "datasets" => [
-                    [
-                        "label" => "Retail Sales",
-                        "backgroundColor" => "#3b82f6",
-                        "data" => $chartRows->pluck('retail_won_sales')->map(fn($v) => round($v, 2))->all()
-                    ],
-                    [
-                        "label" => "Wholesale Sales",
-                        "backgroundColor" => "#f59e0b",
-                        "data" => $chartRows->pluck('wholesale_won_sales')->map(fn($v) => round($v, 2))->all()
-                    ]
-                ]
-            ],
-            "options" => [
-                "scales" => [
-                    "yAxes" => [[
-                        "ticks" => [
-                            "beginAtZero" => true
-                        ]
-                    ]]
-                ]
-            ]
-        ]);
         return [
             'departments' => $departments,
             'employees' => $employees,
             'filters' => [
+                'date_type' => $dateType,
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
             ],
-            'periodLabel' => $periodLabel,
             'summary' => $summary,
             'departmentSections' => $departmentSections,
             'chart' => [
@@ -188,51 +118,61 @@ class CrmDealSalesReportController extends BaseController
                 'sales_type_labels' => [translate('retail'), translate('wholesale')],
                 'sales_type_values' => [round($summary['retail_won_sales'], 2), round($summary['wholesale_won_sales'], 2)],
             ],
-            'employeeChart' => $employeeChart,
-            'statusChart' => $statusChart,
-            'retailWholesaleChart' => $retailWholesaleChart,
         ];
     }
+
     private function resolveDateRange(Request $request): array
     {
-        $range = $request->input('date_range', 'this_month');
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
 
-        switch ($range) {
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
+                break;
+
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
+                break;
 
             case 'today':
                 $fromDate = now()->startOfDay();
                 $toDate = now()->endOfDay();
                 break;
 
-            case 'this_week':
-                $fromDate = now()->startOfWeek();
-                $toDate = now()->endOfWeek();
-                break;
+            case 'custom_date':
+                try {
+                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                } catch (\Throwable) {
+                    $fromDate = now()->subDays(29)->startOfDay();
+                }
 
-            case 'this_month':
-                $fromDate = now()->startOfMonth();
-                $toDate = now()->endOfMonth();
+                try {
+                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfDay();
+                }
                 break;
 
             case 'this_year':
-                $fromDate = now()->startOfYear();
-                $toDate = now()->endOfYear();
-                break;
-
-            case 'custom':
-                $fromDate = Carbon::parse($request->from)->startOfDay();
-                $toDate = Carbon::parse($request->to)->endOfDay();
-                break;
-
             default:
-                $fromDate = now()->startOfMonth();
-                $toDate = now()->endOfMonth();
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                $dateType = 'this_year';
+                break;
         }
 
-        return [$fromDate, $toDate];
+        if ($fromDate->gt($toDate)) {
+            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
+        }
+
+        return [$fromDate, $toDate, $dateType];
     }
 
-       private function getDealRows(
+    private function getDealRows(
         Carbon $fromDate,
         Carbon $toDate,
         array $departmentIds = [],

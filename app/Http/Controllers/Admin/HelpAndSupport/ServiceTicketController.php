@@ -38,6 +38,8 @@ use App\Support\ServiceTicketWorkflow;
 use Illuminate\Validation\ValidationException;
 class ServiceTicketController extends BaseController
 {
+    private const SERVICE_INVOICE_LINK_EXPIRE_HOURS = 24;
+
     public function __construct(
         private readonly SupportTicketRepositoryInterface $supportTicketRepo,
         private readonly SupportTicketConvRepositoryInterface $supportTicketConvRepo,
@@ -780,6 +782,7 @@ class ServiceTicketController extends BaseController
                         'tax' => $newTax,
                         'total' => $newTotal,
                         'payment_status' => 'pending',
+                        'payment_link_expires_at' => now()->addHours(self::SERVICE_INVOICE_LINK_EXPIRE_HOURS),
                         'generated_at' => now(),
                     ]);
                 } elseif ($invoice->payment_status !== 'paid') {
@@ -787,6 +790,8 @@ class ServiceTicketController extends BaseController
                         'subtotal' => $newSubtotal,
                         'tax' => $newTax,
                         'total' => $newTotal,
+                        'payment_status' => 'pending',
+                        'payment_link_expires_at' => now()->addHours(self::SERVICE_INVOICE_LINK_EXPIRE_HOURS),
                     ]);
                     $invoice->refresh();
                 } else {
@@ -867,6 +872,75 @@ class ServiceTicketController extends BaseController
         Log::info('=== Job Completion Ended ===', ['job_id' => $job->id]);
 
         Toastr::success(translate('job_completed_successfully'));
+        return redirect()->back();
+    }
+
+    public function remindInvoicePayment(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'ticket_id' => 'required|exists:support_tickets,id',
+            'invoice_id' => 'required|exists:service_invoices,id',
+        ]);
+
+        $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
+        if (!$ticket) {
+            Toastr::error(translate('ticket_not_found'));
+            return redirect()->back();
+        }
+
+        $invoice = ServiceInvoice::where('id', $request->invoice_id)
+            ->where('ticket_id', $ticket->id)
+            ->first();
+
+        if (!$invoice) {
+            Toastr::error(translate('Invoice not found or already paid'));
+            return redirect()->back();
+        }
+
+        if ($invoice->payment_status === 'paid') {
+            Toastr::error(translate('Invoice not found or already paid'));
+            return redirect()->back();
+        }
+
+        $paymentLink = $invoice->payment_link ?: route('pay-service-invoice', $invoice->id);
+        $invoice->update([
+            'payment_status' => 'pending',
+            'payment_link' => $paymentLink,
+            'payment_link_expires_at' => now()->addHours(self::SERVICE_INVOICE_LINK_EXPIRE_HOURS),
+        ]);
+        $invoice->refresh();
+
+        $reminderMessage = "Payment reminder for ticket #{$ticket->id}. Pay here: {$invoice->payment_link}";
+        $recipients = array_values(array_filter([
+            $ticket->customer_id ? ['type' => 'customer', 'id' => $ticket->customer_id] : null,
+        ]));
+        if (empty($recipients)) {
+            Toastr::error(translate('Customer Not Found'));
+            return redirect()->back();
+        }
+
+        $this->workflowNotifier->notify(
+            ticket: $ticket->id,
+            eventKey: 'invoice_reminder',
+            title: 'Invoice Payment Reminder',
+            message: $reminderMessage,
+            link: route('admin.support-ticket.service.singleTicket', $ticket->id),
+            recipients: $recipients,
+            templateData: [
+                'amount' => number_format((float)$invoice->total, 2),
+                'payment_link' => $invoice->payment_link,
+            ]
+        );
+
+        if ($invoice->job_id) {
+            $this->logJobActivity(
+                $invoice->job_id,
+                'invoice_reminder',
+                "Invoice payment reminder sent for invoice #{$invoice->id}"
+            );
+        }
+
+        Toastr::success('Invoice payment reminder sent.');
         return redirect()->back();
     }
 

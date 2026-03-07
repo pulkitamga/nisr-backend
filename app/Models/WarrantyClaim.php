@@ -80,6 +80,11 @@ class WarrantyClaim extends Model
     {
         return $this->hasMany(WarrantyClaimCharge::class);
     }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(WarrantyClaimPayment::class, 'warranty_claim_id');
+    }
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class)->withTrashed();

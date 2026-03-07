@@ -164,15 +164,17 @@ class CartController extends BaseController
             actorId: (int)auth('admin')->id()
         );
 
-        $exchangeCharge = $request['exchange_charge'] ?? 0;
-        $installationCharge = $request['installation_charge'] ?? 0;
-
-
-        $exchangeTotel = $exchangeCharge;
-        $installationTotel = $installationCharge;
         $requestedLineKey = trim((string)($request['line_key'] ?? ''));
         $lineKey = $requestedLineKey !== '' ? $requestedLineKey : (string)Str::uuid();
         $quantityForUpdate = max(1, (int)($request['quantity_in_cart'] ?? $request['quantity'] ?? 1));
+        $installationTotel = max(0, (float)$request->input('installation_charge', 0));
+        $exchangeQuantity = max(0, (int)$request->input('exchange_quantity', 0));
+        $exchangeTotel = max(0, (float)$request->input('exchange_charge', 0));
+        if ($quantityForUpdate <= 1 || $exchangeQuantity >= $quantityForUpdate || $exchangeQuantity <= 0) {
+            $exchangeQuantity = 0;
+            $exchangeTotel = 0;
+        }
+
         $matchedCartIndex = null;
         if ($cartId && is_array($cartData) && count($cartData) > 0) {
             foreach ($cartData as $key => $cartItem) {
@@ -239,6 +241,7 @@ class CartController extends BaseController
                 variations: $variations,
                 extra: [
                     'exchange_charge' => $exchangeTotel,
+                    'exchange_quantity' => $exchangeQuantity,
                     'installation_charge' => $installationTotel,
                     'branch_id' => $activeBranchId,
                     'line_key' => $lineKey,
@@ -320,6 +323,7 @@ class CartController extends BaseController
             variations: $variations,
             extra: [
                 'exchange_charge' => $exchangeTotel,
+                'exchange_quantity' => $exchangeQuantity,
                 'installation_charge' => $installationTotel,
                 'branch_id' => $activeBranchId,
                 'line_key' => $lineKey,

@@ -8,6 +8,7 @@ use App\Models\EmailTemplate;
 use App\Models\HelpTopic;
 use App\Models\Product;
 use App\Models\VendorRegistrationReason;
+use App\Support\AdminPermissionRegistry;
 use App\Traits\EmailTemplateTrait;
 use App\Traits\SettingsTrait;
 use App\Traits\UpdateClass;
@@ -82,20 +83,24 @@ class InstallController extends Controller
 
     public function system_settings(Request $request)
     {
-        $legacySuperAdminRoleId = DB::table('admin_roles')
-            ->where('name', 'Master Admin')
-            ->value('id');
-
         DB::table('admins')->insertOrIgnore([
             'name' => $request['admin_name'],
             'email' => $request['admin_email'],
-            'admin_role_id' => $legacySuperAdminRoleId,
             'password' => bcrypt($request['admin_password']),
             'phone' => $request['admin_phone'],
             'status' => 1,
             'created_at' => now(),
             'updated_at' => now()
         ]);
+
+        $installedAdmin = Admin::query()->where('email', $request['admin_email'])->first();
+        if ($installedAdmin && Schema::hasTable('roles')) {
+            \Spatie\Permission\Models\Role::query()->firstOrCreate([
+                'name' => AdminPermissionRegistry::superAdminRole(),
+                'guard_name' => config('permissions_admin.guard', 'admin'),
+            ]);
+            $installedAdmin->syncRoles([AdminPermissionRegistry::superAdminRole()]);
+        }
 
         DB::table('admin_wallets')->insert([
             'admin_id' => 1,

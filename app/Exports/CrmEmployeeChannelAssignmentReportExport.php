@@ -18,7 +18,7 @@ class CrmEmployeeChannelAssignmentReportExport implements WithMultipleSheets
         $summaryPerEmployee = collect(data_get($this->data, 'summary.per_employee', []));
         $grand = data_get($this->data, 'summary.grand', []);
 
-        $matrixHeadings = [translate('month')];
+        $matrixHeadings = [translate('period')];
         foreach ($employees as $employee) {
             $name = (string)($employee->name ?? translate('unassigned'));
             $matrixHeadings[] = $name . ' - ' . translate('retail_customers');

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\TaskManagement;
 
 use App\Contracts\Repositories\DepartmentRepositoryInterface;
-use App\Contracts\Repositories\AdminRoleRepositoryInterface;
 use App\Enums\ViewPaths\Admin\TaskManagement;
 use App\Enums\WebConfigKey;
 use App\Exports\BranchListExport;
@@ -30,7 +29,6 @@ class TaskManagementController extends BaseController
 
     public function __construct(
         private readonly DepartmentRepositoryInterface         $departmentRepo,
-        private readonly AdminRoleRepositoryInterface          $adminRoleRepo,   
     )
     {
     }
@@ -53,7 +51,11 @@ class TaskManagementController extends BaseController
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
             relations: ['users' => function ($query) {
-                $query->where('user_type', 8);
+                $query->active()
+                    ->whereHas('roles.permissions', function ($permissionQuery) {
+                        $permissionQuery->where('permissions.name', 'task_section.read')
+                            ->where('permissions.guard_name', config('permissions_admin.guard', 'admin'));
+                    });
             }],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );

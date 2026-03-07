@@ -5,6 +5,16 @@
 
 @push('css_or_js')
 <style>
+    .bidi-auto {
+        unicode-bidi: plaintext;
+    }
+    .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
+    }
+
     .modal {
         display: none;
         position: fixed;
@@ -157,6 +167,7 @@
 @endpush
 
 @section('content')
+@php($isRtl = Session::get('direction') === 'rtl')
 
 
 @if(session('success'))
@@ -207,19 +218,19 @@
                         <div class="col-md-6">
                             <h6>{{ translate('Business Info') }}</h6>
                             <p>
-                                <strong>{{ $order->wholeseller->wholesalerBusiness->company_name }}</strong><br>
-                                {{ $order->wholeseller->email ?? '' }}<br>
-                                {{ $order->wholeseller->phone ?? '' }}<br>
-                                {{ $order->wholeseller_tier ?? '' }}
+                                <strong class="bidi-auto">{{ $order->wholeseller->wholesalerBusiness->company_name }}</strong><br>
+                                <span class="bidi-ltr">{{ $order->wholeseller->email ?? '' }}</span><br>
+                                <span class="bidi-ltr">{{ $order->wholeseller->phone ?? '' }}</span><br>
+                                <span class="bidi-auto">{{ $order->wholeseller_tier ?? '' }}</span>
 
                             </p>
                         </div>
-                        <div class="col-md-6 text-right">
+                        <div class="col-md-6 {{ $isRtl ? 'text-right' : 'text-left' }}">
                             <h6>{{ translate('Order Info') }}</h6>
                             <p>
-                                <strong>{{ translate('Quotation NO') }}:</strong> {{ $order->quotation_no }}<br>
-                                <strong>{{ translate('Purchase Order NO') }}:</strong> {{ $order->purchase_order_no }}<br>
-                                <strong>{{ translate('Date') }}:</strong> {{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}<br>
+                                <strong>{{ translate('Quotation NO') }}:</strong> <span class="bidi-ltr">{{ $order->quotation_no }}</span><br>
+                                <strong>{{ translate('Purchase Order NO') }}:</strong> <span class="bidi-ltr">{{ $order->purchase_order_no }}</span><br>
+                                <strong>{{ translate('Date') }}:</strong> <span class="bidi-ltr">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span><br>
 
                             </p>
                         </div>

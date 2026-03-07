@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ (session('direction') === 'rtl' || app()->getLocale() === 'ar') ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('product_stock_analytics_report') }}</title>
@@ -8,7 +8,7 @@
             font-family: DejaVu Sans, sans-serif;
             font-size: 11px;
             color: #1f2937;
-            text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }};
+            text-align: {{ (session('direction') === 'rtl' || app()->getLocale() === 'ar') ? 'right' : 'left' }};
         }
         h2, h3 { margin: 0 0 8px; }
         .meta { margin-bottom: 10px; }

@@ -7,7 +7,7 @@ use App\Exports\CrmEmployeeChannelAssignmentReportExport;
 use App\Http\Controllers\BaseController;
 use App\Models\Admin;
 use App\Models\Departments;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportPdfService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Contracts\View\View;
@@ -48,16 +48,19 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        $pdf = Pdf::loadView(CrmEmployeeChannelAssignmentReport::EXPORT_PDF[VIEW], $data)
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->download('crm-employee-channel-assignment-report.pdf');
+        return app(ReportPdfService::class)->download(
+            view: CrmEmployeeChannelAssignmentReport::EXPORT_PDF[VIEW],
+            data: $data,
+            fileName: 'crm-employee-channel-assignment-report.pdf',
+            orientation: 'landscape'
+        );
     }
 
     private function buildReportData(Request $request): array
     {
-        [$fromDate, $toDate] = $this->resolveDateRange($request);
-        $periodLabel = $fromDate->format('d M Y') . ' - ' . $toDate->format('d M Y');
+        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
+        $periodStrategy = $this->resolvePeriodStrategy($fromDate, $toDate);
+
         $departmentIds = $this->normalizeMultiIds($request->input('department_ids', $request->input('department_id', [])));
         $employeeIds = $this->normalizeMultiIds($request->input('employee_ids', $request->input('employee_id', [])));
         $availableChannels = $this->getAvailableChannels();
@@ -78,7 +81,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->orderBy('name')
             ->get();
 
-        $rows = $this->getMonthlyRows(
+        $rows = $this->getRows(
             fromDate: $fromDate,
             toDate: $toDate,
             departmentIds: $departmentIds,
@@ -87,32 +90,15 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         );
 
         $employeesForMatrix = $this->resolveEmployeeListForMatrix($rows, $employees, $employeeIds);
-        $monthlyRows = $this->buildMonthlyMatrix(
+        $monthlyRows = $this->buildPeriodMatrix(
             rows: $rows,
             fromDate: $fromDate,
             toDate: $toDate,
-            employeesForMatrix: $employeesForMatrix
+            employeesForMatrix: $employeesForMatrix,
+            periodStrategy: $periodStrategy
         );
         $summary = $this->buildSummary($monthlyRows, $employeesForMatrix);
-         
-        $channelChart = $this->chartImage([
-    "type" => "bar",
-    "data" => [
-        "labels" => $monthlyRows->pluck('month_label')->all(),
-        "datasets" => [
-            [
-                "label" => "Retail",
-                "backgroundColor" => "#3b82f6",
-                "data" => $monthlyRows->map(fn($row) => (int)$row->totals['retail_count'])->all()
-            ],
-            [
-                "label" => "Wholesale",
-                "backgroundColor" => "#f59e0b",
-                "data" => $monthlyRows->map(fn($row) => (int)$row->totals['wholesale_count'])->all()
-            ]
-        ]
-    ]
-]);
+
         return [
             'departments' => $departments,
             'employees' => $employees,
@@ -122,12 +108,13 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
                 'label' => $this->getChannelLabel($channel),
             ])->values(),
             'filters' => [
-                'date_range' => $request->input('date_range', 'this_month'),
+                'date_type' => $dateType,
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
                 'channels' => $channels,
+                'period_type' => $periodStrategy['type'],
             ],
             'monthlyRows' => $monthlyRows,
             'summary' => $summary,
@@ -137,67 +124,58 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
                 'retail' => $monthlyRows->map(fn($row) => (int)$row->totals['retail_count'])->all(),
                 'wholesale' => $monthlyRows->map(fn($row) => (int)$row->totals['wholesale_count'])->all(),
             ],
-            'periodLabel' => $periodLabel,
-            'channelChart' => $channelChart,
         ];
     }
 
     private function resolveDateRange(Request $request): array
     {
-        $range = $request->input('date_range');
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
 
-        switch ($range) {
-
-            case 'today':
-                $fromDate = Carbon::today()->startOfDay();
-                $toDate = Carbon::today()->endOfDay();
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->startOfDay();
+                $toDate = now()->endOfMonth()->endOfDay();
                 break;
 
             case 'this_week':
-                $fromDate = Carbon::now()->startOfWeek();
-                $toDate = Carbon::now()->endOfWeek();
+                $fromDate = now()->startOfWeek()->startOfDay();
+                $toDate = now()->endOfWeek()->endOfDay();
                 break;
 
-            case 'this_month':
-                $fromDate = Carbon::now()->startOfMonth();
-                $toDate = Carbon::now()->endOfMonth();
+            case 'today':
+                $fromDate = now()->startOfDay();
+                $toDate = now()->endOfDay();
+                break;
+
+            case 'custom_date':
+                try {
+                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                } catch (\Throwable) {
+                    $fromDate = now()->subDays(29)->startOfDay();
+                }
+
+                try {
+                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfDay();
+                }
                 break;
 
             case 'this_year':
-                $fromDate = Carbon::now()->startOfYear();
-                $toDate = Carbon::now()->endOfYear();
-                break;
-
-            case 'custom':
-
-                try {
-                    $fromDate = $request->filled('from')
-                        ? Carbon::parse($request->input('from'))->startOfDay()
-                        : Carbon::now()->startOfMonth();
-                } catch (\Throwable) {
-                    $fromDate = Carbon::now()->startOfMonth();
-                }
-
-                try {
-                    $toDate = $request->filled('to')
-                        ? Carbon::parse($request->input('to'))->endOfDay()
-                        : Carbon::now()->endOfMonth();
-                } catch (\Throwable) {
-                    $toDate = Carbon::now()->endOfMonth();
-                }
-
-                break;
-
             default:
-                $fromDate = Carbon::now()->startOfMonth();
-                $toDate = Carbon::now()->endOfMonth();
+                $fromDate = now()->startOfYear()->startOfDay();
+                $toDate = now()->endOfYear()->endOfDay();
+                $dateType = 'this_year';
+                break;
         }
 
         if ($fromDate->gt($toDate)) {
             [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
         }
 
-        return [$fromDate, $toDate];
+        return [$fromDate, $toDate, $dateType];
     }
 
     private function getAvailableChannels(): array
@@ -219,7 +197,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->all();
     }
 
-    private function getMonthlyRows(
+    private function getRows(
         Carbon $fromDate,
         Carbon $toDate,
         array $departmentIds = [],
@@ -238,20 +216,20 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->when(!empty($employeeIds), fn($query) => $query->whereIn('inbox_messages.employee_id', $employeeIds))
             ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw("LOWER(COALESCE(inbox_messages.pipeline, ''))"), $channels))
             ->select([
-                DB::raw("DATE_FORMAT(inbox_messages.created_at, '%Y-%m-01') as report_month"),
+                DB::raw('DATE(inbox_messages.created_at) as report_date'),
                 DB::raw('COALESCE(inbox_messages.employee_id, 0) as employee_id'),
                 DB::raw("MAX(COALESCE(admins.name, '')) as employee_name"),
                 DB::raw("SUM(CASE WHEN {$wholesaleCondition} THEN 0 ELSE 1 END) as retail_count"),
                 DB::raw("SUM(CASE WHEN {$wholesaleCondition} THEN 1 ELSE 0 END) as wholesale_count"),
                 DB::raw('COUNT(*) as total_count'),
             ])
-            ->groupBy(DB::raw("DATE_FORMAT(inbox_messages.created_at, '%Y-%m-01')"), DB::raw('COALESCE(inbox_messages.employee_id, 0)'))
-            ->orderBy('report_month')
+            ->groupBy(DB::raw('DATE(inbox_messages.created_at)'), DB::raw('COALESCE(inbox_messages.employee_id, 0)'))
+            ->orderBy('report_date')
             ->orderBy('employee_name')
             ->get();
 
         return collect($rows)->map(function ($row) {
-            $row->report_month = (string)$row->report_month;
+            $row->report_date = (string)$row->report_date;
             $row->employee_id = (int)$row->employee_id;
             $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
             $row->retail_count = (int)$row->retail_count;
@@ -297,21 +275,32 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->values();
     }
 
-    private function buildMonthlyMatrix(
+    private function buildPeriodMatrix(
         Collection $rows,
         Carbon $fromDate,
         Carbon $toDate,
-        Collection $employeesForMatrix
+        Collection $employeesForMatrix,
+        array $periodStrategy
     ): Collection {
-        $rowsByMonth = $rows
-            ->groupBy('report_month')
-            ->map(fn(Collection $monthRows) => $monthRows->keyBy('employee_id'));
+        $rowsByPeriod = $rows
+            ->groupBy(fn($row) => $this->resolvePeriodKey(Carbon::parse((string)$row->report_date), $periodStrategy))
+            ->map(function (Collection $periodRows) {
+                return $periodRows
+                    ->groupBy('employee_id')
+                    ->map(function (Collection $employeeRows) {
+                        return (object)[
+                            'retail_count' => (int)$employeeRows->sum('retail_count'),
+                            'wholesale_count' => (int)$employeeRows->sum('wholesale_count'),
+                            'total_count' => (int)$employeeRows->sum('total_count'),
+                        ];
+                    });
+            });
 
         $months = [];
-        $period = CarbonPeriod::create($fromDate->copy()->startOfMonth(), '1 month', $toDate->copy()->startOfMonth());
-        foreach ($period as $monthDate) {
-            $monthKey = $monthDate->format('Y-m-01');
-            $monthLabel = $monthDate->locale(app()->getLocale())->translatedFormat('M Y');
+        $periodSequence = $this->buildPeriodSequence($fromDate, $toDate, $periodStrategy);
+        foreach ($periodSequence as $periodEntry) {
+            $monthKey = (string)$periodEntry['key'];
+            $monthLabel = (string)$periodEntry['label'];
 
             $monthEmployeeRows = [];
             $monthTotals = [
@@ -321,7 +310,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ];
 
             foreach ($employeesForMatrix as $employee) {
-                $source = $rowsByMonth->get($monthKey)?->get($employee->id);
+                $source = $rowsByPeriod->get($monthKey)?->get((int)$employee->id);
                 $retailCount = (int)($source->retail_count ?? 0);
                 $wholesaleCount = (int)($source->wholesale_count ?? 0);
                 $totalCount = (int)($source->total_count ?? 0);
@@ -346,6 +335,70 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         }
 
         return collect($months);
+    }
+
+    private function resolvePeriodStrategy(Carbon $fromDate, Carbon $toDate): array
+    {
+        $daysDifference = $fromDate->diffInDays($toDate);
+
+        if ($daysDifference > 60) {
+            return ['type' => 'month'];
+        }
+
+        if ($daysDifference <= 7) {
+            return ['type' => 'weekday'];
+        }
+
+        if ($daysDifference <= 31) {
+            return ['type' => 'day'];
+        }
+
+        return ['type' => 'date'];
+    }
+
+    private function buildPeriodSequence(Carbon $fromDate, Carbon $toDate, array $periodStrategy): array
+    {
+        $periodType = (string)($periodStrategy['type'] ?? 'date');
+        $sequence = [];
+
+        if ($periodType === 'month') {
+            $period = CarbonPeriod::create($fromDate->copy()->startOfMonth(), '1 month', $toDate->copy()->startOfMonth());
+            foreach ($period as $date) {
+                $sequence[] = [
+                    'key' => $date->format('Y-m'),
+                    'label' => $date->locale(app()->getLocale())->translatedFormat('M'),
+                ];
+            }
+
+            return $sequence;
+        }
+
+        $period = CarbonPeriod::create($fromDate->copy()->startOfDay(), $toDate->copy()->startOfDay());
+        foreach ($period as $date) {
+            $sequence[] = [
+                'key' => $date->format('Y-m-d'),
+                'label' => $this->resolvePeriodLabel($date, $periodType),
+            ];
+        }
+
+        return $sequence;
+    }
+
+    private function resolvePeriodKey(Carbon $date, array $periodStrategy): string
+    {
+        return (string)match ((string)($periodStrategy['type'] ?? 'date')) {
+            'month' => $date->format('Y-m'),
+            default => $date->format('Y-m-d'),
+        };
+    }
+
+    private function resolvePeriodLabel(Carbon $date, string $periodType): string
+    {
+        return match ($periodType) {
+            'weekday' => $date->locale(app()->getLocale())->translatedFormat('l'),
+            'day' => $date->format('j'),
+            default => $date->locale(app()->getLocale())->translatedFormat('j M'),
+        };
     }
 
     private function buildSummary(Collection $monthlyRows, Collection $employeesForMatrix): array
@@ -441,16 +494,5 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             'form' => translate('channel_form'),
             default => ucwords(str_replace(['-', '_'], ' ', $channel)),
         };
-    }
-    private function chartImage($config)
-    {
-        $url = "https://quickchart.io/chart?width=700&height=300&c=" . urlencode(json_encode($config));
-
-        try {
-            $image = file_get_contents($url);
-            return 'data:image/png;base64,' . base64_encode($image);
-        } catch (\Exception $e) {
-            return null;
-        }
     }
 }

@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Admin\Department;
 
 use App\Contracts\Repositories\DepartmentRepositoryInterface;
-use App\Contracts\Repositories\AdminRoleRepositoryInterface;
-use App\Contracts\Repositories\AdminRepositoryInterface;
 use App\Enums\ViewPaths\Admin\Department;
 use App\Enums\WebConfigKey;
-use App\Exports\BranchListExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\DepartmentAddRequest;
 use App\Http\Requests\Admin\DepartmentUpdateRequest;
 use App\Http\Requests\Admin\DepartmentUsersAddRequest;
+use App\Support\AdminPermissionRegistry;
 use App\Services\DepartmentService;
 use App\Traits\CommonTrait;
 use App\Traits\EmailTemplateTrait;
@@ -22,10 +20,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Models\ShippingMethodArea;
+use Spatie\Permission\Models\Role;
 
 class DepartmentController extends BaseController
 {
@@ -36,8 +33,6 @@ class DepartmentController extends BaseController
 
     public function __construct(
         private readonly DepartmentRepositoryInterface         $departmentRepo,
-        private readonly AdminRoleRepositoryInterface          $adminRoleRepo,
-        private readonly AdminRepositoryInterface              $adminRepo,
         private readonly DepartmentService                     $departmentService,
     )
     {
@@ -68,8 +63,7 @@ class DepartmentController extends BaseController
 
     public function getAddView(Request $request): View
     {
-        $aRoles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
-        return view(Department::ADD[VIEW], compact('aRoles'));
+        return view(Department::ADD[VIEW]);
     }
 
     public function fViewBranchUsers(Request $request, $dept_id): View
@@ -78,19 +72,20 @@ class DepartmentController extends BaseController
         $aDepartmentUsers = $this->departmentRepo->getUsersListWhere(
             orderBy: ['id' => 'ASC'],
             searchValue: $request['searchValue'],
-            filters: ['department_id' => $dept_id],
-            relations: ['user_role'],
+            filters: [
+                'department_id' => $dept_id,
+                'status' => 'active',
+            ],
+            relations: ['roles'],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
-
-        // dd($aDepartmentUsers[0]['user_role']['name']);
 
         return view(Department::USER_VIEW[VIEW], compact('departments', 'aDepartmentUsers', 'dept_id'));
     }
 
     public function fAddBranchUsers(Request $request, $dept_id): View
     {
-        $aRoles = $this->adminRoleRepo->getEmployeeRoleList(dataLimit: 'all');
+        $aRoles = $this->getActiveAdminRoles();
         $departments = $this->departmentRepo->getFirstWhere(params: ['id' => $dept_id]);
         return view(Department::USER_ADD[VIEW], compact('departments', 'dept_id', 'aRoles'));
     }
@@ -108,9 +103,17 @@ class DepartmentController extends BaseController
 
     public function addDepartmentUsers(DepartmentUsersAddRequest $request, DepartmentService $service): JsonResponse
     {
-        // dd($request);
-        $success = 1;
-        $this->departmentRepo->addDepartmentUsers(data: $service->getAddDepartmentUsers($request, $request['dept_id']));
+        $role = $this->resolveAssignableRole((int)$request['role_id']);
+        if (!$role) {
+            return response()->json(['message' => translate('invalid_role_selected')], 422);
+        }
+
+        $departmentUser = $this->departmentRepo->addDepartmentUsers(
+            data: $service->getAddDepartmentUsers($request, (int)$request['dept_id'])
+        );
+        if ($departmentUser) {
+            $departmentUser->syncRoles([$role->name]);
+        }
          return response()->json(['message' => translate('department_user_added_successfully')]);
     }
 
@@ -153,6 +156,34 @@ class DepartmentController extends BaseController
         $this->departmentRepo->updateDepartmentUsers(id: $request['id'], data: ['status' => 'inactive']);
         Toastr::success(translate('branch_user_deleted_successfully'));
         return redirect()->back();
+    }
+
+    private function getActiveAdminRoles()
+    {
+        $query = Role::query()
+            ->where('guard_name', AdminPermissionRegistry::guard())
+            ->where('name', '!=', AdminPermissionRegistry::superAdminRole())
+            ->orderBy('name');
+
+        if (Schema::hasColumn('roles', 'status')) {
+            $query->where('status', 1);
+        }
+
+        return $query->get();
+    }
+
+    private function resolveAssignableRole(int $roleId): ?Role
+    {
+        $query = Role::query()
+            ->where('guard_name', AdminPermissionRegistry::guard())
+            ->where('id', $roleId)
+            ->where('name', '!=', AdminPermissionRegistry::superAdminRole());
+
+        if (Schema::hasColumn('roles', 'status')) {
+            $query->where('status', 1);
+        }
+
+        return $query->first();
     }
 
 

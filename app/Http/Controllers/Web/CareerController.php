@@ -11,7 +11,9 @@ use App\Models\careerApplies;
 use App\Models\InboxMessage;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Services\SlaService;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 
 
@@ -55,48 +57,58 @@ class CareerController extends Controller
         ]);
 
         $resumePath = null;
-        if ($request->hasFile('resume')) {
-            $resumePath = $request->file('resume')->store('resumes', 'public');
+
+        try {
+            if ($request->hasFile('resume')) {
+                $resumePath = $request->file('resume')->store('career-resumes', 'local');
+            }
+
+            DB::transaction(function () use ($request, $resumePath) {
+                careerApplies::create([
+                    'job_id'        => $request->job_id,
+                    'first_name'    => $request->first_name,
+                    'last_name'     => $request->last_name,
+                    'email'         => $request->email,
+                    'phone'         => $request->phone,
+                    'gender'        => $request->gender,
+                    'country'       => $request->country,
+                    'state'         => $request->state,
+                    'city'          => $request->city,
+                    'area'          => $request->area,
+                    'notice_period' => $request->notice_period,
+                    'last_ctc'      => $request->last_ctc,
+                    'resume'        => $resumePath,
+                ]);
+
+                InboxMessage::create([
+                    'subject'      => 'Career Application - ' . $request->first_name . ' ' . $request->last_name,
+                    'body'         => 'New career application submitted',
+                    'sender_name'  => $request->first_name . ' ' . $request->last_name,
+                    'sender_email' => $request->email,
+                    'sender_phone' => $request->phone,
+                    'pipeline'     => 'form',
+                    'message_type' => 'career',
+                    'status'       => 'new',
+                    'priority'     => 'medium',
+                    'details'      => [
+                        'job_id'        => $request->job_id,
+                        'gender'        => $request->gender,
+                        'country'       => $request->country,
+                        'state'         => $request->state,
+                        'city'          => $request->city,
+                        'area'          => $request->area,
+                        'notice_period' => $request->notice_period,
+                        'last_ctc'      => $request->last_ctc,
+                        'resume'        => $resumePath,
+                    ]
+                ]);
+            });
+        } catch (Throwable) {
+            if ($resumePath) {
+                Storage::disk('local')->delete($resumePath);
+            }
+            return back()->withErrors(['career' => translate('something_went_wrong')]);
         }
-
-        careerApplies::create([
-            'job_id'        => $request->job_id,
-            'first_name'    => $request->first_name,
-            'last_name'     => $request->last_name,
-            'email'         => $request->email,
-            'phone'         => $request->phone,
-            'gender'        => $request->gender,
-            'country'       => $request->country,
-            'state'         => $request->state,
-            'city'          => $request->city,
-            'area'          => $request->area,
-            'notice_period' => $request->notice_period,
-            'last_ctc'      => $request->last_ctc,
-            'resume'        => $resumePath,
-        ]);
-
-         InboxMessage::create([
-            'subject'       => 'Career Application - ' . $request->first_name . ' ' . $request->last_name,
-            'body'          => 'New career application submitted',
-            'sender_name'   => $request->first_name . ' ' . $request->last_name,
-            'sender_email'  => $request->email,
-            'sender_phone'  => $request->phone,
-            'pipeline'       => 'form',
-            'message_type'  => 'career',
-            'status'        => 'new',
-            'priority'      => 'medium',
-            'details'       => [
-                'job_id'        => $request->job_id,
-                'gender'        => $request->gender,
-                'country'       => $request->country,
-                'state'         => $request->state,
-                'city'          => $request->city,
-                'area'          => $request->area,
-                'notice_period' => $request->notice_period,
-                'last_ctc'      => $request->last_ctc,
-                'resume'        => $resumePath,
-            ]
-        ]);
 
      
         
