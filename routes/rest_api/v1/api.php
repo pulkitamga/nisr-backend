@@ -44,7 +44,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['api_lang']], function () {
 
-Route::post('/encrypt-controllers', [EncryptionController::class, 'encryptControllers'])->name('encrypt.controllers');
+Route::post('/encrypt', [EncryptionController::class, 'encrypt'])->name('encrypt');
 Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('decrypt');
 
     Route::prefix('pages')->group(function () {

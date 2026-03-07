@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c21e4de11241e8fcb0a7ef9e18c2415",
+    "content-hash": "381aabd1afd86a7a6169e64fd14d20e9",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -6477,6 +6477,44 @@
             "time": "2024-04-08T12:52:34+00:00"
         },
         {
+            "name": "phpbolt/encrypt",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/arshidkv12/bolt-cli.git",
+                "reference": "0874e077c459e0e0dfea46bbc102454817512226"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/arshidkv12/bolt-cli/zipball/0874e077c459e0e0dfea46bbc102454817512226",
+                "reference": "0874e077c459e0e0dfea46bbc102454817512226",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0"
+            },
+            "default-branch": true,
+            "bin": [
+                "bin/bolt"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bolt\\": "app/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "phpBolt Encryprion",
+            "support": {
+                "issues": "https://github.com/arshidkv12/bolt-cli/issues",
+                "source": "https://github.com/arshidkv12/bolt-cli/tree/master"
+            },
+            "time": "2020-12-02T11:12:13+00:00"
+        },
+        {
             "name": "phpoffice/phpspreadsheet",
             "version": "1.30.0",
             "source": {
@@ -12522,6 +12560,66 @@
             "time": "2025-08-16T05:17:33+00:00"
         },
         {
+            "name": "sbamtr/laravel-source-encrypter",
+            "version": "1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SiavashBamshadnia/Laravel-Source-Encrypter.git",
+                "reference": "0b10af48e20301d35789f3b977406384d44d700f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SiavashBamshadnia/Laravel-Source-Encrypter/zipball/0b10af48e20301d35789f3b977406384d44d700f",
+                "reference": "0b10af48e20301d35789f3b977406384d44d700f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-bolt": "*",
+                "illuminate/console": "^6|^7|^8|^9|^10|^11|^12",
+                "php": ">=7.2.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "sbamtr\\LaravelSourceEncrypter\\SourceEncryptServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "sbamtr\\LaravelSourceEncrypter\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Siavash Bamshadnia",
+                    "email": "sbamtr@gmail.com"
+                }
+            ],
+            "description": "Laravel Source Encrypter",
+            "keywords": [
+                "encrypt",
+                "encrypter",
+                "encryption",
+                "encryptor",
+                "ioncube",
+                "laravel",
+                "lumen",
+                "phpBolt",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/SiavashBamshadnia/Laravel-Source-Encrypter/issues",
+                "source": "https://github.com/SiavashBamshadnia/Laravel-Source-Encrypter/tree/1.6.0"
+            },
+            "time": "2025-10-01T06:53:13+00:00"
+        },
+        {
             "name": "sebastian/cli-parser",
             "version": "2.0.1",
             "source": {
@@ -13960,6 +14058,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "phpbolt/encrypt": 20,
         "amirami/localizator": 15
     },
     "prefer-stable": true,

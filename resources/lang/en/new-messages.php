@@ -12356,4 +12356,6 @@ return [
 	"monthly_breakdown" => "Monthly breakdown",
 	"invalid_request" => "Invalid request",
 	"Enter_adjustment" => "Enter adjustment",
+	"Stock_Transfer_History" => "Stock Transfer History",
+	"Stock History" => "Stock History",
 ];
