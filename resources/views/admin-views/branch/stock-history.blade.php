@@ -52,9 +52,16 @@
             <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm">
                 <i class="tio-back-ui"></i> {{ translate('Back') }}
             </a>
-            <a href="{{ route('admin.branch.export', ['product_id' => $product->id, 'branch_id' => $branch->id, 'variation_type' => $stock->variation_type]) }}" class="btn btn-outline--primary p-2">
-                <img width="14" src="{{asset('public/assets/back-end/img/excel.png')}}" class="excel" alt="">
-                {{ translate('export') }}
+
+            <a href="{{ route('admin.branch.export', [
+        'product_id' => $product->id, 
+        'branch_id' => $branch->id, 
+        'variation_type' => $stock->variation_type,
+        'variation_key' => $stock->variation_key
+    ]) }}" class="btn btn-outline--primary p-2">
+
+                <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                <span class="ps-1">{{ translate('export') }}</span>
             </a>
         </div>
 

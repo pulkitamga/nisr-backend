@@ -12112,4 +12112,6 @@ return [
 	"diagnosis_complete" => "Diagnosis complete",
 	"item_received" => "Item received",
 	"decision_made" => "Decision made",
+	"Stock_Transfer_History" => "سجل نقل المخزون",
+	"Stock History" => "Stock History",
 ];

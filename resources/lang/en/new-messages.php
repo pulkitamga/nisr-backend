@@ -12601,4 +12601,6 @@ return [
 	"Cash on delivery approval is only allowed from waiting payment." => "Cash on delivery approval is only allowed from waiting payment.",
 	"No pending charges to waive." => "No pending charges to waive.",
 	"No linked customer account found for this warranty. Use POS or COD instead." => "No linked customer account found for this warranty. Use POS or COD instead.",
+	"Stock_Transfer_History" => "Stock Transfer History",
+	"Stock History" => "Stock History",
 ];

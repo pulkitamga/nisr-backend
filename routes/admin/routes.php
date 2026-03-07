@@ -2023,10 +2023,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::group(['prefix' => 'deals', 'as' => 'deals.'], function () {
 
             /*
-    |--------------------------------------------------------------------------
-    | 🟦 WHOLESALE DEALS ROUTES
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 🟦 WHOLESALE DEALS ROUTES
+        |--------------------------------------------------------------------------
+        */
             Route::group(['prefix' => 'wholesale', 'as' => 'wholesale.'], function () {
                 Route::middleware('permission:crm_section.access,admin')->group(function () {
                     Route::controller(DealController::class)->group(function () {
@@ -3427,6 +3427,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:branch_management.create,admin')->group(function () {
             Route::post('/stock/store', [StockMovementController::class, 'saveStockRequest'])->name('stock.request.store');
         });
+
+
+        Route::get('/stock-history/{branch_id}/{product_id}', [BranchController::class, 'fGetBranchesStockHistory'])
+            ->name('stock-history');
 
         // Update routes
         Route::middleware('permission:branch_management.update,admin')->group(function () {

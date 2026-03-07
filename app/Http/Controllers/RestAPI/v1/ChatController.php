@@ -250,12 +250,12 @@ class ChatController extends Controller
         $messageForm = User::find($request->user()->id);
         if ($type == 'seller') {
             $seller = Seller::with('shop')->find($request->id);
-            $chatting->seller_id = $request->id == 0 ? null : $request->id;
+            $chatting->seller_id = $request->id == 0 ? 0 : $request->id;
             $chatting->admin_id = $request->id == 0 ? 0 : null;
             $chatting->shop_id = $request->id == 0
                 ? $this->resolveInhouseShopId()
                 : (isset($seller->shop->id) ? $seller->shop->id : null);
-            $chatting->seen_by_seller = $request->id == 0 ? null : 0;
+            $chatting->seen_by_seller = $request->id == 0 ? 0 : 0;
             $chatting->seen_by_admin = $request->id == 0 ? 0 : null;
             $chatting->notification_receiver = $request->id == 0 ? 'admin' : 'seller';
 
