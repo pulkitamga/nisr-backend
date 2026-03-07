@@ -679,26 +679,41 @@ class BranchController extends BaseController
         $branch = BranchModel::findOrFail($branch_id);
         $product = \App\Models\Product::findOrFail($product_id);
 
-
-        // 2. Prepare the $stock object for your helper function
+        // 2. Prepare the $stock object (Handle 'No Variation' as null/empty)
         $stock = new \stdClass();
         $stock->branch_id = $branch_id;
         $stock->product_id = $product_id;
-        $stock->variation_type = $request->query('variation_type');
-        $stock->variation_key = $request->query('variation_key');
+        $stock->variation_type = ($request->variation_type === 'No Variation') ? null : $request->variation_type;
+        $stock->variation_key = ($request->variation_key === 'No Variation') ? null : $request->variation_key;
 
-        // 3. Get History (REUSING YOUR LOGIC)
+        // 3. Get History (Reusing your existing getUnifiedStockHistory logic)
         $logs = $this->getUnifiedStockHistory($stock);
 
-        // 4. Calculate Current Stock for this specific variation in this branch
-        $current_stock = \App\Models\ManageBranchProductStock::where([
+        // 4. Calculate Current Stock with Null/Empty Check
+        $query = \App\Models\ManageBranchProductStock::where([
             'branch_id' => $branch_id,
             'product_id' => $product_id,
-            'variation_type' => $stock->variation_type,
-            'variation_key' => $stock->variation_key
-        ])->sum('current_stock');
+        ]);
 
+        // Handle Variation Type NULL or Empty
+        if (empty($stock->variation_type)) {
+            $query->where(function ($q) {
+                $q->whereNull('variation_type')->orWhere('variation_type', '');
+            });
+        } else {
+            $query->where('variation_type', $stock->variation_type);
+        }
 
+        // Handle Variation Key NULL or Empty
+        if (empty($stock->variation_key)) {
+            $query->where(function ($q) {
+                $q->whereNull('variation_key')->orWhere('variation_key', '');
+            });
+        } else {
+            $query->where('variation_key', $stock->variation_key);
+        }
+
+        $current_stock = $query->sum('current_stock');
 
         return view('admin-views.branch.stock-history', compact('branch', 'product', 'logs', 'stock', 'current_stock'));
     }
