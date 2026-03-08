@@ -9,6 +9,7 @@ use App\Enums\ViewPaths\Admin\Cart;
 use App\Enums\ViewPaths\Admin\POS;
 use App\Http\Controllers\BaseController;
 use App\Services\CartService;
+use App\Services\ProductExtraChargeResolverService;
 use App\Services\PosCartStateService;
 use App\Services\POSService;
 use App\Traits\CalculatorTrait;
@@ -45,6 +46,7 @@ class CartController extends BaseController
         private readonly CartService                 $cartService,
         private readonly PosCartStateService         $posCartStateService,
         private readonly POSService                  $POSService,
+        private readonly ProductExtraChargeResolverService $productExtraChargeResolverService,
     ) {}
 
     public function index(?Request $request, string $type = null): View|Collection|LengthAwarePaginator|null|callable|RedirectResponse
@@ -208,10 +210,20 @@ class CartController extends BaseController
         $requestedLineKey = trim((string)($request['line_key'] ?? ''));
         $lineKey = $requestedLineKey !== '' ? $requestedLineKey : (string)Str::uuid();
         $quantityForUpdate = max(1, (int)($request['quantity_in_cart'] ?? $request['quantity'] ?? 1));
-        $installationTotel = max(0, (float)$request->input('installation_charge', 0));
+
+        $resolvedExtraCharges = $this->productExtraChargeResolverService->resolveForProduct($product);
+        $resolvedInstallationCharge = max(0, (float)($resolvedExtraCharges['installation'] ?? 0));
+        $resolvedExchangeCharge = max(0, (float)($resolvedExtraCharges['exchange'] ?? 0));
+
+        $isInstallationRequested = max(0, (float)$request->input('installation_charge', 0)) > 0;
+        $installationTotel = ($isInstallationRequested && $resolvedInstallationCharge > 0)
+            ? $resolvedInstallationCharge
+            : 0.0;
+
         $exchangeQuantity = max(0, (int)$request->input('exchange_quantity', 0));
-        $exchangeTotel = max(0, (float)$request->input('exchange_charge', 0));
-        $isReplacementDiscountEnabled = (int)$request->input('replacement_discount_enabled', 0) === 1;
+        $exchangeTotel = 0.0;
+        $isReplacementDiscountEnabled = (int)$request->input('replacement_discount_enabled', 0) === 1
+            && $resolvedExchangeCharge > 0;
 
         if ($isReplacementDiscountEnabled) {
             if ($exchangeQuantity < 1) {
@@ -224,9 +236,10 @@ class CartController extends BaseController
                     'exchange_quantity' => [translate('Exchange qty cannot exceed product quantity.')],
                 ]);
             }
+            $exchangeTotel = $exchangeQuantity * $resolvedExchangeCharge;
         } else {
             $exchangeQuantity = 0;
-            $exchangeTotel = 0;
+            $exchangeTotel = 0.0;
         }
 
         $matchedCartIndex = null;

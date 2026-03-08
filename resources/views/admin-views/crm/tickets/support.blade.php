@@ -261,11 +261,17 @@
                     <input type="hidden" name="ticket_id" id="support-follow-up-ticket-id">
                     <input type="hidden" name="department_id" id="support-follow-up-department-id">
                     <input type="hidden" name="employee_id" id="support-follow-up-employee-id">
+                    @php
+                        $supportInProgressStatusId = (int) optional($aAllStatus->first(function ($statusOption) {
+                            $normalizedStatusName = strtolower(str_replace([' ', '-'], '_', trim((string) ($statusOption['name'] ?? ''))));
+                            return in_array($normalizedStatusName, ['in_progress', 'inprogress'], true);
+                        }))->id;
+                    @endphp
                     <div class="row mt-3">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" for="support-follow-up-status">{{ translate('Select Status') }}</label>
-                                <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="support-follow-up-status">
+                                <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="support-follow-up-status" data-in-progress-id="{{ $supportInProgressStatusId }}">
                                     <option value="0" selected disabled>{{ translate('Select Status') }}</option>
                                     @foreach ($aAllStatus as $statusOption)
                                     <option value="{{ $statusOption['id'] }}" data-status-name="{{ strtolower($statusOption['name'] ?? '') }}">{{ translate($statusOption['name']) }}</option>
@@ -332,6 +338,7 @@
 <span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
 <span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
 <span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="support-ticket-follow-up-date-required" data-text="{{ translate('follow_up_date_required_for_in_progress') }}"></span>
 @endsection
 
 @push('script')

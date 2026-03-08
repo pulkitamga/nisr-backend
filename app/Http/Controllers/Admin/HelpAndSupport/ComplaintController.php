@@ -85,6 +85,19 @@ class ComplaintController extends BaseController
             ->exists();
     }
 
+    private function isInProgressStatusForMaster(int $statusId, int $masterId): bool
+    {
+        $statusName = (string) SupportTicketStatusMaster::query()
+            ->where('id', $statusId)
+            ->where('master_id', $masterId)
+            ->where('status', 'active')
+            ->value('name');
+
+        $normalizedStatusName = str_replace(['-', ' '], '_', strtolower(trim($statusName)));
+
+        return in_array($normalizedStatusName, ['in_progress', 'inprogress'], true);
+    }
+
     private function resolveStatusMasterIdByTicketType(?string $ticketType): int
     {
         return match (strtolower(trim((string)$ticketType))) {
@@ -711,11 +724,13 @@ class ComplaintController extends BaseController
             ], 422);
         }
 
+        $isInProgressStatus = $this->isInProgressStatusForMaster($statusId, 1);
+
         if (empty($note)) {
             return response()->json(['success' => 0, 'message' => translate('note_required')], 422);
         }
 
-        if ($statusId === 5 && empty($followUpDate)) {
+        if ($isInProgressStatus && empty($followUpDate)) {
             return response()->json(['success' => 0, 'message' => translate('follow_up_date_required_for_in_progress')], 422);
         }
 
@@ -731,7 +746,7 @@ class ComplaintController extends BaseController
         $updateData = [
             'status' => $statusId,
             // Keep follow-up date only while ticket is In Progress.
-            'follow_up_date' => $statusId === 5 ? date('Y-m-d', strtotime($followUpDate)) : null,
+            'follow_up_date' => $isInProgressStatus ? date('Y-m-d', strtotime($followUpDate)) : null,
         ];
         $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
 
@@ -746,7 +761,7 @@ class ComplaintController extends BaseController
         $statusName = SupportTicketStatusMaster::find($statusId)?->name ?? 'Unknown';
         $description = "Support follow-up - Status: {$statusName} ({$statusId}), Note: " . substr($note, 0, 150);
 
-        if ($statusId === 5 && $followUpDate) {
+        if ($isInProgressStatus && $followUpDate) {
             $description .= ", Follow-up Date: {$followUpDate}";
         }
         if ($oldTicket->status != $statusId) {
@@ -788,7 +803,7 @@ class ComplaintController extends BaseController
         $cronConfigs = CronConfiguration::where(['ticket_status_id' => $statusId, 'status' => 'active'])->get();
 
         foreach ($cronConfigs as $config) {
-            if ($statusId == 5) {
+            if ($isInProgressStatus) {
                 $cronData[] = [
                     'ticket_id' => $ticketId,
                     'send_for' => 1,

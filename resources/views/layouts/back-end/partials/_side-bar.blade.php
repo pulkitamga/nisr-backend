@@ -1286,13 +1286,6 @@
                                             <span class="text-truncate">{{ translate('Request_Restock_List') }}</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ Request::is('admin/report/order') ? 'active' : '' }}">
-                                        <a class="nav-link" href="{{ route('admin.report.order') }}"
-                                            title="{{ translate('order_Report') }}2">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('order_Report') }}2</span>
-                                        </a>
-                                    </li>
                                 </ul>
                             </li>
                             @endif
@@ -1469,40 +1462,31 @@
 
                             @if (Helpers::module_permission_check('wholesaler_section'))
                                 <li
-                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/wholesale/dashboard*') ? 'active' : '' }}">
+                                    class="navbar-vertical-aside-has-menu {{ Request::is('admin/wholesale/dashboard/reports/*') ? 'active' : '' }}">
                                     <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                        href="javascript:" title="Wholesale">
-                                        <i class="tio-graph-up nav-icon"></i>
+                                        href="javascript:" title="{{ translate('wholesale') }}">
+                                        <i class="tio-chart-bar-4 nav-icon"></i>
                                         <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                            Wholesale
+                                            {{ translate('wholesale') }}
                                         </span>
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
-                                        style="display: {{ Request::is('admin/wholesale/dashboard*') ? 'block' : 'none' }}">
-                                        <li class="nav-item {{ Request::is('admin/wholesale/dashboard') ? 'active' : '' }}">
-                                            <a class="nav-link" href="{{ route('admin.wholesale.dashboard.index') }}"
-                                                title="{{ translate('wholesaler_business_analytics') }}">
-                                                <span class="tio-circle nav-indicator-icon"></span>
-                                                <span class="text-truncate">
-                                                    {{ translate('wholesaler_business_analytics') }}
-                                                </span>
-                                            </a>
-                                        </li>
+                                        style="display: {{ Request::is('admin/wholesale/dashboard/reports/*') ? 'block' : 'none' }}">
                                         <li class="nav-item {{ Request::is('admin/wholesale/dashboard/reports/revenue') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.wholesale.dashboard.reports.revenue') }}"
-                                                title="Wholesale Revenue Report">
+                                                title="{{ translate('wholesale_revenue_report') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
                                                 <span class="text-truncate">
-                                                    Wholesale Revenue Report
+                                                    {{ translate('wholesale_revenue_report') }}
                                                 </span>
                                             </a>
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/wholesale/dashboard/reports/pipeline') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.wholesale.dashboard.reports.pipeline') }}"
-                                                title="Wholesale Pipeline Report">
+                                                title="{{ translate('wholesale_pipeline_report') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
                                                 <span class="text-truncate">
-                                                    Wholesale Pipeline Report
+                                                    {{ translate('wholesale_pipeline_report') }}
                                                 </span>
                                             </a>
                                         </li>

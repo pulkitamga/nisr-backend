@@ -3,7 +3,6 @@
 @section('title', translate('warranty_claims_chart'))
 
 @push('css_or_js')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <style>
         .chart-card>div:last-child {
             position: relative;
@@ -104,17 +103,40 @@
             <form id="filterForm" method="GET" action="{{ url()->current() }}">
                 @csrf
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">{{ translate('date_range') }}</label>
-                        <div class="position-relative">
-                            <span class="tio-calendar icon-absolute-on-right"></span>
-                            <input type="text" name="date_range" id="dateRangePicker" class="form-control cursor-pointer"
-                                value="{{ $startDate->format('m/d/Y') }} - {{ $endDate->format('m/d/Y') }}"
-                                autocomplete="off" readonly>
-                        </div>
+                        <select class="form-control" name="date_type" id="dateTypeFilter">
+                            <option value="this_year" {{ ($selectedDateType ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
+                                {{ translate('this_year') }}
+                            </option>
+                            <option value="this_month" {{ ($selectedDateType ?? '') === 'this_month' ? 'selected' : '' }}>
+                                {{ translate('this_month') }}
+                            </option>
+                            <option value="this_week" {{ ($selectedDateType ?? '') === 'this_week' ? 'selected' : '' }}>
+                                {{ translate('this_week') }}
+                            </option>
+                            <option value="today" {{ ($selectedDateType ?? '') === 'today' ? 'selected' : '' }}>
+                                {{ translate('today') }}
+                            </option>
+                            <option value="custom_date" {{ ($selectedDateType ?? '') === 'custom_date' ? 'selected' : '' }}>
+                                {{ translate('custom_range') }}
+                            </option>
+                        </select>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-2 custom-date-range"
+                        style="{{ ($selectedDateType ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <label class="form-label">{{ translate('from') }}</label>
+                        <input type="date" class="form-control" name="from" id="fromDateFilter" value="{{ $selectedFrom ?? $startDate->toDateString() }}">
+                    </div>
+
+                    <div class="col-md-2 custom-date-range"
+                        style="{{ ($selectedDateType ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <label class="form-label">{{ translate('to') }}</label>
+                        <input type="date" class="form-control" name="to" id="toDateFilter" value="{{ $selectedTo ?? $endDate->toDateString() }}">
+                    </div>
+
+                    <div class="col-md-2">
                         <label class="form-label">{{ translate('branch') }}</label>
                         <select class="form-control" name="branch_id" id="branchFilter">
                             <option value="">{{ translate('all_branches') }}</option>
@@ -127,7 +149,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">{{ translate('status') }}</label>
                         <select class="form-control" name="status" id="statusFilter">
                             <option value="all">{{ translate('all_statuses') }}</option>
@@ -167,9 +189,14 @@
 
                     <div class="col-md-4">
                         <label class="form-label d-none d-md-block">&nbsp;</label>
-                        <button type="submit" class="btn btn--primary btn-block">
-                            <i class="tio-filter"></i> {{ translate('apply') }}
-                        </button>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn--primary flex-grow-1">
+                                <i class="tio-filter"></i> {{ translate('apply') }}
+                            </button>
+                            <a href="{{ route('admin.warranty.claim.chart') }}" class="btn btn-outline-secondary">
+                                {{ translate('reset') }}
+                            </a>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -223,7 +250,7 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0">{{ translate('claims_by_day') }} ({{ translate('stacked') }})</h4>
                 <span class="badge badge-soft-primary" id="dateRangeLabel">
-                    {{ $startDate->format('d M') }} - {{ $endDate->format('d M') }}
+                    {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
                 </span>
             </div>
 
@@ -353,8 +380,6 @@
 @endsection
 
 @push('script')
-    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let chartInstance = null;
@@ -366,23 +391,7 @@
 
             // ⭐ page load par export links sync karo
             updateExportLinks();
-
-            $('#dateRangePicker').daterangepicker({
-                startDate: moment('{{ $startDate }}'),
-                endDate: moment('{{ $endDate }}'),
-                ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1,
-                        'month').endOf('month')]
-                },
-                locale: {
-                    format: 'MM/DD/YYYY'
-                }
-            });
+            toggleCustomDateInputs();
 
             // ================================
             // FILTER SUBMIT
@@ -406,12 +415,8 @@
                     $('#card-resolved').text(res.cards.resolved);
 
                     renderChart(res.chart);
-
-                    if (res.chart.labels && res.chart.labels.length > 0) {
-                        $('#dateRangeLabel').text(
-                            res.chart.labels[0] + ' - ' +
-                            res.chart.labels[res.chart.labels.length - 1]
-                        );
+                    if (res.date_range_label) {
+                        $('#dateRangeLabel').text(res.date_range_label);
                     }
                 });
 
@@ -432,8 +437,19 @@
             $('#statusFilter, #branchFilter, #productFilter').on('change', function() {
                 $('#filterForm').submit();
             });
+
+            $('#dateTypeFilter').on('change', function() {
+                toggleCustomDateInputs();
+                if ($(this).val() !== 'custom_date') {
+                    $('#filterForm').submit();
+                }
+            });
         });
 
+        function toggleCustomDateInputs() {
+            const isCustomRange = $('#dateTypeFilter').val() === 'custom_date';
+            $('.custom-date-range').toggle(isCustomRange);
+        }
 
         // ======================================
         // ⭐ EXPORT LINKS UPDATE FUNCTION

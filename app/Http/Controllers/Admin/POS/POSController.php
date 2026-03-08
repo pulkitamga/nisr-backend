@@ -12,6 +12,7 @@ use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\ViewPaths\Admin\POS;
 use App\Http\Controllers\BaseController;
 use App\Services\CartService;
+use App\Services\ProductExtraChargeResolverService;
 use App\Services\PosCartStateService;
 use App\Services\POSService;
 use App\Traits\CalculatorTrait;
@@ -28,7 +29,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use App\Models\Branch;
-use App\Models\ManageExtraCharge;
 use App\Models\ManageBranchProductStock;
 
 
@@ -57,6 +57,7 @@ class POSController extends BaseController
         private readonly CartService                        $cartService,
         private readonly PosCartStateService                $posCartStateService,
         private readonly POSService                         $POSService,
+        private readonly ProductExtraChargeResolverService  $productExtraChargeResolverService,
         private readonly DeliveryZipCodeRepositoryInterface $deliveryZipCodeRepo,
         private readonly VariantMatcher                     $variantMatcher,
     ) {}
@@ -496,17 +497,7 @@ class POSController extends BaseController
             $product->filtered_choice_options = json_encode($choiceOptions);
         }
 
-        $charges = ManageExtraCharge::whereIn('type', ['exchange', 'installation'])
-            ->where('status', 1)
-            ->whereIn('category_id', [$product->category_id, $product->sub_category_id, $product->sub_sub_category_id])
-            ->get();
-
-        $extraCharges = [];
-        foreach ($charges as $charge) {
-            $extraCharges[$charge->type] = $charge->charges;
-        }
-        $extraCharges['exchange'] = $extraCharges['exchange'] ?? 0;
-        $extraCharges['installation'] = $extraCharges['installation'] ?? 0;
+        $extraCharges = $this->productExtraChargeResolverService->resolveForProduct($product);
         $product->extraCharges = $extraCharges;
 
         return response()->json([

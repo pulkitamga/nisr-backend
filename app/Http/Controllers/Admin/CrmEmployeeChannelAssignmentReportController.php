@@ -24,7 +24,6 @@ use Symfony\Component\HttpFoundation\Response;
 class CrmEmployeeChannelAssignmentReportController extends BaseController
 {
     private const DEFAULT_CHANNELS = ['phone', 'social', 'chat', 'email', 'form'];
-    private const WHOLESALE_SUB_TYPES = ['wholesale', 'company', 'trader', 'dealer'];
 
     public function index(?Request $request, string $type = null): View|EloquentCollection|LengthAwarePaginator|null|callable|RedirectResponse
     {
@@ -69,14 +68,30 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             $availableChannels
         );
 
+        $assignedDepartmentIds = $this->getAssignedDepartmentIds(
+            fromDate: $fromDate,
+            toDate: $toDate,
+            channels: $channels
+        );
+        $assignedEmployeeIds = $this->getAssignedEmployeeIds(
+            fromDate: $fromDate,
+            toDate: $toDate,
+            channels: $channels,
+            departmentIds: $departmentIds
+        );
+
         $departments = Departments::query()
             ->select('id', 'name')
+            ->when(!empty($assignedDepartmentIds), fn($query) => $query->whereIn('id', $assignedDepartmentIds))
+            ->when(empty($assignedDepartmentIds), fn($query) => $query->whereRaw('1 = 0'))
             ->orderBy('name')
             ->get();
 
         $employees = Admin::query()
             ->select('id', 'name', 'department_id')
             ->where('status', 1)
+            ->when(!empty($assignedEmployeeIds), fn($query) => $query->whereIn('id', $assignedEmployeeIds))
+            ->when(empty($assignedEmployeeIds), fn($query) => $query->whereRaw('1 = 0'))
             ->when(!empty($departmentIds), fn($query) => $query->whereIn('department_id', $departmentIds))
             ->orderBy('name')
             ->get();
@@ -88,6 +103,12 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             employeeIds: $employeeIds,
             channels: $channels
         );
+        $displayChannels = $this->resolveDisplayChannels($rows, $channels, $availableChannels);
+        $counterChannels = collect($availableChannels)->values()->all();
+        $channelLabels = collect($counterChannels)
+            ->mapWithKeys(fn(string $channel) => [$channel => $this->getChannelLabel($channel)])
+            ->all();
+        $counterTotals = $this->buildCounterTotals($rows, $counterChannels);
 
         $employeesForMatrix = $this->resolveEmployeeListForMatrix($rows, $employees, $employeeIds);
         $monthlyRows = $this->buildPeriodMatrix(
@@ -95,14 +116,19 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             fromDate: $fromDate,
             toDate: $toDate,
             employeesForMatrix: $employeesForMatrix,
-            periodStrategy: $periodStrategy
+            periodStrategy: $periodStrategy,
+            displayChannels: $displayChannels
         );
-        $summary = $this->buildSummary($monthlyRows, $employeesForMatrix);
+        $summary = $this->buildSummary($monthlyRows, $employeesForMatrix, $displayChannels);
 
         return [
             'departments' => $departments,
             'employees' => $employees,
             'employeesForMatrix' => $employeesForMatrix,
+            'displayChannels' => $displayChannels,
+            'counterChannels' => $counterChannels,
+            'channelLabels' => $channelLabels,
+            'counterTotals' => $counterTotals,
             'channelOptions' => collect($availableChannels)->map(fn(string $channel) => (object)[
                 'value' => $channel,
                 'label' => $this->getChannelLabel($channel),
@@ -120,9 +146,12 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             'summary' => $summary,
             'chart' => [
                 'labels' => $monthlyRows->pluck('month_label')->all(),
-                'totals' => $monthlyRows->map(fn($row) => (int)$row->totals['total_count'])->all(),
-                'retail' => $monthlyRows->map(fn($row) => (int)$row->totals['retail_count'])->all(),
-                'wholesale' => $monthlyRows->map(fn($row) => (int)$row->totals['wholesale_count'])->all(),
+                'series' => collect($displayChannels)->map(function (string $channel) use ($monthlyRows, $channelLabels) {
+                    return [
+                        'name' => (string)($channelLabels[$channel] ?? $channel),
+                        'data' => $monthlyRows->map(fn($row) => (int)($row->totals['channels'][$channel] ?? 0))->all(),
+                    ];
+                })->values()->all(),
             ],
         ];
     }
@@ -180,7 +209,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
 
     private function getAvailableChannels(): array
     {
-        $storedChannels = DB::table('inbox_messages')
+        $inboxChannels = DB::table('inbox_messages')
             ->whereNotNull('pipeline')
             ->whereRaw("TRIM(pipeline) <> ''")
             ->distinct()
@@ -189,8 +218,28 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->map(fn($value) => strtolower(trim((string)$value)))
             ->values();
 
+        $leadChannels = DB::table('leads')
+            ->whereNotNull('utm_source')
+            ->whereRaw("TRIM(utm_source) <> ''")
+            ->distinct()
+            ->pluck('utm_source')
+            ->filter()
+            ->map(fn($value) => strtolower(trim((string)$value)))
+            ->values();
+
+        $ticketChannels = DB::table('support_tickets')
+            ->selectRaw($this->ticketChannelSql() . ' as channel')
+            ->whereRaw($this->ticketChannelSql() . " <> ''")
+            ->distinct()
+            ->pluck('channel')
+            ->filter()
+            ->map(fn($value) => strtolower(trim((string)$value)))
+            ->values();
+
         return collect(self::DEFAULT_CHANNELS)
-            ->merge($storedChannels)
+            ->merge($inboxChannels)
+            ->merge($leadChannels)
+            ->merge($ticketChannels)
             ->filter()
             ->unique()
             ->values()
@@ -204,49 +253,281 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         array $employeeIds = [],
         array $channels = []
     ): Collection {
-        $wholesaleCondition = $this->wholesaleConditionSql();
+        $rows = collect()
+            ->merge($this->getInboxRows($fromDate, $toDate, $departmentIds, $employeeIds, $channels))
+            ->merge($this->getLeadRows($fromDate, $toDate, $departmentIds, $employeeIds, $channels))
+            ->merge($this->getDealRows($fromDate, $toDate, $departmentIds, $employeeIds, $channels))
+            ->merge($this->getTicketRows($fromDate, $toDate, $departmentIds, $employeeIds, $channels));
 
-        $rows = DB::table('inbox_messages')
-            ->leftJoin('admins', 'admins.id', '=', 'inbox_messages.employee_id')
-            ->leftJoin('users', 'users.id', '=', 'inbox_messages.contact_id')
-            ->whereBetween('inbox_messages.created_at', [$fromDate, $toDate])
-            ->whereNotNull('inbox_messages.employee_id')
-            ->where('inbox_messages.employee_id', '>', 0)
-            ->when(!empty($departmentIds), fn($query) => $query->whereIn('inbox_messages.department_id', $departmentIds))
-            ->when(!empty($employeeIds), fn($query) => $query->whereIn('inbox_messages.employee_id', $employeeIds))
-            ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw("LOWER(COALESCE(inbox_messages.pipeline, ''))"), $channels))
-            ->select([
-                DB::raw('DATE(inbox_messages.created_at) as report_date'),
-                DB::raw('COALESCE(inbox_messages.employee_id, 0) as employee_id'),
-                DB::raw("MAX(COALESCE(admins.name, '')) as employee_name"),
-                DB::raw("SUM(CASE WHEN {$wholesaleCondition} THEN 0 ELSE 1 END) as retail_count"),
-                DB::raw("SUM(CASE WHEN {$wholesaleCondition} THEN 1 ELSE 0 END) as wholesale_count"),
-                DB::raw('COUNT(*) as total_count'),
-            ])
-            ->groupBy(DB::raw('DATE(inbox_messages.created_at)'), DB::raw('COALESCE(inbox_messages.employee_id, 0)'))
-            ->orderBy('report_date')
-            ->orderBy('employee_name')
-            ->get();
-
-        return collect($rows)->map(function ($row) {
+        return $rows
+            ->groupBy(fn($row) => $row->report_date . '|' . $row->employee_id . '|' . $row->channel)
+            ->map(function (Collection $group) {
+                return (object)[
+                    'report_date' => (string)$group->first()->report_date,
+                    'employee_id' => (int)$group->first()->employee_id,
+                    'employee_name' => (string)$group->first()->employee_name,
+                    'channel' => (string)$group->first()->channel,
+                    'total_count' => (int)$group->sum('total_count'),
+                ];
+            })
+            ->values()
+            ->sortBy(fn($row) => $row->report_date . '|' . strtolower((string)$row->employee_name) . '|' . $row->channel)
+            ->map(function ($row) {
             $row->report_date = (string)$row->report_date;
             $row->employee_id = (int)$row->employee_id;
             $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
-            $row->retail_count = (int)$row->retail_count;
-            $row->wholesale_count = (int)$row->wholesale_count;
+            $row->channel = strtolower(trim((string)$row->channel));
             $row->total_count = (int)$row->total_count;
             return $row;
         });
     }
 
-    private function wholesaleConditionSql(): string
-    {
-        $subTypeList = implode("','", self::WHOLESALE_SUB_TYPES);
+    private function getInboxRows(
+        Carbon $fromDate,
+        Carbon $toDate,
+        array $departmentIds = [],
+        array $employeeIds = [],
+        array $channels = []
+    ): Collection {
+        $channelSql = $this->inboxChannelSql();
 
-        return "LOWER(COALESCE(inbox_messages.convert_sub_type, '')) IN ('{$subTypeList}')"
-            . " OR COALESCE(users.user_type, 0) = 1"
-            . " OR COALESCE(users.wholesaler_status, 0) = 1"
-            . " OR LOWER(COALESCE(users.wholesaler_status, '')) = 'approved'";
+        $rows = DB::table('inbox_messages')
+            ->leftJoin('admins', 'admins.id', '=', 'inbox_messages.employee_id')
+            ->whereBetween('inbox_messages.created_at', [$fromDate, $toDate])
+            ->whereNotNull('inbox_messages.employee_id')
+            ->where('inbox_messages.employee_id', '>', 0)
+            ->when(!empty($departmentIds), fn($query) => $query->whereIn('inbox_messages.department_id', $departmentIds))
+            ->when(!empty($employeeIds), fn($query) => $query->whereIn('inbox_messages.employee_id', $employeeIds))
+            ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($channelSql), $channels))
+            ->select([
+                DB::raw('DATE(inbox_messages.created_at) as report_date'),
+                DB::raw('inbox_messages.employee_id as employee_id'),
+                DB::raw("MAX(COALESCE(admins.name, '')) as employee_name"),
+                DB::raw($channelSql . ' as channel'),
+                DB::raw('COUNT(*) as total_count'),
+            ])
+            ->groupBy(DB::raw('DATE(inbox_messages.created_at)'), 'inbox_messages.employee_id', DB::raw($channelSql))
+            ->get();
+
+        return collect($rows);
+    }
+
+    private function getLeadRows(
+        Carbon $fromDate,
+        Carbon $toDate,
+        array $departmentIds = [],
+        array $employeeIds = [],
+        array $channels = []
+    ): Collection {
+        $channelSql = $this->leadChannelSql('leads');
+
+        $rows = DB::table('leads')
+            ->leftJoin('admins', 'admins.id', '=', 'leads.employee_id')
+            ->whereBetween('leads.created_at', [$fromDate, $toDate])
+            ->whereNotNull('leads.employee_id')
+            ->where('leads.employee_id', '>', 0)
+            ->when(!empty($departmentIds), fn($query) => $query->whereIn('leads.department_id', $departmentIds))
+            ->when(!empty($employeeIds), fn($query) => $query->whereIn('leads.employee_id', $employeeIds))
+            ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($channelSql), $channels))
+            ->select([
+                DB::raw('DATE(leads.created_at) as report_date'),
+                DB::raw('leads.employee_id as employee_id'),
+                DB::raw("MAX(COALESCE(admins.name, '')) as employee_name"),
+                DB::raw($channelSql . ' as channel'),
+                DB::raw('COUNT(*) as total_count'),
+            ])
+            ->groupBy(DB::raw('DATE(leads.created_at)'), 'leads.employee_id', DB::raw($channelSql))
+            ->get();
+
+        return collect($rows);
+    }
+
+    private function getDealRows(
+        Carbon $fromDate,
+        Carbon $toDate,
+        array $departmentIds = [],
+        array $employeeIds = [],
+        array $channels = []
+    ): Collection {
+        $channelSql = $this->dealChannelSql();
+
+        $rows = DB::table('deals')
+            ->leftJoin('admins', 'admins.id', '=', 'deals.employee_id')
+            ->whereBetween('deals.created_at', [$fromDate, $toDate])
+            ->whereNotNull('deals.employee_id')
+            ->where('deals.employee_id', '>', 0)
+            ->when(!empty($departmentIds), fn($query) => $query->whereIn('deals.department_id', $departmentIds))
+            ->when(!empty($employeeIds), fn($query) => $query->whereIn('deals.employee_id', $employeeIds))
+            ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($channelSql), $channels))
+            ->select([
+                DB::raw('DATE(deals.created_at) as report_date'),
+                DB::raw('deals.employee_id as employee_id'),
+                DB::raw("MAX(COALESCE(admins.name, '')) as employee_name"),
+                DB::raw($channelSql . ' as channel'),
+                DB::raw('COUNT(*) as total_count'),
+            ])
+            ->groupBy(DB::raw('DATE(deals.created_at)'), 'deals.employee_id', DB::raw($channelSql))
+            ->get();
+
+        return collect($rows);
+    }
+
+    private function getTicketRows(
+        Carbon $fromDate,
+        Carbon $toDate,
+        array $departmentIds = [],
+        array $employeeIds = [],
+        array $channels = []
+    ): Collection {
+        $channelSql = $this->ticketChannelSql();
+
+        $rows = DB::table('support_tickets')
+            ->leftJoin('admins', 'admins.id', '=', 'support_tickets.employee_id')
+            ->whereBetween('support_tickets.created_at', [$fromDate, $toDate])
+            ->whereNotNull('support_tickets.employee_id')
+            ->where('support_tickets.employee_id', '>', 0)
+            ->when(!empty($departmentIds), fn($query) => $query->whereIn('support_tickets.department_id', $departmentIds))
+            ->when(!empty($employeeIds), fn($query) => $query->whereIn('support_tickets.employee_id', $employeeIds))
+            ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($channelSql), $channels))
+            ->select([
+                DB::raw('DATE(support_tickets.created_at) as report_date'),
+                DB::raw('support_tickets.employee_id as employee_id'),
+                DB::raw("MAX(COALESCE(admins.name, '')) as employee_name"),
+                DB::raw($channelSql . ' as channel'),
+                DB::raw('COUNT(*) as total_count'),
+            ])
+            ->groupBy(DB::raw('DATE(support_tickets.created_at)'), 'support_tickets.employee_id', DB::raw($channelSql))
+            ->get();
+
+        return collect($rows);
+    }
+
+    private function getAssignedDepartmentIds(Carbon $fromDate, Carbon $toDate, array $channels = []): array
+    {
+        $ids = collect();
+
+        $ids = $ids
+            ->merge(
+                DB::table('inbox_messages')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->whereNotNull('department_id')
+                    ->where('department_id', '>', 0)
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->inboxChannelSql()), $channels))
+                    ->pluck('department_id')
+            )
+            ->merge(
+                DB::table('leads')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->whereNotNull('department_id')
+                    ->where('department_id', '>', 0)
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->leadChannelSql('leads')), $channels))
+                    ->pluck('department_id')
+            )
+            ->merge(
+                DB::table('deals')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->whereNotNull('department_id')
+                    ->where('department_id', '>', 0)
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->dealChannelSql()), $channels))
+                    ->pluck('department_id')
+            )
+            ->merge(
+                DB::table('support_tickets')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->whereNotNull('department_id')
+                    ->where('department_id', '>', 0)
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->ticketChannelSql()), $channels))
+                    ->pluck('department_id')
+            );
+
+        return $ids
+            ->map(fn($id) => (int)$id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function getAssignedEmployeeIds(
+        Carbon $fromDate,
+        Carbon $toDate,
+        array $channels = [],
+        array $departmentIds = []
+    ): array {
+        $ids = collect();
+
+        $ids = $ids
+            ->merge(
+                DB::table('inbox_messages')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->when(!empty($departmentIds), fn($query) => $query->whereIn('department_id', $departmentIds))
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->inboxChannelSql()), $channels))
+                    ->pluck('employee_id')
+            )
+            ->merge(
+                DB::table('leads')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->when(!empty($departmentIds), fn($query) => $query->whereIn('department_id', $departmentIds))
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->leadChannelSql('leads')), $channels))
+                    ->pluck('employee_id')
+            )
+            ->merge(
+                DB::table('deals')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->when(!empty($departmentIds), fn($query) => $query->whereIn('department_id', $departmentIds))
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->dealChannelSql()), $channels))
+                    ->pluck('employee_id')
+            )
+            ->merge(
+                DB::table('support_tickets')
+                    ->whereBetween('created_at', [$fromDate, $toDate])
+                    ->whereNotNull('employee_id')
+                    ->where('employee_id', '>', 0)
+                    ->when(!empty($departmentIds), fn($query) => $query->whereIn('department_id', $departmentIds))
+                    ->when(!empty($channels), fn($query) => $query->whereIn(DB::raw($this->ticketChannelSql()), $channels))
+                    ->pluck('employee_id')
+            );
+
+        return $ids
+            ->map(fn($id) => (int)$id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function inboxChannelSql(): string
+    {
+        return "LOWER(TRIM(COALESCE(inbox_messages.pipeline, '')))";
+    }
+
+    private function leadChannelSql(string $leadTable = 'leads'): string
+    {
+        return "LOWER(TRIM(COALESCE(NULLIF({$leadTable}.utm_source, ''), (SELECT im.pipeline FROM inbox_messages im WHERE im.related_lead_id = {$leadTable}.id AND im.pipeline IS NOT NULL AND TRIM(im.pipeline) <> '' ORDER BY im.id DESC LIMIT 1), '')))";
+    }
+
+    private function dealChannelSql(): string
+    {
+        return "LOWER(TRIM(COALESCE((SELECT l.utm_source FROM leads l WHERE l.id = deals.lead_id LIMIT 1), (SELECT im.pipeline FROM inbox_messages im WHERE im.related_lead_id = deals.lead_id AND im.pipeline IS NOT NULL AND TRIM(im.pipeline) <> '' ORDER BY im.id DESC LIMIT 1), '')))";
+    }
+
+    private function ticketChannelSql(): string
+    {
+        return "LOWER(TRIM(COALESCE((SELECT im.pipeline FROM inbox_messages im WHERE im.related_ticket_id = support_tickets.id AND im.pipeline IS NOT NULL AND TRIM(im.pipeline) <> '' ORDER BY im.id DESC LIMIT 1), 'form')))";
     }
 
     private function resolveEmployeeListForMatrix(
@@ -280,7 +561,8 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         Carbon $fromDate,
         Carbon $toDate,
         Collection $employeesForMatrix,
-        array $periodStrategy
+        array $periodStrategy,
+        array $displayChannels
     ): Collection {
         $rowsByPeriod = $rows
             ->groupBy(fn($row) => $this->resolvePeriodKey(Carbon::parse((string)$row->report_date), $periodStrategy))
@@ -288,11 +570,9 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
                 return $periodRows
                     ->groupBy('employee_id')
                     ->map(function (Collection $employeeRows) {
-                        return (object)[
-                            'retail_count' => (int)$employeeRows->sum('retail_count'),
-                            'wholesale_count' => (int)$employeeRows->sum('wholesale_count'),
-                            'total_count' => (int)$employeeRows->sum('total_count'),
-                        ];
+                        return $employeeRows
+                            ->groupBy('channel')
+                            ->map(fn(Collection $channelRows) => (int)$channelRows->sum('total_count'));
                     });
             });
 
@@ -304,25 +584,25 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
 
             $monthEmployeeRows = [];
             $monthTotals = [
-                'retail_count' => 0,
-                'wholesale_count' => 0,
+                'channels' => collect($displayChannels)->mapWithKeys(fn(string $channel) => [$channel => 0])->all(),
                 'total_count' => 0,
             ];
 
             foreach ($employeesForMatrix as $employee) {
-                $source = $rowsByPeriod->get($monthKey)?->get((int)$employee->id);
-                $retailCount = (int)($source->retail_count ?? 0);
-                $wholesaleCount = (int)($source->wholesale_count ?? 0);
-                $totalCount = (int)($source->total_count ?? 0);
+                $sourceChannels = $rowsByPeriod->get($monthKey)?->get((int)$employee->id) ?? collect();
+                $channelCounts = collect($displayChannels)->mapWithKeys(
+                    fn(string $channel) => [$channel => (int)($sourceChannels[$channel] ?? 0)]
+                )->all();
+                $totalCount = (int)collect($channelCounts)->sum();
 
                 $monthEmployeeRows[(int)$employee->id] = [
-                    'retail_count' => $retailCount,
-                    'wholesale_count' => $wholesaleCount,
+                    'channels' => $channelCounts,
                     'total_count' => $totalCount,
                 ];
 
-                $monthTotals['retail_count'] += $retailCount;
-                $monthTotals['wholesale_count'] += $wholesaleCount;
+                foreach ($displayChannels as $channel) {
+                    $monthTotals['channels'][$channel] += (int)$channelCounts[$channel];
+                }
                 $monthTotals['total_count'] += $totalCount;
             }
 
@@ -401,38 +681,37 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         };
     }
 
-    private function buildSummary(Collection $monthlyRows, Collection $employeesForMatrix): array
+    private function buildSummary(Collection $monthlyRows, Collection $employeesForMatrix, array $displayChannels): array
     {
         $grand = [
-            'retail_count' => 0,
-            'wholesale_count' => 0,
+            'channels' => collect($displayChannels)->mapWithKeys(fn(string $channel) => [$channel => 0])->all(),
             'total_count' => 0,
         ];
 
         foreach ($monthlyRows as $monthRow) {
-            $grand['retail_count'] += $monthRow->totals['retail_count'];
-            $grand['wholesale_count'] += $monthRow->totals['wholesale_count'];
+            foreach ($displayChannels as $channel) {
+                $grand['channels'][$channel] += (int)($monthRow->totals['channels'][$channel] ?? 0);
+            }
             $grand['total_count'] += $monthRow->totals['total_count'];
         }
 
         $perEmployee = [];
         foreach ($employeesForMatrix as $employee) {
-            $retailCount = 0;
-            $wholesaleCount = 0;
+            $channelCounts = collect($displayChannels)->mapWithKeys(fn(string $channel) => [$channel => 0])->all();
             $totalCount = 0;
 
             foreach ($monthlyRows as $monthRow) {
                 $cell = $monthRow->employees[(int)$employee->id] ?? null;
-                $retailCount += (int)($cell['retail_count'] ?? 0);
-                $wholesaleCount += (int)($cell['wholesale_count'] ?? 0);
+                foreach ($displayChannels as $channel) {
+                    $channelCounts[$channel] += (int)($cell['channels'][$channel] ?? 0);
+                }
                 $totalCount += (int)($cell['total_count'] ?? 0);
             }
 
             $perEmployee[] = (object)[
                 'employee_id' => (int)$employee->id,
                 'employee_name' => (string)$employee->name,
-                'retail_count' => $retailCount,
-                'wholesale_count' => $wholesaleCount,
+                'channels' => $channelCounts,
                 'total_count' => $totalCount,
             ];
         }
@@ -442,6 +721,45 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             'active_employees' => collect($perEmployee)->where('total_count', '>', 0)->count(),
             'per_employee' => collect($perEmployee)->sortByDesc('total_count')->values(),
         ];
+    }
+
+    private function resolveDisplayChannels(Collection $rows, array $selectedChannels, array $availableChannels): array
+    {
+        $channelsInRows = $rows
+            ->pluck('channel')
+            ->map(fn($value) => strtolower(trim((string)$value)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if (!empty($selectedChannels)) {
+            return collect($selectedChannels)
+                ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
+                ->values()
+                ->all();
+        }
+
+        return collect($availableChannels)
+            ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
+            ->values()
+            ->all();
+    }
+
+    private function buildCounterTotals(Collection $rows, array $counterChannels): array
+    {
+        $totals = collect($counterChannels)
+            ->mapWithKeys(fn(string $channel) => [$channel => 0])
+            ->all();
+
+        foreach ($rows as $row) {
+            $channel = strtolower(trim((string)($row->channel ?? '')));
+            if ($channel !== '' && array_key_exists($channel, $totals)) {
+                $totals[$channel] += (int)($row->total_count ?? 0);
+            }
+        }
+
+        return $totals;
     }
 
     private function normalizeMultiIds(mixed $input): array

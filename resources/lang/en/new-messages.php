@@ -12606,4 +12606,10 @@ return [
 	"diagnosis_complete" => "Diagnosis complete",
 	"item_received" => "Item received",
 	"decision_made" => "Decision made",
+	"Repair fee" => "Repair fee",
+	"Client Reject Payment (Return Battery Without Fix & Close Claim)" => "Client Reject Payment (Return Battery Without Fix & Close Claim)",
+	"client_reject_payment" => "Client reject payment",
+	"payment_handled" => "Payment handled",
+	"vehicle_filter_options" => "Vehicle filter options",
+	"Go to product page" => "Go to product page",
 ];

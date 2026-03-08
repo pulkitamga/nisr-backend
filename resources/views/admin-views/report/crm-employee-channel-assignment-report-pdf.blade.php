@@ -47,8 +47,9 @@
         </thead>
         <tbody>
         <tr><td class="left">{{ translate('total_interactions') }}</td><td>{{ $summary['grand']['total_count'] }}</td></tr>
-        <tr><td class="left">{{ translate('retail_interactions') }}</td><td>{{ $summary['grand']['retail_count'] }}</td></tr>
-        <tr><td class="left">{{ translate('wholesale_interactions') }}</td><td>{{ $summary['grand']['wholesale_count'] }}</td></tr>
+        @foreach($displayChannels as $channel)
+            <tr><td class="left">{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</td><td>{{ $summary['grand']['channels'][$channel] ?? 0 }}</td></tr>
+        @endforeach
         <tr><td class="left">{{ translate('active_employees') }}</td><td>{{ $summary['active_employees'] }}</td></tr>
         </tbody>
     </table>
@@ -58,18 +59,20 @@
         <tr>
             <th rowspan="2">{{ translate('period') }}</th>
             @foreach($employeesForMatrix as $employee)
-                <th class="group-header {{ !$loop->last ? 'group-separator' : '' }}" colspan="3">{{ $employee->name }}</th>
+                <th class="group-header {{ !$loop->last ? 'group-separator' : '' }}" colspan="{{ count($displayChannels) + 1 }}">{{ $employee->name }}</th>
             @endforeach
-            <th class="group-header total-separator" colspan="3">{{ translate('totals') }}</th>
+            <th class="group-header total-separator" colspan="{{ count($displayChannels) + 1 }}">{{ translate('totals') }}</th>
         </tr>
         <tr>
             @foreach($employeesForMatrix as $employee)
-                <th>{{ translate('retail') }}</th>
-                <th>{{ translate('wholesale') }}</th>
+                @foreach($displayChannels as $channel)
+                    <th>{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
+                @endforeach
                 <th class="{{ !$loop->last ? 'group-separator' : '' }}">{{ translate('total') }}</th>
             @endforeach
-            <th class="total-separator">{{ translate('retail_total') }}</th>
-            <th>{{ translate('wholesale_total') }}</th>
+            @foreach($displayChannels as $channel)
+                <th class="{{ $loop->first ? 'total-separator' : '' }}">{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
+            @endforeach
             <th>{{ translate('total') }}</th>
         </tr>
         </thead>
@@ -79,17 +82,19 @@
                 <td class="left">{{ $row->month_label }}</td>
                 @foreach($employeesForMatrix as $employee)
                     @php($cell = $row->employees[$employee->id] ?? null)
-                    <td>{{ $cell['retail_count'] ?? 0 }}</td>
-                    <td>{{ $cell['wholesale_count'] ?? 0 }}</td>
+                    @foreach($displayChannels as $channel)
+                        <td>{{ $cell['channels'][$channel] ?? 0 }}</td>
+                    @endforeach
                     <td class="{{ !$loop->last ? 'group-separator' : '' }}">{{ $cell['total_count'] ?? 0 }}</td>
                 @endforeach
-                <td class="total-separator"><strong>{{ $row->totals['retail_count'] }}</strong></td>
-                <td><strong>{{ $row->totals['wholesale_count'] }}</strong></td>
+                @foreach($displayChannels as $channel)
+                    <td class="{{ $loop->first ? 'total-separator' : '' }}"><strong>{{ $row->totals['channels'][$channel] ?? 0 }}</strong></td>
+                @endforeach
                 <td><strong>{{ $row->totals['total_count'] }}</strong></td>
             </tr>
         @empty
             <tr>
-                <td colspan="{{ (count($employeesForMatrix) * 3) + 4 }}">{{ translate('no_data_found') }}</td>
+                <td colspan="{{ (count($employeesForMatrix) * (count($displayChannels) + 1)) + count($displayChannels) + 2 }}">{{ translate('no_data_found') }}</td>
             </tr>
         @endforelse
         </tbody>
@@ -99,12 +104,14 @@
                 <td class="left"><strong>{{ translate('grand_total') }}</strong></td>
                 @foreach($employeesForMatrix as $employee)
                     @php($employeeTotal = $summary['per_employee']->firstWhere('employee_id', $employee->id))
-                    <td><strong>{{ $employeeTotal->retail_count ?? 0 }}</strong></td>
-                    <td><strong>{{ $employeeTotal->wholesale_count ?? 0 }}</strong></td>
+                    @foreach($displayChannels as $channel)
+                        <td><strong>{{ $employeeTotal->channels[$channel] ?? 0 }}</strong></td>
+                    @endforeach
                     <td class="{{ !$loop->last ? 'group-separator' : '' }}"><strong>{{ $employeeTotal->total_count ?? 0 }}</strong></td>
                 @endforeach
-                <td class="total-separator"><strong>{{ $summary['grand']['retail_count'] }}</strong></td>
-                <td><strong>{{ $summary['grand']['wholesale_count'] }}</strong></td>
+                @foreach($displayChannels as $channel)
+                    <td class="{{ $loop->first ? 'total-separator' : '' }}"><strong>{{ $summary['grand']['channels'][$channel] ?? 0 }}</strong></td>
+                @endforeach
                 <td><strong>{{ $summary['grand']['total_count'] }}</strong></td>
             </tr>
             </tfoot>
@@ -112,4 +119,3 @@
     </table>
 </body>
 </html>
-

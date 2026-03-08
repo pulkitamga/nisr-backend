@@ -27,12 +27,8 @@ class WarrantyClaimsExport implements FromQuery, WithHeadings, WithMapping, Shou
         $query = WarrantyClaim::with('warranty.user', 'warranty.product', 'branch')
             ->orderBy('submitted_at', 'desc');
 
-        if ($this->request->filled('date_range')) {
-            [$start, $end] = explode(' - ', $this->request->date_range);
-            $start = Carbon::parse($start);
-            $end = Carbon::parse($end)->endOfDay();
-            $query->whereBetween('submitted_at', [$start, $end]);
-        }
+        [$start, $end] = $this->resolveDateRange();
+        $query->whereBetween('submitted_at', [$start, $end]);
 
         if ($this->request->filled('branch_id')) {
             $query->where('branch_id', $this->request->branch_id);
@@ -57,6 +53,43 @@ class WarrantyClaimsExport implements FromQuery, WithHeadings, WithMapping, Shou
         }
 
         return $query;
+    }
+
+    private function resolveDateRange(): array
+    {
+        $dateType = (string)$this->request->input('date_type', 'this_year');
+        $from = $this->request->input('from');
+        $to = $this->request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $start = now()->startOfMonth()->startOfDay();
+                $end = now()->endOfMonth()->endOfDay();
+                break;
+            case 'this_week':
+                $start = now()->startOfWeek()->startOfDay();
+                $end = now()->endOfWeek()->endOfDay();
+                break;
+            case 'today':
+                $start = now()->startOfDay();
+                $end = now()->endOfDay();
+                break;
+            case 'custom_date':
+                $start = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                $end = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                break;
+            case 'this_year':
+            default:
+                $start = now()->startOfYear()->startOfDay();
+                $end = now()->endOfYear()->endOfDay();
+                break;
+        }
+
+        if ($start->gt($end)) {
+            [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+        }
+
+        return [$start, $end];
     }
 
     public function headings(): array

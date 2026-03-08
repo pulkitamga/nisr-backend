@@ -27,6 +27,14 @@ use App\Models\Area;
 
 class DeliveryRestrictionController extends BaseController
 {
+    private const PARENT_REQUIRED_MESSAGE = 'Please enable the parent level first.';
+    private const CHILD_REQUIRED_MESSAGE = 'Please disable the child level first.';
+    private const LEVEL_TO_SETTING_TYPE = [
+        'country' => 'delivery_country_restriction',
+        'state' => 'delivery_state_restriction',
+        'city' => 'delivery_city_restriction',
+        'area' => 'delivery_area_restriction',
+    ];
 
     public function __construct(
         private readonly BusinessSettingRepositoryInterface     $businessSettingRepo,
@@ -48,8 +56,110 @@ class DeliveryRestrictionController extends BaseController
         return $this->getView($request);
     }
 
+    private function getHierarchyStatuses(): array
+    {
+        return [
+            'country' => (int)($this->businessSettingRepo->getFirstWhere(params: ['type' => 'delivery_country_restriction'])->value ?? 0),
+            'state' => (int)($this->businessSettingRepo->getFirstWhere(params: ['type' => 'delivery_state_restriction'])->value ?? 0),
+            'city' => (int)($this->businessSettingRepo->getFirstWhere(params: ['type' => 'delivery_city_restriction'])->value ?? 0),
+            'area' => (int)($this->businessSettingRepo->getFirstWhere(params: ['type' => 'delivery_area_restriction'])->value ?? 0),
+        ];
+    }
+
+    private function normalizeHierarchyStatuses(array $statuses): array
+    {
+        if (($statuses['country'] ?? 0) !== 1) {
+            $statuses['state'] = 0;
+            $statuses['city'] = 0;
+            $statuses['area'] = 0;
+            return $statuses;
+        }
+
+        if (($statuses['state'] ?? 0) !== 1) {
+            $statuses['city'] = 0;
+            $statuses['area'] = 0;
+            return $statuses;
+        }
+
+        if (($statuses['city'] ?? 0) !== 1) {
+            $statuses['area'] = 0;
+        }
+
+        return $statuses;
+    }
+
+    private function persistHierarchyStatuses(array $statuses): void
+    {
+        foreach (self::LEVEL_TO_SETTING_TYPE as $level => $settingType) {
+            $this->businessSettingRepo->updateOrInsert(type: $settingType, value: (int)($statuses[$level] ?? 0));
+        }
+    }
+
+    private function hierarchyValidationMessage(string $level, int $targetStatus, array $statuses): ?string
+    {
+        if ($targetStatus === 1) {
+            if ($level === 'state' && ($statuses['country'] ?? 0) !== 1) {
+                return self::PARENT_REQUIRED_MESSAGE;
+            }
+            if ($level === 'city' && (($statuses['country'] ?? 0) !== 1 || ($statuses['state'] ?? 0) !== 1)) {
+                return self::PARENT_REQUIRED_MESSAGE;
+            }
+            if ($level === 'area' && (($statuses['country'] ?? 0) !== 1 || ($statuses['state'] ?? 0) !== 1 || ($statuses['city'] ?? 0) !== 1)) {
+                return self::PARENT_REQUIRED_MESSAGE;
+            }
+        } else {
+            if ($level === 'country' && (($statuses['state'] ?? 0) === 1 || ($statuses['city'] ?? 0) === 1 || ($statuses['area'] ?? 0) === 1)) {
+                return self::CHILD_REQUIRED_MESSAGE;
+            }
+            if ($level === 'state' && (($statuses['city'] ?? 0) === 1 || ($statuses['area'] ?? 0) === 1)) {
+                return self::CHILD_REQUIRED_MESSAGE;
+            }
+            if ($level === 'city' && ($statuses['area'] ?? 0) === 1) {
+                return self::CHILD_REQUIRED_MESSAGE;
+            }
+        }
+
+        return null;
+    }
+
+    private function applyHierarchyToggleChange(Request $request, string $level, string $settingType, string $successMessage): JsonResponse|RedirectResponse
+    {
+        $requestedStatus = (int)$request->get('status', 0) === 1 ? 1 : 0;
+        $statuses = $this->getHierarchyStatuses();
+        $validationMessage = $this->hierarchyValidationMessage($level, $requestedStatus, $statuses);
+
+        if ($validationMessage !== null) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => $validationMessage,
+                    'status' => false,
+                ], 422);
+            }
+            Toastr::error($validationMessage);
+            return back();
+        }
+
+        $this->businessSettingRepo->updateOrInsert(type: $settingType, value: $requestedStatus);
+
+        // Keep persisted state consistent even if previous data was invalid.
+        $normalizedStatuses = $this->normalizeHierarchyStatuses($this->getHierarchyStatuses());
+        $this->persistHierarchyStatuses($normalizedStatuses);
+        clearWebConfigCacheKeys();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'message' => $successMessage,
+                'status' => true,
+            ]);
+        }
+
+        return back();
+    }
+
        public function getView(): View
 {
+    $this->persistHierarchyStatuses($this->normalizeHierarchyStatuses($this->getHierarchyStatuses()));
+
     $storedCountries = $this->deliveryCountryCodeRepo->getListWhere(orderBy: ['id' => 'desc'], dataLimit: getWebConfig(name: 'pagination_limit'));
     $storedStates = $this->deliveryStateRepo->getListWhere(
         orderBy: ['id' => 'desc'],
@@ -205,38 +315,32 @@ class DeliveryRestrictionController extends BaseController
 
     public function countryRestrictionStatusChange(Request $request): JsonResponse|RedirectResponse
     {
-        $this->businessSettingRepo->updateOrInsert(type: 'delivery_country_restriction', value: $request->get('status', 0));
-        if ($request->ajax()) {
-            return response()->json([
-                'message' => translate('delivery_country_restriction_status_changed_successfully'),
-                'status' => true
-            ]);
-        }
-        return back();
+        return $this->applyHierarchyToggleChange(
+            request: $request,
+            level: 'country',
+            settingType: 'delivery_country_restriction',
+            successMessage: translate('delivery_country_restriction_status_changed_successfully'),
+        );
     }
 
     public function StateRestrictionStatusChange(Request $request): JsonResponse|RedirectResponse
     {
-        $this->businessSettingRepo->updateOrInsert(type: 'delivery_state_restriction', value: $request->get('status', 0));
-        if ($request->ajax()) {
-            return response()->json([
-                'message' => translate('delivery_state_restriction_status_changed_successfully'),
-                'status' => true
-            ]);
-        }
-        return back();
+        return $this->applyHierarchyToggleChange(
+            request: $request,
+            level: 'state',
+            settingType: 'delivery_state_restriction',
+            successMessage: translate('delivery_state_restriction_status_changed_successfully'),
+        );
     }
 
     public function cityRestrictionStatusChange(Request $request): JsonResponse|RedirectResponse
     {
-        $this->businessSettingRepo->updateOrInsert(type: 'delivery_city_restriction', value: $request->get('status', 0));
-        if ($request->ajax()) {
-            return response()->json([
-                'message' => translate('delivery_city_restriction_status_changed_successfully'),
-                'status' => true
-            ]);
-        }
-        return back();
+        return $this->applyHierarchyToggleChange(
+            request: $request,
+            level: 'city',
+            settingType: 'delivery_city_restriction',
+            successMessage: translate('delivery_city_restriction_status_changed_successfully'),
+        );
     }
 
     public function zipcodeRestrictionStatusChange(Request $request): JsonResponse|RedirectResponse
@@ -254,14 +358,11 @@ class DeliveryRestrictionController extends BaseController
 
     public function areaRestrictionStatusChange(Request $request): JsonResponse|RedirectResponse
     {
-        $this->businessSettingRepo->updateOrInsert(type: 'delivery_area_restriction', value: $request->get('status', 0));
-        if ($request->ajax()) {
-            return response()->json([
-                'message' => translate('delivery_area_restriction_status_changed_successfully'),
-                'status' => true,
-            ]);
-        }
-        clearWebConfigCacheKeys();
-        return back();
+        return $this->applyHierarchyToggleChange(
+            request: $request,
+            level: 'area',
+            settingType: 'delivery_area_restriction',
+            successMessage: translate('delivery_area_restriction_status_changed_successfully'),
+        );
     }
 }

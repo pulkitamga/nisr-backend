@@ -259,6 +259,8 @@
                 <form id="updateWholesaleFollowUpForm" action="{{ route('admin.complaints.update-wholesale-follow-up') }}" method="POST">
                     @csrf
                     <input type="hidden" name="ticket_id" id="wholesale-follow-up-ticket-id">
+                    <input type="hidden" name="id" id="wholesale-follow-up-id">
+                    <input type="hidden" name="support_ticket_id" id="wholesale-follow-up-support-ticket-id">
                     <input type="hidden" name="department_id" id="wholesale-follow-up-department-id">
                     <input type="hidden" name="employee_id" id="wholesale-follow-up-employee-id">
 
@@ -341,6 +343,7 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
+<span id="support-ticket-ticket-id-required" data-text="{{ translate('Ticket ID is required.') }}"></span>
 @endsection
 
 @push('script')

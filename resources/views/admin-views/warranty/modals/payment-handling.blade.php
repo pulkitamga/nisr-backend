@@ -40,7 +40,7 @@
                             <option value="cod_collect">{{ translate('Confirm COD Collection') }}</option>
                             <option value="online_link">{{ translate('Generate Online Payment Link') }}</option>
                             <option value="waive">{{ translate('Waive All Fees') }}</option>
-                            <option value="reject">{{ translate('Reject Claim') }}</option>
+                            <option value="client_reject_payment">{{ translate('Client Reject Payment (Return Battery Without Fix & Close Claim)') }}</option>
                         </select>
                     </div>
 

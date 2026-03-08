@@ -695,6 +695,16 @@ function submitStatusUpdateForm(formId) {
                     break;
             }
         },
+        error: function (xhr) {
+            const errorMessage = xhr.responseJSON?.message || updateText.data("error") || "Something went wrong";
+            toastr.error(errorMessage);
+
+            if (form.data("from") === "delivery-restriction") {
+                setTimeout(function () {
+                    location.reload();
+                }, 300);
+            }
+        },
     });
 }
 

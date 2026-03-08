@@ -44,7 +44,7 @@ use Carbon\Carbon;
                 </button>
             </div>
             <div class="navbar-nav-wrap-content-right"
-                style="{{$direction == "rtl" ? 'margin-inline-start:unset; margin-inline-end: auto' : 'margin-inline-end:unset; margin-inline-start: auto'}}">
+                style="margin-inline-end: unset; margin-inline-start: auto">
                 <ul class="navbar-nav align-items-center flex-row gap-xl-16px">
                     <li class="nav-item">
                         <div class="hs-unfold">

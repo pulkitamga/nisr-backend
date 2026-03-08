@@ -37,13 +37,13 @@
                     <!-- Inspection Fee -->
                     <div class="form-group" id="inspectionFeeGroup" style="display:none;">
                         <label>{{ translate('Inspection Fee') }}</label>
-                        <input type="number" name="inspection_fee" class="form-control" step="0.01" min="0" placeholder="0.00">
+                        <input type="number" name="inspection_fee" id="inspectionFeeInput" class="form-control" step="0.01" min="0" placeholder="0.00">
                     </div>
 
                     <!-- Repair Fee -->
                     <div class="form-group" id="repairFeeGroup" style="display:block;">
                         <label>{{ translate('Repair Fee') }}</label>
-                        <input type="number" name="repair_fee" class="form-control" step="0.01" min="0" placeholder="0.00">
+                        <input type="number" name="repair_fee" id="repairFeeInput" class="form-control" step="0.01" min="0" placeholder="0.00">
                     </div>
 
                     <div id="replaceOptions" style="display:none;">
@@ -59,13 +59,13 @@
                         <!-- Replacement Fee (only if fee_required) -->
                         <div class="form-group" id="replacementFeeGroup" style="display:none;">
                             <label>{{ translate('Replacement Fee') }}</label>
-                            <input type="number" name="replacement_fee" class="form-control" step="0.01" min="0" placeholder="0.00">
+                            <input type="number" name="replacement_fee" id="replacementFeeInput" class="form-control" step="0.01" min="0" placeholder="0.00">
                         </div>
 
                         <!-- Coverage Mode -->
                         <div class="form-group">
                             <label>{{ translate('Coverage Mode for New Warranty') }}</label>
-                            <select name="replacement_mode" class="form-control" required>
+                            <select name="replacement_mode" id="replacementModeSelect" class="form-control" required>
                                 <option value="remaining">{{ translate('Remaining Term') }}</option>
                                 <option value="full">{{ translate('Full Term') }}</option>
                             </select>
@@ -96,27 +96,46 @@ document.addEventListener('DOMContentLoaded', function () {
     const replaceOptions = modal.querySelector('#replaceOptions');
     const feeOptionSelect = modal.querySelector('#replacementFeeOption');
     const replacementFeeGroup = modal.querySelector('#replacementFeeGroup');
+    const inspectionFeeInput = modal.querySelector('#inspectionFeeInput');
+    const repairFeeInput = modal.querySelector('#repairFeeInput');
+    const replacementFeeInput = modal.querySelector('#replacementFeeInput');
+    const replacementModeSelect = modal.querySelector('#replacementModeSelect');
 
     function toggleFields() {
         const action = actionSelect.value;
         const isTamper = tamperCheckbox.checked;
         const isRepair = action === 'repair';
         const isReplace = action === 'replace';
+        const isReject = action === 'reject';
+        const feeOption = feeOptionSelect.value;
+        const isReplacementFeeRequired = isReplace && feeOption === 'fee_required';
+        const showInspectionFee = isTamper && !isReject;
 
-        // Tamper → inspection fee
-        inspectionGroup.style.display = isTamper ? 'block' : 'none';
+        // Tamper fee is only relevant when action is repair/replace.
+        inspectionGroup.style.display = showInspectionFee ? 'block' : 'none';
+        inspectionFeeInput.disabled = !showInspectionFee;
+        if (!showInspectionFee) {
+            inspectionFeeInput.value = '';
+        }
 
         // Repair → repair fee
         repairFeeGroup.style.display = isRepair ? 'block' : 'none';
+        repairFeeInput.disabled = !isRepair;
+        if (!isRepair) {
+            repairFeeInput.value = '';
+        }
 
         // Replace → show pricing + mode
         replaceOptions.style.display = isReplace ? 'block' : 'none';
+        feeOptionSelect.disabled = !isReplace;
+        feeOptionSelect.required = isReplace;
+        replacementModeSelect.disabled = !isReplace;
+        replacementModeSelect.required = isReplace;
 
-        if (isReplace) {
-            const feeOption = feeOptionSelect.value;
-            replacementFeeGroup.style.display = feeOption === 'fee_required' ? 'block' : 'none';
-        } else {
-            replacementFeeGroup.style.display = 'none';
+        replacementFeeGroup.style.display = isReplacementFeeRequired ? 'block' : 'none';
+        replacementFeeInput.disabled = !isReplacementFeeRequired;
+        if (!isReplacementFeeRequired) {
+            replacementFeeInput.value = '0';
         }
     }
 
@@ -128,10 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     modal.addEventListener('hidden.bs.modal', function () {
         modal.querySelector('form').reset();
-        inspectionGroup.style.display = 'none';
-        repairFeeGroup.style.display = 'none';
-        replaceOptions.style.display = 'none';
-        replacementFeeGroup.style.display = 'none';
+        toggleFields();
     });
 });
 </script>

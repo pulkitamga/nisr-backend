@@ -44,7 +44,7 @@
                         <form action="{{ route('admin.business-settings.delivery-restriction.country-restriction-status-change') }}" method="post" id="country-area-form" data-from="delivery-restriction">
                             @csrf
                             <label class="switcher">
-                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="country-area" {{ isset($countryRestrictionStatus->value) && $countryRestrictionStatus->value  == 1 ? 'checked' : '' }} value="1"
+                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="country-area" data-level="country" {{ isset($countryRestrictionStatus->value) && $countryRestrictionStatus->value  == 1 ? 'checked' : '' }} value="1"
                                     data-modal-id="toggle-status-modal"
                                     data-toggle-id="country-area"
                                     data-on-image="delivery-available-country-on.png"
@@ -69,7 +69,7 @@
                         <form action="{{ route('admin.business-settings.delivery-restriction.state-restriction-status-change') }}" method="post" id="state-area-form" data-from="delivery-restriction">
                             @csrf
                             <label class="switcher">
-                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="state-area" {{ isset($stateRestrictionStatus->value) && $stateRestrictionStatus->value  == 1 ? 'checked' : '' }} value="1"
+                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="state-area" data-level="state" {{ isset($stateRestrictionStatus->value) && $stateRestrictionStatus->value  == 1 ? 'checked' : '' }} value="1"
                                     data-modal-id="toggle-status-modal"
                                     data-toggle-id="state-area"
                                     data-on-image="delivery-available-country-on.png"
@@ -94,7 +94,7 @@
                         <form action="{{ route('admin.business-settings.delivery-restriction.city-restriction-status-change') }}" method="post" id="city-area-form" data-from="delivery-restriction">
                             @csrf
                             <label class="switcher">
-                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="city-area" {{ isset($cityRestrictionStatus->value) && $cityRestrictionStatus->value  == 1 ? 'checked' : '' }} value="1"
+                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="city-area" data-level="city" {{ isset($cityRestrictionStatus->value) && $cityRestrictionStatus->value  == 1 ? 'checked' : '' }} value="1"
                                     data-modal-id="toggle-status-modal"
                                     data-toggle-id="city-area"
                                     data-on-image="delivery-available-country-on.png"
@@ -103,6 +103,32 @@
                                     data-off-title="{{translate('want_to_Turn_OFF_Delivery_Available_City').'?'}}"
                                     data-on-message="<p>{{translate('if_enabled_the_admin_can_deliver_orders_to_the_selected_cities')}}</p>"
                                     data-off-message="<p>{{translate('if_disabled_there_will_be_no_delivery_restrictions_for_admin')}}</p>">
+                                <span class="switcher_control"></span>
+                            </label>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-between align-items-center gap-10 form-control h-auto min-form-control-height mt-2" id="customer_wallet_section">
+                        <span class="title-color">
+                            {{translate('delivery_available_areas')}}
+                            <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="{{translate('if_enabled,_the_areas_will_be_available_for_delivery').'. '.translate('Please_Note').' : '.translate('If_you_don’t_enter_a_specific_areas_from_a_country,_that_area_won’t_be_available_for_delivery').'.'}}">
+                                <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
+                            </span>
+                        </span>
+
+                        <form action="{{ route('admin.business-settings.delivery-restriction.area-restriction-status-change') }}" method="post" id="area-form" data-from="delivery-restriction">
+                            @csrf
+                            <label class="switcher">
+                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="area" data-level="area" {{ isset($areaRestrictionStatus) && $areaRestrictionStatus->value  == 1? 'checked' : '' }} value="1"
+                                    data-modal-id="toggle-status-modal"
+                                    data-toggle-id="area"
+                                    data-on-image="delivery-available-country-on.png"
+                                    data-off-image="delivery-available-country-off.png"
+                                    data-on-title="{{translate('want_to_Turn_ON_Delivery_Available_Areas').'?'}}"
+                                    data-off-title="{{translate('want_to_Turn_OFF_Delivery_Available_Areas').'?'}}"
+                                    data-on-message="<p>{{translate('if_enabled_deliveries_will_be_available_only_in_the_added_areas')}}</p>"
+                                    data-off-message="<p>{{translate('if_disabled_there_will_be_no_delivery_restrictions_based_on_areas')}}</p>">
                                 <span class="switcher_control"></span>
                             </label>
                         </form>
@@ -129,32 +155,6 @@
                                     data-off-title="{{translate('want_to_Turn_OFF_Delivery_Available_Zip_Code_Area').'?'}}"
                                     data-on-message="<p>{{translate('if_enabled_deliveries_will_be_available_only_in_the_added_zip_code_areas')}}</p>"
                                     data-off-message="<p>{{translate('if_disabled_there_will_be_no_delivery_restrictions_based_on_zip_code_areas')}}</p>">
-                                <span class="switcher_control"></span>
-                            </label>
-                        </form>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="d-flex justify-content-between align-items-center gap-10 form-control h-auto min-form-control-height mt-2" id="customer_wallet_section">
-                        <span class="title-color">
-                            {{translate('delivery_available_areas')}}
-                            <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="{{translate('if_enabled,_the_areas_will_be_available_for_delivery').'. '.translate('Please_Note').' : '.translate('If_you_don’t_enter_a_specific_areas_from_a_country,_that_area_won’t_be_available_for_delivery').'.'}}">
-                                <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
-                            </span>
-                        </span>
-
-                        <form action="{{ route('admin.business-settings.delivery-restriction.area-restriction-status-change') }}" method="post" id="area-form" data-from="delivery-restriction">
-                            @csrf
-                            <label class="switcher">
-                                <input type="checkbox" class="switcher_input toggle-switch-message" name="status" id="area" {{ isset($areaRestrictionStatus) && $areaRestrictionStatus->value  == 1? 'checked' : '' }} value="1"
-                                    data-modal-id="toggle-status-modal"
-                                    data-toggle-id="area"
-                                    data-on-image="delivery-available-country-on.png"
-                                    data-off-image="delivery-available-country-off.png"
-                                    data-on-title="{{translate('want_to_Turn_ON_Delivery_Available_Areas').'?'}}"
-                                    data-off-title="{{translate('want_to_Turn_OFF_Delivery_Available_Areas').'?'}}"
-                                    data-on-message="<p>{{translate('if_enabled_deliveries_will_be_available_only_in_the_added_areas')}}</p>"
-                                    data-off-message="<p>{{translate('if_disabled_there_will_be_no_delivery_restrictions_based_on_areas')}}</p>">
                                 <span class="switcher_control"></span>
                             </label>
                         </form>
@@ -567,10 +567,14 @@
     </div>
 </div>
 <span id="get-country-status" data-value="{{ $countryRestrictionStatus?->value ?? 0  }}"></span>
+<span id="get-state-status" data-value="{{ $stateRestrictionStatus?->value ?? 0  }}"></span>
+<span id="get-city-status" data-value="{{ $cityRestrictionStatus?->value ?? 0  }}"></span>
 <span id="get-zip-status" data-value="{{ $zipCodeAreaRestrictionStatus?->value ?? 0  }}"></span>
-<span id="area-status" data-value="{{ $AreaRestrictionStatus?->value ?? 0  }}"></span>
+<span id="get-area-status" data-value="{{ $areaRestrictionStatus?->value ?? 0  }}"></span>
 <span id="get-zip-code-text" data-error="{{ translate('please_enter_zip_code') }}"></span>
 <span id="get-area-text" data-error="{{ translate('please_enter_area') }}"></span>
+<span id="delivery-restriction-parent-message" data-text="Please enable the parent level first."></span>
+<span id="delivery-restriction-child-message" data-text="Please disable the child level first."></span>
 @endsection
 
 @push('script_2')

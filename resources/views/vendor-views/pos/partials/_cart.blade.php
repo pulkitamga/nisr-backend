@@ -181,7 +181,7 @@
                 {{ translate('cancel_Order') }}
             </span>
 
-                <button id="submit_order" type="button" class="btn btn--primary btn-block m-0 action-form-submit" data-message="{{translate('want_to_place_this_order').'?'}}" data-toggle="modal" data-target="#paymentModal">
+                <button id="submit_order" type="button" class="btn btn--primary btn-block m-0 action-form-submit" data-message="{{ translate('want_to_place_this_order') }}" data-toggle="modal" data-target="#paymentModal">
                     <i class="fa fa-shopping-bag"></i>
                     {{ translate('place_Order') }}
                 </button>

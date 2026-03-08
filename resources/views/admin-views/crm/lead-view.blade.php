@@ -10,6 +10,16 @@
         border-left: 4px solid var('');
     }
 
+    .detail-card.rtl {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .detail-card.ltr {
+        direction: ltr;
+        text-align: left;
+    }
+
     .detail-card p {
         margin-bottom: 0.75rem;
         line-height: 1.5;
@@ -30,6 +40,10 @@
         display: inline-block;
         text-align: left;
     }
+
+    .detail-card .list-group-item {
+        gap: .75rem;
+    }
 </style>
 @endpush
 
@@ -47,7 +61,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <div class="card mb-4 shadow-sm detail-card" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+            <div class="card mb-4 shadow-sm detail-card {{ $isRtl ? 'rtl' : 'ltr' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">{{ translate('Message Details') }}</h5>
                 </div>
@@ -67,9 +81,9 @@
                         <ul class="list-group mt-2">
                             @foreach($inbox->details as $key => $value)
                             @if(!empty($value)) {{-- Only show if value is not empty --}}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <li class="list-group-item d-flex justify-content-between align-items-center {{ $isRtl ? 'flex-row-reverse text-right' : '' }}">
                                 <span class="fw-bold">{{ ucfirst($key) }}</span>
-                                <span>{{ $value }}</span>
+                                <span class="bidi-auto">{{ $value }}</span>
                             </li>
                             @endif
                             @endforeach

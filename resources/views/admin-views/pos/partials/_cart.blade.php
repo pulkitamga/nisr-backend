@@ -254,7 +254,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
             </span>
 
             <button id="submit_order" type="button" class="btn btn--primary btn-block m-0 action-form-submit"
-                data-message="{{translate('want_to_place_this_order').'?'}}" data-toggle="modal"
+                data-message="{{ translate('want_to_place_this_order') }}" data-toggle="modal"
                 data-target="#paymentModal">
                 <i class="fa fa-shopping-bag"></i>
                 {{ translate('place_Order') }}

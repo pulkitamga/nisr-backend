@@ -12136,4 +12136,7 @@ return [
 	"Press Enter to add multiple models" => "Press Enter to add multiple models",
 	"Make has been deleted." => "Make has been deleted.",
 	"Could not delete make." => "Could not delete make.",
+	"Repair fee" => "Repair fee",
+	"Inspection fee" => "Inspection fee",
+	"payment_handled" => "Payment handled",
 ];

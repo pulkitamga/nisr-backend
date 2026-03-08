@@ -248,12 +248,21 @@ function basicFunctionalityForCartSummary() {
                 "text"
             ),
             type: "warning",
+            input: null,
             showCancelButton: true,
             cancelButtonColor: "default",
             confirmButtonColor: "#161853",
             cancelButtonText: getNoWord,
             confirmButtonText: getYesWord,
             reverseButtons: true,
+            didOpen: () => {
+                const popup = document.querySelector(".swal2-popup");
+                if (!popup) return;
+                popup.querySelectorAll(".swal2-input, .swal2-file, .swal2-range, .swal2-select, .swal2-radio, .swal2-checkbox, .swal2-textarea, .swal2-input-label")
+                    .forEach((el) => {
+                        el.style.display = "none";
+                    });
+            },
         }).then((result) => {
             if (result.value) {
                 $.post(
@@ -284,6 +293,7 @@ function basicFunctionalityForCartSummary() {
                 title: messageAreYouSure,
                 type: "warning",
                 text: $(this).data("message"),
+                input: null,
                 showCancelButton: true,
                 showConfirmButton: true,
                 confirmButtonColor: "#3085d6",
@@ -291,6 +301,14 @@ function basicFunctionalityForCartSummary() {
                 cancelButtonText: getNoWord,
                 confirmButtonText: getYesWord,
                 reverseButtons: true,
+                didOpen: () => {
+                    const popup = document.querySelector(".swal2-popup");
+                    if (!popup) return;
+                    popup.querySelectorAll(".swal2-input, .swal2-file, .swal2-range, .swal2-select, .swal2-radio, .swal2-checkbox, .swal2-textarea, .swal2-input-label")
+                        .forEach((el) => {
+                            el.style.display = "none";
+                        });
+                },
             }).then(function (result) {
                 if (result.value) {
                     let formData = new FormData(document.getElementById('order-place'));
