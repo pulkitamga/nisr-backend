@@ -45,8 +45,8 @@
                                                         </div>
                                                         <h2 class="align-items-center d-flex fs-36 m-0 text-white">
                                                             {{ webCurrencyConverter(amount: $total_wallet_balance ?? 0) }}
-                                                            <span class="ml-2 fs-18">
-                                                                <i class="tio-info-outined" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="If you want to add fund to your wallet then click add fund button"></i>
+                                                            <span class="ms-2 fs-18">
+                                                                <i class="tio-info-outined" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="{{ translate('if_you_want_to_add_fund_to_your_wallet_then_click_add_fund_button') }}"></i>
                                                             </span>
                                                         </h2>
                                                         @if ($addFundsToWallet)
@@ -84,7 +84,7 @@
                                                             {{ webCurrencyConverter(amount: $total_wallet_balance ?? 0) }}
 
                                                             @if ($addFundsToWallet)
-                                                            <span class="ml-2 fs-18">
+                                                            <span class="ms-2 fs-18">
                                                                 <i class="tio-info-outined" data-toggle="tooltip" data-placement="bottom" title="{{ translate('if_you_want_to_add_fund_to_your_wallet_then_click_add_fund_button') }}"></i>
                                                             </span>
                                                             @endif
@@ -101,7 +101,7 @@
                                                 @foreach ($add_fund_bonus_list as $bonus)
                                                         <div class="item">
 
-                                                    <div class="add-fund-carousel-card z-1 w-100 border rounded-10 p-4 ml-1">
+                                                    <div class="add-fund-carousel-card z-1 w-100 border rounded-10 p-4 ms-1">
                                                             <div>
                                                                 <h4 class="mb-2 text-accent">{{ $bonus->title }}</h4>
                                                                 <p class="mb-2 text-dark">{{ translate('valid_till') }} {{ date('d M, Y',strtotime($bonus->end_date_time)) }}</p>
@@ -130,7 +130,7 @@
                                     <div class="modal-content">
 
                                         <div class="modal-header border-0">
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
@@ -166,7 +166,7 @@
                                                                     <div class="form-check-label d-flex align-items-center">
                                                                         <img width="60" alt="{{ translate('payment') }}"
                                                                              src="{{ getValidImage(path: 'storage/app/public/payment_modules/gateway_image/'.$payment_method_img, type:'banner') }}">
-                                                                        <span class="ml-3">{{ $payment_method_title }}</span>
+                                                                        <span class="ms-3">{{ $payment_method_title }}</span>
                                                                     </div>
                                                                 </label>
                                                             @empty
@@ -193,8 +193,8 @@
                                     <div class="align-items-start d-flex flex-column flex-md-row gap-8 justify-content-between p-2 align-items-center">
                                         <h6 class="mb-0 font-bold fs-16">{{ translate('Transaction_History') }}</h6>
 
-                                        <div class="navbar-nav text-center pr-0">
-                                            <div class="dropdown border pl-3">
+                                        <div class="navbar-nav text-center pe-0">
+                                            <div class="dropdown border ps-3">
                                                 <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
                                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     {{ request()->has('type') ? (request('type') == 'all'? translate('all_Transactions') : ucwords(translate(request('type')))):translate('all_Transactions') }}

@@ -30,8 +30,8 @@
         <!-- Overlay -->
         <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-center rounded-xl pointer-events-none">
             <div>
-                <h1 class="text-4xl font-bold mb-4">Explore Inspiring Stories</h1>
-                <p class="text-lg">Travel, tech, lifestyle aur bhi kuch!</p>
+                <h1 class="text-4xl font-bold mb-4">{{ __('Explore Inspiring Stories') }}</h1>
+                <p class="text-lg">{{ __('Travel, tech, lifestyle and more!') }}</p>
             </div>
         </div>
     </div>
@@ -41,7 +41,7 @@
 <!-- Featured Posts -->
 <section class="py-12 bg-white">
     <div class="max-w-6xl mx-auto px-2">
-        <h2 class="text-3xl font-bold mb-8 text-center text-[#119d90]">Featured Posts</h2>
+        <h2 class="text-3xl font-bold mb-8 text-center text-[#119d90]">{{ __('Featured Posts') }}</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             @foreach($featuredPosts as $post)
@@ -64,7 +64,7 @@
         </div>
 
         @if($featuredPosts->where('status', 1)->count() === 0)
-        <p class="text-center text-gray-500 mt-6">No active featured blog available</p>
+        <p class="text-center text-gray-500 mt-6">{{ __('No active featured blog available') }}</p>
         @endif
     </div>
 </section>
@@ -72,18 +72,18 @@
 
 <!-- Newsletter CTA -->
 <section class="py-16 bg-gray-100 text-center">
-    <h2 class="text-3xl font-bold mb-4 text-[#119d90]">Subscribe to Our Newsletter</h2>
-    <p class="mb-6 text-gray-700">Weekly updates and blog ideas in your inbox</p>
+    <h2 class="text-3xl font-bold mb-4 text-[#119d90]">{{ __('Subscribe to Our Newsletter') }}</h2>
+    <p class="mb-6 text-gray-700">{{ __('Weekly updates and blog ideas in your inbox') }}</p>
     <form class="flex justify-center gap-2 flex-wrap">
-        <input type="email" placeholder="Enter your email" class="px-4 py-2 rounded border border-gray-300 focus:outline-none">
-        <button class="bg-[#119d90] hover:bg-[#119d90] text-white px-6 py-2 rounded">Subscribe</button>
+        <input type="email" placeholder="{{ __('Enter your email') }}" class="px-4 py-2 rounded border border-gray-300 focus:outline-none">
+        <button class="bg-[#119d90] hover:bg-[#119d90] text-white px-6 py-2 rounded">{{ __('Subscribe') }}</button>
     </form>
 </section>
 
 <!-- Latest Blog Cards -->
 <section class="py-12 bg-white">
     <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-8 text-center text-[#119d90]">Latest Blog Posts</h2>
+        <h2 class="text-3xl font-bold mb-8 text-center text-[#119d90]">{{ __('Latest Blog Posts') }}</h2>
 
         <div class="grid md:grid-cols-2 gap-6">
             @foreach($latestPosts as $post)
@@ -110,14 +110,14 @@
         </div>
 
         @if($latestPosts->where('status', 1)->count() === 0)
-        <p class="text-center text-gray-500 mt-6">No latest blog posts available.</p>
+        <p class="text-center text-gray-500 mt-6">{{ __('No latest blog posts available.') }}</p>
         @endif
 
         <!-- Pagination and Show More Button -->
         <div class="mt-6 text-center">
             @if($latestPosts->hasMorePages())
             <a href="{{ $latestPosts->nextPageUrl() }}" class="inline-block text-[#119d90] hover:text-[#119d90] font-semibold py-2 px-4 border border-[#119d90] rounded-full transition duration-300">
-                Show More
+                {{ __('Show More') }}
             </a>
             @endif
         </div>
@@ -130,7 +130,7 @@
 <!-- Categories Grid Section -->
 <section class="py-16 bg-gray-100">
     <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-5 text-center text-[#119d90]">Popular Categories</h2>
+        <h2 class="text-3xl font-bold mb-5 text-center text-[#119d90]">{{ __('Popular Categories') }}</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-6">
             @php
             $categoryImages = [
@@ -162,8 +162,8 @@
 @if($socialMediaBlogs->isNotEmpty())
 <section class="py-16 bg-gray-100">
     <div class="max-w-6xl mx-auto px-4 text-center">
-        <h2 class="text-3xl font-bold mb-6 text-[#119d90]">Follow on Instagram</h2>
-        <p class="text-gray-600 mb-10">Peek into my life — behind the scenes & snapshots 📸</p>
+        <h2 class="text-3xl font-bold mb-6 text-[#119d90]">{{ __('Follow on Instagram') }}</h2>
+        <p class="text-gray-600 mb-10">{{ __('Peek into my life - behind the scenes and snapshots') }}</p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             @foreach($socialMediaBlogs as $blog)
             <img src="{{ asset('storage/' . $blog->image) }}" class="w-full h-40 object-cover rounded-lg hover:scale-105 transition-transform duration-300" alt="{{ $blog->heading }}">

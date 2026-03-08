@@ -36,13 +36,13 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label">{{ translate('Wholesaler') }}</label>
                     <input type="text"
-                        value="{{ $order->wholeseller->wholesalerBusiness->company_name ?? 'N/A' }}"
+                        value="{{ $order->wholeseller->wholesalerBusiness->company_name ?? __('N/A') }}"
                         name="wholesaler_" class="form-control" readonly>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">{{ translate('Wholesaler Tier') }}</label>
-                    <input type="text" value="{{ $order->wholeseller->tier ?? 'N/A' }}" class="form-control"
+                    <input type="text" value="{{ $order->wholeseller->tier ?? __('N/A') }}" class="form-control"
                         readonly>
                 </div>
 
@@ -72,7 +72,7 @@
 
                         <tr data-product-id="{{ $item->product_id }}">
 
-                            <td>{{ $item->product->name }}  ({{ $item->product_variation_type ?? 'No Variation' }})</td>
+                            <td>{{ $item->product->name }}  ({{ $item->product_variation_type ?? __('No Variation') }})</td>
 
                             <td>
                                 <input type="number" name="products[{{ $item->product_id }}][approved_quantity]"

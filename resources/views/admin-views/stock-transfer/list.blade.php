@@ -10,16 +10,16 @@
         <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" alt="">
             {{ translate('Stock_Transfer_List') }}
-            <span class="badge badge-soft-dark radius-50 fz-14 ml-1"></span>
+            <span class="badge badge-soft-dark radius-50 fz-14 ms-1"></span>
         </h2>
     </div>
 
     <div class="mt-20">
         <div class="card">
             <div class="card-header gap-3 align-items-center">
-                <h5 class="mb-0 mr-auto">
+                <h5 class="mb-0 me-auto">
                     {{translate('stock_Transfer_List')}}
-                    <span class="badge badge-soft-dark radius-50 fz-14 ml-1"></span>
+                    <span class="badge badge-soft-dark radius-50 fz-14 ms-1"></span>
                 </h5>
 
                 <form action="{{ url()->current() }}" method="GET">
@@ -34,7 +34,7 @@
                             </div>
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                            placeholder="{{ translate('search_by_Product_Name')}}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                            placeholder="{{ translate('search_by_Product_Name')}}" aria-label="{{ translate('search') }}" value="{{ request('searchValue') }}">
                         <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                     </div>
                 </form>
@@ -73,12 +73,12 @@
                         <tr>
                             <td class="text-center align-middle">{{ $aStockTransfers->firstItem() + $key }}</td>
                             <td class="align-middle">
-                                {{ $transferRequest->toBranch ? $transferRequest->toBranch->branch_name : 'N/A' }}
+                                {{ $transferRequest->toBranch ? $transferRequest->toBranch->branch_name : translate('not_available') }}
                             </td>
                             <td class="text-startStockTransfers align-middle">
-                                {{ $transferRequest->transfer_date ? date('M d, Y', strtotime($transferRequest->transfer_date)) : 'N/A' }}
+                                {{ $transferRequest->transfer_date ? date('M d, Y', strtotime($transferRequest->transfer_date)) : translate('not_available') }}
                             </td>
-                            <td>{{ optional($product->product)->name ?? 'N/A' }}</td>
+                            <td>{{ optional($product->product)->name ?? translate('not_available') }}</td>
                             <td>{{ $product->category->name ?? ''}}</td>
                             <td>{{ $product->variation_type ?? '' }}</td>
                             <td class="text-center align-middle">{{ $product->quantity }}</td>
@@ -86,7 +86,7 @@
                             <td class="text-center align-middle">
                                 @if($product->serial_csv_path)
                                 <a href="{{ route('admin.stock-transfer.download-csv', $product->id) }}"
-                                    class="btn btn-sm btn-outline-info" title="Download CSV">
+                                    class="btn btn-sm btn-outline-info" title="{{ translate('download_csv') }}">
                                     <i class="tio-download"></i>
                                 </a>
                                 @else

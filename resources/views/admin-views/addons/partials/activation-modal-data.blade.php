@@ -3,7 +3,7 @@
         type="button"
         class="btn-close border-0"
         data-dismiss="modal"
-        aria-label="Close"
+        aria-label="{{ translate('Close') }}"
     ><i class="tio-clear"></i></button>
 </div>
 <div class="modal-body px-4 px-sm-5">
@@ -21,3 +21,4 @@
         </div>
     </form>
 </div>
+

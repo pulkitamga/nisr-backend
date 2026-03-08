@@ -175,7 +175,7 @@
             <div class="modal-dialog modal-dialog-centered  modal-dialog-scrollable modal-lg">
                 <div class="modal-content">
                     <div class="modal-header border-0 pb-0">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -208,7 +208,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLongTitle">{{ translate('wallet_payment')}}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -257,3 +257,4 @@
 @push('script')
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/payment.js') }}"></script>
 @endpush
+

@@ -19,7 +19,7 @@
         display: none;
         position: fixed;
         z-index: 1;
-        left: 0;
+        inset-inline-start: 0;
         top: 0;
         width: 100%;
         height: 100%;
@@ -66,7 +66,7 @@
 
         #print-area {
             position: absolute;
-            left: 0;
+            inset-inline-start: 0;
             top: 0;
             width: 100%;
             z-index: 9999;
@@ -97,8 +97,8 @@
         .row {
             display: flex !important;
             flex-wrap: wrap !important;
-            margin-right: -15px !important;
-            margin-left: -15px !important;
+            margin-inline-end: -15px !important;
+            margin-inline-start: -15px !important;
         }
 
         .col-md-5,
@@ -106,8 +106,8 @@
         .col-md-7 {
             position: relative !important;
             width: 100% !important;
-            padding-right: 15px !important;
-            padding-left: 15px !important;
+            padding-inline-end: 15px !important;
+            padding-inline-start: 15px !important;
         }
 
         .col-md-5 {
@@ -262,7 +262,7 @@
 
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $item->product->name ?? 'N/A' }}</td>
+                                <td>{{ $item->product->name ?? __('N/A') }}</td>
                                 <td>{{ $item->product_quantity }}</td>
                                 <td>{{ webCurrencyConverter(amount:$item->base_price) }}</td>
                                 <td>{{ webCurrencyConverter(amount:$tax) }}</td>
@@ -291,14 +291,14 @@
                             @endif
                         </div>
                     </div>
-                    <div class="col-md-5 ml-auto">
+                    <div class="col-md-5 ms-auto">
                         <div class="p-3">
                             <h6 class="mb-3 font-weight-bold text-center border py-lg-2 bg-dark text-white">
                                 {{ translate('Sub Total') }}
                             </h6>
                             <ul class="list-unstyled mb-3">
                                 <li class="d-flex justify-content-between mb-1">
-                                    <span>Tax</span>
+                                    <span>{{ __('Tax') }}</span>
                                     <span>{{ webCurrencyConverter(amount:$totelTax) }}</span>
                                 </li>
                             </ul>
@@ -315,7 +315,7 @@
                             @if (isset($quotation) && !empty(strip_tags($quotation->wholesaler_discount_amount)))
                             <ul class="list-unstyled mb-3">
                                 <li class="d-flex justify-content-between mb-1">
-                                    <span>Wholesaler Discount</span>
+                                    <span>{{ __('Wholesaler Discount') }}</span>
                                     <span>{{ webCurrencyConverter(amount:$quotation->wholesaler_discount_amount) }}</span>
                                 </li>
                             </ul>

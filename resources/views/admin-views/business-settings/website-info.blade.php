@@ -36,7 +36,7 @@
         <div class="card mb-2">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="tio-notifications-alert mr-1"></i>
+                    <i class="tio-notifications-alert me-1"></i>
                     {{ translate('System_Maintenance') }}
                 </h5>
             </div>
@@ -48,7 +48,7 @@
                                 <p class="mb-0">
                                     {{ translate('Your maintenance mode is activated') }}
                                     @if($selectedMaintenanceDuration['maintenance_duration'] != 'until_change')
-                                        {{ translate('from') }} <strong>{{ $maintenanceStartDate->format('m/d/Y, h:i A') }}</strong> to <strong>{{ $maintenanceEndDate->format('m/d/Y, h:i A') }}</strong>.
+                                        {{ translate('from') }} <strong>{{ $maintenanceStartDate->format('m/d/Y, h:i A') }}</strong> {{ __('to') }} <strong>{{ $maintenanceEndDate->format('m/d/Y, h:i A') }}</strong>.
                                     @endif
                                 </p>
                                 <a class="btn btn-outline-primary btn-sm edit square-btn maintenance-mode-show" href="#"><i class="tio-edit"></i></a>
@@ -101,7 +101,7 @@
                         <div class="d-flex justify-content-between align-items-center border rounded mb-2 px-3 py-2">
                             <h5 class="mb-0 font-weight-bold">{{translate('Maintenance_Mode')}}</h5>
 
-                            <label class="switcher ml-auto mb-0">
+                            <label class="switcher ms-auto mb-0">
                                 @if(!$businessSetting['maintenance_mode'])
                                     <input type="checkbox"
                                            id="maintenanceModeSwitch"

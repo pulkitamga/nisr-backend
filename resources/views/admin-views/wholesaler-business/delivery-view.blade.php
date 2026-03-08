@@ -60,7 +60,7 @@
     #addDeliveryModal .modal-body {
         max-height: 70vh;
         overflow-y: auto;
-        padding-right: 1rem;
+        padding-inline-end: 1rem;
     }
 
 
@@ -118,13 +118,13 @@
     $errorCount = session('error_count', 'several');
     @endphp
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Transfer failed!</strong>
-        {{ $errorCount }} serial{{ $errorCount == 1 ? '' : 's' }} {{ $errorCount == 1 ? 'is' : 'are' }} invalid.
+        <strong>{{ translate('Transfer failed!') }}</strong>
+        {{ $errorCount }} {{ $errorCount == 1 ? translate('serial') : translate('serials') }} {{ $errorCount == 1 ? translate('is') : translate('are') }} {{ translate('invalid.') }}
         <a href="{{ route('admin.stock-transfer.download-error-csv', session('error_csv')) }}"
             class="btn btn-sm btn-warning ms-2">
-            Download Error Report
+            {{ translate('Download Error Report') }}
         </a>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ translate('Close') }}">&times;</button>
     </div>
     @endif
 
@@ -157,8 +157,8 @@
                                 <tr class="align-middle">
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($delivery->created_at)->format('d/m/Y') }}</td>
-                                    <td>{{ $delivery->product->name ?? 'N/A' }}</td>
-                                    <td>{{ $delivery->product_variation_type ?? 'No Variation' }}</td>
+                                    <td>{{ $delivery->product->name ?? __('N/A') }}</td>
+                                    <td>{{ $delivery->product_variation_type ?? __('No Variation') }}</td>
                                     <td>{{ $delivery->product_quantity }}</td>
                                     <td>{{ $delivery->quantity_sent }}</td>
                                     <td>{{ $delivery->remaining }}</td>
@@ -170,7 +170,7 @@
                                             data-product-id="{{ $delivery->product_id }}"
                                             data-order-id="{{ $delivery->confirmed_order_id }}"
                                             data-variation-type="{{ $delivery->product_variation_type ?? '' }}"
-                                            data-product-name="{{ $delivery->product->name ?? 'N/A' }}"
+                                            data-product-name="{{ $delivery->product->name ?? __('N/A') }}"
                                             data-requested-qty="{{ $delivery->product_quantity }}"
                                             data-sent-qty="{{ $delivery->quantity_sent }}"
                                             data-remaining="{{ $delivery->remaining }}"
@@ -204,11 +204,11 @@
                                             <i class="bi bi-truck"></i> {{ translate('add_delivery') }}
                                         </h5>
 
-                                        <a href="{{ asset('sample.csv') }}" class="btn btn-primary ml-auto" id="download_sample" download>
+                                        <a href="{{ asset('sample.csv') }}" class="btn btn-primary ms-auto" id="download_sample" download>
                                             {{ translate('Download_Sample_Csv') }}
                                         </a>
 
-                                        <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="Close">
+                                        <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                                             &times;
                                         </button>
                                     </div>
@@ -326,15 +326,15 @@
                     <tr>
                         <td>{{ $deliveryLogs->firstItem() + $index }}</td>
                         <td>{{ \Carbon\Carbon::parse($log->delivery_date)->format('d/m/Y') }}</td>
-                        <td>{{ $log->product->name ?? 'N/A' }}</td>
-                        <td>{{ $log->product_variation_type ?? 'No Variation' }}</td>
+                        <td>{{ $log->product->name ?? __('N/A') }}</td>
+                        <td>{{ $log->product_variation_type ?? __('No Variation') }}</td>
                         <td>{{ $log->quantity_sent }}</td>
-                        <td>{{ $log->branch->branch_name ?? 'N/A' }}</td>
+                        <td>{{ $log->branch->branch_name ?? __('N/A') }}</td>
                         <td>{{ $log->note ?? '-' }}</td>
                         <td class="text-center align-middle">
                             @if($log->serial_csv_path)
                             <a href="{{ route('admin.wholesale.business.delivery.download-csv', $log->id) }}"
-                                class="btn btn-sm btn-outline-info" title="Download CSV">
+                                class="btn btn-sm btn-outline-info" title="{{ translate('Download CSV') }}">
                                 <i class="tio-download"></i>
                             </a>
                             @else
@@ -376,7 +376,7 @@
 
         $('#branchSelect').select2({
             dropdownParent: $('#addDeliveryModal'),
-            placeholder: "Select Branch",
+            placeholder: @json(__('Select Branch')),
             width: '100%'
         });
 
@@ -421,7 +421,7 @@
                 url: "{{ route('admin.wholesale.business.branch-list') }}",
                 method: 'GET',
                 success: function(branches) {
-                    $('#branchSelect').empty().append('<option value="">Select Branch</option>');
+                    $('#branchSelect').empty().append('<option value="">{{ __('Select Branch') }}</option>');
                     branches.forEach(branch => {
                         $('#branchSelect').append(`<option value="${branch.id}">${branch.branch_name}</option>`);
                     });
@@ -500,3 +500,4 @@
     });
 </script>
 @endpush
+

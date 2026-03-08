@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered max-w-655px">
         <div class="modal-content">
             <div class="modal-header border-0 pb-0 pt-2 px-2 d-flex justify-content-end">
-                <button type="button" class="btn-close btn-close-danger" data-dismiss="modal" aria-label="Close"><i
+                <button type="button" class="btn-close btn-close-danger" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                         class="tio-clear"></i></button>
             </div>
             <div class="modal-body px-4 px-sm-5 pt-0">
@@ -37,3 +37,4 @@
         </div>
     </div>
 </div>
+

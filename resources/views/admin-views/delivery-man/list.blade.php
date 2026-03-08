@@ -25,7 +25,7 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                                placeholder="{{translate('search_by_name').','.translate('_contact_info')}}" aria-label="Search" value="{{ request('searchValue') }}" required>
+                                                placeholder="{{translate('search_by_name').','.translate('_contact_info')}}" aria-label="{{ translate('Search') }}" value="{{ request('searchValue') }}" required>
                                         <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
                                 </form>
@@ -68,7 +68,7 @@
                                             <img class="rounded-circle avatar avatar-lg" alt=""
                                                  src="{{getStorageImages(path:$deliveryMen->image_full_url,type:'backend-profile')}}">
                                             <div class="media-body">
-                                                <a title="Earning Statement"
+                                                <a title="{{ translate('Earning Statement') }}"
                                                    class="title-color hover-c1"
                                                    href="{{ route('admin.delivery-man.earning-statement-overview', ['id' => $deliveryMen['id']]) }}">
                                                     {{$deliveryMen['f_name'].' '.$deliveryMen['l_name']}}
@@ -118,7 +118,7 @@
                                                 title="{{translate('edit')}}"
                                                 href="{{route('admin.delivery-man.edit',[$deliveryMen['id']])}}">
                                                 <i class="tio-edit"></i></a>
-                                            <a title="Earning Statement"
+                                            <a title="{{ translate('Earning Statement') }}"
                                                class="btn btn-outline-info btn-sm square-btn"
                                                href="{{ route('admin.delivery-man.earning-statement-overview', ['id' => $deliveryMen['id']]) }}">
                                                 <i class="tio-money"></i>
@@ -156,3 +156,4 @@
 @push('script_2')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deliveryman.js')}}"></script>
 @endpush
+

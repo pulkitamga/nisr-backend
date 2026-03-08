@@ -76,7 +76,7 @@
                                     <a class="btn btn--primary px-4" target="_blank"
                                         href={{ route('admin.orders.generate-invoice', [$order['id']]) }}>
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
-                                            alt="" class="mr-1">
+                                            alt="" class="me-1">
                                         {{ translate('print_Invoice') }}
                                     </a>
                                 </div>
@@ -760,7 +760,7 @@
                                         {{ translate('shipping_address') }}
                                     </h4>
                                     @if ($order['order_status'] != 'delivered')
-                                        <button class="btn btn-outline-primary btn-sm square-btn" title="Edit"
+                                        <button class="btn btn-outline-primary btn-sm square-btn" title="{{ translate('Edit') }}"
                                             data-toggle="modal" data-target="#shippingAddressUpdateModal">
                                             <i class="tio-edit"></i>
                                         </button>
@@ -896,7 +896,7 @@
                         </h4>
                         <div class="media">
                             @if ($order->seller_is == 'admin')
-                                <div class="mr-3">
+                                <div class="me-3">
                                     <img class="avatar rounded avatar-70 img-fit-contain "
                                         src="{{ getStorageImages(path: getWebConfig(name: 'company_fav_icon'), type: 'shop') }}"
                                         alt="">
@@ -908,7 +908,7 @@
                                 </div>
                             @else
                                 @if (!empty($order->seller->shop))
-                                    <div class="mr-3">
+                                    <div class="me-3">
                                         <img class="avatar rounded avatar-70 img-fit"
                                             src="{{ getStorageImages(path: $order->seller->shop->image_full_url, type: 'backend-basic') }}"
                                             alt="">
@@ -947,7 +947,7 @@
                 <div class="modal-content">
                     <div class="modal-header pb-4">
                         <h3 class="mb-0">{{ translate('order_verification_images') }}</h3>
-                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                                 class="tio-clear"></i></button>
                     </div>
                     <div class="modal-body px-4 px-sm-5 pt-0">
@@ -981,7 +981,7 @@
             <div class="modal-content">
                 <div class="modal-header pb-4">
                     <h3 class="mb-0 text-center w-100">{{ translate('shipping_address') }}</h3>
-                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                             class="tio-clear"></i></button>
                 </div>
                 <div class="modal-body px-4 px-sm-5 pt-0">
@@ -1125,7 +1125,7 @@
                 <div class="modal-content">
                     <div class="modal-header pb-4">
                         <h3 class="mb-0 text-center w-100">{{ translate('billing_address') }}</h3>
-                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                                 class="tio-clear"></i></button>
                     </div>
                     <div class="modal-body px-4 px-sm-5 pt-0">
@@ -1284,7 +1284,7 @@
             <div class="modal-content">
                 <div class="modal-header pb-0 pt-4">
                     <button type="button" class="close position-absolute right-3 top-3" data-dismiss="modal"
-                        aria-label="Close"><spanaria-hidden="true">&times;</span></button>
+                        aria-label="{{ translate('Close') }}"><spanaria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-header justify-content-center pt-0 pb-0">
                     <h3 class="modal-title" id="locationModalLabel">{{ translate('location_on_Map') }}</h3>
@@ -1584,7 +1584,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('update_third_party_delivery_info') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -1624,7 +1624,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('exchange_product_info') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -1767,7 +1767,7 @@
                 $.get(getStatesURL, {
                     country: code
                 }, function(states) {
-                    $('#state_dropdown').html(`<option value="">Select State</option>`);
+                    $('#state_dropdown').html(`<option value="">{{ __('Select State') }}</option>`);
                     states.forEach(state => {
                         const isSelected = state.name.toLowerCase().trim() === selectedState
                             .toLowerCase().trim();
@@ -1795,7 +1795,7 @@
                 $.get(getCitiesURL, {
                     state_id: stateId
                 }, function(cities) {
-                    $('#city_dropdown').html(`<option value="">Select City</option>`);
+                    $('#city_dropdown').html(`<option value="">{{ __('Select City') }}</option>`);
                     cities.forEach(city => {
                         const isSelected = city.name.toLowerCase().trim() === selectedCity
                             .toLowerCase().trim();
@@ -1823,7 +1823,7 @@
                 $.get(getAreasURL, {
                     city_id: cityId
                 }, function(areas) {
-                    $('#area_dropdown').html(`<option value="">Select Area</option>`);
+                    $('#area_dropdown').html(`<option value="">{{ __('Select Area') }}</option>`);
                     areas.forEach(area => {
                         const isSelected = area.toLowerCase().trim() === selectedArea.toLowerCase()
                             .trim();
@@ -1842,7 +1842,7 @@
             });
 
             function resetDropdowns(ids) {
-                ids.forEach(id => $(id).html(`<option value="">Select</option>`));
+                ids.forEach(id => $(id).html(`<option value="">{{ translate('Select') }}</option>`));
             }
 
             function clearHiddenInputs(ids) {
@@ -1882,7 +1882,7 @@
                 $.get(getStatesURL, {
                     country: code
                 }, function(states) {
-                    $('#billing_state_dropdown').html(`<option value="">Select State</option>`);
+                    $('#billing_state_dropdown').html(`<option value="">{{ __('Select State') }}</option>`);
                     states.forEach(state => {
                         const isSelected = state.name.toLowerCase().trim() === selectedState
                             .toLowerCase().trim();
@@ -1910,7 +1910,7 @@
                 $.get(getCitiesURL, {
                     state_id: stateId
                 }, function(cities) {
-                    $('#billing_city_dropdown').html(`<option value="">Select City</option>`);
+                    $('#billing_city_dropdown').html(`<option value="">{{ __('Select City') }}</option>`);
                     cities.forEach(city => {
                         const isSelected = city.name.toLowerCase().trim() === selectedCity
                             .toLowerCase().trim();
@@ -1938,7 +1938,7 @@
                 $.get(getBillingAreasURL, {
                     city_id: cityId
                 }, function(areas) {
-                    $('#billing_area_dropdown').html(`<option value="">Select Area</option>`);
+                    $('#billing_area_dropdown').html(`<option value="">{{ __('Select Area') }}</option>`);
                     areas.forEach(area => {
                         const isSelected = area.toLowerCase().trim() === selectedArea.toLowerCase()
                             .trim();
@@ -1957,7 +1957,7 @@
             });
 
             function resetDropdowns(ids) {
-                ids.forEach(id => $(id).html(`<option value="">Select</option>`));
+                ids.forEach(id => $(id).html(`<option value="">{{ translate('Select') }}</option>`));
             }
 
             function clearHiddenInputs(ids) {
@@ -1992,3 +1992,4 @@
         });
     </script>
 @endpush
+

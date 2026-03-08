@@ -1079,7 +1079,7 @@
                                             title="{{ translate('send_notification') }}">
                                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/send-notification.svg') }}"
                                                 alt="{{ translate('send_notification_svg') }}" width="15"
-                                                class="mr-2">
+                                                class="me-2">
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate text-capitalize">
                                                 {{ translate('send_notification') }}
@@ -1093,7 +1093,7 @@
                                             title="{{ translate('push_notifications_setup') }}">
                                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/push-notification.svg') }}"
                                                 alt="{{ translate('push_notification_svg') }}" width="15"
-                                                class="mr-2">
+                                                class="me-2">
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate text-capitalize">
                                                 {{ translate('push_notifications_setup') }}
@@ -1274,9 +1274,9 @@
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/products/' . Product::STOCK_REPORT[URI] . '*') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.products.stock-report') }}"
-                                            title="product stoch">
+                                            title="{{ __('product_stock') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">product stoch</span>
+                                            <span class="text-truncate">{{ __('product_stock') }}</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
@@ -1362,9 +1362,9 @@
                                             </li>
                                             <li class="nav-item {{ Request::is('admin/crm/insights-report') ? 'active' : '' }}">
                                                 <a class="nav-link" href="{{ route('admin.crm.insights-report') }}"
-                                                    title="CRM Insights Report">
+                                                    title="{{ __('CRM Insights Report') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
-                                                    <span class="text-truncate">CRM Insights Report</span>
+                                                    <span class="text-truncate">{{ __('CRM Insights Report') }}</span>
                                                 </a>
                                             </li>
                                             <li
@@ -1405,9 +1405,9 @@
                                             </li>
                                             <li class="nav-item {{ Request::is('admin/ucm/insights-report') ? 'active' : '' }}">
                                                 <a class="nav-link" href="{{ route('admin.ucm.insights-report') }}"
-                                                    title="VOIP Insights Report">
+                                                    title="{{ __('VOIP Insights Report') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
-                                                    <span class="text-truncate">VOIP Insights Report</span>
+                                                    <span class="text-truncate">{{ __('VOIP Insights Report') }}</span>
                                                 </a>
                                             </li>
                                         @endif
@@ -1451,9 +1451,9 @@
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/warranty/report/analytics') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.warranty.report.analytics') }}"
-                                                title="Warranty Analytics Report">
+                                                title="{{ __('Warranty Analytics Report') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
-                                                <span class="text-truncate">Warranty Analytics Report</span>
+                                                <span class="text-truncate">{{ __('Warranty Analytics Report') }}</span>
                                             </a>
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
@@ -2656,7 +2656,7 @@
                                 Request::is('admin/blog*')
                                     ? 'scroll-here'
                                     : '' }}">
-                                <small class="nav-subtitle" title="">Contant Management</small>
+                                <small class="nav-subtitle" title="">{{ __('Content Management') }}</small>
                                 <small class="tio-more-horizontal nav-subtitle-replacer"></small>
                             </li>
 
@@ -2873,7 +2873,7 @@
             if (selectedBranchId) {
                 window.location.href = '/admin/pos?branch_id=' + selectedBranchId;
             } else {
-                alert('No branch found.');
+                alert(@json(__('No branch found.')));
             }
         }
     }
@@ -2884,7 +2884,7 @@
         if (branchId) {
             window.location.href = '/admin/pos?branch_id=' + branchId;
         } else {
-            alert('Please select a branch.');
+            alert(@json(__('Please select a branch.')));
         }
     });
 </script>

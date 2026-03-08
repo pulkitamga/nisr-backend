@@ -1,6 +1,6 @@
 @extends('layouts.front-end.app')
 
-@section('title', 'Careers at NISR')
+@section('title', __('Careers at NISR'))
 
 @push('css_or_js')
 <style>
@@ -63,7 +63,7 @@
                 <div class="card-footer">
                     <h5 class="mb-2">{{ translate('Job_Description') }}</h5>
                     {!! getTranslatedValue($job, 'job_description', $job->job_description ?? '') !!}
-                    <button class="btn btn--primary" data-toggle="modal" data-target="#exampleModal">Apply Now</button>
+                    <button class="btn btn--primary" data-toggle="modal" data-target="#exampleModal">{{ __('Apply Now') }}</button>
                 </div>
             </div>
 

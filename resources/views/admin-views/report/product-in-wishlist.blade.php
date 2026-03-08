@@ -70,7 +70,7 @@
                                     <input type="hidden" value="{{ $seller_id }}" name="seller_id">
                                     <input type="hidden" value="{{ $sort }}" name="sort">
                                     <input id="datatableSearch_" type="search" name="search" class="form-control"
-                                           placeholder="{{translate('search_Product_Name')}}" aria-label="Search orders"
+                                           placeholder="{{translate('search_Product_Name')}}" aria-label="{{ translate('Search orders') }}"
                                            value="{{ $search }}">
                                     <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                 </div>
@@ -134,3 +134,4 @@
 @endsection
 
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-report.js') }}"></script>
+

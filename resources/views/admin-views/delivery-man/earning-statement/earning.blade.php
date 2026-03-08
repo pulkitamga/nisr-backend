@@ -93,13 +93,13 @@
                                                 <i class="tio-search"></i>
                                             </div>
                                         </div>
-                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                         <button type="submit" class="btn btn--primary">
                                             {{ translate('search') }}
                                         </button>
                                     </div>
                                 </form>
-                                <div class="hs-unfold mr-2">
+                                <div class="hs-unfold me-2">
                                     <a class="js-hs-unfold-invoker btn btn-sm btn-white justify-content-between dropdown-toggle min-height-44 min-w-120" href="javascript:"
                                         data-hs-unfold-options='{
                                                 "target": "#menu",
@@ -202,3 +202,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deliveryman.js')}}"></script>
 @endpush
+

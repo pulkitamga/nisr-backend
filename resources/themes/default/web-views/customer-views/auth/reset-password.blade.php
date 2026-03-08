@@ -11,8 +11,8 @@
                 <h2 class="h3 mb-4">{{ translate('reset_your_password')}}</h2>
                 <p class="font-size-md">{{ translate('change_your_password_in_two_easy_steps.')}} {{ translate('this_helps_to_keep_your_new_password_secure.')}}</p>
                 <ol class="list-unstyled font-size-md">
-                    <li><span class="text-primary mr-2">{{ translate('1')}}.</span>{{ translate('new_Password.')}}</li>
-                    <li><span class="text-primary mr-2">{{ translate('2')}}.</span>{{ translate('confirm_Password.')}}
+                    <li><span class="text-primary me-2">{{ translate('1')}}.</span>{{ translate('new_Password.')}}</li>
+                    <li><span class="text-primary me-2">{{ translate('2')}}.</span>{{ translate('confirm_Password.')}}
                     </li>
                 </ol>
                 <div class="card py-2 mt-4">

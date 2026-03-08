@@ -192,7 +192,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="rating mr-1"><i class="tio-star"></i>
+                                        <div class="rating me-1"><i class="tio-star"></i>
                                             {{count($product->rating)>0?number_format($product->rating[0]->average, 2, '.', ' '):0}}
                                         </div>
                                         <div>

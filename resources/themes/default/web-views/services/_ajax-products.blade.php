@@ -12,7 +12,7 @@
     @endforeach
 
     <div class="col-12">
-        <nav class="d-flex justify-content-between pt-2" aria-label="Page navigation"
+        <nav class="d-flex justify-content-between pt-2" aria-label="{{ translate('Page navigation') }}"
              id="paginator-ajax">
             {!! $products->links() !!}
         </nav>

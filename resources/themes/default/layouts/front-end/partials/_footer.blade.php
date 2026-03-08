@@ -306,7 +306,7 @@
                                         <span class="mb-4 font-weight-bold footer-header text-capitalize">{{ translate('start_a_conversation')}}</span>
                                     </div>
                                     <div
-                                        class="flex-grow-1 d-none d-md-block {{Session::get('direction') === "rtl" ? 'mr-4 mx-sm-4' : 'mx-sm-4'}}">
+                                        class="flex-grow-1 d-none d-md-block {{Session::get('direction') === "rtl" ? 'ms-4 mx-sm-4' : 'mx-sm-4'}}">
                                         <hr>
                                     </div>
                                 </div>
@@ -352,7 +352,7 @@
                                         <span class="mb-4 font-weight-bold footer-header">{{ translate('address')}}</span>
                                     </div>
                                     <div
-                                        class="flex-grow-1 d-none d-md-block {{Session::get('direction') === "rtl" ? 'mr-3 ' : 'ml-3'}}">
+                                        class="flex-grow-1 d-none d-md-block ms-3">
                                         <hr class="address_under_line" />
                                     </div>
                                 </div>

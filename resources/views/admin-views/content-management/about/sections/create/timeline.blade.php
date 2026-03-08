@@ -65,8 +65,8 @@ $defaultLanguage = $language[0] ?? 'en';
                 </div>
 
                 <div class="form-group">
-                    <label>Image Preview:</label><br>
-                    <img id="iconPreview" src="#" alt="No image selected" style="max-height: 60px; max-width: 60px; display: none; border: 1px solid #ddd; padding: 5px;">
+                    <label>{{ translate('Image Preview') }}:</label><br>
+                    <img id="iconPreview" src="#" alt="{{ translate('No image selected') }}" style="max-height: 60px; max-width: 60px; display: none; border: 1px solid #ddd; padding: 5px;">
                 </div>
 
 

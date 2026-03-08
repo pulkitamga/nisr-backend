@@ -108,13 +108,13 @@
                                     class="table table-hover table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                                     <thead class="thead-light thead-50 text-capitalize">
                                         <tr>
-                                            <th class="text-center">SL</th>
-                                            <th>Tier</th>
-                                            <th>Min. Quantity</th>
-                                            <th>Max. Quantity</th>
-                                            <th>Unit Price</th>
-                                            <th>Discount (%)</th>
-                                            <th>Final piece</th>
+                                            <th class="text-center">{{ __('SL') }}</th>
+                                            <th>{{ __('Tier') }}</th>
+                                            <th>{{ __('Min. Quantity') }}</th>
+                                            <th>{{ __('Max. Quantity') }}</th>
+                                            <th>{{ __('Unit Price') }}</th>
+                                            <th>{{ __('Discount (%)') }}</th>
+                                            <th>{{ __('Final piece') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="range-rows">
@@ -127,16 +127,16 @@
                                                     disabled>
                                             </td>
                                             <td><input type="number" class="form-control" name="min_qty[]"
-                                                    placeholder="Min qty"></td>
+                                                    placeholder="{{ __('Min qty') }}"></td>
                                             <td><input type="number" class="form-control" name="max_qty[]"
-                                                    placeholder="Max qty"></td>
+                                                    placeholder="{{ __('Max qty') }}"></td>
                                             <td><input type="text" class="form-control unit-price" name="unit_price[]"
-                                                    placeholder="Unit Price" readonly data-row="{{ $index }}"></td>
+                                                    placeholder="{{ __('Unit Price') }}" readonly data-row="{{ $index }}"></td>
                                             <td><input type="number" step="0.01" class="form-control discount-input"
-                                                    name="discount[]" placeholder="Discount" data-row="{{ $index }}">
+                                                    name="discount[]" placeholder="{{ __('Discount') }}" data-row="{{ $index }}">
                                             </td>
                                             <td><input type="text" class="form-control final-price" name="final_price[]"
-                                                    placeholder="Final Price" data-row="{{ $index }}"></td>
+                                                    placeholder="{{ __('Final Price') }}" data-row="{{ $index }}"></td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -182,7 +182,7 @@ $(document).ready(function() {
     $('.product-select').on('change', function() {
     const productId = $(this).val();
     if (!productId) {
-        $('.variation-select').html('<option value="" selected disabled>Select Variation</option>').prop('disabled', true);
+        $('.variation-select').html('<option value="" selected disabled>{{ __('Select Variation') }}</option>').prop('disabled', true);
         $('.unit-price').val('');
         currentUnitPrice = 0;
         $('#hidden-variation-key').val('');
@@ -191,7 +191,7 @@ $(document).ready(function() {
 
     $.get(`/admin/wholesale/product/get-variations/${productId}`, function(res) {
         const $variationSelect = $('.variation-select');
-        $variationSelect.empty().append('<option value="" selected disabled>Select Variation</option>');
+        $variationSelect.empty().append('<option value="" selected disabled>{{ __('Select Variation') }}</option>');
 
         const variations = res.variations || [];
 
@@ -215,7 +215,7 @@ $(document).ready(function() {
             currentUnitPrice = res.unit_price || 0;
             $('.unit-price').val(currentUnitPrice.toFixed(2));
             $('#hidden-variation-key').val(''); // No variation
-            $variationSelect.append('<option value="" selected>No variation available</option>').prop('disabled', true);
+            $variationSelect.append('<option value="" selected>{{ __('No variation available') }}</option>').prop('disabled', true);
         }
 
         updateFinalPrices();

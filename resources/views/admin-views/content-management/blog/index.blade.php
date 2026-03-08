@@ -203,7 +203,7 @@
                 toastr.success(response.message);
             },
             error: function () {
-                toastr.error('Something went wrong!');
+                toastr.error(@json(__('Something went wrong!')));
             }
         });
     });

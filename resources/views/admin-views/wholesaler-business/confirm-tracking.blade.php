@@ -27,17 +27,17 @@
 
 
 <div class="content container-fluid">
-    <h3>Order Tracking - #{{ $order->purchase_order_no }}</h3>
+    <h3>{{ translate('Order Tracking') }} - #{{ $order->purchase_order_no }}</h3>
 
 
 
     <div>
         <ul class="nav nav-tabs mb-4" id="trackingTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button" role="tab" aria-controls="delivery" aria-selected="true">Delivery</a>
+                <a class="nav-link active" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button" role="tab" aria-controls="delivery" aria-selected="true">{{ __('Delivery') }}</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">Payment</a>
+                <a class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">{{ __('Payment') }}</a>
             </li>
         </ul>
     </div>

@@ -152,7 +152,7 @@
                     @php($currency_model = getWebConfig(name: 'currency_model'))
                     @if($currency_model == 'multi_currency')
                     <div class="d-none currency-main-div">
-                        <div class="topbar-text dropdown disable-autohide mr-4 lh-17 d-none d-lg-block">
+                        <div class="topbar-text dropdown disable-autohide me-4 lh-17 d-none d-lg-block">
                             <a class="topbar-link dropdown-toggle font-lang" href="#" data-toggle="dropdown">
                                 {{ getCurrencyCode(type: 'web') }} {{ getCurrencySymbol(currencyCode: getCurrencyCode(type: 'web'), type: 'web') }}
                             </a>
@@ -172,7 +172,7 @@
                         <a class="topbar-link dropdown-toggle d-flex align-items-center font-lang" href="#" data-toggle="dropdown">
                             @foreach($web_config['language'] as $data)
                             @if($data['code'] == getDefaultLanguage())
-                            <img class="mr-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . ($data['country_code'] ?? $data['code']) . '.png')}}" alt="{{$data['name']}}">
+                            <img class="me-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . ($data['country_code'] ?? $data['code']) . '.png')}}" alt="{{$data['name']}}">
                             {{$data['name']}}
                             @endif
                             @endforeach
@@ -182,7 +182,7 @@
                             @if($data['status'] == 1)
                             <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                 <a class="dropdown-item pb-1 d-flex align-items-center" href="javascript:">
-                                    <img class="mr-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . ($data['country_code'] ?? $data['code']) . '.png')}}" alt="{{$data['name']}}" />
+                                    <img class="me-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . ($data['country_code'] ?? $data['code']) . '.png')}}" alt="{{$data['name']}}" />
                                     <span class="text-capitalize">{{$data['name']}}</span>
                                 </a>
                             </li>

@@ -8,7 +8,7 @@
         <div>
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                 <h2 class="h1 mb-0">
-                    <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 mr-1" alt="">
+                    <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 me-1" alt="">
                     {{translate('orders')}}
                 </h2>
                 <span class="badge badge-soft-dark radius-50 fz-14">{{$orders->total()}}</span>
@@ -41,7 +41,7 @@
                                             <input id="datatableSearch_" type="search" name="searchValue"
                                                    class="form-control"
                                                    placeholder="{{translate('search_by_Order_ID')}}"
-                                                   aria-label="Search orders"
+                                                   aria-label="{{ translate('Search orders') }}"
                                                    value="{{ request('searchValue') }}">
                                             <button type="submit"
                                                     class="btn btn--primary">{{translate('search')}}</button>
@@ -156,13 +156,13 @@
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
-                                                <a class="btn btn-outline--primary square-btn btn-sm mr-1"
+                                                <a class="btn btn-outline--primary square-btn btn-sm me-1"
                                                    title="{{translate('view')}}"
                                                    href="{{route('admin.vendors.order-details',[$order['id'],$seller['id']])}}">
                                                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/eye.svg')}}"
                                                          class="svg" alt="">
                                                 </a>
-                                                <a class="btn btn-outline-success square-btn btn-sm mr-1"
+                                                <a class="btn btn-outline-success square-btn btn-sm me-1"
                                                    target="_blank" title="{{translate('invoice')}}"
                                                    href="{{route('admin.orders.generate-invoice',[$order['id']])}}">
                                                     <i class="tio-download-to"></i>
@@ -184,3 +184,4 @@
             </div>
         </div>
 @endsection
+

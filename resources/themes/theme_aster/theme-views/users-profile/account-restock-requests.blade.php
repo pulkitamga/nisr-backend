@@ -24,11 +24,11 @@
                                     <table class="table align-middle table-striped">
                                         <thead class="text-primary">
                                             <tr>
-                                                <th>SL</th>
-                                                <th class="text-capitalize">Product details</th>
-                                                <th>Review</th>
-                                                <th class="text-center">Price</th>
-                                                <th class="text-center">Action</th>
+                                                <th>{{ __('SL') }}</th>
+                                                <th class="text-capitalize">{{ __('Product details') }}</th>
+                                                <th>{{ __('Review') }}</th>
+                                                <th class="text-center">{{ __('Price') }}</th>
+                                                <th class="text-center">{{ __('Action') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>

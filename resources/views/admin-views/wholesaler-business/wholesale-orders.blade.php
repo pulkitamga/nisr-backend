@@ -106,7 +106,7 @@
                                         </div>
                                     </div>
                                     <input id="datatableSearch_" type="search" class="form-control"
-                                        placeholder="{{ translate('Search...') }}" aria-label="Search">
+                                        placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                                 </div>
                                 <div class="dropdown">
                                     <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pr-4"
@@ -147,7 +147,7 @@
                                     <td>{{ $order->purchase_order_no }}</td>
                                     <td>{{ $order->quotation_no }}</td>
                                     <td>{{ $order->wholeseller->wholesalerBusiness->company_name ?? '' }}</td>
-                                    <td>{{ $order->wholeseller_tier ?? 'N/A' }}</td>
+                                    <td>{{ $order->wholeseller_tier ?? __('N/A') }}</td>
                                     <td>
                                         @php
                                         $status = $order->status;
@@ -239,14 +239,14 @@
     <script>
         function confirmAndDelete(deleteUrl) {
             Swal.fire({
-                title: 'Confirm Deletion',
-                text: 'Are you sure you want to delete this order?',
+                title: @json(__('Confirm Deletion')),
+                text: @json(__('Are you sure you want to delete this order?')),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel'
+                confirmButtonText: @json(__('Yes, delete it!')),
+                cancelButtonText: @json(__('Cancel'))
             }).then((result) => {
                 if (result.isConfirmed) {
                     submitDeleteForm(deleteUrl);
@@ -285,3 +285,4 @@
         });
     </script>
     @endpush
+

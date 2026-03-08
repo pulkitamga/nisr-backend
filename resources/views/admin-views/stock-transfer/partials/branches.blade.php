@@ -3,8 +3,8 @@
     <div class="model-lg modal-dialog modal-dialog-centered" style="max-width: 800px;">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
-            	<h3>Select Branch</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
+            	<h3>{{ __('Select Branch') }}</h3>
+                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                 	<i class="tio-clear"></i>
                 </button>
             </div>
@@ -29,7 +29,7 @@
 		                    </tbody>
 		                </table>
 		                <div class="text-end mt-3 justify-centent-end">
-                            <button type="submit" class="btn btn-xs btn-primary">Transfer Stock</button>
+                            <button type="submit" class="btn btn-xs btn-primary">{{ __('Transfer Stock') }}</button>
                         </div>
 		            </form>
 	            </div>
@@ -37,3 +37,4 @@
         </div>
     </div>
 </div>
+

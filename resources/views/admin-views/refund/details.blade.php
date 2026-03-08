@@ -394,10 +394,10 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="input-label" for="inventory_action">Inventory action</label>
+                            <label class="input-label" for="inventory_action">{{ __('Inventory action') }}</label>
                             <select class="form-control" name="inventory_action" id="inventory_action">
-                                <option value="restock">Restock</option>
-                                <option value="no_restock">No restock</option>
+                                <option value="restock">{{ __('Restock') }}</option>
+                                <option value="no_restock">{{ __('No restock') }}</option>
                             </select>
                         </div>
                         <div class="form-group">

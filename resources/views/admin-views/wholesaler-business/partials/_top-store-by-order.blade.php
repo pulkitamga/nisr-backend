@@ -14,7 +14,7 @@
                         <div class="d-flex align-items-center gap-10">
                             <img src="{{getStorageImages(path: $shop->image_full_url,type:'backend-basic')}}" class="avatar rounded-circle avatar-sm" alt="">
 
-                            <h5 class="shop-name">{{$shop['name']??'Not exist'}}</h5>
+                            <h5 class="shop-name">{{$shop['name']??translate('Not exist')}}</h5>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <h5 class="shop-sell c2">{{$item['count']}}</h5>

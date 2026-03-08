@@ -61,7 +61,7 @@
             <div class="modal-content">
                 <div class="modal-header  text-white">
                     <h5 class="modal-title" id="addTodoModalLabel">{{ translate('Add To-Do') }}</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -173,5 +173,6 @@
     });
 </script>
 @endpush
+
 
 

@@ -89,7 +89,7 @@
             width: 24px;
             height: 24px;
             border-radius: 5px;
-            margin-right: 12px;
+            margin-inline-end: 12px;
             border: 2px solid white;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -163,7 +163,7 @@
 
         /* Stacked toggle */
         .stacked-toggle {
-            margin-left: 20px;
+            margin-inline-start: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -399,7 +399,7 @@
             <div class="row mt-3">
                 <div class="col-12 d-flex justify-content-end">
 
-                    <button class="btn btn-sm btn-outline-success mr-2" onclick="exportExcel()">
+                    <button class="btn btn-sm btn-outline-success me-2" onclick="exportExcel()">
                         <i class="tio-file"></i>{{ translate('Excel') }}
                     </button>
 

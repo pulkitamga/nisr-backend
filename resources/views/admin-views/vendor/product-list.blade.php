@@ -32,7 +32,7 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{translate('search_Product_Name')}}"
-                                               aria-label="Search orders"
+                                               aria-label="{{ translate('Search orders') }}"
                                                value="{{ request('searchValue') }}">
                                         <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
@@ -133,7 +133,7 @@
                                                href="{{ route('admin.products.barcode', [$product['id']]) }}">
                                                 <i class="tio-barcode"></i>
                                             </a>
-                                            <a class="btn btn-outline-info btn-sm square-btn" title="View"
+                                            <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('View') }}"
                                                href="{{route('admin.products.view',['addedBy'=>($product['added_by']=='seller'?'vendor' : 'in-house'),'id'=>$product['id']])}}">
                                                 <i class="tio-invisible"></i>
                                             </a>
@@ -177,3 +177,4 @@
         </div>
     </div>
 @endsection
+

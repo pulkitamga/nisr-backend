@@ -626,7 +626,7 @@
             top: 50%;
             width: 20px;
             height: 20px;
-            margin-left: -10px;
+            margin-inline-start: -10px;
             margin-top: -10px;
             border: 2px solid #fff;
             border-top-color: transparent;

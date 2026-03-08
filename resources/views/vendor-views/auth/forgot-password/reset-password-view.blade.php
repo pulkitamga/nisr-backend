@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <meta name="_token" content="{{ csrf_token() }}">
@@ -56,11 +56,11 @@
 
                     <ol class="list-unstyled font-size-md text-start">
                         <li>
-                            <span class="text-primary mr-2">1.</span>
+                            <span class="text-primary me-2">1.</span>
                             {{ translate('enter_your_new_password') . '.' }}
                         </li>
                         <li>
-                            <span class="text-primary mr-2">2.</span>
+                            <span class="text-primary me-2">2.</span>
                             {{ translate('enter_your_confirm_password') . '.' }}
                         </li>
                     </ol>
@@ -152,7 +152,7 @@
     <script>
         "use strict";
         @foreach($errors->all() as $error)
-        toastr.error('{{$error}}', Error, {
+        toastr.error('{{$error}}', @json(__('Error')), {
             CloseButton: true,
             ProgressBar: true
         });
@@ -174,6 +174,7 @@
 
 </body>
 </html>
+
 
 
 

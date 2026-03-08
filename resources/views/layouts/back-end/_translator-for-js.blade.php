@@ -32,6 +32,7 @@
       data-confirm="{{translate('yes')}}" data-cancel="{{translate('no')}}"
       data-deny="{{translate('do_not_Logout')}}"></span>
 <span id="get-select-product-text" data-text="{{translate('select_product')}}"></span>
+<span id="change-language-title-message" data-text="{{translate('want_to_change_this_language_title')}}"></span>
 <span id="change-language-message" data-text="{{translate('want_to_change_this_language')}}"></span>
 <span id="get-quantity-check-message" data-warning="{{translate('please_enter_a_valid_integer_for_current_stock')}}"></span>
 <span id="password-error-message" data-max-character="{{translate('at_least_8_characters').'.'}}" data-uppercase-character="{{translate('at_least_one_uppercase_letter_').'(A...Z)'.'.'}}" data-lowercase-character="{{translate('at_least_one_uppercase_letter_').'(a...z)'.'.'}}"

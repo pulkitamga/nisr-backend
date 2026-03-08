@@ -66,7 +66,7 @@
 
             <div class="d-flex align-items-center w-100 mb-4 px-3">
                 <div class="d-flex align-items-center mx-3">
-                    <h4 class="mb-0 mr-2 text-truncate">{{ translate('Blog_List') }}</h4>
+                    <h4 class="mb-0 me-2 text-truncate">{{ translate('Blog_List') }}</h4>
                     @if(count($blogs) > 0)
                     <span class="badge badge-info align-middle">
                         {{ $blogs->total() }}
@@ -75,8 +75,8 @@
                 </div>
 
 
-                <div class="ml-auto d-flex flex-wrap align-items-center w-100 mt-3 mt-md-0 justify-content-between ">
-                    <form action="{{ url()->current() }}" method="GET" class="form-inline mr-2">
+                <div class="ms-auto d-flex flex-wrap align-items-center w-100 mt-3 mt-md-0 justify-content-between ">
+                    <form action="{{ url()->current() }}" method="GET" class="form-inline me-2">
                         <div class="form-group mb-0">
                             <div class="input-group">
                                 <input id="datatableSearch_" type="search" class="form-control" name="searchValue"

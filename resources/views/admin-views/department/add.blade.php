@@ -34,8 +34,8 @@
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('Status')}}</label>
                             <select class="form-control" name="status" id="status">
-                                <option value="1">Active</option>
-                                <option value="0">Block</option>
+                                <option value="1">{{ __('Active') }}</option>
+                                <option value="0">{{ __('Block') }}</option>
                             </select>
                             
                         </div>
@@ -44,7 +44,7 @@
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('Department_Head')}}</label>
                             <input class="form-control" type="text" value="Managed from employee profile" readonly>
-                            <small class="text-muted">Set department head from Employees -> Edit Employee.</small>
+                            <small class="text-muted">{{ __('Set department head from Employees -> Edit Employee.') }}</small>
                         </div>
                     </div>
                 </div>

@@ -153,7 +153,7 @@ $direction = Session::get('direction') ?? 'ltr';
     <script>
         'use strict';
         @foreach($errors -> all() as $error)
-        toastr.error('{{$error}}', Error, {
+        toastr.error('{{$error}}', @json(__('Error')), {
             CloseButton: true,
             ProgressBar: true
         });
@@ -247,3 +247,4 @@ $direction = Session::get('direction') ?? 'ltr';
 </body>
 
 </html>
+

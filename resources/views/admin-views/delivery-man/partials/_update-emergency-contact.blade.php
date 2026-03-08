@@ -2,7 +2,7 @@
     <div class="modal-content shadow-lg">
         <div class="modal-header border-0 pb-0 d-flex justify-content-between">
             <h4 class="modal-title product-title">{{translate('update_emergency_contact')}} </h4>
-            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i class="tio-clear"></i></button>
+            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i class="tio-clear"></i></button>
         </div>
         <div class="modal-body px-4 px-sm-5 pt-0 mt-3">
             <form action="{{route('admin.delivery-man.emergency-contact.update',['id'=>$emergencyContact['id']])}}" method="post">
@@ -37,3 +37,4 @@
         </div>
     </div>
 </div>
+

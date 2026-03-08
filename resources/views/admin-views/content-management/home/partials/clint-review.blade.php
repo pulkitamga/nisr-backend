@@ -72,7 +72,7 @@ $defaultLanguage = $languages[0] ?? 'en';
                 <div class="modal-header">
                     <h5 class="modal-title" id="addReviewModalLabel">{{ translate('Add New Review') }}</h5>
 
-                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -137,7 +137,7 @@ $defaultLanguage = $languages[0] ?? 'en';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editReviewLabel">{{ translate('Edit Review') }}</h5>
-                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -176,11 +176,11 @@ $defaultLanguage = $languages[0] ?? 'en';
                     </div>
                     @endforeach
                     <div class="mb-3">
-                        <label for="edit-rating" class="form-label">Rating</label>
+                        <label for="edit-rating" class="form-label">{{ __('Rating') }}</label>
                         <input type="text" name="rating" id="edit-rating" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Image</label><br>
+                        <label class="form-label">{{ __('Image') }}</label><br>
                         <img id="edit-image-preview" src="" alt="Image Preview" width="100"
                             style="cursor:pointer; border:1px solid #ccc; padding:4px;">
                         <input type="file" name="image_file" id="edit-image-file" class="form-control mt-2"
@@ -189,8 +189,8 @@ $defaultLanguage = $languages[0] ?? 'en';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Save changes') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">{{ __('Cancel') }}</button>
                 </div>
             </div>
         </form>
@@ -204,14 +204,14 @@ $defaultLanguage = $languages[0] ?? 'en';
         let form = $(this).closest('form');
 
         Swal.fire({
-            title: 'Confirm Deletion',
-            text: 'Are you sure you want to delete this review?',
+            title: @json(__('Confirm Deletion')),
+            text: @json(__('Are you sure you want to delete this review?')),
             type: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
+            confirmButtonText: @json(__('Yes, delete it!')),
+            cancelButtonText: @json(__('Cancel'))
         }).then((result) => {
             if (result.isConfirmed) {
                 form.submit(); 
@@ -300,3 +300,4 @@ $defaultLanguage = $languages[0] ?? 'en';
         });
     });
 </script>
+

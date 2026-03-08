@@ -10,7 +10,7 @@
             </h2>
 
             <a class="btn btn-outline-secondary" href="{{ url()->previous() }}">
-                <i class="tio-back-ui mr-1"></i>{{ translate('back') }}
+                <i class="tio-back-ui me-1"></i>{{ translate('back') }}
             </a>
         </div>
 
@@ -24,21 +24,44 @@
 
                         <div class="col-sm-6 col-lg-3">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('from') }}</label>
-                                <input type="date" name="from_date" class="form-control"
-                                    value="{{ $filters['from_date'] ?? '' }}">
+                                <label class="title-color">{{ translate('date') }}</label>
+                                <select class="form-control" name="date_type" id="date_type">
+                                    <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
+                                        {{ translate('this_Year') }}
+                                    </option>
+                                    <option value="this_month" {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>
+                                        {{ translate('this_Month') }}
+                                    </option>
+                                    <option value="this_week" {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>
+                                        {{ translate('this_Week') }}
+                                    </option>
+                                    <option value="today" {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>
+                                        {{ translate('today') }}
+                                    </option>
+                                    <option value="custom_date" {{ ($filters['date_type'] ?? '') === 'custom_date' ? 'selected' : '' }}>
+                                        {{ translate('custom_Date') }}
+                                    </option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="col-sm-6 col-lg-3">
+                        <div class="col-sm-6 col-lg-3" id="from_div">
+                            <div class="form-group">
+                                <label class="title-color">{{ translate('from') }}</label>
+                                <input type="date" name="from" id="from_date" class="form-control"
+                                    value="{{ $filters['from'] ?? '' }}">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-lg-3" id="to_div">
                             <div class="form-group">
                                 <label class="title-color">{{ translate('to') }}</label>
-                                <input type="date" name="to_date" class="form-control"
-                                    value="{{ $filters['to_date'] ?? '' }}">
+                                <input type="date" name="to" id="to_date" class="form-control"
+                                    value="{{ $filters['to'] ?? '' }}">
                             </div>
                         </div>
 
-                        <div class="col-sm-6 col-lg-3">
+                        <div class="col-sm-6 col-lg-3 filter-btn">
                             <div class="form-group">
                                 <label class="title-color">{{ translate('category') }}</label>
                                 <select class="js-select2-custom form-control" name="category_id">
@@ -76,6 +99,14 @@
 
                         <div class="col-12">
                             <div class="d-flex gap-3 justify-content-end">
+                                @if($reportReady)
+                                    <a href="{{ route('admin.products.stock-report', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success px-4">
+                                        {{ translate('excel') }}
+                                    </a>
+                                    <a href="{{ route('admin.products.stock-report', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger px-4">
+                                        {{ translate('PDF') }}
+                                    </a>
+                                @endif
                                 <a href="{{ route('admin.products.stock-report') }}" class="btn btn-secondary px-5">
                                     {{ translate('reset') }}
                                 </a>
@@ -106,6 +137,7 @@
 @endsection
 
 @push('script')
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-report.js') }}"></script>
     <script>
         "use strict";
 

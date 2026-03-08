@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -23,7 +23,7 @@
         <span class="currency">
             {{ $product['selling_price'] . ' ' . setCurrencySymbol(amount: usdToDefaultCurrency(amount: $product->unit_price), currencyCode: getCurrencyCode())  }}</span>
         <br>
-        <div class="bar-code" style="margin-left: 10px !important; font-weight:bold">{!! DNS1D::getBarcodeHTML($product->code, 'C128') !!}</div>
+        <div class="bar-code" style="margin-inline-start: 10px !important; font-weight:bold">{!! DNS1D::getBarcodeHTML($product->code, 'C128') !!}</div>
         <p class="">{{ translate('code') }} :
             {{ $product->code }}</p>
     </div>

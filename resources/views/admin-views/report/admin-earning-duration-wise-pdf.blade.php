@@ -1,7 +1,7 @@
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Earning Statement</title>
+    <title>{{ __('Admin Earning Statement') }}</title>
     <meta http-equiv="Content-Type" content="text/html;"/>
     <meta charset="UTF-8">
     <style media="all">
@@ -143,8 +143,8 @@
         }
 
         .px-10 {
-            padding-left: 10px;
-            padding-right: 10px;
+            padding-inline-start: 10px;
+            padding-inline-end: 10px;
         }
 
         .fz-14 {

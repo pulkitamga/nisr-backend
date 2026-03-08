@@ -285,7 +285,7 @@
                         <h5 class="modal-title">{{ translate('Assign Invoice No') }}</h5>
                         <button type="button"
                             class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-                            data-bs-dismiss="modal" aria-label="Close"> <span
+                            data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> <span
                                 aria-hidden="true">x</span></i></button>
                     </div>
                     <div class="modal-body">
@@ -314,7 +314,7 @@
                         <h5 class="modal-title">{{ translate('Assign Confirm Order No') }}</h5>
                         <button type="button"
                             class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-                            data-bs-dismiss="modal" aria-label="Close"> <span
+                            data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> <span
                                 aria-hidden="true">x</span></i></button>
                     </div>
                     <div class="modal-body">
@@ -370,7 +370,7 @@
                     <div class="modal-header">
                         <h5 class="modal-title">{{ translate('Assign Purchase Order No') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close">&times;</button>
+                            aria-label="{{ translate('Close') }}">&times;</button>
 
 
                     </div>
@@ -416,7 +416,7 @@
 
         $(document).ready(function() {
             function loadTable(type) {
-                $('#orderTableArea').html('<div class="text-center p-4 text-muted">Loading...</div>');
+                $('#orderTableArea').html('<div class="text-center p-4 text-muted">{{ __('Loading...') }}</div>');
 
                 $.get("{{ route('admin.wholesale.business.orders.by-type') }}", {
                     type: type,
@@ -478,10 +478,10 @@
                 number: poNo
             }, function(res) {
                 if (res.exists) {
-                    $('#availabilityMessage').text('Order number already exists').addClass('text-danger').removeClass('text-success');
+                    $('#availabilityMessage').text(@json(__('Order number already exists'))).addClass('text-danger').removeClass('text-success');
                     $('#submitOrderNo').prop('disabled', true);
                 } else {
-                    $('#availabilityMessage').text('Order number available').addClass('text-success').removeClass('text-danger');
+                    $('#availabilityMessage').text(@json(__('Order number available'))).addClass('text-success').removeClass('text-danger');
                     $('#submitOrderNo').prop('disabled', false);
                 }
             });
@@ -489,7 +489,7 @@
 
 
         function confirmAndDelete(deleteUrl) {
-            if (confirm("Are you sure you want to delete this order?")) {
+            if (confirm(@json(__('Are you sure you want to delete this order?')))) {
                 submitDeleteForm(deleteUrl);
             }
         }
@@ -598,3 +598,4 @@
         });
     </script>
     @endpush
+

@@ -172,7 +172,7 @@
                                 </div>
                                 <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                     placeholder="{{translate('search_by_Title_or_Code_or_Discount_Type')}}"
-                                    value="{{ request('searchValue') }}" aria-label="Search orders" required>
+                                    value="{{ request('searchValue') }}" aria-label="{{ translate('Search orders') }}" required>
                                 <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                             </div>
                         </form>
@@ -250,7 +250,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-10 justify-content-center">
-                                        <button class="btn btn-outline--primary square-btn btn-sm mr-1 get-quick-view" data-id="{{ $coupon['id'] }}">
+                                        <button class="btn btn-outline--primary square-btn btn-sm me-1 get-quick-view" data-id="{{ $coupon['id'] }}">
                                             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/eye.svg')}}" class="svg" alt="">
                                         </button>
                                         <a class="btn btn-outline--primary btn-sm edit"
@@ -305,3 +305,4 @@
 @push('script')
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/coupon.js')}}"></script>
 @endpush
+

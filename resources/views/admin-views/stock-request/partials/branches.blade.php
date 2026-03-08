@@ -2,13 +2,13 @@
 	<div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 1000px;">
 		<div class="modal-content">
 			<div class="modal-header border-0 pb-2 d-flex justify-content-between">
-				<h3>Select Branch & Upload Serials (Traceability)</h3>  <div>
+				<h3>{{ __('Select Branch & Upload Serials (Traceability)') }}</h3>  <div>
                         <a href="{{ asset('sample.csv') }}" class="btn btn-primary" download>
                             {{ translate('Download_Sample_Csv') }}
                         </a>
                     </div>
 
-				<button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
+				<button type="button" class="btn-close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
 					<i class="tio-clear"></i>
 				</button>
 			</div>
@@ -22,7 +22,7 @@
 
 					<!-- Traceability Info -->
 					<div class="alert alert-info d-none" id="traceability-alert">
-						<strong>Traceable Product:</strong> Upload CSV with <span id="required-qty"></span> serials.
+						<strong>{{ __('Traceable Product:') }}</strong> {{ __('Upload CSV with') }} <span id="required-qty"></span> {{ __('serials.') }}
 					</div>
 
 					<div class="table-responsive">
@@ -30,10 +30,10 @@
 							<thead class="thead-light thead-50 text-capitalize">
 								<tr>
 									<th class="text-center">SL</th>
-									<th class="text-center">Select</th>
-									<th>Branch Name</th>
-									<th class="text-center">Available QTY</th>
-									<th>Branch Address</th>
+									<th class="text-center">{{ __('Select') }}</th>
+									<th>{{ __('Branch Name') }}</th>
+									<th class="text-center">{{ __('Available QTY') }}</th>
+									<th>{{ __('Branch Address') }}</th>
 								</tr>
 							</thead>
 							<tbody id="branches-tbody"></tbody>
@@ -43,17 +43,18 @@
 					<!-- CSV Upload (Only for Traceability) -->
 					<div class="mt-3 csv-upload-section" id="csv-upload-section" style="display:none;">
 						<label class="form-label">
-							<strong>Upload Serials CSV</strong>
-							<small class="text-muted d-block">One serial per line. Must match requested quantity.</small>
+							<strong>{{ __('Upload Serials CSV') }}</strong>
+							<small class="text-muted d-block">{{ __('One serial per line. Must match requested quantity.') }}</small>
 						</label>
 						<input type="file" name="serial_csv" class="form-control" accept=".csv">
 					</div>
 
 					<div class="text-end mt-3">
-						<button type="submit" class="btn btn-primary">Transfer Stock</button>
+						<button type="submit" class="btn btn-primary">{{ __('Transfer Stock') }}</button>
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>
 </div>
+

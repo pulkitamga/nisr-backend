@@ -10,7 +10,7 @@
 @section('content')
     <div class="content container-fluid __inline-3">
         <!-- Page Heading -->
-        <nav aria-label="breadcrumb">
+        <nav aria-label="{{ translate('breadcrumb') }}">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('dashboard')}}</a>
                 </li>
@@ -48,7 +48,7 @@
                                 </select>
                             </div>
                             <button type="submit"
-                                    class="btn btn--primary float-right ml-3">{{translate('save')}}</button>
+                                    class="btn btn--primary float-end ms-3">{{translate('save')}}</button>
                         </form>
                     </div>
                 </div>

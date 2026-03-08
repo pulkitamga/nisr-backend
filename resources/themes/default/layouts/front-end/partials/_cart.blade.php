@@ -60,7 +60,7 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
 
             <div
                 class="dropdown-saved-amount text-center  align-items-center justify-content-center text-accent mb-3 {{$totalSavedAmount <= 0 ? 'd-none' : 'd-flex'}}">
-                <img src="{{theme_asset(path: 'public/assets/front-end/img/party-popper.svg') }}" class="mr-2" alt="">
+                <img src="{{theme_asset(path: 'public/assets/front-end/img/party-popper.svg') }}" class="me-2" alt="">
                 <small>
                     {{ translate('you_have_saved') }}
                     <span class="total_discount">
@@ -105,7 +105,7 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
                         <div
                             class="media-body min-height-0 d-flex align-items-center {{ $product ? ($product->status == 0?'blur-section':'') : 'blur-section' }}">
                             <div class="w-0 flex-grow-1 overflow-hidden">
-                                <h6 class="widget-product-title mb-0 mr-2 ">
+                                <h6 class="widget-product-title mb-0 me-2 ">
                                     <a href="{{route('product',$cartItem['slug'])}}" class="line--limit-1">
                                         {{$cartItem['name']}}
                                     </a>
@@ -177,7 +177,7 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
 
                             @else
                             {{-- Agar product status 1 nahi hai --}}
-                            <div class="__quantity mr-29 mb-4">
+                            <div class="__quantity me-29 mb-4">
                                 <div class="quantity__minus cart-qty-btn form-control action-update-cart-quantity"
                                     data-cart-id="{{ $cartItem['id'] }}" data-product-id="{{ $cartItem['product_id'] }}"
                                     data-action="-1" data-event="minus">
@@ -219,11 +219,9 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
             </div>
             @endif
             <div class="d-flex flex-wrap justify-content-between align-items-center pb-2">
-                <div class="font-size-sm {{Session::get('direction') === "rtl" ? 'ml-2 float-left' : 'mr-2 float-right'
-                    }} py-2 ">
+                <div class="font-size-sm me-2 float-end py-2 ">
                     <span>{{ translate('subtotal') }} :</span>
-                    <span class=" text-accent font-size-base cart_total_amount {{Session::get('direction')==="rtl"
-                    ? 'mr-1' : 'ml-1' }}">
+                    <span class=" text-accent font-size-base cart_total_amount ms-1">
                         {{ webCurrencyConverter(amount: $sub_total) }}
                     </span>
                 </div>
@@ -231,12 +229,12 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
                 @if($web_config['guest_checkout_status'] || auth('customer')->check())
                 <a class="btn btn-outline-secondary btn-sm" href="{{route('shop-cart') }}">
                     {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === "rtl"
-                        ? 'left mr-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
+                        ? 'left me-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
                 </a>
                 @else
                 <a class="btn btn-outline-secondary btn-sm" href="{{route('customer.auth.login') }}">
                     {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === "rtl"
-                        ? 'left mr-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
+                        ? 'left me-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
                 </a>
                 @endif
             </div>
@@ -289,3 +287,4 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
         </div>
     </div>
 </div>
+

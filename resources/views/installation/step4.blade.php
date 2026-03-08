@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="text-center text-white mb-4">
-        <h2>{{ "6valley Software Installation" }}</h2>
+        <h2>{{ __('') }}</h2>
         <h6 class="fw-normal">
-            {{ "Please proceed step by step with proper data according to instructions" }}
+            {{ __('') }}
         </h6>
     </div>
 
@@ -29,31 +29,31 @@
         </div>
         <div class="p-4 mb-md-3 mx-xl-4 px-md-5">
             <div class="d-flex align-items-center column-gap-3 flex-wrap">
-                <h5 class="fw-bold fs text-uppercase">{{ "Step 4." }}</h5>
-                <h5 class="fw-normal">{{ "Import Database" }}</h5>
+                <h5 class="fw-bold fs text-uppercase">{{ __('') }}</h5>
+                <h5 class="fw-normal">{{ __('') }}</h5>
             </div>
             <p class="mb-5">
-                {{ "Your Database has been connected ! Just click on the section to automatically import database" }}
+                {{ __('') }}
             </p>
 
             @if(session()->has('error'))
                 <div class="row">
                     <div class="col-md-12">
                         <div class="alert alert-danger">
-                            {{ "Your database is not clean, do you want to clean database then import ?" }}
+                            {{ __('') }}
                         </div>
                     </div>
                 </div>
 
                 <div class="text-center">
                     <a href="{{ route('force-import-sql') }}" class="btn btn-danger px-sm-5 action-installation-show-loader">
-                        {{ "Force Import Database" }}
+                        {{ __('') }}
                     </a>
                 </div>
             @else
                 <div class="text-center">
                     <a href="{{ route('import_sql') }}" class="btn btn-dark px-sm-5 action-installation-show-loader">
-                        {{ "Click Here" }}
+                        {{ __('') }}
                     </a>
                 </div>
             @endif

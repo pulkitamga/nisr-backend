@@ -324,19 +324,21 @@ class DealController extends BaseController
             'ticket_id' => 'nullable|exists:deals,id',
         ]);
 
-        $dealId = $request->message_id ?? $request->deal_id ?? $request->ticket_id;
-        $deal = Deal::findOrFail($dealId);
+        $deal = $this->resolveDealFromRequest($request);
         $authUser = auth('admin')->user();
 
-        if (
-            !$this->isSuperAdmin($authUser) &&
-            $deal->employee?->id !== $authUser->id &&
-            $deal->department?->head_id !== $authUser->id
-        ) {
+        if (!$this->canManageDealStatus($authUser, $deal)) {
             return response()->json([
                 'status' => false,
                 'message' => 'You are not authorized to disqualify this deal.',
             ], 403);
+        }
+
+        if ($this->isQuotationSent($deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Quotation already sent. Use Mark Lost.',
+            ], 422);
         }
 
         $deal->status = 'lost';
@@ -358,6 +360,103 @@ class DealController extends BaseController
         return response()->json([
             'status' => true,
             'message' => 'Deal disqualified successfully!',
+        ]);
+    }
+
+    public function markLost(Request $request): JsonResponse
+    {
+        $request->validate([
+            'message_id' => 'nullable|exists:deals,id',
+            'deal_id' => 'nullable|exists:deals,id',
+            'ticket_id' => 'nullable|exists:deals,id',
+        ]);
+
+        $deal = $this->resolveDealFromRequest($request);
+        $authUser = auth('admin')->user();
+
+        if (!$this->canManageDealStatus($authUser, $deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You are not authorized to mark this deal as lost.',
+            ], 403);
+        }
+
+        if (!$this->isQuotationSent($deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Disqualify deal before sending quotation.',
+            ], 422);
+        }
+
+        $deal->status = 'lost';
+        $deal->save();
+
+        $activity = new DealActivity();
+        $activity->deal_id = $deal->id;
+        $activity->activity_type = 'lost';
+        $activity->title = 'Deal Marked Lost';
+        $activity->subject = 'Deal marked lost by ' . $authUser->name;
+        $activity->note_date = now();
+        $activity->employee_id = $authUser->id;
+        $activity->details = [
+            'status' => 'lost',
+            'deal_id' => $deal->id,
+            'quotation_status' => $deal->quotation_status,
+        ];
+        $activity->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Deal marked as lost successfully!',
+        ]);
+    }
+
+    public function close(Request $request): JsonResponse
+    {
+        $request->validate([
+            'message_id' => 'nullable|exists:deals,id',
+            'deal_id' => 'nullable|exists:deals,id',
+            'ticket_id' => 'nullable|exists:deals,id',
+        ]);
+
+        $deal = $this->resolveDealFromRequest($request);
+        $authUser = auth('admin')->user();
+
+        if (!$this->canManageDealStatus($authUser, $deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You are not authorized to close this deal.',
+            ], 403);
+        }
+
+        if (!$this->isReviewedForClose($deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Review logic first before closing deal.',
+            ], 422);
+        }
+
+        $deal->status = 'closed';
+        $deal->save();
+
+        $activity = new DealActivity();
+        $activity->deal_id = $deal->id;
+        $activity->activity_type = 'closed';
+        $activity->title = 'Deal Closed';
+        $activity->subject = 'Deal closed by ' . $authUser->name;
+        $activity->note_date = now();
+        $activity->employee_id = $authUser->id;
+        $activity->details = [
+            'status' => 'closed',
+            'deal_id' => $deal->id,
+            'quotation_status' => $deal->quotation_status,
+            'order_status' => strtolower((string)($deal->order?->order_status ?? '')),
+        ];
+        $activity->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Deal closed successfully!',
         ]);
     }
 
@@ -1070,6 +1169,40 @@ class DealController extends BaseController
     private function isSuperAdmin(?Admin $admin): bool
     {
         return $admin?->isSuperAdmin() === true;
+    }
+
+    private function canManageDealStatus(?Admin $authUser, Deal $deal): bool
+    {
+        if (!$authUser) {
+            return false;
+        }
+
+        return $this->isSuperAdmin($authUser)
+            || $deal->employee?->id === $authUser->id
+            || $deal->department?->head_id === $authUser->id;
+    }
+
+    private function resolveDealFromRequest(Request $request): Deal
+    {
+        $dealId = $request->message_id ?? $request->deal_id ?? $request->ticket_id;
+        return Deal::findOrFail($dealId);
+    }
+
+    private function isQuotationSent(Deal $deal): bool
+    {
+        $quotationStatus = strtolower(trim((string)($deal->quotation_status ?? '')));
+        return !in_array($quotationStatus, ['', 'draft'], true);
+    }
+
+    private function isReviewedForClose(Deal $deal): bool
+    {
+        $quotationStatus = strtolower(trim((string)($deal->quotation_status ?? '')));
+        if (in_array($quotationStatus, ['accepted', 'rejected'], true)) {
+            return true;
+        }
+
+        $orderStatus = strtolower(trim((string)($deal->order?->order_status ?? '')));
+        return in_array($orderStatus, ['delivered', 'canceled', 'cancelled', 'returned', 'failed'], true);
     }
 
     private function supervisorRoleId(): int

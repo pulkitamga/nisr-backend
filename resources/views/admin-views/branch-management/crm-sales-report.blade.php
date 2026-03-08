@@ -49,9 +49,10 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <label class="form-label mb-1">{{ translate('employee') }}</label>
-                        <select class="js-select2-custom form-control" name="agent_ids[]" id="crm-agent-ids" multiple>
+                        <select class="js-select2-custom form-control" name="agent_id" id="crm-agent-id">
+                            <option value="">{{ translate('all') }}</option>
                             @foreach ($agents as $agent)
                                 <option value="{{ $agent->id }}">{{ $agent->name }}</option>
                             @endforeach
@@ -63,10 +64,10 @@
                         <button type="submit" id="crm-load-btn" class="btn btn--primary">{{ translate('filter') }}</button>
                         <button type="button" id="crm-reset-btn" class="btn btn-outline-secondary">{{ translate('reset') }}</button>
                         <button type="button" id="crm-export-excel" class="btn btn-outline-success">
-                            <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ translate('excel') }}
+                            <i class="tio-download-to me-1"></i>{{ translate('excel') }}
                         </button>
                         <button type="button" id="crm-export-pdf" class="btn btn-outline-danger">
-                            <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ translate('PDF') }}
+                            <i class="tio-download-to me-1"></i>{{ translate('PDF') }}
                         </button>
                     </div>
                 </form>
@@ -173,12 +174,6 @@
                 maximumFractionDigits: 2,
             });
 
-            const selectedValues = (selectElement) => {
-                return Array.from(selectElement.selectedOptions)
-                    .map((option) => Number(option.value))
-                    .filter((value) => Number.isInteger(value) && value > 0);
-            };
-
             const toggleCustomDate = () => {
                 const isCustom = dateTypeEl.value === 'custom_date';
                 document.querySelectorAll('.custom-date-range').forEach((element) => {
@@ -195,7 +190,7 @@
                 const payload = {
                     date_type: dateTypeEl.value || 'this_year',
                     sale_type: document.getElementById('crm-sale-type').value || null,
-                    agent_ids: selectedValues(document.getElementById('crm-agent-ids')),
+                    agent_id: Number(document.getElementById('crm-agent-id').value) || null,
                 };
 
                 if (payload.date_type === 'custom_date') {
@@ -210,13 +205,6 @@
                 const params = new URLSearchParams();
                 Object.entries(payload).forEach(([key, value]) => {
                     if (value === null || value === '') {
-                        return;
-                    }
-
-                    if (Array.isArray(value)) {
-                        value.forEach((item) => {
-                            params.append(`${key}[]`, String(item));
-                        });
                         return;
                     }
 
@@ -358,4 +346,3 @@
         })();
     </script>
 @endpush
-

@@ -70,10 +70,10 @@
                         <button type="submit" id="transfer-load-btn" class="btn btn--primary">{{ translate('filter') }}</button>
                         <button type="button" id="transfer-reset-btn" class="btn btn-outline-secondary">{{ translate('reset') }}</button>
                         <button type="button" id="transfer-export-excel" class="btn btn-outline-success">
-                            <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ translate('excel') }}
+                            <i class="tio-download-to me-1"></i>{{ translate('excel') }}
                         </button>
                         <button type="button" id="transfer-export-pdf" class="btn btn-outline-danger">
-                            <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ translate('PDF') }}
+                            <i class="tio-download-to me-1"></i>{{ translate('PDF') }}
                         </button>
                     </div>
                 </form>

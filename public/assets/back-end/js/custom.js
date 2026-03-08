@@ -352,7 +352,7 @@ HSDemo();
 $(".change-language").on("click", function () {
     let getText = $("#get-confirm-and-cancel-button-text");
     Swal.fire({
-        title: getText.data("sure"),
+        title: $("#change-language-title-message").data("text"),
         text: $("#change-language-message").data("text"),
         type: "warning",
         showCancelButton: true,

@@ -30,14 +30,14 @@
         }
 
         [dir="rtl"] .padd-input-div {
-            padding-right: 1.4rem;
+            padding-inline-end: 1.4rem;
         }
 
         [dir="rtl"] .radio-input-label::after,
         [dir="rtl"] .radio-input-label::before {
             position: absolute;
-            left: auto;
-            right: -1.5rem;
+            inset-inline-start: auto;
+            inset-inline-end: -1.5rem;
         }
     </style>
     @php
@@ -195,9 +195,9 @@
                                                     @endfor
                                         </div>
                                         <span
-                                            class="d-inline-block  align-middle mt-1 {{Session::get('direction') === "rtl" ? 'ml-md-2 ml-sm-0' : 'mr-md-2 mr-sm-0'}} fs-14 text-muted">({{$overallRating[0]}})</span>
+                                            class="d-inline-block  align-middle mt-1 me-md-2 me-sm-0 fs-14 text-muted">({{$overallRating[0]}})</span>
                                         <span
-                                            class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-1 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-1 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}}"><span class="web-text-primary">{{$overallRating[1]}}</span> {{translate('reviews')}}</span>
+                                            class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-1 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1"><span class="web-text-primary">{{$overallRating[1]}}</span> {{translate('reviews')}}</span>
                                     </div>
 
 
@@ -311,7 +311,7 @@
                         <div class="modal-content p-3">
                             <div class="modal-header pb-2">
                                 <h5 class="modal-title">{{ translate('Request Service') }}</h5>
-                                <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="Close">
+                                <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                                     &times;
                                 </button>
                             </div>
@@ -386,24 +386,24 @@
 
                                             <div class="form-group col-lg-6">
                                                 <label>{{ translate('address') }} <span class="text-danger">*</span></label>
-                                                <textarea class="form-control" name="address" id="address_details" rows="1" placeholder="Building, Landmark, etc."></textarea>
+                                                <textarea class="form-control" name="address" id="address_details" rows="1" placeholder="{{ translate('Building, Landmark, etc.') }}"></textarea>
                                             </div>
 
                                         </div>
                                         @if(getWebConfig('map_api_status') == 1)
                                         <div class="row">
                                             <div class="form-group col-lg-6 col-md-12 col-sm-12">
-                                                <label>Latitude:</label>
+                                                <label>{{ translate('Latitude') }}:</label>
                                                 <input type="text" id="latitude" name="latitude" class="form-control mb-2" readonly />
                                             </div>
                                             <div class="form-group col-lg-6 col-md-12 col-sm-12">
 
-                                                <label>Longitude:</label>
+                                                <label>{{ translate('Longitude') }}:</label>
                                                 <input type="text" id="longitude" name="longitude" class="form-control mb-2" readonly />
                                             </div>
                                         </div>
                                         <div class="form-group location-map-canvas-area map-area-alert-border">
-                                            <input type="text" id="pac-input" placeholder="Search location" class="form-control mb-2" />
+                                            <input type="text" id="pac-input" placeholder="{{ translate('Search location') }}" class="form-control mb-2" />
                                             <div id="location_map_canvas" style="height: 300px; width: 100%;"></div>
                                         </div>
                                         @endif
@@ -420,10 +420,10 @@
                                                 <label class="form-label">{{ translate('Vehicle Type') }} <span class="input-required-icon">*</span>
                                                 </label>
                                                 <select name="vehicle_type" class="form-control" required>
-                                                    <option value="Sedan">Sedan</option>
-                                                    <option value="SUV">SUV</option>
-                                                    <option value="Truck">Truck</option>
-                                                    <option value="Other">Other</option>
+                                                    <option value="Sedan">{{ __('Sedan') }}</option>
+                                                    <option value="SUV">{{ __('SUV') }}</option>
+                                                    <option value="Truck">{{ __('Truck') }}</option>
+                                                    <option value="Other">{{ __('Other') }}</option>
                                                 </select>
                                             </div>
                                             <div class="col-6 col-md-4">
@@ -492,7 +492,7 @@
 
 
                 <div class="mt-4 rtl text-align-direction">
-                    <div class="px-4 pb-3 mb-3 mr-0 mr-md-2 bg-white __review-overview __rounded-10 pt-3">
+                    <div class="px-4 pb-3 mb-3 me-0 me-md-2 bg-white __review-overview __rounded-10 pt-3">
                         <ul class="nav nav-tabs nav--tabs d-flex justify-content-center mt-3"
                             role="tablist">
                             <li class="nav-item">
@@ -602,7 +602,7 @@
                                             </div>
                                             <div class="col-1 text-body">
                                                 <span
-                                                    class=" {{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}} ">
+                                                    class=" ms-3 float-end ">
                                                     {{$rating[0]}}
                                                 </span>
                                             </div>
@@ -624,7 +624,7 @@
                                             </div>
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[1]}}
                                                 </span>
                                             </div>
@@ -646,7 +646,7 @@
                                             </div>
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[2]}}
                                                 </span>
                                             </div>
@@ -668,7 +668,7 @@
 
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[3]}}
                                                 </span>
                                             </div>
@@ -690,7 +690,7 @@
                                             </div>
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[4]}}
                                                 </span>
                                             </div>
@@ -735,7 +735,7 @@
                     @if ($value['status'] == 1 && !empty($value['title']))
                     <div class="shipping-details-bottom-border">
                         <div class="px-3 py-3">
-                            <img class="{{Session::get('direction') === "rtl" ? 'float-right ml-2' : 'mr-2'}} __img-20"
+                            <img class="float-end me-2 __img-20"
                                 src="{{ getStorageImages(path: imagePathProcessing(imageData: $value['image'],path: 'company-reliability'), type: 'source', source: 'public/assets/front-end/img'.'/'.$value['item'].'.png') }}"
                                 alt="">
                             <span>{{translate($value['title'])}}</span>
@@ -984,9 +984,9 @@
             if (!isLoggedIn) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Login First',
-                    text: 'You need to login to request a service.',
-                    confirmButtonText: 'Go to Login'
+                    title: @json(__('Login First')),
+                    text: @json(__('You need to login to request a service.')),
+                    confirmButtonText: @json(__('Go to Login'))
                 }).then((result) => {
                     if (result.isConfirmed) {
                         window.location.href = "{{ route('customer.auth.login') }}";
@@ -995,13 +995,13 @@
                 return;
             }
             Swal.fire({
-                title: 'Are you sure?',
-                text: 'You want to confirm this service request?',
+                title: @json(__('Are you sure?')),
+                text: @json(__('You want to confirm this service request?')),
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, Confirm'
+                confirmButtonText: @json(__('Yes, Confirm'))
             }).then((result) => {
                 if (result.isConfirmed) {
                     setTimeout(() => {
@@ -1037,7 +1037,7 @@
             makeNameInput.value = makeName;
 
             const makeId = this.value;
-            modelSelect.innerHTML = '<option value="" disabled selected>Select Model</option>';
+            modelSelect.innerHTML = '<option value="" disabled selected>{{ __('Select Model') }}</option>';
             if (makeId && allModels[makeId]) {
                 allModels[makeId].forEach(model => {
                     const option = document.createElement('option');
@@ -1063,9 +1063,9 @@
                 let countryName = $(this).find('option:selected').data('name');
                 $('#country_name').val(countryName);
 
-                $('#address-state').empty().append('<option value="">Select State</option>');
-                $('#address-city').empty().append('<option value="">Select City</option>');
-                $('#address-area').empty().append('<option value="">Select Area</option>');
+                $('#address-state').empty().append('<option value="">{{ __('Select State') }}</option>');
+                $('#address-city').empty().append('<option value="">{{ __('Select City') }}</option>');
+                $('#address-area').empty().append('<option value="">{{ __('Select Area') }}</option>');
 
                 $.get(getStatesURL, {
                     country: countryCode
@@ -1082,8 +1082,8 @@
                 let stateName = $(this).find('option:selected').data('name');
                 $('#state_name').val(stateName);
 
-                $('#address-city').empty().append('<option value="">Select City</option>');
-                $('#address-area').empty().append('<option value="">Select Area</option>');
+                $('#address-city').empty().append('<option value="">{{ __('Select City') }}</option>');
+                $('#address-area').empty().append('<option value="">{{ __('Select Area') }}</option>');
 
                 $.get(getCitiesURL, {
                     state_id: stateId
@@ -1100,7 +1100,7 @@
                 let cityName = $(this).find('option:selected').data('name');
                 $('#city_name').val(cityName);
 
-                $('#address-area').empty().append('<option value="">Select Area</option>');
+                $('#address-area').empty().append('<option value="">{{ __('Select Area') }}</option>');
 
                 $.get(getAreasURL, {
                     city_id: cityId
@@ -1130,3 +1130,5 @@
     </script>
     @endif
     @endpush
+
+

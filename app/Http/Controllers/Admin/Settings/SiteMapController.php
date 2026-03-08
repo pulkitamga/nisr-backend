@@ -216,19 +216,21 @@ class SiteMapController extends BaseController
 
     public function getUpload(Request $request): RedirectResponse
     {
-        if ($request->file('xml_file')->getClientOriginalExtension() != 'xml') {
+        $uploadedFile = $request->file('xml_file');
+
+        if (!$uploadedFile || $uploadedFile->getClientOriginalExtension() != 'xml') {
             Toastr::error(translate('Please_upload_a_xml_file'));
-        } elseif ($request->file('xml_file')) {
+        } else {
             $fileName = 'sitemap-' . Str::slug(Carbon::now()) . '.xml';
-            $request->file('xml_file')->storeAs('public/sitemap', $fileName);
+            $uploadedFile->storeAs('public/sitemap', $fileName);
             if (File::exists(public_path('sitemap.xml'))) {
                 File::delete(public_path('sitemap.xml'));
             }
             if (File::exists(base_path('sitemap.xml'))) {
                 File::delete(base_path('sitemap.xml'));
             }
-            File::put(public_path('sitemap.xml'), $request->file('xml_file'));
-            File::put(base_path('sitemap.xml'), $request->file('xml_file'));
+            File::copy($uploadedFile->getRealPath(), public_path('sitemap.xml'));
+            File::copy($uploadedFile->getRealPath(), base_path('sitemap.xml'));
             Toastr::success(translate('successfully_upload'));
         }
         return redirect()->route('admin.seo-settings.sitemap');

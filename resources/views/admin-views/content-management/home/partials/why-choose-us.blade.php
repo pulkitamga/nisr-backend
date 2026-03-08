@@ -125,7 +125,7 @@ $content = $jsonData['section'] ?? [];
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="editCardLabel">{{ translate('Edit Card') }}</h5>
-                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -256,3 +256,4 @@ $content = $jsonData['section'] ?? [];
         });
     });
 </script>
+

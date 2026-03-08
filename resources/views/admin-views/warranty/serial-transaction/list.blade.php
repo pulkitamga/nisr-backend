@@ -10,7 +10,7 @@
     <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
             <h2 class="h1 mb-0">
-                <img src="{{ dynamicAsset('public/assets/back-end/img/serial.png') }}" class="mb-1 mr-1" alt="">
+                <img src="{{ dynamicAsset('public/assets/back-end/img/serial.png') }}" class="mb-1 me-1" alt="">
                 <span class="page-header-title">{{ translate('Serial_Transaction_History') }}</span>
             </h2>
             <span class="badge badge-soft-dark radius-50 fz-14">{{ $transactions->total() }}</span>
@@ -165,7 +165,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="tio-history"></i> {{ translate('transaction_history_for') }}: <span id="modalSerial"></span></h5>
-                <button type="button" class="btn-close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="tio-clear"></i></button>
+                <button type="button" class="btn-close border-0" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"><i class="tio-clear"></i></button>
             </div>
             <div class="modal-body" id="modalBody">
                 <!-- Loaded via AJAX -->
@@ -199,3 +199,4 @@
     });
 </script>
 @endpush
+

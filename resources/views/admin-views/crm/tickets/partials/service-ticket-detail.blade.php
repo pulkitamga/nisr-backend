@@ -461,7 +461,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="signatureModalLabel">{{ translate('Customer Signature') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -477,7 +477,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="activityDetailsModalLabel">{{ translate('Activity Details') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -501,7 +501,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="estimateDetailsModalLabel">{{ translate('Estimate Details') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -528,7 +528,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="invoiceDetailsModalLabel">{{ translate('Invoice Details') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -554,7 +554,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="changeOrderDetailsModalLabel">{{ translate('Change Order Details') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -577,7 +577,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="attachmentsModalLabel">{{ translate('Job Attachments') }}</h5>
- <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+ <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>            </div>
             <div class="modal-body text-center" id="attachmentsModalBody">
@@ -594,7 +594,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="cancellationDetailsModalLabel">{{ translate('Cancellation Details') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -619,7 +619,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="serviceDetailsModalLabel">{{ translate('Service Details') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -837,3 +837,4 @@ document.addEventListener('click', function (e) {
 </script>
 
 @endpush
+

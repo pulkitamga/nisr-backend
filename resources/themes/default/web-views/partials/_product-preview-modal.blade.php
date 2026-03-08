@@ -11,7 +11,7 @@
     ($previewFileInfo['mime_category'] == 'document' && $previewFileInfo['mime_type'] == 'application/pdf') ? '' : 'd-none'
     }}">
                 <h6 class="modal-title text-truncate">{{ $product->name }}</h6>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -56,3 +56,4 @@
         </div>
     </div>
 </div>
+

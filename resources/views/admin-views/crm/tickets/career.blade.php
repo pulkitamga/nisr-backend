@@ -31,7 +31,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
                                     <input id="datatableSearch_" type="search" name="searchValue"
                                         class="form-control"
                                         placeholder="{{ translate('search_ticket_by_subject_or_status').'...' }}"
-                                        aria-label="Search tickets" value="{{ request('searchValue') }}">
+                                        aria-label="{{ translate('Search tickets') }}" value="{{ request('searchValue') }}">
                                     <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                 </div>
                             </form>
@@ -185,7 +185,7 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateTicketModalLabel">{{ translate('Escalate Ticket') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -496,12 +496,12 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
         e.preventDefault();
         let form = $(this);
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'This will notify the department and owner.',
+            title: @json(__('Are you sure?')),
+            text: @json(__('This will notify the department and owner.')),
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes, Escalate',
-            cancelButtonText: 'Cancel'
+            confirmButtonText: @json(__('Yes, Escalate')),
+            cancelButtonText: @json(__('Cancel'))
         }).then((result) => {
             if (result.isConfirmed) {
                 form.off('submit').submit(); // Submit without further prevention
@@ -592,3 +592,4 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
     });
 </script>
 @endpush
+

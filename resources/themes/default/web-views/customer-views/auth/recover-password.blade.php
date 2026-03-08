@@ -14,15 +14,15 @@
                 </p>
                 <ol class="list-unstyled font-size-md p-0">
                     <li>
-                        <span class="text-primary mr-2">{{ translate('1')}}.</span>
+                        <span class="text-primary me-2">{{ translate('1')}}.</span>
                         {{ translate('use_your_registered_phone.')}}
                     </li>
                     <li>
-                        <span class="text-primary mr-2">{{ translate('2')}}.</span>
+                        <span class="text-primary me-2">{{ translate('2')}}.</span>
                         {{ translate('we_will_send_you_a_temporary_OTP_in_your_phone') }}.
                     </li>
                     <li>
-                        <span class="text-primary mr-2">{{ translate('3')}}.</span>
+                        <span class="text-primary me-2">{{ translate('3')}}.</span>
                         {{ translate('use_the_OTP_code_to_change_your_password_on_our_secure_website.')}}
                     </li>
                 </ol>

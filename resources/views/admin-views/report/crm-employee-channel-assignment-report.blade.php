@@ -141,10 +141,10 @@
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment-export-excel', request()->query()) }}" class="btn btn-outline-success">
-                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i> {{ translate('excel') }}
+                                <i class="tio-download-to me-1"></i> {{ translate('excel') }}
                             </a>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment-export-pdf', request()->query()) }}" class="btn btn-outline-danger">
-                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i> {{ translate('PDF') }}
+                                <i class="tio-download-to me-1"></i> {{ translate('PDF') }}
                             </a>
                         </div>
                     </div>

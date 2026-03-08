@@ -135,7 +135,7 @@
                                     <div>
                                         <div class="mx-auto text-center">
                                             <div class="uploadDnD">
-                                                <div class="form-group inputDnD input_image" data-title="{{ 'Drag and drop file or Browse file' }}">
+                                                <div class="form-group inputDnD input_image" data-title="{{ __('Drag and drop file or Browse file') }}">
                                                     <input type="file" name="image" class="form-control-file text--primary font-weight-bold" id="banner" accept=".jpg, .png, .jpeg, .gif, .bmp, .webp |image/*">
                                                 </div>
                                             </div>

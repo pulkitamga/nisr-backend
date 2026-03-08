@@ -29,7 +29,7 @@
                                             <div id="accordion">
                                                 <div class="row mb-0 text-black">
                                                     <div class="col-1 mt-3">
-                                                        <i class="czi-book text-muted mr-2"></i>
+                                                        <i class="czi-book text-muted me-2"></i>
                                                     </div>
                                                     <div class="col-11">
                                                         <button class="btnF btn-link collapsed text-align-direction" data-toggle="collapse"
@@ -56,7 +56,7 @@
                                             <div id="accordion">
                                                 <div class="row mb-0 text-black">
                                                     <div class="col-1 mt-3">
-                                                        <i class="czi-book text-muted mr-2"></i>
+                                                        <i class="czi-book text-muted me-2"></i>
                                                     </div>
                                                     <div class="col-11">
                                                         <button class="btnF btn-link collapsed text-align-direction" data-toggle="collapse"

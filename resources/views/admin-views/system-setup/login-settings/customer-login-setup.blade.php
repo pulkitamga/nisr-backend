@@ -233,7 +233,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg">
                 <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <i class="tio-clear"></i>
                     </button>
                 </div>
@@ -258,3 +258,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/customer-login-setup.js')}}"></script>
 @endpush
+

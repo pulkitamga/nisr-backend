@@ -254,7 +254,7 @@
                 toastr.success(res.message);
             },
             error: function() {
-                toastr.error('Something went wrong!');
+                toastr.error(@json(__('Something went wrong!')));
             }
         });
     });
@@ -263,14 +263,14 @@
 <script>
     function confirmDelete(id) {
         Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            title: @json(__('Are you sure?')),
+            text: @json(__('You won\'t be able to revert this!')),
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
+            confirmButtonText: @json(__('Yes, delete it!')),
+            cancelButtonText: @json(__('Cancel'))
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('delete-form-' + id).submit();
@@ -280,3 +280,4 @@
 </script>
 
 @endsection
+

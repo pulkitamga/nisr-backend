@@ -24,7 +24,7 @@
                         <div>
                             <!-- <a href="" class="btn btn--primary text-nowrap">
                                 <i class="tio-add"></i>
-                                <span class="text">Add New</span>
+                                <span class="text">{{ __('Add New') }}</span>
                             </a> -->
                         </div>
                     </div>
@@ -123,9 +123,10 @@
                 toastr.success(res.message);
             },
             error: function() {
-                toastr.error('Something went wrong!');
+                toastr.error(@json(__('Something went wrong!')));
             }
         });
     });
 </script>
 @endpush
+

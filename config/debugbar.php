@@ -14,7 +14,9 @@ return [
      |
      */
 
-    'enabled' => env('DEBUGBAR_ENABLED', null),
+    'enabled' => in_array(env('APP_ENV'), ['local', 'development', 'testing'], true)
+        && (bool) env('APP_DEBUG', false)
+        && env('DEBUGBAR_ENABLED', true),
     'hide_empty_tabs' => false, // Hide tabs until they have content
     'except' => [
         'telescope*',
@@ -39,7 +41,9 @@ return [
      */
     'storage' => [
         'enabled'    => true,
-        'open'       => env('DEBUGBAR_OPEN_STORAGE'), // bool/callback.
+        'open'       => in_array(env('APP_ENV'), ['local', 'development', 'testing'], true)
+            ? env('DEBUGBAR_OPEN_STORAGE')
+            : false, // bool/callback.
         'driver'     => 'file', // redis, file, pdo, socket, custom
         'path'       => storage_path('debugbar'), // For file driver
         'connection' => null,   // Leave null for default connection (Redis/PDO)

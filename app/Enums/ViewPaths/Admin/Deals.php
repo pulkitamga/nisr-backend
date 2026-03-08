@@ -53,6 +53,14 @@ enum  Deals
         URI => 'disqualify',
         VIEW => ''
     ];
+    const MARK_LOST = [
+        URI => 'mark-lost',
+        VIEW => ''
+    ];
+    const CLOSE = [
+        URI => 'close',
+        VIEW => ''
+    ];
     const DESQUALIFY = self::DISQUALIFY; // Legacy typo alias.
 
   

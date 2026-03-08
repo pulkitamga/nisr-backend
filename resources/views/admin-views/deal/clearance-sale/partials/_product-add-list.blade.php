@@ -13,7 +13,7 @@
                             </div>
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                               placeholder="{{ translate('search_by_product_name') }}..." aria-label="Search by Order ID" value="{{ request('searchValue') }}">
+                               placeholder="{{ translate('search_by_product_name') }}..." aria-label="{{ translate('Search by Order ID') }}" value="{{ request('searchValue') }}">
                         <button type="submit" class="btn btn--primary input-group-text">
                             {{ translate('Search') }}
                         </button>
@@ -104,7 +104,7 @@
                             </div>
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                               placeholder="{{ translate('search_by_product_name') }}..." aria-label="Search by Order ID" value="{{ request('searchValue') }}">
+                               placeholder="{{ translate('search_by_product_name') }}..." aria-label="{{ translate('Search by Order ID') }}" value="{{ request('searchValue') }}">
                         <button type="submit" class="btn btn--primary input-group-text">
                             {{ translate('Search') }}
                         </button>
@@ -276,7 +276,7 @@
                                 </td>
                                 <td>
                                      <div class="d-flex justify-content-center">
-                                         <a title="Delete" class="btn btn-outline-danger square-btn stock-clearance-delete-data" href="javascript:" data-id="clearance-product-{{ $clearanceProduct->id }}">
+                                         <a title="{{ translate('Delete') }}" class="btn btn-outline-danger square-btn stock-clearance-delete-data" href="javascript:" data-id="clearance-product-{{ $clearanceProduct->id }}">
                                              <i class="tio-delete"></i>
                                          </a>
                                      </div>
@@ -293,3 +293,4 @@
         </div>
     </div>
 @endif
+

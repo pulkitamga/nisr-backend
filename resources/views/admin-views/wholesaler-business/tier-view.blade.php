@@ -71,7 +71,7 @@ $defaultLanguage = $language[0] ?? 'en';
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" class="btn btn-outline-danger btn-sm square-btn"
-                                                title="Delete"
+                                                title="{{ translate('Delete') }}"
                                                 onclick="confirmTierDelete(this)">
                                                 <i class="tio-delete"></i>
                                             </button>
@@ -99,7 +99,7 @@ $defaultLanguage = $language[0] ?? 'en';
                                                     </li>
                                                     @endforeach
                                                 </ul>
-                                                <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="Close">
+                                                <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                                                     &times;
                                                 </button>
                                             </div>
@@ -180,7 +180,7 @@ $defaultLanguage = $language[0] ?? 'en';
                         </li>
                         @endforeach
                     </ul>
-                    <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                         &times;
                     </button>
                 </div>
@@ -232,10 +232,10 @@ $defaultLanguage = $language[0] ?? 'en';
                     status: isChecked
                 },
                 success: function(response) {
-                    toastr.success(response.message || 'Status updated successfully');
+                    toastr.success(response.message || @json(__('Status updated successfully')));
                 },
                 error: function() {
-                    toastr.error('Something went wrong');
+                    toastr.error(@json(__('Something went wrong')));
                 }
             });
         });
@@ -243,21 +243,21 @@ $defaultLanguage = $language[0] ?? 'en';
 
     function confirmTierDelete(button) {
         Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: @json(__('Are you sure?')),
+            text: @json(__('You won\'t be able to revert this!')),
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "Cancel"
+            confirmButtonText: @json(__('Yes, delete it!')),
+            cancelButtonText: @json(__('Cancel'))
         }).then((result) => {
             if (result.isConfirmed) {
                 const form = button.closest('form');
                 if (form) {
                     form.submit();
                 } else {
-                    Swal.fire("Form not found!", "", "error");
+                    Swal.fire(@json(__('Form not found!')), "", "error");
                 }
             }
         });
@@ -295,3 +295,5 @@ $defaultLanguage = $language[0] ?? 'en';
 
 
 @endsection
+
+

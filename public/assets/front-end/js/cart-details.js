@@ -14,9 +14,11 @@ function updateCartCommon(minimum_order_qty, key, incr, e, quantity_id) {
 
     let quantity = parseInt($("#" + quantity_id + key).val()) + parseInt(incr);
     let exQuantity = $("#" + quantity_id + key);
+    const currentStock = parseInt(exQuantity.data('current-stock')) || 0;
 
-    if (exQuantity.val() > exQuantity.data('current-stock') && e == 'minus') {
-        removeProductFromCartList(key)
+    if (currentStock > 0 && quantity > currentStock && e !== 'delete') {
+        toastr.error($('#message-sorry-stock-limit-exceeded').data('text'));
+        exQuantity.val(currentStock);
         return false;
     }
 
@@ -218,12 +220,8 @@ function setExchangeControlsDisabled(cartId, disabled) {
 }
 
 function getNormalizedExchangePayload(cartId, qty, charges) {
-    const productQty = parseInt($(`#cart_quantity_web${cartId}`).val()) || 0;
     let normalizedQty = parseInt(qty) || 0;
     normalizedQty = Math.max(0, normalizedQty);
-    if (productQty > 0) {
-        normalizedQty = Math.min(normalizedQty, productQty);
-    }
 
     let normalizedCharges = parseFloat(charges) || 0;
     if (normalizedQty <= 0) {
@@ -239,6 +237,22 @@ function getNormalizedExchangePayload(cartId, qty, charges) {
 
 function postExchangeUpdate(cartId, qty, charges, onError = null) {
     const payload = getNormalizedExchangePayload(cartId, qty, charges);
+    const productQty = parseInt($(`#cart_quantity_web${cartId}`).val()) || 0;
+    if (payload.charges > 0 && payload.qty < 1) {
+        toastr.error('Exchange qty must be at least 1 when Replacement Discount is enabled.');
+        if (typeof onError === "function") {
+            onError();
+        }
+        return;
+    }
+    if (productQty > 0 && payload.qty > productQty) {
+        toastr.error('Exchange qty cannot exceed product quantity.');
+        if (typeof onError === "function") {
+            onError();
+        }
+        return;
+    }
+
     const requestId = ++exchangeUpdateRequestSequence;
     exchangeLatestRequestByCart[cartId] = requestId;
     setExchangeControlsDisabled(cartId, true);
@@ -279,7 +293,8 @@ function handleExchangeChargeToggle(event, chargeType) {
     let isChecked = checkbox.checked;
     let charges = isChecked ? parseFloat(checkbox.dataset[chargeType] || 0) : 0;
     let cart_id = checkbox.dataset['cartId'];
-    let qty = isChecked ? $(`#exchange_quantity_web${cart_id}`).val() : 0;
+    let qty = isChecked ? 1 : 0;
+    $(`#exchange_quantity_web${cart_id}`).val(qty);
     const exchangeQTYDetails = document.getElementById(`exchangeQTYDetails_${cart_id}`);
 
     if (exchangeQTYDetails) {
@@ -292,6 +307,9 @@ function handleExchangeChargeToggle(event, chargeType) {
 
     postExchangeUpdate(cart_id, qty, charges, function () {
         checkbox.checked = !isChecked;
+        if (!checkbox.checked) {
+            $(`#exchange_quantity_web${cart_id}`).val(0);
+        }
         if (!exchangeQTYDetails) {
             return;
         }
@@ -363,15 +381,13 @@ $(document).on("click", ".exchange_qty_minus", function () {
     let cartId = input.data("cart-id");
     let currentQuantity = parseInt(input.val());
     let charges = input.data("exchange-charges");
-    let newQuantity = 0;
+    let newQuantity = 1;
     if (currentQuantity > 1) {
         newQuantity = currentQuantity - 1;
-    }else{
-        charges = 0
     }
     const normalized = getNormalizedExchangePayload(cartId, newQuantity, charges);
     newQuantity = normalized.qty;
-    input.val(newQuantity > 0 ? newQuantity : 1);
+    input.val(newQuantity >= 1 ? newQuantity : 1);
     updateExchangeQuantity(cartId, newQuantity, charges);
 });
 
@@ -382,8 +398,10 @@ $(document).on("change", ".exchange_qty_input", function () {
     let charges = input.data("exchange-charges");
     let newQuantity = parseInt(input.val()) || 0; // Default to 0 if empty
 
-    if(newQuantity < 1 || newQuantity == 0 || newQuantity == ''){
-        charges = 0;
+    const isReplacementEnabled = $(`#exchange_charges_for_${cartId}`).is(":checked");
+    if (isReplacementEnabled && newQuantity < 1) {
+        newQuantity = 1;
+        input.val(1);
     }
 
     updateExchangeQuantity(cartId, newQuantity, charges);

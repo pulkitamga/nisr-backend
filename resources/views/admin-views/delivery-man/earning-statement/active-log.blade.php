@@ -31,7 +31,7 @@
                                                 <i class="tio-search"></i>
                                             </div>
                                         </div>
-                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                         <input type="hidden" name="page_name" value="active_log">
                                         <button type="submit" class="btn btn--primary">
                                             {{ translate('search') }}
@@ -141,4 +141,5 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deliveryman.js')}}"></script>
 @endpush
+
 

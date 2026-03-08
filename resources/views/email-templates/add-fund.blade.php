@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -135,7 +135,7 @@
         <tr>
             <th>
                 <div style="font-weight: 400;font-size: 11px;line-height: 22px;color: #242A30;">
-                    <span style="margin-right:5px;">
+                    <span style="margin-inline-end:5px;">
                         <a href="{{ 'tel:'.$companyPhone }}"
                                                           style="text-decoration: none; color: inherit;">{{ translate('phone') }}: {{$companyPhone}}</a></span>
                     <span><a href="{{ 'mailto:'.$companyEmail }}" style="text-decoration: none; color: inherit;">{{ translate('email') }}: {{$companyEmail}}</a></span>

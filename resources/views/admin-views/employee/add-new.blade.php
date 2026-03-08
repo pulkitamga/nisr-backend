@@ -74,7 +74,7 @@
                                         @endforeach
                                     </select>
                                     @if($departments->isEmpty())
-                                        <small class="text-muted">No departments found. You can save employee without selecting one.</small>
+                                        <small class="text-muted">{{ __('No departments found. You can save employee without selecting one.') }}</small>
                                     @endif
                                 </div>
                                 <div class="form-group mb-2">

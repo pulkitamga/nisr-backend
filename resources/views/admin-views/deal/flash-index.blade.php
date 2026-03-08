@@ -15,7 +15,7 @@
                 {{translate('flash_deals')}}
             </h2>
             <button class="btn btn-primary" data-toggle="modal" data-target="#prioritySetModal" >
-                <span data-toggle="tooltip" title="Now you can set priority of products.">{{translate('product_priority_Setup')}}</span>
+                <span data-toggle="tooltip" title="{{ translate('now_you_can_set_priority_of_products') }}">{{translate('product_priority_Setup')}}</span>
             </button>
         </div>
         <div class="row">
@@ -78,8 +78,8 @@
                                     <div class="form-group">
                                         <label for="name"
                                                class="title-color font-weight-medium text-capitalize">{{translate('upload_image')}}</label>
-                                        <span class="text-info ml-1">( {{translate('ratio').' '.'5:1'}} )</span>
-                                        <div class="custom-file text-left">
+                                        <span class="text-info ms-1">( {{translate('ratio').' '.'5:1'}} )</span>
+                                        <div class="custom-file text-start">
                                             <input type="file" name="image" id="custom-file-upload"
                                                    class="custom-file-input image-input" data-image-id="viewer"
                                                    accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
@@ -121,7 +121,7 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
-                                               placeholder="{{translate('search_by_Title')}}" aria-label="Search orders"
+                                               placeholder="{{translate('search_by_Title')}}" aria-label="{{ translate('search') }}"
                                                value="{{ request('searchValue') }}" required>
                                         <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
@@ -176,7 +176,7 @@
                                                        data-on-title = "{{translate('Want_to_Turn_ON_Flash_Deal_Status').'?'}}"
                                                        data-off-title = "{{translate('Want_to_Turn_OFF_Flash_Deal_Status').'?'}}"
                                                        data-on-message = "<p>{{translate('if_enabled_this_flash_sale_will_be_available_on_the_website_and_customer_app')}}</p>"
-                                                       data-off-message = "<p>{{translate('if_disabled_this_flash_sale_will_be_hidden_from_the_user_website_and_customer_app')}}</p>">`)">
+                                                       data-off-message = "<p>{{translate('if_disabled_this_flash_sale_will_be_hidden_from_the_user_website_and_customer_app')}}</p>">
                                                 <span class="switcher_control"></span>
                                             </label>
                                         </form>
@@ -224,7 +224,7 @@
                     <div class="modal-body px-sm-4 mb-sm-3">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h5 class="modal-title flex-grow-1 text-center text-capitalize" id="prioritySetModalLabel">{{translate('priority_settings')}}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>

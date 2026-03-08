@@ -116,14 +116,14 @@
                                         @endif
                                     </div>
                                 </div>
-                                <div class="col-md-5 ml-auto">
+                                <div class="col-md-5 ms-auto">
                                     <div class="p-3">
                                         <h6 class="mb-3 font-weight-bold text-center border py-lg-2 bg-dark text-white">
                                             {{ translate('Sub Total') }}
                                         </h6>
                                         <ul class="list-unstyled mb-3">
                                             <li class="d-flex justify-content-between mb-1">
-                                                <span>Tax</span>
+                                                <span>{{ __('Tax') }}</span>
                                                 <span>{{ webCurrencyConverter(amount:$totelTax) }}</span>
                                             </li>
                                         </ul>
@@ -141,7 +141,7 @@
 
                                         <ul class="list-unstyled mb-3">
                                             <li class="d-flex justify-content-between mb-1">
-                                                <span>Wholesaler Discount</span>
+                                                <span>{{ __('Wholesaler Discount') }}</span>
                                                 <span>{{ webCurrencyConverter(amount:$order->wholesaler_discount_amount)
                                                     }}</span>
                                             </li>
@@ -173,14 +173,14 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('Provide External PO & Quotation') }}</h5>
-                    <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <i class="tio-clear"></i>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="external_po_number" class="form-label">{{ translate('External PO Number') }}</label>
-                        <input type="text" class="form-control" id="external_po_number" placeholder="Ex : QUT-12345678" name="external_po_number"  required>
+                        <input type="text" class="form-control" id="external_po_number" placeholder="{{ translate('Ex : QUT-12345678') }}" name="external_po_number"  required>
                     </div>
                     <div class="mb-3">
                         <label for="quotation_file" class="form-label">{{ translate('Quotation File') }}</label>
@@ -221,13 +221,13 @@
             // Reject button → normal confirm Swal
             const url = rejectUrl;
             Swal.fire({
-                title: `Confirm Reject`,
-                text: `Are you sure you want to reject this quotation?`,
+                title: @json(__('Confirm Reject')),
+                text: @json(__('Are you sure you want to reject this quotation?')),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: `Yes, Reject it!`
+                confirmButtonText: @json(__('Yes, Reject it!'))
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('rejectQuotationForm').submit();
@@ -237,3 +237,4 @@
     }
 </script>
 @endpush
+

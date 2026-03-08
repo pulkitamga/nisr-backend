@@ -9,13 +9,13 @@
         <h4 class="modal-title product-title">
             <a class="product-title2" href="{{route('product',$product->slug)}}" data-toggle="tooltip"
                data-placement="right"
-               title="Go to product page">{{$product['name']}}
-                <i class="czi-arrow-{{ Session::get('direction') === "rtl" ? 'left' : 'right' }} ms-2 font-size-lg mr-0"></i>
+               title="{{ translate('Go to product page') }}">{{$product['name']}}
+                <i class="czi-arrow-{{ Session::get('direction') === "rtl" ? 'left' : 'right' }} ms-2 font-size-lg me-0"></i>
             </a>
         </h4>
     </div>
     <div>
-        <button class="close close-quick-view-modal" type="button" data-dismiss="modal" aria-label="Close">
+        <button class="close close-quick-view-modal" type="button" data-dismiss="modal" aria-label="{{ translate('Close') }}">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
@@ -139,19 +139,19 @@
                         @endfor
                     </div>
                     <span
-                        class="d-inline-block  align-middle mt-1 {{Session::get('direction') === "rtl" ? 'ml-md-2 ml-sm-0' : 'mr-md-2 mr-sm-0'}} fs-14 text-muted">({{$overallRating[0]}})</span>
+                        class="d-inline-block  align-middle mt-1 me-md-2 me-sm-0 fs-14 text-muted">({{$overallRating[0]}})</span>
                     <span
-                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-1 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-1 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}}"><span
+                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-1 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1"><span
                             class="web-text-primary">{{$overallRating[1]}}</span> {{translate('reviews')}}</span>
                     <span class="__inline-25"></span>
                     <span
-                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-1 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-1 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}}">
+                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-1 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1">
                         <span class="web-text-primary">
                             {{$countOrder}}
                         </span> {{translate('orders')}}   </span>
                     <span class="__inline-25">    </span>
                     <span
-                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-0 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-0 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}} text-capitalize">
+                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-0 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1 text-capitalize">
                         <span class="web-text-primary countWishlist-{{ $product->id }}"> {{$countWishlist}}</span> {{translate('wish_listed')}}
                     </span>
 
@@ -199,7 +199,7 @@
                     </div>
 
                     <input type="hidden" name="id" value="{{ $product->id }}">
-                    <div class="position-relative {{Session::get('direction') === "rtl" ? 'ml-n4' : 'mr-n4'}} mb-3">
+                    <div class="position-relative me-n4 mb-3">
                         @if (count(json_decode($product->colors)) > 0)
                             <div class="flex-start">
                                 <div class="product-description-label text-dark font-bold">
@@ -470,3 +470,6 @@
 
 <script type="text/javascript" async="async"
         src="https://platform-api.sharethis.com/js/sharethis.js#property=5f55f75bde227f0012147049&product=sticky-share-buttons"></script>
+
+
+

@@ -36,18 +36,18 @@
                                             </div>
                                             <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                                    placeholder="{{translate('search_by_Name_or_Mobile_No_or_Email')}}"
-                                                   aria-label="Search orders" value="{{ request('searchValue') }}">
+                                                   aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                             <button type="submit"
                                                     class="btn btn--primary">{{translate('search')}}</button>
                                         </div>
                                     </form>
-                                    <div class="hs-unfold mr-2">
+                                    <div class="hs-unfold me-2">
                                         <a class="js-hs-unfold-invoker btn btn-sm btn-white dropdown-toggle min-height-44 arrow-hidden" href="javascript:;"
                                            data-hs-unfold-options='{
                                         "target": "#menu",
                                         "type": "css-animation"
                                     }'>
-                                            <i class="tio-column-view-outlined mr-1"></i> {{ translate('Filter') }}
+                                            <i class="tio-column-view-outlined me-1"></i> {{ translate('Filter') }}
                                         </a>
 
                                         <div id="menu" class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-sm-right px-3 py-4">
@@ -89,3 +89,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/contact.js')}}"></script>
 @endpush
+

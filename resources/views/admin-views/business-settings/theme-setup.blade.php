@@ -25,7 +25,7 @@
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                 <i class="tio-clear"></i>
                             </button>
                         </div>
@@ -173,7 +173,7 @@
                         <div class="modal-content">
                             <div class="modal-header border-0 pb-0 d-flex justify-content-end">
                                 <button type="button" class="btn-close border-0" data-dismiss="modal"
-                                        aria-label="Close"><i
+                                        aria-label="{{ translate('Close') }}"><i
                                         class="tio-clear"></i></button>
                             </div>
                             <div class="modal-body px-5 px-sm-5 pt-0 text-center">
@@ -260,7 +260,7 @@
                                                                 type="button"
                                                                 class="btn-close border-0"
                                                                 data-dismiss="modal"
-                                                                aria-label="Close"
+                                                                aria-label="{{ translate('Close') }}"
                                                             ><i class="tio-clear"></i></button>
                                                         </div>
                                                         <div class="modal-body px-4 px-sm-5 text-center">
@@ -308,7 +308,7 @@
                                                         <div
                                                             class="modal-header border-0 pb-0 d-flex justify-content-end">
                                                             <button type="button" class="btn-close border-0"
-                                                                    data-dismiss="modal" aria-label="Close">
+                                                                    data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                                                 <i class="tio-clear"></i>
                                                             </button>
                                                         </div>
@@ -391,4 +391,5 @@
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/vendor/swiper/swiper-bundle.min.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/business-setting/theme-setup.js')}}"></script>
 @endpush
+
 

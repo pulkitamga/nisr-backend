@@ -42,8 +42,8 @@
                                            data-off-image=""
                                            data-on-title="Want to turn ON {{ ucwords(str_replace('_',' ',$provider['key_name'])) }} as the shipping provider?"
                                            data-off-title="Want to turn OFF {{ ucwords(str_replace('_',' ',$provider['key_name'])) }} as the shipping provider?"
-                                           data-on-message="<p>If enabled, system can use this shipping provider.</p>"
-                                           data-off-message="<p>If disabled, system cannot use this shipping provider.</p>">
+                                           data-on-message="<p>{{ __('If enabled, system can use this shipping provider.') }}</p>"
+                                           data-off-message="<p>{{ __('If disabled, system cannot use this shipping provider.') }}</p>">
                                     <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
                                 </label>
                             </div>

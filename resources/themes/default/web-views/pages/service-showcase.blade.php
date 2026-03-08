@@ -133,12 +133,8 @@ if ($total > 0 && $total < $minSlidesNeeded) { while ($slides->count() < $minSli
                                                     @endif
                                                     @endfor
                                         </div>
-                                        <span class="d-inline-block  align-middle mt-1 {{Session::get('direction') === "
-                                            rtl" ? 'ml-md-2 ml-sm-0' : 'mr-md-2 mr-sm-0' }} fs-14
-                                            text-muted">({{$overallRating[0]}})</span>
-                                        <span class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "
-                                            rtl" ? 'mr-1 ml-md-2 ml-1 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1'
-                                            : 'ml-1 mr-md-2 mr-1 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1' }}"><span
+                                        <span class="d-inline-block align-middle mt-1 me-md-2 me-sm-0 fs-14 text-muted">({{$overallRating[0]}})</span>
+                                        <span class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-1 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1"><span
                                                 class="web-text-primary">{{$overallRating[1]}}</span>
                                             {{translate('reviews')}}</span>
 

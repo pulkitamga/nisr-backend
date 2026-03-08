@@ -71,11 +71,11 @@
                             <div class="mb-3">
                                 <h5 class="px-2 py-1 badge-soft-info rounded mb-3 d-flex">{{ $contact->name }}</h5>
                                 <div class="flex-start mb-1">
-                                    <strong class="{{Session::get('direction') === "rtl" ? 'ml-1' : 'mr-1'}}">{{translate('subject')}}: </strong>
+                                    <strong class="me-1">{{translate('subject')}}: </strong>
                                     <div><strong>{{$contact->subject}}</strong></div>
                                 </div>
                                 <div class="flex-start">
-                                    <strong class="{{Session::get('direction') === "rtl" ? 'ml-1' : 'mr-1'}}">{{translate('message')}}: </strong>
+                                    <strong class="me-1">{{translate('message')}}: </strong>
                                     <div>{{$contact->message}}</div>
                                 </div>
                             </div>
@@ -84,11 +84,11 @@
                                 @if($contact['reply']!=null)
                                     @php($data=json_decode($contact['reply'],true))
                                     <div class="flex-start mb-1">
-                                        <strong class="{{Session::get('direction') === "rtl" ? 'ml-1' : 'mr-1'}}">{{translate('subject')}}: </strong>
+                                        <strong class="me-1">{{translate('subject')}}: </strong>
                                         <div><strong>{{$data['subject']}}</strong></div>
                                     </div>
                                     <div class="flex-start">
-                                        <strong class="{{Session::get('direction') === "rtl" ? 'ml-1' : 'mr-1'}}">{{translate('message')}}: </strong>
+                                        <strong class="me-1">{{translate('message')}}: </strong>
                                         <div>{{$data['body']}}</div>
                                     </div>
                                 @else
@@ -145,3 +145,4 @@
         </div>
     </div>
 @endsection
+

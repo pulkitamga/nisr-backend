@@ -163,7 +163,7 @@
             <div class="modal-content">
                 <div class="modal-header border-0 pb-0">
                     <h6 class="text-center text-capitalize">{{translate('submit_a_review')}}</h6>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -180,24 +180,13 @@
                                 @if(isset($order->deliveryManReview))
                                     <?php
                                         $rating = $order->deliveryManReview->rating;
-                                        $sessionDirection = session()->get('direction') ?? 'ltr';
-                                        if ($sessionDirection == 'ltr') {
-                                            $style = match ($rating) {
-                                                2 => 'left:36px',
-                                                3 => 'left:85px',
-                                                4 => 'left:112px',
-                                                5 => 'left:155px',
-                                                default => 'left:5px',
-                                            };
-                                        }else{
-                                            $style = match ($rating) {
-                                                2 => 'right:36px',
-                                                3 => 'right:85px',
-                                                4 => 'right:112px',
-                                                5 => 'right:155px',
-                                                default => 'right:5px',
-                                            };
-                                        }
+                                        $style = match ($rating) {
+                                            2 => 'inset-inline-start:36px',
+                                            3 => 'inset-inline-start:85px',
+                                            4 => 'inset-inline-start:112px',
+                                            5 => 'inset-inline-start:155px',
+                                            default => 'inset-inline-start:5px',
+                                        };
                                     ?>
                                 @endif
                                 <label class="rating-label">
@@ -260,7 +249,7 @@
                     <div class="modal-header bg-faded-info">
                         <h5 class="modal-title"
                             id="exampleModalLongTitle">{{translate('Send_Message_to_Deliveryman')}}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">×</span>
                         </button>
                     </div>
@@ -305,3 +294,4 @@
     ></span>
 
 @endsection
+

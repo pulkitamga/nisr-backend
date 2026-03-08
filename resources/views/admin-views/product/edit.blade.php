@@ -1015,8 +1015,8 @@
                                     </div>
 
                                     <p class="text-muted mt-2">{{ translate('image_format') }} :
-                                        {{ 'Jpg, png, jpeg, webp ' }}<br>
-                                        {{ translate('image_size') }} : {{ translate('max') }} {{ '2 MB' }}</p>
+                                        {{ __('Jpg, png, jpeg, webp') }}<br>
+                                        {{ translate('image_size') }} : {{ translate('max') }} {{ __('2 MB') }}</p>
                                 </div>
 
                             </div>
@@ -1309,9 +1309,9 @@
                                     @endif
                                 </div>
                                 <p class="text-muted mt-2 fz-12">
-                                    {{ translate('Format') }} : {{ ' pdf, mp4, mp3' }}
+                                    {{ translate('Format') }} : {{ __('pdf, mp4, mp3') }}
                                     <br>
-                                    {{ translate('image_size') }} : {{ translate('max') }} {{ '10 MB' }}
+                                    {{ translate('image_size') }} : {{ translate('max') }} {{ __('10 MB') }}
                                 </p>
                             </div>
                         </div>

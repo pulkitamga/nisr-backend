@@ -44,14 +44,14 @@
                                                 ? $createdAt->format('D h:i A')
                                                 : $createdAt->format('d M Y h:i A');
                                         } else {
-                                            echo "N/A";
+                                            echo translate('not_available');
                                         }
                                         ?>
                                     </td>
                                     <td>
                                         <div class="__btn-grp-sm flex-nowrap">
                                           
-                                            <a href="{{route('notification.view',$notification->id)}}" title="View notification" class="btn-outline-success text-success __action-btn btn-shadow rounded-full">
+                                            <a href="{{route('notification.view',$notification->id)}}" title="{{ translate('view_notification') }}" class="btn-outline-success text-success __action-btn btn-shadow rounded-full">
                                                 <i class="fa fa-eye"></i>
                                             </a>
                                         </div>

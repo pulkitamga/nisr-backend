@@ -27,14 +27,14 @@
             <tr>
                 <td>{{ $key + 1 }}</td>
                 <td>#{{ $blog?->readable_id }}</td>
-                <td class="text-truncate max-w-165">{{ $blog?->category?->name ?? 'N/A' }}</td>
+                <td class="text-truncate max-w-165">{{ $blog?->category?->name ?? __('N/A') }}</td>
                 <td>
                     <div class="w-250 text-wrap line-1">
                         {{ $blog->title }}
                     </div>
                 </td>
-                <td class="max-w-215px overflow-hidden text-truncate"> {{ $blog?->writer ?? 'N/a' }}</td>
-                <td>{{ $blog->is_published ? date('d M, y', strtotime($blog->publish_date)) : 'N/A' }}</td>
+                <td class="max-w-215px overflow-hidden text-truncate"> {{ $blog?->writer ?? __('N/A') }}</td>
+                <td>{{ $blog->is_published ? date('d M, y', strtotime($blog->publish_date)) : __('N/A') }}</td>
                 <td>
                     <div class="d-flex justify-content-center">
                         <form action="{{ route('admin.blog.blog-status-update', $blog->id) }}" class="single-blog-status-form"

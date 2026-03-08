@@ -35,7 +35,7 @@
                                             <i class="tio-search"></i>
                                         </div>
                                     </div>
-                                    <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{translate('search_by_Product_name')}}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                                    <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{translate('search_by_Product_name')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                     <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                 </div>
                             </form>
@@ -72,10 +72,10 @@
                             @foreach($wholesale_products as $key => $product)
                             <tr>
                                 <td>{{ $wholesale_products->firstItem() + $key }}</td>
-                                <td>{{ $product->product->name ?? 'N/A' }}</td>
-                                <td>{{ $product->category->name ?? 'N/A' }}</td>
-                                <td>{{ $product->subcategory->name ?? 'N/A' }}</td>
-                                <td>{{ $product->variation_type ?? 'No Variation' }}</td>
+                                <td>{{ $product->product->name ?? __('N/A') }}</td>
+                                <td>{{ $product->category->name ?? __('N/A') }}</td>
+                                <td>{{ $product->subcategory->name ?? __('N/A') }}</td>
+                                <td>{{ $product->variation_type ?? __('No Variation') }}</td>
 
                                 <td>
                                     <label class="switcher mx-auto">
@@ -154,7 +154,7 @@
                 toastr.success(response.message); // Show success message
             },
             error: function() {
-                toastr.error('Something went wrong!');
+                toastr.error(@json(__('Something went wrong!')));
             }
         });
     });
@@ -165,13 +165,13 @@
         let form = $(this).closest('form');
 
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'This action cannot be undone.',
+            title: @json(__('Are you sure?')),
+            text: @json(__('This action cannot be undone.')),
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: @json(__('Yes, delete it!'))
         }).then((result) => {
             if (result.isConfirmed) {
                 form.submit();

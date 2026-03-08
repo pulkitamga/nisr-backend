@@ -118,7 +118,7 @@ $defaultLanguage = $language[0] ?? 'en';
                 };
                 reader.readAsDataURL(file);
             } else {
-                previewContainer.innerHTML = '<p style="color:red">Invalid file type. Please select an image.</p>';
+                previewContainer.innerHTML = '<p style="color:red">{{ __('Invalid file type. Please select an image.') }}</p>';
             }
         }
     });

@@ -35,7 +35,7 @@
                                 : {{ $orderDetails['verification_code'] }}</h5>
                         @endif
                     </div>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span
+                    <button class="close" type="button" data-dismiss="modal" aria-label="{{ translate('Close') }}"><span
                                 aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body pt-0 ">
@@ -531,7 +531,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -575,3 +575,4 @@
         });
     </script>
 @endpush
+

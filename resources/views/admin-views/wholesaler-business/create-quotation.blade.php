@@ -32,7 +32,7 @@ $defaultLanguage = $language[0] ?? 'en';
                     <input type="text" name="quotation_no" id="quotation_no_input"
                         oninput="checkQuotationNo(this.value)"
                         class="form-control w-full"
-                        placeholder="Enter Quotation No" required>
+                        placeholder="{{ translate('Enter Quotation No') }}" required>
                     <span id="order_no_status" class="text-sm"></span>
                 </div>
 
@@ -50,8 +50,8 @@ $defaultLanguage = $language[0] ?? 'en';
                             data-email="{{ $wholesaler->email }}"
                             data-phone="{{ $wholesaler->phone ?? '' }}"
                             data-wholesalediscount="{{ $wholesaler->wholesaler_discount ?? 0 }}"
-                            data-id="{{ $wholesaler->id ?? 'N/A' }}"
-                            data-tier="{{ $wholesaler->tier ?? 'N/A' }}">
+                            data-id="{{ $wholesaler->id ?? __('N/A') }}"
+                            data-tier="{{ $wholesaler->tier ?? __('N/A') }}">
                             {{ $wholesaler->wholesalerBusiness->company_name ?? '' }} ({{ $wholesaler->email }})
                         </option>
                         @endforeach
@@ -62,14 +62,14 @@ $defaultLanguage = $language[0] ?? 'en';
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block  text-md font-semibold text-gray-700 whitespace-nowrap">{{ translate('Wholesaler') }}</label>
-                    <input type="text" id="ws-name" value="{{ $order->wholeseller->name ?? 'NAME' }}" name="wholesaler_name"
+                    <input type="text" id="ws-name" value="{{ $order->wholeseller->name ?? __('N/A') }}" name="wholesaler_name"
                         class="w-full form-control " readonly>
                 </div>
-                <input type="hidden" id="ws-id" value="{{ $order->wholeseller->id ?? 'id' }}" name="wholesaler_id"
+                <input type="hidden" id="ws-id" value="{{ $order->wholeseller->id ?? '' }}" name="wholesaler_id"
                     class="w-full form-control shadow-sm" readonly>
                 <div>
                     <label class="blocktext-md font-semibold text-gray-700 whitespace-nowrap">{{ translate('Wholesaler Tier') }}</label>
-                    <input type="text" id="ws-tier" value="{{ $order->wholeseller->tier ?? 'TIER' }}" name="wholesale_tier"
+                    <input type="text" id="ws-tier" value="{{ $order->wholeseller->tier ?? __('N/A') }}" name="wholesale_tier"
                         class="w-full form-control" readonly>
                 </div>
             </div>
@@ -86,7 +86,7 @@ $defaultLanguage = $language[0] ?? 'en';
                         </button>
                         <div id="product_dropdown_wrapper" class="mt-2 hidden">
                             <select id="product_select" class="js-example-matcher w-64"
-                                data-placeholder="Search and select a product">
+                                data-placeholder="{{ translate('Search and select a product') }}">
                                 <option value="" disabled selected>{{ translate('Select Product') }}</option>
                                 @foreach ($wholesaleProducts as $wholesale)
 
@@ -99,7 +99,7 @@ $defaultLanguage = $language[0] ?? 'en';
                                  "tier" => $p->tier,
                                       "price" => $p->price_per_piece
                                              ]))'>
-                                    {{ $wholesale->product->name }} ({{ $wholesale->variation_type ?? 'No Variation' }})
+                                    {{ $wholesale->product->name }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
                                 </option>
 
                                 @endforeach
@@ -107,7 +107,7 @@ $defaultLanguage = $language[0] ?? 'en';
                         </div>
                     </div>
                     <input id="datatableSearch_" type="search" class="border border-gray-300 px-3 py-2 rounded-md shadow-sm text-sm w-64"
-                        placeholder="{{ translate('Search...') }}" aria-label="Search">
+                        placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                 </div>
                 <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                     <thead class="thead-light thead-50 text-capitalize">
@@ -228,6 +228,14 @@ $defaultLanguage = $language[0] ?? 'en';
 <script>
     let chargeIndex = 0;
     let discountIndex = 0;
+    const searchProductPlaceholder = @json(__('Search for a product...'));
+    const chargeNameLabel = @json(__('Charge Name'));
+    const discountNameLabel = @json(__('Discount Name'));
+    const valueLabel = @json(__('Value'));
+    const quotationExistsMessage = @json(__('Quotation No already exists'));
+    const quotationAvailableMessage = @json(__('Quotation No is available'));
+    const selectWholesalerPlaceholder = @json(__('-- Select Wholesaler --'));
+    const fallbackNotAvailable = @json(__('N/A'));
 
     const toggleBtn = document.getElementById('toggle_product_dropdown');
     const wrapper = document.getElementById('product_dropdown_wrapper');
@@ -334,7 +342,7 @@ $defaultLanguage = $language[0] ?? 'en';
 
     $(document).ready(function() {
         $('#product_select').select2({
-            placeholder: 'Search for a product...',
+            placeholder: searchProductPlaceholder,
             matcher: matchCustom,
         });
 
@@ -394,10 +402,10 @@ $defaultLanguage = $language[0] ?? 'en';
         if (!selectedWholesalerId) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Oops...',
-                text: 'Please select a wholesaler first.',
+                title: @json(__('Oops...')),
+                text: @json(__('Please select a wholesaler first.')),
                 confirmButtonColor: '#3085d6',
-                confirmButtonText: 'OK'
+                confirmButtonText: @json(__('OK'))
             });
             return;
         }
@@ -447,7 +455,7 @@ $defaultLanguage = $language[0] ?? 'en';
         row.getAttribute('data-product-id') === productId &&
         row.getAttribute('data-variation-type') === variationType
     )) {
-        alert("This variation is already added.");
+        alert(@json(__('This variation is already added.')));
         return;
     }
 
@@ -486,8 +494,8 @@ $defaultLanguage = $language[0] ?? 'en';
         const container = document.createElement('div');
         container.classList.add('flex', 'gap-2', 'items-center', 'mt-2');
         container.innerHTML = `
-            <input type="text" name="charges[${chargeIndex}][name]" placeholder="Charge Name" class="flex-1 px-3 py-2 border rounded" />
-            <input type="number" name="charges[${chargeIndex}][value]" placeholder="Value" class=" px-3 py-2 border rounded" data-charge oninput="updateFinalPrice()" />
+            <input type="text" name="charges[${chargeIndex}][name]" placeholder="${chargeNameLabel}" class="flex-1 px-3 py-2 border rounded" />
+            <input type="number" name="charges[${chargeIndex}][value]" placeholder="${valueLabel}" class=" px-3 py-2 border rounded" data-charge oninput="updateFinalPrice()" />
             <button type="button" onclick="this.parentElement.remove(); updateFinalPrice();" class="btn btn-danger btn-sm square-btn"> <i class="tio-delete"></i></button>
         `;
         document.getElementById('charges').appendChild(container);
@@ -498,8 +506,8 @@ $defaultLanguage = $language[0] ?? 'en';
         const container = document.createElement('div');
         container.classList.add('flex', 'gap-2', 'items-center', 'mt-2');
         container.innerHTML = `
-            <input type="text" name="discounts[${discountIndex}][name]" placeholder="Discount Name" class="flex-1 px-3 py-2 border rounded" />
-            <input type="number" name="discounts[${discountIndex}][value]" placeholder="Value" class=" px-3 py-2 border rounded" data-discount oninput="updateFinalPrice()" />
+            <input type="text" name="discounts[${discountIndex}][name]" placeholder="${discountNameLabel}" class="flex-1 px-3 py-2 border rounded" />
+            <input type="number" name="discounts[${discountIndex}][value]" placeholder="${valueLabel}" class=" px-3 py-2 border rounded" data-discount oninput="updateFinalPrice()" />
             <button type="button" onclick="this.parentElement.remove(); updateFinalPrice();" class="btn btn-danger btn-sm square-btn"> <i class="tio-delete"></i></button>
         `;
         document.getElementById('discounts').appendChild(container);
@@ -532,9 +540,9 @@ $defaultLanguage = $language[0] ?? 'en';
             .then(response => response.json())
             .then(data => {
                 if (data.exists) {
-                    setStatus('Quotation No already exists', 'red', true);
+                    setStatus(quotationExistsMessage, 'red', true);
                 } else {
-                    setStatus('Quotation No is available', 'green', false);
+                    setStatus(quotationAvailableMessage, 'green', false);
                 }
             })
             .catch(err => {
@@ -559,7 +567,7 @@ $defaultLanguage = $language[0] ?? 'en';
 
     $(document).ready(function() {
         $('#wholesaler-select').select2({
-            placeholder: "-- Select Wholesaler --",
+            placeholder: selectWholesalerPlaceholder,
             allowClear: true,
             width: 'resolve'
         });
@@ -567,11 +575,11 @@ $defaultLanguage = $language[0] ?? 'en';
         $('#wholesaler-select').on('change', function() {
             const selected = $(this).find(':selected');
 
-            const name = selected.data('name') || 'N/A';
-            const phone = selected.data('phone') || 'N/A';
-            const email = selected.data('email') || 'N/A';
-            const tier = selected.data('tier') || 'N/A';
-            const id = selected.data('id') || 'N/A';
+            const name = selected.data('name') || fallbackNotAvailable;
+            const phone = selected.data('phone') || fallbackNotAvailable;
+            const email = selected.data('email') || fallbackNotAvailable;
+            const tier = selected.data('tier') || fallbackNotAvailable;
+            const id = selected.data('id') || fallbackNotAvailable;
             const discount = selected.data('wholesalediscount') || '0';
 
             $('#ws-name').val(name);
@@ -612,3 +620,4 @@ $defaultLanguage = $language[0] ?? 'en';
 
 
 @endpush
+

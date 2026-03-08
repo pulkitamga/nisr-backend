@@ -58,10 +58,8 @@
                     <div class="upload-file-textbox text-center" style="">
                         <img width="34" height="34" class="svg" src="{{ dynamicAsset(path: 'public/assets/back-end/img/svg/image-upload.svg') }}" alt="image upload">
                         <h6 class="mt-1 fw-medium lh-base text-center">
-                            <span class="text-info">Click to upload</span>
-                            <br>
-                            Or drag and drop
-                        </h6>
+                            <span class="text-info">{{ __("Click to upload") }}</span>
+                            <br>{{ __("Or drag and drop") }}</h6>
                     </div>
                     <img class="upload-file-img" loading="lazy"
                     src="{{ getStorageImages(path: $blog?->seoInfo?->image_full_url['path'] ? $blog?->seoInfo?->image_full_url : $blog?->meta_image_full_url, type: 'backend-banner') }}"
@@ -79,7 +77,7 @@
                     </div>
                 </div>
             </div>
-            <p class="fs-10 mb-0 text-center">JPG, JPEG, PNG, Gif Image size : Max 2 MB <span class="fw-medium">(325 x 100 px)</span></p>
+            <p class="fs-10 mb-0 text-center">{{ __("JPG, JPEG, PNG, Gif Image size : Max 2 MB") }} <span class="fw-medium">(325 x 100 px)</span></p>
         </div>
     </div>
 

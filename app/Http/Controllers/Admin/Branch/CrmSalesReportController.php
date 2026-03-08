@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin\Branch;
 use App\Exports\CrmSalesReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
-use App\Support\AdminPermissionRegistry;
+use App\Models\Deal;
+use App\Models\Lead;
 use App\Models\Order;
 use App\Services\ReportPdfService;
 use Carbon\Carbon;
@@ -25,11 +26,7 @@ class CrmSalesReportController extends Controller
 {
     public function index(): View
     {
-        $agents = Admin::query()
-            ->active()
-            ->withRole(AdminPermissionRegistry::crmAgentRole())
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $agents = $this->getAssignedCrmAdmins();
 
         return view('admin-views.branch-management.crm-sales-report', compact('agents'));
     }
@@ -41,6 +38,7 @@ class CrmSalesReportController extends Controller
                 'date_type' => 'nullable|in:this_year,this_month,this_week,today,custom_date',
                 'from' => 'nullable|date',
                 'to' => 'nullable|date',
+                'agent_id' => 'nullable|integer|exists:admins,id',
                 'agent_ids' => 'nullable|array',
                 'agent_ids.*' => 'integer|exists:admins,id',
                 'sale_type' => 'nullable|in:retail,wholesale',
@@ -111,35 +109,77 @@ class CrmSalesReportController extends Controller
             ->unique()
             ->values()
             ->all();
-
-        $agentsQuery = Admin::query()
-            ->active()
-            ->withRole(AdminPermissionRegistry::crmAgentRole())
-            ->orderBy('name');
-
-        if (!empty($agentIds)) {
-            $agentsQuery->whereIn('id', $agentIds);
+        $singleAgentId = (int)$request->input('agent_id', 0);
+        if ($singleAgentId > 0) {
+            $agentIds = [$singleAgentId];
         }
 
-        $agents = $agentsQuery->get(['id', 'name']);
+        $agents = $this->getAssignedCrmAdmins($agentIds);
+        $reportAgents = $this->appendUnassignedAgentIfNeeded($agents, $agentIds);
         $periodType = $this->resolvePeriodType($fromDate, $toDate);
-        $salesData = $this->getAgentSalesData($fromDate, $toDate, $agents, $saleType);
-        $pivotData = $this->preparePivotData($salesData, $agents, $fromDate, $toDate, $periodType);
+        $salesData = $this->getAgentSalesData($fromDate, $toDate, $reportAgents, $saleType);
+        $pivotData = $this->preparePivotData($salesData, $reportAgents, $fromDate, $toDate, $periodType);
 
         return [
             'agents' => $agents,
             'pivotData' => $pivotData,
             'chartData' => $this->prepareChartData($pivotData),
-            'statistics' => $this->calculateStatistics($pivotData, $agents),
+            'statistics' => $this->calculateStatistics($pivotData, $reportAgents),
             'periodType' => $periodType,
             'filters' => [
                 'date_type' => $dateType,
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
                 'sale_type' => $saleType,
+                'agent_id' => !empty($agentIds) ? (int)$agentIds[0] : null,
                 'agent_ids' => $agentIds,
             ],
         ];
+    }
+
+    private function getAssignedCrmAdmins(array $selectedAgentIds = []): Collection
+    {
+        $leadEmployeeIds = Lead::query()
+            ->whereNotNull('employee_id')
+            ->where('employee_id', '>', 0)
+            ->pluck('employee_id');
+        $leadOwnerIds = Lead::query()
+            ->whereNotNull('owner_id')
+            ->where('owner_id', '>', 0)
+            ->pluck('owner_id');
+        $dealEmployeeIds = Deal::query()
+            ->whereNotNull('employee_id')
+            ->where('employee_id', '>', 0)
+            ->pluck('employee_id');
+        $dealOwnerIds = Deal::query()
+            ->whereNotNull('owner_id')
+            ->where('owner_id', '>', 0)
+            ->pluck('owner_id');
+
+        $assignedIds = $leadEmployeeIds
+            ->merge($leadOwnerIds)
+            ->merge($dealEmployeeIds)
+            ->merge($dealOwnerIds)
+            ->map(fn($id) => (int)$id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($assignedIds)) {
+            return collect();
+        }
+
+        $query = Admin::query()
+            ->active()
+            ->whereIn('id', $assignedIds)
+            ->orderBy('name');
+
+        if (!empty($selectedAgentIds)) {
+            $query->whereIn('id', $selectedAgentIds);
+        }
+
+        return $query->get(['id', 'name']);
     }
 
     private function resolveDateRange(Request $request): array
@@ -225,9 +265,22 @@ class CrmSalesReportController extends Controller
         $data = [];
 
         foreach ($agents as $agent) {
+            $agentId = (int)$agent->id;
+            $agentOrderIds = $agentId > 0
+                ? $this->getAgentOrderIds($agentId)
+                : $this->getUnassignedDealOrderIds();
+            if (empty($agentOrderIds)) {
+                $data[(int)$agent->id] = [
+                    'id' => $agentId,
+                    'name' => (string)$agent->name,
+                    'period_data' => [],
+                ];
+                continue;
+            }
+
             $query = Order::query()
                 ->from('orders')
-                ->where('sales_agent_id', (int)$agent->id)
+                ->whereIn('orders.id', $agentOrderIds)
                 ->where('order_status', 'delivered')
                 ->whereBetween('orders.created_at', [$fromDate, $toDate]);
 
@@ -263,7 +316,7 @@ class CrmSalesReportController extends Controller
                 ->get();
 
             $agentData = [
-                'id' => (int)$agent->id,
+                'id' => $agentId,
                 'name' => (string)$agent->name,
                 'period_data' => [],
             ];
@@ -282,6 +335,65 @@ class CrmSalesReportController extends Controller
         }
 
         return $data;
+    }
+
+    private function getAgentOrderIds(int $agentId): array
+    {
+        if ($agentId <= 0) {
+            return [];
+        }
+
+        return Deal::query()
+            ->where(function ($query) use ($agentId) {
+                $query->where('owner_id', $agentId)
+                    ->orWhere('employee_id', $agentId);
+            })
+            ->whereNotNull('order_id')
+            ->pluck('order_id')
+            ->map(fn($value) => (int)$value)
+            ->filter(fn($value) => $value > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function getUnassignedDealOrderIds(): array
+    {
+        return Deal::query()
+            ->where(function ($query) {
+                $query->whereNull('owner_id')
+                    ->orWhere('owner_id', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('employee_id')
+                    ->orWhere('employee_id', 0);
+            })
+            ->whereNotNull('order_id')
+            ->pluck('order_id')
+            ->map(fn($value) => (int)$value)
+            ->filter(fn($value) => $value > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function appendUnassignedAgentIfNeeded(Collection $agents, array $selectedAgentIds): Collection
+    {
+        if (!empty($selectedAgentIds)) {
+            return $agents;
+        }
+
+        if (empty($this->getUnassignedDealOrderIds())) {
+            return $agents;
+        }
+
+        $extended = $agents->values();
+        $extended->push((object)[
+            'id' => 0,
+            'name' => translate('unassigned'),
+        ]);
+
+        return $extended;
     }
 
     private function buildPeriodBuckets(Carbon $fromDate, Carbon $toDate, string $periodType): array
@@ -458,6 +570,9 @@ class CrmSalesReportController extends Controller
 
         $agentTotals = [];
         foreach ($agents as $agent) {
+            if ((int)$agent->id <= 0) {
+                continue;
+            }
             $agentTotals[(int)$agent->id] = [
                 'name' => (string)$agent->name,
                 'total' => 0,

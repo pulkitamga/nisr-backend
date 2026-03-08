@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use App\Services\ProductService;
 use App\Services\InventoryMutationService;
 use App\Services\ServiceService;
+use App\Services\ReportPdfService;
 use App\Traits\FileManagerTrait;
 use Illuminate\Http\JsonResponse;
 use App\Exports\ProductListExport;
@@ -41,6 +42,9 @@ use App\Contracts\Repositories\CartRepositoryInterface;
 use App\Contracts\Repositories\BrandRepositoryInterface;
 use App\Contracts\Repositories\ColorRepositoryInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use App\Contracts\Repositories\AuthorRepositoryInterface;
 use App\Contracts\Repositories\BannerRepositoryInterface;
 use App\Contracts\Repositories\BranchRepositoryInterface;
@@ -1187,7 +1191,7 @@ public function getVariations(Request $request): JsonResponse
     ]);
 }
 
-public function getStockReport(Request $request): JsonResponse|View
+public function getStockReport(Request $request): JsonResponse|View|BinaryFileResponse|Response
 {
     $isJsonRequest = $request->ajax() || $request->expectsJson();
 
@@ -1195,6 +1199,9 @@ public function getStockReport(Request $request): JsonResponse|View
         'product_id' => ($isJsonRequest ? 'required' : 'nullable') . '|integer|exists:products,id',
         'category_id' => 'nullable|integer|exists:categories,id',
         'variation' => 'nullable|string',
+        'date_type' => 'nullable|in:this_year,this_month,this_week,today,custom_date',
+        'from' => 'nullable|date',
+        'to' => 'nullable|date|after_or_equal:from',
         'from_date' => 'nullable|date',
         'to_date' => 'nullable|date|after_or_equal:from_date',
         'include_internal_transfer' => 'nullable|boolean',
@@ -1202,8 +1209,7 @@ public function getStockReport(Request $request): JsonResponse|View
 
     $selectedCategoryId = !empty($request->category_id) ? (int)$request->category_id : null;
     $selectedProductId = !empty($request->product_id) ? (int)$request->product_id : null;
-    $fromDate = $request->input('from_date');
-    $toDate = $request->input('to_date');
+    [$dateType, $fromDate, $toDate] = $this->resolveStockReportDateRange($request);
 
     $categories = $this->categoryRepo->getListWhere(filters: ['position' => 0], dataLimit: 'all');
     $productsForFilter = Products::query()
@@ -1232,6 +1238,9 @@ public function getStockReport(Request $request): JsonResponse|View
                 'category_id' => $selectedCategoryId,
                 'product_id' => null,
                 'variation' => null,
+                'date_type' => $dateType,
+                'from' => $fromDate,
+                'to' => $toDate,
                 'from_date' => $fromDate,
                 'to_date' => $toDate,
                 'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
@@ -1253,6 +1262,9 @@ public function getStockReport(Request $request): JsonResponse|View
                 'category_id' => $selectedCategoryId,
                 'product_id' => null,
                 'variation' => null,
+                'date_type' => $dateType,
+                'from' => $fromDate,
+                'to' => $toDate,
                 'from_date' => $fromDate,
                 'to_date' => $toDate,
                 'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
@@ -1349,11 +1361,16 @@ public function getStockReport(Request $request): JsonResponse|View
     if ($selectedCategoryId) {
         $baseParams['category_id'] = $selectedCategoryId;
     }
-    if (!empty($fromDate)) {
-        $baseParams['from_date'] = $fromDate;
+    if (!empty($dateType)) {
+        $baseParams['date_type'] = $dateType;
     }
-    if (!empty($toDate)) {
-        $baseParams['to_date'] = $toDate;
+    if ($dateType === 'custom_date') {
+        if (!empty($fromDate)) {
+            $baseParams['from'] = $fromDate;
+        }
+        if (!empty($toDate)) {
+            $baseParams['to'] = $toDate;
+        }
     }
     $reportBaseUrl = route('admin.products.stock-report') . '?' . http_build_query($baseParams);
 
@@ -1371,6 +1388,9 @@ public function getStockReport(Request $request): JsonResponse|View
             'category_id' => $selectedCategoryId,
             'product_id' => $selectedProductId,
             'variation' => $variation,
+            'date_type' => $dateType,
+            'from' => $fromDate,
+            'to' => $toDate,
             'from_date' => $fromDate,
             'to_date' => $toDate,
             'include_internal_transfer' => $includeInternalTransfer,
@@ -1378,12 +1398,98 @@ public function getStockReport(Request $request): JsonResponse|View
         'reportReady' => true,
     ];
 
+    $download = strtolower((string)$request->query('download', ''));
+    if ($download === 'excel') {
+        return $this->exportStockReportExcel($stockReportData);
+    }
+    if ($download === 'pdf') {
+        return $this->exportStockReportPdf($stockReportData);
+    }
+
     if ($request->ajax() || $request->expectsJson()) {
         $view = view(Product::STOCK_REPORT[VIEW], $stockReportData)->render();
         return response()->json(['view' => $view]);
     }
 
     return view('admin-views.product.stock-report', $stockReportData);
+}
+
+private function exportStockReportExcel(array $reportData): BinaryFileResponse
+{
+    $rows = collect($reportData['historyRows'] ?? [])->map(function (array $row) {
+        return [
+            Carbon::parse($row['date'])->format('Y-m-d H:i:s'),
+            strtoupper((string)$row['type']) === 'IN' ? 'Stock In' : 'Stock Out',
+            (int)$row['quantity'],
+            (string)($row['category'] ?? ''),
+            str_replace('_', ' ', (string)($row['reason'] ?? '')),
+            (string)($row['remarks'] ?? ''),
+            (string)($row['from_branch'] ?? ''),
+            (string)($row['to_branch'] ?? ''),
+        ];
+    })->values()->all();
+
+    return Excel::download(new class($rows) implements FromArray, WithHeadings {
+        public function __construct(private readonly array $rows) {}
+        public function array(): array
+        {
+            return $this->rows;
+        }
+        public function headings(): array
+        {
+            return ['Date', 'Type', 'Quantity', 'Category', 'Reference', 'Remarks', 'From Branch', 'To Branch'];
+        }
+    }, 'stock-report.xlsx');
+}
+
+private function exportStockReportPdf(array $reportData): Response
+{
+    return app(ReportPdfService::class)->download(
+        view: 'admin-views.product.stock-report-pdf',
+        data: $reportData,
+        fileName: 'stock-report.pdf',
+        orientation: 'landscape'
+    );
+}
+
+private function resolveStockReportDateRange(Request $request): array
+{
+    $legacyFrom = $request->input('from_date');
+    $legacyTo = $request->input('to_date');
+    $dateType = (string)$request->input('date_type', (!empty($legacyFrom) || !empty($legacyTo)) ? 'custom_date' : 'this_year');
+    $fromInput = $request->input('from', $legacyFrom);
+    $toInput = $request->input('to', $legacyTo);
+
+    switch ($dateType) {
+        case 'this_month':
+            $fromDate = now()->startOfMonth()->toDateString();
+            $toDate = now()->endOfMonth()->toDateString();
+            break;
+        case 'this_week':
+            $fromDate = now()->startOfWeek()->toDateString();
+            $toDate = now()->endOfWeek()->toDateString();
+            break;
+        case 'today':
+            $fromDate = now()->toDateString();
+            $toDate = now()->toDateString();
+            break;
+        case 'custom_date':
+            $fromDate = $fromInput ? Carbon::parse($fromInput)->toDateString() : '';
+            $toDate = $toInput ? Carbon::parse($toInput)->toDateString() : '';
+            break;
+        case 'this_year':
+        default:
+            $dateType = 'this_year';
+            $fromDate = now()->startOfYear()->toDateString();
+            $toDate = now()->endOfYear()->toDateString();
+            break;
+    }
+
+    if (!empty($fromDate) && !empty($toDate) && Carbon::parse($fromDate)->gt(Carbon::parse($toDate))) {
+        [$fromDate, $toDate] = [$toDate, $fromDate];
+    }
+
+    return [$dateType, $fromDate, $toDate];
 }
      
 public function updateQuantity(Request $request): RedirectResponse
@@ -1967,24 +2073,19 @@ public function updateQuantity(Request $request): RedirectResponse
             'sub_category_id' => $request['sub_category_id'],
         ];
 
-        $startDate = '';
-        $endDate = '';
-        if (isset($request['restock_date']) && !empty($request['restock_date'])) {
-            $dates = explode(' - ', $request['restock_date']);
-            if (count($dates) !== 2 || !checkDateFormatInMDY($dates[0]) || !checkDateFormatInMDY($dates[1])) {
-                Toastr::error(translate('Invalid_date_range_format'));
-                return back();
-            }
-            $startDate = Carbon::createFromFormat('m/d/Y', $dates[0])->startOfDay();
-            $endDate = Carbon::createFromFormat('m/d/Y', $dates[1])->endOfDay();
+        [$startDate, $endDate, $dateError] = $this->resolveRestockDateRange($request);
+        if ($dateError !== null) {
+            Toastr::error($dateError);
+            return back();
         }
+
         $restockProducts = $this->restockProductRepo->getListWhereBetween(
             orderBy: ['updated_at' => 'desc'],
             searchValue: $request['searchValue'],
             filters: $filters,
             relations: ['product'],
             whereBetween: 'created_at',
-            whereBetweenFilters: $startDate && $endDate ? [$startDate, $endDate] : [],
+            whereBetweenFilters: ($startDate && $endDate) ? [$startDate, $endDate] : [],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT),
         );
         $brands = $this->brandRepo->getListWhere(filters: ['status' => 1], dataLimit: 'all');
@@ -2010,13 +2111,7 @@ public function updateQuantity(Request $request): RedirectResponse
             'sub_category_id' => $request['sub_category_id'],
         ];
 
-        $startDate = '';
-        $endDate = '';
-        if (isset($request['restock_date']) && !empty($request['restock_date'])) {
-            $dates = explode(' - ', $request['restock_date']);
-            $startDate = Carbon::createFromFormat('m/d/Y', $dates[0])->startOfDay();
-            $endDate = Carbon::createFromFormat('m/d/Y', $dates[1])->endOfDay();
-        }
+        [$startDate, $endDate] = $this->resolveRestockDateRange($request);
 
         $restockProducts = $this->restockProductRepo->getListWhereBetween(
             orderBy: ['updated_at' => 'desc'],
@@ -2024,7 +2119,7 @@ public function updateQuantity(Request $request): RedirectResponse
             filters: $filters,
             relations: ['product'],
             whereBetween: 'created_at',
-            whereBetweenFilters: $startDate && $endDate ? [$startDate, $endDate] : [],
+            whereBetweenFilters: ($startDate && $endDate) ? [$startDate, $endDate] : [],
             dataLimit: 'all',
         );
         $brand = (!empty($request->brand_id) && $request->has('brand_id')) ? $this->brandRepo->getFirstWhere(params: ['id' => $request->brand_id]) : 'all';
@@ -2041,6 +2136,63 @@ public function updateQuantity(Request $request): RedirectResponse
             'endDate' => $endDate,
         ];
         return Excel::download(new RestockProductListExport($data), 'restock-product-list.xlsx');
+    }
+
+    private function resolveRestockDateRange(Request $request): array
+    {
+        $legacyDateRange = (string)$request->input('restock_date', '');
+        $dateType = (string)$request->input('date_type', $legacyDateRange !== '' ? 'custom_date' : 'this_year');
+        $fromInput = (string)$request->input('from', '');
+        $toInput = (string)$request->input('to', '');
+
+        if ($legacyDateRange !== '' && ($fromInput === '' || $toInput === '')) {
+            $dates = explode(' - ', $legacyDateRange);
+            if (count($dates) === 2 && checkDateFormatInMDY($dates[0]) && checkDateFormatInMDY($dates[1])) {
+                $fromInput = Carbon::createFromFormat('m/d/Y', $dates[0])->toDateString();
+                $toInput = Carbon::createFromFormat('m/d/Y', $dates[1])->toDateString();
+            }
+        }
+
+        $startDate = null;
+        $endDate = null;
+        $dateError = null;
+
+        try {
+            switch ($dateType) {
+                case 'this_month':
+                    $startDate = now()->startOfMonth()->startOfDay();
+                    $endDate = now()->endOfMonth()->endOfDay();
+                    break;
+                case 'this_week':
+                    $startDate = now()->startOfWeek()->startOfDay();
+                    $endDate = now()->endOfWeek()->endOfDay();
+                    break;
+                case 'today':
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->endOfDay();
+                    break;
+                case 'custom_date':
+                    if ($fromInput === '' || $toInput === '') {
+                        $dateError = translate('Invalid_date_range_format');
+                        break;
+                    }
+                    $startDate = Carbon::parse($fromInput)->startOfDay();
+                    $endDate = Carbon::parse($toInput)->endOfDay();
+                    if ($startDate->gt($endDate)) {
+                        $dateError = translate('Invalid_date_range_format');
+                    }
+                    break;
+                case 'this_year':
+                default:
+                    $startDate = now()->startOfYear()->startOfDay();
+                    $endDate = now()->endOfYear()->endOfDay();
+                    break;
+            }
+        } catch (\Throwable) {
+            $dateError = translate('Invalid_date_range_format');
+        }
+
+        return [$startDate, $endDate, $dateError];
     }
 
     public function getProducts(Request $request, ProductService $service): JsonResponse

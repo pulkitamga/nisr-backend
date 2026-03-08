@@ -8,7 +8,7 @@
 
 @section('content')
     <div class="content container-fluid"> <!-- Page Heading -->
-        <nav aria-label="breadcrumb">
+        <nav aria-label="{{ translate('breadcrumb') }}">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('dashboard')}}</a></li>
                 <li class="breadcrumb-item" aria-current="page">{{translate('shipping_Method')}}</li>
@@ -108,7 +108,7 @@
                                         </td>
 
                                         <td>
-                                            <div class="dropdown float-right">
+                                            <div class="dropdown float-end">
                                                 <button class="btn btn-seconary btn-sm dropdown-toggle" type="button"
                                                         id="dropdownMenuButton" data-toggle="dropdown"
                                                         aria-haspopup="true"

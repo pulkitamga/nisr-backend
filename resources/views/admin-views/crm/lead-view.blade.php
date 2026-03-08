@@ -34,7 +34,9 @@
 @endpush
 
 @section('content')
-@php($isRtl = Session::get('direction') === 'rtl')
+@php
+    $isRtl = Session::get('direction') === 'rtl';
+@endphp
 <div class="content container-fluid">
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -383,4 +385,3 @@
     });
 </script>
 @endpush
-

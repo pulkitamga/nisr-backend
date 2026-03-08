@@ -24,7 +24,7 @@
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                                         class="tio-clear"></i></button>
                         </div>
                         <div class="modal-body px-4 px-sm-5 pt-0 text-center">
@@ -147,7 +147,7 @@
                                 <input id="datatableSearch_" type="search" name="search" class="form-control"
                                        placeholder="{{translate('search_by_bonus_title')}}"
                                        value="{{ request('search') }}"
-                                       aria-label="Search orders">
+                                       aria-label="{{ translate('Search orders') }}">
                                 <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                             </div>
                         </form>
@@ -241,4 +241,5 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/customer/wallet.js')}}"></script>
 @endpush
+
 

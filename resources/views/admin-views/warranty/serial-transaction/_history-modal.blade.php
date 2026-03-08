@@ -51,7 +51,7 @@
 /* --- Timeline Core --- */
 .timeline-container {
     position: relative;
-    padding-left: 2rem;
+    padding-inline-start: 2rem;
 }
 .timeline-container::before {
     content: "";

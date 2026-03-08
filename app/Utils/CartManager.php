@@ -1039,6 +1039,7 @@ class CartManager
         $guest_id = session('guest_id') ?? ($request->guest_id ?? 0);
         $status = 1;
         $qty = 0;
+        $requestedQuantity = (int)$request->quantity;
         $cart = Cart::where(['id' => $request->key, 'customer_id' => ($user == 'offline' ? $guest_id : $user->id)])->first();
 
         if (!$cart) {
@@ -1065,10 +1066,27 @@ class CartManager
             $qty = $cart['quantity'];
         }*/
 
+        if ($requestedQuantity < 1) {
+            return [
+                'status' => 0,
+                'qty' => $cart['quantity'],
+                'message' => translate('product_quantity_can_not_be_zero_or_less_than_zero_in_cart'),
+            ];
+        }
+
+        // Prevent updating product qty below existing exchange qty.
+        if ((int)($cart['exchange_qty'] ?? 0) > $requestedQuantity) {
+            return [
+                'status' => 0,
+                'qty' => $cart['quantity'],
+                'message' => translate('Exchange qty cannot exceed product quantity.'),
+            ];
+        }
+
         if ($status) {
-            $qty = $request->quantity;
-            $cart['quantity'] = $request->quantity;
-            $cart['shipping_cost'] = $product->product_type == 'physical' ? CartManager::get_shipping_cost_for_product_category_wise($product, $request->quantity) : 0;
+            $qty = $requestedQuantity;
+            $cart['quantity'] = $requestedQuantity;
+            $cart['shipping_cost'] = $product->product_type == 'physical' ? CartManager::get_shipping_cost_for_product_category_wise($product, $requestedQuantity) : 0;
         }
 
         $cart->save();
@@ -1122,6 +1140,7 @@ class CartManager
         $guest_id = session('guest_id') ?? ($request->guest_id ?? 0);
         $status = 1;
         $qty = 0;
+        $charges = 0;
         $cart = Cart::where(['id' => $request->cart_id, 'customer_id' => ($user == 'offline' ? $guest_id : $user->id)])->first();
 
         if (!$cart) {
@@ -1133,26 +1152,48 @@ class CartManager
             ];
         }
 
-        if ($status) {
-            $qty = max(0, (int)$request->qty);
-            $maxExchangeQty = max(0, (int)$cart['quantity']);
-            $qty = min($qty, $maxExchangeQty);
+        $requestedQty = (int)$request->qty;
+        $requestedCharges = max(0, (float)$request->charges);
+        $productQty = max(0, (int)$cart['quantity']);
 
-            $charges = max(0, (float)$request->charges);
-            if ($qty === 0) {
-                $charges = 0;
-            }
-
-            $cart['exchange_charges'] = $charges;
-            $cart['exchange_qty'] = $qty;
+        if ($requestedQty < 0) {
+            return [
+                'status' => 0,
+                'qty' => $cart['exchange_qty'],
+                'charges' => $cart['exchange_charges'],
+                'message' => translate('Exchange qty cannot be negative.'),
+            ];
         }
 
+        if ($requestedQty > $productQty) {
+            return [
+                'status' => 0,
+                'qty' => $cart['exchange_qty'],
+                'charges' => $cart['exchange_charges'],
+                'message' => translate('Exchange qty cannot exceed product quantity.'),
+            ];
+        }
+
+        if ($requestedCharges > 0 && $requestedQty < 1) {
+            return [
+                'status' => 0,
+                'qty' => $cart['exchange_qty'],
+                'charges' => $cart['exchange_charges'],
+                'message' => translate('Exchange qty must be at least 1 when Replacement Discount is enabled.'),
+            ];
+        }
+
+        $qty = max(0, $requestedQty);
+        $charges = $qty > 0 ? $requestedCharges : 0;
+        $cart['exchange_charges'] = $charges;
+        $cart['exchange_qty'] = $qty;
         $cart->save();
+
         return [
             'status' => $status,
             'charges' => $charges,
             'qty' => $qty,
-            'message' => $status == 1 ? translate('successfully_updated!') : translate('installtion_charges_not_updated')
+            'message' => translate('successfully_updated!')
         ];
     }
 

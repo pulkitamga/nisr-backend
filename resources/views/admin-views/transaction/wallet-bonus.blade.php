@@ -24,13 +24,13 @@
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i class="tio-clear"></i></button>
+                            <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i class="tio-clear"></i></button>
                         </div>
                         <div class="modal-body px-4 px-sm-5 pt-0 text-center">
                             <div class="d-flex flex-column align-items-center gap-2">
                                 <img width="80" class="mb-3" src="{{dynamicAsset(path: 'public/assets/back-end/img/para.png')}}" loading="lazy" alt="">
-                                <h4 class="lh-md">Wallet bonus is only applicable when a customer add fund to wallet via outside payment gateway !</h4>
-                                <p>Customer will get extra amount to his / her wallet additionally with the amount he / she added from other payment gateways. The bonus amount will be deduct from admin wallet & will consider as admin expense</p>
+                                <h4 class="lh-md">{{ translate('Wallet bonus is only applicable when a customer adds funds to wallet via outside payment gateway!') }}</h4>
+                                <p>{{ translate('Customer will get extra amount in wallet in addition to what was added from other payment gateways. The bonus amount will be deducted from admin wallet and considered as admin expense.') }}</p>
                             </div>
                         </div>
                     </div>
@@ -168,10 +168,10 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>Free Delivery</td>
+                            <td>{{ __('Free Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
-                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="Transactions" href="#">
+                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
                                         <i class="tio-download-to"></i>
                                     </a>
                                 </div>
@@ -183,10 +183,10 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>Free Delivery</td>
+                            <td>{{ __('Free Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
-                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="Transactions" href="#">
+                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
                                         <i class="tio-download-to"></i>
                                     </a>
                                 </div>
@@ -198,10 +198,10 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>Free Delivery</td>
+                            <td>{{ __('Free Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
-                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="Transactions" href="#">
+                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
                                         <i class="tio-download-to"></i>
                                     </a>
                                 </div>
@@ -213,10 +213,10 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>Free Delivery</td>
+                            <td>{{ __('Free Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
-                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="Transactions" href="#">
+                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
                                         <i class="tio-download-to"></i>
                                     </a>
                                 </div>
@@ -228,10 +228,10 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>Free Delivery</td>
+                            <td>{{ __('Free Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
-                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="Transactions" href="#">
+                                    <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
                                         <i class="tio-download-to"></i>
                                     </a>
                                 </div>

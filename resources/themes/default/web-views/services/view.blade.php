@@ -123,7 +123,7 @@ $selectedModel = request('model');
             rtl" ? 'pl-2' : 'pr-2' }}" id="SearchParameters">
             <div class="cz-sidebar __inline-35 p-4 overflow-hidden" id="shop-sidebar">
                 <div class="cz-sidebar-header p-0">
-                    <button class="close ms-auto fs-18-mobile" type="button" data-dismiss="sidebar" aria-label="Close">
+                    <button class="close ms-auto fs-18-mobile" type="button" data-dismiss="sidebar" aria-label="{{ translate('Close') }}">
                         <i class="tio-clear"></i>
                     </button>
                 </div>
@@ -330,7 +330,7 @@ $selectedModel = request('model');
                                 data-simplebar-auto-hide="false">
                                 @foreach($activeBrands as $brand)
                                 <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === "rtl"
-                                    ? 'mr-2' : '' }}" id="brand">
+                                    ? 'ms-2' : '' }}" id="brand">
                                     <li class="flex-between get-view-by-onclick cursor-pointer"
                                         data-link="{{ route('services',['brand_id'=> $brand['id'],'data_from'=>'brand', 'offer_type' => isset($data['offer_type']) ? $data['offer_type'] : '', 'page'=>1]) }}">
                                         <div class="text-start">
@@ -367,7 +367,7 @@ $selectedModel = request('model');
                                 data-simplebar-auto-hide="false">
                                 @foreach($web_config['publishing_houses'] as $publishingHouseItem)
                                 <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === "rtl"
-                                    ? 'mr-2' : '' }}" id="brand">
+                                    ? 'ms-2' : '' }}" id="brand">
                                     <li class="flex-between get-view-by-onclick cursor-pointer pe-2"
                                         data-link="{{ route('services',['publishing_house_id'=> $publishingHouseItem['id'], 'product_type' => 'digital', 'offer_type' => isset($data['offer_type']) ? $data['offer_type'] : '', 'page'=>1]) }}">
                                         <div class="text-start">
@@ -406,7 +406,7 @@ $selectedModel = request('model');
                                 data-simplebar-auto-hide="false">
                                 @foreach($web_config['digital_product_authors'] as $productAuthor)
                                 <ul class="brand mt-2 p-0 for-brand-hover {{Session::get('direction') === "rtl"
-                                    ? 'mr-2' : '' }}" id="brand">
+                                    ? 'ms-2' : '' }}" id="brand">
                                     <li class="flex-between get-view-by-onclick cursor-pointer pe-2"
                                         data-link="{{ route('services',['author_id' => $productAuthor['id'], 'product_type' => 'digital','offer_type' => isset($data['offer_type']) ? $data['offer_type'] : '', 'page' => 1]) }}">
                                         <div class="text-start">
@@ -497,3 +497,4 @@ $selectedModel = request('model');
     });
 </script>
 @endpush
+

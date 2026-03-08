@@ -95,7 +95,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content shadow-lg">
                     <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <i class="tio-clear"></i>
                         </button>
                     </div>
@@ -109,7 +109,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -118,7 +118,7 @@
                         <p>{{ translate('for_configuring_otp_in_the_firebase,_you_must_create_a_firebase_project_first.') }}
                         {{ translate('if_you_have_not_created_any_project_for_your_application_yet,_please_create_a_project_first.') }}
                         </p>
-                        <p>{{ translate('Now go the') }} <a href="https://console.firebase.google.com/" target="_blank">Firebase console </a>{{ translate('and follow the instructions below') }} -</p>
+                        <p>{{ translate('Now go the') }} <a href="https://console.firebase.google.com/" target="_blank">{{ __('Firebase console') }}</a> {{ translate('and follow the instructions below') }} -</p>
                         <ol class="d-flex flex-column __gap-5px __instructions">
                             <li>{{ translate('go_to_your_firebase_project.') }}</li>
                             <li>{{ translate('navigate_to_the_build_menu_from_the_left_sidebar_and_select_authentication.') }}</li>
@@ -135,3 +135,4 @@
         </div>
     </div>
 @endsection
+

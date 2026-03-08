@@ -17,8 +17,8 @@
                                 <tr class="align-middle">
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($delivery->created_at)->format('d/m/Y') }}</td>
-                                    <td>{{ $delivery->product->name ?? 'N/A' }}</td>
-                                    <td>{{ $delivery->product_variation_type ?? 'No Variation' }}</td>
+                                    <td>{{ $delivery->product->name ?? __('N/A') }}</td>
+                                    <td>{{ $delivery->product_variation_type ?? __('No Variation') }}</td>
                                     <td>{{ $delivery->product_quantity }}</td>
                                     <td>{{ $delivery->quantity_sent }}</td>
                                     <td>{{ $delivery->remaining }}</td>
@@ -32,7 +32,7 @@
     </table>
 </div>
 <div class="table-responsive mt-4 shadow-sm rounded bg-white">
-    <h5 class="px-3 pt-4 pb-2 text-muted fw-bold border-bottom">Delivery Logs</h5>
+    <h5 class="px-3 pt-4 pb-2 text-muted fw-bold border-bottom">{{ __('Delivery Logs') }}</h5>
     <table class="table table-hover align-middle mb-0">
         <thead class="bg-light text-muted">
             <tr class="text-nowrap">
@@ -51,15 +51,15 @@
                     <tr>
                         <td>{{ $deliveryLogs->firstItem() + $index }}</td>
                         <td>{{ \Carbon\Carbon::parse($log->delivery_date)->format('d/m/Y') }}</td>
-                        <td>{{ $log->product->name ?? 'N/A' }}</td>
-                        <td>{{ $log->product_variation_type ?? 'No Variation' }}</td>
+                        <td>{{ $log->product->name ?? __('N/A') }}</td>
+                        <td>{{ $log->product_variation_type ?? __('No Variation') }}</td>
                         <td>{{ $log->quantity_sent }}</td>
-                        <td>{{ $log->branch->branch_name ?? 'N/A' }}</td>
+                        <td>{{ $log->branch->branch_name ?? __('N/A') }}</td>
                         <td>{{ $log->note ?? '-' }}</td>
                         <td class="text-center align-middle">
                             @if($log->serial_csv_path)
                             <a href="{{ route('admin.wholesale.business.delivery.download-csv', $log->id) }}"
-                                class="btn btn-sm btn-outline-info" title="Download CSV">
+                                class="btn btn-sm btn-outline-info" title="{{ translate('Download CSV') }}">
                                 <i class="tio-download"></i>
                             </a>
                             @else

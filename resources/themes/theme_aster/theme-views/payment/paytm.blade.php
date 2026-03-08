@@ -1,4 +1,4 @@
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <title>{{translate('merchant_Check_Out_Page')}}</title>
 </head>

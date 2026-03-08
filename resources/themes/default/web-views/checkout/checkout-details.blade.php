@@ -85,7 +85,7 @@
                                                                 {{ translate('remember_me')}}
                                                             </label>
 
-                                                            <a class="font-size-sm {{Session::get('direction') === "rtl" ? 'mr-5' : 'ml-5'}}"
+                                                            <a class="font-size-sm ms-5"
                                                                href="{{route('customer.auth.recover-password')}}">
                                                                 {{ translate('forgot_password')}}?
                                                             </a>
@@ -316,3 +316,4 @@
     </script>
 
 @endpush
+

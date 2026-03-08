@@ -636,7 +636,7 @@
                 marker.setVisible(false);
                 const place = autocomplete.getPlace();
                 if (!place.geometry || !place.geometry.location) {
-                    alert("No details available for input: '" + place.name + "'");
+                    alert(@json(__('No details available for input:')) + " '" + place.name + "'");
                     return;
                 }
 
@@ -691,7 +691,7 @@
                 }, function(error) {
                     // If geolocation access is denied or fails, log the error and keep the default location
                     console.error("Geolocation error:", error);
-                    alert("Unable to retrieve your location. Using default location.");
+                    alert(@json(__('Unable to retrieve your location. Using default location.')));
                 });
             } else {
                 // If geolocation is not supported, log a message and use the default location

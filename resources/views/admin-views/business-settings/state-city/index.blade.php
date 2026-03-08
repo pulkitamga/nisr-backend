@@ -257,11 +257,11 @@
         $('.delete-btn').click(function () {
             const formId = $(this).data('id');
             Swal.fire({
-                title: 'Sure?',
-                text: "Can't revert!",
+                title: @json(__('Sure?')),
+                text: @json(__('Can\'t revert!')),
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Yes, delete!'
+                confirmButtonText: @json(__('Yes, delete!'))
             }).then((result) => {
                 if (result.isConfirmed) {
                     $(`#${formId}`).submit();

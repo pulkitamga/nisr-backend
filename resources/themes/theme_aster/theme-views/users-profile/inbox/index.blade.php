@@ -155,7 +155,7 @@
                                                             <div id="selected-files-container"></div>
                                                             <div id="selected-image-container"></div>
                                                         </div>
-                                                        <div class="circle-progress ml-auto collapse">
+                                                        <div class="circle-progress ms-auto collapse">
                                                             <div class="inner">
                                                                 <div class="text"></div>
                                                                 <svg id="svg" width="24" height="24" viewPort="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg">

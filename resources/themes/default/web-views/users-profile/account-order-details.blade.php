@@ -706,7 +706,7 @@
         <div class="modal-content rtl">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title text-capitalize flex-grow-1">{{ translate('Activate Warranty') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -841,7 +841,7 @@
         <div class="modal-content">
             <div class="modal-header border-0 pb-0">
                 <h6 class="text-center text-capitalize m-0 flex-grow-1">{{translate('refund_details')}}</h6>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -876,3 +876,4 @@
     });
 </script>
 @endpush
+

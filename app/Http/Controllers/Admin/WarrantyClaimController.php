@@ -20,7 +20,9 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Utils\Helpers;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class WarrantyClaimController extends Controller
@@ -247,7 +249,21 @@ class WarrantyClaimController extends Controller
     // View Claim
     public function view(WarrantyClaim $claim)
     {
-        $claim->load('warranty.user', 'workOrder', 'attachments', 'charges', 'payments'); // ← change 'photos' to 'attachments'
+        $claim->load(['warranty.user', 'workOrder', 'attachments', 'charges']);
+
+        if ($this->hasWarrantyClaimPaymentsTable($claim->getConnectionName())) {
+            try {
+                $claim->load('payments');
+            } catch (QueryException $exception) {
+                if (!$this->isMissingWarrantyClaimPaymentsTableException($exception)) {
+                    throw $exception;
+                }
+                $claim->setRelation('payments', collect());
+            }
+        } else {
+            $claim->setRelation('payments', collect());
+        }
+
         $timeline = $claim->timelineEvents()->latest()->paginate(10);
 
         return view('admin-views.warranty.claim-view', compact('claim', 'timeline'));
@@ -426,6 +442,14 @@ class WarrantyClaimController extends Controller
         WarrantyPaymentLinkNotificationService $paymentLinkNotificationService
     )
     {
+        if (!$this->hasWarrantyClaimPaymentsTable($claim->getConnectionName())) {
+            $message = translate('Warranty claim payment table is missing. Please run migrations.');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => $message], 500);
+            }
+            return back()->withErrors(['action' => $message]);
+        }
+
         $request->validate([
             'action'       => 'required|in:remind,pos,cod,online_link,cod_collect,waive,reject',
             'charge_ids'   => 'required_if:action,pos,cod,online_link,cod_collect|array',
@@ -709,6 +733,31 @@ class WarrantyClaimController extends Controller
             'notes' => $notes,
             'metadata' => $metadata,
         ]);
+    }
+
+    private function hasWarrantyClaimPaymentsTable(?string $connectionName = null): bool
+    {
+        static $hasTableByConnection = [];
+        $connectionKey = $connectionName ?: '__default__';
+
+        if (!array_key_exists($connectionKey, $hasTableByConnection)) {
+            $schema = $connectionName ? Schema::connection($connectionName) : Schema::connection(config('database.default'));
+            $hasTableByConnection[$connectionKey] = $schema->hasTable('warranty_claim_payments');
+        }
+
+        return (bool)$hasTableByConnection[$connectionKey];
+    }
+
+    private function isMissingWarrantyClaimPaymentsTableException(QueryException $exception): bool
+    {
+        $sqlState = (string)($exception->errorInfo[0] ?? '');
+        $driverCode = (int)($exception->errorInfo[1] ?? 0);
+        $message = strtolower($exception->getMessage());
+
+        return (
+            ($sqlState === '42s02' || $driverCode === 1146)
+            && str_contains($message, 'warranty_claim_payments')
+        );
     }
 
     private function formatPaymentDispatchSummary(?array $dispatchStatus): string

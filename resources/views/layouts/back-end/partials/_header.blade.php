@@ -36,7 +36,7 @@ use Carbon\Carbon;
                 </a>
             </div>
             <div class="navbar-nav-wrap-content-left">
-                <button type="button" class="js-navbar-vertical-aside-toggle-invoker close mr-3 d-xl-none">
+                <button type="button" class="js-navbar-vertical-aside-toggle-invoker close me-3 d-xl-none">
                     <i class="tio-first-page navbar-vertical-aside-toggle-short-align"></i>
                     <i class="tio-last-page navbar-vertical-aside-toggle-full-align"
                         data-template='<div class="tooltip d-none d-sm-block" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
@@ -44,19 +44,19 @@ use Carbon\Carbon;
                 </button>
             </div>
             <div class="navbar-nav-wrap-content-right"
-                style="{{$direction == "rtl" ? 'margin-left:unset; margin-right: auto' : 'margin-right:unset; margin-left: auto'}}">
+                style="{{$direction == "rtl" ? 'margin-inline-start:unset; margin-inline-end: auto' : 'margin-inline-end:unset; margin-inline-start: auto'}}">
                 <ul class="navbar-nav align-items-center flex-row gap-xl-16px">
                     <li class="nav-item">
                         <div class="hs-unfold">
                             <div>
                                 @php( $local = session()->has('local')?session('local'):'en')
                                 @php($lang = \App\Models\BusinessSetting::where('type', 'language')->first())
-                                <div class="topbar-text dropdown disable-autohide {{$direction == "rtl" ? 'ml-3' : 'm-1'}} text-capitalize">
+                                <div class="topbar-text dropdown disable-autohide {{$direction == "rtl" ? 'me-3' : 'm-1'}} text-capitalize">
                                     <a class="topbar-link dropdown-toggle d-flex align-items-center title-color"
                                         href="javascript:" data-toggle="dropdown">
                                         @foreach(json_decode($lang['value'],true) as $data)
                                         @if($data['code']==$local)
-                                        <img class="{{$direction == "rtl" ? 'ml-2' : 'mr-2'}}" width="20"
+                                        <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
                                             src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
                                             alt="{{$data['name']}}">
                                         <span class="d-none d-sm-block">{{$data['name']}}</span>
@@ -71,7 +71,7 @@ use Carbon\Carbon;
                                         <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                             <a class="dropdown-item py-1 {{$data['code']==$local ? 'active' : ':'}}"
                                                 href="javascript:">
-                                                <img class="{{$direction == "rtl" ? 'ml-2' : 'mr-2'}}" width="20"
+                                                <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
                                                     src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
                                                     alt="{{$data['name']}}" />
                                                 <span class="text-capitalize">{{$data['name']}}</span>
@@ -257,7 +257,7 @@ use Carbon\Carbon;
                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account">
                                 <div class="dropdown-item-text">
                                     <div class="media align-items-center text-break">
-                                        <div class="avatar avatar-sm avatar-circle mr-2">
+                                        <div class="avatar avatar-sm avatar-circle me-2">
                                             <img class="avatar-img" src="{{getStorageImages(path: auth('admin')->user()->image_full_url,type: 'backend-profile')}}"
                                                 alt="{{translate('image_description')}}">
                                         </div>
@@ -286,12 +286,12 @@ use Carbon\Carbon;
             <div class="p-3">
                 <div class="bg-white p-1 rounded">
                     @php( $local = session()->has('local')?session('local'):'en')
-                    <div class="topbar-text dropdown disable-autohide {{$direction == "rtl" ? 'ml-3' : 'm-1'}} text-capitalize">
+                    <div class="topbar-text dropdown disable-autohide {{$direction == "rtl" ? 'me-3' : 'm-1'}} text-capitalize">
                         <a class="topbar-link dropdown-toggle title-color d-flex align-items-center" href="#"
                             data-toggle="dropdown">
                             @foreach(json_decode($lang['value'],true) as $data)
                             @if($data['code']==$local)
-                            <img class="{{$direction == "rtl" ? 'ml-2' : 'mr-2'}}" width="20"
+                            <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
                                 src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
                                 alt="{{$data['name']}}">
                             {{$data['name']}}
@@ -303,7 +303,7 @@ use Carbon\Carbon;
                             @if($data['status']==1)
                             <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                 <a class="dropdown-item pb-1" href="javascript:">
-                                    <img class="{{$direction == "rtl" ? 'ml-2' : 'mr-2'}}" width="20"
+                                    <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
                                         src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
                                         alt="{{$data['name']}}" />
                                     <span class="text-capitalize">{{$data['name']}}</span>
@@ -349,3 +349,4 @@ use Carbon\Carbon;
 </div>
 <div id="headerFluid" class="d-none"></div>
 <div id="headerDouble" class="d-none"></div>
+

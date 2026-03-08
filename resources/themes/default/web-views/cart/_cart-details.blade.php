@@ -534,7 +534,7 @@
                             </span>
                             <input type="text"
                                 class="qty_input exchange_qty_input exchangeQuantity{{ $cartItem['id'] }} action-change-update-exchange-quantity-list"
-                                value="{{ $cartItem['exchange_qty'] > 0 ? $cartItem['exchange_qty'] : 1 }}"
+                                value="{{ $cartItem['exchange_qty'] > 0 ? $cartItem['exchange_qty'] : 0 }}"
                                 name="exchange_quantity[{{ $cartItem['id'] }}]"
                                 id="exchange_quantity_web{{ $cartItem['id'] }}" data-cart-id="{{ $cartItem['id'] }}"
                                 data-exchange-charges="{{ $cartItem['exchange_charge'] }}" data-increment="0"
@@ -1014,47 +1014,6 @@ $shipping_type = isset($admin_shipping) == true ? $admin_shipping->shipping_type
         </div>
     </form>
 </div>
-<script>
-function restrictExchangeQty(cartId) {
-    const productQty = parseInt($(`#cart_quantity_web${cartId}`).val()) || 1;
-    let exchangeQty = parseInt($(`#exchange_quantity_web${cartId}`).val()) || 0;
-
-    if (exchangeQty > productQty) {
-        exchangeQty = productQty;
-        $(`#exchange_quantity_web${cartId}`).val(exchangeQty);
-    }
-
-    const plusBtn = $(`.exchange_qty_plus[data-cart-id="${cartId}"]`);
-    if (exchangeQty >= productQty) {
-        plusBtn.addClass('disabled').css({ "pointer-events": "none", "opacity": 0.5 });
-    } else {
-        plusBtn.removeClass('disabled').css({ "pointer-events": "", "opacity": 1 });
-    }
-}
-
-$(document).ready(function () {
-    $('[id^="exchange_quantity_web"]').each(function () {
-        const cartId = $(this).data('cart-id');
-        restrictExchangeQty(cartId);
-    });
-});
-
-$(document).on('input change', '[id^="exchange_quantity_web"], [id^="cart_quantity_web"]', function () {
-    const cartId = $(this).data('cart-id');
-    restrictExchangeQty(cartId);
-});
-
-$(document).on('click', '.exchange_qty_plus', function () {
-    const cartId = $(this).data('cart-id');
-    setTimeout(() => restrictExchangeQty(cartId), 50); // delay to wait for increment
-});
-
-$(document).on('click', '.exchange_qty_minus', function () {
-    const cartId = $(this).data('cart-id');
-    setTimeout(() => restrictExchangeQty(cartId), 50);
-});
-</script>
-
 @endif
 </section>
 

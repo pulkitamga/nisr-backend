@@ -125,8 +125,8 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('Status')}}</label>
                             <select class="form-control" name="status" id="status">
-                                <option value="active" {{$aBranchDetails['status']?($aBranchDetails['status']=='active'?'selected':''):'' }}>Active</option>
-                                <option value="inactive" {{$aBranchDetails['status']?($aBranchDetails['status']=='inactive'?'selected':''):'' }}>Block</option>
+                                <option value="active" {{$aBranchDetails['status']?($aBranchDetails['status']=='active'?'selected':''):'' }}>{{ __("Active") }}</option>
+                                <option value="inactive" {{$aBranchDetails['status']?($aBranchDetails['status']=='inactive'?'selected':''):'' }}>{{ __("Block") }}</option>
                             </select>
 
                         </div>
@@ -145,19 +145,19 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                         <table class="table table-hover table-thead-bordered table-bordered table-nowrap table-align-middle card-table w-100">
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
-                                    <th rowspan="2" class="text-center align-middle">No.</th>
-                                    <th rowspan="2" class="text-center align-middle">Days</th>
-                                    <th colspan="2" class="text-center align-middle">Working Hours</th>
+                                    <th rowspan="2" class="text-center align-middle">{{ __("No.") }}</th>
+                                    <th rowspan="2" class="text-center align-middle">{{ __("Days") }}</th>
+                                    <th colspan="2" class="text-center align-middle">{{ __("Working Hours") }}</th>
                                 </tr>
                                 <tr>
-                                    <th>Working From</th>
-                                    <th>Working To</th>
+                                    <th>{{ __("Working From") }}</th>
+                                    <th>{{ __("Working To") }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="text-center align-middle">1</td>
-                                    <td class="text-center align-middle font-weight-bold">Sunday</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ __("Sunday") }}</td>
                                     <td class="p-0">
                                         <input type="time" value="{{$aBranchDetails['sun_branch_hours_from']}}" name="sun_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -167,7 +167,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">2</td>
-                                    <td class="text-center align-middle font-weight-bold">Monday</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ __("Monday") }}</td>
                                     <td class="p-0">
                                         <input type="time" value="{{$aBranchDetails['mon_branch_hours_from']}}" name="mon_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -177,7 +177,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">3</td>
-                                    <td class="text-center align-middle font-weight-bold">Tuesday</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ __("Tuesday") }}</td>
                                     <td class="p-0">
                                         <input type="time" value="{{$aBranchDetails['tue_branch_hours_from']}}" name="tue_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -187,7 +187,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">4</td>
-                                    <td class="text-center align-middle font-weight-bold">Wednesday</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ __("Wednesday") }}</td>
                                     <td class="p-0">
                                         <input type="time" value="{{$aBranchDetails['wed_branch_hours_from']}}" name="wed_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -197,7 +197,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">5</td>
-                                    <td class="text-center align-middle font-weight-bold">Thursday</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ __("Thursday") }}</td>
                                     <td class="p-0">
                                         <input type="time" value="{{$aBranchDetails['thu_branch_hours_from']}}" name="thu_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -207,7 +207,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">6</td>
-                                    <td class="text-center align-middle font-weight-bold">Friday</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ __("Friday") }}</td>
                                     <td class="p-0">
                                         <input type="time" value="{{$aBranchDetails['fri_branch_hours_from']}}" name="fri_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -217,7 +217,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">7</td>
-                                    <td class="text-center align-middle font-weight-bold">Saturday</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ __("Saturday") }}</td>
                                     <td class="p-0">
                                         <input type="time" value="{{$aBranchDetails['sat_branch_hours_from']}}" name="sat_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>

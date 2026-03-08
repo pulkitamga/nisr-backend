@@ -39,7 +39,7 @@
                                     <div class="heading_search px-0">
                                         <form class="rounded bg-white form-inline d-flex justify-content-center md-form form-sm active-cyan-2 mt-2">
                                             <input class="form-control form-control-sm border-0 me-3 w--0"
-                                                   id="myInput" type="text" placeholder="{{translate('search')}}" aria-label="Search">
+                                                   id="myInput" type="text" placeholder="{{translate('search')}}" aria-label="{{ translate('Search') }}">
                                             <span class="px-2"><i class="fa fa-search __color-92C6FF" aria-hidden="true"></i></span>
                                         </form>
                                     </div>
@@ -170,7 +170,7 @@
                                                                         <path d="M21.2267 15.5548L10.2267 10.0548C10.1404 10.0116 10.0436 9.99437 9.94779 10.005C9.85198 10.0157 9.7613 10.0538 9.68665 10.1148C9.61536 10.1745 9.56215 10.253 9.53301 10.3413C9.50386 10.4296 9.49993 10.5243 9.52165 10.6148L10.8467 15.4998H16.5017V16.4998H10.8467L9.50165 21.3698C9.48126 21.4453 9.47888 21.5245 9.4947 21.6012C9.51052 21.6778 9.5441 21.7496 9.59273 21.8109C9.64136 21.8722 9.7037 21.9212 9.77472 21.954C9.84574 21.9868 9.92347 22.0025 10.0017 21.9998C10.0799 21.9993 10.157 21.9805 10.2267 21.9448L21.2267 16.4448C21.3086 16.4028 21.3773 16.3391 21.4253 16.2605C21.4733 16.182 21.4987 16.0918 21.4987 15.9998C21.4987 15.9077 21.4733 15.8175 21.4253 15.739C21.3773 15.6605 21.3086 15.5967 21.2267 15.5548Z" fill="white"/>
                                                                     </svg>
                                                                 </button>
-                                                                <div class="circle-progress ml-auto collapse">
+                                                                <div class="circle-progress ms-auto collapse">
                                                                     <div class="inner">
                                                                         <div class="text"></div>
                                                                         <svg id="svg" width="24" height="24" viewPort="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -195,7 +195,7 @@
                                                         {{ translate('Thank_you_for_your_patience.') }}.
                                                     </div>
                                                     <div class="d-flex align-items-center">
-                                                        <button type="button" class="close close-element-onclick-by-data" aria-label="Close" data-selector=".temporarily-closed-sticky-alert">
+                                                        <button type="button" class="close close-element-onclick-by-data" aria-label="{{ translate('Close') }}" data-selector=".temporarily-closed-sticky-alert">
                                                             <i class="fa fa-times" aria-hidden="true"></i>
                                                         </button>
                                                     </div>
@@ -232,3 +232,4 @@
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/select-multiple-file.js')}}"></script>
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/select-multiple-image-for-message.js')}}"></script>
 @endpush
+

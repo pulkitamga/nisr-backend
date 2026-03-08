@@ -97,7 +97,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
-                                                    <a class="btn btn-outline-info btn-sm square-btn" title="Edit" href="{{route('admin.business-settings.offline-payment-method.update', ['id'=>$method->id])}}">
+                                                    <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('Edit') }}" href="{{route('admin.business-settings.offline-payment-method.update', ['id'=>$method->id])}}">
                                                         <i class="tio-edit"></i>
                                                     </a>
                                                     <button class="btn btn-outline-danger btn-sm delete square-btn delete-data" title="{{translate('delete')}}" data-id="delete-method-name-{{ $method->id }}">
@@ -140,3 +140,4 @@
 @push('script')
     <script src="{{asset('public/assets/back-end/js/admin/business-setting/offline-payment.js')}}"></script>
 @endpush
+

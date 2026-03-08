@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
                 <h3>{{ translate('Assign Owner') }}</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <i class="tio-clear"></i>
                 </button>
             </div>
@@ -25,3 +25,4 @@
         </div>
     </div>
 </div>
+

@@ -122,7 +122,7 @@
     @if ($errors->any())
         <script>
             @foreach ($errors->all() as $error)
-                toastr.error('{{ $error }}', Error, {
+                toastr.error('{{ $error }}', @json(__('Error')), {
                     CloseButton: true,
                     ProgressBar: true
                 });
@@ -191,3 +191,4 @@
 </body>
 
 </html>
+

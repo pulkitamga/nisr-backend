@@ -166,7 +166,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 toastr.success(res.message);
             },
             error: function() {
-                toastr.error('Failed to update status');
+                toastr.error(@json(__('Failed to update status')));
             }
         });
     });

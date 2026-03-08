@@ -66,7 +66,7 @@
                                 <label for="name" class="title-color d-flex gap-1">
                                     {{ translate('Writer') }}
                                 </label>
-                                <input type="text" id="" name="writer" value="{{ $draftData['writer'] ?? $blog?->writer }}" class="form-control" placeholder="{{ translate('Ex') }}: {{ 'Jhon Milar' }}">
+                                <input type="text" id="" name="writer" value="{{ $draftData['writer'] ?? $blog?->writer }}" class="form-control" placeholder="{{ translate('Ex') }}: {{ __('Jhon Milar') }}">
                             </div>
                             <div class="form-group mb-0">
                                 <label for="name" class="title-color d-flex gap-1">

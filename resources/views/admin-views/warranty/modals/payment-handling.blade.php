@@ -17,7 +17,7 @@
                             @foreach($claim->charges->where('is_paid', false) as $charge)
                             <div>
                                 <label class="d-flex align-items-center">
-                                    <input type="checkbox" name="charge_ids[]" value="{{ $charge->id }}" class="mr-2">
+                                    <input type="checkbox" name="charge_ids[]" value="{{ $charge->id }}" class="me-2">
                                     <span>
                                         <strong>{{ translate(ucfirst(str_replace('_', ' ', $charge->charge_type))) }}:</strong>
                                         {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:$charge->amount))}}

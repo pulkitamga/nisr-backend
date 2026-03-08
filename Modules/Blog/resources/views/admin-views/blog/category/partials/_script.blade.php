@@ -89,7 +89,7 @@
                             toastr.error(errors[key][0]);
                         });
                     } else {
-                        toastr.error(response.responseJSON.message || 'Something went wrong!');
+                        toastr.error(response.responseJSON.message || @json(__('Something went wrong!')));
                     }
                 }
             });
@@ -136,7 +136,7 @@
                             toastr.error(errors[key][0]);
                         });
                     } else {
-                        toastr.error(response.responseJSON.message || 'Something went wrong!');
+                        toastr.error(response.responseJSON.message || @json(__('Something went wrong!')));
                     }
                 }
             });
@@ -184,7 +184,7 @@
                         },
                         error: function (xhr) {
                             $('#deleteModal').modal('hide');
-                            toastr.error('Failed to delete the category.');
+                            toastr.error(@json(__('Failed to delete the category.')));
                         }
                     });
                 }

@@ -24,7 +24,7 @@
                     <div class="col-md-auto mb-3 mb-md-0">
                         <div class="d-flex align-items-center">
                             <img
-                                class="avatar avatar-xxl avatar-4by3 {{Session::get('direction') === "rtl" ? 'ml-4' : 'mr-4'}}"
+                                class="avatar avatar-xxl avatar-4by3 me-4"
                                 src="{{ getStorageImages(path:$deliveryMan->image_full_url , type: 'backend-basic') }}"
                                 alt="{{translate('image_description')}}">
                             <div class="d-block">
@@ -33,7 +33,7 @@
                                 </h4>
                                 <p> {{translate('of')}} {{$reviews->count()?? 0}} {{translate('reviews')}}
                                     <span
-                                        class="badge badge-soft-dark badge-pill {{Session::get('direction') === "rtl" ? 'mr-1' : 'ml-1'}}"></span>
+                                        class="badge badge-soft-dark badge-pill ms-1"></span>
                                 </p>
                             </div>
                         </div>
@@ -43,29 +43,29 @@
                         <ul class="list-unstyled list-unstyled-py-2 mb-0">
                             <li class="d-flex align-items-center font-size-sm">
                                 <span
-                                    class="{{Session::get('direction') === "rtl" ? 'ml-3' : 'mr-3'}}">{{translate('5')}} {{ translate('star') }}</span>
+                                    class="me-3">{{translate('5')}} {{ translate('star') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($five/$total)*100}}%;"
                                          aria-valuenow="{{$total==0?0:($five/$total)*100}}"
                                          aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <span class="{{Session::get('direction') === "rtl" ? 'mr-3' : 'ml-3'}}">{{$five}}</span>
+                                <span class="ms-3">{{$five}}</span>
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 <span
-                                    class="{{Session::get('direction') === "rtl" ? 'ml-3' : 'mr-3'}}">{{translate('4')}} {{ translate('star') }}</span>
+                                    class="me-3">{{translate('4')}} {{ translate('star') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($four/$total)*100}}%;"
                                          aria-valuenow="{{$total==0?0:($four/$total)*100}}"
                                          aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <span class="{{Session::get('direction') === "rtl" ? 'mr-3' : 'ml-3'}}">{{$four}}</span>
+                                <span class="ms-3">{{$four}}</span>
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 <span
-                                    class="{{Session::get('direction') === "rtl" ? 'ml-3' : 'mr-3'}}">{{translate('3')}} {{ translate('star') }}</span>
+                                    class="me-3">{{translate('3')}} {{ translate('star') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($three/$total)*100}}%;"
@@ -73,29 +73,29 @@
                                          aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <span
-                                    class="{{Session::get('direction') === "rtl" ? 'mr-3' : 'ml-3'}}">{{$three}}</span>
+                                    class="ms-3">{{$three}}</span>
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 <span
-                                    class="{{Session::get('direction') === "rtl" ? 'ml-3' : 'mr-3'}}">{{translate('2')}} {{ translate('star') }}</span>
+                                    class="me-3">{{translate('2')}} {{ translate('star') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($two/$total)*100}}%;"
                                          aria-valuenow="{{$total==0?0:($two/$total)*100}}"
                                          aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <span class="{{Session::get('direction') === "rtl" ? 'mr-3' : 'ml-3'}}">{{$two}}</span>
+                                <span class="ms-3">{{$two}}</span>
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 <span
-                                    class="{{Session::get('direction') === "rtl" ? 'ml-3' : 'mr-3'}}">{{translate('1')}} {{ translate('star') }}</span>
+                                    class="me-3">{{translate('1')}} {{ translate('star') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($one/$total)*100}}%;"
                                          aria-valuenow="{{$total==0?0:($one/$total)*100}}"
                                          aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <span class="{{Session::get('direction') === "rtl" ? 'mr-3' : 'ml-3'}}">{{$one}}</span>
+                                <span class="ms-3">{{$one}}</span>
                             </li>
                         </ul>
                     </div>
@@ -117,7 +117,7 @@
                             </div>
                             <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                    placeholder="{{ translate('search_by_Order_ID') }}"
-                                   aria-label="Search orders" value="{{ request('searchValue') }}" required>
+                                   aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}" required>
                             <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                         </div>
                     </form>
@@ -209,10 +209,10 @@
                                             src="{{ getStorageImages(path:$review?->customer->image_full_url, type: 'backend-basic') }}"
                                             alt="{{('image_description')}}">
                                     </div>
-                                    <div class="{{Session::get('direction') === "rtl" ? 'mr-3' : 'ml-3'}}">
+                                    <div class="ms-3">
                                     <span class="d-block h5 text-hover-primary mb-0">{{$review?->customer['f_name']." ".$review?->customer['l_name']}} <i
                                             class="tio-verified text-primary" data-toggle="tooltip" data-placement="top"
-                                            title="Verified Customer"></i></span>
+                                            title="{{ translate('Verified Customer') }}"></i></span>
                                         <span
                                             class="d-block font-size-sm text-body">{{$review?->customer->email??""}}</span>
                                     </div>
@@ -263,3 +263,5 @@
 @push('script_2')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deliveryman.js')}}"></script>
 @endpush
+
+

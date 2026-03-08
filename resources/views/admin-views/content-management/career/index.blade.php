@@ -53,7 +53,7 @@
                     <a href="{{ route('admin.content-management.career.create', ['section' => $current]) }}"
                         class="btn btn--primary text-nowrap">
                         <i class="tio-add"></i>
-                        <span class="text">Add New</span>
+                        <span class="text">{{ __('Add New') }}</span>
                     </a>
                 </div>
             </div>
@@ -214,12 +214,12 @@
                 section: section
             },
             success: function (response) {
-                toastr.success(response.message || 'Status updated successfully!');
+                toastr.success(response.message || @json(__('Status updated successfully!')));
             },
             error: function (xhr) {
                 // Revert checkbox on failure
                 $switch.prop('checked', !newStatus);
-                toastr.error(xhr.responseJSON?.message || 'Failed to update status!');
+                toastr.error(xhr.responseJSON?.message || @json(__('Failed to update status!')));
             },
             complete: function () {
                 $switch.prop('disabled', false);
@@ -229,3 +229,4 @@
 </script>
 
 @endsection
+

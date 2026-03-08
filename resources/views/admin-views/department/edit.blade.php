@@ -34,8 +34,8 @@
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('Status')}}</label>
                             <select class="form-control" name="status" id="status">
-                                <option value="1" {{ $department->status == 1 ? 'selected' : '' }}>Active</option>
-                                <option value="0" {{ $department->status == 0 || $department->status == '' ? 'selected' : '' }}>Block</option>
+                                <option value="1" {{ $department->status == 1 ? 'selected' : '' }}>{{ __('Active') }}</option>
+                                <option value="0" {{ $department->status == 0 || $department->status == '' ? 'selected' : '' }}>{{ __('Block') }}</option>
                             </select>
                             
                         </div>
@@ -49,7 +49,7 @@
                                 value="{{ $department->employee?->name ?? 'No department head assigned' }}"
                                 readonly
                             >
-                            <small class="text-muted">Update this from Employees -> Edit Employee -> Department Head For Escalation.</small>
+                            <small class="text-muted">{{ __('Update this from Employees -> Edit Employee -> Department Head For Escalation.') }}</small>
                         </div>
                     </div>
                 </div>

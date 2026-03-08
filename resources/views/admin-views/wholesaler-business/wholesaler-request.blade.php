@@ -42,7 +42,7 @@
                                     </div>
                                 </div>
                                 <input id="datatableSearch_" type="search" class="form-control"
-                                    placeholder="{{ translate('Search...') }}" aria-label="Search">
+                                    placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                             </div>
                             <div class="dropdown">
                                 <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pr-4" href="{{route('admin.wholesale.business.wholesale-req.export')}}">
@@ -80,35 +80,35 @@
 
                                 <tr>
                                     <td>{{ $wholesaler_business->firstItem() + $key }}</td>
-                                    <td>{{ $business->wholesaler->name ?? 'N/A' }}</td>
-                                    <td>{{ $business->company_name ?? 'N/A' }}</td>
-                                    <td>{{ $business->trade_name ?? 'N/A' }}</td>
+                                    <td>{{ $business->wholesaler->name ?? __('N/A') }}</td>
+                                    <td>{{ $business->company_name ?? __('N/A') }}</td>
+                                    <td>{{ $business->trade_name ?? __('N/A') }}</td>
                                     <td>
-                                        {{ $business->registration_number ?? 'N/A' }}
+                                        {{ $business->registration_number ?? __('N/A') }}
                                         @if($business->register_copy)
                                         <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
-                                            data-target="#registrationModal{{$business->id}}">View</button>
+                                            data-target="#registrationModal{{$business->id}}">{{ __('View') }}</button>
                                         @endif
                                     </td>
                                     <td>
-                                        {{ $business->tax_id ?? 'N/A' }}
+                                        {{ $business->tax_id ?? __('N/A') }}
                                         @if($business->tax_card_copy)
                                         <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
-                                            data-target="#taxModal{{$business->id}}">View</button>
+                                            data-target="#taxModal{{$business->id}}">{{ __('View') }}</button>
                                         @endif
                                     </td>
                                     <td>
-                                        {{ $business->vat_number ?? 'N/A' }}
+                                        {{ $business->vat_number ?? __('N/A') }}
                                         @if($business->vat_register_copy)
                                         <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
-                                            data-target="#vatModal{{$business->id}}">View</button>
+                                            data-target="#vatModal{{$business->id}}">{{ __('View') }}</button>
                                         @endif
                                     </td>
                                     <td>
                                         <select name="tier" class="form-control w-fit-content min-w-[150px]" required>
                                             <option value="" disabled {{ $business->wholesaler->tier == null ?
                                                 'selected' : '' }}>
-                                                Select Tier
+                                                {{ translate('Select Tier') }}
                                             </option>
                                             @foreach($tiers as $tier)
                                             <option value="{{ $tier->name }}" {{ $business->wholesaler->tier ==
@@ -131,7 +131,7 @@
                                             <input type="hidden" name="id" value="{{ $business->wholesaler['id'] }}">
                                             <input type="hidden" name="tier" class="tier-value" value="{{ $business->wholesaler->tier }}">
                                             <input type="hidden" name="wholesaler_discount" class="discount-value" value="{{ $business->wholesaler->wholesaler_discount }}">
-                                            <button type="button" class="btn btn-outline-success btn-sm swal-approve-btn" title="Approve">
+                                            <button type="button" class="btn btn-outline-success btn-sm swal-approve-btn" title="{{ translate('Approve') }}">
                                                 <i class="tio-checkmark-circle" style="color: green;     font-size: x-large;"></i>
                                             </button>
                                             <input type="hidden" name="action" value="approve">
@@ -143,7 +143,7 @@
                                             <input type="hidden" name="tier" class="tier-value" value="silver">
                                             <input type="hidden" name="wholesaler_discount" class="discount-value" value="0">
                                             <input type="hidden" name="id" value="{{ $business->wholesaler['id'] }}">
-                                            <button type="button" class="btn btn-outline-danger btn-sm swal-reject-btn" title="Reject">
+                                            <button type="button" class="btn btn-outline-danger btn-sm swal-reject-btn" title="{{ translate('Reject') }}">
                                                 <i class="tio-clear" style="color: red; font-size: x-large;"></i>
                                             </button>
                                             <input type="hidden" name="action" value="reject">
@@ -158,16 +158,16 @@
                                     <div class="modal-dialog modal-dialog-centered" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLongTitle">Registration Copy
+                                                <h5 class="modal-title" id="exampleModalLongTitle">{{ __('Registration Copy') }}
                                                 </h5>
                                                 <button type="button" class="close" data-dismiss="modal"
-                                                    aria-label="Close">
+                                                    aria-label="{{ translate('Close') }}">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
                                             <div class="modal-body">
                                                 <img src="{{ asset('storage/register_copies/' . $business->register_copy) }}"
-                                                    class="img-fluid" alt="Registration Copy">
+                                                    class="img-fluid" alt="{{ __('Registration Copy') }}">
                                             </div>
                                         </div>
                                     </div>
@@ -179,15 +179,15 @@
                                     <div class="modal-dialog modal-dialog-centered" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLongTitle">Tax Card Copy</h5>
+                                                <h5 class="modal-title" id="exampleModalLongTitle">{{ __('Tax Card Copy') }}</h5>
                                                 <button type="button" class="close" data-dismiss="modal"
-                                                    aria-label="Close">
+                                                    aria-label="{{ translate('Close') }}">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
                                             <div class="modal-body">
                                                 <img src="{{ asset('storage/tax_cards/' . $business->tax_card_copy) }}"
-                                                    class="img-fluid" alt="tax card Copy">
+                                                    class="img-fluid" alt="{{ __('Tax Card Copy') }}">
 
                                             </div>
                                         </div>
@@ -200,16 +200,16 @@
                                     <div class="modal-dialog modal-dialog-centered" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLongTitle">VAT Register Copy
+                                                <h5 class="modal-title" id="exampleModalLongTitle">{{ __('VAT Register Copy') }}
                                                 </h5>
                                                 <button type="button" class="close" data-dismiss="modal"
-                                                    aria-label="Close">
+                                                    aria-label="{{ translate('Close') }}">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
                                             <div class="modal-body">
                                                 <img src="{{ asset('storage/vat_copies/' . $business->vat_register_copy) }}"
-                                                    class="img-fluid" alt="vat register Copy">
+                                                    class="img-fluid" alt="{{ __('VAT Register Copy') }}">
                                             </div>
                                         </div>
                                     </div>
@@ -255,12 +255,12 @@
 document.querySelectorAll('.swal-approve-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         Swal.fire({
-            title: "Are you sure to approve?",
+            title: @json(__('Are you sure to approve?')),
             text: "",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Yes, approve",
-            cancelButtonText: "Cancel",
+            confirmButtonText: @json(__('Yes, approve')),
+            cancelButtonText: @json(__('Cancel')),
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
         }).then((result) => {
@@ -275,12 +275,12 @@ document.querySelectorAll('.swal-approve-btn').forEach(btn => {
 document.querySelectorAll('.swal-reject-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         Swal.fire({
-            title: "Are you sure to reject?",
+            title: @json(__('Are you sure to reject?')),
             text: "",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Yes, reject",
-            cancelButtonText: "Cancel",
+            confirmButtonText: @json(__('Yes, reject')),
+            cancelButtonText: @json(__('Cancel')),
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
         }).then((result) => {
@@ -295,3 +295,5 @@ document.querySelectorAll('.swal-reject-btn').forEach(btn => {
 @endpush
 
 @endsection
+
+

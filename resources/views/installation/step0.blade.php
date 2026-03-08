@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="text-center text-white mb-4">
-        <h2>{{ "6valley Software Installation" }}</h2>
+        <h2>{{ __('') }}</h2>
         <h6 class="fw-normal">
-            {{ "Please proceed step by step with proper data according to instructions" }}
+            {{ __('') }}
         </h6>
     </div>
 
@@ -20,17 +20,16 @@
     <div class="card mt-4">
         <div class="p-4 my-md-3 mx-xl-4 px-md-5">
             <p class="text-center mb-4 top-info-text">
-                {{ "Before starting the installation process please collect this
-                information. Without this information, you won’t be able to complete the installation process" }}
+                {{ __('') }}
             </p>
 
             <div class="bg-light p-4 rounded mb-4">
                 <div class="d-flex justify-content-between gap-1 align-items-center flex-wrap mb-4 pb-sm-3">
                     <h6 class="fw-bold text-uppercase fs m-0 letter-spacing --fs-14px">
-                        {{ "Required Database Information" }}
+                        {{ __('') }}
                     </h6>
                     <a href="https://docs.dynamiclogic.com/docs-six-valley/admin-panel/install-on-server"
-                       target="_blank">{{ "Where to get this information ?" }}</a>
+                       target="_blank">{{ __('') }}</a>
                 </div>
 
                 <div class="px-md-4 pb-sm-3">
@@ -39,7 +38,7 @@
                             <div class="d-flex gap-4 align-items-center flex-wrap">
                                 <img alt=""
                                     src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/database-name.svg') }}">
-                                <div>{{ "Database Name" }}</div>
+                                <div>{{ __('') }}</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
@@ -47,7 +46,7 @@
                                 <img
                                     src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/database-password.svg') }}"
                                     alt="">
-                                <div>{{ "Database Password" }}</div>
+                                <div>{{ __('') }}</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
@@ -55,7 +54,7 @@
                                 <img
                                     src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/database-username.svg') }}"
                                     alt="">
-                                <div>{{ "Database Username" }}</div>
+                                <div>{{ __('') }}</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
@@ -63,7 +62,7 @@
                                 <img
                                     src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/database-hostname.svg') }}"
                                     alt="">
-                                <div>{{ "Database Host Name" }}</div>
+                                <div>{{ __('') }}</div>
                             </div>
                         </div>
                     </div>
@@ -71,9 +70,9 @@
             </div>
 
             <div class="text-center">
-                <p>{{ "Are you ready to start installation process ?" }}</p>
+                <p>{{ __('') }}</p>
                 <a href="{{ route('step1') }}" class="btn btn-dark px-sm-5">
-                    {{ "Get Started" }}
+                    {{ __('') }}
                 </a>
             </div>
         </div>

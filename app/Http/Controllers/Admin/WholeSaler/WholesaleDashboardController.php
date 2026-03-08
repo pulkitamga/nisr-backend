@@ -220,7 +220,9 @@ class WholesaleDashboardController extends BaseController
         $totalOrders = (clone $snapshotQuery)->count();
         $totalRevenue = (float)(clone $snapshotQuery)->sum('final_price');
         $paidRevenue = (float)(clone $snapshotQuery)->where('payment_status', 'paid')->sum('final_price');
-        $deliveredOrders = (clone $snapshotQuery)->where('delivery_status', 'delivered')->count();
+        $deliveredOrdersQuery = clone $snapshotQuery;
+        $this->applyFulfilledDeliveryStatusFilter($deliveredOrdersQuery);
+        $deliveredOrders = $deliveredOrdersQuery->count();
         $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
         $collectionRate = $totalRevenue > 0 ? ($paidRevenue / $totalRevenue) * 100 : 0;
         $fulfillmentRate = $totalOrders > 0 ? ($deliveredOrders / $totalOrders) * 100 : 0;
@@ -233,7 +235,7 @@ class WholesaleDashboardController extends BaseController
             ->selectRaw('SUM(COALESCE(final_price, 0)) as total_revenue')
             ->selectRaw("SUM(CASE WHEN payment_status = 'paid' THEN COALESCE(final_price, 0) ELSE 0 END) as paid_revenue")
             ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
-            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when(($filters['delivery_status'] ?? '') !== '', fn($query) => $this->applyDeliveryStatusFilter($query, (string)$filters['delivery_status']))
             ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->groupBy('period_key')
             ->orderBy('period_key')
@@ -262,7 +264,7 @@ class WholesaleDashboardController extends BaseController
             ->with(['wholeseller.wholesalerBusiness'])
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
             ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
-            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when(($filters['delivery_status'] ?? '') !== '', fn($query) => $this->applyDeliveryStatusFilter($query, (string)$filters['delivery_status']))
             ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->select('wholesaler_id')
             ->selectRaw('COUNT(*) as orders_count')
@@ -276,13 +278,13 @@ class WholesaleDashboardController extends BaseController
         $recentRevenue = (float)WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [now()->subDays(29)->startOfDay(), $snapshotTo])
             ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
-            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when(($filters['delivery_status'] ?? '') !== '', fn($query) => $this->applyDeliveryStatusFilter($query, (string)$filters['delivery_status']))
             ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->sum('final_price');
         $previousRevenue = (float)WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [now()->subDays(59)->startOfDay(), now()->subDays(30)->endOfDay()])
             ->when($filters['payment_status'] !== '', fn($query) => $query->where('payment_status', $filters['payment_status']))
-            ->when($filters['delivery_status'] !== '', fn($query) => $query->where('delivery_status', $filters['delivery_status']))
+            ->when(($filters['delivery_status'] ?? '') !== '', fn($query) => $this->applyDeliveryStatusFilter($query, (string)$filters['delivery_status']))
             ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholesaler_id', $filters['wholesaler_id']))
             ->sum('final_price');
         $momentumRate = $previousRevenue > 0 ? (($recentRevenue - $previousRevenue) / $previousRevenue) * 100 : null;
@@ -664,11 +666,36 @@ class WholesaleDashboardController extends BaseController
             $query->where('payment_status', $filters['payment_status']);
         }
         if (($filters['delivery_status'] ?? '') !== '') {
-            $query->where('delivery_status', $filters['delivery_status']);
+            $this->applyDeliveryStatusFilter($query, (string)$filters['delivery_status']);
         }
         if (($filters['wholesaler_id'] ?? 0) > 0) {
             $query->where('wholesaler_id', (int)$filters['wholesaler_id']);
         }
+    }
+
+    private function applyFulfilledDeliveryStatusFilter($query): void
+    {
+        $query->whereIn('delivery_status', ['fulfilled', 'delivered']);
+    }
+
+    private function applyDeliveryStatusFilter($query, string $deliveryStatus): void
+    {
+        $status = strtolower(trim($deliveryStatus));
+        if ($status === '') {
+            return;
+        }
+
+        if ($status === 'partial') {
+            $query->whereIn('delivery_status', ['partial', 'partials']);
+            return;
+        }
+
+        if ($status === 'fulfilled') {
+            $this->applyFulfilledDeliveryStatusFilter($query);
+            return;
+        }
+
+        $query->where('delivery_status', $status);
     }
 
     private function resolveReportTrendGrouping(Carbon $fromDate, Carbon $toDate): array

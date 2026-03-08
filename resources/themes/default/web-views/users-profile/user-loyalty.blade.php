@@ -267,7 +267,7 @@
                     <h5 class="modal-title flex-grow-1 text-center" id="exampleModalLongTitle">
                         {{translate('Convert point to wallet money')}}
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -314,3 +314,4 @@
 @push('script')
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/user-loyalty.js') }}"></script>
 @endpush
+

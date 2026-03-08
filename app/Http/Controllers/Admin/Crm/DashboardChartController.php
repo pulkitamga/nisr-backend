@@ -570,7 +570,7 @@ class DashboardChartController extends Controller
         }
 
         $departments = Departments::query()->orderBy('name')->get(['id', 'name']);
-        $owners = Admin::query()->orderBy('name')->get(['id', 'name']);
+        $owners = $this->getAssignedCrmOwners();
 
         return view('admin-views.crm.reports.insights', compact(
             'kpi',
@@ -679,6 +679,36 @@ class DashboardChartController extends Controller
         }
 
         return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
+    }
+
+    private function getAssignedCrmOwners()
+    {
+        $leadOwnerIds = Lead::query()
+            ->whereNotNull('owner_id')
+            ->where('owner_id', '>', 0)
+            ->pluck('owner_id');
+        $dealOwnerIds = Deal::query()
+            ->whereNotNull('owner_id')
+            ->where('owner_id', '>', 0)
+            ->pluck('owner_id');
+
+        $ownerIds = $leadOwnerIds
+            ->merge($dealOwnerIds)
+            ->map(fn($id) => (int)$id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($ownerIds)) {
+            return collect();
+        }
+
+        return Admin::query()
+            ->active()
+            ->whereIn('id', $ownerIds)
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
     
     private function resolveDateRange(Request $request)

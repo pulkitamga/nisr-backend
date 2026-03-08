@@ -30,14 +30,14 @@
         }
 
         [dir="rtl"] .padd-input-div {
-            padding-right: 1.4rem;
+            padding-inline-end: 1.4rem;
         }
 
         [dir="rtl"] .radio-input-label::after,
         [dir="rtl"] .radio-input-label::before {
             position: absolute;
-            left: auto;
-            right: -1.5rem;
+            inset-inline-start: auto;
+            inset-inline-end: -1.5rem;
         }
     </style>
     @php
@@ -195,9 +195,9 @@
                                                     @endfor
                                         </div>
                                         <span
-                                            class="d-inline-block  align-middle mt-1 {{Session::get('direction') === "rtl" ? 'ml-md-2 ml-sm-0' : 'mr-md-2 mr-sm-0'}} fs-14 text-muted">({{$overallRating[0]}})</span>
+                                            class="d-inline-block  align-middle mt-1 me-md-2 me-sm-0 fs-14 text-muted">({{$overallRating[0]}})</span>
                                         <span
-                                            class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-1 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-1 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}}"><span class="web-text-primary">{{$overallRating[1]}}</span> {{translate('reviews')}}</span>
+                                            class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-1 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1"><span class="web-text-primary">{{$overallRating[1]}}</span> {{translate('reviews')}}</span>
                                     </div>
 
 
@@ -311,7 +311,7 @@
                         <div class="modal-content p-3">
                             <div class="modal-header pb-2">
                                 <h5 class="modal-title">{{ translate('Request Service') }}</h5>
-                                <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="Close">
+                                <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                                     &times;
                                 </button>
                             </div>
@@ -492,7 +492,7 @@
 
 
                 <div class="mt-4 rtl text-align-direction">
-                    <div class="px-4 pb-3 mb-3 mr-0 mr-md-2 bg-white __review-overview __rounded-10 pt-3">
+                    <div class="px-4 pb-3 mb-3 me-0 me-md-2 bg-white __review-overview __rounded-10 pt-3">
                         <ul class="nav nav-tabs nav--tabs d-flex justify-content-center mt-3"
                             role="tablist">
                             <li class="nav-item">
@@ -602,7 +602,7 @@
                                             </div>
                                             <div class="col-1 text-body">
                                                 <span
-                                                    class=" {{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}} ">
+                                                    class=" ms-3 float-end ">
                                                     {{$rating[0]}}
                                                 </span>
                                             </div>
@@ -624,7 +624,7 @@
                                             </div>
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[1]}}
                                                 </span>
                                             </div>
@@ -646,7 +646,7 @@
                                             </div>
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[2]}}
                                                 </span>
                                             </div>
@@ -668,7 +668,7 @@
 
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[3]}}
                                                 </span>
                                             </div>
@@ -690,7 +690,7 @@
                                             </div>
                                             <div class="col-1">
                                                 <span
-                                                    class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                    class="ms-3 float-end">
                                                     {{$rating[4]}}
                                                 </span>
                                             </div>
@@ -735,7 +735,7 @@
                     @if ($value['status'] == 1 && !empty($value['title']))
                     <div class="shipping-details-bottom-border">
                         <div class="px-3 py-3">
-                            <img class="{{Session::get('direction') === "rtl" ? 'float-right ml-2' : 'mr-2'}} __img-20"
+                            <img class="float-end me-2 __img-20"
                                 src="{{ getStorageImages(path: imagePathProcessing(imageData: $value['image'],path: 'company-reliability'), type: 'source', source: 'public/assets/front-end/img'.'/'.$value['item'].'.png') }}"
                                 alt="">
                             <span>{{translate($value['title'])}}</span>
@@ -1134,3 +1134,5 @@
     </script>
     @endif
     @endpush
+
+

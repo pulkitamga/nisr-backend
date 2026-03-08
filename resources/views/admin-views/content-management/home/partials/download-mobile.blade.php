@@ -73,17 +73,17 @@ $defaultLanguage = $languages[0] ?? 'en';
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>Platform</th>
-            <th>Alt</th>
-            <th>Image</th>
-            <th class="text-center">Action</th>
+            <th>{{ __('Platform') }}</th>
+            <th>{{ __('Alt') }}</th>
+            <th>{{ __('Image') }}</th>
+            <th class="text-center">{{ __('Action') }}</th>
         </tr>
     </thead>
     <tbody>
         {{-- Android Button --}}
         @if (!empty($content['android_button']))
         <tr>
-            <td>Android</td>
+            <td>{{ __('Android') }}</td>
             <td>{{ $content['android_button']['alt'] ?? '' }}</td>
             <td>
                 <img src="{{ $getDownloadImage($content['android_button']['image'] ?? '') }}"
@@ -106,7 +106,7 @@ $defaultLanguage = $languages[0] ?? 'en';
         {{-- iOS Button --}}
         @if (!empty($content['ios_button']))
         <tr>
-            <td>iOS</td>
+            <td>{{ __('iOS') }}</td>
             <td>{{ $content['ios_button']['alt'] ?? '' }}</td>
             <td>
                 <img src="{{ $getDownloadImage($content['ios_button']['image'] ?? '') }}"
@@ -129,7 +129,7 @@ $defaultLanguage = $languages[0] ?? 'en';
         {{-- Mockup Image --}}
         @if (!empty($content['mockup_image']))
         <tr>
-            <td>Mockup</td>
+            <td>{{ __('Mockup') }}</td>
             <td>{{ $content['mockup_image']['alt'] ?? '' }}</td>
             <td>
                 <img src="{{ $getDownloadImage($content['mockup_image']['image'] ?? '') }}"
@@ -151,7 +151,7 @@ $defaultLanguage = $languages[0] ?? 'en';
         {{-- App Logo --}}
         @if (!empty($content['app_logo']))
         <tr>
-            <td>App Logo</td>
+            <td>{{ __('App Logo') }}</td>
             <td>{{ $content['app_logo']['alt'] ?? '' }}</td>
             <td>
                 <img src="{{ $getDownloadImage($content['app_logo']['image'] ?? '') }}"
@@ -185,7 +185,7 @@ $defaultLanguage = $languages[0] ?? 'en';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editModalLabel">{{translate('Edit Download App Item')}}</h5>
-                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -316,3 +316,4 @@ $defaultLanguage = $languages[0] ?? 'en';
     });
 
 </script>
+

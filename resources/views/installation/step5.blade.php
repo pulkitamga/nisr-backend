@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="text-center text-white mb-4">
-        <h2>{{ "6valley Software Installation" }}</h2>
+        <h2>{{ __('') }}</h2>
         <h6 class="fw-normal">
-            {{ "Please proceed step by step with proper data according to instructions" }}
+            {{ __('') }}
         </h6>
     </div>
 
@@ -29,13 +29,13 @@
         </div>
         <div class="p-4 mb-md-3 mx-xl-4 px-md-5">
             <div class="d-flex align-items-center column-gap-3 flex-wrap">
-                <h5 class="fw-bold fs text-uppercase">{{ "Step 5." }}</h5>
-                <h5 class="fw-normal">{{ "Admin Account Settings" }}</h5>
+                <h5 class="fw-bold fs text-uppercase">{{ __('') }}</h5>
+                <h5 class="fw-normal">{{ __('') }}</h5>
             </div>
             <p class="mb-4">
-                {{ "These information will be used to create" }}
-                <strong>{{ "super admin credential" }}</strong>
-                {{ "for your admin panel." }}
+                {{ __('') }}
+                <strong>{{ __('') }}</strong>
+                {{ __('') }}
             </p>
 
             <form method="POST" action="{{ route('system_settings') }}">
@@ -46,7 +46,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="first-name" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Business Name" }}
+                                        {{ __('') }}
                                     </label>
                                     <input type="text" id="first-name" class="form-control" name="company_name"
                                            required placeholder="Ex: 6valley">
@@ -55,7 +55,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="admin-name" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Admin Name" }}
+                                        {{ __('') }}
                                     </label>
                                     <input type="text" id="admin-name" class="form-control" name="admin_name"
                                            required placeholder="Ex: John Doe">
@@ -64,7 +64,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="phone" class="d-flex align-items-center gap-2 mb-2">
-                                        <span class="fw-medium">{{ "Admin Phone" }}</span>
+                                        <span class="fw-medium">{{ __('') }}</span>
                                         <span class="cursor-pointer" data-bs-toggle="tooltip"
                                               data-bs-placement="top" data-bs-custom-class="custom-tooltip"
                                               data-bs-html="true"
@@ -83,7 +83,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="email" class="d-flex align-items-center gap-2 mb-2">
-                                        <span class="fw-medium">{{ "Admin Email" }}</span>
+                                        <span class="fw-medium">{{ __('') }}</span>
                                         <span class="cursor-pointer" data-bs-toggle="tooltip"
                                               data-bs-placement="top" data-bs-custom-class="custom-tooltip"
                                               data-bs-html="true"
@@ -101,12 +101,12 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="password" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Currency Model" }}
+                                        {{ __('') }}
                                     </label>
                                     <div class="input-inner-end-ele position-relative">
                                         <select class="form-control form-select action-installation-currency-select" name="currency_model">
-                                            <option value="single_currency">{{ "Single Currency" }}</option>
-                                            <option value="multi_currency">{{ "Multi Currency" }}</option>
+                                            <option value="single_currency">{{ __('') }}</option>
+                                            <option value="multi_currency">{{ __('') }}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -115,7 +115,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="password" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Admin Password (At least 8 characters)" }}
+                                        {{ __('') }}
                                     </label>
                                     <div class="input-inner-end-ele position-relative">
                                         <input type="password" autocomplete="new-password" id="admin_password"
@@ -136,7 +136,7 @@
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-dark px-sm-5">
-                        {{ "Complete Installation" }}
+                        {{ __('') }}
                     </button>
                 </div>
             </form>

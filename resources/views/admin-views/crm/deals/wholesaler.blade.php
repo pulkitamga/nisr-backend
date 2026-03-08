@@ -113,6 +113,9 @@
                             <option {{ request('status')  == 'lost'?'selected':''}} value="lost">
                                 {{ translate('lost') }}
                             </option>
+                            <option {{ request('status')  == 'closed'?'selected':''}} value="closed">
+                                {{ translate('closed') }}
+                            </option>
 
                         </select>
 
@@ -154,7 +157,7 @@
                         </div>
                     </div>
                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                     <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                 </div>
             </form>
@@ -233,6 +236,7 @@
                             'open' => 'text-primary bg-soft-primary',
                             'won' => 'text-success bg-soft-success',
                             'lost' => 'text-danger bg-soft-danger',
+                            'closed' => 'text-dark bg-soft-dark',
                             default => 'text-dark bg-soft-light',
                             };
                             @endphp
@@ -244,7 +248,7 @@
 
                         <td>
                             <div class="d-flex flex-wrap gap-1">
-                                <a href="{{ route('admin.crm.deals.wholesale.view', $deal->id) }}" class="btn btn-sm btn-info">View</a>
+                                <a href="{{ route('admin.crm.deals.wholesale.view', $deal->id) }}" class="btn btn-sm btn-info">{{ __('View') }}</a>
                                 @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_owner'))
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-outline-secondary assign-owner-btn"
@@ -287,6 +291,21 @@
                                 </a>
                                 @endif
 
+                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_disqualify') && strtolower((string)$deal->status) === 'open')
+                                @if(!in_array(strtolower((string)($deal->quotation_status ?? 'draft')), ['draft', ''], true))
+                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-danger deal-mark-lost-btn" data-deal-id="{{ $deal->id }}">
+                                    {{ translate('Mark Lost') }}
+                                </a>
+                                @else
+                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-danger deal-disqualify-btn" data-deal-id="{{ $deal->id }}">
+                                    {{ translate('Disqualify') }}
+                                </a>
+                                @endif
+                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-dark deal-close-btn" data-deal-id="{{ $deal->id }}">
+                                    {{ translate('Close') }}
+                                </a>
+                                @endif
+
                                 <a href="javascript:void(0)" class="btn btn-sm btn-outline-warning escalate-wholesale-btn" data-deal-id="{{ $deal->id }}">
                                     {{ translate('Escalate') }}
                                 </a>
@@ -315,7 +334,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateWholesaleDealModalLabel">{{ translate('Escalate Deal') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -347,6 +366,9 @@
 <span id="assignOwnerRoute" data-url="{{ route('admin.crm.deals.wholesale.owner-assign') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.crm.deals.wholesale.employee-assign') }}"></span>
 <span id="assignDepartmentRoute" data-url="{{ route('admin.crm.deals.wholesale.update-ticket-department') }}"></span>
+<span id="dealDisqualifyRoute" data-url="{{ route('admin.crm.deals.wholesale.disqualify') }}"></span>
+<span id="dealMarkLostRoute" data-url="{{ route('admin.crm.deals.wholesale.mark-lost') }}"></span>
+<span id="dealCloseRoute" data-url="{{ route('admin.crm.deals.wholesale.close') }}"></span>
 @endsection
 
 @push('script')
@@ -357,6 +379,66 @@
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 
 <script>
+    function submitDealStatusAction(routeUrl, dealId, titleText, confirmText) {
+        Swal.fire({
+            title: titleText,
+            text: confirmText,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '{{ translate("Yes") }}',
+            cancelButtonText: '{{ translate("Cancel") }}'
+        }).then((result) => {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            $.ajax({
+                url: routeUrl,
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    deal_id: dealId
+                },
+                success: function(res) {
+                    Swal.fire('{{ translate("Success") }}', res.message || '{{ translate("Updated successfully") }}', 'success');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                },
+                error: function(xhr) {
+                    Swal.fire('{{ translate("Error") }}', xhr.responseJSON?.message || '{{ translate("Something went wrong") }}', 'error');
+                }
+            });
+        });
+    }
+
+    $(document).on('click', '.deal-disqualify-btn', function() {
+        submitDealStatusAction(
+            $('#dealDisqualifyRoute').data('url'),
+            $(this).data('deal-id'),
+            '{{ translate("Disqualify Deal?") }}',
+            '{{ translate("This should be used before sending quotation.") }}'
+        );
+    });
+
+    $(document).on('click', '.deal-mark-lost-btn', function() {
+        submitDealStatusAction(
+            $('#dealMarkLostRoute').data('url'),
+            $(this).data('deal-id'),
+            '{{ translate("Mark Deal Lost?") }}',
+            '{{ translate("Use this after quotation is sent.") }}'
+        );
+    });
+
+    $(document).on('click', '.deal-close-btn', function() {
+        submitDealStatusAction(
+            $('#dealCloseRoute').data('url'),
+            $(this).data('deal-id'),
+            '{{ translate("Close Deal?") }}',
+            '{{ translate("Review logic must be completed before close.") }}'
+        );
+    });
+
     $(function () {
 
     $(document).on('click', '.escalate-wholesale-btn', function() {
@@ -423,7 +505,7 @@
                 if (res.status) {
                     toastr.success(res.message);
                 } else {
-                    toastr.error('Something went wrong');
+                    toastr.error(@json(__('Something went wrong')));
                 }
             }
         });
@@ -432,3 +514,5 @@
 
 
 @endpush
+
+

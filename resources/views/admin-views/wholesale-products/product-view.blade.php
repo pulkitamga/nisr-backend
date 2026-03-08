@@ -25,17 +25,17 @@
                                 <div>
                                     <span class="key text-nowrap">{{ translate('product_Name') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->product->name ?? 'N/A' }}</span>
+                                    <span class="value">{{ $ProductData->product->name ?? __('N/A') }}</span>
                                 </div>
                                 <div>
                                     <span class="key">{{ translate('Category') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->category->name ?? 'N/A' }}</span>
+                                    <span class="value">{{ $ProductData->category->name ?? __('N/A') }}</span>
                                 </div>
                                 <div>
                                     <span class="key">{{ translate('Sub_Category') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->subcategory->name ?? 'N/A' }}</span>
+                                    <span class="value">{{ $ProductData->subcategory->name ?? __('N/A') }}</span>
                                 </div>
 
                                 <!-- YEH PART REPLACE KAR DO – AB VARIATION KEY BHI DIKHEGA -->
@@ -45,10 +45,10 @@
                                     <span class="value">
                                         @if($ProductData->variation_type && $ProductData->variation_key)
                                         <strong>{{ str_replace('|', ' • ', $ProductData->variation_key) }}</strong>
-                                        <small class="text-muted d-block">(Type: {{ $ProductData->variation_type }})</small>
+                                        <small class="text-muted d-block">({{ translate('Type') }}: {{ $ProductData->variation_type }})</small>
                                         @elseif($ProductData->variation_type)
                                         <span class="text-warning">{{ $ProductData->variation_type }}</span>
-                                        <small class="text-muted d-block">(Key not available)</small>
+                                        <small class="text-muted d-block">({{ translate('Key not available') }})</small>
                                         @else
                                         <span class="badge badge-soft-success">{{ translate('Default') }}</span>
                                         @endif
@@ -59,7 +59,7 @@
                                 <div>
                                     <span class="key">{{ translate('Unit') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->product->unit ?? 'N/A' }}</span>
+                                    <span class="value">{{ $ProductData->product->unit ?? __('N/A') }}</span>
                                 </div>
                                 <div>
                                     <span class="key">{{ translate('Unit_price') }}</span>

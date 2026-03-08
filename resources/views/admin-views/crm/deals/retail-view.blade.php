@@ -304,7 +304,7 @@
                 if (res.status) {
                     toastr.success(res.message);
                 } else {
-                    toastr.error('Something went wrong');
+                    toastr.error(@json(__('Something went wrong')));
                 }
             }
         });
@@ -335,3 +335,4 @@
     });
 </script>
 @endpush
+

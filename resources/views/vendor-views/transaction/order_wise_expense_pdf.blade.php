@@ -1,4 +1,4 @@
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ 'Expense Transaction Statement '.$transaction->order_id }}</title>
