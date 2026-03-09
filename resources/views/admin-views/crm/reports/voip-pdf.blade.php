@@ -74,6 +74,20 @@
         <h4>{{ translate('hourly_load') }}</h4>
         <img src="{{ $hourlyChart }}" style="width:100%; margin-bottom:15px;">
     @endif
+    @if (!empty($trendChart))
+        <h4>{{ translate('crm_trend') }}</h4>
+        <img src="{{ $trendChart }}" style="width:100%; margin-bottom:15px;">
+    @endif
+
+    @if (!empty($stageChart))
+        <h4>{{ translate('deal_stage_distribution') }}</h4>
+        <img src="{{ $stageChart }}" style="width:60%; margin-bottom:15px;">
+    @endif
+
+    @if (!empty($statusChart))
+        <h4>{{ translate('message_status_distribution') }}</h4>
+        <img src="{{ $statusChart }}" style="width:60%; margin-bottom:15px;">
+    @endif
     <table>
         <thead>
             <tr>
