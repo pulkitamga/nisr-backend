@@ -294,7 +294,7 @@ Route::get('/admin/crm/sales-report-export-excel', [CrmSalesReportController::cl
 Route::post('/admin/crm/sales-report-export-pdf', [CrmSalesReportController::class, 'exportPdf'])
     ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
     ->name('admin.crm.sales-report-export-pdf');
-Route::match(['GET','POST'],'/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
+Route::match(['GET', 'POST'], '/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
     ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.insights-report');
 
@@ -343,7 +343,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     Route::controller(UcmController::class)->group(function () {
         Route::group(['prefix' => 'ucm', 'as' => 'ucm.'], function () {
             Route::get('calls',  'calls')->middleware('permission:crm_section.read,admin')->name('calls');
-            Route::get('insights-report',  'insightsReport')->middleware('permission:crm_section.read,admin')->name('insights-report');
+            Route::match(['GET', 'POST'], 'insights-report', 'insightsReport')
+                ->middleware('permission:crm_section.read,admin')
+                ->name('insights-report');
             Route::post('accept',  'accept')->middleware('permission:crm_section.update,admin')->name('accept');
             Route::post('reject',  'reject')->middleware('permission:crm_section.update,admin')->name('reject');
             Route::post('end',  'end')->middleware('permission:crm_section.update,admin')->name('end');
@@ -1126,7 +1128,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::delete(Branch::DELETE['URI'] . '/{id}', [BranchController::class, 'deleteBranch'])->middleware('permission:branch_management.branch_delete,admin')->name('chose.delete');
         Route::get('/stock-history/{branch_id}/{product_id}', [BranchController::class, 'fGetBranchesStockHistory'])
             ->name('stock-history');
-        });
+    });
 
     /*BRANCH*/
 
