@@ -189,43 +189,82 @@ class BranchController extends BaseController
         return back();
     }
 
+    // public function exportList(Request $request): BinaryFileResponse
+    // {
+
+    //     // --- NEW: Single Product History Export Logic ---
+    //     if ($request->has('product_id')) {
+    //         $productId = $request->product_id;
+    //         $branchId = $request->branch_id;
+    //         $variationType = $request->variation_type; // Pass this from JS
+    //         $variantMatcher = app(VariantMatcher::class);
+
+    //         // Replicate the logic from fGetBranchesStockList
+    //         $history = \App\Models\StockRequestProduct::where('product_id', $productId)
+    //             ->whereIn('status', ['transferred', 'pending', 'approved'])
+    //             ->where(function ($q) use ($branchId) {
+    //                 $q->where('received_from_branch', $branchId)
+    //                     ->orWhereHas('stockRequest', function ($sr) use ($branchId) {
+    //                         $sr->where('from_branch_id', $branchId);
+    //                     });
+    //             })
+    //             ->with('stockRequest')
+    //             ->latest()
+    //             ->get()
+    //             ->filter(function ($row) use ($variationType, $variantMatcher) {
+    //                 if ($variationType === 'No Variation' || empty($variationType) || $variationType === 'null') {
+    //                     return $variantMatcher->isDefault($row->variation_type);
+    //                 }
+
+    //                 return $variantMatcher->matches($variationType, $row->variation_type);
+    //             })
+    //             ->values();
+
+    //         return Excel::download(new \App\Exports\BranchStockHistoryExport(['history' => $history]), 'stock-history.xlsx');
+    //     }
+
+    //     // changes end for single product 
+
+
+    //     $vendors = $this->branchRepo->getListWhere(
+    //         orderBy: ['id' => 'desc'],
+    //         searchValue: $request['searchValue'],
+    //         relations: [],
+    //         dataLimit: 'all'
+    //     );
+
+    //     $active = $vendors->where('status', 'active')->count();
+    //     $inactive = $vendors->where('status', '!=', 'active')->count();
+    //     $data = [
+    //         'vendors' => $vendors,
+    //         'search' => $request['searchValue'],
+    //         'active' => $active,
+    //         'inactive' => $inactive,
+    //     ];
+    //     return Excel::download(new BranchListExport($data), BranchExport::EXPORT_XLSX);
+    // }
     public function exportList(Request $request): BinaryFileResponse
     {
+        // --- CASE 1: Single Product Stock History Export ---
+        if ($request->has('product_id') && $request->has('branch_id')) {
 
-        // --- NEW: Single Product History Export Logic ---
-        if ($request->has('product_id')) {
-            $productId = $request->product_id;
-            $branchId = $request->branch_id;
-            $variationType = $request->variation_type; // Pass this from JS
-            $variantMatcher = app(VariantMatcher::class);
+            // Prepare parameters for the unified history helper
+            $stock = new \stdClass();
+            $stock->branch_id = $request->branch_id;
+            $stock->product_id = $request->product_id;
+            $stock->variation_type = $request->variation_type;
+            $stock->variation_key = $request->variation_key;
 
-            // Replicate the logic from fGetBranchesStockList
-            $history = \App\Models\StockRequestProduct::where('product_id', $productId)
-                ->whereIn('status', ['transferred', 'pending', 'approved'])
-                ->where(function ($q) use ($branchId) {
-                    $q->where('received_from_branch', $branchId)
-                        ->orWhereHas('stockRequest', function ($sr) use ($branchId) {
-                            $sr->where('from_branch_id', $branchId);
-                        });
-                })
-                ->with('stockRequest')
-                ->latest()
-                ->get()
-                ->filter(function ($row) use ($variationType, $variantMatcher) {
-                    if ($variationType === 'No Variation' || empty($variationType) || $variationType === 'null') {
-                        return $variantMatcher->isDefault($row->variation_type);
-                    }
+            // Fetch the unified history (same logic as the web view)
+            $history = $this->getUnifiedStockHistory($stock);
 
-                    return $variantMatcher->matches($variationType, $row->variation_type);
-                })
-                ->values();
-
-            return Excel::download(new \App\Exports\BranchStockHistoryExport(['history' => $history]), 'stock-history.xlsx');
+            return Excel::download(
+                new \App\Exports\BranchStockHistoryExport(['history' => $history]),
+                'stock-history-' . now()->format('Y-m-d') . '.xlsx'
+            );
         }
 
-        // changes end for single product 
-
-
+        // --- CASE 2: General Branch List Export ---
         $vendors = $this->branchRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
@@ -233,15 +272,14 @@ class BranchController extends BaseController
             dataLimit: 'all'
         );
 
-        $active = $vendors->where('status', 'active')->count();
-        $inactive = $vendors->where('status', '!=', 'active')->count();
         $data = [
             'vendors' => $vendors,
             'search' => $request['searchValue'],
-            'active' => $active,
-            'inactive' => $inactive,
+            'active' => $vendors->where('status', 'active')->count(),
+            'inactive' => $vendors->where('status', '!=', 'active')->count(),
         ];
-        return Excel::download(new BranchListExport($data), BranchExport::EXPORT_XLSX);
+
+        return Excel::download(new \App\Exports\BranchListExport($data), 'Branch-List.xlsx');
     }
 
     public function getView(Request $request, $id, $tab = null): View|RedirectResponse
@@ -450,60 +488,61 @@ class BranchController extends BaseController
     // }
 
 
-   public function fGetBranchesStockList(Request $request): view
-{
-    $searchValue = $request->input('searchValue', '');
-    $branchFilter = $request->input('branch_id', '');
-    $productFilter = $request->input('product_id', '');
-    $attributeFilter = $request->input('attribute', '');
-    $branches = ManageBranchProductStock::with(['branch', 'product'])
-        ->select(
-            'branch_id',
-            'product_id',
-            DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation') as variation_key"),
-            DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation') as variation_type"),
-            DB::raw('SUM(current_stock) as total_stock')
-        )
-        ->whereHas('product', fn($q) => $q->where('product_type', 'physical'))
-        ->when($branchFilter, fn($q) => $q->where('branch_id', $branchFilter))
-        ->when($productFilter, fn($q) => $q->where('product_id', $productFilter))
-        ->when(
-            $attributeFilter,
-            fn($q) =>
-            $q->where(function ($qq) use ($attributeFilter) {
-                $qq->where('variation_key', 'LIKE', "%$attributeFilter%")
-                   ->orWhere('variation_type', 'LIKE', "%$attributeFilter%");
-            })
-        )
-        ->groupBy(
-            'branch_id',
-            'product_id',
-            DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation')"),
-            DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation')")
-        )
-        ->paginate(10);
+    public function fGetBranchesStockList(Request $request): view
+    {
+        $searchValue = $request->input('searchValue', '');
+        $branchFilter = $request->input('branch_id', '');
+        $productFilter = $request->input('product_id', '');
+        $attributeFilter = $request->input('attribute', '');
+        $branches = ManageBranchProductStock::with(['branch', 'product'])
+            ->select(
+                'branch_id',
+                'product_id',
+                DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation') as variation_key"),
+                DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation') as variation_type"),
+                DB::raw('SUM(current_stock) as total_stock')
+            )
+            ->whereHas('product', fn($q) => $q->where('product_type', 'physical'))
+            ->when($branchFilter, fn($q) => $q->where('branch_id', $branchFilter))
+            ->when($productFilter, fn($q) => $q->where('product_id', $productFilter))
+            ->when(
+                $attributeFilter,
+                fn($q) =>
+                $q->where(function ($qq) use ($attributeFilter) {
+                    $qq->where('variation_key', 'LIKE', "%$attributeFilter%")
+                        ->orWhere('variation_type', 'LIKE', "%$attributeFilter%");
+                })
+            )
+            ->groupBy(
+                'branch_id',
+                'product_id',
+                DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation')"),
+                DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation')")
+            )
+            ->paginate(10);
 
-   
 
-    // Transform each stock row to attach unified transfer logs
-    $branches->getCollection()->transform(function ($stock) {
-      
 
-        // Attach combined stock request + transfer logs
-        $stock->transfer_logs = $this->getUnifiedStockHistory($stock);
+        // Transform each stock row to attach unified transfer logs
+        $branches->getCollection()->transform(function ($stock) {
 
-        return $stock;
-    });
 
-    // Collect branch and product lists **outside** the transform closure
-    $branchList = BranchModel::pluck('branch_name', 'id');
-    $productList = \App\Models\Product::where('product_type', 'physical')->pluck('name', 'id');
+            // Attach combined stock request + transfer logs
+            $stock->transfer_logs = $this->getUnifiedStockHistory($stock);
 
-    return view(
-        Branch::BRANCH_STOCK_LIST[VIEW],
-        compact('branches', 'branchList', 'productList')
-    );
-}
+            return $stock;
+        });
+
+        // Collect branch and product lists **outside** the transform closure
+        $branchList = BranchModel::pluck('branch_name', 'id');
+        $productList = \App\Models\Product::where('product_type', 'physical')->pluck('name', 'id');
+
+        return view(
+            Branch::BRANCH_STOCK_LIST[VIEW],
+            compact('branches', 'branchList', 'productList')
+        );
+    }
+
     public function deleteBranch($id)
     {
         $branch = $this->branchRepo->getFirstWhere(params: ['id' => $id]);
@@ -522,7 +561,7 @@ class BranchController extends BaseController
         return back();
     }
 
-        private function getUnifiedStockHistory($stock)
+    private function getUnifiedStockHistory($stock)
     {
         /* -----------------------------
      * 1️⃣ PRODUCT STOCK TRANSACTION HISTORY
@@ -560,11 +599,11 @@ class BranchController extends BaseController
             ->map(function ($item) {
                 $reasonClean = str_replace('_', ' ', $item->reason ?? 'MANUAL');
                 $reference = $reasonClean;
- 
+
                 // Default names from relations (if they exist)
                 $fromName = $item->fromBranch?->branch_name;
                 $toName   = $item->toBranch?->branch_name;
- 
+
                 if ($item->reason === 'BRANCH_TRANSFER') {
                     if ($item->type === 'IN') {
                         /* * Logic for RECEIVED (IN): from_branch_id is NULL.
@@ -594,7 +633,7 @@ class BranchController extends BaseController
                         $reference .= " (To: " . ($toName ?? 'Unknown') . ")";
                     }
                 }
- 
+
                 return [
                     'source'         => 'transaction',
                     'type'           => $item->type,
@@ -667,5 +706,71 @@ class BranchController extends BaseController
             ->whereIn('id', $assignedIds)
             ->orderBy('name')
             ->get();
+
+
+    // public function fGetBranchesStockHistory(Request $request, $branch_id, $product_id)
+    // {
+    //     // 1. Fetch Basic Info
+    //     $branch = BranchModel::findOrFail($branch_id);
+    //     $product = \App\Models\Product::findOrFail($product_id);
+
+    //     // 2. Prepare the $stock object so your existing helper function can read it
+    //     $stock = new \stdClass();
+    //     $stock->branch_id = $branch_id;
+    //     $stock->product_id = $product_id;
+    //     $stock->variation_type = $request->query('variation_type');
+    //     $stock->variation_key = $request->query('variation_key');
+
+    //     // 3. REUSE YOUR EXISTING LOGIC
+    //     // This is where the history "comes from" in your current modal
+    //     $logs = $this->getUnifiedStockHistory($stock);
+
+    //     // 4. Return the new dedicated page
+    //     return view('admin-views.branch.stock-history', compact('branch', 'product', 'logs', 'stock'));
+    // }
+
+    public function fGetBranchesStockHistory(Request $request, $branch_id, $product_id)
+    {
+        // 1. Fetch Basic Info
+        $branch = BranchModel::findOrFail($branch_id);
+        $product = \App\Models\Product::findOrFail($product_id);
+
+        // 2. Prepare the $stock object (Handle 'No Variation' as null/empty)
+        $stock = new \stdClass();
+        $stock->branch_id = $branch_id;
+        $stock->product_id = $product_id;
+        $stock->variation_type = ($request->variation_type === 'No Variation') ? null : $request->variation_type;
+        $stock->variation_key = ($request->variation_key === 'No Variation') ? null : $request->variation_key;
+
+        // 3. Get History (Reusing your existing getUnifiedStockHistory logic)
+        $logs = $this->getUnifiedStockHistory($stock);
+
+        // 4. Calculate Current Stock with Null/Empty Check
+        $query = \App\Models\ManageBranchProductStock::where([
+            'branch_id' => $branch_id,
+            'product_id' => $product_id,
+        ]);
+
+        // Handle Variation Type NULL or Empty
+        if (empty($stock->variation_type)) {
+            $query->where(function ($q) {
+                $q->whereNull('variation_type')->orWhere('variation_type', '');
+            });
+        } else {
+            $query->where('variation_type', $stock->variation_type);
+        }
+
+        // Handle Variation Key NULL or Empty
+        if (empty($stock->variation_key)) {
+            $query->where(function ($q) {
+                $q->whereNull('variation_key')->orWhere('variation_key', '');
+            });
+        } else {
+            $query->where('variation_key', $stock->variation_key);
+        }
+
+        $current_stock = $query->sum('current_stock');
+
+        return view('admin-views.branch.stock-history', compact('branch', 'product', 'logs', 'stock', 'current_stock'));
     }
 }

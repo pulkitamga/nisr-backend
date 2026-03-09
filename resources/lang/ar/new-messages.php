@@ -12139,4 +12139,6 @@ return [
 	"Repair fee" => "Repair fee",
 	"Inspection fee" => "Inspection fee",
 	"payment_handled" => "Payment handled",
+	"Stock_Transfer_History" => "سجل نقل المخزون",
+	"Stock History" => "Stock History",
 ];
