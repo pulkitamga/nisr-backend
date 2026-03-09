@@ -291,7 +291,7 @@ Route::post('/admin/crm/sales-report-data', [CrmSalesReportController::class, 'g
 Route::get('/admin/crm/sales-report-export-excel', [CrmSalesReportController::class, 'exportExcel'])
     ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
     ->name('admin.crm.sales-report-export-excel');
-Route::get('/admin/crm/sales-report-export-pdf', [CrmSalesReportController::class, 'exportPdf'])
+Route::post('/admin/crm/sales-report-export-pdf', [CrmSalesReportController::class, 'exportPdf'])
     ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
     ->name('admin.crm.sales-report-export-pdf');
 Route::get('/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
