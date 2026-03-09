@@ -2,7 +2,7 @@
 
 @section('title', translate('branch_stock_report'))
 
-@section('content')
+@section('content') 
     <div class="content container-fluid">
 
         <h2 class="mb-4">{{ translate('branch_stock_report') }}</h2>
@@ -13,9 +13,9 @@
                 <h5 class="mb-0">{{ translate('filters') }}</h5>
             </div>
             <div class="card-body">
-                <div class="row g-3 align-items-end">
+                <div class="row g-3 align-items-end justify-content-center">
                     <!-- DATE TYPE SELECTOR  -->
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">{{ translate('date_type') }}</label>
                         <select class="form-control" id="dateType">
                             <option value="">{{ translate('all_time') }}</option>
