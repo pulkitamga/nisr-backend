@@ -53,14 +53,14 @@
         <tr>
 
             <td width="50%" style="border:0;text-align:center">
-                <h3>Won vs Lost by Employee</h3>
+                <h3>{{ translate('won_vs_lost_by_employee') }}</h3>
                 @if (!empty($employeeChart))
                     <img src="{{ $employeeChart }}" width="100%">
                 @endif
             </td>
 
             <td width="50%" style="border:0;text-align:center">
-                <h3>Overall Deal Status Split</h3>
+               <h3>{{ translate('overall_deal_status_split') }}</h3>
                 @if (!empty($statusChart))
                     <img src="{{ $statusChart }}" width="100%">
                 @endif
@@ -72,7 +72,7 @@
         <tr>
 
             <td width="100%" style="border:0;text-align:center">
-                <h3>Won Sales: Retail vs Wholesale by Employee</h3>
+                 <h3>{{ translate('won_sales_retail_vs_wholesale_by_employee') }}</h3>
 
                 @if (!empty($retailWholesaleChart))
                     <img src="{{ $retailWholesaleChart }}" width="100%">
