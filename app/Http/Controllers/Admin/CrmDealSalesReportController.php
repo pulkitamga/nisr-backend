@@ -42,12 +42,7 @@ class CrmDealSalesReportController extends BaseController
     public function exportPdf(Request $request): Response
     {
         $data = $this->buildReportData($request);
-
         $data['exportedAt'] = now();
-
-        $data['employee_chart'] = $request->employee_chart;
-        $data['status_chart'] = $request->status_chart;
-        $data['sales_chart'] = $request->sales_chart;
 
         return app(ReportPdfService::class)->download(
             view: CrmDealSalesReport::EXPORT_PDF[VIEW],

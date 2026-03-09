@@ -2849,26 +2849,19 @@
     </aside>
 </div>
 <script>
-function handlePOSClick(branchCount) {
-    if (typeof $ === 'undefined') {
-        console.error('jQuery is not loaded yet');
-        alert('System is loading. Please try again in a moment.');
-        return;
-    }
-    
-    if (branchCount > 1) {
-        $('#branchSelectModal').modal('show');
-    } else {
-        let selectedBranchId = $('#posBranchId option:eq(1)').val();
-        if (selectedBranchId) {
-            window.location.href = '/admin/pos?branch_id=' + selectedBranchId;
+    function handlePOSClick(branchCount) {
+        if (branchCount > 1) {
+            $('#branchSelectModal').modal('show');
         } else {
-            alert(@json(__('No branch found.')));
+            let selectedBranchId = $('#posBranchId option:eq(1)').val(); // get first branch
+            if (selectedBranchId) {
+                window.location.href = '/admin/pos?branch_id=' + selectedBranchId;
+            } else {
+                alert(@json(__('No branch found.')));
+            }
         }
     }
-}
 
-$(document).ready(function() {
     $('#posBranchForm').on('submit', function(e) {
         e.preventDefault();
         let branchId = $('#posBranchId').val();
@@ -2878,5 +2871,4 @@ $(document).ready(function() {
             alert(@json(__('Please select a branch.')));
         }
     });
-});
 </script>
