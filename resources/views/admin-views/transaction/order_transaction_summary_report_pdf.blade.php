@@ -12,7 +12,7 @@
     $companyLogo = getWebConfig(name: 'company_web_logo');
 ?>
 
-<body>
+<body> 
 <table class="content-position">
     <tr>
         <td>
