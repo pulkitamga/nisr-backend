@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="text-center text-white mb-4">
-        <h2>{{ "dynamic Software Installation" }}</h2>
+        <h2>{{ __('') }}</h2>
         <h6 class="fw-normal">
-            {{ "Please proceed step by step with proper data according to instructions" }}
+            {{ __('') }}
         </h6>
     </div>
 
@@ -30,11 +30,11 @@
         </div>
         <div class="p-4 mb-md-3 mx-xl-4 px-md-5">
             <div class="d-flex align-items-center column-gap-3 flex-wrap">
-                <h5 class="fw-bold fs text-uppercase">{{ "Step 3." }}</h5>
-                <h5 class="fw-normal">{{ "Update Database Information" }}</h5>
+                <h5 class="fw-bold fs text-uppercase">{{ __('') }}</h5>
+                <h5 class="fw-normal">{{ __('') }}</h5>
             </div>
             <p class="mb-4">
-                {{ "Provide your database information." }}
+                {{ __('') }}
 
             </p>
 
@@ -42,7 +42,7 @@
                 <div class="row margin-top-20px">
                     <div class="col-md-12">
                         <div class="alert alert-danger">
-                            {{ "Invalid Database Credentials or Host. Please check your database credentials carefully." }}
+                            {{ __('') }}
                         </div>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="db_host" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Database Host" }}
+                                        {{ __('') }}
                                     </label>
                                     <input type="text" id="db_host" class="form-control" name="DB_HOST"
                                            required
@@ -75,7 +75,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="db_name" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Database Name" }}
+                                        {{ __('') }}
                                     </label>
                                     <input type="text" id="db_name" class="form-control" name="DB_DATABASE"
                                            required
@@ -86,7 +86,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="db_user" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Database Username" }}
+                                        {{ __('') }}
                                     </label>
                                     <input type="text" id="db_user" class="form-control"
                                            name="DB_USERNAME" required
@@ -97,7 +97,7 @@
                             <div class="col-md-6">
                                 <div class="from-group">
                                     <label for="db_pass" class="d-flex align-items-center gap-2 mb-2">
-                                        {{ "Database Password" }}
+                                        {{ __('') }}
                                     </label>
                                     <div class="input-inner-end-ele position-relative">
                                         <input type="password" id="db_pass" min="8" class="form-control"
@@ -118,7 +118,7 @@
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-dark px-sm-5">{{ "Continue" }}</button>
+                    <button type="submit" class="btn btn-dark px-sm-5">{{ __('') }}</button>
                 </div>
             </form>
         </div>

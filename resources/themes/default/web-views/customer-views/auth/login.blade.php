@@ -280,7 +280,7 @@
 
             // Disable button and show loading state
             $btn.prop('disabled', true).addClass('disabled');
-            $btn.html('<span class="spinner-border spinner-border-sm mr-2"></span> {{ translate("Please_wait") }}');
+            $btn.html('<span class="spinner-border spinner-border-sm me-2"></span> {{ translate("Please_wait") }}');
 
             // Show loader message
             const loaderHtml = `

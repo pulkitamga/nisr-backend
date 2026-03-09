@@ -136,7 +136,12 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('delivery_status') }}</label>
-                            <input type="text" class="form-control" name="delivery_status" value="{{ $filters['delivery_status'] ?? '' }}" placeholder="{{ translate('all') }}">
+                            <select class="form-control" name="delivery_status">
+                                <option value="">{{ translate('all') }}</option>
+                                <option value="pending" {{ ($filters['delivery_status'] ?? '') === 'pending' ? 'selected' : '' }}>{{ translate('pending') }}</option>
+                                <option value="partial" {{ ($filters['delivery_status'] ?? '') === 'partial' ? 'selected' : '' }}>{{ translate('partial') }}</option>
+                                <option value="fulfilled" {{ ($filters['delivery_status'] ?? '') === 'fulfilled' ? 'selected' : '' }}>{{ translate('fulfilled') }}</option>
+                            </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>

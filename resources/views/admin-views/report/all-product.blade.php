@@ -145,7 +145,7 @@
                             <input type="hidden" name="from" value="{{ $from }}">
                             <input type="hidden" name="to" value="{{ $to }}">
                             <input id="datatableSearch_" type="search" name="search" class="form-control"
-                                   placeholder="{{translate('search_product_name')}}" aria-label="Search orders"
+                                   placeholder="{{translate('search_product_name')}}" aria-label="{{ translate('Search orders') }}"
                                    value="{{ $search }}">
                             <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                         </div>
@@ -213,7 +213,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="rating mr-1"><i class="tio-star"></i>
+                                        <div class="rating me-1"><i class="tio-star"></i>
                                             {{count($product->rating)>0?number_format($product->rating[0]->average, 2, '.', ' '):0}}
                                         </div>
                                         <div>
@@ -244,3 +244,4 @@
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/apexcharts-data-show.js')}}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-report.js') }}"></script>
 @endpush
+

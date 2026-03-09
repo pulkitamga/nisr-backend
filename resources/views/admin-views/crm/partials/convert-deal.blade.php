@@ -4,7 +4,7 @@
 
             <div class="modal-header bg-section">
                 <h3 class="mb-0">{{ translate('Convert Lead to Deal') }}</h3>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span>&times;</span>
                 </button>
             </div>
@@ -50,3 +50,4 @@
         </div>
     </div>
 </div>
+

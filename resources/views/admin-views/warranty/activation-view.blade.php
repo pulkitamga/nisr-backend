@@ -22,7 +22,7 @@
             <div class="col-sm mb-2 mb-sm-0">
                 <h1 class="page-header-title">
                     <span class="text-uppercase bidi-ltr">{{ $warranty->serial_number }}</span>
-                    <span class="badge badge-soft-{{ $warranty->status == 'active' ? 'success' : ($warranty->status == 'expired' ? 'danger' : 'warning') }} ml-2">
+                    <span class="badge badge-soft-{{ $warranty->status == 'active' ? 'success' : ($warranty->status == 'expired' ? 'danger' : 'warning') }} ms-2">
                         {{ ucfirst($warranty->statusLabel()) }}
                     </span>
                 </h1>
@@ -44,10 +44,10 @@
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled list-unstyled-py-3">
-                        <li><strong>{{ translate('Product') }}:</strong> <span class="bidi-auto">{{ $warranty->product?->name ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Product') }}:</strong> <span class="bidi-auto">{{ $warranty->product?->name ?? translate('not_available') }}</span></li>
                         <li><strong>{{ translate('Warranty Duration') }}:</strong> <span class="bidi-ltr">{{ $warranty->warranty_months }}</span> {{ translate('months') }}</li>
-                        <li><strong>{{ translate('Start Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->start_date?->format('d M, Y') ?? 'Not Started' }}</span></li>
-                        <li><strong>{{ translate('End Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->end_date?->format('d M, Y') ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Start Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->start_date?->format('d M, Y') ?? translate('not_started') }}</span></li>
+                        <li><strong>{{ translate('End Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->end_date?->format('d M, Y') ?? translate('not_available') }}</span></li>
                         <li><strong>{{ translate('Remaining Days') }}:</strong>
                             <span class="text-{{ $warranty->remaining_days > 30 ? 'success' : 'warning' }}">
                                 <span class="bidi-ltr">{{ $warranty->remaining_days }}</span> {{ translate('days') }}
@@ -69,11 +69,11 @@
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled list-unstyled-py-3">
-                        <li><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{ $warranty->user?->f_name ?? $warranty->activated_by_name ?? 'N/A' }}</span></li>
-                        <li><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->email ?? $warranty->activated_by_email ?? 'N/A' }}</span></li>
-                        <li><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->phone ?? $warranty->activated_by_phone ?? 'N/A' }}</span></li>
-                        <li><strong>{{ translate('Activated IP') }}:</strong> <span class="bidi-ltr">{{ $warranty->activated_ip ?? 'N/A' }}</span></li>
-                        <li><strong>{{ translate('Purchase Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->purchase_date?->format('d M, Y') ?? 'N/A' }}</span></li>
+                        <li><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{ $warranty->user?->f_name ?? $warranty->activated_by_name ?? translate('not_available') }}</span></li>
+                        <li><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->email ?? $warranty->activated_by_email ?? translate('not_available') }}</span></li>
+                        <li><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->phone ?? $warranty->activated_by_phone ?? translate('not_available') }}</span></li>
+                        <li><strong>{{ translate('Activated IP') }}:</strong> <span class="bidi-ltr">{{ $warranty->activated_ip ?? translate('not_available') }}</span></li>
+                        <li><strong>{{ translate('Purchase Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->purchase_date?->format('d M, Y') ?? translate('not_available') }}</span></li>
                     </ul>
                 </div>
             </div>
@@ -118,17 +118,17 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="tio-history"></i> {{ translate('Activity Timeline') }}
-                <span class="badge badge-soft-dark ml-2">{{ $warranty->timelineEvents->count() }}</span>
+                <span class="badge badge-soft-dark ms-2">{{ $warranty->timelineEvents->count() }}</span>
             </h5>
             <small class="text-muted">
-                <i class="tio-info-outlined" data-bs-toggle="tooltip" title="All activation, replacement, manual override events"></i>
+                <i class="tio-info-outlined" data-bs-toggle="tooltip" title="{{ translate('all_activation_replacement_manual_override_events') }}"></i>
             </small>
         </div>
         <div class="card-body p-0">
             @if($warranty->timelineEvents->isEmpty())
             <div class="text-center py-5">
-                <img src="{{ dynamicAsset('public/assets/back-end/img/empty/timeline.svg') }}" alt="No Activity" class="w-100px mb-3">
-                <p class="text-muted">{{ translate('No activity recorded yet.') }}</p>
+                <img src="{{ dynamicAsset('public/assets/back-end/img/empty/timeline.svg') }}" alt="{{ translate('no_activity') }}" class="w-100px mb-3">
+                <p class="text-muted">{{ translate('no_activity_recorded_yet') }}</p>
             </div>
             @else
             <div class="table-responsive">
@@ -171,7 +171,7 @@
                             </td>
                             <td>
                                 <span class="badge badge-soft-{{ $badgeClass }} badge-pill">
-                                    <i class="{{ $icon }} mr-1"></i>
+                                    <i class="{{ $icon }} me-1"></i>
                                     {{ ucwords(str_replace('_', ' ', $eventType)) }}
                                 </span>
                             </td>
@@ -198,7 +198,7 @@
                                     </div>
                                     @endif
                                     <div>
-                                        <strong>{{ $event->user?->name ?? 'User' }}</strong><br>
+                                        <strong>{{ $event->user?->name ?? translate('user') }}</strong><br>
                                     </div>
                                 </div>
                             </td>

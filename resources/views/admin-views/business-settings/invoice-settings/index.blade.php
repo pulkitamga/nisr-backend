@@ -43,7 +43,7 @@
                             <div class="form-group mb-3">
                                 <div class="d-flex flex-wrap gap-3">
                                     <label class="title-color text-capitalize">{{ translate('Business identity') }}</label>
-                                        <div class="d-flex gap-3 flex-wrap ml-auto">
+                                        <div class="d-flex gap-3 flex-wrap ms-auto">
                                         <label class="form--check">
                                             <input type="radio" name="business_identity" class="business-identity form--check-input" value="Tax ID" {{$invoiceSettings?->business_identity == 'Tax ID'? 'checked' : ''}}>
                                             <span class="form--check-label">{{ translate('tax_Id') }}</span>

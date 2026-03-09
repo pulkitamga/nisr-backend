@@ -205,7 +205,7 @@
                                          </div>
                                      </div>
                                      <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                         placeholder="{{translate('search_by_branch_name_or_product_name')}}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                                         placeholder="{{translate('search_by_branch_name_or_product_name')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                      <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                  </div>
                              </form>
@@ -301,7 +301,7 @@
                                          @endif
                                      </div>
                                      @else
-                                     <span class="badge badge-soft-dark">N/A</span>
+                                     <span class="badge badge-soft-dark">{{ __('N/A') }}</span>
                                      @endif
                                  </td>
                                  <td class="text-center">{{ $stock->total_stock }}</td>
@@ -369,7 +369,7 @@
                  <h5 class="modal-title" id="stockHistoryModalLabel">
                      {{ translate('Stock Transfer History') }}
                  </h5>
-                 <button type="button" class="close" onclick="closeModal()" aria-label="Close">
+                 <button type="button" class="close" onclick="closeModal()" aria-label="{{ translate('Close') }}">
                      <span aria-hidden="true">&times;</span>
                  </button>
              </div>

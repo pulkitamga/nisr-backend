@@ -28,7 +28,7 @@
                 <div class="row align-items-md-center gx-md-5">
                     <div class="col-md-auto mb-3 mb-md-0">
                         <div class="d-flex align-items-center">
-                            <img class="avatar avatar-xxl avatar-4by3 mr-4"
+                            <img class="avatar avatar-xxl avatar-4by3 me-4"
                                  onerror="this.src='{{dynamicAsset(path: 'public/assets/admin/img/160x160/img1.jpg')}}'"
                                  src="{{dynamicStorage(path: 'storage/app/public/delivery-man')}}/{{$dm['image']}}"
                                  alt="Image Description">
@@ -48,7 +48,7 @@
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($five=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],5))
                                 <span
-                                    class="mr-3">5 star</span>
+                                    class="me-3">5 star</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($five/$total)*100}}%;"
@@ -59,7 +59,7 @@
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($four=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],4))
-                                <span class="mr-3">4 star</span>
+                                <span class="me-3">4 star</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($four/$total)*100}}%;"
@@ -70,7 +70,7 @@
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($three=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],3))
-                                <span class="mr-3">3 star</span>
+                                <span class="me-3">3 star</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($three/$total)*100}}%;"
@@ -81,7 +81,7 @@
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($two=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],2))
-                                <span class="mr-3">2 star</span>
+                                <span class="me-3">2 star</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($two/$total)*100}}%;"
@@ -92,7 +92,7 @@
                             </li>
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($one=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],1))
-                                <span class="mr-3">1 star</span>
+                                <span class="me-3">1 star</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($one/$total)*100}}%;"
@@ -150,7 +150,7 @@
                                     <div class="ml-3">
                                     <span class="d-block h5 text-hover-primary mb-0">{{$review->customer['f_name']." ".$review->customer['l_name']}} <i
                                             class="tio-verified text-primary" data-toggle="tooltip" data-placement="top"
-                                            title="Verified Customer"></i></span>
+                                            title="{{ translate('Verified Customer') }}"></i></span>
                                         <span class="d-block font-size-sm text-body">{{$review->customer->email}}</span>
                                     </div>
                                 </a>
@@ -191,3 +191,4 @@
         </div>
     </div>
 @endsection
+

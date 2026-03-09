@@ -195,7 +195,7 @@
                             <input type="hidden" value="{{ $to }}" name="to">
                             <input id="datatableSearch_" value="{{ $search }}" type="search" name="search"
                                    class="form-control" placeholder="{{ translate('search_by_order_id')}}"
-                                   aria-label="Search orders" required>
+                                   aria-label="{{ translate('Search orders') }}" required>
                             <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                         </div>
                     </form>
@@ -326,3 +326,4 @@
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/apexcharts-data-show.js')}}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/order-report.js') }}"></script>
 @endpush
+

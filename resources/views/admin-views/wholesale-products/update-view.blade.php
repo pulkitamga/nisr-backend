@@ -189,6 +189,10 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         const $ = window.jQuery || window.$;
+        const okButtonText = @json(__('OK'));
+        const tierNamePlaceholder = @json(__('Tier Name'));
+        const minQtyPlaceholder = @json(__('Min qty'));
+        const maxQtyPlaceholder = @json(__('Max qty'));
 
         function calculateFinalPrice(row) {
             const discount = parseFloat(row.querySelector('.discount-input')?.value || 0);
@@ -210,6 +214,16 @@
         });
 
         document.getElementById('add-price-range')?.addEventListener('click', function () {
+            if (!window.remainingTiers || window.remainingTiers.length === 0) {
+                Swal.fire({
+                    title: '{{ translate('No tier available!') }}',
+                    text: '{{ translate('There are no more tiers to add.') }}',
+                    icon: 'info',
+                    confirmButtonText: okButtonText
+                });
+                return;
+            }
+
             const rows = document.querySelectorAll('#range-rows tr.range-row');
             const newIndex = rows.length + 1;
 
@@ -217,9 +231,9 @@
             newRow.className = 'range-row';
             newRow.innerHTML = `
                 <td class="text-center row-number">${newIndex}.</td>
-                <td><input type="text" class="form-control" name="tier[]" placeholder="Tier Name" required></td>
-                <td><input type="number" class="form-control" name="min_qty[]" placeholder="Min qty" required min="1"></td>
-                <td><input type="number" class="form-control" name="max_qty[]" placeholder="Max qty"></td>
+                <td><input type="text" class="form-control" name="tier[]" placeholder="${tierNamePlaceholder}" required></td>
+                <td><input type="number" class="form-control" name="min_qty[]" placeholder="${minQtyPlaceholder}" required min="1"></td>
+                <td><input type="number" class="form-control" name="max_qty[]" placeholder="${maxQtyPlaceholder}"></td>
                 <td><input type="number" step="0.01" class="form-control unit-price-input" value="${BASE_UNIT_PRICE.toFixed(2)}" readonly></td>
                 <td><input type="number" step="0.01" class="form-control discount-input" name="discount[]" value="0" min="0" max="100"></td>
                 <td><input type="number" step="0.01" class="form-control final-price-input" name="final_price[]" value="${BASE_UNIT_PRICE.toFixed(2)}" readonly></td>

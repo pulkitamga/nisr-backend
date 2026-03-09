@@ -63,7 +63,7 @@
             @endif
 
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <div>Net (before VAT)</div>
+                <div>{{ __('Net (before VAT)') }}</div>
                 <div>{{webCurrencyConverter($netBeforeVat)}}</div>
             </div>
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">

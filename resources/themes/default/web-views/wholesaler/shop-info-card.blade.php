@@ -77,7 +77,7 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <div class="{{Session::get('direction') === "rtl" ? 'ml-sm-4' : 'mr-sm-4'}}">
+                <div class="me-sm-4">
                     @if (auth('customer')->check())
                         <div class="d-flex">
                             @if($seller_id == 0)
@@ -132,3 +132,4 @@
         </div>
     </div>
 </div>
+

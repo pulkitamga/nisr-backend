@@ -49,7 +49,7 @@
                                 </div>
                             </div>
                             <input id="datatableSearch_" type="search" class="form-control"
-                                placeholder="{{ translate('Search...') }}" aria-label="Search">
+                                placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                         </div>
                         <div class="dropdown">
                             <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pr-4"
@@ -87,11 +87,11 @@
                         <img class="rounded-circle avatar avatar-lg" alt=""
                              src="{{ getStorageImages(path: $business->wholesaler->image_full_url, type:'backend-profile') }}">
                         <div class="media-body">
-                            {{ $business->company_name ?? 'N/A' }}
+                            {{ $business->company_name ?? __('N/A') }}
                         </div>
                     </div>
                 </td>
-                <td>{{ $business->wholesaler->phone ?? 'N/A' }}</td>
+                <td>{{ $business->wholesaler->phone ?? __('N/A') }}</td>
                 <td>{{ $business->wholesaler->tier }}</td>
 
                 <td>
@@ -176,7 +176,7 @@
                 toastr.success(res.message);
             },
             error: function() {
-                toastr.error('Something went wrong!');
+                toastr.error(@json(__('Something went wrong!')));
             }
         });
     });
@@ -194,7 +194,7 @@
                 toastr.success(response.message); 
             },
             error: function() {
-                toastr.error('Something went wrong!');
+                toastr.error(@json(__('Something went wrong!')));
             }
         });
     });
@@ -219,3 +219,4 @@
 
 
 @endsection
+

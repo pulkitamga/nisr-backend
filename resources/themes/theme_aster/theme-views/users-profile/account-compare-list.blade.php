@@ -102,7 +102,7 @@
                                                             </td>
                                                         @else
                                                             <td>
-                                                                {{ 'N/a' }}
+                                                                {{ __('N/A') }}
                                                             </td>
                                                         @endif
                                                     @endif

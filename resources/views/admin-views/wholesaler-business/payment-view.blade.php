@@ -62,11 +62,11 @@
                             <div class="info-block">
                                 <h6 class="text-muted mb-3">{{ translate('Business Details') }}</h6>
                                 <ul class="list-unstyled mb-0">
-                                    <li class="mb-2"><strong>Company:</strong> <span class="bidi-auto">{{ $business->company_name }}</span></li>
-                                    <li class="mb-2"><strong>Trade Name:</strong> <span class="bidi-auto">{{ $business->trade_name }}</span></li>
-                                    <li class="mb-2"><strong>Registration No.:</strong> <span class="bidi-ltr">{{ $business->registration_number }}</span></li>
-                                    <li class="mb-2"><strong>Tax ID:</strong> <span class="bidi-ltr">{{ $business->tax_id }}</span></li>
-                                    <li class="mb-2"><strong>VAT No:</strong> <span class="bidi-ltr">{{ $business->vat_number }}</span></li>
+                                    <li class="mb-2"><strong>{{ __('Company') }}:</strong> <span class="bidi-auto">{{ $business->company_name }}</span></li>
+                                    <li class="mb-2"><strong>{{ __('Trade Name') }}:</strong> <span class="bidi-auto">{{ $business->trade_name }}</span></li>
+                                    <li class="mb-2"><strong>{{ __('Registration No.') }}:</strong> <span class="bidi-ltr">{{ $business->registration_number }}</span></li>
+                                    <li class="mb-2"><strong>{{ __('Tax ID') }}:</strong> <span class="bidi-ltr">{{ $business->tax_id }}</span></li>
+                                    <li class="mb-2"><strong>{{ __('VAT No') }}:</strong> <span class="bidi-ltr">{{ $business->vat_number }}</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -78,7 +78,7 @@
                                 <ul class="list-unstyled mb-0">
                                     <li class="mb-2"><strong>{{ translate('Tier') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->tier ?? translate('no_data_found') }}</span></li>
                                     <li class="mb-2"><strong>{{ translate('Discount') }}:</strong> <span class="bidi-ltr">{{ $order->wholeseller->wholesaler_discount ?? translate('no_data_found') }}%</span></li>
-                                    <li class="mb-2"><strong>{{ translate('MOQ Override') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->moq_override_enabled ? 'Yes' : 'No' }}</span></li>
+                                    <li class="mb-2"><strong>{{ translate('MOQ Override') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->moq_override_enabled ? __('Yes') : __('No') }}</span></li>
                                 </ul>
 
                                 <div class="mt-3">
@@ -128,12 +128,12 @@
                             <thead class="bg-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>Date</th>
-                                    <th>Amount</th>
-                                    <th>Method</th>
-                                    <th>Reference</th>
-                                    <th>Note</th>
-                                    <th>Created_at</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Amount') }}</th>
+                                    <th>{{ __('Method') }}</th>
+                                    <th>{{ __('Reference') }}</th>
+                                    <th>{{ __('Note') }}</th>
+                                    <th>{{ __('Created at') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -168,11 +168,11 @@
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="addPaymentModalLabel">{{ translate('Add_Payment') }}
                                         </h5>
-                                        <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="Close">
+                                        <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                                                     &times;
                                         </button>
                                     </div>
-                                    <div class="modal-body flex-grow-1 overflow-auto" style="padding-right: 1rem;">
+                                    <div class="modal-body flex-grow-1 overflow-auto" style="padding-inline-end: 1rem;">
                                         <div class="mb-3">
                                             <label class="form-label">{{ translate('Remaining_Amount') }}</label>
                                             <input type="text" id="remaining_before" class="form-control"
@@ -191,11 +191,11 @@
                                         <div class="mb-3">
                                             <label class="form-label">{{ translate('Payment_Method') }}</label>
                                             <select name="method" class="form-control" required>
-                                                <option value="cash">Cash</option>
-                                                <option value="bank">Bank Transfer</option>
-                                                <option value="cheque">Cheque</option>
-                                                <option value="upi">UPI</option>
-                                                <option value="upi">Other</option>
+                                                <option value="cash">{{ __('Cash') }}</option>
+                                                <option value="bank">{{ __('Bank Transfer') }}</option>
+                                                <option value="cheque">{{ __('Cheque') }}</option>
+                                                <option value="upi">{{ __('UPI') }}</option>
+                                                <option value="other">{{ __('Other') }}</option>
                                             </select>
                                         </div>
                                         <div class="mb-3">
@@ -243,3 +243,4 @@
     });
 </script>
 @endpush
+

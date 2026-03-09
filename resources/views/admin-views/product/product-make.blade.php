@@ -11,14 +11,14 @@
     <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
             <h2 class="h1 mb-0">
-                <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 mr-1" alt="">
+                <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 me-1" alt="">
                 {{translate('product_makes')}}
             </h2>
         </div>
 
         <div class="card shadow rounded">
             <div class="card-header">
-                <h5 class="mb-0">Add Make & Model</h5>
+                <h5 class="mb-0">{{ __('Add Make & Model') }}</h5>
             </div>
             <div class="card-body">
                 <form id="makeModelForm" method="POST" action="{{ route('admin.products.make.store') }}">
@@ -28,13 +28,13 @@
 
                     <div class="row">
                         <div class="mb-3 col-lg-6">
-                            <label for="make" class="form-label">Make</label>
+                            <label for="make" class="form-label">{{ __('Make') }}</label>
                             <input type="text" class="form-control" id="make" name="make" required>
                         </div>
                         <div class="mb-3 col-lg-6">
-                            <label for="model" class="form-label">Model</label>
+                            <label for="model" class="form-label">{{ __('Model') }}</label>
                             <input type="text" class="form-control" id="model" name="model" data-role="tagsinput" required>
-                            <small class="text-muted">Press Enter to add multiple models.</small>
+                            <small class="text-muted">{{ __('Press Enter to add multiple models.') }}</small>
                         </div>
                     </div>
 
@@ -65,7 +65,7 @@
                                     </div>
                                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                         placeholder="{{ translate('search_by_Product_Name') }}"
-                                        aria-label="Search orders" value="{{ request('searchValue') }}">
+                                        aria-label="{{ __('Search orders') }}" value="{{ request('searchValue') }}">
                                     <input type="hidden" value="{{ request('status') }}" name="status">
                                     <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                 </div>
@@ -191,7 +191,7 @@
             // Set make name and id
             $('#make').val(name);
             $('#make_id').val(id);
-            $('#submitBtn').text('Update');
+            $('#submitBtn').text("{{ __('Update') }}");
 
             $.get(`/admin/products/models/${id}`, function(data) {
                 if (Array.isArray(data.models)) {
@@ -208,9 +208,9 @@
         });
 
         // Reset form after submit
-        $('#makeModelForm').on('submit', function() {
-            $('#submitBtn').text('Submit');
-        });
+            $('#makeModelForm').on('submit', function() {
+                $('#submitBtn').text("{{ __('Submit') }}");
+            });
 
         $('.delete-make-btn').on('click', function() {
             const id = $(this).data('id');

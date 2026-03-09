@@ -21,14 +21,14 @@
 
                     <div class="media-body">
                         <div class="row align-items-center">
-                            <div class="d-block col-sm mb-1 mb-sm-0 text-start {{Session::get('direction') === "rtl" ? 'mr-2' : 'ml-2'}}">
+                            <div class="d-block col-sm mb-1 mb-sm-0 text-start ms-2">
                                 <div>
                                     <h1 class="page-header-title">{{translate('Earning_Report')}}  {{translate('overview')}} </h1>
                                 </div>
 
                                 <div class="row align-items-center">
                                     <div class="flex-between col-auto">
-                                        <h5 class="text-muted {{Session::get('direction') === "rtl" ? 'ml-1' : 'mr-1'}}">{{translate('admin')}}
+                                        <h5 class="text-muted me-1">{{translate('admin')}}
                                             : </h5>
                                         <h5 class="text-muted">{{auth('admin')->user()->name}}</h5>
                                     </div>
@@ -243,16 +243,16 @@
                 <div class="flex-start">
                     <h6 class="card-subtitle mt-1">{{translate('total_sale_of')}} {{date('Y')}} :</h6>
                     <h6>
-                        <span class="h3 {{Session::get('direction') === "rtl" ? 'mr-sm-2' : 'ml-sm-2'}}"> {{\App\Utils\BackEndHelper::usd_to_currency($total_sold)." "}}</span>
+                        <span class="h3 ms-sm-2"> {{\App\Utils\BackEndHelper::usd_to_currency($total_sold)." "}}</span>
                     </h6>
                     <h6>
-                        <span class="h3 {{Session::get('direction') === "rtl" ? 'mr-sm-2' : 'ml-sm-2'}}"> {{\App\Utils\BackEndHelper::currency_symbol()}}</span>
+                        <span class="h3 ms-sm-2"> {{\App\Utils\BackEndHelper::currency_symbol()}}</span>
                     </h6>
                 </div>
                 <div class="hs-unfold">
                     <a class="js-hs-unfold-invoker btn btn-white"
                        href="{{route('admin.orders.list',['all'])}}">
-                        <i class="tio-shopping-cart-outlined {{Session::get('direction') === "rtl" ? 'ml-1' : 'mr-1'}}"></i> {{translate('orders')}}
+                        <i class="tio-shopping-cart-outlined me-1"></i> {{translate('orders')}}
                     </a>
                 </div>
             </div>
@@ -523,7 +523,7 @@
                                 if (v.v.toFixed() > 0) {
                                     return '<span class="font-weight-bold">' + v.v.toFixed() + ' hours</span> on ' + v.d;
                                 } else {
-                                    return '<span class="font-weight-bold">No time</span> on ' + v.d;
+                                    return '<span class="font-weight-bold">{{ __('No time') }}</span> {{ __('on') }} ' + v.d;
                                 }
                             }
                         }

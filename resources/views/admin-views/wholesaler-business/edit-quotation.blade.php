@@ -28,7 +28,7 @@ $defaultLanguage = $language[0] ?? 'en';
     <div class="flex-1">
         <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Purchase Order No') }}:</label>
         <input type="text" name="order_no" id="order_no_input" oninput="checkOrderNo(this.value)"
-            class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="Enter Order No"
+            class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="{{ translate('Enter Order No') }}"
             value="{{ old('order_no', $order->purchase_order_no) }}" readonly>
     </div>
 
@@ -36,7 +36,7 @@ $defaultLanguage = $language[0] ?? 'en';
     <div class="flex-1">
         <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Quotation No') }}:</label>
         <input type="text" name="order_no" id="order_no_input" oninput="checkOrderNo(this.value)"
-            class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="Enter Order No"
+            class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="{{ translate('Enter Order No') }}"
             value="{{ old('order_no', $order->quotation_no) }}" readonly>
     </div>
     </div>
@@ -44,13 +44,13 @@ $defaultLanguage = $language[0] ?? 'en';
       <div class="grid grid-cols-2 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-md font-bold text-gray-700">{{ translate('Wholesaler') }}</label>
-                    <input type="text" value="{{ $order->wholeseller->name ?? 'N/A' }}"
+                    <input type="text" value="{{ $order->wholeseller->name ?? __('N/A') }}"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" readonly>
                 </div>
 
                 <div>
                     <label class="block text-md font-bold text-gray-700">{{ translate('Wholesaler Tier') }}</label>
-                    <input type="text" value="{{ $order->wholeseller->tier ?? 'N/A' }}"
+                    <input type="text" value="{{ $order->wholeseller->tier ?? __('N/A') }}"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" readonly>
                 </div>
 
@@ -72,8 +72,8 @@ $defaultLanguage = $language[0] ?? 'en';
                         </button>
                         <div id="product_dropdown_wrapper" class="mt-2 hidden">
                             <select id="product_select" class="js-example-matcher w-64"
-                                data-placeholder="Search and select a product">
-                                <option value="" disabled selected>Select Product{{ translate('Requested Qty') }}</option>
+                                data-placeholder="{{ translate('Search and select a product') }}">
+                                <option value="" disabled selected>{{ translate('Select Product') }}</option>
                                 @foreach ($wholesaleProducts as $wholesale)
 
                                <option value="{{ $wholesale->product_id }}|{{ $wholesale->variation_type ?? '' }}" 
@@ -82,13 +82,13 @@ $defaultLanguage = $language[0] ?? 'en';
                                         data-name="{{ $wholesale->product->name }}"
                                         data-price="{{ optional($wholesale->price_list->first())->price_per_piece ?? 0 }}"
                                         data-tax="{{ $wholesale->product->tax_model == 'exclude' ? $wholesale->product->tax : 0 }}">
-                                    {{ $wholesale->product->name }} ({{ $wholesale->variation_type ?? 'No Variation' }})
+                                    {{ $wholesale->product->name }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
                                 </option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
-                    <input type="text" id="product_search_input" placeholder="Search product in table..."
+                    <input type="text" id="product_search_input" placeholder="{{ translate('Search product in table...') }}"
                         class="border border-gray-300 px-3 py-2 rounded-md shadow-sm text-sm w-64" />
                 </div>
                 
@@ -114,7 +114,7 @@ $defaultLanguage = $language[0] ?? 'en';
         @endphp
         <tr data-product-id="{{ $item->product_id }}" data-variation-type="{{ $item->product_variation_type }}">
             <td class="px-4 py-2">
-                {{ $item->product->name ?? 'N/A' }} ({{ $item->product_variation_type ?? 'No Variation' }})
+                {{ $item->product->name ?? __('N/A') }} ({{ $item->product_variation_type ?? translate('No Variation') }})
             </td>
 
             <td class="px-4 py-2">
@@ -169,9 +169,9 @@ $defaultLanguage = $language[0] ?? 'en';
                     @foreach ($existingCharges as $chargeIndex => $charge)
                     <div class="flex space-x-2 items-center mb-2">
                         <input type="text" name="charges[{{ $chargeIndex }}][name]" value="{{ $charge['label'] }}"
-                            placeholder="Charge Name" class="flex-1 px-3 py-2 border rounded" />
+                            placeholder="{{ translate('Charge Name') }}" class="flex-1 px-3 py-2 border rounded" />
                         <input type="number" name="charges[{{ $chargeIndex }}][value]" value="{{ $charge['amount'] }}"
-                            placeholder="Value" class="px-3 py-2 border rounded" data-charge
+                            placeholder="{{ translate('Value') }}" class="px-3 py-2 border rounded" data-charge
                             oninput="updateFinalPrice()" />
                         <button type="button" onclick="this.parentElement.remove(); updateFinalPrice();"
                             class="btn btn-danger btn-sm square-btn">
@@ -189,9 +189,9 @@ $defaultLanguage = $language[0] ?? 'en';
                     @foreach ($existingDiscounts as $discountIndex => $discount)
                     <div class="flex space-x-2 items-center mb-2">
                         <input type="text" name="discounts[{{ $discountIndex }}][name]" value="{{ $discount['label'] }}"
-                            placeholder="Discount Name" class="flex-1 px-3 py-2 border rounded" />
+                            placeholder="{{ translate('Discount Name') }}" class="flex-1 px-3 py-2 border rounded" />
                         <input type="number" name="discounts[{{ $discountIndex }}][value]"
-                            value="{{ $discount['amount'] }}" placeholder="Value" class="px-3 py-2 border rounded"
+                            value="{{ $discount['amount'] }}" placeholder="{{ translate('Value') }}" class="px-3 py-2 border rounded"
                             data-discount oninput="updateFinalPrice()" />
                         <button type="button" onclick="this.parentElement.remove(); updateFinalPrice();"
                             class="btn btn-danger btn-sm square-btn">
@@ -275,6 +275,12 @@ $defaultLanguage = $language[0] ?? 'en';
 <script>
     let chargeIndex   = {{ count($existingCharges) }};
     let discountIndex = {{ count($existingDiscounts) }};
+    const searchProductPlaceholder = @json(__('Search for a product...'));
+    const chargeNameLabel = @json(__('Charge Name'));
+    const discountNameLabel = @json(__('Discount Name'));
+    const valueLabel = @json(__('Value'));
+    const orderExistsMessage = @json(__('Order No already exists'));
+    const orderAvailableMessage = @json(__('Order No is available'));
 
         const toggleBtn = document.getElementById('toggle_product_dropdown');
         const wrapper = document.getElementById('product_dropdown_wrapper');
@@ -382,7 +388,7 @@ $defaultLanguage = $language[0] ?? 'en';
 
         $(document).ready(function () {
             $('#product_select').select2({
-                placeholder: 'Search for a product...',
+                placeholder: searchProductPlaceholder,
                 matcher: matchCustom,
             });
 
@@ -422,12 +428,12 @@ $defaultLanguage = $language[0] ?? 'en';
 
     console.log("Is Duplicate?", duplicate);
     if (duplicate) {
-        alert("This product with this variation is already in the order.");
+        alert(@json(__('This product with this variation is already in the order.')));
         return;
     }
 
     const row = document.createElement('tr');
-    const displayVariation = variationType || 'No Variation';
+    const displayVariation = variationType || @json(__('No Variation'));
 
     row.setAttribute('data-product-id', productId);
     row.setAttribute('data-variation-type', variationType);
@@ -437,7 +443,7 @@ $defaultLanguage = $language[0] ?? 'en';
         <td class="px-4 py-2"><input type="number" name="products[${productId}][${variationType}][price]" value="${basePrice}" class="admin-price border px-2 py-1 rounded w-24"></td>
         <td class="px-4 py-2"><input type="text" name="products[${productId}][${variationType}][tax]" value="${productTax}%" class="admin-tax border px-2 py-1 rounded w-24"></td>
         <td class="px-4 py-2"><input type="number" step="0.01" name="products[${productId}][${variationType}][final_price]" value="${basePrice.toFixed(2)}" class="admin-final border px-2 py-1 rounded w-24"></td>
-        <td class="px-4 py-2"><button type="button" class="remove-btn text-red-600 hover:underline">Remove</button></td>
+        <td class="px-4 py-2"><button type="button" class="remove-btn text-red-600 hover:underline">{{ __('Remove') }}</button></td>
     `;
     tableBody.appendChild(row);
 
@@ -478,9 +484,9 @@ function checkOrderNo(value) {
         .then(response => response.json())
         .then(data => {
             if (data.exists) {
-                setStatus('Order No already exists', 'red', true);
+                setStatus(orderExistsMessage, 'red', true);
             } else {
-                setStatus('Order No is available', 'green', false);
+                setStatus(orderAvailableMessage, 'green', false);
             }
         })
         .catch(err => {
@@ -510,8 +516,8 @@ const button = document.getElementById('submit_btn');
         const container = document.getElementById('charges');
         const html = `
             <div class="flex gap-2 items-center mt-2">
-                <input type="text" name="charges[${chargeIndex}][name]" placeholder="Charge Name" class="flex-1 px-3 py-2 border rounded" />
-                <input type="number" name="charges[${chargeIndex}][value]" placeholder="Value" class="px-3 py-2 border rounded" data-charge oninput="updateFinalPrice()" />
+                <input type="text" name="charges[${chargeIndex}][name]" placeholder="${chargeNameLabel}" class="flex-1 px-3 py-2 border rounded" />
+                <input type="number" name="charges[${chargeIndex}][value]" placeholder="${valueLabel}" class="px-3 py-2 border rounded" data-charge oninput="updateFinalPrice()" />
                 <button type="button" onclick="this.parentElement.remove(); updateFinalPrice();" class="btn btn-danger btn-sm square-btn">
                   <i class="tio-delete"></i>
                 </button>
@@ -524,8 +530,8 @@ const button = document.getElementById('submit_btn');
         const container = document.getElementById('discounts');
         const html = `
             <div class="flex gap-2 items-center mt-2">
-                <input type="text" name="discounts[${discountIndex}][name]" placeholder="Discount Name" class="flex-1 px-3 py-2 border rounded" />
-                <input type="number" name="discounts[${discountIndex}][value]" placeholder="Value" class="px-3 py-2 border rounded" data-discount oninput="updateFinalPrice()" />
+                <input type="text" name="discounts[${discountIndex}][name]" placeholder="${discountNameLabel}" class="flex-1 px-3 py-2 border rounded" />
+                <input type="number" name="discounts[${discountIndex}][value]" placeholder="${valueLabel}" class="px-3 py-2 border rounded" data-discount oninput="updateFinalPrice()" />
                 <button type="button" onclick="this.parentElement.remove(); updateFinalPrice();" class="btn btn-danger btn-sm square-btn">
                   <i class="tio-delete"></i>
                 </button>

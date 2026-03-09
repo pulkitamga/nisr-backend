@@ -35,7 +35,7 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{ translate('search_Product_Name') }}"
-                                               aria-label="Search orders"
+                                               aria-label="{{ translate('Search orders') }}"
                                                value="{{ $searchValue }}" required>
                                         <button type="submit" class="btn btn--primary">
                                             {{ translate('search') }}
@@ -113,3 +113,4 @@
 
 <span id="get-update-status-route" data-action="{{ route('admin.products.updated-shipping') }}"></span>
 @endsection
+

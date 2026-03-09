@@ -1,55 +1,55 @@
 @extends('layouts.back-end.app')
 
-@section('title', 'Agent Sales CRM Report')
+@section('title', translate('Agent Sales CRM Report'))
 
 @section('content')
 <div class="content container-fluid">
 
-    <h2 class="mb-4">Agent Sales CRM Report</h2>
+    <h2 class="mb-4">{{ __('Agent Sales CRM Report') }}</h2>
     
     <!-- Filter Controls -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0">Filters</h5>
+            <h5 class="mb-0">{{ __('Filters') }}</h5>
         </div>
         <div class="card-body">
             <form id="filterForm">
                 <div class="row g-3 align-items-end">
                     <!-- Agent Filter - Custom Dropdown -->
                     <div class="col-md-4">
-                        <label class="form-label">Select Agents</label>
+                        <label class="form-label">{{ __('Select Agents') }}</label>
                         <div class="custom-multiselect">
                             <div class="select-box" onclick="toggleDropdown('agentDropdown')">
                                 <div class="form-control d-flex justify-content-between align-items-center" style="cursor: pointer;">
-                                    <span id="agentDisplayText">All Agents</span>
+                                    <span id="agentDisplayText">{{ __('All Agents') }}</span>
                                     <i class="tio-chevron-down"></i>
                                 </div>
                             </div>
                             <div id="agentDropdown" class="dropdown-checkboxes" style="display: none;">
                                 <div class="dropdown-header p-2 border-bottom">
-                                    <button type="button" class="btn btn-sm btn-link p-0 mr-2" onclick="selectAllAgents(true)">Select All</button>
-                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllAgents(false)">Clear All</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0 me-2" onclick="selectAllAgents(true)">{{ __('Select All') }}</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllAgents(false)">{{ __('Clear All') }}</button>
                                 </div>
                                 <div class="dropdown-content p-2" style="max-height: 200px; overflow-y: auto;">
                                     <div class="form-check mb-1">
                                         <input class="form-check-input agent-checkbox" type="checkbox" value="0" id="agent0" checked>
-                                        <label class="form-check-label" for="agent0">Agent A</label>
+                                        <label class="form-check-label" for="agent0">{{ __('Agent A') }}</label>
                                     </div>
                                     <div class="form-check mb-1">
                                         <input class="form-check-input agent-checkbox" type="checkbox" value="1" id="agent1" checked>
-                                        <label class="form-check-label" for="agent1">Agent B</label>
+                                        <label class="form-check-label" for="agent1">{{ __('Agent B') }}</label>
                                     </div>
                                     <div class="form-check mb-1">
                                         <input class="form-check-input agent-checkbox" type="checkbox" value="2" id="agent2" checked>
-                                        <label class="form-check-label" for="agent2">Agent C</label>
+                                        <label class="form-check-label" for="agent2">{{ __('Agent C') }}</label>
                                     </div>
                                     <div class="form-check mb-1">
                                         <input class="form-check-input agent-checkbox" type="checkbox" value="3" id="agent3" checked>
-                                        <label class="form-check-label" for="agent3">Agent D</label>
+                                        <label class="form-check-label" for="agent3">{{ __('Agent D') }}</label>
                                     </div>
                                     <div class="form-check mb-1">
                                         <input class="form-check-input agent-checkbox" type="checkbox" value="4" id="agent4" checked>
-                                        <label class="form-check-label" for="agent4">Agent E</label>
+                                        <label class="form-check-label" for="agent4">{{ __('Agent E') }}</label>
                                     </div>
                                 </div>
                             </div>
@@ -58,38 +58,38 @@
 
                     <!-- Sales Type Filter -->
                     <div class="col-md-4">
-                        <label class="form-label">Sales Type</label>
+                        <label class="form-label">{{ __('Sales Type') }}</label>
                         <div class="d-flex flex-column gap-2">
                             <div class="form-check">
                                 <input class="form-check-input salesType" type="checkbox" value="retail" checked name="sales_types[]" id="retailCheck">
-                                <label class="form-check-label" for="retailCheck">Retail</label>
+                                <label class="form-check-label" for="retailCheck">{{ __('Retail') }}</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input salesType" type="checkbox" value="wholesale" checked name="sales_types[]" id="wholesaleCheck">
-                                <label class="form-check-label" for="wholesaleCheck">Wholesale</label>
+                                <label class="form-check-label" for="wholesaleCheck">{{ __('Wholesale') }}</label>
                             </div>
                         </div>
                     </div>
 
                     <!-- Month Filter - Custom Dropdown -->
                     <div class="col-md-4">
-                        <label class="form-label">Select Months</label>
+                        <label class="form-label">{{ __('Select Months') }}</label>
                         <div class="custom-multiselect">
                             <div class="select-box" onclick="toggleDropdown('monthDropdown')">
                                 <div class="form-control d-flex justify-content-between align-items-center" style="cursor: pointer;">
-                                    <span id="monthDisplayText">All Months</span>
+                                    <span id="monthDisplayText">{{ __('All Months') }}</span>
                                     <i class="tio-chevron-down"></i>
                                 </div>
                             </div>
                             <div id="monthDropdown" class="dropdown-checkboxes" style="display: none;">
                                 <div class="dropdown-header p-2 border-bottom">
-                                    <button type="button" class="btn btn-sm btn-link p-0 mr-2" onclick="selectAllMonths(true)">Select All</button>
-                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllMonths(false)">Clear All</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0 me-2" onclick="selectAllMonths(true)">{{ __('Select All') }}</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllMonths(false)">{{ __('Clear All') }}</button>
                                 </div>
                                 <div class="dropdown-content p-2" style="max-height: 200px; overflow-y: auto;">
                                     <?php
-                                    $months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                              'July', 'August', 'September', 'October', 'November', 'December'];
+                                    $months = [__('January'), __('February'), __('March'), __('April'), __('May'), __('June'),
+                                              __('July'), __('August'), __('September'), __('October'), __('November'), __('December')];
                                     ?>
                                     @foreach($months as $index => $month)
                                     <div class="form-check mb-1">
@@ -106,22 +106,22 @@
                 <!-- Chart Type & Buttons Row -->
                 <div class="row mt-4">
                     <div class="col-md-6">
-                        <label class="form-label">Chart Type</label>
+                        <label class="form-label">{{ __('Chart Type') }}</label>
                         <select id="chartType" class="form-control">
-                            <option value="bar">Bar Chart</option>
-                            <option value="line">Line Chart</option>
-                            <option value="stacked">Stacked Bar</option>
+                            <option value="bar">{{ __('Bar Chart') }}</option>
+                            <option value="line">{{ __('Line Chart') }}</option>
+                            <option value="stacked">{{ __('Stacked Bar') }}</option>
                         </select>
                     </div>
                     <div class="col-md-6 d-flex align-items-end gap-2">
                         <button type="button" class="btn btn-primary" id="applyFilters">
-                            <i class="tio-filter-list"></i> Generate Chart
+                            <i class="tio-filter-list"></i> {{ __('Generate Chart') }}
                         </button>
                         <button type="button" class="btn btn-secondary" id="resetFilters">
-                            <i class="tio-restore"></i> Reset Filters
+                            <i class="tio-restore"></i> {{ __('Reset Filters') }}
                         </button>
                         <button type="button" class="btn btn-success" id="downloadChart">
-                            <i class="tio-download-to"></i> Download Chart
+                            <i class="tio-download-to"></i> {{ __('Download Chart') }}
                         </button>
                     </div>
                 </div>
@@ -133,11 +133,11 @@
     <!-- CRM Chart Container -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0" id="chartTitle">Agent Sales Overview</h4>
+            <h4 class="mb-0" id="chartTitle">{{ __('Agent Sales Overview') }}</h4>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge badge-secondary" id="filterStatus">All Agents | All Months</span>
+                <span class="badge badge-secondary" id="filterStatus">{{ __('All Agents') }} | {{ __('All Months') }}</span>
                 <button type="button" class="btn btn-sm btn-outline-danger" id="clearAllFilters">
-                    <i class="tio-clear"></i> Clear All
+                    <i class="tio-clear"></i> {{ __('Clear All') }}
                 </button>
             </div>
         </div>
@@ -147,36 +147,36 @@
                 <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body p-3">
-                            <h6 class="card-title">Total Sales</h6>
+                            <h6 class="card-title">{{ __('Total Sales') }}</h6>
                             <h3 id="totalSales" class="mb-0">0</h3>
-                            <small>Across all agents & months</small>
+                            <small>{{ __('Across all agents & months') }}</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card bg-success text-white">
                         <div class="card-body p-3">
-                            <h6 class="card-title">Avg. per Agent</h6>
+                            <h6 class="card-title">{{ __('Avg. per Agent') }}</h6>
                             <h3 id="avgPerAgent" class="mb-0">0</h3>
-                            <small>Average sales per agent</small>
+                            <small>{{ __('Average sales per agent') }}</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card bg-info text-white">
                         <div class="card-body p-3">
-                            <h6 class="card-title">Top Agent</h6>
+                            <h6 class="card-title">{{ __('Top Agent') }}</h6>
                             <h3 id="topAgent" class="mb-0">-</h3>
-                            <small>Highest performing</small>
+                            <small>{{ __('Highest performing') }}</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card bg-warning text-white">
                         <div class="card-body p-3">
-                            <h6 class="card-title">Best Month</h6>
+                            <h6 class="card-title">{{ __('Best Month') }}</h6>
                             <h3 id="bestMonth" class="mb-0">-</h3>
-                            <small>Highest sales month</small>
+                            <small>{{ __('Highest sales month') }}</small>
                         </div>
                     </div>
                 </div>
@@ -195,7 +195,7 @@
             <div class="row mt-4">
                 <div class="col-md-12">
                     <div class="alert alert-light">
-                        <h6 class="mb-2">Chart Legend:</h6>
+                        <h6 class="mb-2">{{ __('Chart Legend:') }}</h6>
                         <div id="chartLegend" class="d-flex flex-wrap gap-3">
                             <!-- Legend will be populated by JavaScript -->
                         </div>
@@ -208,7 +208,7 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h6 class="mb-0">Monthly Comparison</h6>
+                            <h6 class="mb-0">{{ __('Monthly Comparison') }}</h6>
                         </div>
                         <div class="card-body">
                             <div class="chart-container" style="position: relative; height: 250px;">
@@ -220,7 +220,7 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h6 class="mb-0">Agent Performance</h6>
+                            <h6 class="mb-0">{{ __('Agent Performance') }}</h6>
                         </div>
                         <div class="card-body">
                             <div class="chart-container" style="position: relative; height: 250px;">
@@ -245,6 +245,29 @@
 let mainChart;
 let monthlyChart;
 let agentChart;
+const i18n = {
+    noAgentsSelected: @json(__('No agents selected')),
+    allAgents: @json(__('All Agents')),
+    noMonthsSelected: @json(__('No months selected')),
+    allMonths: @json(__('All Months')),
+    chartGeneratedSuccessfully: @json(__('Chart generated successfully!')),
+    filtersResetToDefault: @json(__('Filters reset to default!')),
+    allAgentsAllMonths: @json(__('All Agents | All Months')),
+    agentCountLabel: @json(__('Agent(s)')),
+    monthCountLabel: @json(__('Month(s)')),
+    bar: @json(__('Bar')),
+    line: @json(__('Line')),
+    stackedBar: @json(__('Stacked Bar')),
+    agentSales: @json(__('Agent Sales')),
+    chart: @json(__('Chart')),
+    months: @json(__('Months')),
+    salesAmount: @json(__('Sales Amount')),
+    sales: @json(__('Sales')),
+    monthlySales: @json(__('Monthly Sales')),
+    retail: @json(__('Retail')),
+    wholesale: @json(__('Wholesale')),
+    chartDownloadedSuccessfully: @json(__('Chart downloaded successfully!'))
+};
 let currentFilters = {
     agents: [0, 1, 2, 3, 4], // All agents selected by default
     salesTypes: ['retail', 'wholesale'],
@@ -252,9 +275,9 @@ let currentFilters = {
 };
 
 /* ---------- STATIC DATA ---------- */
-const agents = ['Agent A', 'Agent B', 'Agent C', 'Agent D', 'Agent E'];
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const agents = [@json(__('Agent A')), @json(__('Agent B')), @json(__('Agent C')), @json(__('Agent D')), @json(__('Agent E'))];
+const months = [@json(__('Jan')), @json(__('Feb')), @json(__('Mar')), @json(__('Apr')), @json(__('May')), @json(__('Jun')),
+                @json(__('Jul')), @json(__('Aug')), @json(__('Sep')), @json(__('Oct')), @json(__('Nov')), @json(__('Dec'))];
 
 // Static data: [agent][month][type]
 const salesData = [
@@ -369,10 +392,10 @@ function updateAgentDisplay() {
     const displayText = document.getElementById('agentDisplayText');
     
     if (checkboxes.length === 0) {
-        displayText.textContent = 'No agents selected';
+        displayText.textContent = i18n.noAgentsSelected;
         displayText.style.color = '#dc3545';
     } else if (checkboxes.length === 5) {
-        displayText.textContent = 'All Agents';
+        displayText.textContent = i18n.allAgents;
         displayText.style.color = '';
     } else {
         const selectedNames = Array.from(checkboxes).map(cb => {
@@ -387,14 +410,14 @@ function updateAgentDisplay() {
 function updateMonthDisplay() {
     const checkboxes = document.querySelectorAll('.month-checkbox:checked');
     const displayText = document.getElementById('monthDisplayText');
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                       'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthNames = [@json(__('January')), @json(__('February')), @json(__('March')), @json(__('April')), @json(__('May')), @json(__('June')),
+                       @json(__('July')), @json(__('August')), @json(__('September')), @json(__('October')), @json(__('November')), @json(__('December'))];
     
     if (checkboxes.length === 0) {
-        displayText.textContent = 'No months selected';
+        displayText.textContent = i18n.noMonthsSelected;
         displayText.style.color = '#dc3545';
     } else if (checkboxes.length === 12) {
-        displayText.textContent = 'All Months';
+        displayText.textContent = i18n.allMonths;
         displayText.style.color = '';
     } else {
         const selectedNames = Array.from(checkboxes).map(cb => {
@@ -443,7 +466,7 @@ function setupEventListeners() {
     // Generate Chart Button
     document.getElementById('applyFilters').addEventListener('click', function() {
         generateCharts();
-        showNotification('Chart generated successfully!', 'success');
+        showNotification(i18n.chartGeneratedSuccessfully, 'success');
     });
     
     // Reset Filters Button
@@ -510,7 +533,7 @@ function resetToDefaultFilters() {
     // Generate charts
     generateCharts();
     
-    showNotification('Filters reset to default!', 'info');
+    showNotification(i18n.filtersResetToDefault, 'info');
 }
 
 function updateFilterStatus() {
@@ -521,11 +544,11 @@ function updateFilterStatus() {
     if (agentCount === 5 && monthCount === 12) {
         filterStatus.classList.remove('badge-info');
         filterStatus.classList.add('badge-secondary');
-        filterStatus.textContent = 'All Agents | All Months';
+        filterStatus.textContent = i18n.allAgentsAllMonths;
     } else {
         filterStatus.classList.remove('badge-secondary');
         filterStatus.classList.add('badge-info');
-        filterStatus.textContent = `${agentCount} Agent(s) | ${monthCount} Month(s)`;
+        filterStatus.textContent = `${agentCount} ${i18n.agentCountLabel} | ${monthCount} ${i18n.monthCountLabel}`;
     }
 }
 
@@ -541,8 +564,8 @@ function generateCharts() {
     // Update chart title
     const chartTitle = document.getElementById('chartTitle');
     const chartType = document.getElementById('chartType').value;
-    const typeText = chartType === 'bar' ? 'Bar' : chartType === 'line' ? 'Line' : 'Stacked Bar';
-    chartTitle.textContent = `Agent Sales - ${typeText} Chart (${currentFilters.months.length} Months)`;
+    const typeText = chartType === 'bar' ? i18n.bar : chartType === 'line' ? i18n.line : i18n.stackedBar;
+    chartTitle.textContent = `${i18n.agentSales} - ${typeText} ${i18n.chart} (${currentFilters.months.length} ${i18n.months})`;
     
     // Generate main chart
     generateMainChart();
@@ -626,7 +649,7 @@ function generateMainChart() {
                     },
                     title: {
                         display: true,
-                        text: 'Sales Amount'
+                        text: i18n.salesAmount
                     }
                 },
                 x: {
@@ -636,7 +659,7 @@ function generateMainChart() {
                     },
                     title: {
                         display: true,
-                        text: 'Months'
+                        text: i18n.months
                     }
                 }
             },
@@ -736,7 +759,7 @@ function generateMonthlyComparisonChart() {
         data: {
             labels: currentFilters.months.map(m => months[m]),
             datasets: [{
-                label: 'Monthly Sales',
+                label: i18n.monthlySales,
                 data: monthlyTotals,
                 backgroundColor: backgroundColors,
                 borderColor: backgroundColors.map(c => c.replace('0.8', '1')),
@@ -753,7 +776,7 @@ function generateMonthlyComparisonChart() {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return `Sales: ${context.parsed.y.toLocaleString()}`;
+                            return `${i18n.sales}: ${context.parsed.y.toLocaleString()}`;
                         }
                     }
                 }
@@ -891,11 +914,11 @@ function updateChartLegend() {
             legendHTML += `
                 <div class="d-flex align-items-center gap-2">
                     <div class="legend-color" style="width: 20px; height: 20px; background-color: ${colorPalette.retail[idx % colorPalette.retail.length]};"></div>
-                    <span>${agents[agentIndex]} Retail</span>
+                    <span>${agents[agentIndex]} ${i18n.retail}</span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <div class="legend-color" style="width: 20px; height: 20px; background-color: ${colorPalette.wholesale[idx % colorPalette.wholesale.length]};"></div>
-                    <span>${agents[agentIndex]} Wholesale</span>
+                    <span>${agents[agentIndex]} ${i18n.wholesale}</span>
                 </div>
             `;
         });
@@ -920,7 +943,7 @@ function downloadChartImage() {
     link.href = document.getElementById('crmChart').toDataURL('image/png');
     link.click();
     
-    showNotification('Chart downloaded successfully!', 'success');
+    showNotification(i18n.chartDownloadedSuccessfully, 'success');
 }
 
 /* ---------- NOTIFICATION FUNCTION ---------- */
@@ -999,12 +1022,12 @@ function showNotification(message, type = 'success') {
 }
 
 .form-check {
-    padding-left: 0;
+    padding-inline-start: 0;
     margin-bottom: 0.25rem;
 }
 
 .form-check-input {
-    margin-right: 0.5rem;
+    margin-inline-end: 0.5rem;
 }
 
 .form-check-label {

@@ -11,7 +11,7 @@ $companyLogo = getWebConfig(name: 'company_web_logo');
 $lang = \App\Utils\Helpers::default_lang();
 $direction = Session::get('direction');
 ?>
-<html lang="{{ $lang }}" class="{{ $direction === 'rtl'?'active':'' }}">
+<html lang="{{ $lang }}" class="{{ $direction === 'rtl'?'active':'' }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

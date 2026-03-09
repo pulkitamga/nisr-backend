@@ -58,16 +58,16 @@
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th class="lg-w-43">SL</th>
-                                <th class="lg-w-160">Topics</th>
-                                <th class="lg-w-160">Push Notification</th>
-                                <th class="lg-w-160">Mail</th>
-                                <th class="lg-w-160">SMS</th>
+                                <th class="lg-w-160">{{ __("Topics") }}</th>
+                                <th class="lg-w-160">{{ __("Push Notification") }}</th>
+                                <th class="lg-w-160">{{ __("Mail") }}</th>
+                                <th class="lg-w-160">{{ __("SMS") }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>1</td>
-                                <td>Order</td>
+                                <td>{{ __("Order") }}</td>
                                 <td>
                                     <form>
                                         <label class="switcher">
@@ -122,7 +122,7 @@
                             </tr>
                             <tr>
                                 <td>2</td>
-                                <td>Terms & Condition Updates</td>
+                                <td>{{ __("Terms & Condition Updates") }}</td>
                                 <td>
                                     <form>
                                         <label class="switcher">

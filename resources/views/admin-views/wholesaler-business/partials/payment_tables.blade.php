@@ -55,7 +55,7 @@
                             </h5>
                             <button type="button"
                                 class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-                                data-bs-dismiss="modal" aria-label="Close"> <span
+                                data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> <span
                                     aria-hidden="true">x</span></i></button>
                         </div>
                         <div class="modal-body">

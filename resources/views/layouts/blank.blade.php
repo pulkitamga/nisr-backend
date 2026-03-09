@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 
 <head>
     <meta charset="UTF-8">
@@ -33,7 +33,7 @@
                 <div class="footer-logo">
                     <img src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/logo.svg') }}" alt="">
                 </div>
-                <p class="copyright-text mb-0">© {{ date("Y") }} | {{'All Rights Reserved'}}</p>
+                <p class="copyright-text mb-0">© {{ date("Y") }} | {{ __('All Rights Reserved') }}</p>
             </div>
         </footer>
     </div>

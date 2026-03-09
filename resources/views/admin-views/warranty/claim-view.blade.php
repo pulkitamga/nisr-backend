@@ -3,13 +3,17 @@
 
 @push('css_or_js')
 <style>
+    .claim-rtl {
+        direction: rtl;
+        text-align: right;
+    }
     .kv-row {
         display: flex;
         align-items: baseline;
         flex-wrap: wrap;
         gap: .35rem;
         margin-bottom: .75rem;
-        direction: ltr;
+        direction: inherit;
     }
     .kv-label {
         font-weight: 600;
@@ -28,10 +32,35 @@
         text-align: left;
     }
     .claim-rtl .kv-row {
+        direction: rtl;
+        justify-content: flex-start !important;
+        text-align: right !important;
+    }
+    .claim-rtl .table th,
+    .claim-rtl .table td,
+    .claim-rtl h6,
+    .claim-rtl .text-muted {
+        text-align: right !important;
+    }
+    .claim-rtl .claim-overview-row,
+    .claim-rtl .claim-summary-row,
+    .claim-rtl .claim-activity-header {
+        flex-direction: row-reverse !important;
+    }
+    .claim-rtl .claim-overview-row > [class*="col-"],
+    .claim-rtl .claim-summary-row > [class*="col-"],
+    .claim-rtl .claim-overview-row p,
+    .claim-rtl .claim-overview-row div {
+        text-align: right !important;
+    }
+    .claim-rtl .claim-actions {
         justify-content: flex-end;
-        text-align: right;
+    }
+    .claim-rtl .attachments-nav {
+        direction: rtl;
     }
     .claim-ltr .kv-row {
+        direction: ltr;
         justify-content: flex-start;
         text-align: left;
     }
@@ -42,11 +71,11 @@
 @php
     $isRtl = Session::get('direction') === 'rtl';
     $totalCharges = (float)$claim->charges->sum('amount');
-    $paidChargesTotal = (float)$claim->charges->where('is_paid', true)->sum('amount');
-    $outstandingCharges = max(0, $totalCharges - $paidChargesTotal);
+    $paidChargesTotal = (float)$claim->payments->where('payment_status', 'paid')->sum('amount');
+    $outstandingCharges = (float)$claim->charges->where('is_paid', false)->sum('amount');
     $hasUnpaidCharges = $claim->charges->where('is_paid', false)->count() > 0;
 @endphp
-<div class="content container-fluid {{ $isRtl ? 'claim-rtl' : 'claim-ltr' }}">
+<div class="content container-fluid {{ $isRtl ? 'claim-rtl' : 'claim-ltr' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between">
             <h5><span class="bidi-ltr">{{ $claim->claim_number }}</span> - <span class="bidi-auto">{{ translate($claim->status) }}</span></h5>
@@ -55,9 +84,9 @@
             </a>
         </div>
 
-        <div class="card-body mb-4">
-            <div class="row mb-4">
-                <div class="col-md-6">
+        <div class="card-body mb-4 {{ $isRtl ? 'text-right' : 'text-left' }}">
+            <div class="row mb-4 claim-overview-row {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                <div class="col-md-6 {{ $isRtl ? 'text-right' : 'text-left' }}">
                     <h6 class="font-weight-bold">{{ translate('Warranty') }}</h6>
                     <p class="kv-row">
                         <span class="kv-label">{{ translate('serial') }}</span>
@@ -81,7 +110,7 @@
                         <span class="kv-value bidi-ltr">{{$claim->warranty->user->email ?? $claim->warranty->activated_by_email}}</span>
                     </p>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 {{ $isRtl ? 'text-right' : 'text-left' }}">
                     <h6 class="font-weight-bold">{{ translate('Claim') }}</h6>
                     <p class="kv-row">
                         <span class="kv-label">{{ translate('Submitted') }}</span>
@@ -109,7 +138,7 @@
     </div>
     <div class="card mb-4">
         <div class="card-body mb-4">
-            <div class="row">
+            <div class="row claim-summary-row {{ $isRtl ? 'flex-row-reverse' : '' }}">
                 <div class="col-md-4 mb-3 mb-md-0">
                     <div class="p-3 border rounded">
                         <div class="text-muted">{{ translate('Total Charges') }}</div>
@@ -132,7 +161,8 @@
 
             <div class="table-responsive mt-4">
                 <h6 class="font-weight-bold mb-3">{{ translate('Payment Records') }}</h6>
-                <table class="table table-sm table-bordered">
+                <table class="table table-sm table-bordered"
+                    style="text-align: {{ $isRtl ? 'right' : 'left' }};">
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('Channel') }}</th>
@@ -149,7 +179,12 @@
                         <tr>
                             <td>{{ translate($payment->payment_channel) }}</td>
                             <td>{{ translate($payment->payment_status) }}</td>
-                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment->amount)) }}</td>
+                            @php
+                                $paymentAmount = ($payment->payment_channel === 'client_reject_payment')
+                                    ? 0
+                                    : (float)$payment->amount;
+                            @endphp
+                            <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $paymentAmount)) }}</td>
                             <td><span class="bidi-ltr">{{ $payment->payment_reference ?? '—' }}</span></td>
                             <td>
                                 @if($payment->payment_link)
@@ -193,7 +228,7 @@
                 @endforeach
             </div>
 
-            <div class="d-flex justify-content-between mt-2">
+            <div class="d-flex justify-content-between mt-2 attachments-nav">
                 <button type="button" class="btn btn-sm btn-secondary" id="prevAtt">{{ translate('Previous') }}</button>
                 <button type="button" class="btn btn-sm btn-secondary" id="nextAtt">{{ translate('Next') }}</button>
             </div>
@@ -202,9 +237,9 @@
     </div>
     <div class="card mb-4">
         <div class="card-body mb-4">
-            <div class="d-flex justify-content-between mb-4">
+            <div class="d-flex justify-content-between mb-4 claim-activity-header {{ $isRtl ? 'flex-row-reverse' : '' }}">
                 <h6 class="mt-4">{{ translate('activity_log') }}</h6>
-                <div class="mt-4 d-flex flex-wrap gap-2">
+                <div class="mt-4 d-flex flex-wrap gap-2 claim-actions">
 
                     @if($claim->status === 'new')
                     <button class="btn btn-primary btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.decide', $claim->id) }}" data-target="#decideModal">

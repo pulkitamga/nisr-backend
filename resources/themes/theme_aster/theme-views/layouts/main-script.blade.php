@@ -59,7 +59,7 @@
     <script>
         'use strict';
         @foreach($errors->all() as $error)
-        toastr.error('{{$error}}', Error, {
+        toastr.error('{{$error}}', @json(__('Error')), {
             CloseButton: true,
             ProgressBar: true
         });
@@ -158,3 +158,4 @@
     });
 </script>
 <script src="{{ theme_asset('assets/js/custom.js') }}"></script>
+

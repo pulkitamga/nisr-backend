@@ -278,7 +278,7 @@
                         value="{{ request('search') }}"
                         class="form-control form-control-sm me-2 input-group-text input-search-table"
                         placeholder="  {{translate('Search branch...')}}"
-                        aria-label="Search branch">
+                        aria-label="{{ translate('Search branch...') }}">
                     <button type="submit" class="btn btn-sm btn-primary">
                         <i class="bi bi-search"></i> {{translate('Search')}}
                 </form>
@@ -318,8 +318,8 @@
 
                             <td class="">
                                 <div class="d-flex justify-content-center">
-                                    <a href="https://www.google.com/maps?q={{ $branch->branch_latitude ?? 0 }},{{ $branch->branch_longitude ?? 0 }}" target="_blank" class="btn btn-sm btn-outline-primary direction-btn" title="Get Direction">
-                                        <svg width="18" height="18" style="margin-right: 4px;" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <a href="https://www.google.com/maps?q={{ $branch->branch_latitude ?? 0 }},{{ $branch->branch_longitude ?? 0 }}" target="_blank" class="btn btn-sm btn-outline-primary direction-btn" title="{{ __('Get Direction') }}">
+                                        <svg width="18" height="18" style="margin-inline-end: 4px;" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M256 0C167.6 0 96 71.6 96 160c0 114.9 139.8 266.7 145.2 272.7 6 6.5 15.6 6.5 21.6 0C276.2 426.7 416 274.9 416 160 416 71.6 344.4 0 256 0zm0 240c-44.2 0-80-35.8-80-80s35.8-80 80-80 80 35.8 80 80-35.8 80-80 80z" />
                                         </svg> {{translate('Direction')}}
                                     </a>
@@ -396,25 +396,25 @@
                        <div class="card mb-4" style="max-width: 350px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
                             <div class="card-body" style="background-color: #f8f9fa;">
                                 <h5 class="text-center mb-4 text-[21px] text-capitalize text-primary font-weight-bold">${branch.branch_name}</h5>
-                                <p><strong class="text-dark mb-2">Phone:</strong> <span class="text-muted">${branch.phone}</span></p>
-                                <p><strong class="text-dark mb-2">Email:</strong> <span class="text-muted">${branch.email}</span></p>
-                                <p><strong class="text-dark mb-2">Address:</strong> <span class="text-muted">${branch.branch_address}</span></p>
+                                <p><strong class="text-dark mb-2">{{ __('Phone') }}:</strong> <span class="text-muted">${branch.phone}</span></p>
+                                <p><strong class="text-dark mb-2">{{ __('Email') }}:</strong> <span class="text-muted">${branch.email}</span></p>
+                                <p><strong class="text-dark mb-2">{{ __('Address') }}:</strong> <span class="text-muted">${branch.branch_address}</span></p>
                             
 
                         
-                                <h6 class="mt-4 text-primary font-weight-bold">Branch Timings:</h6>
+                                <h6 class="mt-4 text-primary font-weight-bold">{{ __('Branch Timings') }}:</h6>
                                 <ul class="list-unstyled">
-                                    <li><strong>Sunday:</strong> <span class="text-muted">${branch.sun_branch_hours_from && branch.sun_branch_hours_to ? branch.sun_branch_hours_from + ' - ' + branch.sun_branch_hours_to : 'Closed'}</span></li>
-                                    <li><strong>Monday:</strong> <span class="text-muted">${branch.mon_branch_hours_from && branch.mon_branch_hours_to ? branch.mon_branch_hours_from + ' - ' + branch.mon_branch_hours_to : 'Closed'}</span></li>
-                                    <li><strong>Tuesday:</strong> <span class="text-muted">${branch.tue_branch_hours_from && branch.tue_branch_hours_to ? branch.tue_branch_hours_from + ' - ' + branch.tue_branch_hours_to : 'Closed'}</span></li>
-                                    <li><strong>Wednesday:</strong> <span class="text-muted">${branch.wed_branch_hours_from && branch.wed_branch_hours_to ? branch.wed_branch_hours_from + ' - ' + branch.wed_branch_hours_to : 'Closed'}</span></li>
-                                    <li><strong>Thursday:</strong> <span class="text-muted">${branch.thu_branch_hours_from && branch.thu_branch_hours_to ? branch.thu_branch_hours_from + ' - ' + branch.thu_branch_hours_to : 'Closed'}</span></li>
-                                    <li><strong>Friday:</strong> <span class="text-muted">${branch.fri_branch_hours_from && branch.fri_branch_hours_to ? branch.fri_branch_hours_from + ' - ' + branch.fri_branch_hours_to : 'Closed'}</span></li>
-                                    <li><strong>Saturday:</strong> <span class="text-muted">${branch.sat_branch_hours_from && branch.sat_branch_hours_to ? branch.sat_branch_hours_from + ' - ' + branch.sat_branch_hours_to : 'Closed'}</span></li>
+                                    <li><strong>{{ __('Sunday') }}:</strong> <span class="text-muted">${branch.sun_branch_hours_from && branch.sun_branch_hours_to ? branch.sun_branch_hours_from + ' - ' + branch.sun_branch_hours_to : '{{ __('Closed') }}'}</span></li>
+                                    <li><strong>{{ __('Monday') }}:</strong> <span class="text-muted">${branch.mon_branch_hours_from && branch.mon_branch_hours_to ? branch.mon_branch_hours_from + ' - ' + branch.mon_branch_hours_to : '{{ __('Closed') }}'}</span></li>
+                                    <li><strong>{{ __('Tuesday') }}:</strong> <span class="text-muted">${branch.tue_branch_hours_from && branch.tue_branch_hours_to ? branch.tue_branch_hours_from + ' - ' + branch.tue_branch_hours_to : '{{ __('Closed') }}'}</span></li>
+                                    <li><strong>{{ __('Wednesday') }}:</strong> <span class="text-muted">${branch.wed_branch_hours_from && branch.wed_branch_hours_to ? branch.wed_branch_hours_from + ' - ' + branch.wed_branch_hours_to : '{{ __('Closed') }}'}</span></li>
+                                    <li><strong>{{ __('Thursday') }}:</strong> <span class="text-muted">${branch.thu_branch_hours_from && branch.thu_branch_hours_to ? branch.thu_branch_hours_from + ' - ' + branch.thu_branch_hours_to : '{{ __('Closed') }}'}</span></li>
+                                    <li><strong>{{ __('Friday') }}:</strong> <span class="text-muted">${branch.fri_branch_hours_from && branch.fri_branch_hours_to ? branch.fri_branch_hours_from + ' - ' + branch.fri_branch_hours_to : '{{ __('Closed') }}'}</span></li>
+                                    <li><strong>{{ __('Saturday') }}:</strong> <span class="text-muted">${branch.sat_branch_hours_from && branch.sat_branch_hours_to ? branch.sat_branch_hours_from + ' - ' + branch.sat_branch_hours_to : '{{ __('Closed') }}'}</span></li>
                                 </ul>
                                 <div class="d-flex justify-content-center mt-3">
                                                     <a href="https://www.google.com/maps/dir/?api=1&destination=${position.lat},${position.lng}" target="_blank" class="btn btn--primary btn-sm">
-                                                        Get Direction
+                                                        {{ __('Get Direction') }}
                                                     </a>
                                                     </div>
 
@@ -474,11 +474,11 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title text-primary">${branch.branch_name}</h5>
-                        <p><strong>Phone:</strong> ${branch.phone}</p>
-                        <p><strong>Email:</strong> ${branch.email}</p>
-                        <p><strong>Address:</strong> ${branch.branch_address}</p>
+                        <p><strong>{{ __('Phone') }}:</strong> ${branch.phone}</p>
+                        <p><strong>{{ __('Email') }}:</strong> ${branch.email}</p>
+                        <p><strong>{{ __('Address') }}:</strong> ${branch.branch_address}</p>
                         <a href="https://www.google.com/maps/dir/?api=1&destination=${branch.branch_latitude},${branch.branch_longitude}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            Get Direction
+                            {{ __('Get Direction') }}
                         </a>
                     </div>
                 </div>

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\WarrantyClaim;
 use App\Models\Branch;
-use App\Models\User;
 use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -21,6 +20,9 @@ class WarrantyClaimChartController extends Controller
         $dates = $this->parseDateRange($request);
         $startDate = $dates['start'];
         $endDate   = $dates['end'];
+        $selectedDateType = (string)$request->input('date_type', 'this_year');
+        $selectedFrom = (string)$request->input('from', $startDate->toDateString());
+        $selectedTo = (string)$request->input('to', $endDate->toDateString());
 
         $branches = Branch::select('id', 'branch_name as name')->get();
 
@@ -35,6 +37,9 @@ class WarrantyClaimChartController extends Controller
         return view('admin-views.warranty.claim-chart', compact(
             'startDate',
             'endDate',
+            'selectedDateType',
+            'selectedFrom',
+            'selectedTo',
             'cards',
             'chartData',
             'claims',
@@ -52,6 +57,9 @@ class WarrantyClaimChartController extends Controller
         return response()->json([
             'cards' => $this->getCardsData($start, $end, $request),
             'chart' => $this->prepareChartData($start, $end, $request),
+            'date_range_label' => $start->format('d M Y') . ' - ' . $end->format('d M Y'),
+            'from' => $start->toDateString(),
+            'to' => $end->toDateString(),
         ]);
     }
 
@@ -120,14 +128,38 @@ class WarrantyClaimChartController extends Controller
 
     private function parseDateRange(Request $request)
     {
-        if ($request->filled('date_range')) {
-            [$start, $end] = explode(' - ', $request->date_range);
-            $start = Carbon::createFromFormat('m/d/Y', trim($start));
-            $end   = Carbon::createFromFormat('m/d/Y', trim($end));
-        } else {
-            $end   = Carbon::today();
-            $start = Carbon::today()->subDays(6);
+        $dateType = (string)$request->input('date_type', 'this_year');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        switch ($dateType) {
+            case 'this_month':
+                $start = now()->startOfMonth()->startOfDay();
+                $end = now()->endOfMonth()->endOfDay();
+                break;
+            case 'this_week':
+                $start = now()->startOfWeek()->startOfDay();
+                $end = now()->endOfWeek()->endOfDay();
+                break;
+            case 'today':
+                $start = now()->startOfDay();
+                $end = now()->endOfDay();
+                break;
+            case 'custom_date':
+                $start = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                $end = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                break;
+            case 'this_year':
+            default:
+                $start = now()->startOfYear()->startOfDay();
+                $end = now()->endOfYear()->endOfDay();
+                break;
         }
+
+        if ($start->gt($end)) {
+            [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+        }
+
         return ['start' => $start, 'end' => $end];
     }
 
@@ -307,7 +339,7 @@ class WarrantyClaimChartController extends Controller
         $dailyBreakdown = $this->getDailyBreakdown($start, $end, $request);
 
         $filters = [
-            'date_range' => $request->date_range ?? $start->format('d M Y') . ' - ' . $end->format('d M Y'),
+            'date_range' => $start->format('d M Y') . ' - ' . $end->format('d M Y'),
             'branch'     => $request->branch_id ? Branch::find($request->branch_id)->branch_name : 'All',
             'status'     => $request->status ?? 'All',
             'product'    => $request->product_id ? Product::find($request->product_id)->name : 'All',

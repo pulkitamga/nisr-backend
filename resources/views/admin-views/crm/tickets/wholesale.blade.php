@@ -28,7 +28,7 @@
                                     <input id="datatableSearch_" type="search" name="searchValue"
                                         class="form-control"
                                         placeholder="{{ translate('search_ticket_by_subject_or_status').'...' }}"
-                                        aria-label="Search orders" value="{{ request('searchValue') }}">
+                                        aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                     <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                 </div>
                             </form>
@@ -220,7 +220,7 @@
                             @endif
                             @endif
                             @if(!empty($ticket->status_details) && trim(strtolower($ticket->status_details->name)) != 'closed')
-                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showWholesaleFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" title="Follow-up details">
+                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showWholesaleFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" title="{{ translate('Follow-up details') }}">
                                 {{ translate('follow_Up') }}
                             </a>
                             @endif
@@ -251,7 +251,7 @@
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
                 <h3>{{ translate('Wholesale Follow Up') }}</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <i class="tio-clear"></i>
                 </button>
             </div>
@@ -259,6 +259,8 @@
                 <form id="updateWholesaleFollowUpForm" action="{{ route('admin.complaints.update-wholesale-follow-up') }}" method="POST">
                     @csrf
                     <input type="hidden" name="ticket_id" id="wholesale-follow-up-ticket-id">
+                    <input type="hidden" name="id" id="wholesale-follow-up-id">
+                    <input type="hidden" name="support_ticket_id" id="wholesale-follow-up-support-ticket-id">
                     <input type="hidden" name="department_id" id="wholesale-follow-up-department-id">
                     <input type="hidden" name="employee_id" id="wholesale-follow-up-employee-id">
 
@@ -316,7 +318,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateTicketModalLabel">{{ translate('Escalate Ticket') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -341,6 +343,7 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
+<span id="support-ticket-ticket-id-required" data-text="{{ translate('Ticket ID is required.') }}"></span>
 @endsection
 
 @push('script')
@@ -348,3 +351,4 @@
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
 
 @endpush
+

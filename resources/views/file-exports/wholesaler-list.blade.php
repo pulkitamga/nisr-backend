@@ -1,4 +1,4 @@
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <table>
     <thead>
         <tr>
@@ -47,21 +47,21 @@
                 {{ $business->registration_number ?? 'N/A' }}
                 @if($business->register_copy)
                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
-                    data-target="#registrationModal{{$business->id}}">View</button>
+                    data-target="#registrationModal{{$business->id}}">{{ __('View') }}</button>
                 @endif
             </td>
             <td>
                 {{ $business->tax_id ?? 'N/A' }}
                 @if($business->tax_card_copy)
                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
-                    data-target="#taxModal{{$business->id}}">View</button>
+                    data-target="#taxModal{{$business->id}}">{{ __('View') }}</button>
                 @endif
             </td>
             <td>
                 {{ $business->vat_number ?? 'N/A' }}
                 @if($business->vat_register_copy)
                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
-                    data-target="#vatModal{{$business->id}}">View</button>
+                    data-target="#vatModal{{$business->id}}">{{ __('View') }}</button>
                 @endif
             </td>
         </tr>

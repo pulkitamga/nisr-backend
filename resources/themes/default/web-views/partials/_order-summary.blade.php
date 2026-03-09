@@ -48,7 +48,7 @@
             </div>
             @endif
             <div class="d-flex justify-content-between">
-                <span class="cart_title">Net (before VAT)</span>
+                <span class="cart_title">{{ __('Net (before VAT)') }}</span>
                 <span class="cart_value">
                     {{ webCurrencyConverter(amount: $netBeforeVat) }}
                 </span>
@@ -296,7 +296,7 @@
         }).get())];
 
         if (selectedKeys.length === 0) {
-            toastr.warning('Please select at least one item to clear.');
+            toastr.warning('{{ __('Please select at least one item to clear.') }}');
             return;
         }
 

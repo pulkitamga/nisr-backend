@@ -58,24 +58,24 @@
 @if(session('success'))
     <script>
         Swal.fire({
-            title: 'Success!',
+            title: @json(__('Success!')),
             text: '{{ session('success') }}',
             icon: 'success',
-            confirmButtonText: 'OK'
+            confirmButtonText: @json(__('OK'))
         });
     </script>
 @endif
 <script>
     function confirmClearCache() {
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'You are about to clear the entire website cache!',
+            title: @json(__('Are you sure?')),
+            text: @json(__('You are about to clear the entire website cache!')),
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, clear it!',
-            cancelButtonText: 'Cancel'
+            confirmButtonText: @json(__('Yes, clear it!')),
+            cancelButtonText: @json(__('Cancel'))
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('clear-cache-form').submit();

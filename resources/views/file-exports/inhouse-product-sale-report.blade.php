@@ -1,41 +1,41 @@
 <table>
     <tr>
-        <td colspan="7"><strong>Inhouse Product Sale Report</strong></td>
+        <td colspan="7"><strong>{{ __('Inhouse Product Sale Report') }}</strong></td>
     </tr>
     <tr>
-        <td colspan="7">From: {{ $filters['from'] }} | To: {{ $filters['to'] }}</td>
+        <td colspan="7">{{ __('From') }}: {{ $filters['from'] }} | {{ __('To') }}: {{ $filters['to'] }}</td>
     </tr>
     <tr>
-        <td colspan="7">Exported at: {{ optional($exportedAt ?? now())->format('Y-m-d H:i:s') }}</td>
+        <td colspan="7">{{ __('Exported at') }}: {{ optional($exportedAt ?? now())->format('Y-m-d H:i:s') }}</td>
     </tr>
 </table>
 
 <table>
     <thead>
     <tr>
-        <th>Channel</th>
-        <th>Total Qty</th>
-        <th>Total Sales</th>
+        <th>{{ __('Channel') }}</th>
+        <th>{{ __('Total Qty') }}</th>
+        <th>{{ __('Total Sales') }}</th>
     </tr>
     </thead>
     <tbody>
     <tr>
-        <td>POS</td>
+        <td>{{ __('POS') }}</td>
         <td>{{ $summary['pos_qty'] }}</td>
         <td>{{ number_format($summary['pos_amount'], 2) }}</td>
     </tr>
     <tr>
-        <td>Online</td>
+        <td>{{ __('Online') }}</td>
         <td>{{ $summary['online_qty'] }}</td>
         <td>{{ number_format($summary['online_amount'], 2) }}</td>
     </tr>
     <tr>
-        <td>Wholesale</td>
+        <td>{{ __('Wholesale') }}</td>
         <td>{{ $summary['wholesale_qty'] }}</td>
         <td>{{ number_format($summary['wholesale_amount'], 2) }}</td>
     </tr>
     <tr>
-        <td><strong>Total</strong></td>
+        <td><strong>{{ __('Total') }}</strong></td>
         <td><strong>{{ $summary['total_qty'] }}</strong></td>
         <td><strong>{{ number_format($summary['total_amount'], 2) }}</strong></td>
     </tr>
@@ -43,15 +43,15 @@
 </table>
 
 <table>
-    <tr><td colspan="7"><strong>POS Table</strong></td></tr>
+    <tr><td colspan="7"><strong>{{ __('POS Table') }}</strong></td></tr>
     <thead>
     <tr>
         <th>#</th>
-        <th>Product</th>
-        <th>Branch</th>
-        <th>Qty</th>
-        <th>Orders</th>
-        <th>Sales</th>
+        <th>{{ __('Product') }}</th>
+        <th>{{ __('Branch') }}</th>
+        <th>{{ __('Qty') }}</th>
+        <th>{{ __('Orders') }}</th>
+        <th>{{ __('Sales') }}</th>
     </tr>
     </thead>
     <tbody>
@@ -69,15 +69,15 @@
 </table>
 
 <table>
-    <tr><td colspan="7"><strong>Online Table</strong></td></tr>
+    <tr><td colspan="7"><strong>{{ __('Online Table') }}</strong></td></tr>
     <thead>
     <tr>
         <th>#</th>
-        <th>Product</th>
-        <th>Branch</th>
-        <th>Qty</th>
-        <th>Orders</th>
-        <th>Sales</th>
+        <th>{{ __('Product') }}</th>
+        <th>{{ __('Branch') }}</th>
+        <th>{{ __('Qty') }}</th>
+        <th>{{ __('Orders') }}</th>
+        <th>{{ __('Sales') }}</th>
     </tr>
     </thead>
     <tbody>
@@ -95,15 +95,15 @@
 </table>
 
 <table>
-    <tr><td colspan="7"><strong>Wholesale Table</strong></td></tr>
+    <tr><td colspan="7"><strong>{{ __('Wholesale Table') }}</strong></td></tr>
     <thead>
     <tr>
         <th>#</th>
-        <th>Product</th>
-        <th>Branch</th>
-        <th>Qty</th>
-        <th>Orders</th>
-        <th>Sales</th>
+        <th>{{ __('Product') }}</th>
+        <th>{{ __('Branch') }}</th>
+        <th>{{ __('Qty') }}</th>
+        <th>{{ __('Orders') }}</th>
+        <th>{{ __('Sales') }}</th>
     </tr>
     </thead>
     <tbody>
@@ -119,4 +119,3 @@
     @endforeach
     </tbody>
 </table>
-

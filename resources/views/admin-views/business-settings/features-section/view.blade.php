@@ -136,7 +136,7 @@
                                                     placeholder="{{ translate('type_your_title_text') }}">
                                             </div>
                                             <div class="mb-3">
-                                                <label for="title">Sub Title</label>
+                                                <label for="title">{{ __('Sub Title') }}</label>
                                                 <textarea class="form-control" disabled
                                                     placeholder="{{ translate('type_your_subtitle_text') }}">{{ $item->subtitle }}</textarea>
                                             </div>

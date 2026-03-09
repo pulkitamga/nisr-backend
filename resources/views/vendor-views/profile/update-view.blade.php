@@ -16,7 +16,7 @@
                 </div>
                 <div class="col-sm-auto">
                     <a class="btn btn--primary" href="{{ route('vendor.dashboard.index') }}">
-                        <i class="tio-home mr-1"></i> {{ translate('dashboard') }}
+                        <i class="tio-home me-1"></i> {{ translate('dashboard') }}
                     </a>
                 </div>
             </div>

@@ -352,7 +352,7 @@ HSDemo();
 $(".change-language").on("click", function () {
     let getText = $("#get-confirm-and-cancel-button-text");
     Swal.fire({
-        title: getText.data("sure"),
+        title: $("#change-language-title-message").data("text"),
         text: $("#change-language-message").data("text"),
         type: "warning",
         showCancelButton: true,
@@ -693,6 +693,16 @@ function submitStatusUpdateForm(formId) {
                 default:
                     toastr.success(updateText.data("text"));
                     break;
+            }
+        },
+        error: function (xhr) {
+            const errorMessage = xhr.responseJSON?.message || updateText.data("error") || "Something went wrong";
+            toastr.error(errorMessage);
+
+            if (form.data("from") === "delivery-restriction") {
+                setTimeout(function () {
+                    location.reload();
+                }, 300);
             }
         },
     });

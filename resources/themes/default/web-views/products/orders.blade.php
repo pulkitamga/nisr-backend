@@ -1,6 +1,6 @@
 @extends('layouts.front-end.app')
 
-@section('title', 'My Orders')
+@section('title', translate('My Orders'))
 
 @section('content')
     @include('layouts.front-end.partials._store-header')
@@ -13,7 +13,7 @@
 @endif
 
 <div class="container mt-5 mb-5">
-    <h2 class="mb-4">My Wholesale Orders</h2>
+    <h2 class="mb-4">{{ __('My Wholesale Orders') }}</h2>
 
     @if($orders->count())
     <div class="row">
@@ -30,13 +30,13 @@
                         </div>
                         <div class="col-8">
                             <h5 class="card-title mb-2">{{ $order->product->name }}</h5>
-                            <p class="mb-1">Quantity: <strong>{{ $order->product_quantity }}</strong></p>
-                            <p class="mb-1">Price: <strong>{{ webCurrencyConverter($order->base_price) }}</strong></p>
-                            <p class="mb-1">Order Date: {{ $order->created_at->format('d M Y, h:i A') }}</p>
+                            <p class="mb-1">{{ translate('Quantity') }}: <strong>{{ $order->product_quantity }}</strong></p>
+                            <p class="mb-1">{{ translate('Price') }}: <strong>{{ webCurrencyConverter($order->base_price) }}</strong></p>
+                            <p class="mb-1">{{ translate('Order Date') }}: {{ $order->created_at->format('d M Y, h:i A') }}</p>
                             <a href="{{ route('wholesale.invoice', ['order_id' => $order->id]) }}"
                                class="btn btn-sm btn-primary mt-2"
                                target="_blank">
-                                View Quotation
+                                {{ translate('View Quotation') }}
                             </a>
                         </div>
                     </div>
@@ -46,7 +46,7 @@
         @endforeach
     </div>
     @else
-    <p>No orders found.</p>
+    <p>{{ __('No orders found.') }}</p>
     @endif
 </div>
 

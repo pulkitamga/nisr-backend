@@ -14,6 +14,8 @@ class CrmEmployeeChannelAssignmentReportExport implements WithMultipleSheets
     {
         $isRtl = session('direction') === 'rtl';
         $employees = collect($this->data['employeesForMatrix'] ?? []);
+        $displayChannels = collect($this->data['displayChannels'] ?? []);
+        $channelLabels = collect($this->data['channelLabels'] ?? []);
         $monthlyRows = collect($this->data['monthlyRows'] ?? []);
         $summaryPerEmployee = collect(data_get($this->data, 'summary.per_employee', []));
         $grand = data_get($this->data, 'summary.grand', []);
@@ -21,54 +23,63 @@ class CrmEmployeeChannelAssignmentReportExport implements WithMultipleSheets
         $matrixHeadings = [translate('period')];
         foreach ($employees as $employee) {
             $name = (string)($employee->name ?? translate('unassigned'));
-            $matrixHeadings[] = $name . ' - ' . translate('retail_customers');
-            $matrixHeadings[] = $name . ' - ' . translate('wholesale_customers');
+            foreach ($displayChannels as $channel) {
+                $matrixHeadings[] = $name . ' - ' . (string)($channelLabels->get($channel) ?? ucwords(str_replace(['-', '_'], ' ', (string)$channel)));
+            }
             $matrixHeadings[] = $name . ' - ' . translate('total');
         }
-        $matrixHeadings[] = translate('retail_total');
-        $matrixHeadings[] = translate('wholesale_total');
+        foreach ($displayChannels as $channel) {
+            $matrixHeadings[] = (string)($channelLabels->get($channel) ?? ucwords(str_replace(['-', '_'], ' ', (string)$channel)) . ' ' . translate('total'));
+        }
         $matrixHeadings[] = translate('total_interactions');
 
-        $matrixRows = $monthlyRows->map(function ($row) use ($employees) {
+        $matrixRows = $monthlyRows->map(function ($row) use ($employees, $displayChannels) {
             $line = [(string)data_get($row, 'month_label', '')];
 
             foreach ($employees as $employee) {
                 $employeeId = (int)($employee->id ?? 0);
                 $cell = data_get($row, "employees.{$employeeId}", []);
-                $line[] = (int)data_get($cell, 'retail_count', 0);
-                $line[] = (int)data_get($cell, 'wholesale_count', 0);
+                foreach ($displayChannels as $channel) {
+                    $line[] = (int)data_get($cell, "channels.{$channel}", 0);
+                }
                 $line[] = (int)data_get($cell, 'total_count', 0);
             }
 
-            $line[] = (int)data_get($row, 'totals.retail_count', 0);
-            $line[] = (int)data_get($row, 'totals.wholesale_count', 0);
+            foreach ($displayChannels as $channel) {
+                $line[] = (int)data_get($row, "totals.channels.{$channel}", 0);
+            }
             $line[] = (int)data_get($row, 'totals.total_count', 0);
             return $line;
         })->values()->all();
 
-        $summaryHeadings = [
-            translate('employee'),
-            translate('retail_customers'),
-            translate('wholesale_customers'),
-            translate('total_interactions'),
-        ];
+        $summaryHeadings = [translate('employee')];
+        foreach ($displayChannels as $channel) {
+            $summaryHeadings[] = (string)($channelLabels->get($channel) ?? ucwords(str_replace(['-', '_'], ' ', (string)$channel)));
+        }
+        $summaryHeadings[] = translate('total_interactions');
 
-        $summaryRows = $summaryPerEmployee->map(function ($row) {
-            return [
+        $summaryRows = $summaryPerEmployee->map(function ($row) use ($displayChannels) {
+            $line = [
                 (string)data_get($row, 'employee_name', translate('unassigned')),
-                (int)data_get($row, 'retail_count', 0),
-                (int)data_get($row, 'wholesale_count', 0),
-                (int)data_get($row, 'total_count', 0),
             ];
+
+            foreach ($displayChannels as $channel) {
+                $line[] = (int)data_get($row, "channels.{$channel}", 0);
+            }
+
+            $line[] = (int)data_get($row, 'total_count', 0);
+            return $line;
         })->values()->all();
 
         if (!empty($grand)) {
-            $summaryRows[] = [
+            $grandLine = [
                 translate('grand_total'),
-                (int)data_get($grand, 'retail_count', 0),
-                (int)data_get($grand, 'wholesale_count', 0),
-                (int)data_get($grand, 'total_count', 0),
             ];
+            foreach ($displayChannels as $channel) {
+                $grandLine[] = (int)data_get($grand, "channels.{$channel}", 0);
+            }
+            $grandLine[] = (int)data_get($grand, 'total_count', 0);
+            $summaryRows[] = $grandLine;
         }
 
         return [
@@ -87,4 +98,3 @@ class CrmEmployeeChannelAssignmentReportExport implements WithMultipleSheets
         ];
     }
 }
-

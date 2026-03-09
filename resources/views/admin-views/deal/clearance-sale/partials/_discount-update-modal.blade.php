@@ -2,7 +2,7 @@
     <div class="modal-dialog">
         <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
             <div class="modal-header">
-                <button type="button" class="close p-0 fz-22" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close p-0 fz-22" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true"><i class="tio-clear"></i></span>
                 </button>
             </div>
@@ -48,3 +48,4 @@
         </div>
     </div>
 </div>
+

@@ -24,7 +24,7 @@
                     </form>
 
                     <div class="mt-4">
-                        <span id="resend-info" class="text-muted">{{ translate('You can resend OTP in') }} <span id="timer">30</span> sec</span>
+                        <span id="resend-info" class="text-muted">{{ translate('You can resend OTP in') }} <span id="timer">30</span> {{ __('sec') }}</span>
                         <form id="resend-form" action="{{ route('warranty.resend-otp') }}" method="POST" style="display: none;">
                             @csrf
                             <button type="submit" class="btn btn-link">{{ translate('Resend OTP') }}</button>

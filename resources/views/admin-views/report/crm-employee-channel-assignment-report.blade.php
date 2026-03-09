@@ -141,10 +141,10 @@
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment-export-excel', request()->query()) }}" class="btn btn-outline-success">
-                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i> {{ translate('excel') }}
+                                <i class="tio-download-to me-1"></i> {{ translate('excel') }}
                             </a>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment-export-pdf', request()->query()) }}" class="btn btn-outline-danger">
-                                <i class="tio-download-to {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i> {{ translate('PDF') }}
+                                <i class="tio-download-to me-1"></i> {{ translate('PDF') }}
                             </a>
                         </div>
                     </div>
@@ -161,22 +161,18 @@
             </div>
             <div class="col-md-3">
                 <div class="report-kpi-card">
-                    <div class="report-kpi-title">{{ translate('retail_interactions') }}</div>
-                    <div class="report-kpi-value">{{ $summary['grand']['retail_count'] }}</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="report-kpi-card">
-                    <div class="report-kpi-title">{{ translate('wholesale_interactions') }}</div>
-                    <div class="report-kpi-value">{{ $summary['grand']['wholesale_count'] }}</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="report-kpi-card">
                     <div class="report-kpi-title">{{ translate('active_employees') }}</div>
                     <div class="report-kpi-value">{{ $summary['active_employees'] }}</div>
                 </div>
             </div>
+            @foreach($counterChannels as $channel)
+            <div class="col-md-3">
+                <div class="report-kpi-card">
+                    <div class="report-kpi-title">{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</div>
+                    <div class="report-kpi-value">{{ $counterTotals[$channel] ?? 0 }}</div>
+                </div>
+            </div>
+            @endforeach
         </div>
 
         <div class="row g-2 mb-3">
@@ -198,18 +194,20 @@
                     <tr>
                         <th class="matrix-sticky" rowspan="2">{{ translate('period') }}</th>
                         @foreach($employeesForMatrix as $employee)
-                            <th class="matrix-head-agent {{ !$loop->last ? 'agent-separator' : '' }}" colspan="3">{{ $employee->name }}</th>
+                            <th class="matrix-head-agent {{ !$loop->last ? 'agent-separator' : '' }}" colspan="{{ count($displayChannels) + 1 }}">{{ $employee->name }}</th>
                         @endforeach
-                        <th class="matrix-head-agent totals-separator" colspan="3">{{ translate('totals') }}</th>
+                        <th class="matrix-head-agent totals-separator" colspan="{{ count($displayChannels) + 1 }}">{{ translate('totals') }}</th>
                     </tr>
                     <tr>
                         @foreach($employeesForMatrix as $employee)
-                            <th class="matrix-head-sub">{{ translate('retail') }}</th>
-                            <th class="matrix-head-sub">{{ translate('wholesale') }}</th>
+                            @foreach($displayChannels as $channel)
+                                <th class="matrix-head-sub">{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
+                            @endforeach
                             <th class="matrix-head-sub {{ !$loop->last ? 'agent-separator' : '' }}">{{ translate('total') }}</th>
                         @endforeach
-                        <th class="matrix-head-sub totals-separator">{{ translate('retail_total') }}</th>
-                        <th class="matrix-head-sub">{{ translate('wholesale_total') }}</th>
+                        @foreach($displayChannels as $channel)
+                            <th class="matrix-head-sub {{ $loop->first ? 'totals-separator' : '' }}">{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
+                        @endforeach
                         <th class="matrix-head-sub">{{ translate('total') }}</th>
                     </tr>
                     </thead>
@@ -219,17 +217,19 @@
                             <td class="matrix-sticky">{{ $row->month_label }}</td>
                             @foreach($employeesForMatrix as $employee)
                                 @php($cell = $row->employees[$employee->id] ?? null)
-                                <td class="text-center">{{ $cell['retail_count'] ?? 0 }}</td>
-                                <td class="text-center">{{ $cell['wholesale_count'] ?? 0 }}</td>
+                                @foreach($displayChannels as $channel)
+                                    <td class="text-center">{{ $cell['channels'][$channel] ?? 0 }}</td>
+                                @endforeach
                                 <td class="text-center {{ !$loop->last ? 'agent-separator' : '' }}">{{ $cell['total_count'] ?? 0 }}</td>
                             @endforeach
-                            <td class="text-center font-weight-bold totals-separator">{{ $row->totals['retail_count'] }}</td>
-                            <td class="text-center font-weight-bold">{{ $row->totals['wholesale_count'] }}</td>
+                            @foreach($displayChannels as $channel)
+                                <td class="text-center font-weight-bold {{ $loop->first ? 'totals-separator' : '' }}">{{ $row->totals['channels'][$channel] ?? 0 }}</td>
+                            @endforeach
                             <td class="text-center font-weight-bold">{{ $row->totals['total_count'] }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ (count($employeesForMatrix) * 3) + 4 }}" class="text-center py-4">
+                            <td colspan="{{ (count($employeesForMatrix) * (count($displayChannels) + 1)) + count($displayChannels) + 2 }}" class="text-center py-4">
                                 {{ translate('no_data_found') }}
                             </td>
                         </tr>
@@ -241,12 +241,14 @@
                             <td class="matrix-sticky">{{ translate('grand_total') }}</td>
                             @foreach($employeesForMatrix as $employee)
                                 @php($employeeTotal = $summary['per_employee']->firstWhere('employee_id', $employee->id))
-                                <td class="text-center">{{ $employeeTotal->retail_count ?? 0 }}</td>
-                                <td class="text-center">{{ $employeeTotal->wholesale_count ?? 0 }}</td>
+                                @foreach($displayChannels as $channel)
+                                    <td class="text-center">{{ $employeeTotal->channels[$channel] ?? 0 }}</td>
+                                @endforeach
                                 <td class="text-center {{ !$loop->last ? 'agent-separator' : '' }}">{{ $employeeTotal->total_count ?? 0 }}</td>
                             @endforeach
-                            <td class="text-center totals-separator">{{ $summary['grand']['retail_count'] }}</td>
-                            <td class="text-center">{{ $summary['grand']['wholesale_count'] }}</td>
+                            @foreach($displayChannels as $channel)
+                                <td class="text-center {{ $loop->first ? 'totals-separator' : '' }}">{{ $summary['grand']['channels'][$channel] ?? 0 }}</td>
+                            @endforeach
                             <td class="text-center">{{ $summary['grand']['total_count'] }}</td>
                         </tr>
                         </tfoot>
@@ -264,8 +266,9 @@
                     <thead class="thead-light">
                     <tr>
                         <th>{{ translate('employee') }}</th>
-                        <th class="text-center">{{ translate('retail') }}</th>
-                        <th class="text-center">{{ translate('wholesale') }}</th>
+                        @foreach($displayChannels as $channel)
+                            <th class="text-center">{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
+                        @endforeach
                         <th class="text-center">{{ translate('total_interactions') }}</th>
                     </tr>
                     </thead>
@@ -273,12 +276,13 @@
                     @forelse($summary['per_employee'] as $item)
                         <tr>
                             <td>{{ $item->employee_name }}</td>
-                            <td class="text-center">{{ $item->retail_count }}</td>
-                            <td class="text-center">{{ $item->wholesale_count }}</td>
+                            @foreach($displayChannels as $channel)
+                                <td class="text-center">{{ $item->channels[$channel] ?? 0 }}</td>
+                            @endforeach
                             <td class="text-center font-weight-bold">{{ $item->total_count }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center py-3">{{ translate('no_data_found') }}</td></tr>
+                        <tr><td colspan="{{ count($displayChannels) + 2 }}" class="text-center py-3">{{ translate('no_data_found') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -292,21 +296,15 @@
     <script>
         (function () {
             const chartData = @json($chart);
-            const retailLabel = @json(translate('retail'));
-            const wholesaleLabel = @json(translate('wholesale'));
 
             const el = document.querySelector('#crm-employee-channel-monthly-chart');
             if (!el) return;
 
             new ApexCharts(el, {
                 chart: {type: 'bar', height: 350, stacked: true, toolbar: {show: false}},
-                series: [
-                    {name: retailLabel, data: chartData.retail},
-                    {name: wholesaleLabel, data: chartData.wholesale}
-                ],
+                series: chartData.series || [],
                 xaxis: {categories: chartData.labels, labels: {rotate: -30}},
                 dataLabels: {enabled: false},
-                colors: ['#1f8ef1', '#f59e0b'],
                 legend: {position: 'bottom'},
                 noData: {text: @json(translate('no_data_found'))}
             }).render();

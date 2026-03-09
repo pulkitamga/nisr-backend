@@ -96,12 +96,12 @@
                     <table class="table table-hover table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
-                                <th class="text-center">SL</th>
-                                <th>Category</th>
-                                <th>Products</th>
-                                <th>Attributes</th>
-                                <th class="text-capitalize">QTY</th>
-                                <th class="text-center">Action</th>
+                                <th class="text-center">{{ translate('SL') }}</th>
+                                <th>{{ translate('category') }}</th>
+                                <th>{{ translate('products') }}</th>
+                                <th>{{ translate('attributes') }}</th>
+                                <th class="text-capitalize">{{ translate('QTY') }}</th>
+                                <th class="text-center">{{ translate('action') }}</th>
                             </tr>
                         </thead>
                         <tbody id="product-rows">
@@ -119,7 +119,7 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <select autocomplete="off" name="products[0][product_id]" class="js-select2-custom form-control product-select product-select-0" data-row-id="0" placeholder="{{ translate('select_product') }}" aria-label="Search here">
+                                    <select autocomplete="off" name="products[0][product_id]" class="js-select2-custom form-control product-select product-select-0" data-row-id="0" placeholder="{{ translate('select_product') }}" aria-label="{{ translate('search') }}">
                                         <option value="">{{ translate('select_product') }}</option>
                                         @foreach ($products as $product)
                                         <option value="{{ $product['id'] }}" {{ old('name') == $product['id'] ? 'selected' : '' }}>
@@ -139,7 +139,7 @@
                                     </select>
                                 </td>
                                 <td style="width:10%;">
-                                    <input autocomplete="off" type="number" name="products[0][product_qty]" class="form-control" placeholder="{{ translate('QTY') }}" aria-label="Search here">
+                                    <input autocomplete="off" type="number" name="products[0][product_qty]" class="form-control" placeholder="{{ translate('QTY') }}" aria-label="{{ translate('quantity') }}">
                                 </td>
                                 <td></td>
                             </tr>
@@ -205,7 +205,7 @@
                 </td>
                 <td>
                     <select autocomplete="off" name="products[${productRowCount}][product_id]" class="js-select2-custom form-control product-select product-select-${productRowCount}" data-row-id="${productRowCount}">
-                        <option value="">Select Product</option>
+                        <option value="">{{ translate('select_product') }}</option>
                         @foreach ($products as $product)
                             <option value="{{ $product['id'] }}">{{ $product['name'] }}</option>
                         @endforeach
@@ -224,11 +224,11 @@
                     </select>
                 </td>
                 <td  style="width:10%;">
-                    <input autocomplete="off" type="number" name="products[${productRowCount}][product_qty]" class="form-control" placeholder="QTY">
+                    <input autocomplete="off" type="number" name="products[${productRowCount}][product_qty]" class="form-control" placeholder="{{ translate('QTY') }}">
                 </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-danger remove-product-btn" data-row-id="row-${productRowCount}">
-                        Remove
+                        {{ translate('remove') }}
                     </button>
                 </td>
             </tr>

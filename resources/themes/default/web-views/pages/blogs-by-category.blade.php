@@ -1,13 +1,13 @@
 @extends('layouts.front-end.app')
 
-@section('title', $category . ' Blogs')
+@section('title', $category . ' ' . __('Blogs'))
 
 @section('content')
 
 
 <section class="py-12 bg-white">
     <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-8 text-center">{{ $category }} Blogs</h2>
+        <h2 class="text-3xl font-bold mb-8 text-center">{{ $category }} {{ __('Blogs') }}</h2>
 
         @if($blogs->count())
         <!-- First Blog with Large Image and Text on the Right -->
@@ -52,7 +52,7 @@
             {{ $blogs->links() }}
         </div>
         @else
-        <p class="text-center text-gray-500">No blog found in this category.</p>
+        <p class="text-center text-gray-500">{{ __('No blog found in this category.') }}</p>
         @endif
     </div>
 </section>

@@ -34,10 +34,10 @@
                 <thead class="thead-light">
                     <tr>
                         <th>#</th>
-                        <th>Product Name</th>
-                        <th>Stock</th>
-                        <th>Code</th>
-                        <th>Vendor</th>
+                        <th>{{ __('Product Name') }}</th>
+                        <th>{{ __('Stock') }}</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Vendor') }}</th>
                         <th>{{ translate('Action') }}</th>
                     </tr>
                 </thead>
@@ -58,7 +58,7 @@
 
                     @if($products->isEmpty())
                     <tr>
-                        <td colspan="5" class="text-center">No products found for this branch</td>
+                        <td colspan="5" class="text-center">{{ __('No products found for this branch') }}</td>
                     </tr>
                     @endif
                 </tbody>

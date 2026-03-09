@@ -67,6 +67,7 @@ class UcmController extends Controller
     public function insightsReport(Request $request): View|BinaryFileResponse|Response
     {
         [$snapshotFrom, $snapshotTo] = $this->resolveDateRange($request);
+        $resolvedAgentSql = $this->resolvedAgentIdSql('crm_calls');
 
         $filters = [
             'date_type' => (string)$request->input('date_type', 'this_year'),
@@ -82,7 +83,7 @@ class UcmController extends Controller
 
         $snapshotQuery = CrmCall::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo]);
-        $this->applyVoipFilters($snapshotQuery, $filters);
+        $this->applyVoipFilters($snapshotQuery, $filters, 'crm_calls');
 
         $totalCalls = (clone $snapshotQuery)->count();
         $inboundCalls = (clone $snapshotQuery)->where('direction', 'inbound')->count();
@@ -97,20 +98,20 @@ class UcmController extends Controller
             ->whereNotNull('customer_id')
             ->distinct()
             ->count('customer_id');
-        $activeAgents = (clone $snapshotQuery)
-            ->whereNotNull('agent_id')
-            ->distinct()
-            ->count('agent_id');
+        $activeAgents = (int)((clone $snapshotQuery)
+            ->selectRaw("COUNT(DISTINCT {$resolvedAgentSql}) as total")
+            ->value('total') ?? 0);
 
-        $trendRows = CrmCall::query()
+        $trendQuery = CrmCall::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
             ->selectRaw($trendGrouping['select'] . ' as period_key')
             ->selectRaw('COUNT(*) as total_calls')
             ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_calls")
-            ->selectRaw('AVG(COALESCE(call_duration, 0)) as avg_duration')
-            ->when($filters['direction'] !== '', fn($query) => $query->where('direction', $filters['direction']))
-            ->when($filters['status'] !== '', fn($query) => $query->where('status', $filters['status']))
-            ->when($filters['agent_id'] > 0, fn($query) => $query->where('agent_id', $filters['agent_id']))
+            ->selectRaw('AVG(COALESCE(call_duration, 0)) as avg_duration');
+        $this->applyVoipFilters($trendQuery, $filters, 'crm_calls');
+
+        $trendRows = $trendQuery
+            ->selectRaw($trendGrouping['select'] . ' as period_key')
             ->groupBy('period_key')
             ->orderBy('period_key')
             ->get()
@@ -158,17 +159,16 @@ class UcmController extends Controller
         }
 
         $topAgents = CrmCall::query()
-            ->leftJoin('admins', 'admins.id', '=', 'crm_calls.agent_id')
             ->whereBetween('crm_calls.created_at', [$snapshotFrom, $snapshotTo])
             ->when($filters['direction'] !== '', fn($query) => $query->where('crm_calls.direction', $filters['direction']))
             ->when($filters['status'] !== '', fn($query) => $query->where('crm_calls.status', $filters['status']))
-            ->when($filters['agent_id'] > 0, fn($query) => $query->where('crm_calls.agent_id', $filters['agent_id']))
-            ->selectRaw('crm_calls.agent_id')
-            ->selectRaw("COALESCE(admins.name, 'Unassigned') as agent_name")
+            ->when($filters['agent_id'] > 0, fn($query) => $query->whereRaw("{$resolvedAgentSql} = ?", [$filters['agent_id']]))
+            ->selectRaw("{$resolvedAgentSql} as agent_id")
+            ->selectRaw("COALESCE((SELECT ad.name FROM admins ad WHERE ad.id = {$resolvedAgentSql} LIMIT 1), 'Unassigned') as agent_name")
             ->selectRaw('COUNT(*) as calls_count')
             ->selectRaw('SUM(COALESCE(crm_calls.call_duration, 0)) as total_duration')
             ->selectRaw('AVG(COALESCE(crm_calls.call_duration, 0)) as avg_duration')
-            ->groupBy('crm_calls.agent_id', 'admins.name')
+            ->groupBy(DB::raw($resolvedAgentSql), DB::raw("COALESCE((SELECT ad.name FROM admins ad WHERE ad.id = {$resolvedAgentSql} LIMIT 1), 'Unassigned')"))
             ->orderByDesc('calls_count')
             ->limit(8)
             ->get();
@@ -246,10 +246,10 @@ class UcmController extends Controller
         }
 
         $filterAgents = CrmCall::query()
-            ->leftJoin('admins', 'admins.id', '=', 'crm_calls.agent_id')
             ->whereBetween('crm_calls.created_at', [$snapshotFrom, $snapshotTo])
-            ->selectRaw('crm_calls.agent_id, COALESCE(admins.name, "Unassigned") as agent_name')
-            ->groupBy('crm_calls.agent_id', 'admins.name')
+            ->selectRaw("{$resolvedAgentSql} as agent_id, COALESCE((SELECT ad.name FROM admins ad WHERE ad.id = {$resolvedAgentSql} LIMIT 1), 'Unassigned') as agent_name")
+            ->whereRaw("{$resolvedAgentSql} IS NOT NULL")
+            ->groupBy(DB::raw($resolvedAgentSql), DB::raw("COALESCE((SELECT ad.name FROM admins ad WHERE ad.id = {$resolvedAgentSql} LIMIT 1), 'Unassigned')"))
             ->orderBy('agent_name')
             ->get();
 
@@ -305,7 +305,11 @@ class UcmController extends Controller
         return [$fromDate, $toDate];
     }
 
-    private function applyVoipFilters(Builder|\Illuminate\Database\Eloquent\Builder $query, array $filters): void
+    private function applyVoipFilters(
+        Builder|\Illuminate\Database\Eloquent\Builder $query,
+        array $filters,
+        string $callAlias = 'crm_calls'
+    ): void
     {
         if (($filters['direction'] ?? '') !== '') {
             $query->where('direction', $filters['direction']);
@@ -314,8 +318,44 @@ class UcmController extends Controller
             $query->where('status', $filters['status']);
         }
         if (($filters['agent_id'] ?? 0) > 0) {
-            $query->where('agent_id', (int)$filters['agent_id']);
+            $query->whereRaw($this->resolvedAgentIdSql($callAlias) . ' = ?', [(int)$filters['agent_id']]);
         }
+    }
+
+    private function resolvedAgentIdSql(string $callAlias = 'crm_calls'): string
+    {
+        $srcSql = $this->normalizedDigitsSql("{$callAlias}.src_number");
+        $dstSql = $this->normalizedDigitsSql("{$callAlias}.dst_number");
+        $srcAgentSql = $this->matchAdminIdByNumberSql($srcSql);
+        $dstAgentSql = $this->matchAdminIdByNumberSql($dstSql);
+
+        return "COALESCE(CASE"
+            . " WHEN {$callAlias}.direction = 'outbound' THEN {$srcAgentSql}"
+            . " WHEN {$callAlias}.direction = 'inbound' THEN {$dstAgentSql}"
+            . " ELSE COALESCE({$dstAgentSql}, {$srcAgentSql}) END,"
+            . " {$callAlias}.agent_id,"
+            . " COALESCE({$dstAgentSql}, {$srcAgentSql}))";
+    }
+
+    private function matchAdminIdByNumberSql(string $numberSql): string
+    {
+        $adminPhoneSql = $this->normalizedDigitsSql('a.phone');
+
+        return "(SELECT a.id FROM admins a"
+            . " WHERE a.status = 1"
+            . " AND {$adminPhoneSql} <> ''"
+            . " AND ("
+            . " {$adminPhoneSql} = {$numberSql}"
+            . " OR {$numberSql} LIKE CONCAT('%', {$adminPhoneSql})"
+            . " OR {$adminPhoneSql} LIKE CONCAT('%', {$numberSql})"
+            . " )"
+            . " ORDER BY CHAR_LENGTH({$adminPhoneSql}) DESC, a.id ASC"
+            . " LIMIT 1)";
+    }
+
+    private function normalizedDigitsSql(string $columnSql): string
+    {
+        return "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE({$columnSql}, ''), '+', ''), ' ', ''), '-', ''), '(', ''), ')', ''), '.', ''), '/', '')";
     }
 
     private function resolveTrendGrouping(Carbon $fromDate, Carbon $toDate): array

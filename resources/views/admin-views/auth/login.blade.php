@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <meta name="_token" content="{{ csrf_token() }}">
@@ -60,7 +60,7 @@
                         </label>
 
                         <input type="email" class="form-control form-control-lg" name="email" id="signingAdminEmail"
-                                tabindex="1" placeholder="email@address.com" aria-label="email@address.com"
+                                tabindex="1" placeholder="{{ translate('enter_email_address') }}" aria-label="{{ translate('enter_email_address') }}"
                                 required data-msg="Please enter a valid email address.">
                     </div>
                     <div class="js-form-message form-group">
@@ -74,7 +74,7 @@
                             <input type="password" class="js-toggle-password form-control form-control-lg"
                                     name="password" id="signingAdminPassword"
                                     placeholder="{{ translate('8+_characters_required') }}"
-                                    aria-label="8+ characters required" required
+                                    aria-label="{{ translate('8+_characters_required') }}" required
                                     data-msg="Your password is invalid. Please try again."
                                     data-hs-toggle-password-options='{
                                                 "target": "#changePassTarget",
@@ -164,7 +164,7 @@
     <script>
         "use strict";
         @foreach($errors->all() as $error)
-        toastr.error('{{$error}}', Error, {
+        toastr.error('{{$error}}', @json(__('Error')), {
             CloseButton: true,
             ProgressBar: true
         });
@@ -185,4 +185,6 @@
 
 </body>
 </html>
+
+
 

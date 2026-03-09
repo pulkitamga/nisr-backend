@@ -152,7 +152,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -183,7 +183,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -216,7 +216,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content" style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -248,7 +248,7 @@
                 <div class="modal-content" style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">{{translate('twitter_API_Set_up_Instructions')}}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -263,3 +263,4 @@
         </div>
     </div>
 @endsection
+

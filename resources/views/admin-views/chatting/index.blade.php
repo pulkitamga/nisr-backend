@@ -18,7 +18,7 @@
                         <form class="search-form mb-4 px-20" id="chat-search-form">
                             <div class="search-input-group">
                                 <i class="tio-search search-icon" aria-hidden="true"></i>
-                                <input id="myInput" type="text" aria-label="Search customers..."
+                                <input id="myInput" type="text" aria-label="{{ translate('search_customers') }}"
                                        placeholder="{{ request('type') == 'customer' ? translate('search_customers') : translate('search_delivery_men')}}...">
                             </div>
                         </form>
@@ -133,7 +133,7 @@
                                 <div class="avatar avatar-sm avatar-circle border">
                                     <img class="avatar-img user-avatar-image" id="profile_image"
                                          src="{{  getStorageImages(path: $lastChatUser->image_full_url,type: 'backend-profile')}}"
-                                         alt="Image Description">
+                                         alt="{{ translate('profile_image') }}">
                                     <span class="avatar-status avatar-sm-status avatar-status-success"></span>
                                 </div>
                                 <div class="media-body">
@@ -187,7 +187,7 @@
                                             </label>
                                         </div>
                                         <label class="w-0 flex-grow-1 uploaded-file-container">
-                                            <textarea class="form-control pt-3 radius-left-button pl-105px" id="msgInputValue" name="message" type="text" placeholder="{{translate('send_a_message')}}" aria-label="Search"></textarea>
+                                            <textarea class="form-control pt-3 radius-left-button pl-105px" id="msgInputValue" name="message" type="text" placeholder="{{translate('send_a_message')}}" aria-label="{{ translate('send_a_message') }}"></textarea>
                                             <div class="d-flex justify-content-between items-container">
                                                 <div class="overflow-x-auto pt-3 pb-2">
                                                     <div>
@@ -208,7 +208,7 @@
                                                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/send-icon.png')}}" alt="">
                                             </button>
                                         </div>
-                                        <div class="circle-progress ml-auto collapse">
+                                        <div class="circle-progress ms-auto collapse">
                                             <div class="inner">
                                                 <div class="text"></div>
                                                 <svg id="svg" width="24" height="24" viewPort="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg">

@@ -224,7 +224,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg">
             <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="tio-clear"></i></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i class="tio-clear"></i></button>
             </div>
             <div class="modal-body px-4 px-sm-5 pt-0 pb-sm-5">
                 <div class="d-flex flex-column align-items-center text-center gap-2 mb-2">
@@ -287,7 +287,7 @@
                 }
             },
             error: function() {
-                toastr.error('Failed to update status');
+                toastr.error(@json(__('Failed to update status')));
                 // Optionally, revert the checkbox state if update fails
                 $(this).prop('checked', !newStatus);
             }
@@ -298,3 +298,5 @@
 
 </script>
 @endpush
+
+

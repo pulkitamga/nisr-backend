@@ -14,7 +14,7 @@
                 {{ translate('feature_deal') }}
             </h2>
             <button class="btn btn-primary" data-toggle="modal" data-target="#prioritySetModal" >
-                <span data-toggle="tooltip" title="Now you can set priority of products.">{{ translate('product_priority_Setup') }}</span>
+                <span data-toggle="tooltip" title="{{ translate('now_you_can_set_priority_of_products') }}">{{ translate('product_priority_Setup') }}</span>
             </button>
         </div>
         <div class="row">
@@ -99,7 +99,7 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
-                                               placeholder="{{ translate('search_by_title') }}" aria-label="Search orders"
+                                               placeholder="{{ translate('search_by_title') }}" aria-label="{{ translate('search') }}"
                                                value="{{ request('searchValue') }}" required>
                                         <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                     </div>
@@ -201,7 +201,7 @@
                     <div class="modal-body px-sm-4 mb-sm-3">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h5 class="modal-title flex-grow-1 text-center text-capitalize" id="prioritySetModalLabel">{{ translate('priority_settings') }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>

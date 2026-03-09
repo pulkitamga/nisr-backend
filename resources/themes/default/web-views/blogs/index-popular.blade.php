@@ -60,7 +60,7 @@
                         <ul class="blog-top-nav d-flex gap-3">
                             <li class="{{ request('category') == '' ? 'active' : ''}}">
                                 <a href="{{ route('frontend.blog.popular-blog') }}" class="border rounded-10 px-3 py-2">
-                                    <span class="opacity-60">All</span>
+                                    <span class="opacity-60">{{ __('All') }}</span>
                                 </a>
                             </li>
                             @foreach($blogCategoryList as $blogCategory)

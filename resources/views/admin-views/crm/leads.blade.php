@@ -90,7 +90,7 @@
                         </div>
                     </div>
                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                     <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                 </div>
             </form>
@@ -279,7 +279,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateLeadModalLabel">{{ translate('Escalate Lead') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -403,13 +403,13 @@
 
         if (!leadId) {
             e.preventDefault();
-            Swal.fire('Error', convertLeadMissingMessage, 'error');
+            Swal.fire(@json(__('Error')), convertLeadMissingMessage, 'error');
             return;
         }
 
         if (!partyId) {
             e.preventDefault();
-            Swal.fire('Error', convertSelectPartyMessage, 'error');
+            Swal.fire(@json(__('Error')), convertSelectPartyMessage, 'error');
             return;
         }
 
@@ -428,13 +428,13 @@
         let leadId = $(this).data("id");
 
         Swal.fire({
-            title: "Are you sure?",
-            text: "You want to disqualify this lead!",
+            title: @json(__('Are you sure?')),
+            text: @json(__('You want to disqualify this lead!')),
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, Disqualify"
+            confirmButtonText: @json(__('Yes, Disqualify'))
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
@@ -446,15 +446,15 @@
                     },
                     success: function(res) {
                         if (res.status) {
-                            Swal.fire("Done!", res.message, "success");
+                            Swal.fire(@json(__('Done!')), res.message, "success");
                             // Optionally row remove / status update
                             $("#row-" + leadId).find("span.btn").removeClass().addClass("btn text-danger bg-soft-danger").text("Disqualified");
                         } else {
-                            Swal.fire("Error!", res.message, "error");
+                            Swal.fire(@json(__('Error!')), res.message, "error");
                         }
                     },
                     error: function(xhr) {
-                        Swal.fire("Error!", xhr.responseJSON?.message || "Something went wrong", "error");
+                        Swal.fire(@json(translate('Error')) + "!", xhr.responseJSON?.message || @json(translate('Something went wrong')), "error");
                     }
                 });
             }
@@ -518,3 +518,4 @@ $(document).ready(function() {
 
 </script>
 @endpush
+

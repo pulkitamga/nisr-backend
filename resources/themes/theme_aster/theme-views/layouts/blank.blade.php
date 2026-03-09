@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <title>
@@ -47,7 +47,7 @@
     function currency_select(val)
     {
         if(val==='multi_currency'){
-            toastr.warning("Multi-currency is depends on exchange rate and your gateway configuration, So if you don't need multi-currency it will be better select single currency. (We prefer to use single currency).", {
+            toastr.warning(@json(__('Multi-currency is depends on exchange rate and your gateway configuration, So if you don\\'t need multi-currency it will be better select single currency. (We prefer to use single currency).')), {
             CloseButton: true,
             ProgressBar: true
         });

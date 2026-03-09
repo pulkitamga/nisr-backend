@@ -245,7 +245,7 @@
                     }
                 }
                 , error: function() {
-                    toastr.error('Failed to update status');
+                    toastr.error(@json(__('Failed to update status')));
                     // Optionally, revert the checkbox state if update fails
                     $(this).prop('checked', !newStatus);
                 }
@@ -255,3 +255,4 @@
 
 </script>
 @endpush
+

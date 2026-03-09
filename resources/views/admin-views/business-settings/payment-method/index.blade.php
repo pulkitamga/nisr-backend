@@ -20,7 +20,7 @@
                             {{ translate('your_current_payment_settings_are_disabled,because_you_have_enabled_payment_gateway_addon').' '.translate('To_visit_your_currently_active_payment_gateway_settings_please_follow_the_link').'.' }}
                         </h4>
                         <span>
-                            <a href="{{!empty($paymentUrl) ? $paymentUrl : '' }}" class="btn btn-outline-primary"><i class="tio-settings mr-1"></i>{{translate('settings')}}</a>
+                            <a href="{{!empty($paymentUrl) ? $paymentUrl : '' }}" class="btn btn-outline-primary"><i class="tio-settings me-1"></i>{{translate('settings')}}</a>
                         </span>
                     </div>
                 </div>
@@ -135,7 +135,7 @@
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content shadow-lg">
                                 <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close">
+                                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                         <i class="tio-clear"></i>
                                     </button>
                                 </div>
@@ -200,3 +200,4 @@
         @endif
     </script>
 @endpush
+

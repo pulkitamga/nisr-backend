@@ -125,11 +125,11 @@
                                 class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                             <a href="{{ route('admin.report.inhouse-product-sale-export-excel', request()->query()) }}"
                                 class="btn btn-outline-success">
-                                <i class="tio-download-to mr-1"></i> {{ translate('excel') }}
+                                <i class="tio-download-to me-1"></i> {{ translate('excel') }}
                             </a>
                             <a href="{{ route('admin.report.inhouse-product-sale-export-pdf', request()->query()) }}"
                                 class="btn btn-outline-danger">
-                                <i class="tio-download-to mr-1"></i> {{ translate('PDF') }}
+                                <i class="tio-download-to me-1"></i> {{ translate('PDF') }}
                             </a>
                         </div>
                     </div>

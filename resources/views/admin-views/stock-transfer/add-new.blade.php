@@ -17,9 +17,9 @@
 
     @if(session('error_csv'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Transfer failed!</strong> {{ session('error_count') }} serials invalid.
+        <strong>{{ translate('Transfer failed!') }}</strong> {{ session('error_count') }} {{ translate('serials invalid.') }}
         <a href="{{ route('admin.stock-transfer.download-error-csv', session('error_csv')) }}" class="btn btn-sm btn-warning ms-2">
-            Download Error Report
+            {{ translate('Download Error Report') }}
         </a>
         <button type="button" class="btn-close" data-bs-dismiss="alert">&times;</button>
     </div>
@@ -70,14 +70,14 @@
                 <table class="table table-bordered table-hover">
                     <thead class="thead-light">
                         <tr>
-                            <th>SL</th>
-                            <th>Category</th>
-                            <th>Product</th>
-                            <th>Variation</th>
-                            <th>Available Stock</th>
-                            <th>QTY</th>
-                            <th>Serial CSV</th>
-                            <th>Action</th>
+                            <th>{{ translate('SL') }}</th>
+                            <th>{{ __('Category') }}</th>
+                            <th>{{ __('Product') }}</th>
+                            <th>{{ __('Variation') }}</th>
+                            <th>{{ __('Available Stock') }}</th>
+                            <th>{{ __('QTY') }}</th>
+                            <th>{{ __('Serial CSV') }}</th>
+                            <th>{{ __('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody id="product-rows">
@@ -184,7 +184,7 @@
         });
         $variationSelect.prop('disabled', false);
     } else {
-        $variationSelect.append('<option disabled>No variation</option>').prop('disabled', true);
+        $variationSelect.append('<option disabled>{{ __('No variation') }}</option>').prop('disabled', true);
     }
 
     toggleSerialCsv(rowId);
@@ -302,7 +302,7 @@
     </div>
 </td>
         <td class="text-center">
-            <button type="button" class="btn btn-danger btn-sm remove-row">Remove</button>
+            <button type="button" class="btn btn-danger btn-sm remove-row">{{ __('Remove') }}</button>
         </td>
     </tr>`;
         $('#product-rows').append(rowHtml);

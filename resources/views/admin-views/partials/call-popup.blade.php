@@ -36,11 +36,11 @@
                                             ${call.contact ? `<br><small class="text-muted">${call.contact.name}</small>` : ''}
                                         </div>
                                         <button class="btn btn-success btn-sm accept-call" data-id="${call.call_id}" data-channel="${call.channel}">
-                                            Accept
+                                            {{ __('Accept') }}
                                         </button>
                                     </div>
                                     <button class="btn btn-outline-danger btn-sm mt-2 reject-call" data-id="${call.call_id}" data-channel="${call.channel}">
-                                        Reject
+                                        {{ __('Reject') }}
                                     </button>
                                 </div>
                             </div>`;
@@ -50,11 +50,11 @@
                         let html = `
                             <div class="card mb-2 shadow-sm bg-info text-white" style="width: 300px;" data-call-id="${call.call_id}" data-channel="${call.channel}">
                                 <div class="card-body p-3">
-                                    <strong>Ongoing Call</strong><br>
+                                    <strong>{{ __('Ongoing Call') }}</strong><br>
                                     ${call.caller} → ${call.callee}
                                     ${call.contact ? `<hr class="my-2"><strong>${call.contact.name}</strong>` : ''}
                                     <button class="btn btn-danger btn-sm mt-2 end-call" data-id="${call.call_id}" data-channel="${call.channel}">
-                                        End Call
+                                        {{ __('End Call') }}
                                     </button>
                                 </div>
                             </div>`;

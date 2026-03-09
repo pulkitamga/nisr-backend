@@ -5,7 +5,7 @@
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title flex-grow-1 text-center text-capitalize" id="reasonEditModalLabel">{{translate('why_sell_with_us')}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -47,3 +47,4 @@
         </div>
     </div>
 </div>
+

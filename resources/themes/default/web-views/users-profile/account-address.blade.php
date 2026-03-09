@@ -243,7 +243,7 @@
                                         </h6>
                                     </div>
                                     <div class="d-flex justify-content-between gap-2 align-items-center">
-                                        <a class="" title="Edit Address" id="edit"
+                                        <a class="" title="{{ translate('edit_address') }}" id="edit"
                                             href="{{route('address-edit',$shippingAddress->id)}}">
                                             <img
                                                 src="{{theme_asset(path: 'public/assets/front-end/img/address-edit-icon.png')}}"

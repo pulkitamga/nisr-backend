@@ -48,7 +48,7 @@
 
                                     <a class="btn btn--primary px-4" target="_blank"
                                        href="{{route('vendor.orders.generate-invoice',[$order['id']])}}">
-                                        <i class="tio-print mr-1"></i> {{translate('print__Invoice')}}
+                                        <i class="tio-print me-1"></i> {{translate('print__Invoice')}}
                                     </a>
                                 </div>
                                 <div class="d-flex flex-column gap-2 mt-3">
@@ -521,7 +521,7 @@
                                 </h4>
                             </div>
                             <div class="media">
-                                <div class="mr-3">
+                                <div class="me-3">
                                     <img class="avatar rounded-circle avatar-70"
                                          src="{{getStorageImages(path: $order->customer->image_full_url,type: 'backend-profile')}}"
                                          alt="{{translate('image')}}">
@@ -663,7 +663,7 @@
                         </h4>
                         <div class="media">
                             @if(!empty($order->seller->shop))
-                                <div class="mr-3">
+                                <div class="me-3">
                                     <img class="avatar rounded avatar-70"
                                          src="{{getStorageImages(path: $order?->seller?->shop->image_full_url,type: 'backend-basic')}}"
                                          alt="">

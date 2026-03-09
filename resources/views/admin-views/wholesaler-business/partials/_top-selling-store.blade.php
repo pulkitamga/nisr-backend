@@ -17,7 +17,7 @@
                                 <img class="avatar rounded-circle avatar-sm" alt=""
                                      src="{{getStorageImages(path: $vendor->seller->shop->image_full_url,type:'backend-basic')}}">
 
-                                <h5 class="shop-name">{{ $vendor->seller->shop['name'] ?? 'Not exist' }}</h5>
+                                <h5 class="shop-name">{{ $vendor->seller->shop['name'] ?? translate('Not exist') }}</h5>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <h5 class="shop-sell">

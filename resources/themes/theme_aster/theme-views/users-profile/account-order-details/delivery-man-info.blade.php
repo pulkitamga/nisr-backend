@@ -100,7 +100,7 @@
                                                         @csrf
                                                         <div class="modal-body px-sm-5">
                                                             <div class="form-group mb-4">
-                                                                <label for="rating">{{'rating'}}</label>
+                                                                <label for="rating">{{ __('rating') }}</label>
                                                                 <select name="rating" id="rating" class="form-select">
                                                                     <option value="1">{{translate('1')}}</option>
                                                                     <option value="2">{{translate('2')}}</option>

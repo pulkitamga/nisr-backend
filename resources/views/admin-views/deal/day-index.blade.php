@@ -106,7 +106,7 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
-                                               placeholder="{{translate('search_by_Title')}}" aria-label="Search orders"
+                                               placeholder="{{translate('search_by_Title')}}" aria-label="{{ translate('Search orders') }}"
                                                value="{{ request('searchValue') }}" required>
                                         <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
@@ -194,3 +194,4 @@
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/search-product.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deal.js')}}"></script>
 @endpush
+

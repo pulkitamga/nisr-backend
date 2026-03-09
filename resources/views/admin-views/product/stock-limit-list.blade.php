@@ -6,7 +6,7 @@
     <div class="content container-fluid">
         <div class="mb-3 d-flex flex-column gap-1">
             <h2 class="h1 text-capitalize d-flex gap-2 align-items-center">
-                <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" class="mb-1 mr-1" alt="">
+                <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" class="mb-1 me-1" alt="">
                 {{ translate('limited_Stocked_Products_List') }}
                 <span class="badge badge-soft-dark radius-50 fz-14 ml-1">
                     {{ $products->total() }}
@@ -32,7 +32,7 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{ translate('search_by_Product_Name') }}"
-                                               aria-label="Search orders"
+                                               aria-label="{{ translate('Search orders') }}"
                                                value="{{ $searchValue }}" required>
                                         <input type="hidden" value="{{ $status }}" name="status">
                                         <button type="submit" class="btn btn--primary">
@@ -191,7 +191,7 @@
                         @csrf
                         <div class="rest-part-content"></div>
                         <div class="d-flex justify-content-end gap-10 flex-wrap align-items-center">
-                            <button type="button" class="btn btn-danger px-4" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="btn btn-danger px-4" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                 {{ translate('close') }}
                             </button>
                             <button class="btn btn--primary" class="btn btn--primary px-4" type="submit">
@@ -204,3 +204,4 @@
         </div>
     </div>
 @endsection
+

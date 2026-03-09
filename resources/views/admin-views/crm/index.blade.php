@@ -87,7 +87,7 @@
                         </div>
                     </div>
                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="Search orders" value="{{ request('searchValue') }}">
+                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                     <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                 </div>
             </form>
@@ -271,7 +271,7 @@
             <div class="modal-header">
                 <h5 class="modal-title">                                   {{ translate('User_Suggestion') }}
 </h5>
-                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <i class="tio-clear"></i>
                 </button>
             </div>
@@ -315,3 +315,4 @@
 </script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 @endpush
+

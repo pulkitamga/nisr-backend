@@ -38,11 +38,38 @@
                         @endif
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label class="title-color" for="store">{{ translate('Request_Restock_Date') }}</label>
-                                <div class="position-relative">
-                                    <span class="tio-calendar icon-absolute-on-right"></span>
-                                    <input type="text" name="restock_date" class="js-daterangepicker-with-range form-control" placeholder="{{ translate('Select_Date') }}" value="{{request('restock_date')}}" autocomplete="off">
-                                </div>
+                                <label class="title-color">{{ translate('date') }}</label>
+                                <select class="form-control" name="date_type" id="date_type">
+                                    <option value="this_year" {{ (request('date_type', !request()->filled('restock_date') ? 'this_year' : 'custom_date')) === 'this_year' ? 'selected' : '' }}>
+                                        {{ translate('this_Year') }}
+                                    </option>
+                                    <option value="this_month" {{ request('date_type') === 'this_month' ? 'selected' : '' }}>
+                                        {{ translate('this_Month') }}
+                                    </option>
+                                    <option value="this_week" {{ request('date_type') === 'this_week' ? 'selected' : '' }}>
+                                        {{ translate('this_Week') }}
+                                    </option>
+                                    <option value="today" {{ request('date_type') === 'today' ? 'selected' : '' }}>
+                                        {{ translate('today') }}
+                                    </option>
+                                    <option value="custom_date" {{ request('date_type') === 'custom_date' || request()->filled('restock_date') ? 'selected' : '' }}>
+                                        {{ translate('custom_Date') }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4 col-xl-3" id="from_div">
+                            <div class="form-group">
+                                <label class="title-color">{{ translate('from') }}</label>
+                                <input type="date" name="from" id="from_date" class="form-control"
+                                       value="{{ request('from') }}">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4 col-xl-3" id="to_div">
+                            <div class="form-group">
+                                <label class="title-color">{{ translate('to') }}</label>
+                                <input type="date" name="to" id="to_date" class="form-control"
+                                       value="{{ request('to') }}">
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-4 col-xl-3">
@@ -112,7 +139,9 @@
                     </h5>
 
                     <form action="{{ url()->current() }}" method="GET">
-                        <input type="hidden" name="restock_date" value="{{request('restock_date')}}">
+                        <input type="hidden" name="date_type" value="{{ request('date_type', !request()->filled('restock_date') ? 'this_year' : 'custom_date') }}">
+                        <input type="hidden" name="from" value="{{ request('from') }}">
+                        <input type="hidden" name="to" value="{{ request('to') }}">
                         <input type="hidden" name="category_id" value="{{request('category_id')}}">
                         <input type="hidden" name="sub_category_id" value="{{request('sub_category_id')}}">
                         <input type="hidden" name="brand_id" value="{{request('brand_id')}}">
@@ -123,12 +152,12 @@
                                 </div>
                             </div>
                             <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                    placeholder="{{ translate('search_by_Product_Name')}}"  aria-label="Search orders" value="{{ request('searchValue') }}">
+                                    placeholder="{{ translate('search_by_Product_Name')}}"  aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                             <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                         </div>
                     </form>
                     <div class="dropdown">
-                        <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.products.restock-export', ['restock_date' => request('restock_date'),'brand_id' => request('brand_id'), 'category_id' => request('category_id'), 'sub_category_id' => request('sub_category_id'),  'searchValue' => request('searchValue')])}}">
+                        <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.products.restock-export', ['date_type' => request('date_type', !request()->filled('restock_date') ? 'this_year' : 'custom_date'), 'from' => request('from'), 'to' => request('to'), 'brand_id' => request('brand_id'), 'category_id' => request('category_id'), 'sub_category_id' => request('sub_category_id'), 'searchValue' => request('searchValue')])}}">
                             <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
                             <span class="ps-2">{{ translate('export') }}</span>
                         </a>
@@ -178,7 +207,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a class="btn btn-outline-info btn-sm square-btn" title="View"
+                                        <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('View') }}"
                                             href="{{ route('admin.products.view',['addedBy'=>($restockProduct->product['added_by'] == 'seller' ? 'vendor' : 'in-house'),'id'=>$restockProduct->product['id'] ?? 0]) }}">
                                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/restock_view.svg') }}" alt="">
                                         </a>
@@ -227,7 +256,7 @@
                         @csrf
                         <div class="rest-part-content"></div>
                         <div class="btn--container">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                 {{ translate('close') }}
                             </button>
                             <button class="btn btn--primary" class="btn btn--primary" type="submit">
@@ -242,6 +271,32 @@
 @endsection
 @push('script')
     <script type="text/javascript">
-        changeInputTypeForDateRangePicker($('input[name="restock_date"]'));
+        "use strict";
+
+        function toggleRestockCustomDateFields() {
+            const isCustom = $('#date_type').val() === 'custom_date';
+            $('#from_div').toggle(isCustom);
+            $('#to_div').toggle(isCustom);
+            $('#from_date').prop('required', isCustom);
+            $('#to_date').prop('required', isCustom);
+            if (!isCustom) {
+                $('#from_date').val('');
+                $('#to_date').val('');
+            }
+        }
+
+        $('#date_type').on('change', toggleRestockCustomDateFields);
+        toggleRestockCustomDateFields();
+
+        $('#from_date, #to_date').on('change', function () {
+            const fromDate = $('#from_date').val();
+            const toDate = $('#to_date').val();
+            if (fromDate && toDate && fromDate > toDate) {
+                $('#from_date').val('');
+                $('#to_date').val('');
+                toastr.error('{{ translate('Invalid_date_range_format') }}');
+            }
+        });
     </script>
 @endpush
+

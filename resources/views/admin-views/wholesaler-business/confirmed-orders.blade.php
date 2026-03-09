@@ -116,7 +116,7 @@
                                 </div>
                             </div>
                             <input id="datatableSearch_" type="search" class="form-control"
-                                placeholder="{{ translate('Search...') }}" aria-label="Search">
+                                placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                         </div>
                         <div class="dropdown">
                             <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pr-4"
@@ -216,7 +216,7 @@
                                     </button>
 
                                     <div class="action-popup shadow-sm p-2 bg-white border rounded d-none position-absolute z-3"
-                                        style="top: 100%; left: 0; min-width: 150px;">
+                                        style="top: 100%; inset-inline-start: 0; min-width: 150px;">
                                         @if (!$order->invoice_no)
                                         <a href="javascript:void(0)" class="dropdown-item text-dark py-1 px-2"
                                             onclick="openInvoicePopup({{ $order->id }})">
@@ -278,7 +278,7 @@
                             <h5 class="modal-title">{{ translate('Assign Invoice No') }}</h5>
                             <button type="button"
                                 class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-                                data-bs-dismiss="modal" aria-label="Close"> <span
+                                data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> <span
                                     aria-hidden="true">x</span></i></button>
                         </div>
                         <div class="modal-body">
@@ -307,7 +307,7 @@
                             <h5 class="modal-title">{{ translate('Assign Confirm Order No') }}</h5>
                             <button type="button"
                                 class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-                                data-bs-dismiss="modal" aria-label="Close"> <span
+                                data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> <span
                                     aria-hidden="true">x</span></i></button>
                         </div>
                         <div class="modal-body">
@@ -361,14 +361,14 @@
 <script>
     function confirmAndDelete(deleteUrl) {
         Swal.fire({
-            title: 'Confirm Deletion',
-            text: 'Are you sure you want to delete this order?',
+            title: @json(__('Confirm Deletion')),
+            text: @json(__('Are you sure you want to delete this order?')),
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
+            confirmButtonText: @json(__('Yes, delete it!')),
+            cancelButtonText: @json(__('Cancel'))
         }).then((result) => {
             if (result.isConfirmed) {
                 submitDeleteForm(deleteUrl);
@@ -518,17 +518,19 @@
         if (ext === 'pdf') {
             htmlContent = `<iframe src="${url}" width="100%" height="400px"></iframe>`;
         } else {
-            htmlContent = `<p>Cannot preview this file. <a href="${url}" target="_blank">Click here to download</a></p>`;
+            htmlContent = `<p>{{ __('Cannot preview this file.') }} <a href="${url}" target="_blank">{{ __('Click here to download') }}</a></p>`;
         }
 
         Swal.fire({
-            title: 'Attachment',
+            title: @json(__('Attachment')),
             html: htmlContent,
             showCloseButton: true,
             showCancelButton: false,
-            confirmButtonText: 'Close'
+            confirmButtonText: @json(__('Close'))
         });
     }
 </script>
 
 @endpush
+
+

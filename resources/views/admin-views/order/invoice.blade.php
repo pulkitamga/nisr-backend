@@ -755,7 +755,7 @@
                                     <td class="text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['subTotal']) }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-left font-bold">{{ 'Net (before VAT)' }}</td>
+                                    <td class="text-left font-bold">{{ __('Net (before VAT)') }}</td>
                                     <td class="text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['netBeforeVat']) }}</td>
                                 </tr>
                                 @if($order->order_type == 'default_type' && $order?->is_shipping_free != 1)

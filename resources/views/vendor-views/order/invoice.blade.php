@@ -763,7 +763,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="text-left font-bold">{{ 'Net (before VAT)' }}</td>
+                                    <td class="text-left font-bold">{{ __('Net (before VAT)') }}</td>
                                     <td class="text-right">
                                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['netBeforeVat']), currencyCode: getCurrencyCode()) }}
                                     </td>

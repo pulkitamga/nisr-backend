@@ -74,7 +74,7 @@
                                         @endforeach
                                     </select>
                                     @if($departments->isEmpty())
-                                        <small class="text-muted">No departments found. You can save employee without selecting one.</small>
+                                        <small class="text-muted">{{ __('No departments found. You can save employee without selecting one.') }}</small>
                                     @endif
                                 </div>
                                 <div class="form-group mb-2">
@@ -238,7 +238,7 @@
             $branchSelect.on('select2:unselecting', function (e) {
                 const selected = $(this).select2('data');
                 if (selected.length <= 1) {
-                    alert("At least one branch must be selected.");
+                    alert(@json(__('At least one branch must be selected.')));
                     e.preventDefault(); // stop unselect
                 }
             });

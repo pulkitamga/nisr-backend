@@ -8,6 +8,42 @@ let isPosOrderPlacing = false;
 let isPosAddToCartRunning = false;
 let lastQuickViewRequestToken = 0;
 
+function normalizePosNumber(value) {
+    const source = (value ?? "").toString();
+    // Support Arabic and Persian numerals in RTL input.
+    return source
+        .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632))
+        .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1776))
+        .replace(/[^\d.-]/g, "");
+}
+
+function parsePosInt(value, fallback = 0) {
+    const parsed = parseInt(normalizePosNumber(value), 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function syncVisibleQtyMinusButtonState() {
+    const inCartSection = $(".in-cart-quantity-system");
+    const inCartVisible = inCartSection.length > 0
+        && !inCartSection.hasClass("d--none")
+        && !inCartSection.hasClass("d-none");
+
+    const input = inCartVisible ? $(".in-cart-quantity-field").first() : $(".cart-qty-field").first();
+    const minusBtn = inCartVisible ? $(".in-cart-quantity-minus").first() : $(".btn-number[data-type='minus'][data-field='quantity']").first();
+
+    if (!input.length || !minusBtn.length) {
+        return;
+    }
+
+    const minValue = Math.max(parsePosInt(input.attr("min"), 1), 1);
+    const valueCurrent = parsePosInt(input.val(), minValue);
+    if (valueCurrent > minValue) {
+        minusBtn.removeAttr("disabled");
+    } else {
+        minusBtn.attr("disabled", true);
+    }
+}
+
 function generatePosIdempotencyKey(action) {
     const prefix = (action || "pos").toString().trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-");
     const stamp = Date.now().toString(36);
@@ -45,9 +81,9 @@ function getQuickViewSelectedQuantity() {
         && !inCartSection.hasClass("d--none")
         && !inCartSection.hasClass("d-none");
 
-    let qty = parseInt((inCartVisible ? $(".in-cart-quantity-field").val() : $(".cart-qty-field").val()), 10);
+    let qty = parsePosInt((inCartVisible ? $(".in-cart-quantity-field").val() : $(".cart-qty-field").val()), 0);
     if (!Number.isFinite(qty) || qty < 1) {
-        qty = parseInt($(".cart-qty-field").val(), 10);
+        qty = parsePosInt($(".cart-qty-field").val(), 0);
     }
     if (!Number.isFinite(qty) || qty < 1) {
         qty = 1;
@@ -56,7 +92,7 @@ function getQuickViewSelectedQuantity() {
 }
 
 function getQuickViewMaxExchangeQuantity() {
-    return Math.max(getQuickViewSelectedQuantity() - 1, 0);
+    return Math.max(getQuickViewSelectedQuantity(), 0);
 }
 
 function syncExchangeQuantityState() {
@@ -78,13 +114,12 @@ function syncExchangeQuantityState() {
     exchangeCheckbox.prop("disabled", !canUseExchange);
 
     const exchangeEnabled = exchangeCheckbox.is(":checked") && canUseExchange;
-    let exchangeQty = parseInt(exchangeQtyInput.val(), 10);
+    let exchangeQty = parsePosInt(exchangeQtyInput.val(), 0);
     if (!Number.isFinite(exchangeQty) || exchangeQty < 0) {
         exchangeQty = 0;
     }
-    if (exchangeQty > maxExchangeQty) {
-        exchangeQty = maxExchangeQty;
-    }
+    // Keep user-entered exchange qty unchanged when product qty changes.
+    // Final relationship validation (exchange <= product qty) is enforced on submit.
     if (exchangeEnabled && exchangeQty < 1) {
         exchangeQty = 1;
     }
@@ -93,12 +128,12 @@ function syncExchangeQuantityState() {
     }
 
     exchangeQtyInput.val(exchangeQty);
-    exchangeQtyInput.attr("min", 0);
+    exchangeQtyInput.attr("min", exchangeEnabled ? 1 : 0);
     exchangeQtyInput.attr("max", maxExchangeQty);
 
     exchangeQtyWrapper.toggleClass("d-none", !exchangeEnabled);
     exchangeQtyInput.prop("disabled", !exchangeEnabled || !canUseExchange);
-    exchangeMinusBtn.prop("disabled", !exchangeEnabled || exchangeQty <= 0);
+    exchangeMinusBtn.prop("disabled", !exchangeEnabled || exchangeQty <= 1);
     exchangePlusBtn.prop("disabled", !exchangeEnabled || exchangeQty >= maxExchangeQty);
 }
 
@@ -301,10 +336,12 @@ function renderSelectProduct() {
     $(".variant-change input , .cart-qty-field").off("change").on("change", function () {
         getVariantPrice();
         syncExchangeQuantityState();
+        syncVisibleQtyMinusButtonState();
     });
     $("#add-to-cart-form .in-cart-quantity-field").off("change").on("change", function () {
         getVariantPrice("already_in_cart");
         syncExchangeQuantityState();
+        syncVisibleQtyMinusButtonState();
     });
     $("#exchange-charge-checkbox").off("change").on("change", function () {
         syncExchangeQuantityState();
@@ -314,6 +351,7 @@ function renderSelectProduct() {
     });
     $(".cart-qty-field, .in-cart-quantity-field").off("input").on("input", function () {
         syncExchangeQuantityState();
+        syncVisibleQtyMinusButtonState();
     });
 
     $(".cart-qty-field").off("focus").on("focus", function () {
@@ -337,6 +375,7 @@ function renderSelectProduct() {
     });
 
     syncExchangeQuantityState();
+    syncVisibleQtyMinusButtonState();
 }
 
 renderSelectProduct();
@@ -403,12 +442,21 @@ function basicFunctionalityForCartSummary() {
                 "text"
             ),
             type: "warning",
+            input: null,
             showCancelButton: true,
             cancelButtonColor: "default",
             confirmButtonColor: "#161853",
             cancelButtonText: getNoWord,
             confirmButtonText: getYesWord,
             reverseButtons: true,
+            didOpen: () => {
+                const popup = document.querySelector(".swal2-popup");
+                if (!popup) return;
+                popup.querySelectorAll(".swal2-input, .swal2-file, .swal2-range, .swal2-select, .swal2-radio, .swal2-checkbox, .swal2-textarea, .swal2-input-label")
+                    .forEach((el) => {
+                        el.style.display = "none";
+                    });
+            },
         }).then((result) => {
             if (result.value) {
                 $.post(
@@ -445,6 +493,7 @@ function basicFunctionalityForCartSummary() {
                 title: messageAreYouSure,
                 type: "warning",
                 text: $(this).data("message"),
+                input: null,
                 showCancelButton: true,
                 showConfirmButton: true,
                 confirmButtonColor: "#3085d6",
@@ -452,6 +501,14 @@ function basicFunctionalityForCartSummary() {
                 cancelButtonText: getNoWord,
                 confirmButtonText: getYesWord,
                 reverseButtons: true,
+                didOpen: () => {
+                    const popup = document.querySelector(".swal2-popup");
+                    if (!popup) return;
+                    popup.querySelectorAll(".swal2-input, .swal2-file, .swal2-range, .swal2-select, .swal2-radio, .swal2-checkbox, .swal2-textarea, .swal2-input-label")
+                        .forEach((el) => {
+                            el.style.display = "none";
+                        });
+                },
             }).then(function (result) {
                 if (result.value) {
                     if (isPosOrderPlacing) {
@@ -778,7 +835,8 @@ $(".action-extra-discount").on("click", function (event) {
 function posUpdateQuantityFunctionality() {
     $(".action-pos-update-quantity").off("change").on("change", function (event) {
         let getKey = $(this).data("product-key");
-        let quantity = $(this).val();
+        let quantity = parsePosInt($(this).val(), 0);
+        $(this).val(quantity > 0 ? quantity : 1);
         let variant = $(this).data("product-variant");
         let lineKey = $(this).data("line-key");
         getPOSUpdateQuantity(getKey, quantity, event, variant, lineKey);
@@ -806,7 +864,7 @@ function getPOSUpdateQuantity(key, qty, e, variant = null, lineKey = null) {
         );
     } else {
         let element = $(e.target);
-        let minValue = parseInt(element.attr("min"));
+        let minValue = parsePosInt(element.attr("min"), 1);
         $.post(
             $("#route-admin-pos-update-quantity").data("url"),
             {
@@ -842,6 +900,12 @@ function getPOSUpdateQuantity(key, qty, e, variant = null, lineKey = null) {
 }
 
 function updateQuantityResponseProcess(data) {
+    if (data.exchangeQtyInvalid && data.message) {
+        toastr.warning(data.message, {
+            CloseButton: true,
+            ProgressBar: true,
+        });
+    }
     if (data.productType === "physical" && data.qty < 0) {
         toastr.warning(
             $("#message-product-quantity-is-not-enough").data("text"),
@@ -1020,7 +1084,7 @@ function quickView(product_id) {
 }
 
 function getVariantForAlreadyInCart(event = null) {
-    let current_val = parseFloat($(".in-cart-quantity-field").val());
+    let current_val = parsePosInt($(".in-cart-quantity-field").val(), 0);
     if (current_val > 0) {
         $(".in-cart-quantity-minus").removeAttr("disabled");
         if (event == "plus") {
@@ -1035,6 +1099,7 @@ function getVariantForAlreadyInCart(event = null) {
         $(".in-cart-quantity-minus").attr("disabled", true);
     }
     syncExchangeQuantityState();
+    syncVisibleQtyMinusButtonState();
     getVariantPrice("already_in_cart");
 }
 
@@ -1059,28 +1124,38 @@ function cartQuantityInitialize() {
         e.preventDefault();
         let fieldName = $(this).attr("data-field");
         let type = $(this).attr("data-type");
-        let input = $("input[name='" + fieldName + "']");
-        let currentVal = parseInt(input.val());
+        // Scope to the current quantity group first to avoid updating a wrong input.
+        let input = $(this).closest(".product-quantity-group").find("input[name='" + fieldName + "']");
+        if (!input.length) {
+            input = $(this).siblings("input[name='" + fieldName + "']");
+        }
+        if (!input.length) {
+            input = $("input[name='" + fieldName + "']").first();
+        }
+        let currentVal = parsePosInt(input.val(), 0);
+        let minValue = parsePosInt(input.attr("min"), 0);
+        let maxValue = parsePosInt(input.attr("max"), 999999);
 
         if (!isNaN(currentVal)) {
             if (type == "minus") {
-                if (currentVal > input.attr("min")) {
+                if (currentVal > minValue) {
                     input.val(currentVal - 1).change();
                 }
-                if (parseInt(input.val()) == input.attr("min")) {
+                if (parsePosInt(input.val(), 0) <= minValue) {
                     $(this).attr("disabled", true);
                 }
             } else if (type == "plus") {
-                if (currentVal < input.attr("max")) {
+                if (currentVal < maxValue) {
                     input.val(currentVal + 1).change();
                 }
-                if (parseInt(input.val()) == input.attr("max")) {
+                if (parsePosInt(input.val(), 0) >= maxValue) {
                     $(this).attr("disabled", true);
                 }
             }
         } else {
-            input.val(0);
+            input.val(minValue > 0 ? minValue : 1);
         }
+        syncVisibleQtyMinusButtonState();
     });
 
     $(".input-number").focusin(function () {
@@ -1088,20 +1163,24 @@ function cartQuantityInitialize() {
     });
 
     $(".input-number").change(function () {
-        let minValue = parseInt($(this).attr("min"));
-        let maxValue = parseInt($(this).attr("max"));
-        let valueCurrent = parseInt($(this).val());
+        let minValue = parsePosInt($(this).attr("min"), 0);
+        let maxValue = parsePosInt($(this).attr("max"), 0);
+        let valueCurrent = parsePosInt($(this).val(), 0);
         let name = $(this).attr("name");
+        const group = $(this).closest(".product-quantity-group");
+        const minusBtn = group.find(".btn-number[data-type='minus'][data-field='" + name + "']");
+        const plusBtn = group.find(".btn-number[data-type='plus'][data-field='" + name + "']");
         if (valueCurrent >= minValue) {
-            $(".btn-number[data-type='minus'][data-field='" + name + "']").removeAttr("disabled");
+            minusBtn.removeAttr("disabled");
         } else {
             $(this).val($(this).data("oldValue"))
         }
         if (valueCurrent <= maxValue) {
-            $(".btn-number[data-type='plus'][data-field='" + name + "']").removeAttr("disabled");
+            plusBtn.removeAttr("disabled");
         } else {
             $(this).val($(this).data("oldValue"))
         }
+        syncVisibleQtyMinusButtonState();
     });
     $(".input-number").keydown(function (e) {
         if (
@@ -1202,6 +1281,7 @@ function getVariantPrice(type = null) {
                 }
                 setProductData('price-section', response.price, tax, response.discount_text);
                 syncExchangeQuantityState();
+                syncVisibleQtyMinusButtonState();
             },
         });
     }
@@ -1219,31 +1299,30 @@ function addToCart(form_id = "add-to-cart-form") {
             },
         });
 
+        const exchangeQtyLimitMessage = "Exchange qty cannot exceed product quantity.";
+        const exchangeQtyMinMessage = "Exchange qty must be at least 1 when Replacement Discount is enabled.";
         let exchangeCharge = 0;
         let installationCharge = 0;
         const branch_id = $('#branch_id').data('branch') || '';
         const selectedQty = getQuickViewSelectedQuantity();
+        const isReplacementEnabled = $("#exchange-charge-checkbox").prop('checked');
 
 
-        if ($("#exchange-charge-checkbox").prop('checked')) {
-            let exchangeQuantity = parseInt($("#exchange-quantity").val(), 10);
-            const maxExchangeQuantity = getQuickViewMaxExchangeQuantity();
-
-            if (maxExchangeQuantity <= 0) {
-                exchangeQuantity = 0;
+        if (isReplacementEnabled) {
+            let exchangeQuantity = parsePosInt($("#exchange-quantity").val(), 0);
+            if (!Number.isFinite(exchangeQuantity) || exchangeQuantity < 1) {
+                toastr.error(exchangeQtyMinMessage);
+                return false;
             }
-            if (!Number.isFinite(exchangeQuantity) || exchangeQuantity < 0) {
-                exchangeQuantity = 0;
-            }
-            if (exchangeQuantity > maxExchangeQuantity) {
-                exchangeQuantity = maxExchangeQuantity;
-            }
-            if (exchangeQuantity > 0 && exchangeQuantity >= selectedQty) {
-                exchangeQuantity = Math.max(selectedQty - 1, 0);
+            if (exchangeQuantity > selectedQty) {
+                toastr.error(exchangeQtyLimitMessage);
+                return false;
             }
             $("#exchange-quantity").val(exchangeQuantity);
             let exchangePrice = $("#exchange-quantity").data("price");
             exchangeCharge = exchangeQuantity > 0 ? (exchangeQuantity * exchangePrice).toFixed(2) : 0;
+        } else {
+            $("#exchange-quantity").val(0);
         }
 
         if ($("#installation-charge-checkbox").prop('checked')) {
@@ -1251,7 +1330,8 @@ function addToCart(form_id = "add-to-cart-form") {
         }
         let finalData = $("#" + form_id).serializeArray().concat([
             { name: 'exchange_charge', value: exchangeCharge },
-            { name: 'exchange_quantity', value: parseInt($("#exchange-quantity").val(), 10) || 0 },
+            { name: 'exchange_quantity', value: parsePosInt($("#exchange-quantity").val(), 0) || 0 },
+            { name: 'replacement_discount_enabled', value: isReplacementEnabled ? 1 : 0 },
             { name: 'installation_charge', value: installationCharge },
             { name: 'branch_id', value: branch_id },
             { name: 'cart_id', value: getPosActiveCartId() },
@@ -1308,6 +1388,15 @@ function addToCart(form_id = "add-to-cart-form") {
                 removeFromCart();
             },
             error: function (xhr, status, error) {
+                const firstFieldErrors = xhr?.responseJSON?.errors
+                    ? Object.values(xhr.responseJSON.errors)[0]
+                    : null;
+                const message = (Array.isArray(firstFieldErrors) && firstFieldErrors.length > 0)
+                    ? firstFieldErrors[0]
+                    : xhr?.responseJSON?.message;
+                if (message) {
+                    toastr.error(message);
+                }
             },
             complete: function () {
                 $("#loading").fadeOut();

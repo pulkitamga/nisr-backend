@@ -161,15 +161,15 @@
                                         @endfor
                                     </div>
                                     <span
-                                        class="d-inline-block  align-middle mt-1 {{Session::get('direction') === "rtl" ? 'ml-md-2 ml-sm-0' : 'mr-md-2 mr-sm-0'}} fs-14 text-muted">({{$overallRating[0]}})</span>
+                                        class="d-inline-block  align-middle mt-1 me-md-2 me-sm-0 fs-14 text-muted">({{$overallRating[0]}})</span>
                                     <span
-                                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-1 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-1 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}}"><span class="web-text-primary">{{$overallRating[1]}}</span> {{translate('reviews')}}</span>
+                                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-1 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1"><span class="web-text-primary">{{$overallRating[1]}}</span> {{translate('reviews')}}</span>
                                     <span class="__inline-25"></span>
                                     <span
-                                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-1 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-1 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}}"><span class="web-text-primary">{{$countOrder}}</span> {{translate('orders')}}   </span>
+                                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-1 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1"><span class="web-text-primary">{{$countOrder}}</span> {{translate('orders')}}   </span>
                                     <span class="__inline-25">    </span>
                                     <span
-                                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 {{Session::get('direction') === "rtl" ? 'mr-1 ml-md-2 ml-0 pr-md-2 pr-sm-1 pl-md-2 pl-sm-1' : 'ml-1 mr-md-2 mr-0 pl-md-2 pl-sm-1 pr-md-2 pr-sm-1'}} text-capitalize"> <span class="web-text-primary countWishlist-{{ $product->id }}"> {{$countWishlist}}</span> {{translate('wish_listed')}} </span>
+                                        class="font-regular font-for-tab d-inline-block font-size-sm text-body align-middle mt-1 ms-1 me-md-2 me-0 ps-md-2 ps-sm-1 pe-md-2 pe-sm-1 text-capitalize"> <span class="web-text-primary countWishlist-{{ $product->id }}"> {{$countWishlist}}</span> {{translate('wish_listed')}} </span>
                                 </div>
 
                                 @if($product['product_type'] == 'digital')
@@ -222,7 +222,7 @@
                                     @csrf
                                     <input type="hidden" name="id" value="{{ $product->id }}">
                                     <div
-                                        class="position-relative {{Session::get('direction') === "rtl" ? 'ml-n4' : 'mr-n4'}} mb-2">
+                                        class="position-relative me-n4 mb-2">
                                         @if (count(json_decode($product->colors)) > 0)
                                             <div class="flex-start align-items-center mb-2 gap-2">
                                                 <div class="product-description-label m-0 text-dark font-bold">
@@ -453,7 +453,7 @@
                     </div>
 
                     <div class="mt-4 rtl text-align-direction">
-                        <div class="px-4 pb-3 mb-3 mr-0 mr-md-2 bg-white __review-overview __rounded-10 pt-3">
+                        <div class="px-4 pb-3 mb-3 me-0 me-md-2 bg-white __review-overview __rounded-10 pt-3">
                             <ul class="nav nav-tabs nav--tabs d-flex justify-content-center mt-3"
                                 role="tablist">
                                 <li class="nav-item">
@@ -564,7 +564,7 @@
                                                     </div>
                                                     <div class="col-1 text-body">
                                                         <span
-                                                            class=" {{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}} ">
+                                                            class=" ms-3 float-end ">
                                                             {{$rating[0]}}
                                                         </span>
                                                     </div>
@@ -586,7 +586,7 @@
                                                     </div>
                                                     <div class="col-1">
                                                         <span
-                                                            class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                            class="ms-3 float-end">
                                                                 {{$rating[1]}}
                                                         </span>
                                                     </div>
@@ -608,7 +608,7 @@
                                                     </div>
                                                     <div class="col-1">
                                                         <span
-                                                            class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                            class="ms-3 float-end">
                                                             {{$rating[2]}}
                                                         </span>
                                                     </div>
@@ -630,7 +630,7 @@
                                                     </div>
                                                     <div class="col-1">
                                                         <span
-                                                            class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                            class="ms-3 float-end">
                                                             {{$rating[3]}}
                                                         </span>
                                                     </div>
@@ -652,7 +652,7 @@
                                                     </div>
                                                     <div class="col-1">
                                                         <span
-                                                            class="{{Session::get('direction') === "rtl" ? 'mr-3 float-left' : 'ml-3 float-right'}}">
+                                                            class="ms-3 float-end">
                                                                 {{$rating[4]}}
                                                         </span>
                                                     </div>
@@ -697,7 +697,7 @@
                                 @if ($value['status'] == 1 && !empty($value['title']))
                                     <div class="shipping-details-bottom-border">
                                         <div class="px-3 py-3">
-                                            <img class="{{Session::get('direction') === "rtl" ? 'float-right ml-2' : 'mr-2'}} __img-20"
+                                            <img class="float-end me-2 __img-20"
                                                  src="{{ getStorageImages(path: imagePathProcessing(imageData: $value['image'],path: 'company-reliability'), type: 'source', source: 'public/assets/front-end/img'.'/'.$value['item'].'.png') }}"
                                                 alt="">
                                             <span>{{translate($value['title'])}}</span>
@@ -909,7 +909,7 @@
                                     @if($category)
                                         <a class="text-capitalize view-all-text web-text-primary me-1"
                                            href="{{route('products',['category_id'=> $category[0]->id,'data_from'=>'category','page'=>1])}}">{{ translate('view_all')}}
-                                            <i class="czi-arrow-{{Session::get('direction') === "rtl" ? 'left mr-1 ml-n1 mt-1 ' : 'right ml-1 mr-n1'}}"></i>
+                                            <i class="czi-arrow-{{Session::get('direction') === "rtl" ? 'left ms-1 me-n1 mt-1 ' : 'right ms-1 me-n1'}}"></i>
                                         </a>
                                     @endif
                                 </div>
@@ -962,3 +962,5 @@
     <script type="text/javascript" async="async"
             src="https://platform-api.sharethis.com/js/sharethis.js#property=5f55f75bde227f0012147049&product=sticky-share-buttons"></script>
 @endpush
+
+

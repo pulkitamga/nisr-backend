@@ -19,7 +19,7 @@
                 <div class="modal-content">
                     <div class="modal-header d-flex justify-content-between">
                         <h5 class="modal-title text-capitalize" id="exampleModalLongTitle">{{translate('add_fund')}}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -106,7 +106,7 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list mr-1"></i>{{translate('filter')}}</button>
+                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list me-1"></i>{{translate('filter')}}</button>
                             </div>
                         </form>
                     </div>
@@ -289,3 +289,4 @@
         })
     </script>
 @endpush
+

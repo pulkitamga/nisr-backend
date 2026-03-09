@@ -8,14 +8,15 @@ use App\Models\ActivationReview;
 use App\Models\Blacklist;
 use App\Models\OrderDetail;
 use App\Models\Branch;
-use App\Models\Policy;
 use App\Models\Warranty;
 use App\Models\WarrantyTimelineEvent;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
@@ -330,7 +331,7 @@ class WarrantyActivationController extends Controller
             'invoice_number' => $request->invoice_number,
             'activated_ip' => $activationIp,
             'activation_method' => 'user_public_form',
-            'policy_version' => Policy::published()->orderByDesc('published_at')->first()?->version,
+            'policy_version' => $this->resolvePublishedPolicyVersion(),
             'consent_checked' => true,
             'consent_timestamp' => now(),
             'consent_ip' => $activationIp,
@@ -534,7 +535,7 @@ class WarrantyActivationController extends Controller
                 'consent_checked' => true,
                 'consent_timestamp' => now(),
                 'consent_ip' => $request->ip(),
-                'policy_version' => Policy::published()->orderByDesc('published_at')->first()?->version,
+                'policy_version' => $this->resolvePublishedPolicyVersion(),
             ]);
 
             WarrantyTimelineEvent::create([
@@ -572,5 +573,17 @@ class WarrantyActivationController extends Controller
 
         Toastr::error(translate('no_serial_number_could_be_activated'));
         return back();
+    }
+
+    private function resolvePublishedPolicyVersion(): ?string
+    {
+        if (Schema::hasTable('warranty_policies')) {
+            return DB::table('warranty_policies')
+                ->whereNotNull('published_at')
+                ->orderByDesc('published_at')
+                ->value('version');
+        }
+
+        return null;
     }
 }

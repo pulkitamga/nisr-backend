@@ -267,7 +267,7 @@
 
     .email-dl {
         max-width: 240px;
-        margin-left: auto;
+        margin-inline-start: auto;
     }
 
     .email-dl dt, .email-dl dd {
@@ -322,7 +322,7 @@
         display: none;
     }
     .product-image {
-        margin-right: 10px;
+        margin-inline-end: 10px;
         width: 35px;
         height: 35px;
         border: 1px solid #e5e5e5;
@@ -341,14 +341,14 @@
         font-size: 16px;
     }
     .social-media-icon a{
-        margin-right: 10px;
+        margin-inline-end: 10px;
     }
     .social-media-icon a:last-child{
-        margin-right: 0;
+        margin-inline-end: 0;
     }
     .mx-auto{
-        margin-left: auto;
-        margin-right: auto;
+        margin-inline-start: auto;
+        margin-inline-end: auto;
 
     }
     .text-nowrap{

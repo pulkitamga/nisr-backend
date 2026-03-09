@@ -141,7 +141,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 <input hidden name="type" value="wholesaler_registration">
                 <div class="modal-header">
                     <h5 class="modal-title flex-grow-1 text-center" id="faqAddModalLabel">{{translate('FAQs')}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -210,7 +210,7 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
                 <input hidden name="type" value="wholesaler_registration">
                 <div class="modal-header">
                     <h5 class="modal-title flex-grow-1 text-center" id="faqAddModalLabel">{{translate('FAQs')}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>

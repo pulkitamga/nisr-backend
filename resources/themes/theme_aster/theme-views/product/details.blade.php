@@ -530,7 +530,7 @@
                                                         @endfor
                                                     </div>
                                                     <div class="rating-review__info">
-                                                        <span>{{$productReviews->total().' '.translate($productReviews->total() <=1 ? 'review' : 'reviews')}}</span>
+                                                        <span>{{ $productReviews->total() . ' ' . trans_choice('review|reviews', $productReviews->total()) }}</span>
                                                     </div>
                                                 </div>
                                                 <ul class="list-rating gap-10">

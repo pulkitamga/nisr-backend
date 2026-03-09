@@ -3,8 +3,8 @@
     <div class="model-sm modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
-            	<h3>Follow Up Details</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
+            	<h3>{{ __('Follow Up Details') }}</h3>
+                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                 	<i class="tio-clear"></i>
                 </button>
             </div>
@@ -72,10 +72,11 @@
                         </div>
                     </div>
 	                <div class="text-end mt-2 justify-centent-end">
-                        <button type="submit" class="btn btn-xs btn-primary">Update Follow Up</button>
+                        <button type="submit" class="btn btn-xs btn-primary">{{ __('Update Follow Up') }}</button>
                     </div>
 	            </form>
             </div>
         </div>
     </div>
 </div>
+

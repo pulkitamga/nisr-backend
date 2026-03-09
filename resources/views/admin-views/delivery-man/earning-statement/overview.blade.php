@@ -108,7 +108,7 @@
                         <div class="flex-start">
                             <div><h4>{{translate('status')}} : </h4></div>
                             <div class="mx-1">
-                                <h4>{!! $deliveryMan->is_active == 1?'<label class="badge badge-success">Active</label>':'<label class="badge badge-danger">In-Active</label>' !!}</h4>
+                                <h4>{!! $deliveryMan->is_active == 1?'<label class="badge badge-success">'.__('Active').'</label>':'<label class="badge badge-danger">'.__('In-Active').'</label>' !!}</h4>
                             </div>
                         </div>
                         <div class="flex-start">
@@ -169,7 +169,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{translate('cash_Withdraw')}}</h5>
-                    <button id="invoice_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button id="invoice_close" type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -188,7 +188,7 @@
                     <div class="col-md-12 mb-3">
                         <div class="text-center">
                             <form action="">
-                                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-danger" data-dismiss="modal">{{ __('Close') }}</button>
                                 <button class="btn btn--primary" data-toggle="modal" data-target="#exampleModal">{{translate('collect_Cash')}}</button>
                             </form>
                         </div>
@@ -199,3 +199,4 @@
         </div>
     </div>
 @endsection
+

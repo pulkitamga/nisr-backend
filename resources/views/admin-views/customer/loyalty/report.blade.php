@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                             <div>
-                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list mr-1"></i>{{translate('filter')}}</button>
+                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list me-1"></i>{{translate('filter')}}</button>
                             </div>
                         </form>
                     </div>

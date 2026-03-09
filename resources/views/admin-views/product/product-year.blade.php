@@ -6,26 +6,26 @@
     <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
             <h2 class="h1 mb-0">
-                <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 mr-1" alt="">
+                <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 me-1" alt="">
                 {{translate('product_makes')}}
             </h2>
         </div>
 
         <div class="card shadow rounded">
             <div class="card-header">
-                <h5 class="mb-0">Add Years</h5>
+                <h5 class="mb-0">{{ __('Add Years') }}</h5>
             </div>
             <div class="card-body">
                 <form action="#" method="POST">
                     <div class="row">
                         <div class="mb-3 col-lg-6 col-md-12 col-sm-12">
-                            <label for="make" class="form-label">Make</label>
+                            <label for="make" class="form-label">{{ __('Make') }}</label>
                             <input type="text" class="form-control" id="make" name="make" placeholder="e.g. Toyota" required>
                         </div>
                         <div class="mb-3 col-lg-6 col-md-12 col-sm-12">
-                            <label for="model" class="form-label">Model</label>
+                            <label for="model" class="form-label">{{ __('Model') }}</label>
                             <input type="text" class="form-control" id="model" name="model" placeholder="e.g. x50 x70 x90" required>
-                            <small class="text-muted">You can enter multiple models separated by space.</small>
+                            <small class="text-muted">{{ __('You can enter multiple models separated by space.') }}</small>
                         </div>
                     </div>
                     <div class="text-end">
@@ -53,7 +53,7 @@
                                     </div>
                                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                         placeholder="{{ translate('search_by_Product_Name') }}"
-                                        aria-label="Search orders" value="{{ request('searchValue') }}">
+                                        aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                     <input type="hidden" value="{{ request('status') }}" name="status">
                                     <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                 </div>
@@ -86,3 +86,4 @@
     </div>
 </div>
 @endsection
+

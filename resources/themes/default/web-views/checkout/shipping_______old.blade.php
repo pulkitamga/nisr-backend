@@ -26,12 +26,12 @@
     }
 
     [dir="rtl"] .delivery-radio-btn-label {
-        margin-right: 20px;
+        margin-inline-end: 20px;
     }
 
     .delivery-radio-btn-label {
         font-size: 19px;
-        padding-left: 12px;
+        padding-inline-start: 12px;
     }
 
 
@@ -39,7 +39,7 @@
         border: 1px solid darkgrey;
         border-radius: 8px;
         padding: 25px;
-        margin-left: 3px;
+        margin-inline-start: 3px;
         margin-bottom: 1rem;
     }
 </style>
@@ -704,7 +704,7 @@
                     }
                 });
             } else {
-                html = `<option value="">No available locations</option>`;
+                html = `<option value="">{{ __('No available locations') }}</option>`;
             }
             $(selector).html(html);
         }
@@ -712,62 +712,62 @@
         // --- SHIPPING SECTION ---
         $('#country').on('change', function() {
             if (stateReq) stateReq.abort();
-            $('#state_id').html('<option value="">Loading...</option>');
+            $('#state_id').html('<option value="">{{ __('Loading...') }}</option>');
             stateReq = $.get(getStatesURL, {
                 country: this.value
             }, function(res) {
-                renderOptions('#state_id', res.states, "Select State");
+                renderOptions('#state_id', res.states, "{{ __('Select State') }}");
             });
         });
 
         $('#state_id').on('change', function() {
             if (cityReq) cityReq.abort();
-            $('#city_id').html('<option value="">Loading...</option>');
+            $('#city_id').html('<option value="">{{ __('Loading...') }}</option>');
             cityReq = $.get(getCitiesURL, {
                 state_id: this.value
             }, function(res) {
-                renderOptions('#city_id', res.cities, "Select City");
+                renderOptions('#city_id', res.cities, "{{ __('Select City') }}");
             });
         });
 
         $('#city_id').on('change', function() {
             if (areaReq) areaReq.abort();
-            $('#area').html('<option value="">Loading...</option>');
+            $('#area').html('<option value="">{{ __('Loading...') }}</option>');
             areaReq = $.get(getAreasURL, {
                 city_id: this.value
             }, function(res) {
-                renderOptions('#area', res.areas, "Select Area");
+                renderOptions('#area', res.areas, "{{ __('Select Area') }}");
             });
         });
 
         // --- BILLING SECTION ---
         $('#billing_country').on('change', function() {
             if (bStateReq) bStateReq.abort();
-            $('#billing_state_id').html('<option value="">Loading...</option>');
+            $('#billing_state_id').html('<option value="">{{ __('Loading...') }}</option>');
             bStateReq = $.get(getBillingStatesURL, {
                 billing_country: this.value
             }, function(res) {
-                renderOptions('#billing_state_id', res.states, "Select State");
+                renderOptions('#billing_state_id', res.states, "{{ __('Select State') }}");
             });
         });
 
         $('#billing_state_id').on('change', function() {
             if (bCityReq) bCityReq.abort();
-            $('#billing_city_id').html('<option value="">Loading...</option>');
+            $('#billing_city_id').html('<option value="">{{ __('Loading...') }}</option>');
             bCityReq = $.get(getBillingCitiesURL, {
                 billing_state_id: this.value
             }, function(res) {
-                renderOptions('#billing_city_id', res.cities, "Select City");
+                renderOptions('#billing_city_id', res.cities, "{{ __('Select City') }}");
             });
         });
 
         $('#billing_city_id').on('change', function() {
             if (bAreaReq) bAreaReq.abort();
-            $('#billing_area').html('<option value="">Loading...</option>');
+            $('#billing_area').html('<option value="">{{ __('Loading...') }}</option>');
             bAreaReq = $.get(getBillingAreasURL, {
                 billing_city_id: this.value
             }, function(res) {
-                renderOptions('#billing_area', res.areas, "Select Area");
+                renderOptions('#billing_area', res.areas, "{{ __('Select Area') }}");
             });
         });
 

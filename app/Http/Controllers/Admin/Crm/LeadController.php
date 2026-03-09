@@ -846,6 +846,11 @@ public function getUserOrders(Request $request)
         return $this->handleLeadAssignmentUpdate($request);
     }
 
+    public function updateAssignment(Request $request): JsonResponse
+    {
+        return $this->handleLeadAssignmentUpdate($request);
+    }
+
     public function assignOwner(Request $request): JsonResponse
     {
         if (!$request->filled('owner_id') && $request->filled('employee_id')) {

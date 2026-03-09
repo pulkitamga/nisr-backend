@@ -29,7 +29,7 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{translate('search_ticket_by_subject_or_status').'...'}}"
-                                               aria-label="Search orders" value="{{ request('searchValue') }}">
+                                               aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                         <button type="submit"
                                                 class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
@@ -158,7 +158,7 @@
                                                 href="{{route('admin.complaints.singleTicket',$ticket['id'])}}">
                                                 <i class="tio-open-in-new"></i>
                                             </a>
-                                            <div class="btn btn-outline-warning btn-sm square-btn" data-toggle="modal" data-target="#showFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}"  title="Follow-up details">
+                                            <div class="btn btn-outline-warning btn-sm square-btn" data-toggle="modal" data-target="#showFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}"  title="{{ translate('Follow-up details') }}">
                                                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt=""> 
                                             </div>
                                         </div>
@@ -191,3 +191,4 @@
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/support-tickets.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
 @endpush
+

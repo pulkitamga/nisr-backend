@@ -4,7 +4,7 @@
 @push('css_or_js')
 <meta name="robots" content="index, follow">
 <meta property="og:image" content="{{$web_config['web_logo']['path']}}" />
-<meta property="og:title" content="Welcome To {{$web_config['company_name']}} Home" />
+<meta property="og:title" content="{{ translate('welcome_to') }} {{$web_config['company_name']}} {{ translate('home') }}" />
 <meta property="og:url" content="{{env('APP_URL')}}">
 <meta name="description"
     content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)), 0, 160) }}">
@@ -12,7 +12,7 @@
     content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)), 0, 160) }}">
 
 <meta property="twitter:card" content="{{$web_config['web_logo']['path']}}" />
-<meta property="twitter:title" content="Welcome To {{$web_config['company_name']}} Home" />
+<meta property="twitter:title" content="{{ translate('welcome_to') }} {{$web_config['company_name']}} {{ translate('home') }}" />
 <meta property="twitter:url" content="{{env('APP_URL')}}">
 <meta property="twitter:description"
     content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)), 0, 160) }}">
@@ -176,7 +176,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                                                 <i class="tio-star-outlined"></i>
                                                 @endif
                                                 @endfor
-                                                <span class="text-gray-600 text-xs ml-1">({{ count($product->reviews)
+                                                <span class="text-gray-600 text-xs ms-1">({{ count($product->reviews)
                                                 }})</span>
                                     </div>
                                     @endif
@@ -192,7 +192,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                                             {{ webCurrencyConverter(amount: $product->unit_price) }}
                                         </del>
                                         @endif
-                                        <span class="text-red-600 font-bold ml-1">
+                                        <span class="text-red-600 font-bold ms-1">
                                             {{ getProductPriceByType(product: $product, type: 'discounted_unit_price',
                                         result: 'string') }}
                                         </span>
@@ -396,7 +396,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                                 {{ $findPerfectMatch['filter_title'] }}
                             </h2>
 
-                            <form class="d-grid gap-3" aria-label="Vehicle filter options" action="{{ route('products') }}" method="GET">
+                            <form class="d-grid gap-3" aria-label="{{ translate('vehicle_filter_options') }}" action="{{ route('products') }}" method="GET">
                                 <div class="mb-2">
                                     <label for="make" class="form-label">{{ $findPerfectMatch['make_label'] }}</label>
                                     <select id="make" name="make" class="form-select border my-1">

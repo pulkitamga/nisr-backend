@@ -19,7 +19,7 @@
                 </p>
                 <div class="text-center">
                     <a class="btn btn--primary font-weight-bold" href="{{ route('home') }}">
-                        <span class="mr-2"><i class="fa fa-home" aria-hidden="true"></i></span>
+                        <span class="me-2"><i class="fa fa-home" aria-hidden="true"></i></span>
                         {{translate('home')}}
                     </a>
                 </div>

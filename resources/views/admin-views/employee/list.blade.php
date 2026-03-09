@@ -151,7 +151,7 @@
                                             @endif
                                         @endcan
                                         @can('employee_management.read')
-                                            <a class="btn btn-outline-info btn-sm square-btn" title="View" href="{{route('admin.employee.view',['id'=>$employee['id']])}}">
+                                            <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('View') }}" href="{{route('admin.employee.view',['id'=>$employee['id']])}}">
                                                 <i class="tio-invisible"></i>
                                             </a>
                                         @endcan
@@ -183,3 +183,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/employee.js')}}"></script>
 @endpush
+

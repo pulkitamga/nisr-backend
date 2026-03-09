@@ -1,4 +1,4 @@
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ translate('refund_Transaction_Summary_Report') }}</title>
@@ -215,11 +215,11 @@
         }
 
         .pl-0 {
-            padding-left: 0 !important;
+            padding-inline-start: 0 !important;
         }
 
         .pr-0 {
-            padding-right: 0 !important;
+            padding-inline-end: 0 !important;
         }
 
         @media (max-width: 460px) {

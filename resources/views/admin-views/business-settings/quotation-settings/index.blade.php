@@ -149,7 +149,7 @@
                 toastr.success(res.message);
             },
             error: function () {
-                toastr.error('Failed to update status');
+                toastr.error(@json(__('Failed to update status')));
             }
         });
     });

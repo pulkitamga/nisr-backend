@@ -15,7 +15,7 @@
                         </div>
                     </div>
                     <input id="datatableSearch_" type="search" class="form-control"
-                        placeholder="{{ translate('Search...') }}" aria-label="Search">
+                        placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                 </div>
             </div>
 

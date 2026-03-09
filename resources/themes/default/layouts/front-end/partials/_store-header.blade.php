@@ -93,7 +93,7 @@
             @php($categories = \App\Utils\CategoryManager::getCategoriesWithCountingAndPriorityWiseSorting(dataLimit:
             11))
 
-            <ul class="navbar-nav mega-nav pr-lg-2 pl-lg-2 mr-2 d-none d-lg-block __mega-nav custom-category-width">
+            <ul class="navbar-nav mega-nav pr-lg-2 pl-lg-2 me-2 d-none d-lg-block __mega-nav custom-category-width">
                 <li class="nav-item {{!request()->is('/')?'dropdown':''}} ">
 
                     <a class="nav-link dropdown-toggle category-menu-toggle-btn ps-0 store-category" href="javascript:">
@@ -318,13 +318,13 @@
             @else
             <li class="nav-item d-md-none">
                 <a class="dropdown-item pl-2 font-bold-on-mobile" href="{{route('customer.auth.login')}}">
-                    <i class="fa fa-sign-in mr-2"></i> {{ translate('sign_in')}}
+                    <i class="fa fa-sign-in me-2"></i> {{ translate('sign_in')}}
                 </a>
                 <div class="dropdown-divider"></div>
             </li>
             <li class="nav-item d-md-none">
                 <a class="dropdown-item pl-2 font-bold-on-mobile" href="{{route('customer.auth.sign-up')}}">
-                    <i class="fa fa-user-circle mr-2"></i>{{ translate('sign_up')}}
+                    <i class="fa fa-user-circle me-2"></i>{{ translate('sign_up')}}
                 </a>
             </li>
             @endif
@@ -516,7 +516,7 @@
                         : 'right' }}" aria-labelledby="dropdownMenuButton">
                             <?php
                             if ($notifications->count() == 0) {
-                                echo "<a href='#' class='dropdown-item px-2 py-1 text-center'>No Notifications Found</a>";
+                                echo "<a href='#' class='dropdown-item px-2 py-1 text-center'>{{ __('No Notifications Found') }}</a>";
                             }
                             foreach ($notifications as $notification):  ?>
                                 <a href="#" class="dropdown-item px-2 py-1">
@@ -591,7 +591,7 @@
                 </div>
                 @else
                 <div class="dropdown ">
-                    <a class="navbar-tool {{Session::get('direction') === "rtl" ? 'ml-md-2' : '' }}"
+                    <a class="navbar-tool {{Session::get('direction') === "rtl" ? 'me-md-2' : '' }}"
                         type="button" data-toggle="dropdown" aria-haspopup="true" href="#" rel="nofollow"
                         aria-expanded="false">
                         <div class="navbar-tool-icon-box bg-secondary">
@@ -603,11 +603,11 @@
                     <div class="text-align-direction dropdown-lang dropdown-menu  dropdown-menu-{{Session::get('direction') === "
                         rtl" ? 'left' : 'right' }}" aria-labelledby="dropdownMenuButton">
                         <a class="dropdown-item" href="{{route('customer.auth.login')}}">
-                            <i class="fa fa-sign-in mr-2"></i> {{ translate('sign_in')}}
+                            <i class="fa fa-sign-in me-2"></i> {{ translate('sign_in')}}
                         </a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{{route('customer.auth.sign-up')}}">
-                            <i class="fa fa-user-circle mr-2"></i>{{ translate('sign_up')}}
+                            <i class="fa fa-user-circle me-2"></i>{{ translate('sign_up')}}
                         </a>
                     </div>
                 </div>

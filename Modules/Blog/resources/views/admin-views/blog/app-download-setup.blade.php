@@ -143,10 +143,8 @@ $downloadAppBackground = getWebConfig(name: 'blog_feature_download_app_backgroun
                                             <div class="upload-file-textbox text-center" style="">
                                                 <img width="34" height="34" class="svg" src="{{ dynamicAsset(path: 'public/assets/back-end/img/svg/image-upload.svg') }}" alt="image upload">
                                                 <h6 class="mt-1 fw-medium lh-base text-center">
-                                                    <span class="text-info">Click to upload</span>
-                                                    <br>
-                                                    Or drag and drop
-                                                </h6>
+                                                    <span class="text-info">{{ __("Click to upload") }}</span>
+                                                    <br>{{ __("Or drag and drop") }}</h6>
                                             </div>
                                             <img class="upload-file-img" loading="lazy" src="{{ $downloadAppIcon ? getStorageImages(path: $downloadAppIcon , type: 'backend-basic') : '' }}" data-default-src="" alt="" style="display: none;">
                                         </label>
@@ -161,7 +159,7 @@ $downloadAppBackground = getWebConfig(name: 'blog_feature_download_app_backgroun
                                             </div>
                                         </div>
                                     </div>
-                                    <p class="fs-10 mb-0 text-center">JPG, JPEG, PNG, Gif Image size : Max 2 MB <span class="fw-medium">(325 x 100 px)</span></p>
+                                    <p class="fs-10 mb-0 text-center">{{ __("JPG, JPEG, PNG, Gif Image size : Max 2 MB") }} <span class="fw-medium">(325 x 100 px)</span></p>
                                 </div>
                                 <div class="d-flex flex-column gap-20">
                                     <div>
@@ -179,10 +177,8 @@ $downloadAppBackground = getWebConfig(name: 'blog_feature_download_app_backgroun
                                             <div class="upload-file-textbox text-center" style="">
                                                 <img width="34" height="34" class="svg" src="{{ dynamicAsset(path: 'public/assets/back-end/img/svg/image-upload.svg') }}" alt="image upload">
                                                 <h6 class="mt-1 fw-medium lh-base text-center">
-                                                    <span class="text-info">Click to upload</span>
-                                                    <br>
-                                                    Or drag and drop
-                                                </h6>
+                                                    <span class="text-info">{{ __("Click to upload") }}</span>
+                                                    <br>{{ __("Or drag and drop") }}</h6>
                                             </div>
                                             <img class="upload-file-img" loading="lazy" src="{{ $downloadAppBackground ? getStorageImages(path: $downloadAppBackground , type: 'backend-basic') : '' }}" data-default-src="" alt="" style="display: none;">
                                         </label>
@@ -197,7 +193,7 @@ $downloadAppBackground = getWebConfig(name: 'blog_feature_download_app_backgroun
                                             </div>
                                         </div>
                                     </div>
-                                    <p class="fs-10 mb-0 text-center">JPG, JPEG, PNG, Gif Image size : Max 2 MB <span class="fw-medium">(325 x 100 px)</span></p>
+                                    <p class="fs-10 mb-0 text-center">{{ __("JPG, JPEG, PNG, Gif Image size : Max 2 MB") }} <span class="fw-medium">(325 x 100 px)</span></p>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-3 justify-content-end">

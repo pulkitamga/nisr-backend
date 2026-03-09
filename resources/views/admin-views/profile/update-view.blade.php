@@ -14,7 +14,7 @@
                 </h2>
                 <div class="col-sm-auto">
                     <a class="btn btn--primary" href="{{route('admin.dashboard.index')}}">
-                        <i class="tio-home mr-1"></i> {{translate('dashboard')}}
+                        <i class="tio-home me-1"></i> {{translate('dashboard')}}
                     </a>
                 </div>
             </div>
@@ -23,7 +23,7 @@
             <div class="col-lg-3">
                 <div class="navbar-vertical navbar-expand-lg mb-3 mb-lg-5">
                     <button type="button" class="navbar-toggler btn btn-block btn-white mb-3"
-                            aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbarVerticalNavMenu"
+                            aria-label="{{ translate('toggle_navigation') }}" aria-expanded="false" aria-controls="navbarVerticalNavMenu"
                             data-toggle="collapse" data-target="#navbarVerticalNavMenu">
                         <span class="d-flex justify-content-between align-items-center">
                               <span class="h5 mb-0">{{translate('nav_menu')}}</span>

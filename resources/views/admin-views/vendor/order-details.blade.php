@@ -74,7 +74,7 @@
                                     <a class="btn btn--primary px-4" target="_blank"
                                        href={{route('admin.orders.generate-invoice',[$order['id']])}}>
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
-                                             alt="" class="mr-1">
+                                             alt="" class="me-1">
                                         {{translate('print_Invoice')}}
                                     </a>
                                 </div>
@@ -213,7 +213,7 @@
                                                 </div>
                                                 @if($detail->productAllStatus->digital_product_type == 'ready_after_sell')
                                                     <button type="button" class="btn btn-sm btn--primary mt-2"
-                                                            title="File Upload" data-toggle="modal"
+                                                            title="{{ translate('File Upload') }}" data-toggle="modal"
                                                             data-target="#fileUploadModal-{{ $detail->id }}"
                                                     >
                                                         <i class="tio-file-outlined"></i> {{translate('file')}}
@@ -255,7 +255,7 @@
                                                                 <div class="mb-4">
                                                                     {{translate('uploaded_file')}} :
                                                                     <a href="{{ dynamicStorage(path: 'storage/app/public/product/digital-product/'.$detail->digital_file_after_sell) }}"
-                                                                       class="btn btn-success btn-sm" title="Download"
+                                                                       class="btn btn-success btn-sm" title="{{ translate('Download') }}"
                                                                        download><i
                                                                             class="tio-download"></i> {{translate('download')}}
                                                                     </a>
@@ -564,7 +564,7 @@
                                              alt="">
                                         {{translate('shipping_address')}}
                                     </h4>
-                                    <button class="btn btn-outline-primary btn-sm square-btn" title="Edit"
+                                    <button class="btn btn-outline-primary btn-sm square-btn" title="{{ translate('Edit') }}"
                                             data-toggle="modal" data-target="#shippingAddressUpdateModal">
                                         <i class="tio-edit"></i>
                                     </button>
@@ -611,7 +611,7 @@
                                     {{translate('billing_address')}}
                                 </h4>
 
-                                <button class="btn btn-outline-primary btn-sm square-btn" title="Edit"
+                                <button class="btn btn-outline-primary btn-sm square-btn" title="{{ translate('Edit') }}"
                                         data-toggle="modal" data-target="#billingAddressUpdateModal">
                                     <i class="tio-edit"></i>
                                 </button>
@@ -660,7 +660,7 @@
 
                         <div class="media">
                             @if($order->seller_is == 'admin')
-                                <div class="mr-3">
+                                <div class="me-3">
                                     <img class="avatar rounded avatar-70"
                                          src="{{ getStorageImages(path: $companyLogo, type: 'backend-logo') }}" alt="">
                                 </div>
@@ -671,7 +671,7 @@
                                 </div>
                             @else
                                 @if(!empty($order->seller->shop))
-                                    <div class="mr-3">
+                                    <div class="me-3">
                                         <img class="avatar rounded avatar-70"
                                              src="{{ getStorageImages(path:$order?->seller?->shop->image_full_url,type: 'backend-basic')}}"
                                              alt="">
@@ -707,7 +707,7 @@
                 <div class="modal-content">
                     <div class="modal-header pb-4">
                         <h3 class="mb-0">{{translate('order_verification_images')}}</h3>
-                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                                 class="tio-clear"></i></button>
                     </div>
                     <div class="modal-body px-4 px-sm-5 pt-0">
@@ -740,7 +740,7 @@
             <div class="modal-content">
                 <div class="modal-header pb-4">
                     <h3 class="mb-0">{{translate('shipping_address')}}</h3>
-                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                    <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                             class="tio-clear"></i></button>
                 </div>
                 <div class="modal-body px-4 px-sm-5 pt-0">
@@ -855,7 +855,7 @@
                 <div class="modal-content">
                     <div class="modal-header pb-4">
                         <h3 class="mb-0">{{translate('billing_address')}}</h3>
-                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                        <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                                 class="tio-clear"></i></button>
                     </div>
                     <div class="modal-body px-4 px-sm-5 pt-0">
@@ -959,7 +959,7 @@
                 <div class="modal-header">
                     <h4 class="modal-title"
                         id="locationModalLabel">{{translate('location_Data')}}</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}"><span
                             aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -979,7 +979,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{translate('update_third_party_delivery_info')}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -1060,3 +1060,4 @@
         defer></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/vendor/order.js')}}"></script>
 @endpush
+

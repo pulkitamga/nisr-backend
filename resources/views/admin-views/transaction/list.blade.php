@@ -23,7 +23,7 @@
                                 </div>
                                 <input id="datatableSearch_" type="search" name="search" class="form-control"
                                        placeholder="{{ translate('search_by_orders_id_or_transaction_id')}}"
-                                       aria-label="Search orders"
+                                       aria-label="{{ translate('Search orders') }}"
                                        value="{{ $search }}"
                                        required>
                                 <button type="submit"
@@ -198,3 +198,4 @@
         });
     </script>
 @endpush
+

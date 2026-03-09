@@ -28,7 +28,7 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{translate('search_ticket_by_subject_or_status').'...'}}"
-                                               aria-label="Search orders" value="{{ request('searchValue') }}">
+                                               aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                         <button type="submit"
                                                 class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
@@ -148,3 +148,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/support-tickets.js')}}"></script>
 @endpush
+

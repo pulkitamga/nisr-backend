@@ -17,7 +17,7 @@
                             @foreach($claim->charges->where('is_paid', false) as $charge)
                             <div>
                                 <label class="d-flex align-items-center">
-                                    <input type="checkbox" name="charge_ids[]" value="{{ $charge->id }}" class="mr-2">
+                                    <input type="checkbox" name="charge_ids[]" value="{{ $charge->id }}" class="me-2">
                                     <span>
                                         <strong>{{ translate(ucfirst(str_replace('_', ' ', $charge->charge_type))) }}:</strong>
                                         {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:$charge->amount))}}
@@ -40,7 +40,7 @@
                             <option value="cod_collect">{{ translate('Confirm COD Collection') }}</option>
                             <option value="online_link">{{ translate('Generate Online Payment Link') }}</option>
                             <option value="waive">{{ translate('Waive All Fees') }}</option>
-                            <option value="reject">{{ translate('Reject Claim') }}</option>
+                            <option value="client_reject_payment">{{ translate('Client Reject Payment (Return Battery Without Fix & Close Claim)') }}</option>
                         </select>
                     </div>
 

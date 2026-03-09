@@ -227,13 +227,13 @@ use Illuminate\Support\Facades\Session;
                                             <td>
                                                 <div class="d-flex justify-content-center">
                                                     <a title="{{translate('view')}}"
-                                                       class="btn btn-outline--primary square-btn btn-sm mr-1"
+                                                       class="btn btn-outline--primary square-btn btn-sm me-1"
                                                        href="{{route('admin.vendors.order-details',['order_id'=>$order['id'],'vendor_id'=>$order['seller_id']])}}">
                                                         <img src="{{dynamicAsset(path: 'public/assets/back-end/img/eye.svg')}}"
                                                              class="svg" alt="">
                                                     </a>
 
-                                                    <a class="btn btn-outline-success square-btn btn-sm mr-1"
+                                                    <a class="btn btn-outline-success square-btn btn-sm me-1"
                                                        target="_blank" title="{{translate('invoice')}}"
                                                        href="{{route('admin.orders.generate-invoice',[$order['id']])}}">
                                                         <i class="tio-download-to"></i>

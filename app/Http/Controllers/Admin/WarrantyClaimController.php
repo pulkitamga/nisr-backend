@@ -20,7 +20,9 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Utils\Helpers;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class WarrantyClaimController extends Controller
@@ -247,7 +249,21 @@ class WarrantyClaimController extends Controller
     // View Claim
     public function view(WarrantyClaim $claim)
     {
-        $claim->load('warranty.user', 'workOrder', 'attachments', 'charges', 'payments'); // ← change 'photos' to 'attachments'
+        $claim->load(['warranty.user', 'workOrder', 'attachments', 'charges']);
+
+        if ($this->hasWarrantyClaimPaymentsTable($claim->getConnectionName())) {
+            try {
+                $claim->load('payments');
+            } catch (QueryException $exception) {
+                if (!$this->isMissingWarrantyClaimPaymentsTableException($exception)) {
+                    throw $exception;
+                }
+                $claim->setRelation('payments', collect());
+            }
+        } else {
+            $claim->setRelation('payments', collect());
+        }
+
         $timeline = $claim->timelineEvents()->latest()->paginate(10);
 
         return view('admin-views.warranty.claim-view', compact('claim', 'timeline'));
@@ -426,8 +442,16 @@ class WarrantyClaimController extends Controller
         WarrantyPaymentLinkNotificationService $paymentLinkNotificationService
     )
     {
+        if (!$this->hasWarrantyClaimPaymentsTable($claim->getConnectionName())) {
+            $message = translate('Warranty claim payment table is missing. Please run migrations.');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => $message], 500);
+            }
+            return back()->withErrors(['action' => $message]);
+        }
+
         $request->validate([
-            'action'       => 'required|in:remind,pos,cod,online_link,cod_collect,waive,reject',
+            'action'       => 'required|in:remind,pos,cod,online_link,cod_collect,waive,client_reject_payment',
             'charge_ids'   => 'required_if:action,pos,cod,online_link,cod_collect|array',
             'charge_ids.*' => 'exists:warranty_claim_charges,id,warranty_claim_id,' . $claim->id,
             'payment_reference' => 'nullable|required_if:action,pos,cod_collect|string|max:100',
@@ -471,12 +495,56 @@ class WarrantyClaimController extends Controller
             if ($activeLink?->payment_link) {
                 $description .= " | Active link: {$activeLink->payment_link}";
             }
-        } elseif ($action === 'reject') {
-            $claim->update([
-                'status' => 'rejected',
-                'diagnosis_notes' => 'Rejected due to non-payment: ' . ($notes ?? ''),
-            ]);
-            $description .= ' | Claim rejected';
+        } elseif ($action === 'client_reject_payment') {
+            if ($claim->status !== 'waiting_payment') {
+                $message = translate('Client payment rejection is only allowed from waiting payment.');
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->withErrors(['action' => $message]);
+            }
+
+            $pendingCharges = $claim->charges()->where('is_paid', false)->get();
+            $pendingAmount = (float)$pendingCharges->sum('amount');
+            $pendingIds = $pendingCharges->pluck('id')->map(fn($id) => (int)$id)->values()->all();
+            $existingNotes = trim((string)$claim->diagnosis_notes);
+
+            DB::transaction(function () use ($claim, $pendingCharges, $pendingAmount, $pendingIds, $notes, $existingNotes) {
+                if ($pendingCharges->isNotEmpty()) {
+                    $pendingCharges->each->update(['is_paid' => true]);
+                }
+
+                $rejectNotes = trim((string)$notes);
+                if ($pendingAmount > 0) {
+                    $rejectNotes = trim($rejectNotes . " | Rejected charge amount: {$pendingAmount}");
+                }
+
+                $this->createClaimPaymentRecord(
+                    claim: $claim,
+                    channel: 'client_reject_payment',
+                    status: 'rejected',
+                    amount: 0,
+                    chargeIds: $pendingIds,
+                    notes: $rejectNotes !== '' ? $rejectNotes : null,
+                    metadata: [
+                        'rejected_charge_amount' => $pendingAmount,
+                    ]
+                );
+
+                $closeNote = 'Client rejected payment and received the battery back without repair.';
+                if ($notes) {
+                    $closeNote .= " Notes: {$notes}";
+                }
+
+                $claim->update([
+                    'status' => 'closed',
+                    'resolved_at' => $claim->resolved_at ?? now(),
+                    'is_fee_waived' => true,
+                    'diagnosis_notes' => $existingNotes ? "{$existingNotes}\n{$closeNote}" : $closeNote,
+                ]);
+            });
+
+            $description .= ' | Client rejected payment | Battery returned without repair | Claim closed';
         } elseif ($action === 'waive') {
             $waived = $claim->charges()->where('is_paid', false)->get();
             $wasWaitingPayment = $claim->status === 'waiting_payment';
@@ -653,6 +721,9 @@ class WarrantyClaimController extends Controller
         ]);
 
         $message = translate('Payment handled successfully.');
+        if ($action === 'client_reject_payment') {
+            $message = translate('Claim closed without repair after client rejected payment.');
+        }
         if ($generatedLink) {
             $message = translate('Payment link generated successfully.');
         }
@@ -711,6 +782,31 @@ class WarrantyClaimController extends Controller
         ]);
     }
 
+    private function hasWarrantyClaimPaymentsTable(?string $connectionName = null): bool
+    {
+        static $hasTableByConnection = [];
+        $connectionKey = $connectionName ?: '__default__';
+
+        if (!array_key_exists($connectionKey, $hasTableByConnection)) {
+            $schema = $connectionName ? Schema::connection($connectionName) : Schema::connection(config('database.default'));
+            $hasTableByConnection[$connectionKey] = $schema->hasTable('warranty_claim_payments');
+        }
+
+        return (bool)$hasTableByConnection[$connectionKey];
+    }
+
+    private function isMissingWarrantyClaimPaymentsTableException(QueryException $exception): bool
+    {
+        $sqlState = (string)($exception->errorInfo[0] ?? '');
+        $driverCode = (int)($exception->errorInfo[1] ?? 0);
+        $message = strtolower($exception->getMessage());
+
+        return (
+            ($sqlState === '42s02' || $driverCode === 1146)
+            && str_contains($message, 'warranty_claim_payments')
+        );
+    }
+
     private function formatPaymentDispatchSummary(?array $dispatchStatus): string
     {
         if (!$dispatchStatus) {
@@ -742,8 +838,8 @@ class WarrantyClaimController extends Controller
             'tamper_detected'   => $request->boolean('tamper_detected'),
         ];
 
-        // ——— AUTO REJECT IF TAMPER + REJECT ———
-        if ($request->repair_or_replace === 'reject' || $request->boolean('tamper_detected')) {
+        // Reject only when the selected action is reject.
+        if ($request->repair_or_replace === 'reject') {
             $claim->update(array_merge($update, ['status' => 'rejected']));
             $description = "Diagnosis: {$request->diagnosis_notes} | REJECTED | Tamper: " . ($request->boolean('tamper_detected') ? 'Yes' : 'No');
             $claim->timelineEvents()->create([
@@ -812,7 +908,7 @@ class WarrantyClaimController extends Controller
             $actionText .= " ({$request->replacement_fee_option}, {$request->replacement_mode})";
         }
 
-        $description = "Diagnosis: {$request->diagnosis_notes} | Action: {$actionText}";
+        $description = "Diagnosis: {$request->diagnosis_notes} | Action: {$actionText} | Tamper: " . ($request->boolean('tamper_detected') ? 'Yes' : 'No');
 
         if ($hasCharges) {
             $feeTexts = collect($charges)->map(fn($c) => "{$c['charge_type']} = {$c['amount']}")->implode(', ');

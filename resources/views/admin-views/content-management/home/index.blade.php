@@ -163,13 +163,14 @@
                     status: status
                 },
                 success: function (response) {
-                    toastr.success('Status updated successfully');
+                    toastr.success(@json(__('Status updated successfully')));
                 },
                 error: function () {
-                    toastr.error('Failed to update status');
+                    toastr.error(@json(__('Failed to update status')));
                 }
             });
         });
     });
 </script>
 @endpush
+

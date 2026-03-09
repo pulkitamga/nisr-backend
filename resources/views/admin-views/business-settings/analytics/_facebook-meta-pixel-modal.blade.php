@@ -4,7 +4,7 @@
         <div class="modal-content">
             <div class="modal-header border-0 pb-0 pt-2 px-2 d-flex justify-content-end">
                 <button type="button" class="bg-transparent border-0 btn-close fz-22 p-0 text-black"
-                        data-dismiss="modal" aria-label="Close"><i class="tio-clear"></i>
+                        data-dismiss="modal" aria-label="{{ translate('Close') }}"><i class="tio-clear"></i>
                 </button>
             </div>
             <div class="modal-body px-4 px-sm-5 pt-0">
@@ -58,3 +58,4 @@
         </div>
     </div>
 </div>
+

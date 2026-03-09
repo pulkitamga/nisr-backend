@@ -13,7 +13,7 @@ $direction = Session::get('direction');
 ?>
 
     <!DOCTYPE html>
-<html lang="{{ $lang }}" class="{{ $direction === 'rtl'?'active':'' }}">
+<html lang="{{ $lang }}" class="{{ $direction === 'rtl'?'active':'' }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

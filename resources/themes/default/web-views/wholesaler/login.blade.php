@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 
 <head>
     <meta charset="utf-8">
@@ -62,7 +62,7 @@
                             <label class="input-label" for="signingVendorEmail">{{translate('your_email')}}</label>
 
                             <input type="email" class="form-control form-control-lg" name="user_identity" id="si-email"
-                                tabindex="1" placeholder="email@address.com" aria-label="email@address.com" required
+                                tabindex="1" placeholder="{{ translate('enter_email_address') }}" aria-label="{{ translate('enter_email_address') }}" required
                                 data-msg="Please enter a valid email address.">
                         </div>
                         <div class="js-form-message form-group">
@@ -79,7 +79,7 @@
                                 <input type="password" class="js-toggle-password form-control form-control-lg"
                                     name="password" type="password" id="si-password"
                                     placeholder="{{ translate('8+_characters_required') }}"
-                                    aria-label="8+ characters required" required
+                                    aria-label="{{ translate('8+_characters_required') }}" required
                                     data-msg="Your password is invalid. Please try again."
                                     data-hs-toggle-password-options='{
                                                 "target": "#changePassTarget",
@@ -206,7 +206,7 @@
                             res.status === 'true';
 
                         if (isSuccess) {
-                            toastr.success(res.message || "Login successful");
+                            toastr.success(res.message || @json(__('Login successful')));
 
                             if (res.redirect_url) {
                                 window.location.href = res.redirect_url;
@@ -215,12 +215,12 @@
                             }
 
                         } else {
-                            toastr.error(res.message || "Login failed");
+                            toastr.error(res.message || @json(__('Login failed')));
                         }
                     },
 
                     error: function(xhr) {
-                        let message = "Something went wrong!";
+                        let message = @json(__('Something went wrong!'));
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             message = xhr.responseJSON.message;
                         }

@@ -18,7 +18,7 @@
             <div class="text-center">
                 <img class="object-fit-contain height-300px" loading="lazy" src="{{dynamicAsset(path: 'public/assets/front-end/img/maintenance-mode-icon.png')}}" alt="{{ translate('maintenance-mode') }}">
                 <h3 class="mt-3">
-                    {{ 'System database is being refreshed, please keep patience. System will be up in 2 minutes....' }}
+                    {{ __('System database is being refreshed, please keep patience. System will be up in 2 minutes....') }}
                 </h3>
                 <br>
             </div>

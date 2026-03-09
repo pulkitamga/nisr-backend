@@ -100,7 +100,7 @@
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                placeholder="{{ translate('search_by_Product_or_Customer') }}"
-                               aria-label="Search orders" value="{{ request('searchValue') }}" required>
+                               aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}" required>
                         <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                     </div>
                 </form>
@@ -270,7 +270,7 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <button type="button" class="close text-BFBFBF" data-dismiss="modal" aria-label="Close">
+                                    <button type="button" class="close text-BFBFBF" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                         <i class="tio-clear-circle"></i>
                                     </button>
                                 </div>
@@ -341,7 +341,7 @@
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <button type="button" class="close text-BFBFBF" data-dismiss="modal" aria-label="Close">
+                                <button type="button" class="close text-BFBFBF" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                     <i class="tio-clear-circle"></i>
                                 </button>
                             </div>
@@ -421,3 +421,4 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/search-product.js')}}"></script>
 @endpush
+

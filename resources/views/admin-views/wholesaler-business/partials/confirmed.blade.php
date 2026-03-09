@@ -17,7 +17,7 @@
                                 </div>
                             </div>
                             <input id="datatableSearch_" type="search" class="form-control"
-                                placeholder="{{ translate('Search...') }}" aria-label="Search">
+                                placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                         </div>
                     </div>
 
@@ -30,17 +30,17 @@
 <table class="table table-hover table-bordered">
     <thead class="bg-light">
          <tr>
-            <th>Sl</th>
-            <th>Date</th>
-            <th class="text-nowrap">Purchase Order No</th>
-            <th class="text-nowrap">Quotation No</th>
-            <th class="text-nowrap">Confirm Order No</th>
-            <th class="text-nowrap">Invoice No</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th class="text-nowrap">Delivery Status</th>
-            <th class="text-nowrap">Payment Status</th>
-            <th>Action</th>
+            <th>{{ translate('SL') }}</th>
+            <th>{{ __('Date') }}</th>
+            <th class="text-nowrap">{{ __('Purchase Order No') }}</th>
+            <th class="text-nowrap">{{ __('Quotation No') }}</th>
+            <th class="text-nowrap">{{ __('Confirm Order No') }}</th>
+            <th class="text-nowrap">{{ __('Invoice No') }}</th>
+            <th>{{ __('Total') }}</th>
+            <th>{{ __('Status') }}</th>
+            <th class="text-nowrap">{{ __('Delivery Status') }}</th>
+            <th class="text-nowrap">{{ __('Payment Status') }}</th>
+            <th>{{ __('Action') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -107,11 +107,11 @@
 
                                             {{-- Popup --}}
                                             <div class="action-popup shadow-sm p-2 bg-white border rounded d-none position-absolute z-3"
-                                                style="top: 100%; left: 0; min-width: 150px;">
+                                                style="top: 100%; inset-inline-start: 0; min-width: 150px;">
                                                 @if (!$c->invoice_no)
                                                 <a href="javascript:void(0)" class="dropdown-item text-dark py-1 px-2"
                                                     onclick="openInvoicePopup({{ $c->id }})">
-                                                    <i class="tio-edit"></i> Invoice No
+                                                    <i class="tio-edit"></i> {{ translate('Invoice No') }}
                                                 </a>
                                                 @endif
 
@@ -119,7 +119,7 @@
                                                 @if (!$c->confirm_order_no)
                                                 <a href="javascript:void(0)" class="dropdown-item text-dark py-1 px-2"
                                                     onclick="openConfirmOrderPopup({{ $c->id }})">
-                                                    <i class="tio-edit"></i> Confirm Order No
+                                                    <i class="tio-edit"></i> {{ translate('Confirm Order No') }}
                                                 </a>
                                                 @endif
 
@@ -127,16 +127,16 @@
 
                                                 <a class="dropdown-item text-dark py-1 px-2"
                                                     href="{{ route('admin.wholesale.business.orders.payment', $c->id) }}">
-                                                    <i class="tio-wallet"></i> Payment
+                                                    <i class="tio-wallet"></i> {{ translate('Payment') }}
                                                 </a>
                                                 <a class="dropdown-item text-dark py-1 px-2"
                                                     href="{{ route('admin.wholesale.business.orders.delivery', $c->id) }}">
-                                                    <i class="tio-truck"></i> Delivery
+                                                    <i class="tio-truck"></i> {{ translate('Delivery') }}
                                                 </a>
                                                 <a class="dropdown-item text-danger py-1 px-2"
                                                     href="javascript:void(0);"
                                                     onclick="confirmAndDelete('{{ route('admin.wholesale.business.confirem.order.delete', $c->id) }}')">
-                                                    <i class="tio-delete"></i> Delete
+                                                    <i class="tio-delete"></i> {{ translate('Delete') }}
                                                 </a>
                                             </div>
                                         </div>
@@ -166,3 +166,4 @@
     });
 });
 </script>
+

@@ -150,10 +150,10 @@
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
-                                                <a title="Delete" class="btn btn-outline-danger square-btn delete-data" data-id="vendor-{{ $vendor['id']}}" href="javascript:">
+                                                <a title="{{ translate('Delete') }}" class="btn btn-outline-danger square-btn delete-data" data-id="vendor-{{ $vendor['id']}}" href="javascript:">
                                                     <i class="tio-delete"></i>
                                                 </a>
-                                                <a class="btn btn-outline-primary btn-sm square-btn" title="View"
+                                                <a class="btn btn-outline-primary btn-sm square-btn" title="{{ translate('View') }}"
                                                    href="{{ route('admin.vendors.view', ['id' => $vendor['user_id'], 'tab' => 'clearance_sale']) }}">
                                                     <i class="tio-invisible"></i>
                                                 </a>
@@ -189,3 +189,4 @@
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/deal.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/clearance-sale-script.js') }}"></script>
 @endpush
+

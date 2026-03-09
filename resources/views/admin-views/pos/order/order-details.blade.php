@@ -28,7 +28,7 @@
                                 <a class="btn btn--primary px-4" target="_blank"
                                     href="{{ route('admin.orders.generate-invoice',[$order['id']]) }}">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
-                                        alt="" class="mr-1">
+                                        alt="" class="me-1">
                                     {{ translate('print_Invoice') }}
                                 </a>
                             </div>

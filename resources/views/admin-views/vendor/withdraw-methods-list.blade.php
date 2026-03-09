@@ -32,7 +32,7 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                               placeholder="{{translate('search_Method_Name')}}" aria-label="Search orders"
+                                               placeholder="{{translate('search_Method_Name')}}" aria-label="{{ translate('Search orders') }}"
                                                value="{{ request('searchValue') }}" required>
                                         <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
@@ -151,3 +151,4 @@
           data-error="{{translate('default_Method_updated_failed').'!!'}}">
     </span>
 @endsection
+

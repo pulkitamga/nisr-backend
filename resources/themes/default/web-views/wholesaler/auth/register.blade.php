@@ -210,7 +210,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg">
             <div class="modal-header border-0 pb-0 d-flex justify-content-end">
-                <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
+                <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
                         class="tio-clear"></i></button>
             </div>
             <div class="modal-body px-4 px-sm-5 pt-0">
@@ -271,7 +271,7 @@ $(document).on("change", ".toggle-pass", function () {
         e.preventDefault();
 
  if ({{ auth('customer')->check() ? 'true' : 'false' }}) {
-        toastr.error("You are already logged in with another account. Logout then continue.");
+        toastr.error(@json(__('You are already logged in with another account. Logout then continue.')));
         return false; 
     }
         let form = $(this);
@@ -284,7 +284,7 @@ $(document).on("change", ".toggle-pass", function () {
         'X-Requested-With': 'XMLHttpRequest'  
     },
             beforeSend: function() {
-                $("#sign-up").attr("disabled", true).html("Processing...");
+                $("#sign-up").attr("disabled", true).html(@json(__('Processing...')));
             },
             success: function(response) {
         console.log("✅ AJAX Success Response:", response);
@@ -329,3 +329,4 @@ $(document).on("change", ".toggle-pass", function () {
 
 
 @endpush
+

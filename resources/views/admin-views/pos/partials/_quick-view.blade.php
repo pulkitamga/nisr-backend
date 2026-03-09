@@ -253,8 +253,9 @@
                                                 <input type="text" name="exchange_quantity"
                                                     id="exchange-quantity"
                                                     class=" form-control input-number text-center exchange-qty-field"
-                                                    placeholder="0" value="0" min="0" max="99"
+                                                    placeholder="1" value="0" min="0" max="99"
                                                     disabled
+                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                                     data-price="{{ $product->extraCharges['exchange'] }}">
                                                 <button type="button"
                                                     class="btn-number bg-transparent exchange-qty-field-plus"

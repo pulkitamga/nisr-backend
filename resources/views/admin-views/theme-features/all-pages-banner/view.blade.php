@@ -114,7 +114,7 @@
                                             <input id="datatableSearch_" type="search" name="searchValue"
                                                    class="form-control"
                                                    placeholder="{{ translate('Search_by_Banner_Type') }}"
-                                                   aria-label="Search orders" value="{{ request('searchValue') }}">
+                                                   aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                             <button type="submit" class="btn btn--primary">
                                                 {{ translate('Search') }}
                                             </button>
@@ -213,3 +213,4 @@
 @push('script')
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/banner.js') }}"></script>
 @endpush
+

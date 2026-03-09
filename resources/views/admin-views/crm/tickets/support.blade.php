@@ -28,7 +28,7 @@
                                     <input id="datatableSearch_" type="search" name="searchValue"
                                         class="form-control"
                                         placeholder="{{ translate('search_ticket_by_subject_customer_email_phone_priority_or_status').'...' }}"
-                                        aria-label="Search orders" value="{{ request('searchValue') }}">
+                                        aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                     <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                 </div>
                             </form>
@@ -219,7 +219,7 @@
                             @if(strtolower($ticket->status_details?->name ?? '') !== 'closed')
                             <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showSupportFollowUpModal"
                                 data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}"
-                                data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" title="Follow-up details">
+                                data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" title="{{ translate('Follow-up details') }}">
                                 {{ translate('Follow Up') }}
                             </a>
                             @endif
@@ -251,7 +251,7 @@
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
                 <h3>{{ translate('Support Follow Up') }}</h3>
-                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <i class="tio-clear"></i>
                 </button>
             </div>
@@ -261,11 +261,17 @@
                     <input type="hidden" name="ticket_id" id="support-follow-up-ticket-id">
                     <input type="hidden" name="department_id" id="support-follow-up-department-id">
                     <input type="hidden" name="employee_id" id="support-follow-up-employee-id">
+                    @php
+                        $supportInProgressStatusId = (int) optional($aAllStatus->first(function ($statusOption) {
+                            $normalizedStatusName = strtolower(str_replace([' ', '-'], '_', trim((string) ($statusOption['name'] ?? ''))));
+                            return in_array($normalizedStatusName, ['in_progress', 'inprogress'], true);
+                        }))->id;
+                    @endphp
                     <div class="row mt-3">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" for="support-follow-up-status">{{ translate('Select Status') }}</label>
-                                <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="support-follow-up-status">
+                                <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="support-follow-up-status" data-in-progress-id="{{ $supportInProgressStatusId }}">
                                     <option value="0" selected disabled>{{ translate('Select Status') }}</option>
                                     @foreach ($aAllStatus as $statusOption)
                                     <option value="{{ $statusOption['id'] }}" data-status-name="{{ strtolower($statusOption['name'] ?? '') }}">{{ translate($statusOption['name']) }}</option>
@@ -304,7 +310,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateTicketModalLabel">{{ translate('Escalate Ticket') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -332,6 +338,7 @@
 <span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
 <span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
 <span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="support-ticket-follow-up-date-required" data-text="{{ translate('follow_up_date_required_for_in_progress') }}"></span>
 @endsection
 
 @push('script')
@@ -339,3 +346,4 @@
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
 
 @endpush
+

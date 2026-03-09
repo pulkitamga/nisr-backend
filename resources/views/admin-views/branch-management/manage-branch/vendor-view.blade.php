@@ -41,37 +41,37 @@
                                 <ul class="customer-details-new-card-content-list">
                                     <li>
                                         <span class="key">{{translate('contact')}}</span>
-                                        <span class="mr-3">:</span>
+                                        <span class="me-3">:</span>
                                         <strong class="value">{{!empty($vendor->phone) ? $vendor->phone : translate('no_data_found')}}</strong>
                                     </li>
                                     <li>
                                         <span class="key">{{translate('email')}}</span>
-                                        <span class="mr-3">:</span>
+                                        <span class="me-3">:</span>
                                         <strong class="value">{{$vendor->email ?? translate('no_data_found')}}</strong>
                                     </li>
                                     <li>
                                         <span class="key">{{translate('status')}}</span>
-                                        <span class="mr-3">:</span>
+                                        <span class="me-3">:</span>
                                         <strong class="value">{{ $vendor->status == 1 ? translate('active') : translate('inactive') }}</strong>
                                     </li>
                                     <li>
                                         <span class="key">{{translate('free_delivery_over_amount')}}</span>
-                                        <span class="mr-3">:</span>
+                                        <span class="me-3">:</span>
                                         <strong class="value">{{$vendor->free_delivery_over_amount ?? translate('no_data_found')}}</strong>
                                     </li>
                                     <li>
                                         <span class="key">{{translate('sales_commission_percentage')}}</span>
-                                        <span class="mr-3">:</span>
+                                        <span class="me-3">:</span>
                                         <strong class="value">{{$vendor->sales_commission_percentage ?? translate('no_data_found')}}</strong>
                                     </li>
                                     <li>
                                         <span class="key">{{translate('gst')}}</span>
-                                        <span class="mr-3">:</span>
+                                        <span class="me-3">:</span>
                                         <strong class="value">{{$vendor->gst ?? translate('no_data_found')}}</strong>
                                     </li>
                                     <li>
                                         <span class="key">{{translate('minimum_order_amount')}}</span>
-                                        <span class="mr-3">:</span>
+                                        <span class="me-3">:</span>
                                         <strong class="value">{{$vendor->minimum_order_amount ?? translate('no_data_found')}}</strong>
                                     </li>
                                 </ul>
@@ -88,27 +88,27 @@
                         <ul class="customer-details-new-card-content-list">
                             <li>
                                 <span class="key">{{translate('bank_name')}}</span>
-                                <span class="mr-3">:</span>
+                                <span class="me-3">:</span>
                                 <strong class="value">{{$vendor->bank_name ?? translate('no_data_found')}}</strong>
                             </li>
                             <li>
                                 <span class="key">{{translate('account_no')}}</span>
-                                <span class="mr-3">:</span>
+                                <span class="me-3">:</span>
                                 <strong class="value">{{$vendor->account_no ?? translate('no_data_found')}}</strong>
                             </li>
                             <li>
                                 <span class="key">{{translate('holder_name')}}</span>
-                                <span class="mr-3">:</span>
+                                <span class="me-3">:</span>
                                 <strong class="value">{{$vendor->holder_name ?? translate('no_data_found')}}</strong>
                             </li>
                             <li>
                                 <span class="key">{{translate('branch')}}</span>
-                                <span class="mr-3">:</span>
+                                <span class="me-3">:</span>
                                 <strong class="value">{{$vendor->branch ?? translate('no_data_found')}}</strong>
                             </li>
                             <li>
                                 <span class="key">{{translate('app_language')}}</span>
-                                <span class="mr-3">:</span>
+                                <span class="me-3">:</span>
                                 <strong class="value">{{$vendor->app_language ?? translate('no_data_found')}}</strong>
                             </li>
                         </ul>

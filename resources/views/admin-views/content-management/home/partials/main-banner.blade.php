@@ -108,7 +108,7 @@ $defaultLanguage = $languages[0] ?? 'en';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('Edit Banner') }}</h5>
-                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -199,7 +199,7 @@ $defaultLanguage = $languages[0] ?? 'en';
 
                 <input type="hidden" name="section" value="{{ $currentType }}">
                 <div class="modal-header">
-                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cms-modal-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -311,11 +311,11 @@ $defaultLanguage = $languages[0] ?? 'en';
                 if (response.success) {
                     location.reload(); // Or use remove() to delete row instantly
                 } else {
-                    alert('Delete failed!');
+                    alert(@json(__('Delete failed!')));
                 }
             },
             error: function() {
-                alert('Something went wrong.');
+                alert(@json(__('Something went wrong.')));
             }
         });
     }
@@ -489,8 +489,9 @@ $defaultLanguage = $languages[0] ?? 'en';
             section: section
         }, function(data) {
             if (data.success) {
-                toastr.success("Status updated!");
+                toastr.success(@json(__('Status updated!')));
             }
         });
     });
 </script>
+

@@ -308,9 +308,9 @@
           let selectedCountryName = $(this).find('option:selected').text().trim();
     $('#country_name').val(selectedCountryName);
         const countryCode = $(this).val();
-        $('#state_id').empty().append('<option value="">Select State</option>');
-        $('#city_id').empty().append('<option value="">Select City</option>');
-        $('#area').empty().append('<option value="">Select Area</option>');
+        $('#state_id').empty().append('<option value="">{{ __('Select State') }}</option>');
+        $('#city_id').empty().append('<option value="">{{ __('Select City') }}</option>');
+        $('#area').empty().append('<option value="">{{ __('Select Area') }}</option>');
 
         $.get(getStatesURL, { country: countryCode }, function (states) {
             $.each(states, function (i, state) {
@@ -327,8 +327,8 @@
         $('#state_name').val(selected.data('name'));
 
         const stateId = $(this).val();
-        $('#city_id').empty().append('<option value="">Select City</option>');
-        $('#area').empty().append('<option value="">Select Area</option>');
+        $('#city_id').empty().append('<option value="">{{ __('Select City') }}</option>');
+        $('#area').empty().append('<option value="">{{ __('Select Area') }}</option>');
 
         $.get(getCitiesURL, { state_id: stateId }, function (cities) {
             $.each(cities, function (i, city) {
@@ -345,7 +345,7 @@
         $('#city_name').val(selected.data('name'));
 
         const cityId = $(this).val();
-        $('#area').empty().append('<option value="">Select Area</option>');
+        $('#area').empty().append('<option value="">{{ __('Select Area') }}</option>');
 
         $.get(getAreasURL, { city_id: cityId }, function (areas) {
             $.each(areas, function (i, area) {

@@ -16,7 +16,7 @@
     }
 
     [dir="rtl"] .padd-input-div {
-        padding-right: 1.4rem;
+        padding-inline-end: 1.4rem;
     }
 
     [dir="rtl"] .radio-input-label::after,

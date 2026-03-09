@@ -6,7 +6,7 @@
         <div>
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                 <h2 class="h1 mb-0">
-                    <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 mr-1" alt="">
+                    <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 me-1" alt="">
                     {{translate('product_gallery')}}
                 </h2>
                 <span class="badge badge-soft-dark radius-50 fz-14">{{$products->total()}}</span>
@@ -57,7 +57,7 @@
                                     <input type="hidden" name="vendor_id" value="{{ request('vendor_id') }}">
                                     <input type="search" name="searchValue" class="form-control"
                                            placeholder="{{translate('search_by_product_name')}}"
-                                           aria-label="Search orders" value="{{ request('searchValue') }}">
+                                           aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
                                     <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                 </div>
                             </form>
@@ -217,3 +217,4 @@
     </div>
     <span id="get-product-gallery-route" data-action="{{route('admin.products.product-gallery')}}" data-brand-id="{{request('brand_id')}}" data-category-id="{{request('category_id')}}" data-vendor-id="{{request('vendor_id')}}">
 @endsection
+

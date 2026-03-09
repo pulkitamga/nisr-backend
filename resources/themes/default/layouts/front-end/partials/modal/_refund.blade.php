@@ -79,7 +79,7 @@
                             <div>-{{ webCurrencyConverter(amount: $order_details->discount) }}</div>
                         </div>
                         <div class="d-flex justify-content-between gap-2">
-                            <div class="text-muted">vat/tax</div>
+                            <div class="text-muted">{{ __('vat/tax') }}</div>
                             <div>{{ webCurrencyConverter(amount: $order_details->tax) }}</div>
                         </div>
                         <?php

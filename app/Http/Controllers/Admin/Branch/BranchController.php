@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin\Branch;
 
 use App\Models\Admin;
+use App\Models\Deal;
+use App\Models\Lead;
 use App\Models\State;
 use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\WebConfigKey;
@@ -650,6 +652,60 @@ class BranchController extends BaseController
             ->values();
     }
 
+    public function getActiveBranchManagers()
+    {
+        $branchManagerRoles = array_values(array_unique(array_filter([
+            AdminPermissionRegistry::branchManagerRole(),
+            'Branch Manager',
+            'Operations Manager',
+        ])));
+
+        $branchManagers = Admin::query()
+            ->active()
+            ->withRole($branchManagerRoles)
+            ->orderBy('name')
+            ->get();
+
+        if ($branchManagers->isNotEmpty()) {
+            return $branchManagers;
+        }
+
+        $leadEmployeeIds = Lead::query()
+            ->whereNotNull('employee_id')
+            ->where('employee_id', '>', 0)
+            ->pluck('employee_id');
+        $leadOwnerIds = Lead::query()
+            ->whereNotNull('owner_id')
+            ->where('owner_id', '>', 0)
+            ->pluck('owner_id');
+        $dealEmployeeIds = Deal::query()
+            ->whereNotNull('employee_id')
+            ->where('employee_id', '>', 0)
+            ->pluck('employee_id');
+        $dealOwnerIds = Deal::query()
+            ->whereNotNull('owner_id')
+            ->where('owner_id', '>', 0)
+            ->pluck('owner_id');
+
+        $assignedIds = $leadEmployeeIds
+            ->merge($leadOwnerIds)
+            ->merge($dealEmployeeIds)
+            ->merge($dealOwnerIds)
+            ->map(fn($id) => (int)$id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($assignedIds)) {
+            return collect();
+        }
+
+        return Admin::query()
+            ->active()
+            ->whereIn('id', $assignedIds)
+            ->orderBy('name')
+            ->get();
 
 
     // public function fGetBranchesStockHistory(Request $request, $branch_id, $product_id)

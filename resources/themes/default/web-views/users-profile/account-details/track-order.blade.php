@@ -315,24 +315,24 @@
                 </div>
                 <div class="track-unique-header" style="display: flex !important; align-items: center !important; gap: 6px !important; color: #6b7280 !important; font-size: 13px !important; margin-bottom: 12px !important;">
                     <i class="far fa-clock"></i>
-                    <span>Last updated at: <span id="bosta-updated-time">Please wait...</span></span>
+                    <span>{{ __('Last updated at') }}: <span id="bosta-updated-time">{{ __('Please wait...') }}</span></span>
                 </div>
 
                 <h1 class="track-unique-title" style="font-size: 32px !important; font-weight: 700 !important; color: #000000 !important; margin-bottom: 50px !important; letter-spacing: -0.5px !important; display: block !important;">
-                    Will arrive on <span class="track-unique-highlight" id="bosta-status-val" style="color: #239e92 !important;">Soon</span>
+                    {{ __('Will arrive on') }} <span class="track-unique-highlight" id="bosta-status-val" style="color: #239e92 !important;">{{ __('Soon') }}</span>
                 </h1>
 
                 <div class="track-unique-stepper" style="display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: flex-start !important; position: relative !important; width: 100% !important; min-height: 100px !important; padding: 0 !important;">
 
-                    <div class="track-unique-bar-bg" style="position: absolute !important; top: 16px !important; left: 5%; right: 5%; height: 2px !important; background-color: #e5e7eb !important; z-index: 1 !important;"></div>
+                    <div class="track-unique-bar-bg" style="position: absolute !important; top: 16px !important; inset-inline-start: 5%; inset-inline-end: 5%; height: 2px !important; background-color: #e5e7eb !important; z-index: 1 !important;"></div>
 
-                    <div class="track-unique-bar-fill" id="bosta-line-fill" style="position: absolute !important; top: 16px !important; left: 5%; width: 0%; height: 2px !important; background-color: #10b981 !important; z-index: 2 !important; transition: width 0.8s ease !important;"></div>
+                    <div class="track-unique-bar-fill" id="bosta-line-fill" style="position: absolute !important; top: 16px !important; inset-inline-start: 5%; width: 0%; height: 2px !important; background-color: #10b981 !important; z-index: 2 !important; transition: width 0.8s ease !important;"></div>
 
                     <div class="track-unique-node" data-code="10" style="display: flex !important; flex-direction: column !important; align-items: center !important; flex: 1 !important; position: relative !important; z-index: 3 !important;">
                         <div class="track-unique-icon" style="width: 32px !important; height: 32px !important; border-radius: 50% !important; border: 2px solid #d1d5db !important; background-color: #ffffff !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-bottom: 16px !important;">
                             <i class="fas fa-check" style="color: #ffffff !important; font-size: 14px !important; display: none;"></i>
                         </div>
-                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">Order Created</div>
+                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">{{ __('Order Created') }}</div>
                         <div class="track-unique-date" id="date-node-10" style="font-size: 12px !important; color: #6b7280 !important; text-align: center !important;">-</div>
                     </div>
 
@@ -340,7 +340,7 @@
                         <div class="track-unique-icon" style="width: 32px !important; height: 32px !important; border-radius: 50% !important; border: 2px solid #d1d5db !important; background-color: #ffffff !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-bottom: 16px !important;">
                             <i class="fas fa-check" style="color: #ffffff !important; font-size: 14px !important; display: none;"></i>
                         </div>
-                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">Order Picked Up</div>
+                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">{{ __('Order Picked Up') }}</div>
                         <div class="track-unique-date" id="date-node-21" style="font-size: 12px !important; color: #6b7280 !important; text-align: center !important;">-</div>
                     </div>
 
@@ -348,7 +348,7 @@
                         <div class="track-unique-icon" style="width: 32px !important; height: 32px !important; border-radius: 50% !important; border: 2px solid #d1d5db !important; background-color: #ffffff !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-bottom: 16px !important;">
                             <i class="fas fa-check" style="color: #ffffff !important; font-size: 14px !important; display: none;"></i>
                         </div>
-                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">In Progress</div>
+                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">{{ __('In Progress') }}</div>
                         <div class="track-unique-date" id="date-node-30" style="font-size: 12px !important; color: #6b7280 !important; text-align: center !important;">-</div>
                     </div>
 
@@ -356,7 +356,7 @@
                         <div class="track-unique-icon" style="width: 32px !important; height: 32px !important; border-radius: 50% !important; border: 2px solid #d1d5db !important; background-color: #ffffff !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-bottom: 16px !important;">
                             <i class="fas fa-check" style="color: #ffffff !important; font-size: 14px !important; display: none;"></i>
                         </div>
-                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">Out for Delivery</div>
+                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">{{ __('Out for Delivery') }}</div>
                         <div class="track-unique-date" id="date-node-41" style="font-size: 12px !important; color: #6b7280 !important; text-align: center !important;">-</div>
                     </div>
 
@@ -364,7 +364,7 @@
                         <div class="track-unique-icon" style="width: 32px !important; height: 32px !important; border-radius: 50% !important; border: 2px solid #d1d5db !important; background-color: #ffffff !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-bottom: 16px !important;">
                             <i class="fas fa-check" style="color: #ffffff !important; font-size: 14px !important; display: none;"></i>
                         </div>
-                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">Delivered</div>
+                        <div class="track-unique-label" style="font-size: 14px !important; font-weight: 500 !important; color: #9ca3af !important; text-align: center !important;">{{ __('Delivered') }}</div>
                         <div class="track-unique-date" id="date-node-45" style="font-size: 12px !important; color: #6b7280 !important; text-align: center !important;">-</div>
                     </div>
                 </div>

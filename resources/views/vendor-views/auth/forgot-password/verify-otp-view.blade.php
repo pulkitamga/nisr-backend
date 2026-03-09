@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <meta name="_token" content="{{ csrf_token() }}">
@@ -99,7 +99,7 @@
     <script>
         "use strict";
         @foreach($errors->all() as $error)
-        toastr.error('{{$error}}', Error, {
+        toastr.error('{{$error}}', @json(__('Error')), {
             CloseButton: true,
             ProgressBar: true
         });
@@ -141,6 +141,7 @@
 
 </body>
 </html>
+
 
 
 

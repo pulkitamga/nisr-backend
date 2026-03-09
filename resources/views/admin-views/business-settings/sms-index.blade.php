@@ -35,7 +35,7 @@
                                 {{ translate('your_current_SMS_settings_are_disabled_because_you_have_enabled_sms_gateway_addon_To_visit_your_currently_active_sms_gateway_settings_please_follow_the_link') }}
                             </h4>
                             <span>
-                            <a href="{{!empty($paymentUrl) ? $paymentUrl : ''}}" class="btn btn-outline-primary"><i class="tio-settings mr-1"></i>{{translate('settings')}}</a>
+                            <a href="{{!empty($paymentUrl) ? $paymentUrl : ''}}" class="btn btn-outline-primary"><i class="tio-settings me-1"></i>{{translate('settings')}}</a>
                         </span>
                         </div>
                     </div>

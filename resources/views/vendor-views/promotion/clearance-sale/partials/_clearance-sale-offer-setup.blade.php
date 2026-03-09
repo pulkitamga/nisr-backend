@@ -120,7 +120,7 @@
                         @endif
                     </div>
                 </div>
-                <div class="col-md-6 ml-auto">
+                <div class="col-md-6 ms-auto">
                     <label class="form-label d-none d-md-block">&nbsp;</label>
                     <div class="btn--container justify-content-end">
                         <a class="btn btn-secondary" href="{{ route('vendor.clearance-sale.index') }}">

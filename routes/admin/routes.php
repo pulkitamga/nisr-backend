@@ -996,7 +996,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('permission:user_section.read,admin')->group(function () {
                 Route::controller(CustomerWalletController::class)->group(function () {
                     Route::get(CustomerWallet::REPORT[URI], 'index')->name('report');
-                    Route::get(CustomerWallet::EXPORT[URI], 'export')->name('export');
+                    Route::get(CustomerWallet::EXPORT[URI], 'exportList')->name('export');
                     Route::get(CustomerWallet::BONUS_SETUP[URI], 'getBonusSetupView')->name('bonus-setup');
                     Route::get(CustomerWallet::BONUS_SETUP_EDIT[URI] . '/{id}', 'getUpdateView')->name('bonus-setup-edit');
                 });
@@ -2049,6 +2049,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                         Route::post('desqualify', 'disqualify')
                             ->name('disqualify.legacy')
                             ->middleware('permission:crm_section.deal_wholesale_disqualify,admin');
+                        Route::post(Deals::MARK_LOST[URI], 'markLost')
+                            ->name('mark-lost')
+                            ->middleware('permission:crm_section.deal_wholesale_disqualify,admin');
+                        Route::post(Deals::CLOSE[URI], 'close')
+                            ->name('close')
+                            ->middleware('permission:crm_section.deal_wholesale_disqualify,admin');
 
                         Route::get(Deals::DEPARTMENT_EMPLOYEE[URI], 'getEmployeesByDepartment')
                             ->name('getemployee');
@@ -2093,6 +2099,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                             ->middleware('permission:crm_section.deal_retail_disqualify,admin');
                         Route::post('desqualify', 'disqualify')
                             ->name('disqualify.legacy')
+                            ->middleware('permission:crm_section.deal_retail_disqualify,admin');
+                        Route::post(Deals::MARK_LOST[URI], 'markLost')
+                            ->name('mark-lost')
+                            ->middleware('permission:crm_section.deal_retail_disqualify,admin');
+                        Route::post(Deals::CLOSE[URI], 'close')
+                            ->name('close')
                             ->middleware('permission:crm_section.deal_retail_disqualify,admin');
 
                         Route::get(Deals::DEPARTMENT_EMPLOYEE[URI], 'getEmployeesByDepartment')

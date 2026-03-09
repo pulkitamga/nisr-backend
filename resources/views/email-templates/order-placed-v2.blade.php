@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -21,7 +21,7 @@
         .color-green { color: green; }
         .table-header-items { background-color: #cacaca; padding: 5px; }
         .table-header-items th { padding: 10px 5px; }
-        .calculation-section { width: 46%; margin-left: 41%; display: inline; }
+        .calculation-section { width: 46%; margin-inline-start: 41%; display: inline; }
         .m-10px { margin: 10px; }
         .width-100 { width: 100%; }
         .width-50 { width: 50%; }

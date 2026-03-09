@@ -43,11 +43,11 @@
                         <label class="form-label">{{ translate('Status') }}</label>
                         <select name="status" class="form-control">
                             <option value="">{{ translate('All') }}</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="Processed" {{ request('status') == 'Processed' ? 'selected' : '' }}>Processed
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
+                            <option value="Processed" {{ request('status') == 'Processed' ? 'selected' : '' }}>{{ translate('Processed') }}
                             </option>
                             <option value="	Quotationsend" {{ request('status') == '	Quotationsend' ? 'selected' : '' }}>
-                                Quotationsend</option>
+                                {{ translate('Quotationsend') }}</option>
                         </select>
                     </div>
 
@@ -79,7 +79,7 @@
                                     </div>
                                 </div>
                                 <input id="datatableSearch_" type="search" class="form-control"
-                                    placeholder="{{ translate('Search...') }}" aria-label="Search">
+                                    placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                             </div>
                             <div class="dropdown">
                                 <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pr-4"
@@ -122,7 +122,7 @@
                             <td>
                                 {{$order->wholeseller->wholesalerBusiness->company_name ?? ''}}
                             </td>
-                            <td>{{ $order->wholeseller_tier ?? 'N/A' }}</td>
+                            <td>{{ $order->wholeseller_tier ?? __('N/A') }}</td>
                             <td>
                                 @php
                                 $status = $order->status;
@@ -179,7 +179,7 @@
                                                     <h5 class="modal-title">{{ translate('Assign Purchase Order No') }}</h5>
                                                     <button type="button"
                                                         class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-                                                        data-bs-dismiss="modal" aria-label="Close"> <span
+                                                        data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> <span
                                                             aria-hidden="true">x</span></i></button>
 
 
@@ -209,7 +209,7 @@
                                     <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
                                     <td>{{ $order->purchase_order_no }}</td>
                                     <td>{{ $order->wholeseller->wholesalerBusiness->company_name ?? '' }}</td>
-                                    <td>{{ $order->wholeseller_tier ?? 'N/A' }}</td>
+                                    <td>{{ $order->wholeseller_tier ?? __('N/A') }}</td>
                                     <td>
                                         @php
                                             $status = strtolower($order->status);
@@ -294,7 +294,7 @@
                         <h5 class="modal-title">{{ translate('Assign Purchase Order No') }}</h5>
                         <button type="button"
                             class="radius-50 border-0 font-weight-bold text-black-50 position-absolute right-3 top-3 z-index-99"
-                            data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true">x</span></i></button>
+                            data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> <span aria-hidden="true">x</span></i></button>
 
 
                     </div>
@@ -354,14 +354,14 @@
     <script>
         function confirmAndDelete(deleteUrl) {
             Swal.fire({
-                title: 'Confirm Deletion',
-                text: 'Are you sure you want to delete this order?',
+                title: @json(__('Confirm Deletion')),
+                text: @json(__('Are you sure you want to delete this order?')),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel'
+                confirmButtonText: @json(__('Yes, delete it!')),
+                cancelButtonText: @json(__('Cancel'))
             }).then((result) => {
                 if (result.isConfirmed) {
                     submitDeleteForm(deleteUrl);
@@ -390,11 +390,11 @@
                 number: poNo
             }, function(res) {
                 if (res.exists) {
-                    $('#availabilityMessage').text('Order number already exists').addClass('text-danger')
+                    $('#availabilityMessage').text(@json(__('Order number already exists'))).addClass('text-danger')
                         .removeClass('text-success');
                     $('#submitOrderNo').prop('disabled', true);
                 } else {
-                    $('#availabilityMessage').text('Order number available').addClass('text-success')
+                    $('#availabilityMessage').text(@json(__('Order number available'))).addClass('text-success')
                         .removeClass('text-danger');
                     $('#submitOrderNo').prop('disabled', false);
                 }
@@ -418,3 +418,5 @@
         });
     </script>
 @endpush
+
+

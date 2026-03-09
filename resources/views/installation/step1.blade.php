@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="text-center text-white mb-4">
-        <h2>{{ "6valley Software Installation" }}</h2>
+        <h2>{{ __('') }}</h2>
         <h6 class="fw-normal">
-            {{ "Please proceed step by step with proper data according to instructions" }}
+            {{ __('') }}
         </h6>
     </div>
 
@@ -22,7 +22,7 @@
             <div class="d-flex justify-content-end mb-2">
                 <a href="https://docs.dynamiclogic.com/docs-six-valley/intro/" class="d-flex align-items-center gap-1"
                    target="_blank">
-                    {{ "Read Documentation" }}
+                    {{ __('') }}
                     <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
                           data-bs-title="Follow our documentation">
                             <img src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/info.svg') }}"
@@ -32,13 +32,13 @@
             </div>
 
             <div class="d-flex align-items-center column-gap-3 flex-wrap mb-4">
-                <h5 class="fw-bold fs text-uppercase">{{ "Step 1." }}</h5>
-                <h5 class="fw-normal">{{ "Check & Verify File Permissions" }}</h5>
+                <h5 class="fw-bold fs text-uppercase">{{ __('') }}</h5>
+                <h5 class="fw-normal">{{ __('') }}</h5>
             </div>
 
             <div class="bg-light p-4 rounded mb-4">
                 <h6 class="fw-bold text-uppercase fs m-0 letter-spacing  mb-4 pb-sm-3 --fs-14px">
-                    {{ "Required Database Information" }}
+                    {{ __('') }}
                 </h6>
 
                 <div class="px-xl-2 pb-sm-3">
@@ -48,7 +48,7 @@
                                 <img alt=""
                                      src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/php-version.svg') }}">
                                 <div class="d-flex align-items-center gap-2 justify-content-between flex-grow-1">
-                                    {{ "PHP Version 8.1 +" }}
+                                    {{ __('') }}
                                     @php($phpVersion = number_format((float)phpversion(), 2, '.', ''))
                                     @if ($phpVersion >= 8.1)
                                         <img width="20" alt=""
@@ -59,7 +59,7 @@
                                               data-bs-html="true" data-bs-delay='{"hide":1000}'
                                               data-bs-title="Your php version in server is lower than 8.1 version
                                                    <a href='https://support.cpanel.net/hc/en-us/articles/360052624713-How-to-change-the-PHP-version-for-a-domain-in-cPanel-or-WHM'
-                                                   class='d-block' target='_blank'>See how to update</a> ">
+                                                   class='d-block' target='_blank'>{{ __('See how to update') }}</a> ">
                                                 <img class="svg text-danger" alt=""
                                                      src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/info.svg') }}">
                                             </span>
@@ -73,7 +73,7 @@
                                 <img alt=""
                                      src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/curl-enabled.svg') }}">
                                 <div class="d-flex align-items-center gap-2 justify-content-between flex-grow-1">
-                                    {{ "Curl Enabled" }}
+                                    {{ __('') }}
                                     @if ($permission['curl_enabled'])
                                         <img width="20" alt=""
                                              src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/check.png') }}">
@@ -95,7 +95,7 @@
                                 <img alt=""
                                      src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/route-service.svg') }}">
                                 <div class="d-flex align-items-center gap-2 justify-content-between flex-grow-1">
-                                    {{ ".env File Permission" }}
+                                    {{ __('') }}
                                     @if ($permission['db_file_write_perm'])
                                         <img width="20" alt=""
                                              src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/check.png') }}">
@@ -116,7 +116,7 @@
                                 <img alt=""
                                      src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/route-service.svg') }}">
                                 <div class="d-flex align-items-center gap-2 justify-content-between flex-grow-1">
-                                    {{ "RouteServiceProvider.php File Permission" }}
+                                    {{ __('') }}
                                     @if ($permission['routes_file_write_perm'])
                                         <img width="20" alt=""
                                              src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/check.png') }}">
@@ -137,10 +137,10 @@
             </div>
 
             <div class="text-center">
-                <p>{{ "All the permissions are provided successfully ?" }}</p>
+                <p>{{ __('') }}</p>
                 @if ($permission['curl_enabled'] == 1 && $permission['db_file_write_perm'] == 1 && $permission['routes_file_write_perm'] == 1 && $phpVersion >= 8.1)
                     <a href="{{ route('step2') }}" class="btn btn-dark px-sm-5">
-                        {{ "Proceed Next" }}
+                        {{ __('') }}
                     </a>
                 @endif
             </div>

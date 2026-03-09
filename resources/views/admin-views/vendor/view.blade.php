@@ -74,7 +74,7 @@
                                             <div class="">
                                                 <ul class="list-unstyled list-unstyled-py-2 mb-0">
                                                     <li class="d-flex align-items-center font-size-sm">
-                                                        <span class="mr-3">{{'5'.' '.translate('star')}}</span>
+                                                        <span class="me-3">{{'5'.' '.translate('star')}}</span>
                                                         <div class="progress flex-grow-1">
                                                             <div class="progress-bar width--100" role="progressbar"
                                                                  aria-valuenow="0" aria-valuemin="0"
@@ -83,7 +83,7 @@
                                                         <span class="ml-3">{{$seller->single_rating_5}}</span>
                                                     </li>
                                                     <li class="d-flex align-items-center font-size-sm">
-                                                        <span class="mr-3">{{'4'.' '.translate('star')}}</span>
+                                                        <span class="me-3">{{'4'.' '.translate('star')}}</span>
                                                         <div class="progress flex-grow-1">
                                                             <div class="progress-bar width--80" role="progressbar"
                                                                  aria-valuenow="0" aria-valuemin="0"
@@ -92,7 +92,7 @@
                                                         <span class="ml-3">{{$seller->single_rating_4}}</span>
                                                     </li>
                                                     <li class="d-flex align-items-center font-size-sm">
-                                                        <span class="mr-3">{{'3'.' '.translate('star')}}</span>
+                                                        <span class="me-3">{{'3'.' '.translate('star')}}</span>
                                                         <div class="progress flex-grow-1">
                                                             <div class="progress-bar width--60" role="progressbar"
                                                                  aria-valuenow="0" aria-valuemin="0"
@@ -101,7 +101,7 @@
                                                         <span class="ml-3">{{$seller->single_rating_3}}</span>
                                                     </li>
                                                     <li class="d-flex align-items-center font-size-sm">
-                                                        <span class="mr-3">{{'2'.' '.translate('star')}}</span>
+                                                        <span class="me-3">{{'2'.' '.translate('star')}}</span>
                                                         <div class="progress flex-grow-1">
                                                             <div class="progress-bar width--40" role="progressbar"
                                                                  aria-valuenow="0" aria-valuemin="0"
@@ -110,7 +110,7 @@
                                                         <span class="ml-3">{{$seller->single_rating_2}}</span>
                                                     </li>
                                                     <li class="d-flex align-items-center font-size-sm">
-                                                        <span class="mr-3">{{'2'.' '.translate('star')}}</span>
+                                                        <span class="me-3">{{'2'.' '.translate('star')}}</span>
                                                         <div class="progress flex-grow-1">
                                                             <div class="progress-bar width--20" role="progressbar" aria-valuenow="0" aria-valuemin="0"
                                                                  aria-valuemax="100"></div>

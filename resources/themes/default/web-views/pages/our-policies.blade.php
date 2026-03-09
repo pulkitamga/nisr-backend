@@ -66,7 +66,7 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        margin-right: 20px;
+        margin-inline-end: 20px;
         transition: all 0.3s ease;
     }
 
@@ -112,7 +112,7 @@
         .policy-icon {
             width: 45px;
             height: 45px;
-            margin-right: 15px;
+            margin-inline-end: 15px;
         }
 
         .policy-icon i {

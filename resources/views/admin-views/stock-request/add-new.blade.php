@@ -97,11 +97,11 @@
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th class="text-center">SL</th>
-                                <th>Category</th>
-                                <th>Products</th>
-                                <th>variation</th>
-                                <th class="text-capitalize">QTY</th>
-                                <th class="text-center">Action</th>
+                                <th>{{ __('Category') }}</th>
+                                <th>{{ __('Products') }}</th>
+                                <th>{{ __('Variation') }}</th>
+                                <th class="text-capitalize">{{ __('QTY') }}</th>
+                                <th class="text-center">{{ __('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody id="product-rows">
@@ -216,7 +216,7 @@
                 <input type="number" name="products[${productRowCount}][product_qty]" class="form-control" min="1" placeholder="QTY" required>
             </td>
             <td class="text-center">
-                <button type="button" class="btn btn-danger btn-sm remove-product-btn">Remove</button>
+                <button type="button" class="btn btn-danger btn-sm remove-product-btn">{{ __('Remove') }}</button>
             </td>
         </tr>
     `;
