@@ -12614,4 +12614,5 @@ return [
 	"Go to product page" => "Go to product page",
 	"Stock_Transfer_History" => "Stock Transfer History",
 	"Stock History" => "Stock History",
+	"weekly_breakdown" => "Weekly breakdown",
 ];
