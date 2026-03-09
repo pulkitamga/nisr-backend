@@ -12142,4 +12142,5 @@ return [
 	"Stock_Transfer_History" => "سجل نقل المخزون",
 	"Stock History" => "Stock History",
 	"weekly_breakdown" => "Weekly breakdown",
+	"crm_trend" => "اتجاه إدارة علاقات العملاء",
 ];

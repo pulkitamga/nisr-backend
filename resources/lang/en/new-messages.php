@@ -12615,4 +12615,5 @@ return [
 	"Stock_Transfer_History" => "Stock Transfer History",
 	"Stock History" => "Stock History",
 	"weekly_breakdown" => "Weekly breakdown",
+	"crm_trend" => "Crm trend",
 ];

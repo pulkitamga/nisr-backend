@@ -559,12 +559,15 @@ class DashboardChartController extends Controller
                 public function headings(): array { return ['Owner', 'Deals', 'Total Value', 'Avg Value']; }
             }, 'crm-insights-report.xlsx');
         }
-
+        
+        $trendChart = $request->input('trend_chart');
+        $stageChart = $request->input('stage_chart');
+        $statusChart = $request->input('status_chart');
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.crm.reports.insights-pdf',
-                data: compact('kpi', 'topOwners', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                data: compact('kpi', 'topOwners', 'snapshotFrom', 'snapshotTo', 'isRtl','trendChart','stageChart','statusChart'),
                 fileName: 'crm-insights-report.pdf'
             );
         }
