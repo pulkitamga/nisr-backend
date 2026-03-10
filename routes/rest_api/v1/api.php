@@ -128,7 +128,7 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
         Route::get('config', 'configuration');
     });
 
-    Route::group(['prefix' => 'shipping-methods', 'middleware' => 'apiGuestCheck'], function () {
+    Route::group(['prefix' => 'shipping-method', 'middleware' => 'apiGuestCheck'], function () {
         Route::controller(ShippingMethodController::class)->group(function () {
             Route::get('detail/{id}', 'get_shipping_method_info');
             Route::get('by-seller/{id}/{seller_is}', 'shipping_methods_by_seller');

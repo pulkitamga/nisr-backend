@@ -251,7 +251,22 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ translate('crm_trend_last_12_months') }}</h4>
+                        @php
+                            $chartTitle = match ($filters['date_type'] ?? 'this_year') {
+                                'this_year' => translate('crm_trend_this_year'),
+                                'this_month' => translate('crm_trend_this_month'),
+                                'this_week' => translate('crm_trend_this_week'),
+                                'today' => translate('crm_trend_today'),
+                                'custom_date' => translate('crm_trend_custom_range') .
+                                    ': ' .
+                                    ($filters['from'] ?? '') .
+                                    ' - ' .
+                                    ($filters['to'] ?? ''),
+                                default => translate('crm_trend_last_12_months'),
+                            };
+                        @endphp
+
+                        <h4 class="mb-0">{{ $chartTitle }}</h4>
                         <span class="badge-soft">{{ translate('messages_leads_deals') }}</span>
                     </div>
                     <div class="card-body">
