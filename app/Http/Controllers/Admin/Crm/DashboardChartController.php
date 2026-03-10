@@ -581,9 +581,37 @@ class DashboardChartController extends Controller
         $statusChart = $request->input('status_chart');
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+            // Get chart images from request (sent via POST)
+            $trendChart = $request->input('trend_chart');
+            $stageChart = $request->input('stage_chart');
+            $statusChart = $request->input('status_chart');
+
+            // Add dynamic titles for PDF
+            $chartTitle = match ($filters['date_type']) {
+                'this_year' => translate('crm_trend') . ' (' . $snapshotFrom->format('Y') . ')',
+                'this_month' => translate('crm_trend') . ' (' . $snapshotFrom->format('F Y') . ')',
+                'this_week' => translate('crm_trend') . ' (' . $snapshotFrom->format('M d') . ' - ' . $snapshotTo->format('M d, Y') . ')',
+                'today' => translate('crm_trend') . ' (' . $snapshotFrom->format('j F Y') . ')',
+                'custom_date' => translate('crm_trend') . ': ' . $snapshotFrom->format('j F Y') . ' - ' . $snapshotTo->format('j F Y'),
+                default => translate('crm_trend') . ' (' . translate('last_12_months') . ')',
+            };
+
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.crm.reports.insights-pdf',
-                data: compact('kpi', 'topOwners', 'snapshotFrom', 'snapshotTo', 'isRtl', 'trendChart', 'stageChart', 'statusChart'),
+                data: compact(
+                    'kpi',
+                    'topOwners',
+                    'snapshotFrom',
+                    'snapshotTo',
+                    'isRtl',
+                    'filters',        // ADD THIS - needed for dynamic titles
+                    'insights',        // ADD THIS - insights are missing
+                    'chartTitle',      // ADD THIS - for trend chart title
+                    'trendChart',
+                    'stageChart',
+                    'statusChart'
+                ),
                 fileName: 'crm-insights-report.pdf'
             );
         }
