@@ -8,6 +8,7 @@ use App\Http\Controllers\BaseController;
 use App\Models\Admin;
 use App\Models\Departments;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Mpdf\Mpdf;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -50,15 +51,28 @@ class CrmDealSalesReportController extends BaseController
             return null;
         }
     }
-    public function exportPdf(Request $request): Response
+    public function exportPdf(Request $request)
     {
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        $pdf = Pdf::loadView(CrmDealSalesReport::EXPORT_PDF[VIEW], $data)
-            ->setPaper('a4', 'landscape');
+        $html = view(CrmDealSalesReport::EXPORT_PDF[VIEW], $data)->render();
 
-        return $pdf->download('crm-sales-performance-report.pdf');
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4-L', // Landscape
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_left' => 10,
+            'margin_right' => 10,
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        return response(
+            $mpdf->Output('crm-sales-performance-report.pdf', 'S'),
+            200
+        )->header('Content-Type', 'application/pdf');
     }
 
     private function buildReportData(Request $request): array
@@ -68,16 +82,29 @@ class CrmDealSalesReportController extends BaseController
         $departmentIds = $this->normalizeMultiIds($request->input('department_ids', $request->input('department_id', [])));
         $employeeIds = $this->normalizeMultiIds($request->input('employee_ids', $request->input('employee_id', [])));
 
+        // $departments = Departments::query()
+        //     ->select('id', 'name')
+        //     ->orderBy('name')
+        //     ->get();
         $departments = Departments::query()
-            ->select('id', 'name')
-            ->orderBy('name')
+            ->select('departments.id', 'departments.name')
+            ->join('deals', 'deals.department_id', '=', 'departments.id')
+            ->whereIn('deals.status', ['won', 'lost'])
+            ->whereBetween('deals.created_at', [$fromDate, $toDate])
+            ->when(!empty($employeeIds), fn($query) => $query->whereIn('deals.employee_id', $employeeIds))
+            ->distinct()
+            ->orderBy('departments.name')
             ->get();
 
         $employees = Admin::query()
-            ->select('id', 'name', 'department_id')
-            ->where('status', 1)
-            ->when(!empty($departmentIds), fn($query) => $query->whereIn('department_id', $departmentIds))
-            ->orderBy('name')
+            ->select('admins.id', 'admins.name', 'admins.department_id')
+            ->join('deals', 'deals.employee_id', '=', 'admins.id')
+            ->where('admins.status', 1)
+            ->whereIn('deals.status', ['won', 'lost'])
+            ->whereBetween('deals.created_at', [$fromDate, $toDate])
+            ->when(!empty($departmentIds), fn($query) => $query->whereIn('admins.department_id', $departmentIds))
+            ->distinct()
+            ->orderBy('admins.name')
             ->get();
 
         $rows = $this->getDealRows(
@@ -105,7 +132,7 @@ class CrmDealSalesReportController extends BaseController
         $chartRows = $rows->sortByDesc('total_deals')->take(12)->values();
 
         if ($fromDate->isSameMonth($toDate)) {
-            $periodLabel = $fromDate->format('M Y'); // Mar 2026
+            $periodLabel = $fromDate->format('d M Y') . ' - ' . $toDate->format('d M Y');
         } else {
             $periodLabel = $fromDate->format('d M Y') . ' - ' . $toDate->format('d M Y');
         }
@@ -171,6 +198,7 @@ class CrmDealSalesReportController extends BaseController
             'filters' => [
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
+                'date_type' => $request->input('date_type', 'this_year'),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
             ],
@@ -195,7 +223,7 @@ class CrmDealSalesReportController extends BaseController
     }
     private function resolveDateRange(Request $request): array
     {
-        $range = $request->input('date_range', 'this_month');
+        $range = $request->input('date_type', 'this_year');
 
         switch ($range) {
 
@@ -232,7 +260,7 @@ class CrmDealSalesReportController extends BaseController
         return [$fromDate, $toDate];
     }
 
-       private function getDealRows(
+    private function getDealRows(
         Carbon $fromDate,
         Carbon $toDate,
         array $departmentIds = [],

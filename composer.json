@@ -36,7 +36,7 @@
         "maatwebsite/excel": "*",
         "madnest/madzipper": "*",
         "milon/barcode": "^10.0",
-        "mpdf/mpdf": "^8.2",
+        "mpdf/mpdf": "*",
         "nwidart/laravel-modules": "^10.0",
         "phpbolt/encrypt": "@dev",
         "phpoffice/phpspreadsheet": "^1.29",
