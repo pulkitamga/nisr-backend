@@ -114,7 +114,7 @@
 
         <div class="card mb-3">
             <div class="card-body">
-                <canvas id="crm-sales-chart" height="220"></canvas>
+                <canvas id="crm-sales-chart" height="400"></canvas>
             </div>
         </div>
 

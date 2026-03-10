@@ -161,7 +161,7 @@ function getProductTypeFunctionality() {
 function toggleServiceFieldRequired(productType) {
     const serviceFields = $(".service_product_show").find("input, textarea, select");
 
-    if (productType === "service") {
+    if (productType === "services") {
         serviceFields.each(function () {
             $(this).attr("required", true);
         });

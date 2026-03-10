@@ -29,6 +29,7 @@ $(document).on("ready", function () {
         // Store on modal element as fallback
         $(this).data('product-id', productId);
         $(this).data('stock-request-product-id', stockRequestProductId);
+        $('#csv-error-container').empty();
 
         // Fetch branches stock
         $.ajax({
@@ -41,14 +42,16 @@ $(document).on("ready", function () {
             beforeSend: () => $("#loading").fadeIn(),
             success: function (response) {
                 const { branchesStock, product } = response.data;
-                const isTraceable = product.is_traceable === 1;
-                const requiredQty = product.quantity;
+                const isTraceable = Number(product.is_traceable) === 1 || product.is_traceable === true;
+                const requiredQty = Number(product.quantity) || 0;
 
                 // Update UI
                 $('#required-qty').text(requiredQty);
                 $('#traceability-alert').toggleClass('d-none', !isTraceable);
                 $('#csv-upload-section').toggle(isTraceable);
-                $('input[name="serial_csv"]').prop('required', isTraceable);
+                $('input[name="serial_csv"]').prop('required', isTraceable).val('');
+                $('#branchesStockForm').data('is-traceable', isTraceable);
+                $('#branchesStockForm').data('required-qty', requiredQty);
 
                 const tbody = $('#branches-tbody').empty();
                 branchesStock.forEach((branch, index) => {
@@ -80,6 +83,14 @@ $(document).on("ready", function () {
         const selected = $('input[name="selected_branches[]"]:checked');
         if (selected.length === 0) {
             toastr.error('Select at least one branch.');
+            return;
+        }
+
+        const isTraceable = $(this).data('is-traceable') === true;
+        const serialCsvInput = $('input[name="serial_csv"]')[0];
+        const hasCsvFile = !!(serialCsvInput && serialCsvInput.files && serialCsvInput.files.length > 0);
+        if (isTraceable && !hasCsvFile) {
+            toastr.error('CSV file is required for traceable product.');
             return;
         }
 

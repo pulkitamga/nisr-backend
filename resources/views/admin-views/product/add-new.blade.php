@@ -38,6 +38,7 @@
             <div class="card-body">
                 @foreach ($languages as $lang)
                 <div class="{{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang }}-form">
+                    @if($lang == $defaultLanguage)
                     <div class="form-group">
                         <label class="title-color">
                             {{ translate('product_type') }}
@@ -50,6 +51,7 @@
                             @endif
                         </select>
                     </div>
+                    @endif
 
                     <div class="form-group">
                         <label class="title-color" for="{{ $lang }}_name">{{ translate('product_name') }}
