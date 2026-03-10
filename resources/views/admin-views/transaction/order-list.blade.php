@@ -390,6 +390,8 @@
 @endsection
 
 @push('script')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/apexcharts.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/apexcharts-data-show.js')}}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/transaction-report.js') }}"></script>

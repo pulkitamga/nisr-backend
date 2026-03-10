@@ -1447,4 +1447,108 @@ class ReportController extends Controller
         $previousUrl = strtok(url()->previous(), '?');
         return redirect()->to($previousUrl . '?' . http_build_query(['from_date' => $request['from'], 'to_date' => $request['to']]))->with(['from' => $from, 'to' => $to]);
     }
+
+    public function adminEarningPdf(Request $request)
+    {
+        $from         = $request['from'];
+        $to           = $request['to'];
+        $date_type    = $request['date_type'] ?? 'this_year';
+
+        $digital_payment_query = Order::where(['order_status' => 'delivered'])->whereNotIn('payment_method', ['cash', 'cash_on_delivery', 'pay_by_wallet', 'offline_payment']);
+        $digital_payment = self::earning_common_query($request, $digital_payment_query)->sum('order_amount');
+
+        $cash_payment_query = Order::where(['order_status' => 'delivered'])->whereIn('payment_method', ['cash', 'cash_on_delivery']);
+        $cash_payment = self::earning_common_query($request, $cash_payment_query)->sum('order_amount');
+
+        $wallet_payment_query = Order::where(['order_status' => 'delivered'])->where(['payment_method' => 'pay_by_wallet']);
+        $wallet_payment = self::earning_common_query($request, $wallet_payment_query)->sum('order_amount');
+
+        $offline_payment_query = Order::where(['payment_method' => 'offline_payment']);
+        $offline_payment = self::earning_common_query($request, $offline_payment_query)->sum('order_amount');
+
+        $total_payment = $cash_payment + $wallet_payment + $digital_payment + $offline_payment;
+
+        $payment_data = [
+            'total_payment' => $total_payment,
+            'cash_payment' => $cash_payment,
+            'wallet_payment' => $wallet_payment,
+            'offline_payment' => $offline_payment,
+            'digital_payment' => $digital_payment,
+        ];
+
+        $filter_data = self::earning_common_filter('admin', $date_type, $from, $to);
+        $inhouse_earn = $filter_data['earn_from_order'];
+        $shipping_earn = $filter_data['shipping_earn'];
+        $deliveryman_incentive = $filter_data['deliveryman_incentive'];
+        $admin_commission_earn = $filter_data['commission'];
+        $refund_given = $filter_data['refund_given'];
+        $discount_given = $filter_data['discount_given'];
+        $total_tax = $filter_data['total_tax'];
+        $admin_bearer_free_shipping = $filter_data['admin_bearer_free_shipping'];
+
+        $total_inhouse_earning = 0;
+        $total_commission = 0;
+        $total_shipping_earn = 0;
+        $total_deliveryman_incentive = 0;
+        $total_discount_given = 0;
+        $total_refund_given = 0;
+        $total_tax_final = 0;
+        $total_earning_statistics = [];
+        $total_commission_statistics = [];
+        $chart_labels = [];
+        $chart_values = [];
+
+        foreach ($inhouse_earn as $key => $earning) {
+            $total_inhouse_earning += $earning;
+            $total_commission += $admin_commission_earn[$key];
+            $total_shipping_earn += $shipping_earn[$key];
+            $total_deliveryman_incentive += $deliveryman_incentive[$key]; 
+            $total_discount_given += $discount_given[$key];
+            $total_tax_final += $total_tax[$key];
+            $total_refund_given += $refund_given[$key];
+
+            $total_commission_statistics[$key] = $admin_commission_earn[$key];
+            $total_earning_statistics[$key] = ($earning + $admin_commission_earn[$key] + $shipping_earn[$key])
+                - $discount_given[$key] - $refund_given[$key] - $deliveryman_incentive[$key];
+
+            $chart_labels[] = $key;
+            $chart_values[] = $total_earning_statistics[$key];
+        }
+
+        $total_in_house_products_query = Product::where(['added_by' => 'admin', 'product_type' => 'physical']);
+        $total_in_house_products = self::earning_common_query($request, $total_in_house_products_query)->count();
+
+        $total_stores_query = Seller::where(['status' => 'approved']);
+        $total_stores = self::earning_common_query($request, $total_stores_query)->count();
+
+        $pdfData = [
+            'duration'               => $date_type, 
+            'inhouse_earning'        => $total_inhouse_earning - $total_tax_final,
+            'admin_commission'       => $total_commission,
+            'shipping_earn'          => $total_shipping_earn,
+            'deliveryman_incentive'  => $total_deliveryman_incentive,
+            'discount_given'         => $total_discount_given,
+            'total_tax'              => $total_tax_final,
+            'refund_given'           => $total_refund_given,
+            'total_earning'          => ($total_inhouse_earning + $total_commission + $total_shipping_earn)
+                - ($total_discount_given + $total_refund_given + $total_deliveryman_incentive),
+            'chart_labels'           => $chart_labels,
+            'chart_values'           => $chart_values,
+            'max_chart_value'        => !empty($chart_values) ? max($chart_values) : 1,
+        ];
+
+        $company_phone   = BusinessSetting::where('type', 'company_phone')->first()->value ?? '';
+        $company_email   = BusinessSetting::where('type', 'company_email')->first()->value ?? '';
+        $company_name    = BusinessSetting::where('type', 'company_name')->first()->value ?? '';
+        $company_web_logo = BusinessSetting::where('type', 'company_web_logo')->first()->value ?? '';
+
+        $pdfData['company_phone'] = $company_phone;
+        $pdfData['company_email'] = $company_email;
+        $pdfData['company_name']  = $company_name;
+        $pdfData['company_logo']  = $company_web_logo;
+
+        $mpdfView = view('admin-views.report.admin-earning-pdf', compact('pdfData'));
+
+        Helpers::gen_mpdf($mpdfView, 'admin_earning_', $date_type);
+    }
 }

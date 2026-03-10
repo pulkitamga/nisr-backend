@@ -47,6 +47,39 @@
             font-weight: 700;
         }
 
+        .chart-container {
+            margin: 20px 0;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .bar-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+        .bar {
+            background-color: #0177CD;
+            border-radius: 4px 4px 0 0;
+            width: 100%;
+            min-height: 2px;
+        }
+        .bar-label {
+            margin-top: 5px;
+            font-size: 9px;
+        }
+        .bar-value {
+            font-size: 8px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -72,6 +105,7 @@
         {{ $fromDate->format('Y-m-d') }} - {{ $toDate->format('Y-m-d') }}
     </div>
 
+    <!-- KPI Grid -->
     <table class="kpi-grid">
         <tr>
             <td>
@@ -93,6 +127,49 @@
         </tr>
     </table>
 
+    <!-- Status Distribution Chart -->
+    @if(!empty($statusChartData['labels']) && count($statusChartData['labels']) > 0)
+        <div class="chart-container">
+            <div class="chart-title">{{ translate('claims_by_status') }}</div>
+            <div class="bar-chart">
+                @php $maxCount = max($statusChartData['counts']); @endphp
+                @foreach($statusChartData['labels'] as $index => $label)
+                    @php
+                        $count = $statusChartData['counts'][$index] ?? 0;
+                        $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 2;
+                    @endphp
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ $height }}px;"></div>
+                        <div class="bar-label">{{ $label }}</div>
+                        <div class="bar-value">{{ $count }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- Trend Chart (Optional) -->
+    @if(!empty($trendChartData['labels']) && count($trendChartData['labels']) > 0)
+        <div class="chart-container">
+            <div class="chart-title">{{ translate('claims_trend') }}</div>
+            <div class="bar-chart">
+                @php $maxCount = max($trendChartData['counts']); @endphp
+                @foreach($trendChartData['labels'] as $index => $label)
+                    @php
+                        $count = $trendChartData['counts'][$index] ?? 0;
+                        $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 2;
+                    @endphp
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ $height }}px;"></div>
+                        <div class="bar-label">{{ $label }}</div>
+                        <div class="bar-value">{{ $count }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- Claims Table -->
     <table>
         <thead>
             <tr>
