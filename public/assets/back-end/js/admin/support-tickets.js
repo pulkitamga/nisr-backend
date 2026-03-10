@@ -15,6 +15,8 @@ const uiText = {
     yesEscalate: getDataText('support-ticket-yes-escalate', 'Yes, Escalate'),
 };
 
+let lastWholesaleFollowUpTicketId = 0;
+
 function normalizeStatusName(rawStatusName) {
     return String(rawStatusName || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
 }
@@ -25,18 +27,39 @@ function isInProgressStatusSelected(selectSelector) {
         return false;
     }
 
+    const $selectedOption = $statusField.find('option:selected');
+    const requiresFollowUpDate = Number($selectedOption.data('require-follow-up-date') || 0) === 1;
+    if (requiresFollowUpDate) {
+        return true;
+    }
+
     const selectedStatusId = Number($statusField.val() || 0);
     const configuredInProgressId = Number($statusField.data('in-progress-id') || 0);
     if (configuredInProgressId > 0 && selectedStatusId === configuredInProgressId) {
         return true;
     }
 
-    const $selectedOption = $statusField.find('option:selected');
     const statusName = normalizeStatusName(
         $selectedOption.data('status-name') || $selectedOption.text(),
     );
 
     return statusName === 'in_progress' || statusName === 'inprogress';
+}
+
+function syncWholesaleFollowUpDateVisibility() {
+    const shouldShowDate = isInProgressStatusSelected('#wholesale-follow-up-status');
+    const $dateRow = $('#wholesale-ticket-next-follow-up-date-row');
+
+    if (!$dateRow.length) {
+        return shouldShowDate;
+    }
+
+    $dateRow.removeClass('d-none');
+    if (!shouldShowDate) {
+        $dateRow.addClass('d-none');
+    }
+
+    return shouldShowDate;
 }
 
 function syncSupportFollowUpDateVisibility() {
@@ -58,6 +81,7 @@ function syncSupportFollowUpDateVisibility() {
 function setWholesaleFollowUpContext(ticketId, departmentId, employeeId, statusId, statusName) {
     const normalizedTicketId = Number(ticketId || 0);
     const $modal = $('#showWholesaleFollowUpModal');
+    lastWholesaleFollowUpTicketId = normalizedTicketId > 0 ? normalizedTicketId : lastWholesaleFollowUpTicketId;
 
     $('#wholesale-follow-up-ticket-id').val(normalizedTicketId > 0 ? String(normalizedTicketId) : '');
     $('#wholesale-follow-up-id').val(normalizedTicketId > 0 ? String(normalizedTicketId) : '');
@@ -231,7 +255,13 @@ function handleFollowUpSubmit(formSelector, modalSelector) {
             let ticketId = Number($ticketIdInput.val() || 0);
 
             if (ticketId <= 0) {
-                ticketId = Number($('#showWholesaleFollowUpModal').data('ticket-id') || 0);
+                ticketId = Number(
+                    $('#showWholesaleFollowUpModal').data('ticket-id')
+                    || $('#wholesale-follow-up-id').val()
+                    || $('#wholesale-follow-up-support-ticket-id').val()
+                    || lastWholesaleFollowUpTicketId
+                    || 0,
+                );
                 if (ticketId > 0) {
                     $ticketIdInput.val(String(ticketId));
                     $('#wholesale-follow-up-id').val(String(ticketId));
@@ -241,6 +271,16 @@ function handleFollowUpSubmit(formSelector, modalSelector) {
 
             if (ticketId <= 0) {
                 toastr.error(getDataText('support-ticket-ticket-id-required', 'Ticket ID is required.'));
+                return;
+            }
+
+            const isInProgressStatus = syncWholesaleFollowUpDateVisibility();
+            if (isInProgressStatus && !$('#wholesale-ticket-next-follow-up-date').val()) {
+                toastr.error(getDataText(
+                    'support-ticket-follow-up-date-required',
+                    'Follow-up date is required for In Progress',
+                ));
+                $('#wholesale-ticket-next-follow-up-date').trigger('focus');
                 return;
             }
         }
@@ -405,11 +445,11 @@ $(function () {
     });
 
     $('#wholesale-follow-up-status').on('change', function () {
-        let status = Number($(this).val() || 0);
-        $('#wholesale-ticket-next-follow-up-date-row').addClass('d-none');
-        if (status === 59) {
-            $('#wholesale-ticket-next-follow-up-date-row').removeClass('d-none');
-        }
+        syncWholesaleFollowUpDateVisibility();
+    });
+
+    $('#showWholesaleFollowUpModal').on('shown.bs.modal', function () {
+        syncWholesaleFollowUpDateVisibility();
     });
 
     handleFollowUpSubmit('#updateSupportTicketFollowUpForm', '#showSupportFollowUpModal');

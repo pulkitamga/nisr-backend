@@ -669,6 +669,7 @@ class POSOrderController extends BaseController
             'totalInstallationPrice' => $installationTotal,
             'totalExchangePrice' => $exchangeTotal,
             'legacyTotalBeforeVat' => $totalCalculation['total'],
+            'add_to_cart_time' => $cartPayload['add_to_cart_time'] ?? null,
         ];
     }
 

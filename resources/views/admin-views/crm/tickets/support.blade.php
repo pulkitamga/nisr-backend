@@ -274,7 +274,16 @@
                                 <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="support-follow-up-status" data-in-progress-id="{{ $supportInProgressStatusId }}">
                                     <option value="0" selected disabled>{{ translate('Select Status') }}</option>
                                     @foreach ($aAllStatus as $statusOption)
-                                    <option value="{{ $statusOption['id'] }}" data-status-name="{{ strtolower($statusOption['name'] ?? '') }}">{{ translate($statusOption['name']) }}</option>
+                                    @php
+                                        $supportStatusName = strtolower(trim((string) ($statusOption['name'] ?? '')));
+                                        $supportNormalizedStatusName = str_replace([' ', '-'], '_', $supportStatusName);
+                                        $supportRequiresFollowUpDate = in_array($supportNormalizedStatusName, ['in_progress', 'inprogress'], true) ? 1 : 0;
+                                    @endphp
+                                    <option value="{{ $statusOption['id'] }}"
+                                        data-status-name="{{ $supportStatusName }}"
+                                        data-require-follow-up-date="{{ $supportRequiresFollowUpDate }}">
+                                        {{ translate($statusOption['name']) }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -346,4 +355,3 @@
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
 
 @endpush
-
