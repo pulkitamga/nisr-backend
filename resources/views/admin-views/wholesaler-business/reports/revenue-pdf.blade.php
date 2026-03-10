@@ -11,48 +11,132 @@
             direction: {{ ($isRtl ?? false) ? 'rtl' : 'ltr' }};
             text-align: {{ ($isRtl ?? false) ? 'right' : 'left' }};
             unicode-bidi: embed;
+            margin: 20px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            direction: {{ ($isRtl ?? false) ? 'rtl' : 'ltr' }};
+        h2 {
+            color: #1d4ed8;
+            margin-bottom: 15px;
         }
-        th, td { border: 1px solid #d1d5db; padding: 6px; text-align: {{ ($isRtl ?? false) ? 'right' : 'left' }}; }
-        th { background: #f3f4f6; }
-        .metric-line { margin: 0 0 6px; }
+        .metric-line { 
+            margin: 0 0 8px; 
+            font-size: 14px;
+        }
         .value-ltr {
             direction: ltr;
             unicode-bidi: embed;
             display: inline-block;
             text-align: left;
+            font-weight: 600;
+        }
+        .chart-container {
+            margin: 25px 0;
+            page-break-inside: avoid;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1f2937;
+            border-bottom: 2px solid #1d4ed8;
+            padding-bottom: 8px;
+        }
+        .chart-image {
+            width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: contain;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            border: 1px solid #d1d5db;
+        }
+        th, td { 
+            border: 1px solid #d1d5db; 
+            padding: 10px; 
+            text-align: {{ ($isRtl ?? false) ? 'right' : 'left' }};
+        }
+        th { 
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        .table-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 30px 0 15px;
+            color: #1f2937;
+            border-bottom: 2px solid #1d4ed8;
+            padding-bottom: 8px;
         }
     </style>
 </head>
 <body>
-<h2>{{ translate('wholesale_revenue_report') }}</h2>
-<p class="metric-line">
-    {{ translate('report_period') }}:
-    <span class="value-ltr">{{ $snapshotFrom->format('Y-m-d') }} - {{ $snapshotTo->format('Y-m-d') }}</span>
-</p>
-<p class="metric-line">{{ translate('total_revenue') }}: <span class="value-ltr">{{ number_format((float)($kpi['total_revenue'] ?? 0), 2) }}</span></p>
-<table>
-    <thead>
-    <tr>
-        <th>{{ translate('wholesaler') }}</th>
-        <th>{{ translate('orders') }}</th>
-        <th>{{ translate('revenue') }}</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach($topWholesalers as $row)
-        <tr>
-            <td>{{ $row->wholeseller?->name ?? ('#' . $row->wholesaler_id) }}</td>
-            <td>{{ number_format((int)$row->orders_count) }}</td>
-            <td>{{ number_format((float)$row->total_revenue, 2) }}</td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
+    <h2>{{ translate('wholesale_revenue_report') }}</h2>
+    
+    <p class="metric-line">
+        {{ translate('report_period') }}:
+        <span class="value-ltr">{{ $snapshotFrom->format('Y-m-d') }} - {{ $snapshotTo->format('Y-m-d') }}</span>
+    </p>
+
+    <!-- Graph 1: Revenue Trend Chart -->
+    @if(!empty($revenueTrendChartImage))
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('revenue_trend') }}</div>
+        <img src="{{ $revenueTrendChartImage }}" class="chart-image" alt="Revenue Trend">
+    </div>
+    @endif
+
+    <!-- Graph 2: Delivery Status Chart -->
+    @if(!empty($deliveryStatusChartImage))
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('delivery_status_breakdown') }}</div>
+        <img src="{{ $deliveryStatusChartImage }}" class="chart-image" alt="Delivery Status">
+    </div>
+    @endif
+
+    <!-- Graph 3: Payment Status Chart -->
+    @if(!empty($paymentStatusChartImage))
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('payment_status_breakdown') }}</div>
+        <img src="{{ $paymentStatusChartImage }}" class="chart-image" alt="Payment Status">
+    </div>
+    @endif
+
+    <!-- Graph 4: Monthly Orders Chart -->
+    @if(!empty($monthlyOrdersChartImage))
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('monthly_orders') }}</div>
+        <img src="{{ $monthlyOrdersChartImage }}" class="chart-image" alt="Monthly Orders">
+    </div>
+    @endif
+
+    <!-- Table: Top Wholesalers -->
+    <div class="table-title">{{ translate('top_wholesalers') }}</div>
+    <table>
+        <thead>
+            <tr>
+                <th>{{ translate('wholesaler') }}</th>
+                <th>{{ translate('orders') }}</th>
+                <th>{{ translate('revenue') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($topWholesalers as $row)
+                <tr>
+                    <td>{{ $row->wholeseller?->name ?? ('#' . $row->wholesaler_id) }}</td>
+                    <td class="value-ltr">{{ number_format((int)$row->orders_count) }}</td>
+                    <td class="value-ltr">{{ number_format((float)$row->total_revenue, 2) }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="3" style="text-align: center;">{{ translate('no_data_available') }}</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 </body>
 </html>
