@@ -49,6 +49,16 @@
             max-height: 250px;
             object-fit: contain;
         }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        .col-6 {
+            width: 50%;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -95,22 +105,6 @@
     <div class="chart-container">
         <div class="chart-title">{{ translate('delivery_status_breakdown') }}</div>
         <img src="{{ $deliveryStatusChartImage }}" class="chart-image" alt="Delivery Status">
-    </div>
-    @endif
-
-    <!-- Graph 3: Payment Status Chart -->
-    @if(!empty($paymentStatusChartImage))
-    <div class="chart-container">
-        <div class="chart-title">{{ translate('payment_status_breakdown') }}</div>
-        <img src="{{ $paymentStatusChartImage }}" class="chart-image" alt="Payment Status">
-    </div>
-    @endif
-
-    <!-- Graph 4: Monthly Orders Chart -->
-    @if(!empty($monthlyOrdersChartImage))
-    <div class="chart-container">
-        <div class="chart-title">{{ translate('monthly_orders') }}</div>
-        <img src="{{ $monthlyOrdersChartImage }}" class="chart-image" alt="Monthly Orders">
     </div>
     @endif
 

@@ -12145,5 +12145,7 @@ return [
 	"crm_trend" => "اتجاه إدارة علاقات العملاء",
 	"tier_revenue_breakdown" => "تفصيل الإيرادات حسب الفئة",
 	"no_data_available" => "لا توجد بيانات متاحة",
+    'revenue_trend' => 'اتجاه الإيرادات',
+    'delivery_status_breakdown' => 'توزيع حالة التسليم',
 
 ];
