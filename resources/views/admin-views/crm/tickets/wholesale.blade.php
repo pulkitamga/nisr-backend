@@ -279,7 +279,16 @@
                                     ['id'=>61,'name'=>'Closed'],
                                     ['id'=>62,'name'=>'Cancelled']
                                     ] as $status)
-                                    <option value="{{ $status['id'] }}" data-status-name="{{ strtolower($status['name'] ?? '') }}">{{ translate($status['name']) }}</option>
+                                    @php
+                                        $wholesaleStatusName = strtolower(trim((string) ($status['name'] ?? '')));
+                                        $wholesaleNormalizedStatusName = str_replace([' ', '-'], '_', $wholesaleStatusName);
+                                        $wholesaleRequiresFollowUpDate = in_array($wholesaleNormalizedStatusName, ['in_progress', 'inprogress'], true) ? 1 : 0;
+                                    @endphp
+                                    <option value="{{ $status['id'] }}"
+                                        data-status-name="{{ $wholesaleStatusName }}"
+                                        data-require-follow-up-date="{{ $wholesaleRequiresFollowUpDate }}">
+                                        {{ translate($status['name']) }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -344,6 +353,7 @@
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
 <span id="support-ticket-ticket-id-required" data-text="{{ translate('Ticket ID is required.') }}"></span>
+<span id="support-ticket-follow-up-date-required" data-text="{{ translate('follow_up_date_required_for_in_progress') }}"></span>
 @endsection
 
 @push('script')
@@ -351,4 +361,3 @@
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
 
 @endpush
-

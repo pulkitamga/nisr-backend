@@ -956,15 +956,19 @@ class WholeSalerController extends BaseController
 
     public function tierStore(Request $request)
     {
+        $defaultLangIndex = array_search(config('app.locale'), $request->input('lang', []), true);
+        if ($defaultLangIndex === false) {
+            $defaultLangIndex = 0;
+        }
+
         $request->validate([
             'name' => 'required|array',
-            'name.*' => 'required|string|max:255',
+            'name.*' => 'nullable|string|max:255',
+            "name.$defaultLangIndex" => 'required|string|max:255',
             'lang' => 'required|array',
             'lang.*' => 'required|string',
             'rank' => 'required|integer|min:1',
         ]);
-
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
 
         $tier = WholesaleTier::create([
             'name' => $request->name[$defaultLangIndex],
@@ -983,15 +987,19 @@ class WholeSalerController extends BaseController
 
     public function tierUpdate(Request $request, $id)
     {
+        $defaultLangIndex = array_search(config('app.locale'), $request->input('lang', []), true);
+        if ($defaultLangIndex === false) {
+            $defaultLangIndex = 0;
+        }
+
         $request->validate([
             'name' => 'required|array',
-            'name.*' => 'required|string|max:255',
+            'name.*' => 'nullable|string|max:255',
+            "name.$defaultLangIndex" => 'required|string|max:255',
             'lang' => 'required|array',
             'lang.*' => 'required|string',
             'rank' => 'required|integer|min:1',
         ]);
-
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
 
         $tier = WholesaleTier::findOrFail($id);
         $tier->update([
