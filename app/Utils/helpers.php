@@ -516,8 +516,6 @@ class helpers
  
         return $data;
     }
-
-
     public static function product_data_formatting($data, $multi_data = false)
     {
         if ($data) {

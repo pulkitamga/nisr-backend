@@ -11,48 +11,166 @@
             direction: {{ ($isRtl ?? false) ? 'rtl' : 'ltr' }};
             text-align: {{ ($isRtl ?? false) ? 'right' : 'left' }};
             unicode-bidi: embed;
+            margin: 20px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            direction: {{ ($isRtl ?? false) ? 'rtl' : 'ltr' }};
+        h2 {
+            color: #1d4ed8;
+            margin-bottom: 15px;
         }
-        th, td { border: 1px solid #d1d5db; padding: 6px; text-align: {{ ($isRtl ?? false) ? 'right' : 'left' }}; }
-        th { background: #f3f4f6; }
-        .metric-line { margin: 0 0 6px; }
+        .metric-line { 
+            margin: 0 0 8px; 
+            font-size: 14px;
+        }
         .value-ltr {
             direction: ltr;
             unicode-bidi: embed;
             display: inline-block;
             text-align: left;
+            font-weight: 600;
+        }
+        .chart-container {
+            margin: 25px 0;
+            page-break-inside: avoid;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1f2937;
+            border-bottom: 2px solid #1d4ed8;
+            padding-bottom: 8px;
+        }
+        .chart-image {
+            width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: contain;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        .col-6 {
+            width: 50%;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            border: 1px solid #d1d5db;
+        }
+        th, td { 
+            border: 1px solid #d1d5db; 
+            padding: 10px; 
+            text-align: {{ ($isRtl ?? false) ? 'right' : 'left' }};
+        }
+        th { 
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        .table-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 30px 0 15px;
+            color: #1f2937;
+            border-bottom: 2px solid #1d4ed8;
+            padding-bottom: 8px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6b7280;
+            font-size: 10px;
+            border-top: 1px dashed #d1d5db;
+            padding-top: 15px;
         }
     </style>
 </head>
 <body>
-<h2>{{ translate('wholesale_pipeline_report') }}</h2>
-<p class="metric-line">
-    {{ translate('report_period') }}:
-    <span class="value-ltr">{{ $snapshotFrom->format('Y-m-d') }} - {{ $snapshotTo->format('Y-m-d') }}</span>
-</p>
-<p class="metric-line">{{ translate('confirmed_orders') }}: <span class="value-ltr">{{ number_format((int)($kpi['confirmed_count'] ?? 0)) }}</span></p>
-<table>
-    <thead>
-    <tr>
-        <th>{{ translate('tier') }}</th>
-        <th>{{ translate('orders') }}</th>
-        <th>{{ translate('revenue') }}</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach($tierRevenue as $row)
-        <tr>
-            <td>{{ $row->tier_name }}</td>
-            <td>{{ number_format((int)$row->orders_count) }}</td>
-            <td>{{ number_format((float)$row->total_revenue, 2) }}</td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
+    <h2>{{ translate('wholesale_pipeline_report') }}</h2>
+    
+    <p class="metric-line">
+        {{ translate('report_period') }}:
+        <span class="value-ltr">{{ $snapshotFrom->format('Y-m-d') }} - {{ $snapshotTo->format('Y-m-d') }}</span>
+    </p>
+    
+    <p class="metric-line">{{ translate('confirmed_orders') }}: 
+        <span class="value-ltr">{{ number_format((int)($kpi['confirmed_count'] ?? 0)) }}</span>
+    </p>
+
+    <!-- Graph 1: Stage Snapshot -->
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('stage_snapshot') }}</div>
+        @if(!empty($stageSnapshotChartImage))
+            <img src="{{ $stageSnapshotChartImage }}" class="chart-image" alt="Stage Snapshot">
+        @else
+            <p style="text-align: center; color: #6b7280;">{{ translate('no_data_available') }}</p>
+        @endif
+    </div>
+
+    <!-- Graph 2: Pipeline Trend -->
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('stage_trend_last_6_months') }}</div>
+        @if(!empty($pipelineTrendChartImage))
+            <img src="{{ $pipelineTrendChartImage }}" class="chart-image" alt="Pipeline Trend">
+        @else
+            <p style="text-align: center; color: #6b7280;">{{ translate('no_data_available') }}</p>
+        @endif
+    </div>
+
+    <!-- Graph 3: Top Products -->
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('top_product_volume') }}</div>
+        @if(!empty($topProductsChartImage))
+            <img src="{{ $topProductsChartImage }}" class="chart-image" alt="Top Products">
+        @else
+            <p style="text-align: center; color: #6b7280;">{{ translate('no_data_available') }}</p>
+        @endif
+    </div>
+
+    <!-- Graph 4: Tier Mix -->
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('wholesaler_tier_mix') }}</div>
+        @if(!empty($tierMixChartImage))
+            <img src="{{ $tierMixChartImage }}" class="chart-image" alt="Tier Mix">
+        @else
+            <p style="text-align: center; color: #6b7280;">{{ translate('no_data_available') }}</p>
+        @endif
+    </div>
+
+    <!-- Table: Tier Revenue Breakdown -->
+    <div class="table-title">{{ translate('tier_revenue_breakdown') }}</div>
+    <table>
+        <thead>
+            <tr>
+                <th>{{ translate('tier') }}</th>
+                <th>{{ translate('orders') }}</th>
+                <th>{{ translate('revenue') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($tierRevenue as $row)
+                <tr>
+                    <td>{{ $row->tier_name }}</td>
+                    <td class="value-ltr">{{ number_format((int)$row->orders_count) }}</td>
+                    <td class="value-ltr">{{ number_format((float)$row->total_revenue, 2) }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="3" style="text-align: center;">{{ translate('no_tier_revenue_data_in_this_period') }}</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <div class="footer">
+        {{ translate('generated_on') }}: {{ now()->format('M d, Y h:i A') }}
+    </div>
 </body>
 </html>
