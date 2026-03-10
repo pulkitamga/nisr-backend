@@ -12626,4 +12626,5 @@ return [
 	"crm_trend_this_week" => "Crm trend this week",
 	"crm_trend_today" => "Crm trend today",
 	"crm_activity_trend" => "Crm activity trend",
+	"top_deal_owners_by_value" => "Top deal owners by value",
 ];

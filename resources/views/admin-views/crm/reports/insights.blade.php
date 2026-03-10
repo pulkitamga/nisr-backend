@@ -251,21 +251,6 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        @php
-                            $chartTitle = match ($filters['date_type'] ?? 'this_year') {
-                                'this_year' => translate('crm_trend_this_year'),
-                                'this_month' => translate('crm_trend_this_month'),
-                                'this_week' => translate('crm_trend_this_week'),
-                                'today' => translate('crm_trend_today'),
-                                'custom_date' => translate('crm_trend_custom_range') .
-                                    ': ' .
-                                    ($filters['from'] ?? '') .
-                                    ' - ' .
-                                    ($filters['to'] ?? ''),
-                                default => translate('crm_trend_last_12_months'),
-                            };
-                        @endphp
-
                         <h4 class="mb-0">{{ $chartTitle }}</h4>
                         <span class="badge-soft">{{ translate('messages_leads_deals') }}</span>
                     </div>
@@ -318,7 +303,23 @@
 
         <div class="card">
             <div class="card-header border-0">
-                <h4 class="mb-0">{{ translate('top_deal_owners_by_value_90d') }}</h4>
+                @php
+                    // Extract just the date part from chart title
+                    $datePart = match ($filters['date_type'] ?? 'this_year') {
+                        'today' => '(' . $snapshotFrom->format('j F Y') . ')',
+                        'this_week' => '(' . $snapshotFrom->format('M d') . ' - ' . $snapshotTo->format('M d, Y') . ')',
+                        'this_month' => '(' . $snapshotFrom->format('F Y') . ')',
+                        'this_year' => '(' . $snapshotFrom->format('Y') . ')',
+                        'custom_date' => '(' .
+                            $snapshotFrom->format('j F Y') .
+                            ' - ' .
+                            $snapshotTo->format('j F Y') .
+                            ')',
+                        default => '(' . translate('last_12_months') . ')',
+                    };
+                @endphp
+
+                <h4 class="mb-0">{{ translate('top_deal_owners_by_value') }} {{ $datePart }}</h4>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
