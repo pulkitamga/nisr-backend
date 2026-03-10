@@ -283,127 +283,8 @@
     <script>
         'use strict';
 
-        (function() {
-            const trendData = @json($trendChartData);
-            const deliveryData = @json($deliveryChartData);
-            const currencySymbol = document.getElementById('get-currency-symbol')?.dataset?.currencySymbol || '';
-            const fmtMoney = (value) => `${currencySymbol}${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-
-            const trendCtx = document.getElementById('wholesale-revenue-trend');
-            if (trendCtx) {
-                new Chart(trendCtx, {
-                    data: {
-                        labels: trendData.labels || [],
-                        datasets: [{
-                                type: 'bar',
-                                label: @json(translate('orders')),
-                                data: trendData.orders || [],
-                                backgroundColor: 'rgba(15, 118, 110, 0.22)',
-                                borderColor: '#0f766e',
-                                borderWidth: 1,
-                                yAxisID: 'yOrders'
-                            },
-                            {
-                                type: 'line',
-                                label: @json(translate('revenue')),
-                                data: trendData.revenue || [],
-                                borderColor: '#0f766e',
-                                backgroundColor: 'rgba(15, 118, 110, 0.12)',
-                                borderWidth: 3,
-                                tension: 0.35,
-                                fill: false,
-                                yAxisID: 'yRevenue'
-                            },
-                            {
-                                type: 'line',
-                                label: @json(translate('paid_revenue')),
-                                data: trendData.paid_revenue || [],
-                                borderColor: '#14b8a6',
-                                backgroundColor: 'rgba(20, 184, 166, 0.16)',
-                                borderWidth: 2,
-                                tension: 0.35,
-                                fill: false,
-                                yAxisID: 'yRevenue'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        if (context.dataset.yAxisID === 'yRevenue') {
-                                            return `${context.dataset.label}: ${fmtMoney(context.raw)}`;
-                                        }
-                                        return `${context.dataset.label}: ${Number(context.raw || 0).toLocaleString()}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            yRevenue: {
-                                type: 'linear',
-                                position: 'left',
-                                ticks: {
-                                    callback: (value) => fmtMoney(value)
-                                },
-                                grid: {
-                                    color: 'rgba(16, 42, 67, 0.08)'
-                                }
-                            },
-                            yOrders: {
-                                type: 'linear',
-                                position: 'right',
-                                grid: {
-                                    drawOnChartArea: false
-                                },
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            const deliveryCtx = document.getElementById('wholesale-delivery-mix');
-            if (deliveryCtx) {
-                const labels = (deliveryData.labels || []).length ? deliveryData.labels : [@json(translate('no_data'))];
-                const counts = (deliveryData.counts || []).length ? deliveryData.counts : [1];
-
-                new Chart(deliveryCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels,
-                        datasets: [{
-                            data: counts,
-                            backgroundColor: ['#0f766e', '#14b8a6', '#f59e0b', '#64748b', '#ef4444', '#8b5cf6'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-        })();
-
         $(document).ready(function() {
+            // Date range toggle
             $('#date_type').on('change', function() {
                 if ($(this).val() === 'custom_date') {
                     $('.custom-date-range').show();
@@ -411,6 +292,185 @@
                     $('.custom-date-range').hide();
                 }
             });
+
+            // Get chart data from PHP
+            const trendData = @json($trendChartData);
+            const deliveryData = @json($deliveryChartData);
+
+            console.log('Trend Data:', trendData);
+            console.log('Delivery Data:', deliveryData);
+
+            // Format money function
+            const currencySymbol = '{{ session('currency_symbol') ?? '$' }}';
+            const fmtMoney = (value) => `${currencySymbol}${Number(value || 0).toFixed(2)}`;
+
+            // Revenue Trend Chart
+            const trendCtx = document.getElementById('wholesale-revenue-trend');
+            if (trendCtx && trendData && trendData.labels && trendData.labels.length > 0) {
+                new Chart(trendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: trendData.labels,
+                        datasets: [{
+                                label: '{{ translate('orders') }}',
+                                data: trendData.orders || [],
+                                backgroundColor: 'rgba(15, 118, 110, 0.22)',
+                                borderColor: '#0f766e',
+                                borderWidth: 1,
+                                type: 'bar',
+                                yAxisID: 'A'
+                            },
+                            {
+                                label: '{{ translate('revenue') }}',
+                                data: trendData.revenue || [],
+                                borderColor: '#0f766e',
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                tension: 0.35,
+                                fill: false,
+                                type: 'line',
+                                yAxisID: 'B'
+                            },
+                            {
+                                label: '{{ translate('paid_revenue') }}',
+                                data: trendData.paid_revenue || [],
+                                borderColor: '#14b8a6',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                tension: 0.35,
+                                fill: false,
+                                type: 'line',
+                                yAxisID: 'B'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }],
+                            yAxes: [{
+                                    id: 'A',
+                                    type: 'linear',
+                                    position: 'left',
+                                    ticks: {
+                                        beginAtZero: true,
+                                        stepSize: 1,
+                                        callback: function(value) {
+                                            return value.toLocaleString();
+                                        }
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: '{{ translate('orders') }}'
+                                    }
+                                },
+                                {
+                                    id: 'B',
+                                    type: 'linear',
+                                    position: 'right',
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function(value) {
+                                            return fmtMoney(value);
+                                        }
+                                    },
+                                    gridLines: {
+                                        drawOnChartArea: false
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: '{{ translate('revenue') }}'
+                                    }
+                                }
+                            ]
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                                    const label = dataset.label || '';
+                                    const value = tooltipItem.yLabel;
+
+                                    if (dataset.yAxisID === 'B') {
+                                        return label + ': ' + fmtMoney(value);
+                                    }
+                                    return label + ': ' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.log('No trend data available');
+                if (trendCtx) {
+                    trendCtx.parentNode.innerHTML =
+                        '<div class="text-center py-4">{{ translate('no_data_available') }}</div>';
+                }
+            }
+
+            // Delivery Status Chart
+            const deliveryCtx = document.getElementById('wholesale-delivery-mix');
+            if (deliveryCtx && deliveryData && deliveryData.labels && deliveryData.labels.length > 0) {
+                const total = deliveryData.counts.reduce((a, b) => a + b, 0);
+
+                new Chart(deliveryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: deliveryData.labels,
+                        datasets: [{
+                            data: deliveryData.counts,
+                            backgroundColor: ['#0f766e', '#14b8a6', '#f59e0b', '#64748b', '#ef4444',
+                                '#8b5cf6'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    const label = data.labels[tooltipItem.index] || '';
+                                    const value = data.datasets[0].data[tooltipItem.index];
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) :
+                                        0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.log('No delivery data available');
+                if (deliveryCtx) {
+                    deliveryCtx.parentNode.innerHTML =
+                        '<div class="text-center py-4">{{ translate('no_data_available') }}</div>';
+                }
+            }
         });
     </script>
 @endpush
