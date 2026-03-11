@@ -14,77 +14,115 @@
             text-align: {{ $isRtl ?? false ? 'right' : 'left' }};
         }
 
-        /* Header Styles */
+        /* Header Styles with Logo */
         .report-header {
             background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%);
             color: white;
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
+            overflow: hidden;
         }
 
-        .report-header h2 {
+        .header-content {
+            float: left;
+            width: 70%;
+        }
+
+        .logo-container {
+            float: right;
+            width: 25%;
+            text-align: right;
+        }
+
+        .logo-container img {
+            max-width: 100px;
+            max-height: 50px;
+            object-fit: contain;
+        }
+
+        .header-content h2 {
             margin: 0 0 5px 0;
             font-size: 20px;
         }
 
-        .report-header p {
+        .header-content p {
             margin: 0;
             opacity: 0.9;
             font-size: 11px;
         }
 
-        /* KPI Metrics */
-        .kpi-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .metric-box {
-            flex: 1 1 calc(16.666% - 8px);
-            background: #f3f4f6;
-            border-radius: 6px;
-            padding: 10px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .metric-box h4 {
-            margin: 0 0 5px 0;
-            font-size: 10px;
-            color: #4b5563;
-            text-transform: uppercase;
-        }
-
-        .metric-box span {
-            font-weight: bold;
-            font-size: 16px;
-            color: #0f766e;
-        }
-
-        /* Chart Row - 2 columns */
-        .chart-row {
+        /* Clear float */
+        .clearfix::after {
+            content: "";
+            clear: both;
             display: table;
-            width: 100%;
-            table-layout: fixed;
+        }
+
+        /* KPI Metrics - Table layout for mPDF */
+        .kpi-wrapper {
+            background: #f3f6fb;
+            padding: 7px;
+            border-radius: 10px;
             margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .kpi-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 5px;
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px !important;
+            padding: 5px 5px;
+            vertical-align: middle;
+        }
+
+        .kpi-label {
+            color: #5f6672;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin: 0 0 6px 0;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            text-align: left;
+        }
+
+        /* .kpi-value.percentage {
+            color: #0f766e;
+        } */
+
+        /* Chart Row - Table layout for mPDF */
+        .chart-row {
+            width: 100%;
+            margin-bottom: 20px;
+            display: block;
+            overflow: hidden;
         }
 
         .chart-trend {
-            display: table-cell;
-            width: 70%;
-            padding-right: 10px;
+            width: 68%;
+            float: left;
+            margin-right: 2%;
         }
 
         .chart-stage {
-            display: table-cell;
             width: 30%;
+            float: left;
         }
 
         .chart-col {
-            /* flex: 1; */
             border: 1px solid #e5e7eb;
             border-radius: 6px;
             padding: 12px;
@@ -104,7 +142,6 @@
             width: 100%;
             height: auto;
             max-height: 170px;
-            object-fit: contain;
         }
 
         /* Full Width Chart */
@@ -204,23 +241,177 @@
                 padding-left: 0;
             }
 
-            .metric-box {
-                text-align: center;
+            .header-content {
+                float: right;
+                text-align: right;
+            }
+
+            .logo-container {
+                float: left;
+                text-align: left;
+            }
+
+            .chart-trend {
+                float: right;
+                margin-right: 0;
+                margin-left: 2%;
+            }
+
+            .chart-stage {
+                float: right;
             }
         @endif
+
+        .row {
+            width: 100%;
+            margin-bottom: 20px;
+            display: block;
+            overflow: hidden;
+        }
+
+        .col {
+            width: 16.2%;
+            float: left;
+            margin-right: 0.5%;
+        }
+
+        .col:last-child {
+            margin-right: 0;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 0;
+            height: auto;
+        }
+
+        .card-body {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .kpi-label {
+            color: #5f6672;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            text-align: left;
+        }
+
+        .kpi-value.percentage {
+            color: #0f766e;
+        }
+
+        /* Clear fix */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- Modern Header -->
-    <div class="report-header">
-        <h2>{{ translate('crm_insights_report') }}</h2>
-        <p>{{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
-        </p>
+    <!-- Modern Header with Logo - Fixed for mPDF -->
+    <div class="report-header clearfix">
+        <div class="header-content">
+            <h2>{{ translate('crm_insights_report') }}</h2>
+            <p>{{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
+                {{ $snapshotTo->format('M d, Y') }}</p>
+        </div>
+        <div class="logo-container">
+            @if (!empty($logo))
+                <img src="{{ $logo }}" alt="{{ translate('logo') }}">
+            @else
+                <img src="{{ public_path('storage/company/2025-01-09-678000bad07e6.webp') }}" alt="Logo"
+                    style="max-width: 100px; max-height: 50px;">
+            @endif
+        </div>
     </div>
 
-    <!-- First Row: Trend + Stage Charts side by side with dynamic titles -->
+<!-- KPI Metrics Cards - Fixed with proper number formatting and black values -->
+<div class="kpi-wrapper">
+    <div class="row clearfix">
+        <div class="col">
+            <div class="card">
+                <div class="card-body" style="text-align: left; padding: 12px 15px;">
+                    <p class="kpi-label" style="text-align: left;">{{ translate('messages') }}</p>
+                    <p class="kpi-value" style="text-align: left; color: #0f172a;">{{ number_format((int) ($kpi['message_count'] ?? 0)) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card">
+                <div class="card-body" style="text-align: left; padding: 12px 15px;">
+                    <p class="kpi-label" style="text-align: left;">{{ translate('leads') }}</p>
+                    <p class="kpi-value" style="text-align: left; color: #0f172a;">{{ number_format((int) ($kpi['lead_count'] ?? 0)) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card">
+                <div class="card-body" style="text-align: left; padding: 12px 15px;">
+                    <p class="kpi-label" style="text-align: left;">{{ translate('deals') }}</p>
+                    <p class="kpi-value" style="text-align: left; color: #0f172a;">{{ number_format((int) ($kpi['deal_count'] ?? 0)) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card">
+                <div class="card-body" style="text-align: left; padding: 12px 15px;">
+                    <p class="kpi-label" style="text-align: left;">{{ translate('pipeline_value') }}</p>
+                    <p class="kpi-value" style="text-align: left; color: #0f172a;">
+                        @php
+                            $value = (float) ($kpi['total_deal_value'] ?? 0);
+                            $formatted = number_format($value, 2);
+                            $parts = explode('.', $formatted);
+                        @endphp
+                        {{ $parts[0] }}<span style="font-size: 14px;">.{{ $parts[1] ?? '00' }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card">
+                <div class="card-body" style="text-align: left; padding: 12px 15px;">
+                    <p class="kpi-label" style="text-align: left;">{{ translate('lead_to_deal') }}</p>
+                    <p class="kpi-value" style="text-align: left; color: #0f172a;">
+                        {{ number_format((float) ($kpi['lead_to_deal_rate'] ?? 0), 1) }}%
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card">
+                <div class="card-body" style="text-align: left; padding: 12px 15px;">
+                    <p class="kpi-label" style="text-align: left;">{{ translate('win_rate') }}</p>
+                    <p class="kpi-value" style="text-align: left; color: #0f172a;">
+                        {{ number_format((float) ($kpi['deal_win_rate'] ?? 0), 1) }}%
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- First Row: Trend + Stage Charts side by side -->
     @if (!empty($trendChart) || !empty($stageChart))
         <div class="chart-row">
             @if (!empty($trendChart))
@@ -277,7 +468,7 @@
         </div>
     @endif
 
-    <!-- Message Status Chart with dynamic title -->
+    <!-- Message Status Chart (if available) -->
     @if (!empty($statusChart))
         <div class="full-chart">
             @php
@@ -308,7 +499,7 @@
         </div>
     @endif
 
-    <!-- Top Owners Table with dynamic date -->
+    <!-- Top Owners Table -->
     <div class="table-container">
         <div class="table-header">
             @php
@@ -334,21 +525,25 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($topOwners as $owner)
+                @forelse ($topOwners ?? [] as $owner)
                     @php
-                        $avg = (int) $owner->deals_count > 0 ? $owner->total_value / (int) $owner->deals_count : 0;
+                        $avg =
+                            (int) ($owner->deals_count ?? 0) > 0
+                                ? ($owner->total_value ?? 0) / (int) ($owner->deals_count ?? 1)
+                                : 0;
                     @endphp
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td><strong>{{ $owner->owner_name }}</strong></td>
-                        <td class="value-ltr">{{ number_format((int) $owner->deals_count) }}</td>
-                        <td class="value-ltr">{{ number_format((float) $owner->total_value, 2) }}</td>
+                        <td><strong>{{ $owner->owner_name ?? translate('unknown') }}</strong></td>
+                        <td class="value-ltr">{{ number_format((int) ($owner->deals_count ?? 0)) }}</td>
+                        <td class="value-ltr">{{ number_format((float) ($owner->total_value ?? 0), 2) }}</td>
                         <td class="value-ltr">{{ number_format($avg, 2) }}</td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="5" style="text-align: center; padding: 15px;">
-                            {{ translate('no_owner_activity_in_this_period') }}</td>
+                            {{ translate('no_owner_activity_in_this_period') }}
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
