@@ -11916,6 +11916,7 @@ return [
 	"insights" => "الرؤى",
 	"auto_summary" => "ملخص تلقائي",
 	"top_deal_owners_by_value_90d" => "أفضل ملاك الصفقات حسب القيمة (90 يومًا)",
+	"top_deal_owners_by_value" => "أفضل ملاك الصفقات حسب القيمة",
 	"no_owner_activity_in_this_period" => "لا توجد نشاطات للملاك في هذه الفترة.",
 	"voip_trend_last_12_months" => "اتجاه الاتصالات (آخر 12 شهرًا)",
 	"volume_completion_duration" => "الحجم، الإكمال، المدة",

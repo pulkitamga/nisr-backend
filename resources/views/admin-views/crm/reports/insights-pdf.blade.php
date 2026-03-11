@@ -291,13 +291,14 @@
             padding: 12px 15px;
             text-align: left;
         }
+
         .kpi-container {
             background-color: #f3f6fb;
             padding: 10px 5px;
             border-radius: 12px;
             margin-bottom: 20px;
         }
- 
+
         .kpi-table {
             width: 100%;
             border-collapse: separate;
@@ -306,7 +307,7 @@
             /* Space between cards */
             table-layout: fixed;
         }
- 
+
         .kpi-table td {
             background-color: #ffffff;
             border: 1px solid #e5e7eb;
@@ -317,7 +318,7 @@
             height: 55px;
             text-align: left;
         }
- 
+
         /* .kpi-label {
             color: #6b7280;
             font-size: 8px;
@@ -326,7 +327,7 @@
             margin-bottom: 4px;
             display: block;
         } */
- 
+
         /* .kpi-value {
            
             font-size: 16px;
@@ -371,8 +372,7 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('crm_insights_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
-                {{ $snapshotTo->format('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $snapshotFrom->translatedFormat('M d, Y') }} - {{ $snapshotTo->translatedFormat('M d, Y') }}</p>
         </div>
         <div class="logo-container">
             @php
@@ -394,7 +394,8 @@
             <tr>
                 <td>
                     <div class="kpi-label">{{ translate('messages') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['message_count'] ?? 0)) }}</strong></div>
+                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['message_count'] ?? 0)) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('leads') }}</div>
@@ -406,15 +407,18 @@
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('pipeline_value') }}</div>
-                    <div class="kpi-value" style="font-size: 13px;"><strong>{{ number_format((float) ($kpi['total_deal_value'] ?? 0), 2) }}</strong></div>
+                    <div class="kpi-value" style="font-size: 13px;">
+                        <strong>{{ number_format((float) ($kpi['total_deal_value'] ?? 0), 2) }}</strong></div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('lead_to_deal') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((float) ($kpi['lead_to_deal_rate'] ?? 0), 1) }}%</strong></div>
+                    <div class="kpi-value">
+                        <strong>{{ number_format((float) ($kpi['lead_to_deal_rate'] ?? 0), 1) }}%</strong></div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('win_rate') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((float) ($kpi['deal_win_rate'] ?? 0), 1) }}%</strong></div>
+                    <div class="kpi-value">
+                        <strong>{{ number_format((float) ($kpi['deal_win_rate'] ?? 0), 1) }}%</strong></div>
                 </td>
             </tr>
         </table>
@@ -427,20 +431,20 @@
                 <div class="chart-trend">
                     @php
                         $trendTitle = match ($filters['date_type'] ?? 'this_year') {
-                            'today' => translate('crm_trend') . ' (' . $snapshotFrom->format('j F Y') . ')',
+                            'today' => translate('crm_trend') . ' (' . $snapshotFrom->translatedFormat('j F Y') . ')',
                             'this_week' => translate('crm_trend') .
                                 ' (' .
-                                $snapshotFrom->format('M d') .
+                                $snapshotFrom->translatedFormat('M d') .
                                 ' - ' .
-                                $snapshotTo->format('M d, Y') .
+                                $snapshotTo->translatedFormat('M d, Y') .
                                 ')',
-                            'this_month' => translate('crm_trend') . ' (' . $snapshotFrom->format('F Y') . ')',
-                            'this_year' => translate('crm_trend') . ' (' . $snapshotFrom->format('Y') . ')',
+                            'this_month' => translate('crm_trend') . ' (' . $snapshotFrom->translatedFormat('F Y') . ')',
+                            'this_year' => translate('crm_trend') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
                             'custom_date' => translate('crm_trend') .
                                 ': ' .
-                                $snapshotFrom->format('j F Y') .
+                                $snapshotFrom->translatedFormat('j F Y') .
                                 ' - ' .
-                                $snapshotTo->format('j F Y'),
+                                $snapshotTo->translatedFormat('j F Y'),
                             default => translate('crm_trend') . ' (' . translate('last_12_months') . ')',
                         };
                     @endphp
@@ -453,20 +457,20 @@
                 <div class="chart-stage">
                     @php
                         $stageTitle = match ($filters['date_type'] ?? 'this_year') {
-                            'today' => translate('deal_stage_mix') . ' (' . $snapshotFrom->format('j F Y') . ')',
+                            'today' => translate('deal_stage_mix') . ' (' . $snapshotFrom->translatedFormat('j F Y') . ')',
                             'this_week' => translate('deal_stage_mix') .
                                 ' (' .
-                                $snapshotFrom->format('M d') .
+                                $snapshotFrom->translatedFormat('M d') .
                                 ' - ' .
-                                $snapshotTo->format('M d, Y') .
+                                $snapshotTo->translatedFormat('M d, Y') .
                                 ')',
-                            'this_month' => translate('deal_stage_mix') . ' (' . $snapshotFrom->format('F Y') . ')',
-                            'this_year' => translate('deal_stage_mix') . ' (' . $snapshotFrom->format('Y') . ')',
+                            'this_month' => translate('deal_stage_mix') . ' (' . $snapshotFrom->translatedFormat('F Y') . ')',
+                            'this_year' => translate('deal_stage_mix') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
                             'custom_date' => translate('deal_stage_mix') .
                                 ': ' .
-                                $snapshotFrom->format('j F Y') .
+                                $snapshotFrom->translatedFormat('j F Y') .
                                 ' - ' .
-                                $snapshotTo->format('j F Y'),
+                                $snapshotTo->translatedFormat('j F Y'),
                             default => translate('deal_stage_mix') . ' (' . translate('last_12_months') . ')',
                         };
                     @endphp
@@ -482,23 +486,23 @@
         <div class="full-chart">
             @php
                 $statusTitle = match ($filters['date_type'] ?? 'this_year') {
-                    'today' => translate('message_status_distribution') . ' (' . $snapshotFrom->format('j F Y') . ')',
+                    'today' => translate('message_status_distribution') . ' (' . $snapshotFrom->translatedFormat('j F Y') . ')',
                     'this_week' => translate('message_status_distribution') .
                         ' (' .
-                        $snapshotFrom->format('M d') .
+                        $snapshotFrom->translatedFormat('M d') .
                         ' - ' .
-                        $snapshotTo->format('M d, Y') .
+                        $snapshotTo->translatedFormat('M d, Y') .
                         ')',
                     'this_month' => translate('message_status_distribution') .
                         ' (' .
-                        $snapshotFrom->format('F Y') .
+                        $snapshotFrom->translatedFormat('F Y') .
                         ')',
-                    'this_year' => translate('message_status_distribution') . ' (' . $snapshotFrom->format('Y') . ')',
+                    'this_year' => translate('message_status_distribution') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
                     'custom_date' => translate('message_status_distribution') .
                         ': ' .
-                        $snapshotFrom->format('j F Y') .
+                        $snapshotFrom->translatedFormat('j F Y') .
                         ' - ' .
-                        $snapshotTo->format('j F Y'),
+                        $snapshotTo->translatedFormat('j F Y'),
                     default => translate('message_status_distribution') . ' (' . translate('last_12_months') . ')',
                 };
             @endphp
@@ -513,11 +517,11 @@
         <div class="table-header">
             @php
                 $tableDatePart = match ($filters['date_type'] ?? 'this_year') {
-                    'today' => '(' . $snapshotFrom->format('j F Y') . ')',
-                    'this_week' => '(' . $snapshotFrom->format('M d') . ' - ' . $snapshotTo->format('M d, Y') . ')',
-                    'this_month' => '(' . $snapshotFrom->format('F Y') . ')',
-                    'this_year' => '(' . $snapshotFrom->format('Y') . ')',
-                    'custom_date' => '(' . $snapshotFrom->format('j F Y') . ' - ' . $snapshotTo->format('j F Y') . ')',
+                    'today' => '(' . $snapshotFrom->translatedFormat('j F Y') . ')',
+                    'this_week' => '(' . $snapshotFrom->translatedFormat('M d') . ' - ' . $snapshotTo->translatedFormat('M d, Y') . ')',
+                    'this_month' => '(' . $snapshotFrom->translatedFormat('F Y') . ')',
+                    'this_year' => '(' . $snapshotFrom->translatedFormat('Y') . ')',
+                    'custom_date' => '(' . $snapshotFrom->translatedFormat('j F Y') . ' - ' . $snapshotTo->translatedFormat('j F Y') . ')',
                     default => '(' . translate('last_12_months') . ')',
                 };
             @endphp
@@ -561,7 +565,7 @@
 
     <!-- Footer -->
     <div class="footer">
-        {{ translate('generated_on') }}: {{ now()->format('j F Y, h:i A') }} | {{ translate('crm_insights_report') }}
+        {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} | {{ translate('crm_insights_report') }}
     </div>
 
 </body>
