@@ -62,10 +62,48 @@
 
         /* KPI Metrics - Table layout for mPDF */
         .kpi-wrapper {
-            background: #e9edf3;
-            padding: 12px;
+            background-color: #f3f6fb;
+            padding: 10px;
             border-radius: 12px;
             margin-bottom: 20px;
+        }
+
+        .kpi-table {
+            width: 100%;
+            border-collapse: separate !important;
+            border-spacing: 10px 0;
+            /* Gap between the 4 cards */
+            table-layout: fixed;
+        }
+
+        .kpi-table td {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px !important;
+            /* Rounded corners */
+            padding: 12px 10px;
+            vertical-align: top;
+            height: 55px;
+            /* Consistent height */
+            text-align: left;
+            /* Left aligned */
+        }
+
+        .kpi-label {
+            color: #6b7280;
+            font-size: 8px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .kpi-value {
+            color: #111827;
+            font-size: 15px;
+            font-weight: 900;
+            /* Extra bold */
+            display: block;
         }
 
         .row {
@@ -297,42 +335,33 @@
     <!-- KPI Metrics Cards -->
     @if (isset($kpi) && !empty($kpi))
         <div class="kpi-wrapper">
-            <table style="width: 100%; border-collapse: separate; border-spacing: 8px; margin: 0;">
+            <table class="kpi-table" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td style="width: 25%;" align="center" valign="top">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="kpi-label">{{ translate('total_revenue') }}</p>
-                                <p class="kpi-value">{{ number_format((float) ($kpi['total_revenue'] ?? 0), 2) }}</p>
-                            </div>
+                    <td>
+                        <div class="kpi-label">{{ translate('total_revenue') }}</div>
+                        <div class="kpi-value">
+                            <strong>{{ number_format((float) ($kpi['total_revenue'] ?? 0), 2) }}</strong>
                         </div>
                     </td>
 
-                    <td style="width: 25%;" align="center" valign="top">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="kpi-label">{{ translate('paid_revenue') }}</p>
-                                <p class="kpi-value">{{ number_format((float) ($kpi['paid_revenue'] ?? 0), 2) }}</p>
-                            </div>
+                    <td>
+                        <div class="kpi-label">{{ translate('paid_revenue') }}</div>
+                        <div class="kpi-value">
+                            <strong>{{ number_format((float) ($kpi['paid_revenue'] ?? 0), 2) }}</strong>
                         </div>
                     </td>
 
-                    <td style="width: 25%;" align="center" valign="top">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="kpi-label">{{ translate('avg_order_value') }}</p>
-                                <p class="kpi-value">{{ number_format((float) ($kpi['avg_order_value'] ?? 0), 2) }}</p>
-                            </div>
+                    <td>
+                        <div class="kpi-label">{{ translate('avg_order_value') }}</div>
+                        <div class="kpi-value">
+                            <strong>{{ number_format((float) ($kpi['avg_order_value'] ?? 0), 2) }}</strong>
                         </div>
                     </td>
 
-                    <td style="width: 25%;" align="center" valign="top">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="kpi-label">{{ translate('fulfillment_rate') }}</p>
-                                <p class="kpi-value">{{ number_format((float) ($kpi['fulfillment_rate'] ?? 0), 1) }}%
-                                </p>
-                            </div>
+                    <td>
+                        <div class="kpi-label">{{ translate('fulfillment_rate') }}</div>
+                        <div class="kpi-value">
+                            <strong>{{ number_format((float) ($kpi['fulfillment_rate'] ?? 0), 1) }}%</strong>
                         </div>
                     </td>
                 </tr>

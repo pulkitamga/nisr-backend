@@ -251,7 +251,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ $chartTitle }}</h4>
+                       <h4 class="mb-0">{{ translate('crm_trend') }} ({{ $snapshotFrom->format('d M, Y') }} - {{ $snapshotTo->format('d M, Y') }})</h4>
                         <span class="badge-soft">{{ translate('messages_leads_deals') }}</span>
                     </div>
                     <div class="card-body">
@@ -263,7 +263,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('deal_stage_mix') }}</h4>
-                        <span class="badge-soft">90D</span>
+                        <span class="badge-soft">{{ $snapshotFrom->format('d M, Y') }} - {{ $snapshotTo->format('d M, Y') }} </span>
                     </div>
                     <div class="card-body">
                         <canvas id="crm-stage-chart" height="220"></canvas>
@@ -319,7 +319,7 @@
                     };
                 @endphp
 
-                <h4 class="mb-0">{{ translate('top_deal_owners_by_value') }} {{ $datePart }}</h4>
+                <h4 class="mb-0">{{ translate('top_deal_owners_by_value') }} ({{ $snapshotFrom->format('d M, Y') }} - {{ $snapshotTo->format('d M, Y') }})</h4>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">

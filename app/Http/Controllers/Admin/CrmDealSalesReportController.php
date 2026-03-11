@@ -131,10 +131,10 @@ class CrmDealSalesReportController extends BaseController
 
         $chartRows = $rows->sortByDesc('total_deals')->take(12)->values();
 
-       $reportPeriod = $fromDate->format('M d, Y') . ' - ' . $toDate->format('M d, Y');
+        $periodLabel = $fromDate->format('d F, Y') . ' - ' . $toDate->format('d F, Y');
 
-$rangeDays = $fromDate->diffInDays($toDate) + 1;
-$rangeShort = $rangeDays . 'D';
+        $rangeDays = $fromDate->diffInDays($toDate) + 1;
+        $rangeShort = $rangeDays . 'D';
         $employeeChart = $this->chartImage([
             "type" => "bar",
             "data" => [
