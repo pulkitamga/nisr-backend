@@ -12637,4 +12637,5 @@ return [
 	"stage_trend" => "Stage trend",
 	"avg_order_value" => "Avg order value",
 	"total_revenue" => "Total revenue",
+	"end_to_end" => "End to end",
 ];
