@@ -86,7 +86,7 @@
                 <div>
                     <h2 class="h1 mb-1">{{ translate('wholesale_pipeline_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
+                        {{ translate('report_period') }}: {{ $dateRange }}
                     </p>
                 </div>
                 <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
@@ -216,7 +216,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ translate('stage_trend_last_6_months') }}</h4>
+                        <h4 class="mb-0">{{ translate('stage_trend') }}{{ $dateRange  }}</h4>
                         <span class="badge-soft">{{ translate('pipeline_velocity') }}</span>
                     </div>
                     <div class="card-body">
@@ -228,7 +228,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('stage_snapshot') }}</h4>
-                        <span class="badge-soft">90D</span>
+                        <span class="badge-soft">{{$dateRange}}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="wholesale-stage-snapshot" height="220"></canvas>
@@ -266,7 +266,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0">
-                        <h4 class="mb-0">{{ translate('tier_revenue_breakdown_90d') }}</h4>
+                        <h4 class="mb-0">{{ translate('tier_revenue_breakdown') }}{{ $dateRange }}</h4>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">

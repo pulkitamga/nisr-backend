@@ -291,6 +291,49 @@
             padding: 12px 15px;
             text-align: left;
         }
+        .kpi-container {
+            background-color: #f3f6fb;
+            padding: 10px 5px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+ 
+        .kpi-table {
+            width: 100%;
+            border-collapse: separate;
+            /* Required for radius */
+            border-spacing: 10px 0;
+            /* Space between cards */
+            table-layout: fixed;
+        }
+ 
+        .kpi-table td {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            /* mPDF needs this specific property and value to render radius on cells */
+            border-radius: 12px !important;
+            padding: 12px 10px;
+            vertical-align: top;
+            height: 55px;
+            text-align: left;
+        }
+ 
+        /* .kpi-label {
+            color: #6b7280;
+            font-size: 8px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: block;
+        } */
+ 
+        /* .kpi-value {
+           
+            font-size: 16px;
+            font-weight: 900;
+            color: #000000;
+            display: block;
+        } */
 
         .kpi-label {
             color: #5f6672;
@@ -332,84 +375,50 @@
                 {{ $snapshotTo->format('M d, Y') }}</p>
         </div>
         <div class="logo-container">
+            @php
+                $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
+            @endphp
+
             @if (!empty($logo))
-                <img src="{{ $logo }}" alt="{{ translate('logo') }}">
-            @else
-                <img src="{{ public_path('storage/company/2025-01-09-678000bad07e6.webp') }}" alt="Logo"
-                    style="max-width: 100px; max-height: 50px;">
+                <img src="{{ $logo }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px;">
+            @elseif(file_exists($defaultLogoPath))
+                <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
+                    alt="Logo" style="max-width:100px; max-height:50px;">
             @endif
         </div>
     </div>
 
-<!-- KPI Metrics Cards - Fixed with proper number formatting and black values -->
-<div class="kpi-wrapper">
-    <div class="row clearfix">
-        <div class="col">
-            <div class="card">
-                <div class="card-body" style="text-align: left; padding: 12px 15px;">
-                    <p class="kpi-label" style="text-align: left;">{{ translate('messages') }}</p>
-                    <p class="kpi-value" style="text-align: left; color: #0f172a;">{{ number_format((int) ($kpi['message_count'] ?? 0)) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="card">
-                <div class="card-body" style="text-align: left; padding: 12px 15px;">
-                    <p class="kpi-label" style="text-align: left;">{{ translate('leads') }}</p>
-                    <p class="kpi-value" style="text-align: left; color: #0f172a;">{{ number_format((int) ($kpi['lead_count'] ?? 0)) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="card">
-                <div class="card-body" style="text-align: left; padding: 12px 15px;">
-                    <p class="kpi-label" style="text-align: left;">{{ translate('deals') }}</p>
-                    <p class="kpi-value" style="text-align: left; color: #0f172a;">{{ number_format((int) ($kpi['deal_count'] ?? 0)) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="card">
-                <div class="card-body" style="text-align: left; padding: 12px 15px;">
-                    <p class="kpi-label" style="text-align: left;">{{ translate('pipeline_value') }}</p>
-                    <p class="kpi-value" style="text-align: left; color: #0f172a;">
-                        @php
-                            $value = (float) ($kpi['total_deal_value'] ?? 0);
-                            $formatted = number_format($value, 2);
-                            $parts = explode('.', $formatted);
-                        @endphp
-                        {{ $parts[0] }}<span style="font-size: 14px;">.{{ $parts[1] ?? '00' }}</span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="card">
-                <div class="card-body" style="text-align: left; padding: 12px 15px;">
-                    <p class="kpi-label" style="text-align: left;">{{ translate('lead_to_deal') }}</p>
-                    <p class="kpi-value" style="text-align: left; color: #0f172a;">
-                        {{ number_format((float) ($kpi['lead_to_deal_rate'] ?? 0), 1) }}%
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="card">
-                <div class="card-body" style="text-align: left; padding: 12px 15px;">
-                    <p class="kpi-label" style="text-align: left;">{{ translate('win_rate') }}</p>
-                    <p class="kpi-value" style="text-align: left; color: #0f172a;">
-                        {{ number_format((float) ($kpi['deal_win_rate'] ?? 0), 1) }}%
-                    </p>
-                </div>
-            </div>
-        </div>
+    <!-- KPI Metrics Cards - Fixed with proper number formatting and black values -->
+    <div class="kpi-container">
+        <table class="kpi-table" cellpadding="0" cellspacing="0">
+            <tr>
+                <td>
+                    <div class="kpi-label">{{ translate('messages') }}</div>
+                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['message_count'] ?? 0)) }}</strong></div>
+                </td>
+                <td>
+                    <div class="kpi-label">{{ translate('leads') }}</div>
+                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['lead_count'] ?? 0)) }}</strong></div>
+                </td>
+                <td>
+                    <div class="kpi-label">{{ translate('deals') }}</div>
+                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['deal_count'] ?? 0)) }}</strong></div>
+                </td>
+                <td>
+                    <div class="kpi-label">{{ translate('pipeline_value') }}</div>
+                    <div class="kpi-value" style="font-size: 13px;"><strong>{{ number_format((float) ($kpi['total_deal_value'] ?? 0), 2) }}</strong></div>
+                </td>
+                <td>
+                    <div class="kpi-label">{{ translate('lead_to_deal') }}</div>
+                    <div class="kpi-value"><strong>{{ number_format((float) ($kpi['lead_to_deal_rate'] ?? 0), 1) }}%</strong></div>
+                </td>
+                <td>
+                    <div class="kpi-label">{{ translate('win_rate') }}</div>
+                    <div class="kpi-value"><strong>{{ number_format((float) ($kpi['deal_win_rate'] ?? 0), 1) }}%</strong></div>
+                </td>
+            </tr>
+        </table>
     </div>
-</div>
 
     <!-- First Row: Trend + Stage Charts side by side -->
     @if (!empty($trendChart) || !empty($stageChart))

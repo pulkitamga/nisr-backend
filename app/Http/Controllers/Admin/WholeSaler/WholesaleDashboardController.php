@@ -227,7 +227,7 @@ class WholesaleDashboardController extends BaseController
         $collectionRate = $totalRevenue > 0 ? ($paidRevenue / $totalRevenue) * 100 : 0;
         $fulfillmentRate = $totalOrders > 0 ? ($deliveredOrders / $totalOrders) * 100 : 0;
         $openRevenue = max(0, $totalRevenue - $paidRevenue);
-
+        $dateRange = $snapshotFrom->format('d M, Y') . ' - ' . $snapshotTo->format('d M, Y');
         $trendRows = WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
             ->selectRaw($trendGrouping['select'] . ' as period_key')
@@ -318,7 +318,9 @@ class WholesaleDashboardController extends BaseController
             deliveryRows: $deliveryRows->toArray(),
             momentumRate: $momentumRate,
             recentRevenue: $recentRevenue,
-            previousRevenue: $previousRevenue
+            previousRevenue: $previousRevenue,
+            snapshotFrom: $snapshotFrom,
+            snapshotTo: $snapshotTo
         );
 
         $download = (string)$request->input('download', '');
@@ -415,13 +417,15 @@ class WholesaleDashboardController extends BaseController
             'snapshotFrom',
             'snapshotTo',
             'filters',
-            'wholesalers'
+            'wholesalers',
+            'dateRange'
         ));
     }
 
     public function pipelineReport(Request $request): View|BinaryFileResponse|Response
     {
         [$snapshotFrom, $snapshotTo] = $this->resolveReportDateRange($request);
+        $dateRange = $snapshotFrom->format('d M, Y') . ' - ' . $snapshotTo->format('d M, Y');
         $filters = [
             'date_type' => (string)$request->input('date_type', 'this_year'),
             'from' => $snapshotFrom->toDateString(),
@@ -431,7 +435,7 @@ class WholesaleDashboardController extends BaseController
         ];
         $trendGrouping = $this->resolveReportTrendGrouping($snapshotFrom, $snapshotTo);
         $periodKeys = $this->buildReportPeriodKeys($snapshotFrom, $snapshotTo, $trendGrouping['unit']);
-
+        
         $purchaseCount = WholesalePurchaseOrder::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
             ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholeseller_id', $filters['wholesaler_id']))
@@ -708,7 +712,8 @@ class WholesaleDashboardController extends BaseController
             'snapshotTo',
             'filters',
             'wholesalers',
-            'tiers'
+            'tiers',
+            'dateRange'
         ));
     }
 
@@ -898,17 +903,20 @@ class WholesaleDashboardController extends BaseController
         array $deliveryRows,
         ?float $momentumRate,
         float $recentRevenue,
-        float $previousRevenue
+        float $previousRevenue,
+        Carbon $snapshotFrom,
+        Carbon $snapshotTo
     ): array {
         if (($kpi['total_orders'] ?? 0) === 0) {
             return [translate('no_confirmed_wholesale_orders_found_in_last_90_days')];
         }
-
+        $dateRange = $snapshotFrom->format('d M, Y') . ' - ' . $snapshotTo->format('d M, Y');
         $insights = [];
-        $insights[] = strtr(translate('wholesale_revenue_insight_total'), [
-            ':total_revenue' => $this->formatMoney((float)$kpi['total_revenue']),
-            ':total_orders' => (string)((int)$kpi['total_orders']),
-        ]);
+        $insights[] = "Revenue between {$dateRange} reached "
+            . $this->formatMoney((float)$kpi['total_revenue'])
+            . " from "
+            . (int)$kpi['total_orders']
+            . " confirmed orders.";
 
         $maxRevenue = max($trendRevenue);
         if ($maxRevenue > 0) {
