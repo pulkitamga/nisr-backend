@@ -263,7 +263,25 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('deal_stage_mix') }}</h4>
-                        <span class="badge-soft">90D</span>
+                        @php
+                            $stageDateIndicator = match ($filters['date_type'] ?? 'this_year') {
+                                'today' => '(' . $snapshotFrom->format('M d, Y') . ')',
+                                'this_week' => '(' .
+                                    $snapshotFrom->format('M d') .
+                                    ' - ' .
+                                    $snapshotTo->format('M d, Y') .
+                                    ')',
+                                'this_month' => '(' . $snapshotFrom->format('M Y') . ')',
+                                'this_year' => '(' . $snapshotFrom->format('Y') . ')',
+                                'custom_date' => '(' .
+                                    $snapshotFrom->format('M d, Y') .
+                                    ' - ' .
+                                    $snapshotTo->format('M d, Y') .
+                                    ')',
+                                default => '(' . translate('last_12_months') . ')',
+                            };
+                        @endphp
+                        <span class="badge-soft">{{ $stageDateIndicator }}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="crm-stage-chart" height="220"></canvas>
