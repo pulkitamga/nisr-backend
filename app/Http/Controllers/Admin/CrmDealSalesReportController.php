@@ -131,11 +131,10 @@ class CrmDealSalesReportController extends BaseController
 
         $chartRows = $rows->sortByDesc('total_deals')->take(12)->values();
 
-        if ($fromDate->isSameMonth($toDate)) {
-            $periodLabel = $fromDate->format('d M Y') . ' - ' . $toDate->format('d M Y');
-        } else {
-            $periodLabel = $fromDate->format('d M Y') . ' - ' . $toDate->format('d M Y');
-        }
+       $reportPeriod = $fromDate->format('M d, Y') . ' - ' . $toDate->format('M d, Y');
+
+$rangeDays = $fromDate->diffInDays($toDate) + 1;
+$rangeShort = $rangeDays . 'D';
         $employeeChart = $this->chartImage([
             "type" => "bar",
             "data" => [

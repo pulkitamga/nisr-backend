@@ -12629,4 +12629,12 @@ return [
 	"top_deal_owners_by_value" => "Top deal owners by value",
 	"won_sales_total" => "Won sales total",
 	"department_performance_breakdown" => "Department performance breakdown",
+	"key_insights" => "Key insights",
+	"no_data_available" => "No data available",
+	"fulfilled" => "Fulfilled",
+	"top_wholesalers_by_revenue" => "Top wholesalers by revenue",
+	"revenue_trend" => "Revenue trend",
+	"stage_trend" => "Stage trend",
+	"avg_order_value" => "Avg order value",
+	"total_revenue" => "Total revenue",
 ];
