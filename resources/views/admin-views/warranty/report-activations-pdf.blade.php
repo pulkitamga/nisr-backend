@@ -47,6 +47,39 @@
             font-weight: 700;
         }
 
+        .chart-container {
+            margin: 20px 0;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .bar-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+        .bar {
+            background-color: #0177CD;
+            border-radius: 4px 4px 0 0;
+            width: 100%;
+            min-height: 2px;
+        }
+        .bar-label {
+            margin-top: 5px;
+            font-size: 9px;
+        }
+        .bar-value {
+            font-size: 8px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -73,6 +106,7 @@
         {{ $fromDate->format('Y-m-d') }} - {{ $toDate->format('Y-m-d') }}
     </div>
 
+    <!-- KPI Grid -->
     <table class="kpi-grid">
         <tr>
             <td>
@@ -96,6 +130,49 @@
         </tr>
     </table>
 
+    <!-- Activation Method Chart -->
+    @if(!empty($activationMethodChartData['labels']) && count($activationMethodChartData['labels']) > 0)
+        <div class="chart-container">
+            <div class="chart-title">{{ translate('activations_by_method') }}</div>
+            <div class="bar-chart">
+                @php $maxCount = max($activationMethodChartData['counts']); @endphp
+                @foreach($activationMethodChartData['labels'] as $index => $label)
+                    @php
+                        $count = $activationMethodChartData['counts'][$index] ?? 0;
+                        $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 2;
+                    @endphp
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ $height }}px;"></div>
+                        <div class="bar-label">{{ $label }}</div>
+                        <div class="bar-value">{{ $count }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- Activation Trend Chart -->
+    @if(!empty($activationTrendChartData['labels']) && count($activationTrendChartData['labels']) > 0)
+        <div class="chart-container">
+            <div class="chart-title">{{ translate('activations_trend') }}</div>
+            <div class="bar-chart">
+                @php $maxCount = max($activationTrendChartData['counts']); @endphp
+                @foreach($activationTrendChartData['labels'] as $index => $label)
+                    @php
+                        $count = $activationTrendChartData['counts'][$index] ?? 0;
+                        $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 2;
+                    @endphp
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ $height }}px;"></div>
+                        <div class="bar-label">{{ $label }}</div>
+                        <div class="bar-value">{{ $count }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- Method Breakdown Table (Optional) -->
     <table>
         <thead>
             <tr>
@@ -119,6 +196,7 @@
         </tbody>
     </table>
 
+    <!-- Activations Table -->
     <table>
         <thead>
             <tr>

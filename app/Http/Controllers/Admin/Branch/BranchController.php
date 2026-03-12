@@ -706,6 +706,7 @@ class BranchController extends BaseController
             ->whereIn('id', $assignedIds)
             ->orderBy('name')
             ->get();
+    }
 
 
     // public function fGetBranchesStockHistory(Request $request, $branch_id, $product_id)

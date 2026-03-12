@@ -37,7 +37,7 @@ class WarrantyClaimChartController extends Controller
         return view('admin-views.warranty.claim-chart', compact(
             'startDate',
             'endDate',
-            'selectedDateType',
+            'selectedDateType', 
             'selectedFrom',
             'selectedTo',
             'cards',

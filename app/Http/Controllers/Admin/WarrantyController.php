@@ -347,7 +347,7 @@ class WarrantyController extends Controller
         return redirect()->route('admin.warranty.activation.list');
     }
 
-   
+
 
     // Activation List
     public function activationList(Request $request)
@@ -614,7 +614,10 @@ class WarrantyController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array { return $this->rows; }
+                public function array(): array
+                {
+                    return $this->rows;
+                }
                 public function headings(): array
                 {
                     return ['Claim Number', 'Serial', 'Status', 'Customer', 'Submitted At', 'Resolution Due', 'Branch'];
@@ -627,7 +630,7 @@ class WarrantyController extends Controller
             $claimsForPdf = $detailQuery->get();
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-claims-pdf',
-                data: compact('kpi', 'claimsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
+                data: compact('kpi', 'claimsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl', 'statusChartData', 'trendChartData'),
                 fileName: 'warranty-claims-report.pdf',
                 orientation: 'landscape'
             );
@@ -783,7 +786,10 @@ class WarrantyController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array { return $this->rows; }
+                public function array(): array
+                {
+                    return $this->rows;
+                }
                 public function headings(): array
                 {
                     return ['Claim Number', 'Serial', 'Product', 'SLA Type', 'Due Date', 'Completed At', 'SLA Status', 'Claim Status'];
@@ -796,7 +802,17 @@ class WarrantyController extends Controller
             $slaRowsForPdf = $slaSummaryRows->values();
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-sla-pdf',
-                data: compact('kpi', 'slaRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
+                data: compact(
+                    'kpi',
+                    'slaRowsForPdf',
+                    'fromDate',
+                    'toDate',
+                    'filters',
+                    'isRtl',
+                    'slaComplianceChartData',
+                    'slaTypeChartData',
+                    'slaTrendChartData'
+                ),
                 fileName: 'warranty-sla-report.pdf',
                 orientation: 'landscape'
             );
@@ -947,7 +963,10 @@ class WarrantyController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array { return $this->rows; }
+                public function array(): array
+                {
+                    return $this->rows;
+                }
                 public function headings(): array
                 {
                     return ['Serial', 'Product', 'Customer', 'Branch', 'Activation Method', 'Activated At', 'Status', 'Warranty End'];
@@ -960,7 +979,18 @@ class WarrantyController extends Controller
             $activationRowsForPdf = $detailQuery->get();
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-activations-pdf',
-                data: compact('kpi', 'methodBreakdown', 'topProducts', 'activationRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
+                data: compact(
+                    'kpi',
+                    'methodBreakdown',
+                    'topProducts',
+                    'activationRowsForPdf',
+                    'fromDate',
+                    'toDate',
+                    'filters',
+                    'isRtl',
+                    'activationTrendChartData',
+                    'activationMethodChartData'
+                ),
                 fileName: 'warranty-activations-report.pdf',
                 orientation: 'landscape'
             );
@@ -1002,9 +1032,9 @@ class WarrantyController extends Controller
             ->selectRaw($completedColumn . ' as completed_at')
             ->selectRaw(
                 'CASE ' .
-                'WHEN ' . $completedColumn . ' IS NOT NULL THEN IF(' . $completedColumn . ' <= ' . $dueColumn . ', 1, 0) ' .
-                'ELSE IF(' . $dueColumn . ' >= NOW(), 1, 0) ' .
-                'END as is_within_sla'
+                    'WHEN ' . $completedColumn . ' IS NOT NULL THEN IF(' . $completedColumn . ' <= ' . $dueColumn . ', 1, 0) ' .
+                    'ELSE IF(' . $dueColumn . ' >= NOW(), 1, 0) ' .
+                    'END as is_within_sla'
             )
             ->whereNotNull($dueColumn)
             ->whereBetween($dueColumn, [$fromDate, $toDate]);
@@ -1287,8 +1317,14 @@ class WarrantyController extends Controller
             $rows = $topProducts->map(fn($row) => [(string)$row->product_name, (int)$row->claims_count])->values()->all();
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array { return $this->rows; }
-                public function headings(): array { return ['Product', 'Claims']; }
+                public function array(): array
+                {
+                    return $this->rows;
+                }
+                public function headings(): array
+                {
+                    return ['Product', 'Claims'];
+                }
             }, 'warranty-analytics-report.xlsx');
         }
 
@@ -1296,7 +1332,7 @@ class WarrantyController extends Controller
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-analytics-pdf',
-                data: compact('kpi', 'topProducts', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                data: compact('kpi', 'topProducts', 'snapshotFrom', 'snapshotTo', 'isRtl', 'statusChartData', 'trendChartData'),
                 fileName: 'warranty-analytics-report.pdf'
             );
         }

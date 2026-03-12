@@ -1355,6 +1355,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::get('earning', 'earning_index')->name('earning');
                 Route::get('admin-earning', 'admin_earning')->name('admin-earning');
                 Route::post('admin-earning-duration-download-pdf', 'admin_earning_duration_download_pdf')->name('admin-earning-duration-download-pdf');
+                Route::get('admin-earning-pdf', 'adminEarningPdf')->name('admin-earning-pdf');
                 Route::get('vendor-earning', 'vendorEarning')->name('vendor-earning');
                 Route::any('set-date', 'set_date')->name('set-date');
             });
@@ -1390,6 +1391,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:report.export_product_catalog|report.export,admin')->group(function () {
             Route::controller(ProductReportController::class)->group(function () {
                 Route::get('all-product-excel', 'allProductExportExcel')->name('all-product-excel');
+                 Route::get('all-product-pdf', 'allProductExportPDF')->name('all-product-pdf');
             });
         });
 

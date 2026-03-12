@@ -105,6 +105,40 @@
         </td>
     </tr>
 </table>
+
+{{-- Expense Statistics Chart (Bar Chart) --}}
+<table class="content-position" style="margin-top: 20px;">
+    <tr>
+        <th colspan="2" class="text-left black bold" style="padding: 10px 0;">
+            <h3>{{ translate('expense_Statistics') }}</h3>
+        </th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            @php
+                $chartData = $expense_transaction_chart['discount_amount'] ?? [];
+                $maxValue = !empty($chartData) ? max($chartData) : 1;
+                $barWidth = 30;
+                $chartHeight = 150;
+            @endphp
+            <svg width="100%" height="200" viewBox="0 0 {{ count($chartData) * ($barWidth + 10) + 50 }} 200" preserveAspectRatio="xMidYMid meet">
+                @foreach($chartData as $label => $value)
+                    @php
+                        $barHeight = ($value / $maxValue) * $chartHeight;
+                        $x = 30 + $loop->index * ($barWidth + 15);
+                        $y = 180 - $barHeight;
+                    @endphp
+                    <rect x="{{ $x }}" y="{{ $y }}" width="{{ $barWidth }}" height="{{ $barHeight }}" fill="#FF6B6B" />
+                    <text x="{{ $x + $barWidth/2 }}" y="195" font-size="10" text-anchor="middle">{{ $label }}</text>
+                    <text x="{{ $x + $barWidth/2 }}" y="{{ $y - 5 }}" font-size="8" text-anchor="middle">{{ number_format($value, 2) }}</text>
+                @endforeach
+                <line x1="20" y1="180" x2="{{ count($chartData) * ($barWidth + 15) + 30 }}" y2="180" stroke="black" stroke-width="1" />
+                <line x1="20" y1="20" x2="20" y2="180" stroke="black" stroke-width="1" />
+            </svg>
+        </td>
+    </tr>
+</table>
+
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 <table class="">
     <tr>

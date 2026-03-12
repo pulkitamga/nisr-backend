@@ -237,6 +237,104 @@
     </tr>
     </tbody>
 </table>
+
+{{-- Order Statistics Chart (Bar Chart) --}}
+<table class="content-position" style="margin-top: 20px;">
+    <tr>
+        <th colspan="2" class="text-left black bold" style="padding: 10px 0;">
+            <h3>{{ translate('order_Statistics') }}</h3>
+        </th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            @php
+                $chartData = $order_transaction_chart['order_amount'] ?? [];
+                $maxValue = !empty($chartData) ? max($chartData) : 1;
+                $barWidth = 30; // width of each bar in pixels
+                $chartHeight = 150;
+            @endphp
+            <svg width="100%" height="200" viewBox="0 0 {{ count($chartData) * ($barWidth + 10) + 50 }} 200" preserveAspectRatio="xMidYMid meet">
+                @foreach($chartData as $label => $value)
+                    @php
+                        $barHeight = ($value / $maxValue) * $chartHeight;
+                        $x = 30 + $loop->index * ($barWidth + 15);
+                        $y = 180 - $barHeight;
+                    @endphp
+                    <rect x="{{ $x }}" y="{{ $y }}" width="{{ $barWidth }}" height="{{ $barHeight }}" fill="#0177CD" />
+                    <text x="{{ $x + $barWidth/2 }}" y="195" font-size="10" text-anchor="middle">{{ $label }}</text>
+                    <text x="{{ $x + $barWidth/2 }}" y="{{ $y - 5 }}" font-size="8" text-anchor="middle">{{ number_format($value, 2) }}</text>
+                @endforeach
+                <line x1="20" y1="180" x2="{{ count($chartData) * ($barWidth + 15) + 30 }}" y2="180" stroke="black" stroke-width="1" />
+                <line x1="20" y1="20" x2="20" y2="180" stroke="black" stroke-width="1" />
+            </svg>
+        </td>
+    </tr>
+</table>
+
+{{-- Payment Statistics Chart (Pie Chart) --}}
+<table class="content-position" style="margin-top: 30px;">
+    <tr>
+        <th colspan="2" class="text-left black bold" style="padding: 10px 0;">
+            <h3>{{ translate('payment_Statistics') }}</h3>
+        </th>
+    </tr>
+    <tr>
+        <td style="width: 50%; vertical-align: top;">
+            @php
+                $payments = [
+                    'cash_payment' => $payment_data['cash_payment'] ?? 0,
+                    'digital_payment' => $payment_data['digital_payment'] ?? 0,
+                    'wallet_payment' => $payment_data['wallet_payment'] ?? 0,
+                    'offline_payment' => $payment_data['offline_payment'] ?? 0,
+                ];
+                $total = array_sum($payments);
+                $colors = ['#004188', '#0177CD', '#A2CEEE', '#CDE6F5'];
+                $startAngle = 0;
+                $cx = 100; $cy = 100; $r = 80;
+            @endphp
+            <svg width="200" height="200" viewBox="0 0 200 200">
+                @foreach($payments as $key => $value)
+                    @if($value > 0 && $total > 0)
+                        @php
+                            $percentage = $value / $total;
+                            $endAngle = $startAngle + $percentage * 360;
+                            // Convert angles to radians
+                            $startRad = deg2rad($startAngle);
+                            $endRad = deg2rad($endAngle);
+                            $x1 = $cx + $r * cos($startRad);
+                            $y1 = $cy + $r * sin($startRad);
+                            $x2 = $cx + $r * cos($endRad);
+                            $y2 = $cy + $r * sin($endRad);
+                            $largeArcFlag = $percentage > 0.5 ? 1 : 0;
+                            $pathData = "M $cx,$cy L $x1,$y1 A $r,$r 0 $largeArcFlag,1 $x2,$y2 Z";
+                        @endphp
+                        <path d="{{ $pathData }}" fill="{{ $colors[$loop->index] }}" stroke="white" stroke-width="1" />
+                        @php $startAngle = $endAngle; @endphp
+                    @endif
+                @endforeach
+                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="40" fill="white" />
+            </svg>
+        </td>
+        <td style="width: 50%; vertical-align: top; padding-left: 20px;">
+            <table style="width: 100%;">
+                @foreach($payments as $key => $value)
+                    <tr>
+                        <td>
+                            <span style="display:inline-block; width:12px; height:12px; background:{{ $colors[$loop->index] }}; margin-right:5px;"></span>
+                            {{ translate(str_replace('_payment', '', $key)) }}
+                        </td>
+                        <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $value), currencyCode: getCurrencyCode()) }}</td>
+                    </tr>
+                @endforeach
+                <tr style="border-top:1px solid #ddd;">
+                    <td><strong>{{ translate('total') }}</strong></td>
+                    <td class="text-right"><strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $total), currencyCode: getCurrencyCode()) }}</strong></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
 <br>
 <table class="">
     <tr>

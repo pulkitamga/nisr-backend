@@ -14,7 +14,7 @@
         .header {
             text-align: center;
             margin-bottom: 20px;
-            border-bottom: 2px solid #4a90e2;
+            border-bottom: 2px solid #4a90e2; 
             padding-bottom: 10px;
         }
         .header h2 {
@@ -86,6 +86,53 @@
         .card-pending { background: #ede7f6; border-left: 4px solid #673ab7; }
         .card-resolved { background: #e0f2f1; border-left: 4px solid #009688; }
 
+        /* चार्ट स्टाइल */
+        .chart-container {
+            margin: 30px 0;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 180px;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .bar-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+        .bar {
+            background-color: #4a90e2;
+            border-radius: 4px 4px 0 0;
+            width: 100%;
+            min-height: 2px;
+        }
+        .bar-label {
+            margin-top: 5px;
+            font-size: 8px;
+            font-weight: 500;
+            transform: rotate(-45deg);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60px;
+        }
+        .bar-value {
+            font-size: 8px;
+            font-weight: bold;
+        }
+        .chart-note {
+            font-size: 9px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -152,7 +199,7 @@
         <div class="filters-grid">
             <div class="filter-item"><strong>{{ translate('date_range') }}:</strong> <span class="bidi-ltr">{{ $filters['date_range'] }}</span></div>
             <div class="filter-item"><strong>{{ translate('branch') }}:</strong> {{ $filters['branch'] }}</div>
-                        <div class="filter-item"><strong>{{ translate('product') }}:</strong> {{ $filters['product'] }}</div>
+            <div class="filter-item"><strong>{{ translate('product') }}:</strong> {{ $filters['product'] }}</div>
             <div class="filter-item"><strong>{{ translate('status') }}:</strong> {{ $filters['status'] }}</div>
             @if($filters['search'])
             <div class="filter-item"><strong>{{ translate('search') }}:</strong> {{ $filters['search'] }}</div>
@@ -189,6 +236,67 @@
             <div class="value">{{ $cards['resolved'] }}</div>
         </div>
     </div>
+
+    <!-- चार्ट 1: Status Distribution -->
+    @php
+        $statusLabels = [translate('total'), translate('new'), translate('approved'), translate('rejected'), translate('pending'), translate('resolved')];
+        $statusCounts = [
+            $cards['total'] ?? 0,
+            $cards['new'] ?? 0,
+            $cards['approved'] ?? 0,
+            $cards['rejected'] ?? 0,
+            $cards['pending'] ?? 0,
+            $cards['resolved'] ?? 0
+        ];
+        $maxStatus = max($statusCounts) ?: 1;
+    @endphp
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('claims_by_status') }}</div>
+        <div class="bar-chart">
+            @foreach($statusLabels as $index => $label)
+                @php
+                    $count = $statusCounts[$index];
+                    $height = $maxStatus > 0 ? ($count / $maxStatus) * 100 : 2;
+                @endphp
+                <div class="bar-wrapper">
+                    <div class="bar" style="height: {{ $height }}px;"></div>
+                    <div class="bar-label">{{ $label }}</div>
+                    <div class="bar-value">{{ $count }}</div>
+                </div>
+            @endforeach
+        </div>
+        <div class="chart-note">{{ translate('maximum_value') }}: {{ $maxStatus }}</div>
+    </div>
+
+    <!-- चार्ट 2: Daily Claims Trend -->
+    @php
+        $dailyDates = [];
+        $dailyTotals = [];
+        foreach($dailyBreakdown as $day) {
+            $dailyDates[] = $day['date'];
+            $dailyTotals[] = $day['total'];
+        }
+        $maxDaily = !empty($dailyTotals) ? max($dailyTotals) : 1;
+    @endphp
+    @if(count($dailyTotals) > 0)
+    <div class="chart-container">
+        <div class="chart-title">{{ translate('daily_claims_trend') }}</div>
+        <div class="bar-chart">
+            @foreach($dailyDates as $index => $date)
+                @php
+                    $total = $dailyTotals[$index];
+                    $height = $maxDaily > 0 ? ($total / $maxDaily) * 100 : 2;
+                @endphp
+                <div class="bar-wrapper">
+                    <div class="bar" style="height: {{ $height }}px; background-color: #ff9800;"></div>
+                    <div class="bar-label">{{ \Carbon\Carbon::parse($date)->format('d M') }}</div>
+                    <div class="bar-value">{{ $total }}</div>
+                </div>
+            @endforeach
+        </div>
+        <div class="chart-note">{{ translate('maximum_daily') }}: {{ $maxDaily }}</div>
+    </div>
+    @endif
 
     <!-- डेली ब्रेकडाउन रिपोर्ट -->
     <h3 style="margin:20px 0 10px;">📅 {{ translate('daily_breakdown_report') }}</h3>
