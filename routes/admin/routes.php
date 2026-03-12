@@ -1062,7 +1062,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(CrmDealSalesReport::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_crm_deal_sales_performance|report.export,admin')
                 ->name('crm-sales-performance-export-excel');
-            Route::get(CrmDealSalesReport::EXPORT_PDF[URI], 'exportPdf')
+            Route::match(['GET', 'POST'], CrmDealSalesReport::EXPORT_PDF[URI], 'exportPdf')
                 ->middleware('permission:report.export_crm_deal_sales_performance|report.export,admin')
                 ->name('crm-sales-performance-export-pdf');
         });
@@ -1086,7 +1086,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(CrmEmployeeChannelAssignmentReport::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_crm_employee_channel_assignment|report.export,admin')
                 ->name('crm-employee-channel-assignment-export-excel');
-             Route::match(['GET', 'POST'], CrmEmployeeChannelAssignmentReport::EXPORT_PDF[URI], 'exportPdf')
+            Route::match(['GET', 'POST'], CrmEmployeeChannelAssignmentReport::EXPORT_PDF[URI], 'exportPdf')
                 ->middleware('permission:report.export_crm_employee_channel_assignment|report.export,admin')
                 ->name('crm-employee-channel-assignment-export-pdf');
         });
@@ -1391,7 +1391,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:report.export_product_catalog|report.export,admin')->group(function () {
             Route::controller(ProductReportController::class)->group(function () {
                 Route::get('all-product-excel', 'allProductExportExcel')->name('all-product-excel');
-                 Route::get('all-product-pdf', 'allProductExportPDF')->name('all-product-pdf');
+                Route::get('all-product-pdf', 'allProductExportPDF')->name('all-product-pdf');
             });
         });
 
@@ -2257,8 +2257,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::controller(WholesaleDashboardController::class)->group(function () {
                     Route::get(WholeSaler::DASHBOARD[URI], 'index')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('index');
                     Route::match(['GET', 'POST'], 'reports/revenue', 'revenueReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.revenue');
-                   Route::get('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline');
-Route::post('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline.post');
+                    Route::get('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline');
+                    Route::post('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline.post');
                     Route::post(WholeSaler::ORDER_STATUS[URI], 'getOrderStatus')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-status');
                     Route::get(WholeSaler::EARNING_STATISTICS[URI], 'getEarningStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('earning-statistics');
                     Route::get(WholeSaler::ORDER_STATISTICS[URI], 'getOrderStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-statistics');
