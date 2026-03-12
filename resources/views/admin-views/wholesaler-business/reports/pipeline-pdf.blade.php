@@ -401,7 +401,7 @@
         <table width="100%">
             <tr>
 
-                <td width="20%" style="text-align:left; color:yellow;">
+                <td width="20%" style="text-align:left; color:red;">
                     Page {PAGENO}
                 </td>
 
