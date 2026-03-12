@@ -56,6 +56,11 @@ class CrmDealSalesReportController extends BaseController
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
+        // Get chart images from request (sent via POST/GET from frontend)
+        $data['employeeChart'] = $request->input('employee_chart');
+        $data['statusChart'] = $request->input('status_chart');
+        $data['retailWholesaleChart'] = $request->input('retail_wholesale_chart');
+
         $html = view(CrmDealSalesReport::EXPORT_PDF[VIEW], $data)->render();
 
         $mpdf = new Mpdf([

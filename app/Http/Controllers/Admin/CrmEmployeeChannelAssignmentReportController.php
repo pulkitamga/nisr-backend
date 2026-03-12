@@ -47,29 +47,8 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        $chart = $data['chart'];
-
-        // Channel assignment chart
-        $channelChartConfig = [
-            'type' => 'bar',
-            'data' => [
-                'labels' => $chart['labels'],
-                'datasets' => collect($chart['series'])->map(function ($series) {
-                    return [
-                        'label' => $series['name'],
-                        'data' => $series['data'],
-                    ];
-                })->values()->all()
-            ],
-            'options' => [
-                'legend' => ['position' => 'bottom'],
-                'scales' => [
-                    'yAxes' => [['ticks' => ['beginAtZero' => true]]]
-                ]
-            ]
-        ];
-
-        $data['channelChart'] = $this->chartImage($channelChartConfig);
+        // Get chart image from request (sent via POST/GET from frontend)
+        $data['channelChart'] = $request->input('channel_chart');
 
         return app(ReportPdfService::class)->download(
             view: CrmEmployeeChannelAssignmentReport::EXPORT_PDF[VIEW],

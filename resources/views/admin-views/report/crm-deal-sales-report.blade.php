@@ -397,5 +397,51 @@
                 $('.custom-date-range').toggle(isCustom);
             });
         })();
+        // PDF Download with chart images - EXACTLY like CRM Insights
+$(document).ready(function() {
+    $('.btn-outline-danger[href*="export-pdf"]').on('click', function(e) {
+        e.preventDefault();
+        
+        // Wait a moment for charts to render
+        setTimeout(function() {
+            // Get chart elements (ApexCharts renders as SVG)
+            const employeeChartEl = document.querySelector('#crm-employee-status-chart svg');
+            const statusChartEl = document.querySelector('#crm-status-split-chart svg');
+            const retailWholesaleChartEl = document.querySelector('#crm-employee-sales-type-chart svg');
+            
+            if (employeeChartEl && statusChartEl && retailWholesaleChartEl) {
+                // Convert SVG to base64 images
+                const employeeChartSVG = employeeChartEl.outerHTML;
+                const statusChartSVG = statusChartEl.outerHTML;
+                const retailWholesaleChartSVG = retailWholesaleChartEl.outerHTML;
+                
+                const employeeImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(employeeChartSVG)));
+                const statusImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(statusChartSVG)));
+                const retailWholesaleImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(retailWholesaleChartSVG)));
+                
+                // Get current URL
+                const url = new URL($(this).attr('href'));
+                
+                // Create a form to POST the images
+                const form = $('<form method="POST" action="' + url.pathname + '"></form>');
+                form.append('@csrf');
+                form.append('<input type="hidden" name="employee_chart" value="' + employeeImage + '">');
+                form.append('<input type="hidden" name="status_chart" value="' + statusImage + '">');
+                form.append('<input type="hidden" name="retail_wholesale_chart" value="' + retailWholesaleImage + '">');
+                
+                // Add all current query parameters from the URL
+                url.searchParams.forEach((value, key) => {
+                    form.append('<input type="hidden" name="' + key + '" value="' + value + '">');
+                });
+                
+                $('body').append(form);
+                form.submit();
+            } else {
+                // Fallback to regular link if charts not found
+                window.location.href = $(this).attr('href');
+            }
+        }, 500); // Wait 500ms for charts to render
+    });
+});
     </script>
 @endpush
