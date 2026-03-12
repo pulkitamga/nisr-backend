@@ -521,5 +521,44 @@
                 }
             }
         });
+        // PDF Download with chart images - EXACTLY like CRM Insights
+        $(document).ready(function() {
+            $('.btn-outline-danger[href*="download=pdf"]').on('click', function(e) {
+                e.preventDefault();
+
+                // Get the trend and delivery chart canvases
+                const trendCanvas = document.getElementById('wholesale-revenue-trend');
+                const deliveryCanvas = document.getElementById('wholesale-delivery-mix');
+
+                if (trendCanvas && deliveryCanvas) {
+                    // Convert canvases to base64 images
+                    const trendImage = trendCanvas.toDataURL('image/png');
+                    const deliveryImage = deliveryCanvas.toDataURL('image/png');
+
+                    // Get current URL
+                    const url = new URL($(this).attr('href'));
+
+                    // Create a form to POST the images
+                    const form = $('<form method="POST" action="' + url.pathname + '"></form>');
+                    form.append('@csrf');
+                    form.append('<input type="hidden" name="download" value="pdf">');
+                    form.append('<input type="hidden" name="trend_chart" value="' + trendImage + '">');
+                    form.append('<input type="hidden" name="delivery_chart" value="' + deliveryImage +
+                    '">');
+
+                    // Add all current query parameters from the URL
+                    url.searchParams.forEach((value, key) => {
+                        form.append('<input type="hidden" name="' + key + '" value="' + value +
+                            '">');
+                    });
+
+                    $('body').append(form);
+                    form.submit();
+                } else {
+                    // Fallback to regular link if canvases not found
+                    window.location.href = $(this).attr('href');
+                }
+            });
+        });
     </script>
 @endpush

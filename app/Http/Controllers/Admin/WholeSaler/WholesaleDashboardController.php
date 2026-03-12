@@ -344,49 +344,9 @@ class WholesaleDashboardController extends BaseController
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
 
-            // Generate chart images for PDF
-            // 1. Revenue Trend Chart
-            $revenueTrendChartImage = $this->generateChartImage(
-                'line',
-                $trendChartData['labels'],
-                [
-                    $trendChartData['revenue'],
-                    $trendChartData['paid_revenue']
-                ],
-                ['#1d4ed8', '#10b981'],
-                ['Total Revenue', 'Paid Revenue']
-            );
-
-            // 2. Delivery Status Chart
-            $deliveryStatusChartImage = $this->generateChartImage(
-                'bar',
-                $deliveryChartData['labels'],
-                [$deliveryChartData['counts']],
-                ['#3b82f6'],
-                'Orders'
-            );
-
-            // 3. Payment Status Chart
-            $paymentLabels = ['Paid', 'Unpaid'];
-            $paymentData = [
-                (float)($kpi['paid_revenue'] ?? 0),
-                (float)($kpi['open_revenue'] ?? 0)
-            ];
-            $paymentStatusChartImage = $this->generateChartImage(
-                'doughnut',
-                $paymentLabels,
-                [$paymentData],
-                ['#10b981', '#ef4444']
-            );
-
-            // 4. Monthly Orders Chart
-            $monthlyOrdersChartImage = $this->generateChartImage(
-                'bar',
-                $trendChartData['labels'],
-                [$trendChartData['orders']],
-                ['#8b5cf6'],
-                'Orders'
-            );
+            // Get chart images from request (sent via POST from frontend)
+            $revenueTrendChartImage = $request->input('trend_chart');
+            $deliveryStatusChartImage = $request->input('delivery_chart');
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.wholesaler-business.reports.revenue-pdf',
@@ -398,9 +358,7 @@ class WholesaleDashboardController extends BaseController
                     'isRtl',
                     'insights',
                     'revenueTrendChartImage',
-                    'deliveryStatusChartImage',
-                    'paymentStatusChartImage',
-                    'monthlyOrdersChartImage'
+                    'deliveryStatusChartImage'
                 ),
                 fileName: 'wholesale-revenue-report.pdf'
             );
@@ -435,7 +393,7 @@ class WholesaleDashboardController extends BaseController
         ];
         $trendGrouping = $this->resolveReportTrendGrouping($snapshotFrom, $snapshotTo);
         $periodKeys = $this->buildReportPeriodKeys($snapshotFrom, $snapshotTo, $trendGrouping['unit']);
-        
+
         $purchaseCount = WholesalePurchaseOrder::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
             ->when($filters['wholesaler_id'] > 0, fn($query) => $query->where('wholeseller_id', $filters['wholesaler_id']))
@@ -618,66 +576,12 @@ class WholesaleDashboardController extends BaseController
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
 
-            // Make sure all chart data is available
-            $pipelineStageChartData = [
-                'labels' => ['Purchase Orders', 'Quotations', 'Confirmed Orders'],
-                'counts' => [$purchaseCount, $quotationCount, $confirmedCount],
-            ];
+            // Get chart images from request (sent via POST from frontend)
+            $stageSnapshotChartImage = $request->input('stage_snapshot_chart');
+            $pipelineTrendChartImage = $request->input('pipeline_trend_chart');
+            $topProductsChartImage = $request->input('top_products_chart');
+            $tierMixChartImage = $request->input('tier_mix_chart');
 
-            $pipelineTrendChartData = [
-                'labels' => $trendLabels,
-                'purchase' => $purchaseTrend,
-                'quotation' => $quotationTrend,
-                'confirmed' => $confirmedTrend,
-            ];
-
-            $topProductsChartData = [
-                'labels' => $topProducts->map(fn($row) => $row->product_name ?: ('Product #' . $row->product_id))->values()->all(),
-                'quantities' => $topProducts->map(fn($row) => (float)$row->total_quantity)->values()->all(),
-            ];
-
-            $tierMixChartData = [
-                'labels' => $tierMix->pluck('tier_name')->values()->all(),
-                'counts' => $tierMix->pluck('wholesaler_count')->map(fn($value) => (int)$value)->values()->all(),
-            ];
-
-            // Generate chart images for PDF
-            $stageSnapshotChartImage = $this->generateChartImage(
-                'bar',
-                $pipelineStageChartData['labels'],
-                [$pipelineStageChartData['counts']],
-                ['#1d4ed8', '#2563eb', '#38bdf8'],
-                'Count'
-            );
-
-            $pipelineTrendChartImage = $this->generateChartImage(
-                'line',
-                $pipelineTrendChartData['labels'],
-                [
-                    $pipelineTrendChartData['purchase'],
-                    $pipelineTrendChartData['quotation'],
-                    $pipelineTrendChartData['confirmed']
-                ],
-                ['#1d4ed8', '#2563eb', '#38bdf8'],
-                ['Purchase Orders', 'Quotations', 'Confirmed Orders']
-            );
-
-            $topProductsChartImage = $this->generateChartImage(
-                'horizontalBar',
-                $topProductsChartData['labels'],
-                [$topProductsChartData['quantities']],
-                ['rgba(14, 165, 233, 0.55)'],
-                'Units'
-            );
-
-            $tierMixChartImage = $this->generateChartImage(
-                'doughnut',
-                $tierMixChartData['labels'],
-                [$tierMixChartData['counts']],
-                ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe']
-            );
-
-            // Use download() method (not generate())
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.wholesaler-business.reports.pipeline-pdf',
                 data: compact(
