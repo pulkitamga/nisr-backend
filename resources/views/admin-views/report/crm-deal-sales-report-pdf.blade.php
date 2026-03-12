@@ -16,9 +16,8 @@
         }
 
         /* HEADER */
-
         .report-header {
-            background: #0f766e;
+            background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%);
             color: white;
             padding: 15px 20px;
             border-radius: 8px;
@@ -37,6 +36,12 @@
             text-align: right;
         }
 
+        .logo-container img {
+            max-width: 100px;
+            max-height: 50px;
+            object-fit: contain;
+        }
+
         .header-content h2 {
             margin: 0 0 5px 0;
             font-size: 20px;
@@ -44,54 +49,64 @@
 
         .header-content p {
             margin: 0;
+            opacity: 0.9;
             font-size: 11px;
-            opacity: .9;
+        }
+
+        /* Clear float */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
         }
 
         /* KPI */
-
         .kpi-container {
-            background: #f3f6fb;
-            padding: 10px 6px;
-            border-radius: 10px;
+            background-color: #f3f6fb;
+            padding: 10px 5px;
+            border-radius: 12px;
             margin-bottom: 20px;
         }
 
         .kpi-table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 8px 0;
+            border-spacing: 10px 0;
             table-layout: fixed;
         }
 
         .kpi-table td {
-            background: #fff;
+            background-color: #ffffff;
             border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 10px;
-            height: 55px;
+            border-radius: 12px !important;
+            padding: 12px 10px;
             vertical-align: top;
+            height: 55px;
+            text-align: left;
         }
 
         .kpi-label {
-            font-size: 9px;
+            color: #5f6672;
+            font-size: 10px;
             text-transform: uppercase;
-            color: #6b7280;
             font-weight: 600;
-            margin-bottom: 3px;
+            margin: 0 0 8px 0;
+            text-align: center;
         }
 
         .kpi-value {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
-            color: #111827;
+            color: #0f172a;
+            margin: 0;
+            text-align: left;
         }
 
         /* CHARTS */
-
         .chart-row {
             width: 100%;
-            margin-bottom: 20px;
+            margin: 0 0 6px 0;
+            display: block;
             overflow: hidden;
         }
 
@@ -119,7 +134,7 @@
             color: #0f766e;
             border-bottom: 2px solid #0f766e;
             padding-bottom: 5px;
-            margin-bottom: 10px;
+            margin: 0 0 12px 0;
         }
 
         .chart-title small {
@@ -135,26 +150,31 @@
         }
 
         /* FULL CHART */
-
         .full-chart {
             border: 1px solid #e5e7eb;
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 20px;
+            background: white;
+            page-break-inside: avoid;
         }
 
         /* TABLE */
-
         .table-container {
             border: 1px solid #e5e7eb;
             border-radius: 6px;
             overflow: hidden;
+            margin-top: 15px;
         }
 
         .table-header {
             background: #0f766e;
             color: white;
-            padding: 10px;
+            padding: 10px 12px;
+        }
+
+        .table-header strong {
+            font-size: 14px;
         }
 
         table {
@@ -165,7 +185,7 @@
 
         th {
             background: #e5e7eb;
-            padding: 7px;
+            padding: 8px 6px;
             font-weight: 600;
             text-align: center;
         }
@@ -180,6 +200,10 @@
             background: #f9fafb;
         }
 
+        tr:last-child td {
+            border-bottom: none;
+        }
+
         .value-ltr {
             direction: ltr;
             unicode-bidi: embed;
@@ -187,7 +211,6 @@
         }
 
         /* FOOTER */
-
         .footer {
             margin-top: 20px;
             text-align: center;
@@ -230,18 +253,15 @@
 <body>
 
     <!-- HEADER -->
-
-    <div class="report-header">
+    <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('crm_sales_performance_report') }}</h2>
             <p>{{ translate('report_period') }}: {{ $filters['from'] }} - {{ $filters['to'] }}</p>
         </div>
-
         <div class="logo-container">
             @php
                 $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
             @endphp
-
             @if (file_exists($defaultLogoPath))
                 <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
                     style="max-width:100px;max-height:50px;">
@@ -249,110 +269,84 @@
         </div>
     </div>
 
-
     <!-- KPI CARDS -->
-
     <div class="kpi-container">
-        <table class="kpi-table">
+        <table class="kpi-table" cellpadding="0" cellspacing="0">
             <tr>
-
                 <td>
                     <div class="kpi-label">{{ translate('won_sales') }}</div>
-                    <div class="kpi-value">{{ number_format($summary['won_sales_total'], 2) }}</div>
+                    <div class="kpi-value"><strong>{{ number_format($summary['won_sales_total'], 2) }}</strong></div>
                 </td>
-
                 <td>
                     <div class="kpi-label">{{ translate('retail_won_sales') }}</div>
-                    <div class="kpi-value">{{ number_format($summary['retail_won_sales'], 2) }}</div>
+                    <div class="kpi-value"><strong>{{ number_format($summary['retail_won_sales'], 2) }}</strong></div>
                 </td>
-
                 <td>
                     <div class="kpi-label">{{ translate('wholesale_won_sales') }}</div>
-                    <div class="kpi-value">{{ number_format($summary['wholesale_won_sales'], 2) }}</div>
+                    <div class="kpi-value"><strong>{{ number_format($summary['wholesale_won_sales'], 2) }}</strong></div>
                 </td>
-
                 <td>
                     <div class="kpi-label">{{ translate('won_deals') }}</div>
-                    <div class="kpi-value">{{ $summary['won_count'] }}</div>
+                    <div class="kpi-value"><strong>{{ $summary['won_count'] }}</strong></div>
                 </td>
-
                 <td>
                     <div class="kpi-label">{{ translate('lost_deals') }}</div>
-                    <div class="kpi-value">{{ $summary['lost_count'] }}</div>
+                    <div class="kpi-value"><strong>{{ $summary['lost_count'] }}</strong></div>
                 </td>
-
                 <td>
                     <div class="kpi-label">{{ translate('total_deals') }}</div>
-                    <div class="kpi-value">{{ $summary['total_deals'] }}</div>
+                    <div class="kpi-value"><strong>{{ $summary['total_deals'] }}</strong></div>
                 </td>
-
             </tr>
         </table>
     </div>
 
+    <!-- FIRST ROW: Two Charts Side by Side -->
     @if (!empty($employeeChart) || !empty($statusChart))
-        <div style="width:100%; margin:10px 0;">
-
+        <div class="chart-row">
             @if (!empty($employeeChart))
-                <div style="display:inline-block; width:68%; vertical-align:top; margin-right:2%;">
-
+                <div class="chart-trend">
                     <div class="chart-col">
                         <div class="chart-title">
                             {{ translate('won_vs_lost_by_employee') }}
                             <small>({{ $filters['from'] }} - {{ $filters['to'] }})</small>
                         </div>
-
                         <img src="{{ $employeeChart }}" class="chart-image">
                     </div>
-
                 </div>
             @endif
 
             @if (!empty($statusChart))
-                <div style="display:inline-block; width:30%; vertical-align:top;">
-
+                <div class="chart-stage">
                     <div class="chart-col">
                         <div class="chart-title">
                             {{ translate('overall_deal_status_split') }}
                             <small>({{ $filters['from'] }} - {{ $filters['to'] }})</small>
                         </div>
-
                         <img src="{{ $statusChart }}" class="chart-image">
                     </div>
-
                 </div>
             @endif
-
         </div>
     @endif
 
-
-    <!-- FULL CHART - Third Graph (Full Width) -->
-
+    <!-- SECOND ROW: Full Width Chart -->
     @if (!empty($retailWholesaleChart))
         <div class="full-chart">
-
             <div class="chart-title">
                 {{ translate('won_sales_retail_vs_wholesale_by_employee') }}
                 <small>({{ $filters['from'] }} - {{ $filters['to'] }})</small>
             </div>
-
-            <img src="{{ $retailWholesaleChart }}" style="width:100%;max-height:200px;">
-
+            <img src="{{ $retailWholesaleChart }}" style="width:100%; max-height:140px;">
         </div>
     @endif
 
-
     <!-- TABLE -->
-
     <div class="table-container">
-
         <div class="table-header">
             <strong>{{ translate('department_and_employee_won_lost_summary') }}</strong>
         </div>
-
         <table>
-
             <thead>
                 <tr>
                     <th>{{ translate('department') }}</th>
@@ -365,112 +359,60 @@
                     <th>{{ translate('total') }}</th>
                 </tr>
             </thead>
-
             <tbody>
-
                 @foreach ($departmentSections as $section)
                     @foreach ($section->employees as $row)
                         <tr>
-
                             <td>{{ $section->department_name }}</td>
-
                             <td><strong>{{ $row->employee_name }}</strong></td>
-
                             <td class="value-ltr">{{ number_format($row->retail_won_sales, 2) }}</td>
-
                             <td class="value-ltr">{{ number_format($row->wholesale_won_sales, 2) }}</td>
-
                             <td class="value-ltr">{{ number_format($row->won_sales_total, 2) }}</td>
-
                             <td>{{ $row->won_count }}</td>
-
                             <td>{{ $row->lost_count }}</td>
-
                             <td>{{ $row->total_deals }}</td>
-
                         </tr>
                     @endforeach
-
-
                     <tr style="background:#e6f0f0;font-weight:bold">
-
-                        <td colspan="2">
-                            {{ $section->department_name }} {{ translate('total') }}
-                        </td>
-
+                        <td colspan="2">{{ $section->department_name }} {{ translate('total') }}</td>
                         <td>{{ number_format($section->totals['retail_won_sales'], 2) }}</td>
-
                         <td>{{ number_format($section->totals['wholesale_won_sales'], 2) }}</td>
-
                         <td>{{ number_format($section->totals['won_sales_total'], 2) }}</td>
-
                         <td>{{ $section->totals['won_count'] }}</td>
-
                         <td>{{ $section->totals['lost_count'] }}</td>
-
                         <td>{{ $section->totals['total_deals'] }}</td>
-
                     </tr>
                 @endforeach
-
             </tbody>
-
-
             <tfoot>
-
                 <tr style="background:#0f766e;color:white;font-weight:bold">
-
                     <td colspan="2">{{ translate('grand_total') }}</td>
-
                     <td>{{ number_format($summary['retail_won_sales'], 2) }}</td>
-
                     <td>{{ number_format($summary['wholesale_won_sales'], 2) }}</td>
-
                     <td>{{ number_format($summary['won_sales_total'], 2) }}</td>
-
                     <td>{{ $summary['won_count'] }}</td>
-
                     <td>{{ $summary['lost_count'] }}</td>
-
                     <td>{{ $summary['total_deals'] }}</td>
-
                 </tr>
-
             </tfoot>
-
         </table>
-
     </div>
 
-
     <!-- FOOTER -->
-
-    <div style="
-border-top:1px dashed #d1d5db;
-margin-top:20px;
-padding-top:8px;
-font-size:9px;
-color:#6b7280;
-">
-
+     <div style="border-top:1px dashed #d1d5db;margin-top:20px;padding-top:8px;font-size:9px;color:#6b7280;">
         <table width="100%">
             <tr>
-
                 <td width="20%" style="text-align:left; color:red;">
                     Page {PAGENO}
                 </td>
-
                 <td width="60%" style="text-align:center;">
                     Generated on: {{ now()->translatedFormat('j F Y, h:i A') }} | CRM insights report<br>
                     Generated by: <span style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
                     <span style="color:red;">{{ config('app.name') }}</span>
                 </td>
-
                 <td width="20%"></td>
-
             </tr>
         </table>
-
     </div>
 
 </body>

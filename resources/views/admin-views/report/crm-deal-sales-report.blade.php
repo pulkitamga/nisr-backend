@@ -117,7 +117,7 @@
                                 <i class="tio-download-to me-1"></i> {{ translate('excel') }}
                             </a>
                             <a href="{{ route('admin.report.crm-sales-performance-export-pdf', request()->query()) }}"
-                                class="btn btn-outline-danger">
+                                class="btn btn-outline-danger" target="_blank" download="crm-sales-performance-report.pdf">
                                 <i class="tio-download-to me-1"></i> {{ translate('PDF') }}
                             </a>
                         </div>
@@ -397,92 +397,94 @@
                 $('.custom-date-range').toggle(isCustom);
             });
         })();
-        // PDF Download with chart images - EXACTLY like CRM Insights
-// PDF Download with chart images - FIXED version for CRM Sales Performance
-$(document).ready(function() {
-    $('.btn-outline-danger[href*="export-pdf"]').on('click', function(e) {
-        e.preventDefault();
-        
-        // Store reference to the clicked element
-        const $button = $(this);
-        let href = $button.attr('href');
-        
-        // Make sure href is absolute
-        if (!href.startsWith('http') && !href.startsWith('/')) {
-            href = '/' + href;
-        }
 
-        // Wait a moment for charts to render
-        setTimeout(function() {
-            // Get chart elements (ApexCharts renders as SVG)
-            const employeeChartEl = document.querySelector('#crm-employee-status-chart svg');
-            const statusChartEl = document.querySelector('#crm-status-split-chart svg');
-            const salesTypeChartEl = document.querySelector('#crm-employee-sales-type-chart svg');
+        // PDF Download with chart images - FIXED version with download
+        $(document).ready(function() {
+            $('.btn-outline-danger[href*="export-pdf"]').on('click', function(e) {
+                e.preventDefault();
 
-            if (employeeChartEl && statusChartEl && salesTypeChartEl) {
-                try {
-                    // Convert SVGs to base64 images
-                    const employeeChartSVG = employeeChartEl.outerHTML;
-                    const statusChartSVG = statusChartEl.outerHTML;
-                    const salesTypeChartSVG = salesTypeChartEl.outerHTML;
-                    
-                    const employeeImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(employeeChartSVG)));
-                    const statusImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(statusChartSVG)));
-                    const salesTypeImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(salesTypeChartSVG)));
+                // Store reference to the clicked element
+                const $button = $(this);
+                let href = $button.attr('href');
 
-                    // Create a form and submit it
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = href;
-                    
-                    // Add CSRF token
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = '{{ csrf_token() }}';
-                    form.appendChild(csrfInput);
-                    
-                    // Add chart images
-                    const employeeInput = document.createElement('input');
-                    employeeInput.type = 'hidden';
-                    employeeInput.name = 'employee_chart';
-                    employeeInput.value = employeeImage;
-                    form.appendChild(employeeInput);
-                    
-                    const statusInput = document.createElement('input');
-                    statusInput.type = 'hidden';
-                    statusInput.name = 'status_chart';
-                    statusInput.value = statusImage;
-                    form.appendChild(statusInput);
-                    
-                    const salesTypeInput = document.createElement('input');
-                    salesTypeInput.type = 'hidden';
-                    salesTypeInput.name = 'retail_wholesale_chart';
-                    salesTypeInput.value = salesTypeImage;
-                    form.appendChild(salesTypeInput);
-                    
-                    // Add all current query parameters
-                    const urlParams = new URLSearchParams(window.location.search);
-                    urlParams.forEach((value, key) => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = key;
-                        input.value = value;
-                        form.appendChild(input);
-                    });
-                    
-                    document.body.appendChild(form);
-                    form.submit();
-                } catch (error) {
-                    console.error('Error capturing charts:', error);
-                    window.location.href = href;
-                }
-            } else {
-                console.log('Chart elements not found, falling back to regular link');
-                window.location.href = href;
-            }
-        }, 500); // Wait 500ms for charts to render
-    });
-});
+                // Wait a moment for charts to render
+                setTimeout(function() {
+                    // Get chart elements (ApexCharts renders as SVG)
+                    const employeeChartEl = document.querySelector(
+                    '#crm-employee-status-chart svg');
+                    const statusChartEl = document.querySelector('#crm-status-split-chart svg');
+                    const salesTypeChartEl = document.querySelector(
+                        '#crm-employee-sales-type-chart svg');
+
+                    if (employeeChartEl && statusChartEl && salesTypeChartEl) {
+                        try {
+                            // Convert SVGs to base64 images
+                            const employeeChartSVG = employeeChartEl.outerHTML;
+                            const statusChartSVG = statusChartEl.outerHTML;
+                            const salesTypeChartSVG = salesTypeChartEl.outerHTML;
+
+                            const employeeImage = 'data:image/svg+xml;base64,' + btoa(unescape(
+                                encodeURIComponent(employeeChartSVG)));
+                            const statusImage = 'data:image/svg+xml;base64,' + btoa(unescape(
+                                encodeURIComponent(statusChartSVG)));
+                            const salesTypeImage = 'data:image/svg+xml;base64,' + btoa(unescape(
+                                encodeURIComponent(salesTypeChartSVG)));
+
+                            // Create a form and submit it
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = href;
+                            form.target = '_blank'; // Open in new tab
+
+                            // Add CSRF token
+                            const csrfInput = document.createElement('input');
+                            csrfInput.type = 'hidden';
+                            csrfInput.name = '_token';
+                            csrfInput.value = '{{ csrf_token() }}';
+                            form.appendChild(csrfInput);
+
+                            // Add chart images
+                            const employeeInput = document.createElement('input');
+                            employeeInput.type = 'hidden';
+                            employeeInput.name = 'employee_chart';
+                            employeeInput.value = employeeImage;
+                            form.appendChild(employeeInput);
+
+                            const statusInput = document.createElement('input');
+                            statusInput.type = 'hidden';
+                            statusInput.name = 'status_chart';
+                            statusInput.value = statusImage;
+                            form.appendChild(statusInput);
+
+                            const salesTypeInput = document.createElement('input');
+                            salesTypeInput.type = 'hidden';
+                            salesTypeInput.name = 'retail_wholesale_chart';
+                            salesTypeInput.value = salesTypeImage;
+                            form.appendChild(salesTypeInput);
+
+                            // Add all current query parameters
+                            const urlParams = new URLSearchParams(window.location.search);
+                            urlParams.forEach((value, key) => {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = key;
+                                input.value = value;
+                                form.appendChild(input);
+                            });
+
+                            document.body.appendChild(form);
+                            form.submit();
+                            document.body.removeChild(form); // Clean up
+                        } catch (error) {
+                            console.error('Error capturing charts:', error);
+                            window.open(href, '_blank');
+                        }
+                    } else {
+                        console.log('Chart elements not found, falling back to regular link');
+                        window.open(href, '_blank');
+                    }
+                }, 500);
+            });
+        });
     </script>
 @endpush
