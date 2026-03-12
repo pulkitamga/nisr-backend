@@ -1,285 +1,358 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') }}">
+<html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ?? false ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('crm_sales_performance_report') }}</title>
+
     <style>
-        /* Modern mPDF Styles */
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 10px;
-            color: #1f2937;
-            margin: 1.2cm;
-            text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }};
-            line-height: 1.4;
+            font-size: 11px;
+            color: #111827;
+            margin: 15px;
+            direction: {{ $isRtl ?? false ? 'rtl' : 'ltr' }};
+            text-align: {{ $isRtl ?? false ? 'right' : 'left' }};
         }
 
-        /* Header Styles */
+        /* HEADER */
+
         .report-header {
-            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+            background: #0f766e;
             color: white;
-            padding: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .header-content {
+            float: left;
+            width: 70%;
+        }
+
+        .logo-container {
+            float: right;
+            width: 25%;
+            text-align: right;
+        }
+
+        .header-content h2 {
+            margin: 0 0 5px 0;
+            font-size: 20px;
+        }
+
+        .header-content p {
+            margin: 0;
+            font-size: 11px;
+            opacity: .9;
+        }
+
+        /* KPI */
+
+        .kpi-container {
+            background: #f3f6fb;
+            padding: 10px 6px;
             border-radius: 10px;
             margin-bottom: 20px;
         }
 
-        .report-header h1 {
-            margin: 0 0 8px 0;
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .report-header .meta-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            opacity: 0.9;
-            margin-top: 10px;
-        }
-
-        .meta-item {
-            display: inline-block;
-            margin-{{ session('direction') === 'rtl' ? 'left' : 'right' }}: 20px;
-        }
-
-        /* Summary Cards - Using Table for mPDF Compatibility */
-        .summary-table {
+        .kpi-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+            border-collapse: separate;
+            border-spacing: 8px 0;
+            table-layout: fixed;
         }
 
-        .summary-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 5px;
-            text-align: center;
+        .kpi-table td {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+            height: 55px;
+            vertical-align: top;
         }
 
-        .summary-label {
-            font-size: 8px;
+        .kpi-label {
+            font-size: 9px;
             text-transform: uppercase;
-            color: #64748b;
-            letter-spacing: 0.3px;
-            margin-bottom: 5px;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 3px;
         }
 
-        .summary-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #0f766e;
-            margin: 0;
+        .kpi-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
         }
 
-        /* Chart Containers */
+        /* CHARTS */
+
         .chart-row {
-            display: flex;
-            gap: 15px;
+            width: 100%;
             margin-bottom: 20px;
-            page-break-inside: avoid;
+            overflow: hidden;
+        }
+
+        .chart-trend {
+            width: 68%;
+            float: left;
+            margin-right: 2%;
+        }
+
+        .chart-stage {
+            width: 30%;
+            float: left;
         }
 
         .chart-col {
-            flex: 1;
-        }
-
-        .chart-container {
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
             background: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
         }
 
         .chart-title {
             font-size: 13px;
-            font-weight: 600;
-            color: #0f172a;
+            font-weight: bold;
+            color: #0f766e;
             border-bottom: 2px solid #0f766e;
-            padding-bottom: 8px;
-            margin: 0 0 15px 0;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .chart-title small {
+            font-weight: normal;
+            font-size: 10px;
+            color: #4b5563;
+            margin-{{ $isRtl ?? false ? 'right' : 'left' }}: 5px;
         }
 
         .chart-image {
             width: 100%;
-            height: auto;
-            max-height: 180px;
-            object-fit: contain;
+            max-height: 170px;
         }
 
-        /* Table Styles */
+        /* FULL CHART */
+
+        .full-chart {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* TABLE */
+
         .table-container {
-            margin-top: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
         }
 
         .table-header {
             background: #0f766e;
             color: white;
-            padding: 12px 15px;
-        }
-
-        .table-header h3 {
-            margin: 0;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 10px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9px;
+            font-size: 10px;
         }
 
         th {
-            background: #f1f5f9;
-            color: #1e293b;
+            background: #e5e7eb;
+            padding: 7px;
             font-weight: 600;
-            text-transform: uppercase;
-            font-size: 8px;
-            letter-spacing: 0.3px;
-            padding: 10px 5px;
-            border: 1px solid #e2e8f0;
             text-align: center;
         }
 
         td {
-            padding: 8px 5px;
-            border: 1px solid #e2e8f0;
+            padding: 6px;
+            border-bottom: 1px solid #e5e7eb;
             text-align: center;
         }
 
-        /* Department Section Styling */
-        .department-row {
-            background: #f8fafc;
-            font-weight: 600;
-        }
-
-        .department-row td {
-            background: #e6f0f0;
-            border-bottom: 2px solid #0f766e;
-        }
-
-        .department-name {
-            font-weight: 700;
-            color: #0f766e;
-        }
-
-        .grand-total-row {
-            background: #0f766e;
-            color: white;
-            font-weight: 700;
-        }
-
-        .grand-total-row td {
-            background: #0f766e;
-            color: white;
-            border-color: #1e293b;
-        }
-
-        /* Alternating row colors */
-        tbody tr:nth-child(even) {
+        tr:nth-child(even) {
             background: #f9fafb;
         }
 
-        tbody tr:hover {
-            background: #f1f5f9;
+        .value-ltr {
+            direction: ltr;
+            unicode-bidi: embed;
+            display: inline-block;
         }
 
-        /* Footer */
+        /* FOOTER */
+
         .footer {
-            margin-top: 25px;
-            padding-top: 12px;
-            border-top: 1px dashed #cbd5e1;
+            margin-top: 20px;
             text-align: center;
-            color: #64748b;
+            color: #6b7280;
             font-size: 8px;
+            border-top: 1px dashed #d1d5db;
+            padding-top: 8px;
         }
 
-        /* RTL Specific */
-        @if (session('direction') === 'rtl')
-            .summary-card {
-                text-align: center;
+        /* RTL Support */
+        @if ($isRtl ?? false)
+            .header-content {
+                float: right;
+                text-align: right;
             }
 
-            .meta-item {
-                margin-left: 20px;
+            .logo-container {
+                float: left;
+                text-align: left;
+            }
+
+            .chart-trend {
+                float: right;
                 margin-right: 0;
+                margin-left: 2%;
+            }
+
+            .chart-stage {
+                float: right;
+            }
+
+            .chart-title small {
+                margin-right: 5px;
+                margin-left: 0;
             }
         @endif
     </style>
 </head>
 
 <body>
-    <!-- Modern Header -->
+
+    <!-- HEADER -->
 
     <div class="report-header">
-        <h1>{{ translate('crm_sales_performance_report') }}</h1>
-        <table width="100%" style="margin-top:10px;font-size:11px;color:white;">
+        <div class="header-content">
+            <h2>{{ translate('crm_sales_performance_report') }}</h2>
+            <p>{{ translate('report_period') }}: {{ $filters['from'] }} - {{ $filters['to'] }}</p>
+        </div>
+
+        <div class="logo-container">
+            @php
+                $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
+            @endphp
+
+            @if (file_exists($defaultLogoPath))
+                <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
+                    style="max-width:100px;max-height:50px;">
+            @endif
+        </div>
+    </div>
+
+
+    <!-- KPI CARDS -->
+
+    <div class="kpi-container">
+        <table class="kpi-table">
             <tr>
+
                 <td>
-                    <strong>{{ translate('from') }}:</strong> {{ $filters['from'] }}
-                    &nbsp;&nbsp;
-                    <strong>{{ translate('to') }}:</strong> {{ $filters['to'] }}
+                    <div class="kpi-label">{{ translate('won_sales') }}</div>
+                    <div class="kpi-value">{{ number_format($summary['won_sales_total'], 2) }}</div>
                 </td>
 
-                <td align="right">
-                    <strong>{{ translate('exported_at') }}:</strong>
-                    {{ optional($exportedAt ?? now())->format('d M Y, H:i') }}
+                <td>
+                    <div class="kpi-label">{{ translate('retail_won_sales') }}</div>
+                    <div class="kpi-value">{{ number_format($summary['retail_won_sales'], 2) }}</div>
                 </td>
+
+                <td>
+                    <div class="kpi-label">{{ translate('wholesale_won_sales') }}</div>
+                    <div class="kpi-value">{{ number_format($summary['wholesale_won_sales'], 2) }}</div>
+                </td>
+
+                <td>
+                    <div class="kpi-label">{{ translate('won_deals') }}</div>
+                    <div class="kpi-value">{{ $summary['won_count'] }}</div>
+                </td>
+
+                <td>
+                    <div class="kpi-label">{{ translate('lost_deals') }}</div>
+                    <div class="kpi-value">{{ $summary['lost_count'] }}</div>
+                </td>
+
+                <td>
+                    <div class="kpi-label">{{ translate('total_deals') }}</div>
+                    <div class="kpi-value">{{ $summary['total_deals'] }}</div>
+                </td>
+
             </tr>
         </table>
     </div>
 
-    <!-- First Row: Two Charts Side by Side -->
-    <div class="chart-row">
-        <!-- Won vs Lost by Employee Chart -->
-        @if (!empty($employeeChart))
-            <div class="chart-col">
-                <div class="chart-container">
-                    <div class="chart-title">{{ translate('won_vs_lost_by_employee') }}
-                        <small>({{ $periodLabel ?? '' }})</small></div>
-                    <img src="{{ $employeeChart }}" class="chart-image" alt="Won vs Lost by Employee">
-                </div>
-            </div>
-        @endif
+    @if (!empty($employeeChart) || !empty($statusChart))
+        <div style="width:100%; margin:10px 0;">
 
-        <!-- Overall Deal Status Split Chart -->
-        @if (!empty($statusChart))
-            <div class="chart-col">
-                <div class="chart-container">
-                    <div class="chart-title">{{ translate('overall_deal_status_split') }}</div>
-                    <img src="{{ $statusChart }}" class="chart-image" alt="Deal Status Split">
-                </div>
-            </div>
-        @endif
-    </div>
+            @if (!empty($employeeChart))
+                <div style="display:inline-block; width:68%; vertical-align:top; margin-right:2%;">
 
-    <!-- Second Row: Full Width Chart -->
-    @if (!empty($retailWholesaleChart))
-        <div style="margin-bottom: 20px;">
-            <div class="chart-container">
-                <div class="chart-title">{{ translate('won_sales_retail_vs_wholesale_by_employee') }}
-                    <small>({{ $periodLabel ?? '' }})</small></div>
-                <img src="{{ $retailWholesaleChart }}" style="width:100%; max-height:200px; object-fit:contain;"
-                    alt="Retail vs Wholesale">
-            </div>
+                    <div class="chart-col">
+                        <div class="chart-title">
+                            {{ translate('won_vs_lost_by_employee') }}
+                            <small>({{ $filters['from'] }} - {{ $filters['to'] }})</small>
+                        </div>
+
+                        <img src="{{ $employeeChart }}" class="chart-image">
+                    </div>
+
+                </div>
+            @endif
+
+            @if (!empty($statusChart))
+                <div style="display:inline-block; width:30%; vertical-align:top;">
+
+                    <div class="chart-col">
+                        <div class="chart-title">
+                            {{ translate('overall_deal_status_split') }}
+                            <small>({{ $filters['from'] }} - {{ $filters['to'] }})</small>
+                        </div>
+
+                        <img src="{{ $statusChart }}" class="chart-image">
+                    </div>
+
+                </div>
+            @endif
+
         </div>
     @endif
 
-    <!-- Detailed Department & Employee Breakdown -->
-    <div class="table-container">
-        <div class="table-header">
-            <h3>{{ translate('department_performance_breakdown') }} <small
-                    style="font-weight:normal; opacity:0.9;">({{ $filters['from'] }} - {{ $filters['to'] }})</small>
-            </h3>
+
+    <!-- FULL CHART - Third Graph (Full Width) -->
+
+    @if (!empty($retailWholesaleChart))
+        <div class="full-chart">
+
+            <div class="chart-title">
+                {{ translate('won_sales_retail_vs_wholesale_by_employee') }}
+                <small>({{ $filters['from'] }} - {{ $filters['to'] }})</small>
+            </div>
+
+            <img src="{{ $retailWholesaleChart }}" style="width:100%;max-height:200px;">
+
         </div>
+    @endif
+
+
+    <!-- TABLE -->
+
+    <div class="table-container">
+
+        <div class="table-header">
+            <strong>{{ translate('department_and_employee_won_lost_summary') }}</strong>
+        </div>
+
         <table>
+
             <thead>
                 <tr>
                     <th>{{ translate('department') }}</th>
@@ -292,73 +365,114 @@
                     <th>{{ translate('total') }}</th>
                 </tr>
             </thead>
+
             <tbody>
-                @forelse($departmentSections as $section)
-                    <!-- Employee Rows -->
+
+                @foreach ($departmentSections as $section)
                     @foreach ($section->employees as $row)
                         <tr>
-                            <td style="text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }};">
-                                {{ $section->department_name }}</td>
-                            <td style="text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }};">
-                                <strong>{{ $row->employee_name }}</strong></td>
-                            <td>{{ number_format((float) $row->retail_won_sales, 2) }}</td>
-                            <td>{{ number_format((float) $row->wholesale_won_sales, 2) }}</td>
-                            <td>{{ number_format((float) $row->won_sales_total, 2) }}</td>
-                            <td>{{ (int) $row->won_count }}</td>
-                            <td>{{ (int) $row->lost_count }}</td>
-                            <td>{{ (int) $row->total_deals }}</td>
+
+                            <td>{{ $section->department_name }}</td>
+
+                            <td><strong>{{ $row->employee_name }}</strong></td>
+
+                            <td class="value-ltr">{{ number_format($row->retail_won_sales, 2) }}</td>
+
+                            <td class="value-ltr">{{ number_format($row->wholesale_won_sales, 2) }}</td>
+
+                            <td class="value-ltr">{{ number_format($row->won_sales_total, 2) }}</td>
+
+                            <td>{{ $row->won_count }}</td>
+
+                            <td>{{ $row->lost_count }}</td>
+
+                            <td>{{ $row->total_deals }}</td>
+
                         </tr>
                     @endforeach
 
-                    <!-- Department Total Row -->
-                    <tr class="department-row">
-                        <td colspan="2"
-                            style="text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }};">
-                            <strong>{{ $section->department_name }} {{ translate('total') }}</strong></td>
-                        <td><strong>{{ number_format((float) $section->totals['retail_won_sales'], 2) }}</strong></td>
-                        <td><strong>{{ number_format((float) $section->totals['wholesale_won_sales'], 2) }}</strong>
+
+                    <tr style="background:#e6f0f0;font-weight:bold">
+
+                        <td colspan="2">
+                            {{ $section->department_name }} {{ translate('total') }}
                         </td>
-                        <td><strong>{{ number_format((float) $section->totals['won_sales_total'], 2) }}</strong></td>
-                        <td><strong>{{ (int) $section->totals['won_count'] }}</strong></td>
-                        <td><strong>{{ (int) $section->totals['lost_count'] }}</strong></td>
-                        <td><strong>{{ (int) $section->totals['total_deals'] }}</strong></td>
+
+                        <td>{{ number_format($section->totals['retail_won_sales'], 2) }}</td>
+
+                        <td>{{ number_format($section->totals['wholesale_won_sales'], 2) }}</td>
+
+                        <td>{{ number_format($section->totals['won_sales_total'], 2) }}</td>
+
+                        <td>{{ $section->totals['won_count'] }}</td>
+
+                        <td>{{ $section->totals['lost_count'] }}</td>
+
+                        <td>{{ $section->totals['total_deals'] }}</td>
+
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" style="text-align: center; padding: 20px;">{{ translate('no_data_found') }}
-                        </td>
-                    </tr>
-                @endforelse
+                @endforeach
+
             </tbody>
-            <!-- Grand Total Row -->
+
+
             <tfoot>
-                <tr style="background: #0f766e; color: white;">
-                    <td colspan="2"
-                        style="text-align: {{ session('direction') === 'rtl' ? 'right' : 'left' }}; background: #0f766e; color: white;">
-                        <strong>{{ translate('grand_total') }}</strong>
-                    </td>
-                    <td style="background: #0f766e; color: white;">
-                        <strong>{{ number_format((float) ($summary['retail_won_sales'] ?? 0), 2) }}</strong></td>
-                    <td style="background: #0f766e; color: white;">
-                        <strong>{{ number_format((float) ($summary['wholesale_won_sales'] ?? 0), 2) }}</strong></td>
-                    <td style="background: #0f766e; color: white;">
-                        <strong>{{ number_format((float) ($summary['won_sales_total'] ?? 0), 2) }}</strong></td>
-                    <td style="background: #0f766e; color: white;">
-                        <strong>{{ (int) ($summary['won_count'] ?? 0) }}</strong></td>
-                    <td style="background: #0f766e; color: white;">
-                        <strong>{{ (int) ($summary['lost_count'] ?? 0) }}</strong></td>
-                    <td style="background: #0f766e; color: white;">
-                        <strong>{{ (int) ($summary['total_deals'] ?? 0) }}</strong></td>
+
+                <tr style="background:#0f766e;color:white;font-weight:bold">
+
+                    <td colspan="2">{{ translate('grand_total') }}</td>
+
+                    <td>{{ number_format($summary['retail_won_sales'], 2) }}</td>
+
+                    <td>{{ number_format($summary['wholesale_won_sales'], 2) }}</td>
+
+                    <td>{{ number_format($summary['won_sales_total'], 2) }}</td>
+
+                    <td>{{ $summary['won_count'] }}</td>
+
+                    <td>{{ $summary['lost_count'] }}</td>
+
+                    <td>{{ $summary['total_deals'] }}</td>
+
                 </tr>
+
             </tfoot>
+
         </table>
+
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        {{ translate('crm_sales_performance_report') }} | {{ translate('generated') }}:
-        {{ now()->format('d M Y, H:i') }} | {{ translate('page') }} 1/1
+
+    <!-- FOOTER -->
+
+    <div style="
+border-top:1px dashed #d1d5db;
+margin-top:20px;
+padding-top:8px;
+font-size:9px;
+color:#6b7280;
+">
+
+        <table width="100%">
+            <tr>
+
+                <td width="20%" style="text-align:left; color:red;">
+                    Page {PAGENO}
+                </td>
+
+                <td width="60%" style="text-align:center;">
+                    Generated on: {{ now()->translatedFormat('j F Y, h:i A') }} | CRM insights report<br>
+                    Generated by: <span style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
+                    <span style="color:red;">{{ config('app.name') }}</span>
+                </td>
+
+                <td width="20%"></td>
+
+            </tr>
+        </table>
+
     </div>
+
 </body>
 
 </html>
