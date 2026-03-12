@@ -77,19 +77,23 @@
 
 @section('content')
     @php
-        $isRtl = session('direction') === 'rtl'
-            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl =
+            session('direction') === 'rtl' ||
+            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
-    <div class="content container-fluid wholesale-report-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid wholesale-report-page {{ $isRtl ? 'text-right' : '' }}"
+        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
                 <div>
                     <h2 class="h1 mb-1">{{ translate('wholesale_revenue_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
+                        {{ translate('report_period') }}: {{ $dateRange }}
                     </p>
+
                 </div>
-                <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
+                <span class="badge badge-light text-dark">{{ translate('updated') }}
+                    {{ now()->format('M d, Y h:i A') }}</span>
             </div>
         </div>
 
@@ -100,18 +104,29 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
-                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
-                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
-                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
+                                <option value="this_year"
+                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
+                                    {{ translate('this_year') }}</option>
+                                <option value="this_month"
+                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
+                                    {{ translate('this_month') }}</option>
+                                <option value="this_week"
+                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
+                                    {{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
+                                    {{ translate('today') }}</option>
+                                <option value="custom_date"
+                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
+                                    {{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
@@ -119,8 +134,9 @@
                             <label class="form-label mb-1">{{ translate('wholesaler') }}</label>
                             <select class="form-control" name="wholesaler_id">
                                 <option value="0">{{ translate('all') }}</option>
-                                @foreach($wholesalers as $wholesaler)
-                                    <option value="{{ $wholesaler->id }}" {{ (int)($filters['wholesaler_id'] ?? 0) === (int)$wholesaler->id ? 'selected' : '' }}>
+                                @foreach ($wholesalers as $wholesaler)
+                                    <option value="{{ $wholesaler->id }}"
+                                        {{ (int) ($filters['wholesaler_id'] ?? 0) === (int) $wholesaler->id ? 'selected' : '' }}>
                                         {{ $wholesaler->name }}
                                     </option>
                                 @endforeach
@@ -130,24 +146,37 @@
                             <label class="form-label mb-1">{{ translate('payment_status') }}</label>
                             <select class="form-control" name="payment_status">
                                 <option value="">{{ translate('all') }}</option>
-                                <option value="paid" {{ ($filters['payment_status'] ?? '') === 'paid' ? 'selected' : '' }}>{{ translate('paid') }}</option>
-                                <option value="unpaid" {{ ($filters['payment_status'] ?? '') === 'unpaid' ? 'selected' : '' }}>{{ translate('unpaid') }}</option>
+                                <option value="paid"
+                                    {{ ($filters['payment_status'] ?? '') === 'paid' ? 'selected' : '' }}>
+                                    {{ translate('paid') }}</option>
+                                <option value="unpaid"
+                                    {{ ($filters['payment_status'] ?? '') === 'unpaid' ? 'selected' : '' }}>
+                                    {{ translate('unpaid') }}</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('delivery_status') }}</label>
                             <select class="form-control" name="delivery_status">
                                 <option value="">{{ translate('all') }}</option>
-                                <option value="pending" {{ ($filters['delivery_status'] ?? '') === 'pending' ? 'selected' : '' }}>{{ translate('pending') }}</option>
-                                <option value="partial" {{ ($filters['delivery_status'] ?? '') === 'partial' ? 'selected' : '' }}>{{ translate('partial') }}</option>
-                                <option value="fulfilled" {{ ($filters['delivery_status'] ?? '') === 'fulfilled' ? 'selected' : '' }}>{{ translate('fulfilled') }}</option>
+                                <option value="pending"
+                                    {{ ($filters['delivery_status'] ?? '') === 'pending' ? 'selected' : '' }}>
+                                    {{ translate('pending') }}</option>
+                                <option value="partial"
+                                    {{ ($filters['delivery_status'] ?? '') === 'partial' ? 'selected' : '' }}>
+                                    {{ translate('partial') }}</option>
+                                <option value="fulfilled"
+                                    {{ ($filters['delivery_status'] ?? '') === 'fulfilled' ? 'selected' : '' }}>
+                                    {{ translate('fulfilled') }}</option>
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.wholesale.dashboard.reports.revenue') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
-                            <a href="{{ route('admin.wholesale.dashboard.reports.revenue', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
-                            <a href="{{ route('admin.wholesale.dashboard.reports.revenue', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.revenue') }}"
+                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.revenue', array_merge(request()->query(), ['download' => 'excel'])) }}"
+                                class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.revenue', array_merge(request()->query(), ['download' => 'pdf'])) }}"
+                                class="btn btn-outline-danger">{{ translate('PDF') }}</a>
                         </div>
                     </div>
                 </form>
@@ -157,8 +186,18 @@
         <div class="row g-3 mb-3">
             <div class="col-sm-6 col-xl-3">
                 <div class="card kpi-card h-100">
+                    @php
+                        $start = \Carbon\Carbon::parse($snapshotFrom);
+                        $end = \Carbon\Carbon::parse($snapshotTo);
+
+                        if ($start->format('M Y') === $end->format('M Y')) {
+                            $shortDateRange = $start->format('d') . '–' . $end->format('d M Y');
+                        } else {
+                            $shortDateRange = $start->format('d M') . ' – ' . $end->format('d M Y');
+                        }
+                    @endphp
                     <div class="card-body">
-                        <p class="kpi-label mb-2">{{ translate('revenue_90d') }}</p>
+                        {{ translate('revenue') }} ({{ $shortDateRange }})
                         <p class="kpi-value">{{ number_format((float) $kpi['total_revenue'], 2) }}</p>
                     </div>
                 </div>
@@ -193,7 +232,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ translate('revenue_trend_last_12_months') }}</h4>
+                        <h4 class="mb-0"> {{ translate('revenue_trend') }} ({{ $dateRange }})</h4>
                         <span class="badge-soft">{{ translate('orders_plus_revenue') }}</span>
                     </div>
                     <div class="card-body">
@@ -205,7 +244,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('delivery_status_mix') }}</h4>
-                        <span class="badge-soft">90D</span>
+                        <span class="badge-soft">{{ $dateRange }}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="wholesale-delivery-mix" height="220"></canvas>
@@ -218,7 +257,11 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0">
-                        <h4 class="mb-0">{{ translate('top_wholesalers_by_revenue_90d') }}</h4>
+                        <div class="card-header border-0">
+                            <h4 class="mb-0">
+                                {{ translate('top_wholesalers_by_revenue') }} ({{ $dateRange }})
+                            </h4>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -237,8 +280,13 @@
                                     @php
                                         $user = $row->wholeseller;
                                         $companyName = $user?->wholesalerBusiness?->company_name ?? '-';
-                                        $displayName = $user?->name ?? $user?->f_name ?? (translate('wholesaler') . ' #' . $row->wholesaler_id);
-                                        $collection = (float) $row->total_revenue > 0 ? ((float) $row->paid_revenue / (float) $row->total_revenue) * 100 : 0;
+                                        $displayName =
+                                            $user?->name ??
+                                            ($user?->f_name ?? translate('wholesaler') . ' #' . $row->wholesaler_id);
+                                        $collection =
+                                            (float) $row->total_revenue > 0
+                                                ? ((float) $row->paid_revenue / (float) $row->total_revenue) * 100
+                                                : 0;
                                     @endphp
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
@@ -250,7 +298,8 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">{{ translate('no_wholesale_orders_found_in_this_period') }}</td>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            {{ translate('no_wholesale_orders_found_in_this_period') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -283,127 +332,8 @@
     <script>
         'use strict';
 
-        (function() {
-            const trendData = @json($trendChartData);
-            const deliveryData = @json($deliveryChartData);
-            const currencySymbol = document.getElementById('get-currency-symbol')?.dataset?.currencySymbol || '';
-            const fmtMoney = (value) => `${currencySymbol}${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-
-            const trendCtx = document.getElementById('wholesale-revenue-trend');
-            if (trendCtx) {
-                new Chart(trendCtx, {
-                    data: {
-                        labels: trendData.labels || [],
-                        datasets: [{
-                                type: 'bar',
-                                label: @json(translate('orders')),
-                                data: trendData.orders || [],
-                                backgroundColor: 'rgba(15, 118, 110, 0.22)',
-                                borderColor: '#0f766e',
-                                borderWidth: 1,
-                                yAxisID: 'yOrders'
-                            },
-                            {
-                                type: 'line',
-                                label: @json(translate('revenue')),
-                                data: trendData.revenue || [],
-                                borderColor: '#0f766e',
-                                backgroundColor: 'rgba(15, 118, 110, 0.12)',
-                                borderWidth: 3,
-                                tension: 0.35,
-                                fill: false,
-                                yAxisID: 'yRevenue'
-                            },
-                            {
-                                type: 'line',
-                                label: @json(translate('paid_revenue')),
-                                data: trendData.paid_revenue || [],
-                                borderColor: '#14b8a6',
-                                backgroundColor: 'rgba(20, 184, 166, 0.16)',
-                                borderWidth: 2,
-                                tension: 0.35,
-                                fill: false,
-                                yAxisID: 'yRevenue'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        if (context.dataset.yAxisID === 'yRevenue') {
-                                            return `${context.dataset.label}: ${fmtMoney(context.raw)}`;
-                                        }
-                                        return `${context.dataset.label}: ${Number(context.raw || 0).toLocaleString()}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            yRevenue: {
-                                type: 'linear',
-                                position: 'left',
-                                ticks: {
-                                    callback: (value) => fmtMoney(value)
-                                },
-                                grid: {
-                                    color: 'rgba(16, 42, 67, 0.08)'
-                                }
-                            },
-                            yOrders: {
-                                type: 'linear',
-                                position: 'right',
-                                grid: {
-                                    drawOnChartArea: false
-                                },
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            const deliveryCtx = document.getElementById('wholesale-delivery-mix');
-            if (deliveryCtx) {
-                const labels = (deliveryData.labels || []).length ? deliveryData.labels : [@json(translate('no_data'))];
-                const counts = (deliveryData.counts || []).length ? deliveryData.counts : [1];
-
-                new Chart(deliveryCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels,
-                        datasets: [{
-                            data: counts,
-                            backgroundColor: ['#0f766e', '#14b8a6', '#f59e0b', '#64748b', '#ef4444', '#8b5cf6'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-        })();
-
         $(document).ready(function() {
+            // Date range toggle
             $('#date_type').on('change', function() {
                 if ($(this).val() === 'custom_date') {
                     $('.custom-date-range').show();
@@ -411,6 +341,185 @@
                     $('.custom-date-range').hide();
                 }
             });
+
+            // Get chart data from PHP
+            const trendData = @json($trendChartData);
+            const deliveryData = @json($deliveryChartData);
+
+            console.log('Trend Data:', trendData);
+            console.log('Delivery Data:', deliveryData);
+
+            // Format money function
+            const currencySymbol = '{{ session('currency_symbol') ?? '$' }}';
+            const fmtMoney = (value) => `${currencySymbol}${Number(value || 0).toFixed(2)}`;
+
+            // Revenue Trend Chart
+            const trendCtx = document.getElementById('wholesale-revenue-trend');
+            if (trendCtx && trendData && trendData.labels && trendData.labels.length > 0) {
+                new Chart(trendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: trendData.labels,
+                        datasets: [{
+                                label: '{{ translate('orders') }}',
+                                data: trendData.orders || [],
+                                backgroundColor: 'rgba(15, 118, 110, 0.22)',
+                                borderColor: '#0f766e',
+                                borderWidth: 1,
+                                type: 'bar',
+                                yAxisID: 'A'
+                            },
+                            {
+                                label: '{{ translate('revenue') }}',
+                                data: trendData.revenue || [],
+                                borderColor: '#0f766e',
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                tension: 0.35,
+                                fill: false,
+                                type: 'line',
+                                yAxisID: 'B'
+                            },
+                            {
+                                label: '{{ translate('paid_revenue') }}',
+                                data: trendData.paid_revenue || [],
+                                borderColor: '#14b8a6',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                tension: 0.35,
+                                fill: false,
+                                type: 'line',
+                                yAxisID: 'B'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }],
+                            yAxes: [{
+                                    id: 'A',
+                                    type: 'linear',
+                                    position: 'left',
+                                    ticks: {
+                                        beginAtZero: true,
+                                        stepSize: 1,
+                                        callback: function(value) {
+                                            return value.toLocaleString();
+                                        }
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: '{{ translate('orders') }}'
+                                    }
+                                },
+                                {
+                                    id: 'B',
+                                    type: 'linear',
+                                    position: 'right',
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function(value) {
+                                            return fmtMoney(value);
+                                        }
+                                    },
+                                    gridLines: {
+                                        drawOnChartArea: false
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: '{{ translate('revenue') }}'
+                                    }
+                                }
+                            ]
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                                    const label = dataset.label || '';
+                                    const value = tooltipItem.yLabel;
+
+                                    if (dataset.yAxisID === 'B') {
+                                        return label + ': ' + fmtMoney(value);
+                                    }
+                                    return label + ': ' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.log('No trend data available');
+                if (trendCtx) {
+                    trendCtx.parentNode.innerHTML =
+                        '<div class="text-center py-4">{{ translate('no_data_available') }}</div>';
+                }
+            }
+
+            // Delivery Status Chart
+            const deliveryCtx = document.getElementById('wholesale-delivery-mix');
+            if (deliveryCtx && deliveryData && deliveryData.labels && deliveryData.labels.length > 0) {
+                const total = deliveryData.counts.reduce((a, b) => a + b, 0);
+
+                new Chart(deliveryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: deliveryData.labels,
+                        datasets: [{
+                            data: deliveryData.counts,
+                            backgroundColor: ['#0f766e', '#14b8a6', '#f59e0b', '#64748b', '#ef4444',
+                                '#8b5cf6'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    const label = data.labels[tooltipItem.index] || '';
+                                    const value = data.datasets[0].data[tooltipItem.index];
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) :
+                                        0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.log('No delivery data available');
+                if (deliveryCtx) {
+                    deliveryCtx.parentNode.innerHTML =
+                        '<div class="text-center py-4">{{ translate('no_data_available') }}</div>';
+                }
+            }
         });
     </script>
 @endpush

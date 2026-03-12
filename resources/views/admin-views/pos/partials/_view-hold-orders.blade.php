@@ -1,4 +1,6 @@
-@if ($totalHoldOrders > 0)
+@php($holdOrders = collect($cartItems ?? [])->filter(fn($item) => (bool)($item['customerOnHold'] ?? false))->all())
+
+@if (count($holdOrders) > 0)
     <div class="table-responsive datatable-custom custom-scrollbar-pos min-h-300">
         <table class="table table-hover table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
             <thead class="thead-light thead-50 text-capitalize">
@@ -13,17 +15,16 @@
             </thead>
 
             <tbody>
-            @if (session()->has('cart_name') && count(session()->get('cart_name')) > 0 )
             @php($totalHoldOrdersCount=1)
-                @foreach ($cartItems as $key => $singleCart)
-                    @if($singleCart['customerOnHold'])
-                        <tr>
+                @foreach ($holdOrders as $key => $singleCart)
+                    <tr>
                         <td>{{ $totalHoldOrdersCount }}</td>
                             <?php $totalHoldOrdersCount++; ?>
                         <td>
-                            @if (isset(session()->get($key)['add_to_cart_time']))
-                                <div>{{ session()->get($key)['add_to_cart_time']->format('d/m/Y') ?? translate('not_available') }}</div>
-                                <div>{{ session()->get($key)['add_to_cart_time']->format('h:i A') ?? '' }}</div>
+                            @php($holdTime = !empty($singleCart['add_to_cart_time']) ? \Carbon\Carbon::parse($singleCart['add_to_cart_time']) : null)
+                            @if ($holdTime)
+                                <div>{{ $holdTime->format('d/m/Y') }}</div>
+                                <div>{{ $holdTime->format('h:i A') }}</div>
                             @else
                                 <div>{{ translate('now') }}</div>
                             @endif
@@ -34,11 +35,11 @@
                                class="text-dark">{{ $singleCart['customerPhone'] ?? '' }}</a>
                         </td>
                         <td>
-                            <div class="table-items">
-                                <div class="cursor-pointer">
-                                    {{ $singleCart['countItem'] }} {{ translate('items') }}
-                                </div>
-                                @if (session()->has($key) && count(session()->get($key)) > 0)
+                                <div class="table-items">
+                                    <div class="cursor-pointer">
+                                        {{ $singleCart['countItem'] }} {{ translate('items') }}
+                                    </div>
+                                @if (!empty($singleCart['cartItemValue']) && count($singleCart['cartItemValue']) > 0)
                                     <div class="bg-white p-0 box-shadow table-items-popup">
                                         @foreach($singleCart['cartItemValue'] as  $item)
                                             @if(is_array($item))
@@ -80,9 +81,7 @@
                             </div>
                         </td>
                     </tr>
-                    @endif
                 @endforeach
-            @endif
             </tbody>
         </table>
     </div>

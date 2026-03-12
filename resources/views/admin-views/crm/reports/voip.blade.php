@@ -77,9 +77,8 @@
 
 @section('content')
     @php
-        $isRtl =
-            session('direction') === 'rtl' ||
-            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl = session('direction') === 'rtl'
+            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
     <div class="content container-fluid voip-report-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
@@ -87,12 +86,10 @@
                 <div>
                     <h2 class="h1 mb-1">{{ translate('voip_insights_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
-                        {{ $snapshotTo->format('M d, Y') }}
+                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
                     </p>
                 </div>
-                <span class="badge badge-light text-dark">{{ translate('updated') }}
-                    {{ now()->format('M d, Y h:i A') }}</span>
+                <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
             </div>
         </div>
 
@@ -103,29 +100,18 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year"
-                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
-                                <option value="this_month"
-                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
-                                <option value="this_week"
-                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
-                                    {{ translate('today') }}</option>
-                                <option value="custom_date"
-                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
-                                    {{ translate('custom_range') }}</option>
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
@@ -133,25 +119,17 @@
                             <label class="form-label mb-1">{{ translate('direction') }}</label>
                             <select class="form-control" name="direction">
                                 <option value="">{{ translate('all') }}</option>
-                                <option value="inbound"
-                                    {{ ($filters['direction'] ?? '') === 'inbound' ? 'selected' : '' }}>
-                                    {{ translate('inbound') }}</option>
-                                <option value="outbound"
-                                    {{ ($filters['direction'] ?? '') === 'outbound' ? 'selected' : '' }}>
-                                    {{ translate('outbound') }}</option>
+                                <option value="inbound" {{ ($filters['direction'] ?? '') === 'inbound' ? 'selected' : '' }}>{{ translate('inbound') }}</option>
+                                <option value="outbound" {{ ($filters['direction'] ?? '') === 'outbound' ? 'selected' : '' }}>{{ translate('outbound') }}</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('status') }}</label>
                             <select class="form-control" name="status">
                                 <option value="">{{ translate('all') }}</option>
-                                <option value="ringing" {{ ($filters['status'] ?? '') === 'ringing' ? 'selected' : '' }}>
-                                    {{ translate('ringing') }}</option>
-                                <option value="ongoing" {{ ($filters['status'] ?? '') === 'ongoing' ? 'selected' : '' }}>
-                                    {{ translate('ongoing') }}</option>
-                                <option value="completed"
-                                    {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>
-                                    {{ translate('completed') }}</option>
+                                <option value="ringing" {{ ($filters['status'] ?? '') === 'ringing' ? 'selected' : '' }}>{{ translate('ringing') }}</option>
+                                <option value="ongoing" {{ ($filters['status'] ?? '') === 'ongoing' ? 'selected' : '' }}>{{ translate('ongoing') }}</option>
+                                <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>{{ translate('completed') }}</option>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -159,8 +137,7 @@
                             <select class="form-control" name="agent_id">
                                 <option value="0">{{ translate('all') }}</option>
                                 @foreach ($filterAgents as $agent)
-                                    <option value="{{ (int) $agent->agent_id }}"
-                                        {{ (int) ($filters['agent_id'] ?? 0) === (int) $agent->agent_id ? 'selected' : '' }}>
+                                    <option value="{{ (int) $agent->agent_id }}" {{ (int) ($filters['agent_id'] ?? 0) === (int) $agent->agent_id ? 'selected' : '' }}>
                                         {{ $agent->agent_name }}
                                     </option>
                                 @endforeach
@@ -168,13 +145,9 @@
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.ucm.insights-report') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
-                            <a href="{{ route('admin.ucm.insights-report', array_merge(request()->query(), ['download' => 'excel'])) }}"
-                                class="btn btn-outline-success">{{ translate('excel') }}</a>
-                            <button id="downloadPdf" class="btn btn-outline-danger">
-                                {{ translate('PDF') }}
-                            </button>
+                            <a href="{{ route('admin.ucm.insights-report') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.ucm.insights-report', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <a href="{{ route('admin.ucm.insights-report', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger">{{ translate('PDF') }}</a>
                         </div>
                     </div>
                 </form>
@@ -305,15 +278,12 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td class="font-weight-semibold">{{ $agent->agent_name }}</td>
                                         <td class="text-end">{{ number_format((int) $agent->calls_count) }}</td>
-                                        <td class="text-end">
-                                            {{ number_format(((float) $agent->total_duration) / 60, 1) }}m</td>
-                                        <td class="text-end">{{ number_format(((float) $agent->avg_duration) / 60, 1) }}m
-                                        </td>
+                                        <td class="text-end">{{ number_format(((float) $agent->total_duration) / 60, 1) }}m</td>
+                                        <td class="text-end">{{ number_format(((float) $agent->avg_duration) / 60, 1) }}m</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted py-4">
-                                            {{ translate('no_agent_call_data_in_this_period') }}</td>
+                                        <td colspan="5" class="text-center text-muted py-4">{{ translate('no_agent_call_data_in_this_period') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -424,9 +394,7 @@
                         labels: statusData.labels || [],
                         datasets: [{
                             data: statusData.counts || [],
-                            backgroundColor: ['#2563eb', '#14b8a6', '#f59e0b', '#e11d48', '#64748b',
-                                '#84cc16'
-                            ]
+                            backgroundColor: ['#2563eb', '#14b8a6', '#f59e0b', '#e11d48', '#64748b', '#84cc16']
                         }]
                     },
                     options: {
@@ -513,40 +481,6 @@
                     $('.custom-date-range').hide();
                 }
             });
-        });
-        document.getElementById('downloadPdf').addEventListener('click', function() {
-
-            const trendChart = Chart.getChart('voip-trend-chart');
-            const statusChart = Chart.getChart('voip-status-chart');
-            const directionChart = Chart.getChart('voip-direction-chart');
-            const hourlyChart = Chart.getChart('voip-hourly-chart');
-
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = "{{ route('admin.ucm.insights-report') }}";
-
-            // CSRF
-            const csrf = document.createElement('input');
-            csrf.type = 'hidden';
-            csrf.name = '_token';
-            csrf.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            form.appendChild(csrf);
-
-            function addField(name, value) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value;
-                form.appendChild(input);
-            }
-
-            if (trendChart) addField('trend_chart', trendChart.toBase64Image());
-            if (statusChart) addField('status_chart', statusChart.toBase64Image());
-            if (directionChart) addField('direction_chart', directionChart.toBase64Image());
-            if (hourlyChart) addField('hourly_chart', hourlyChart.toBase64Image());
-
-            document.body.appendChild(form);
-            form.submit();
         });
     </script>
 @endpush

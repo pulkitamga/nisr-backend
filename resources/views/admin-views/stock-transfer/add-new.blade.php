@@ -323,5 +323,29 @@
             });
         }
     });
+
+    $('#stock_transfer_form').on('submit', function(e) {
+        let hasCsvError = false;
+
+        $('.product-row').each(function() {
+            const $row = $(this);
+            const rowId = $row.data('row-id');
+            const rowNo = Number(rowId) + 1;
+            const $selectedOption = $row.find('.product-select option:selected');
+            const isTraceable = Number($selectedOption.data('is-traceable')) === 1 || $selectedOption.data('is-traceable') === true;
+            const csvInput = $row.find('.serial-csv')[0];
+            const hasCsvFile = !!(csvInput && csvInput.files && csvInput.files.length > 0);
+
+            if (isTraceable && !hasCsvFile) {
+                hasCsvError = true;
+                toastr.error(`Row ${rowNo}: CSV file is required for traceable product.`);
+                return false;
+            }
+        });
+
+        if (hasCsvError) {
+            e.preventDefault();
+        }
+    });
 </script>
 @endpush

@@ -388,7 +388,7 @@
             const confirmId = $(this).data('order-id');
             remainingQty = parseInt($(this).data('remaining'));
             const variationType = $(this).data('variation-type') || '';
-            const isTraceable = parseInt($(this).data('is-traceable'));
+            const isTraceable = Number($(this).data('is-traceable')) === 1 || $(this).data('is-traceable') === true;
 
             $('#modalProductId').val(productId);
             $('#modalProductName').text(productName);
@@ -407,7 +407,9 @@
             $('#csvError').hide();
             $('#submitDeliveryBtn').prop('disabled', false);
 
-            if (isTraceable === 1) {
+            $('#deliveryForm').data('is-traceable', isTraceable);
+
+            if (isTraceable) {
                 $('#serialCsv').closest('.mb-3').show();
                 $('#download_sample').show();
                 $('#serialCsv').prop('required', true);
@@ -476,6 +478,18 @@
             validateCsvMatch();
         });
 
+        $('#deliveryForm').on('submit', function(e) {
+            const traceable = $(this).data('is-traceable') === true;
+            const serialCsvInput = $('#serialCsv')[0];
+            const hasCsvFile = !!(serialCsvInput && serialCsvInput.files && serialCsvInput.files.length > 0);
+
+            if (traceable && !hasCsvFile) {
+                e.preventDefault();
+                toastr.error('CSV file is required for traceable product.');
+                return;
+            }
+        });
+
         function validateCsvMatch() {
             const file = $('#serialCsv')[0].files[0];
             if (!file || expectedSerialCount === 0) {
@@ -500,4 +514,3 @@
     });
 </script>
 @endpush
-

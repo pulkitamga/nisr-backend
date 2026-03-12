@@ -7,7 +7,8 @@ use App\Exports\CrmDealSalesReportExport;
 use App\Http\Controllers\BaseController;
 use App\Models\Admin;
 use App\Models\Departments;
-use App\Services\ReportPdfService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Mpdf\Mpdf;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -39,36 +40,71 @@ class CrmDealSalesReportController extends BaseController
         );
     }
 
-    public function exportPdf(Request $request): Response
+    private function chartImage($config)
+    {
+        $url = "https://quickchart.io/chart?width=600&height=300&c=" . urlencode(json_encode($config));
+
+        try {
+            $image = file_get_contents($url);
+            return 'data:image/png;base64,' . base64_encode($image);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+    public function exportPdf(Request $request)
     {
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        return app(ReportPdfService::class)->download(
-            view: CrmDealSalesReport::EXPORT_PDF[VIEW],
-            data: $data,
-            fileName: 'crm-sales-performance-report.pdf',
-            orientation: 'landscape'
-        );
+        $html = view(CrmDealSalesReport::EXPORT_PDF[VIEW], $data)->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4-L', // Landscape
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_left' => 10,
+            'margin_right' => 10,
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        return response(
+            $mpdf->Output('crm-sales-performance-report.pdf', 'S'),
+            200
+        )->header('Content-Type', 'application/pdf');
     }
 
     private function buildReportData(Request $request): array
     {
-        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
+        [$fromDate, $toDate] = $this->resolveDateRange($request);
 
         $departmentIds = $this->normalizeMultiIds($request->input('department_ids', $request->input('department_id', [])));
         $employeeIds = $this->normalizeMultiIds($request->input('employee_ids', $request->input('employee_id', [])));
 
+        // $departments = Departments::query()
+        //     ->select('id', 'name')
+        //     ->orderBy('name')
+        //     ->get();
         $departments = Departments::query()
-            ->select('id', 'name')
-            ->orderBy('name')
+            ->select('departments.id', 'departments.name')
+            ->join('deals', 'deals.department_id', '=', 'departments.id')
+            ->whereIn('deals.status', ['won', 'lost'])
+            ->whereBetween('deals.created_at', [$fromDate, $toDate])
+            ->when(!empty($employeeIds), fn($query) => $query->whereIn('deals.employee_id', $employeeIds))
+            ->distinct()
+            ->orderBy('departments.name')
             ->get();
 
         $employees = Admin::query()
-            ->select('id', 'name', 'department_id')
-            ->where('status', 1)
-            ->when(!empty($departmentIds), fn($query) => $query->whereIn('department_id', $departmentIds))
-            ->orderBy('name')
+            ->select('admins.id', 'admins.name', 'admins.department_id')
+            ->join('deals', 'deals.employee_id', '=', 'admins.id')
+            ->where('admins.status', 1)
+            ->whereIn('deals.status', ['won', 'lost'])
+            ->whereBetween('deals.created_at', [$fromDate, $toDate])
+            ->when(!empty($departmentIds), fn($query) => $query->whereIn('admins.department_id', $departmentIds))
+            ->distinct()
+            ->orderBy('admins.name')
             ->get();
 
         $rows = $this->getDealRows(
@@ -95,16 +131,77 @@ class CrmDealSalesReportController extends BaseController
 
         $chartRows = $rows->sortByDesc('total_deals')->take(12)->values();
 
+        $periodLabel = $fromDate->format('d F, Y') . ' - ' . $toDate->format('d F, Y');
+
+        $rangeDays = $fromDate->diffInDays($toDate) + 1;
+        $rangeShort = $rangeDays . 'D';
+        $employeeChart = $this->chartImage([
+            "type" => "bar",
+            "data" => [
+                "labels" => $chartRows->pluck('employee_name')->all(),
+                "datasets" => [
+                    [
+                        "label" => "Won",
+                        "backgroundColor" => "#22c55e",
+                        "data" => $chartRows->pluck('won_count')->all()
+                    ],
+                    [
+                        "label" => "Lost",
+                        "backgroundColor" => "#ef4444",
+                        "data" => $chartRows->pluck('lost_count')->all()
+                    ]
+                ]
+            ]
+        ]);
+
+        $statusChart = $this->chartImage([
+            "type" => "pie",
+            "data" => [
+                "labels" => ['Won', 'Lost'],
+                "datasets" => [[
+                    "backgroundColor" => ["#22c55e", "#ef4444"],
+                    "data" => [$summary['won_count'], $summary['lost_count']]
+                ]]
+            ]
+        ]);
+        $retailWholesaleChart = $this->chartImage([
+            "type" => "bar",
+            "data" => [
+                "labels" => $chartRows->pluck('employee_name')->all(),
+                "datasets" => [
+                    [
+                        "label" => "Retail Sales",
+                        "backgroundColor" => "#3b82f6",
+                        "data" => $chartRows->pluck('retail_won_sales')->map(fn($v) => round($v, 2))->all()
+                    ],
+                    [
+                        "label" => "Wholesale Sales",
+                        "backgroundColor" => "#f59e0b",
+                        "data" => $chartRows->pluck('wholesale_won_sales')->map(fn($v) => round($v, 2))->all()
+                    ]
+                ]
+            ],
+            "options" => [
+                "scales" => [
+                    "yAxes" => [[
+                        "ticks" => [
+                            "beginAtZero" => true
+                        ]
+                    ]]
+                ]
+            ]
+        ]);
         return [
             'departments' => $departments,
             'employees' => $employees,
             'filters' => [
-                'date_type' => $dateType,
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
+                'date_type' => $request->input('date_type', 'this_year'),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
             ],
+            'periodLabel' => $periodLabel,
             'summary' => $summary,
             'departmentSections' => $departmentSections,
             'chart' => [
@@ -118,58 +215,48 @@ class CrmDealSalesReportController extends BaseController
                 'sales_type_labels' => [translate('retail'), translate('wholesale')],
                 'sales_type_values' => [round($summary['retail_won_sales'], 2), round($summary['wholesale_won_sales'], 2)],
             ],
+            'employeeChart' => $employeeChart,
+            'statusChart' => $statusChart,
+            'retailWholesaleChart' => $retailWholesaleChart,
         ];
     }
-
     private function resolveDateRange(Request $request): array
     {
-        $dateType = (string)$request->input('date_type', 'this_year');
-        $from = $request->input('from');
-        $to = $request->input('to');
+        $range = $request->input('date_type', 'this_year');
 
-        switch ($dateType) {
-            case 'this_month':
-                $fromDate = now()->startOfMonth()->startOfDay();
-                $toDate = now()->endOfMonth()->endOfDay();
-                break;
-
-            case 'this_week':
-                $fromDate = now()->startOfWeek()->startOfDay();
-                $toDate = now()->endOfWeek()->endOfDay();
-                break;
+        switch ($range) {
 
             case 'today':
                 $fromDate = now()->startOfDay();
                 $toDate = now()->endOfDay();
                 break;
 
-            case 'custom_date':
-                try {
-                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
-                } catch (\Throwable) {
-                    $fromDate = now()->subDays(29)->startOfDay();
-                }
+            case 'this_week':
+                $fromDate = now()->startOfWeek();
+                $toDate = now()->endOfWeek();
+                break;
 
-                try {
-                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
-                } catch (\Throwable) {
-                    $toDate = now()->endOfDay();
-                }
+            case 'this_month':
+                $fromDate = now()->startOfMonth();
+                $toDate = now()->endOfMonth();
                 break;
 
             case 'this_year':
-            default:
-                $fromDate = now()->startOfYear()->startOfDay();
-                $toDate = now()->endOfYear()->endOfDay();
-                $dateType = 'this_year';
+                $fromDate = now()->startOfYear();
+                $toDate = now()->endOfYear();
                 break;
+
+            case 'custom':
+                $fromDate = Carbon::parse($request->from)->startOfDay();
+                $toDate = Carbon::parse($request->to)->endOfDay();
+                break;
+
+            default:
+                $fromDate = now()->startOfMonth();
+                $toDate = now()->endOfMonth();
         }
 
-        if ($fromDate->gt($toDate)) {
-            [$fromDate, $toDate] = [$toDate->copy()->startOfDay(), $fromDate->copy()->endOfDay()];
-        }
-
-        return [$fromDate, $toDate, $dateType];
+        return [$fromDate, $toDate];
     }
 
     private function getDealRows(
