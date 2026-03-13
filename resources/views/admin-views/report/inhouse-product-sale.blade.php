@@ -16,7 +16,7 @@
             font-size: 12px;
             margin-bottom: 6px;
         }
-
+ 
         .report-kpi-value {
             font-size: 22px;
             font-weight: 700;
@@ -78,7 +78,7 @@
                             </select>
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('branch') }}</label>
                             <select class="js-select2-custom form-control" name="branch_ids[]" multiple>
                                 @foreach ($branches as $branch)
@@ -90,7 +90,7 @@
                             </select>
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
@@ -119,7 +119,7 @@
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
-                        <div class="col-12 d-flex flex-wrap gap-2">
+                        <div class="col-md-12 d-flex justify-content-center gap-2 mt-3">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
                             <a href="{{ route('admin.report.inhouse-product-sale') }}"
                                 class="btn btn-outline-secondary">{{ translate('reset') }}</a>

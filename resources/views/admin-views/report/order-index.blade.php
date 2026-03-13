@@ -9,7 +9,7 @@
                 {{translate('order_Report')}}
             </h2>
         </div>
-        <div class="card mb-2">
+        <div class="card mb-2"> 
             <div class="card-body">
                 <form action="" id="form-data" method="GET">
                     <h4 class="mb-3">{{translate('filter_Data')}}</h4>

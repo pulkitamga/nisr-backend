@@ -14,7 +14,7 @@
         </div>
 
         @include('admin-views.report.product-report-inline-menu')
-
+ 
         <div class="card mb-2">
             <div class="card-body">
                 <form action="" id="form-data" method="GET">
@@ -154,6 +154,10 @@
                         <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.report.all-product-excel', ['seller_id' => request('seller_id'), 'search' => request('search'), 'date_type' => request('date_type'), 'from' => request('from'), 'to' => request('to')]) }}">
                             <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
                             <span class="ps-2">{{ translate('export') }}</span>
+                        </a>
+                         <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.report.all-product-pdf', ['seller_id' => request('seller_id'), 'search' => request('search'), 'date_type' => request('date_type'), 'from' => request('from'), 'to' => request('to')]) }}">
+                            <span class="text-warning"><i class="tio-file-text"></i></span>
+                            <span class="ps-2">{{ translate('pdf') }}</span>
                         </a>
                     </div>
                 </div>
