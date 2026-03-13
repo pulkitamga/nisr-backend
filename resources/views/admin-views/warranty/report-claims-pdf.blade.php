@@ -103,8 +103,6 @@
             text-align: left;
         }
 
-<<<<<<< ahmed5
-=======
         .kpi-value.percentage {
             color: #0f766e;
         }
@@ -269,31 +267,6 @@
         </div>
     </div>
 
-<<<<<<< ahmed5
-    <table class="kpi-grid">
-        <tr>
-            <td>
-                <div class="kpi-label">{{ translate('total_claims') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['total_claims'] ?? 0)) }}</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('claim_rate') }}</div>
-                <div class="kpi-value">{{ number_format((float)($kpi['claim_rate'] ?? 0), 1) }}%</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('open_claims') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['open_claims'] ?? 0)) }}</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('resolved') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['resolved_claims'] ?? 0)) }}</div>
-            </td>
-        </tr>
-    </table>
-
-    <table>
-        <thead>
-=======
     <!-- KPI CARDS - 4 in one row -->
     <div class="kpi-container">
         <table class="kpi-table" cellpadding="0" cellspacing="0">

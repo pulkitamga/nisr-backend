@@ -17,8 +17,6 @@
             direction: {{ $isRtl ? 'rtl' : 'ltr' }};
             text-align: {{ $isRtl ? 'right' : 'left' }};
         }
-<<<<<<< ahmed5
-=======
 
         /* Header Styles with Logo - Green like CRM */
         .report-header {
@@ -180,17 +178,11 @@
             font-size: 14px;
         }
 
->>>>>>> local
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 10px;
         }
-<<<<<<< ahmed5
-        th, td { border: 1px solid #d1d5db; padding: 6px; text-align: {{ ($isRtl ?? false) ? 'right' : 'left' }}; }
-        th { background: #f3f4f6; }
-        .metric-line { margin: 0 0 6px; }
-=======
 
         th {
             background: #e5e7eb;
@@ -213,40 +205,10 @@
             background: #f9fafb;
         }
 
->>>>>>> local
         .value-ltr {
             direction: ltr;
             unicode-bidi: embed;
             display: inline-block;
-<<<<<<< ahmed5
-            text-align: left;
-        }
-    </style>
-</head>
-<body>
-<h2>{{ translate('warranty_analytics_report') }}</h2>
-<p class="metric-line">
-    {{ translate('report_period') }}:
-    <span class="value-ltr">{{ $snapshotFrom->format('Y-m-d') }} - {{ $snapshotTo->format('Y-m-d') }}</span>
-</p>
-<p class="metric-line">{{ translate('total_claims') }}: <span class="value-ltr">{{ number_format((int)($kpi['total_claims'] ?? 0)) }}</span></p>
-<table>
-    <thead>
-    <tr>
-        <th>{{ translate('product') }}</th>
-        <th>{{ translate('claims') }}</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach($topProducts as $product)
-        <tr>
-            <td>{{ $product->product_name }}</td>
-            <td>{{ number_format((int)$product->claims_count) }}</td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
-=======
         }
 
         /* No Data Message */

@@ -105,8 +105,6 @@
             text-align: left;
         }
 
-<<<<<<< ahmed5
-=======
         .kpi-value.percentage {
             color: #0f766e;
         }
@@ -289,37 +287,6 @@
         </div>
     </div>
 
-<<<<<<< ahmed5
-    <table class="kpi-grid">
-        <tr>
-            <td>
-                <div class="kpi-label">{{ translate('total_deadlines') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['total_deadlines'] ?? 0)) }}</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('sla_compliance') }}</div>
-                <div class="kpi-value">{{ number_format((float)($kpi['compliance'] ?? 0), 1) }}%</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('on_time') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['on_time'] ?? 0)) }}</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('breached') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['breached'] ?? 0)) }}</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('avg_breach_hours') }}</div>
-                <div class="kpi-value">
-                    {{ ($kpi['avg_breach_hours'] ?? null) !== null ? number_format((float)$kpi['avg_breach_hours'], 1) . 'h' : translate('na') }}
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <table>
-        <thead>
-=======
     <!-- KPI CARDS - 5 in one row -->
     <div class="kpi-container">
         <table class="kpi-table" cellpadding="0" cellspacing="0">
@@ -467,36 +434,10 @@
                 </td>
                 <td width="20%"></td>
             </tr>
-<<<<<<< ahmed5
-        </thead>
-        <tbody>
-            @forelse($slaRowsForPdf as $row)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $row->sla_type_key === 'response' ? translate('first_response_sla') : translate('resolution_sla') }}</td>
-                    <td>{{ $row->claim_number }}</td>
-                    <td>{{ $row->serial_number }}</td>
-                    <td>{{ $row->product_name }}</td>
-                    <td>{{ \Carbon\Carbon::parse($row->due_date)->format('Y-m-d H:i') }}</td>
-                    <td>
-                        {{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->format('Y-m-d H:i') : '-' }}
-                    </td>
-                    <td>{{ (int)$row->is_within_sla === 1 ? translate('on_time') : translate('breached') }}</td>
-                    <td>{{ translate($row->status) }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="9">{{ translate('no_data_found') }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</body>
-=======
+
         </table>
     </div>
 
 </body>
 
->>>>>>> local
 </html>
