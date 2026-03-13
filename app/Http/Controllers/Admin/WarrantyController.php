@@ -634,9 +634,6 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-claims-pdf',
-<<<<<<< ahmed5
-                data: compact('kpi', 'claimsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
-=======
                 data: compact(
                     'kpi',
                     'claimsForPdf',
@@ -647,7 +644,7 @@ class WarrantyController extends Controller
                     'statusChartImage',
                     'trendChartImage'
                 ),
->>>>>>> local
+
                 fileName: 'warranty-claims-report.pdf',
                 orientation: 'landscape'
             );
@@ -821,9 +818,6 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-sla-pdf',
-<<<<<<< ahmed5
-                data: compact('kpi', 'slaRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
-=======
                 data: compact(
                     'kpi',
                     'slaRowsForPdf',
@@ -835,7 +829,7 @@ class WarrantyController extends Controller
                     'typeChartImage',
                     'trendChartImage'
                 ),
->>>>>>> local
+
                 fileName: 'warranty-sla-report.pdf',
                 orientation: 'landscape'
             );
@@ -1004,9 +998,6 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-activations-pdf',
-<<<<<<< ahmed5
-                data: compact('kpi', 'methodBreakdown', 'topProducts', 'activationRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
-=======
                 data: compact(
                     'kpi',
                     'methodBreakdown',
@@ -1019,7 +1010,6 @@ class WarrantyController extends Controller
                     'trendChartImage',
                     'methodChartImage'
                 ),
->>>>>>> local
                 fileName: 'warranty-activations-report.pdf',
                 orientation: 'landscape'
             );
@@ -1362,10 +1352,6 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-analytics-pdf',
-<<<<<<< ahmed5
-                data: compact('kpi', 'topProducts', 'snapshotFrom', 'snapshotTo', 'isRtl'),
-                fileName: 'warranty-analytics-report.pdf'
-=======
                 data: compact(
                     'kpi',
                     'topProducts',
@@ -1379,7 +1365,6 @@ class WarrantyController extends Controller
                 ),
                 fileName: 'warranty-analytics-report.pdf',
                 orientation: 'landscape'
->>>>>>> local
             );
         }
 

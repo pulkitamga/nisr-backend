@@ -19,17 +19,7 @@
             padding: 15px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-<<<<<<< ahmed5
-            border-bottom: 2px solid #4a90e2;
-            padding-bottom: 10px;
-        }
-        .header h2 {
-            margin: 0;
-            color: #2c3e50;
-            font-size: 24px;
-=======
             overflow: hidden;
->>>>>>> local
         }
 
         .header-content {
@@ -108,8 +98,6 @@
             text-align: left;
         }
 
-<<<<<<< ahmed5
-=======
         /* KPI Card Colors */
         .td-total { border-left-color: #3498db !important; }
         .td-total .kpi-value { color: #3498db; }
@@ -198,7 +186,6 @@
             margin-left: 10px;
         }
 
->>>>>>> local
         table {
             width: 100%;
             border-collapse: collapse;
@@ -295,27 +282,6 @@
 </head>
 <body>
 
-<<<<<<< ahmed5
-    <!-- हेडर -->
-    <div class="header">
-        <h2>{{ translate('warranty_claims_report') }}</h2>
-        <p>
-            {{ translate('generated_on') }}: <span class="bidi-ltr">{{ now()->format('d M Y H:i A') }}</span> &nbsp; | &nbsp;
-            {{ translate('By') }}: System
-        </p>
-    </div>
-
-    <!-- फिल्टर अप्लाइड सेक्शन -->
-    <div class="filters-section">
-        <h4>🔍 {{ translate('filters_applied') }}</h4>
-        <div class="filters-grid">
-            <div class="filter-item"><strong>{{ translate('date_range') }}:</strong> <span class="bidi-ltr">{{ $filters['date_range'] }}</span></div>
-            <div class="filter-item"><strong>{{ translate('branch') }}:</strong> {{ $filters['branch'] }}</div>
-                        <div class="filter-item"><strong>{{ translate('product') }}:</strong> {{ $filters['product'] }}</div>
-            <div class="filter-item"><strong>{{ translate('status') }}:</strong> {{ $filters['status'] }}</div>
-            @if($filters['search'])
-            <div class="filter-item"><strong>{{ translate('search') }}:</strong> {{ $filters['search'] }}</div>
-=======
     <!-- Modern Header with Logo -->
     <div class="report-header clearfix">
         <div class="header-content">
@@ -331,9 +297,20 @@
             @elseif(file_exists($defaultLogoPath))
                 <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
                     alt="Logo" style="max-width:100px; max-height:50px;">
->>>>>>> local
             @endif
         </div>
+    </div>
+
+    <!-- Filter Summary -->
+    <div class="filter-summary">
+        <strong>{{ translate('filters_applied') }}:</strong> 
+        {{ translate('date_range') }}: {{ $filters['date_range'] }} | 
+        {{ translate('branch') }}: {{ $filters['branch'] }} | 
+        {{ translate('status') }}: {{ $filters['status'] }} | 
+        {{ translate('product') }}: {{ $filters['product'] }}
+        @if($filters['search'])
+            | {{ translate('search') }}: {{ $filters['search'] }}
+        @endif
     </div>
 
     <!-- KPI Cards - 6 in a single row using table layout -->
@@ -368,88 +345,12 @@
         </table>
     </div>
 
-<<<<<<< ahmed5
-    <!-- डेली ब्रेकडाउन रिपोर्ट -->
-    <h3 style="margin:20px 0 10px;">📅 {{ translate('daily_breakdown_report') }}</h3>
-    <table class="daily-table">
-        <thead>
-            <tr>
-                <th>{{ translate('date') }}</th>
-                <th>{{ translate('total') }}</th>
-                <th>{{ translate('new') }}</th>
-                <th>{{ translate('approved') }}</th>
-                <th>{{ translate('rma_issued') }}</th>
-                <th>{{ translate('received') }}</th>
-                <th>{{ translate('repair_pending') }}</th>
-                <th>{{ translate('replacement_pending') }}</th>
-                <th>{{ translate('qc_pending') }}</th>
-                <th>{{ translate('dispatched') }}</th>
-                <th>{{ translate('resolved') }}</th>
-                <th>{{ translate('rejected') }}</th>
-                <th>{{ translate('closed') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($dailyBreakdown as $day)
-            <tr>
-                <td>{{ $day['date'] }}</td>
-                <td><strong>{{ $day['total'] }}</strong></td>
-                <td>{{ $day['new'] }}</td>
-                <td>{{ $day['approved'] }}</td>
-                <td>{{ $day['rma_issued'] }}</td>
-                <td>{{ $day['received'] }}</td>
-                <td>{{ $day['repair_pending'] }}</td>
-                <td>{{ $day['replacement_pending'] }}</td>
-                <td>{{ $day['qc_pending'] }}</td>
-                <td>{{ $day['dispatched'] }}</td>
-                <td>{{ $day['resolved'] }}</td>
-                <td>{{ $day['rejected'] }}</td>
-                <td>{{ $day['closed'] }}</td>
-            </tr>
-            @empty
-            <tr><td colspan="13" style="text-align:center;">{{ translate('no_data_found') }}</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    @if(count($claims) > 0)
-    <h3 style="margin:20px 0 10px;">📋 {{ translate('claims_list') }}</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>{{ translate('SL') }}</th>
-                <th>{{ translate('claim_number') }}</th>
-                <th>{{ translate('serial') }}</th>
-                <th>{{ translate('product') }}</th>
-                <th>{{ translate('status') }}</th>
-                <th>{{ translate('customer') }}</th>
-                <th>{{ translate('submitted_at') }}</th>
-                <th>{{ translate('sla_due') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($claims as $index => $claim)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $claim->claim_number }}</td>
-                <td>{{ $claim->serial_number }}</td>
-                <td>{{ $claim->warranty?->product?->name ?? '-' }}</td>
-                <td>{{ translate($claim->status) }}</td>
-                <td>{{ $claim->warranty?->user?->name ?? $claim->warranty?->activated_by_name ?? '' }}</td>
-                <td>{{ $claim->submitted_at ? $claim->submitted_at->format('Y-m-d H:i') : '' }}</td>
-                <td>{{ $claim->resolution_due ? $claim->resolution_due->format('Y-m-d H:i') : '-' }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    @endif
-=======
     <!-- Chart - Using actual chart image from controller -->
     @if(!empty($chartImage))
     <div class="chart-container">
         <div class="chart-header">
             <h4>{{ translate('claims_by_day') }} ({{ translate('stacked') }})</h4>
-            <span class="">{{ $start->format('M d, Y') }} - {{ $end->format('M d, Y') }}</span>
+            <span class="badge-soft-primary">{{ $start->format('d M Y') }} - {{ $end->format('d M Y') }}</span>
         </div>
         <img src="{{ $chartImage }}" class="chart-image" alt="Claims Chart" />
     </div>
@@ -505,7 +406,6 @@
                         } else {
                             $remaining = '-';
                         }
->>>>>>> local
 
                         $badgeClass = match ($claim->status) {
                             'new', 'waiting_customer', 'waiting_parts', 'waiting_payment' => 'badge-warning',
@@ -541,34 +441,20 @@
     </div>
 
     <!-- Footer -->
-     <!-- FOOTER -->
- 
-    <div style="
-border-top:1px dashed #d1d5db;
-margin-top:20px;
-padding-top:8px;
-font-size:9px;
-color:#6b7280;
-">
- 
+    <div style="border-top:1px dashed #d1d5db; margin-top:20px; padding-top:8px; font-size:9px; color:#6b7280;">
         <table width="100%">
             <tr>
- 
-                <td width="20%" style="text-align:left; color:red;">
+                <td width="20%" style="text-align:left; color:#0f766e;">
                     Page {PAGENO}
                 </td>
- 
                 <td width="60%" style="text-align:center;">
-                    Generated on: {{ now()->translatedFormat('j F Y, h:i A') }} | CRM insights report<br>
-                    Generated by: <span style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
-                    <span style="color:red;">{{ config('app.name') }}</span>
+                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} | {{ translate('warranty_claims_report') }}<br>
+                    {{ translate('generated_by') }}: <span style="color:#0f766e;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
+                    <span style="color:#0f766e;">{{ config('app.name') }}</span>
                 </td>
- 
                 <td width="20%"></td>
- 
             </tr>
         </table>
- 
     </div>
 
 </body>
