@@ -27,6 +27,10 @@ class Departments extends Model
 
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Admin::class,'head_id');
+        return $this->belongsTo(Admin::class, 'head_id');
+    }
+    public function inboxMessages()
+    {
+        return $this->hasMany(InboxMessage::class, 'department_id');
     }
 }

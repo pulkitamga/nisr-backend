@@ -375,6 +375,7 @@
     @endif
 
     <!-- Top Products Table -->
+
     <div class="table-container">
         <div class="table-header">
             <h3>{{ translate('top_products_by_claim_volume') }} ({{ $dateRange }})</h3>
@@ -423,6 +424,6 @@
         </table>
     </div>
 
->>>>>>> local
+
 </body>
 </html>

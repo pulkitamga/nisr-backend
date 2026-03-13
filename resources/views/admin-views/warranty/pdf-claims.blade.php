@@ -186,6 +186,53 @@
             margin-left: 10px;
         }
 
+        /* चार्ट स्टाइल */
+        .chart-container {
+            margin: 30px 0;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 180px;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .bar-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+        .bar {
+            background-color: #4a90e2;
+            border-radius: 4px 4px 0 0;
+            width: 100%;
+            min-height: 2px;
+        }
+        .bar-label {
+            margin-top: 5px;
+            font-size: 8px;
+            font-weight: 500;
+            transform: rotate(-45deg);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60px;
+        }
+        .bar-value {
+            font-size: 8px;
+            font-weight: bold;
+        }
+        .chart-note {
+            font-size: 9px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;

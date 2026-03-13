@@ -10,7 +10,7 @@
                 {{translate('transaction_report')}}
             </h2>
         </div>
-        @include('admin-views.report.transaction-report-inline-menu')
+        @include('admin-views.report.transaction-report-inline-menu') 
         <div class="card mb-2">
             <div class="card-body">
                 <h4 class="mb-3">{{translate('filter_Data')}}</h4>
@@ -209,7 +209,7 @@
                             <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                         </div>
                     </form>
-                    <div>
+                    <div> 
                         <a href="{{ route('admin.transaction.order-transaction-summary-pdf', ['date_type'=>request('date_type'), 'seller_id'=>request('seller_id'), 'customer_id'=>request('customer_id'), 'status'=>request('status'), 'from'=>request('from'), 'to'=>request('to')]) }}"
                            class="btn btn-outline--primary text-nowrap btn-block">
                             <i class="tio-file-text"></i>
@@ -390,6 +390,13 @@
 @endsection
 
 @push('script')
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
+
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/apexcharts.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/apexcharts-data-show.js')}}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/transaction-report.js') }}"></script>

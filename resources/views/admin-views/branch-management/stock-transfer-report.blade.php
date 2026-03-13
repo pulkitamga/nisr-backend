@@ -15,7 +15,7 @@
         <div class="card mb-3">
             <div class="card-body">
                 <form id="transfer-report-filter-form" class="row g-2 align-items-end">
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('date_range') }}</label>
                         <select class="form-control" id="transfer-date-type" name="date_type">
                             <option value="this_year">{{ translate('this_year') }}</option>
@@ -26,17 +26,17 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2 custom-date-range" id="transfer-from-wrapper" style="display:none;">
+                    <div class="col-md-3 custom-date-range" id="transfer-from-wrapper" style="display:none;">
                         <label class="form-label mb-1">{{ translate('from') }}</label>
                         <input type="date" class="form-control" id="transfer-from" name="from">
                     </div>
 
-                    <div class="col-md-2 custom-date-range" id="transfer-to-wrapper" style="display:none;">
+                    <div class="col-md-3 custom-date-range" id="transfer-to-wrapper" style="display:none;">
                         <label class="form-label mb-1">{{ translate('to') }}</label>
                         <input type="date" class="form-control" id="transfer-to" name="to">
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('from_branch') }}</label>
                         <select class="form-control" id="from-branch-id" name="from_branch_id">
                             <option value="">{{ translate('all') }}</option>
@@ -46,7 +46,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('to_branch') }}</label>
                         <select class="form-control" id="to-branch-id" name="to_branch_id">
                             <option value="">{{ translate('all') }}</option>
@@ -56,7 +56,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('status') }}</label>
                         <select class="form-control" id="transfer-status" name="status">
                             <option value="">{{ translate('all') }}</option>
@@ -66,7 +66,7 @@
                         </select>
                     </div>
 
-                    <div class="col-12 d-flex flex-wrap gap-2 mt-2">
+                    <div class="col-md-12 d-flex justify-content-center gap-2 mt-3">
                         <button type="submit" id="transfer-load-btn" class="btn btn--primary">{{ translate('filter') }}</button>
                         <button type="button" id="transfer-reset-btn" class="btn btn-outline-secondary">{{ translate('reset') }}</button>
                         <button type="button" id="transfer-export-excel" class="btn btn-outline-success">
@@ -133,7 +133,7 @@
 
         <div class="card mb-3">
             <div class="card-body">
-                <canvas id="transfer-report-chart" height="110"></canvas>
+                <canvas id="transfer-report-chart" height="400"></canvas>
             </div>
         </div>
 

@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class BranchStockHistoryExport implements FromView, ShouldAutoSize
+class BranchStockHistoryExport implements FromView, ShouldAutoSize, WithStyles
 {
     protected $data;
 
@@ -19,9 +19,15 @@ class BranchStockHistoryExport implements FromView, ShouldAutoSize
 
     public function view(): View
     {
-        // This points to a small blade file we will create in the next step
         return view('admin-views.branch.history-export', [
             'history' => $this->data['history']
         ]);
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => ['font' => ['bold' => true]], // Make headers bold
+        ];
     }
 }

@@ -169,7 +169,39 @@
             font-size: 14px;
         }
 
->>>>>>> local
+        .chart-container {
+            margin: 20px 0;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .bar-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+        .bar {
+            background-color: #0177CD;
+            border-radius: 4px 4px 0 0;
+            width: 100%;
+            min-height: 2px;
+        }
+        .bar-label {
+            margin-top: 5px;
+            font-size: 9px;
+        }
+        .bar-value {
+            font-size: 8px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -293,6 +325,7 @@
                     </strong></div>
                 </td>
             </tr>
+
         </table>
     </div>
 
@@ -442,7 +475,27 @@ color:#6b7280;
 ">
  
         <table width="100%">
->>>>>>> local
+
+        </thead>
+        <tbody>
+            @forelse($methodBreakdown as $row)
+                <tr>
+                    <td>{{ $row['label'] }}</td>
+                    <td>{{ number_format((int)$row['count']) }}</td>
+                    <td>{{ number_format((float)$row['percentage'], 1) }}%</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="3">{{ translate('no_data_found') }}</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <!-- Activations Table -->
+    <table>
+        <thead>
+
             <tr>
  
                 <td width="20%" style="text-align:left; color:red;">

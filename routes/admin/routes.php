@@ -291,10 +291,10 @@ Route::post('/admin/crm/sales-report-data', [CrmSalesReportController::class, 'g
 Route::get('/admin/crm/sales-report-export-excel', [CrmSalesReportController::class, 'exportExcel'])
     ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
     ->name('admin.crm.sales-report-export-excel');
-Route::get('/admin/crm/sales-report-export-pdf', [CrmSalesReportController::class, 'exportPdf'])
+Route::post('/admin/crm/sales-report-export-pdf', [CrmSalesReportController::class, 'exportPdf'])
     ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
     ->name('admin.crm.sales-report-export-pdf');
-Route::get('/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
+Route::match(['GET', 'POST'], '/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
     ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.insights-report');
 
@@ -343,7 +343,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     Route::controller(UcmController::class)->group(function () {
         Route::group(['prefix' => 'ucm', 'as' => 'ucm.'], function () {
             Route::get('calls',  'calls')->middleware('permission:crm_section.read,admin')->name('calls');
-            Route::get('insights-report',  'insightsReport')->middleware('permission:crm_section.read,admin')->name('insights-report');
+            Route::match(['GET', 'POST'], 'insights-report', 'insightsReport')
+                ->middleware('permission:crm_section.read,admin')
+                ->name('insights-report');
             Route::post('accept',  'accept')->middleware('permission:crm_section.update,admin')->name('accept');
             Route::post('reject',  'reject')->middleware('permission:crm_section.update,admin')->name('reject');
             Route::post('end',  'end')->middleware('permission:crm_section.update,admin')->name('end');
@@ -1062,7 +1064,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(CrmDealSalesReport::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_crm_deal_sales_performance|report.export,admin')
                 ->name('crm-sales-performance-export-excel');
-            Route::get(CrmDealSalesReport::EXPORT_PDF[URI], 'exportPdf')
+            Route::match(['GET', 'POST'], CrmDealSalesReport::EXPORT_PDF[URI], 'exportPdf')
                 ->middleware('permission:report.export_crm_deal_sales_performance|report.export,admin')
                 ->name('crm-sales-performance-export-pdf');
         });
@@ -1086,7 +1088,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(CrmEmployeeChannelAssignmentReport::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_crm_employee_channel_assignment|report.export,admin')
                 ->name('crm-employee-channel-assignment-export-excel');
-            Route::get(CrmEmployeeChannelAssignmentReport::EXPORT_PDF[URI], 'exportPdf')
+            Route::match(['GET', 'POST'], CrmEmployeeChannelAssignmentReport::EXPORT_PDF[URI], 'exportPdf')
                 ->middleware('permission:report.export_crm_employee_channel_assignment|report.export,admin')
                 ->name('crm-employee-channel-assignment-export-pdf');
         });
@@ -1126,6 +1128,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::post(Branch::UPDATE_SETTING[URI] . '/{id}', [BranchController::class, 'updateSetting'])->middleware('permission:branch_management.branch_edit,admin')->name('update-setting');
         // DELETE permission routes
         Route::delete(Branch::DELETE['URI'] . '/{id}', [BranchController::class, 'deleteBranch'])->middleware('permission:branch_management.branch_delete,admin')->name('chose.delete');
+        Route::get('/stock-history/{branch_id}/{product_id}', [BranchController::class, 'fGetBranchesStockHistory'])
+            ->name('stock-history');
     });
 
     /*BRANCH*/
@@ -1353,6 +1357,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::get('earning', 'earning_index')->name('earning');
                 Route::get('admin-earning', 'admin_earning')->name('admin-earning');
                 Route::post('admin-earning-duration-download-pdf', 'admin_earning_duration_download_pdf')->name('admin-earning-duration-download-pdf');
+                Route::get('admin-earning-pdf', 'adminEarningPdf')->name('admin-earning-pdf');
                 Route::get('vendor-earning', 'vendorEarning')->name('vendor-earning');
                 Route::any('set-date', 'set_date')->name('set-date');
             });
@@ -1388,6 +1393,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:report.export_product_catalog|report.export,admin')->group(function () {
             Route::controller(ProductReportController::class)->group(function () {
                 Route::get('all-product-excel', 'allProductExportExcel')->name('all-product-excel');
+                Route::get('all-product-pdf', 'allProductExportPDF')->name('all-product-pdf');
             });
         });
 
@@ -2023,10 +2029,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::group(['prefix' => 'deals', 'as' => 'deals.'], function () {
 
             /*
-    |--------------------------------------------------------------------------
-    | 🟦 WHOLESALE DEALS ROUTES
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 🟦 WHOLESALE DEALS ROUTES
+        |--------------------------------------------------------------------------
+        */
             Route::group(['prefix' => 'wholesale', 'as' => 'wholesale.'], function () {
                 Route::middleware('permission:crm_section.access,admin')->group(function () {
                     Route::controller(DealController::class)->group(function () {
@@ -2252,8 +2258,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->group(function () {
                 Route::controller(WholesaleDashboardController::class)->group(function () {
                     Route::get(WholeSaler::DASHBOARD[URI], 'index')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('index');
-                    Route::get('reports/revenue', 'revenueReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.revenue');
+                    Route::match(['GET', 'POST'], 'reports/revenue', 'revenueReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.revenue');
                     Route::get('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline');
+                    Route::post('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline.post');
                     Route::post(WholeSaler::ORDER_STATUS[URI], 'getOrderStatus')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-status');
                     Route::get(WholeSaler::EARNING_STATISTICS[URI], 'getEarningStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('earning-statistics');
                     Route::get(WholeSaler::ORDER_STATISTICS[URI], 'getOrderStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-statistics');
@@ -3439,6 +3446,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:branch_management.create,admin')->group(function () {
             Route::post('/stock/store', [StockMovementController::class, 'saveStockRequest'])->name('stock.request.store');
         });
+
+
+        Route::get('/stock-history/{branch_id}/{product_id}', [BranchController::class, 'fGetBranchesStockHistory'])
+            ->name('stock-history');
 
         // Update routes
         Route::middleware('permission:branch_management.update,admin')->group(function () {

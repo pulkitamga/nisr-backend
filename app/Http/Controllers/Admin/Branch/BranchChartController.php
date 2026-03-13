@@ -52,7 +52,7 @@ class BranchChartController extends BaseAdminController
         );
     }
 
-    public function getChartData(Request $request): JsonResponse
+    public function getChartData(Request $request): JsonResponse 
     {
         $branchId      = $request->branch_id;
         $productId     = $request->product_id;

@@ -12612,8 +12612,6 @@ return [
 	"payment_handled" => "Payment handled",
 	"vehicle_filter_options" => "Vehicle filter options",
 	"Go to product page" => "Go to product page",
-<<<<<<< ahmed5
-=======
 	"Stock_Transfer_History" => "Stock Transfer History",
 	"Stock History" => "Stock History",
 	"weekly_breakdown" => "Weekly breakdown",
@@ -12659,5 +12657,5 @@ return [
 	"top_products_by_claim_volume" => "Top products by claim volume",
 	"warranty_trend" => "Warranty trend",
 	"stacked_bar_chart_showing_daily_claims_by_status" => "Stacked bar chart showing daily claims by status",
->>>>>>> local
+
 ];

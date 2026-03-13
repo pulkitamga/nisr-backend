@@ -122,6 +122,7 @@
             page-break-inside: avoid;
         }
 
+
         .chart-trend {
             width: 68%;
             float: left;
@@ -174,7 +175,40 @@
             font-size: 14px;
         }
 
->>>>>>> local
+        .chart-container {
+            margin: 20px 0;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .bar-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+        .bar {
+            background-color: #0177CD;
+            border-radius: 4px 4px 0 0;
+            width: 100%;
+            min-height: 2px;
+        }
+        .bar-label {
+            margin-top: 5px;
+            font-size: 9px;
+        }
+        .bar-value {
+            font-size: 8px;
+        }
+
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -371,7 +405,6 @@
         <div class="table-header">
             <h3>{{ translate('sla_details') }} ({{ $dateRange }})</h3>
         </div>
-
         @if ($hasData)
             <table>
                 <thead>
@@ -420,7 +453,95 @@
     <!-- FOOTER -->
     <div class="footer">
         <table class="footer-table">
->>>>>>> local
+
+    <!-- SLA Compliance Pie/Bar Chart -->
+    @if(!empty($slaComplianceChartData['labels']) && count($slaComplianceChartData['labels']) > 0)
+        <div class="chart-container">
+            <div class="chart-title">{{ translate('sla_compliance_breakdown') }}</div>
+            <div class="bar-chart">
+                @php $maxCount = max($slaComplianceChartData['counts']); @endphp
+                @foreach($slaComplianceChartData['labels'] as $index => $label)
+                    @php
+                        $count = $slaComplianceChartData['counts'][$index] ?? 0;
+                        $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 2;
+                    @endphp
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ $height }}px;"></div>
+                        <div class="bar-label">{{ $label }}</div>
+                        <div class="bar-value">{{ $count }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- SLA Type Distribution -->
+    @if(!empty($slaTypeChartData['labels']) && count($slaTypeChartData['labels']) > 0)
+        <div class="chart-container">
+            <div class="chart-title">{{ translate('sla_by_type') }}</div>
+            <div class="bar-chart">
+                @php $maxCount = max($slaTypeChartData['counts']); @endphp
+                @foreach($slaTypeChartData['labels'] as $index => $label)
+                    @php
+                        $count = $slaTypeChartData['counts'][$index] ?? 0;
+                        $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 2;
+                    @endphp
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ $height }}px;"></div>
+                        <div class="bar-label">{{ $label }}</div>
+                        <div class="bar-value">{{ $count }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- SLA Trend Chart (Total vs Breached) -->
+    @if(!empty($slaTrendChartData['labels']) && count($slaTrendChartData['labels']) > 0)
+        <div class="chart-container">
+            <div class="chart-title">{{ translate('sla_trend') }}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                @php $maxTotal = max($slaTrendChartData['total']); @endphp
+                <div style="flex:1; min-width:200px;">
+                    <div style="font-size:10px; text-align:center;">{{ translate('total_deadlines') }}</div>
+                    <div class="bar-chart">
+                        @foreach($slaTrendChartData['labels'] as $index => $label)
+                            @php
+                                $count = $slaTrendChartData['total'][$index] ?? 0;
+                                $height = $maxTotal > 0 ? ($count / $maxTotal) * 100 : 2;
+                            @endphp
+                            <div class="bar-wrapper">
+                                <div class="bar" style="height: {{ $height }}px; background-color: #0177CD;"></div>
+                                <div class="bar-label">{{ $label }}</div>
+                                <div class="bar-value">{{ $count }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div style="flex:1; min-width:200px;">
+                    <div style="font-size:10px; text-align:center;">{{ translate('breached') }}</div>
+                    <div class="bar-chart">
+                        @foreach($slaTrendChartData['labels'] as $index => $label)
+                            @php
+                                $count = $slaTrendChartData['breached'][$index] ?? 0;
+                                $height = $maxTotal > 0 ? ($count / $maxTotal) * 100 : 2;
+                            @endphp
+                            <div class="bar-wrapper">
+                                <div class="bar" style="height: {{ $height }}px; background-color: #dc2626;"></div>
+                                <div class="bar-label">{{ $label }}</div>
+                                <div class="bar-value">{{ $count }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- SLA Details Table -->
+    <table>
+        <thead>
+
             <tr>
                 <td width="20%" style="text-align:{{ $isRtl ? 'right' : 'left' }};">
                     Page {PAGENO}
