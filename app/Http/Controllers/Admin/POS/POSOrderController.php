@@ -1,0 +1,714 @@
+<?php
+
+namespace App\Http\Controllers\Admin\POS;
+
+use App\Contracts\Repositories\CustomerRepositoryInterface;
+use App\Contracts\Repositories\DigitalProductVariationRepositoryInterface;
+use App\Contracts\Repositories\OrderDetailRepositoryInterface;
+use App\Contracts\Repositories\OrderRepositoryInterface;
+use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Contracts\Repositories\StorageRepositoryInterface;
+use App\Contracts\Repositories\VendorRepositoryInterface;
+use App\Enums\ViewPaths\Admin\POSOrder;
+use App\Events\DigitalProductDownloadEvent;
+use App\Http\Controllers\BaseController;
+use App\Services\CartService;
+use App\Services\InventoryMutationService;
+use App\Services\OrderDetailsService;
+use App\Services\OrderService;
+use App\Services\POSService;
+use App\Services\PosCartStateService;
+use App\Services\PosIdempotencyService;
+use App\Traits\CalculatorTrait;
+use App\Traits\CustomerTrait;
+use App\Utils\OrderManager;
+use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+
+class POSOrderController extends BaseController
+{
+    use CustomerTrait;
+    use CalculatorTrait;
+
+    /**
+     * @param ProductRepositoryInterface $productRepo
+     * @param CustomerRepositoryInterface $customerRepo
+     * @param OrderRepositoryInterface $orderRepo
+     * @param OrderDetailRepositoryInterface $orderDetailRepo
+     * @param VendorRepositoryInterface $vendorRepo
+     * @param DigitalProductVariationRepositoryInterface $digitalProductVariationRepo
+     * @param StorageRepositoryInterface $storageRepo
+     * @param POSService $POSService
+     * @param CartService $cartService
+     * @param OrderDetailsService $orderDetailsService
+     * @param OrderService $orderService
+     */
+    public function __construct(
+        private readonly ProductRepositoryInterface                 $productRepo,
+        private readonly CustomerRepositoryInterface                $customerRepo,
+        private readonly OrderRepositoryInterface                   $orderRepo,
+        private readonly OrderDetailRepositoryInterface             $orderDetailRepo,
+        private readonly VendorRepositoryInterface                  $vendorRepo,
+        private readonly DigitalProductVariationRepositoryInterface $digitalProductVariationRepo,
+        private readonly StorageRepositoryInterface                 $storageRepo,
+        private readonly POSService                                 $POSService,
+        private readonly CartService                                $cartService,
+        private readonly PosCartStateService                        $posCartStateService,
+        private readonly PosIdempotencyService                      $posIdempotencyService,
+        private readonly InventoryMutationService                   $inventoryMutationService,
+        private readonly OrderDetailsService                        $orderDetailsService,
+        private readonly OrderService                               $orderService,
+    ) {}
+
+    /**
+     * @param Request|null $request
+     * @param string|null $type
+     * @return View|Collection|LengthAwarePaginator|callable|RedirectResponse|null
+     */
+    public function index(?Request $request, string $type = null): View|Collection|LengthAwarePaginator|null|callable|RedirectResponse
+    {
+        return $this->getOrderDetailsView(id: $type);
+    }
+
+    /**
+     * @param string $id
+     * @return View|RedirectResponse
+     */
+    public function getOrderDetailsView(string $id): View|RedirectResponse
+    {
+        $vendorId = auth('seller')->id();
+        $vendor = $this->vendorRepo->getFirstWhere(params: ['id' => $vendorId]);
+        $getPOSStatus = getWebConfig('seller_pos');
+        if ($vendor['pos_status'] == 0 || $getPOSStatus == 0) {
+            Toastr::warning(translate('access_denied!!'));
+            return redirect()->back();
+        }
+        $order = $this->orderRepo->getFirstWhere(params: ['id' => $id], relations: ['details', 'shipping', 'seller']);
+        return view(POSOrder::ORDER_DETAILS[VIEW], compact('order'));
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function placeOrder(Request $request): JsonResponse
+    {
+        $context = $this->validateWriteContext($request, true);
+        $branchId = $context['branch_id'];
+        $cartId = $context['cart_id'];
+        $idempotencyKey = trim((string)$request->input('idempotency_key', ''));
+        if ($idempotencyKey === '') {
+            throw ValidationException::withMessages([
+                'idempotency_key' => [translate('invalid_request')],
+            ]);
+        }
+
+        $result = $this->posIdempotencyService->execute(
+            action: 'admin_place_order',
+            idempotencyKey: $idempotencyKey,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id(),
+            ttlSeconds: 300,
+            callback: function () use ($request, $branchId, $cartId) {
+                $cart = $this->posCartStateService->getPayload(
+                    cartId: $cartId,
+                    branchId: $branchId,
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
+                );
+                $cartLineItems = $this->getSessionCartLineItems(cart: $cart);
+                $orderAmountData = $this->getOrderAmountData(
+                    cartId: $cartId,
+                    cartLineItems: $cartLineItems,
+                    branchId: $branchId
+                );
+                $amount = $orderAmountData['amount'];
+                $installationCharge = $orderAmountData['installationCharge'];
+                $exchangeCharge = $orderAmountData['exchangeCharge'];
+
+                $lineBranchIds = collect($cartLineItems)
+                    ->map(fn($item) => (int)($item['branch_id'] ?? 0))
+                    ->filter(fn($id) => $id > 0)
+                    ->unique()
+                    ->values();
+                if ($lineBranchIds->count() > 1) {
+                    return [
+                        'status' => 'error',
+                        'message' => translate('please_place_separate_pos_orders_per_branch'),
+                    ];
+                }
+
+                $resolvedBranchId = $lineBranchIds->count() === 1
+                    ? (int)$lineBranchIds->first()
+                    : $branchId;
+                $paymentType = (string)($request['type'] ?? 'cash');
+                $paidAmount = $paymentType === 'cash' ? (float)($request['paid_amount'] ?? 0) : null;
+                $condition = $this->POSService->checkConditions(
+                    amount: $amount,
+                    paidAmount: $paidAmount,
+                    cartId: $cartId,
+                    branchId: $branchId,
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
+                );
+                if ($condition) {
+                    return ['status' => 'validation_error'];
+                }
+
+                $userId = $this->cartService->getUserId($cartId);
+                $checkProductTypeDigital = $this->cartService->checkProductTypeDigital(cartId: $cartId);
+                if ($userId == 0 && $checkProductTypeDigital) {
+                    return [
+                        'checkProductTypeForWalkingCustomer' => true,
+                        'message' => translate('To_order_digital_product') . ',' . translate('_kindly_fill_up_the_“Add_New_Customer”_form') . '.',
+                    ];
+                }
+
+                try {
+                    DB::beginTransaction();
+
+                    if ($paymentType == 'wallet' && $userId != 0) {
+                        $customerBalance = $this->customerRepo->getFirstWhere(params: ['id' => $userId]) ?? 0;
+                        if ($customerBalance['wallet_balance'] >= $amount) {
+                            $this->createWalletTransaction(user_id: $userId, amount: $amount, transaction_type: 'order_place', reference: 'order_place_in_pos');
+                        } else {
+                            DB::rollBack();
+                            return [
+                                'status' => 'error',
+                                'message' => translate('need_Sufficient_Amount_Balance'),
+                            ];
+                        }
+                    }
+
+                    $orderId = OrderManager::getNextOrderId();
+                    $createdOrderDetails = 0;
+                    foreach ($cartLineItems as $item) {
+                        $product = $this->productRepo->getFirstWhere(params: ['id' => $item['id']], relations: ['clearanceSale' => function ($query) {
+                            return $query->active();
+                        }]);
+
+                        if (!$product) {
+                            throw new \RuntimeException(translate('Product_not_found_in_cart'));
+                        }
+
+                        $lineUnitPrice = (float)($item['price'] ?? 0);
+                        $installationChargeProduct = (float)($item['installation_charge'] ?? 0);
+                        $exchangeChargeProduct = (float)($item['exchange_charge'] ?? 0);
+
+                        $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(params: ['product_id' => $item['id'], 'variant_key' => $item['variant']], relations: ['storage']);
+                        if ($product['product_type'] == 'digital' && $digitalProductVariation) {
+                            $lineUnitPrice = (float)$digitalProductVariation['price'];
+
+                            if ($product['digital_product_type'] == 'ready_product') {
+                                $getStoragePath = $this->storageRepo->getFirstWhere(params: [
+                                    'data_id' => $digitalProductVariation['id'],
+                                    "data_type" => "App\Models\DigitalProductVariation",
+                                ]);
+                                $product['digital_file_ready'] = $digitalProductVariation['file'];
+                                $product['storage_path'] = $getStoragePath ? $getStoragePath['value'] : 'public';
+                            }
+                        } elseif ($product['digital_product_type'] == 'ready_product' && !empty($product['digital_file_ready'])) {
+                            $product['storage_path'] = $product['digital_file_ready_storage_type'] ?? 'public';
+                        }
+
+                        $lineDiscount = max(0, (float)($item['discount'] ?? 0));
+                        $lineTaxRate = max(0, (float)($product['tax'] ?? 0));
+                        $taxableUnitAmount = max(0, $lineUnitPrice - $lineDiscount);
+                        if ((string)($product['tax_model'] ?? 'exclude') === 'include') {
+                            $tax = $lineTaxRate > 0
+                                ? ($taxableUnitAmount * $lineTaxRate) / (100 + $lineTaxRate)
+                                : 0.0;
+                        } else {
+                            $tax = $this->getTaxAmount($taxableUnitAmount, $lineTaxRate);
+                        }
+                        $price = $lineUnitPrice;
+
+                        $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
+                            orderId: $orderId,
+                            item: $item,
+                            product: $product,
+                            price: $price,
+                            tax: $tax,
+                            installationCharge: $installationChargeProduct,
+                            exchangeCharge: $exchangeChargeProduct,
+                        );
+
+                        if ($product['product_type'] == 'physical') {
+                            $lineBranchId = (int)($item['branch_id'] ?? 0);
+                            if ($lineBranchId <= 0) {
+                                $lineBranchId = $branchId;
+                            }
+
+                            $stockMutation = $this->inventoryMutationService->decreaseForPosLine(
+                                productId: (int)$item['id'],
+                                qty: (int)$item['quantity'],
+                                variant: $item['variant'] ?? null,
+                                branchId: $lineBranchId,
+                                sellerId: null,
+                                referenceId: (int)$orderId,
+                                context: 'Admin POS'
+                            );
+
+                            if (!($stockMutation['status'] ?? false)) {
+                                throw new \RuntimeException($stockMutation['message'] ?? translate('Stock_not_available_in_this_branch_for_product_and_variation'));
+                            }
+
+                            if (isset($stockMutation['branchId']) && (int)$stockMutation['branchId'] > 0) {
+                                $resolvedBranchId = (int)$stockMutation['branchId'];
+                            }
+                        }
+
+                        $this->orderDetailRepo->add(data: $orderDetail);
+                        $createdOrderDetails++;
+                    }
+
+                    if ($createdOrderDetails === 0) {
+                        throw new \RuntimeException(translate('cart_empty_warning'));
+                    }
+
+                    $order = $this->orderService->getPOSOrderData(
+                        orderId: $orderId,
+                        cart: $cart,
+                        amount: $amount,
+                        paidAmount: $paymentType == 'cash' ? $paidAmount : $amount,
+                        paymentType: $paymentType,
+                        addedBy: 'admin',
+                        userId: $userId,
+                        installationCharge: $installationCharge,
+                        exchangeCharge: $exchangeCharge,
+                        branchId: $resolvedBranchId,
+                    );
+
+                    $this->orderRepo->add(data: $order);
+                    DB::commit();
+                } catch (\Throwable $exception) {
+                    DB::rollBack();
+                    return [
+                        'status' => 'error',
+                        'message' => $exception->getMessage(),
+                    ];
+                }
+
+                if ($checkProductTypeDigital) {
+                    $order = $this->orderRepo->getFirstWhere(params: ['id' => $orderId], relations: ['details.productAllStatus']);
+                    $data = [
+                        'userName' => $order->customer->f_name,
+                        'userType' => 'customer',
+                        'templateName' => 'digital-product-download',
+                        'order' => $order,
+                        'subject' => translate('download_Digital_Product'),
+                        'title' => translate('Congratulations') . '!',
+                        'emailId' => $order->customer['email'],
+                    ];
+                    event(new DigitalProductDownloadEvent(email: $order->customer['email'], data: $data));
+                }
+
+                $this->posCartStateService->putPayload(
+                    cartId: $cartId,
+                    branchId: $branchId,
+                    payload: [],
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
+                );
+                $newCartId = $this->cartService->generateWalkingCustomerCartId($branchId);
+                $this->posCartStateService->ensureCart(
+                    cartId: $newCartId,
+                    branchId: $branchId,
+                    actorType: 'admin',
+                    actorId: (int)auth('admin')->id()
+                );
+
+                return [
+                    'status' => 'success',
+                    'orderId' => $orderId,
+                    'cartId' => $newCartId,
+                ];
+            }
+        );
+
+        if (($result['status'] ?? '') === 'error') {
+            Toastr::error((string)($result['message'] ?? translate('something_went_wrong')));
+            return response()->json();
+        }
+        if (($result['status'] ?? '') === 'validation_error') {
+            return response()->json();
+        }
+        if (boolval($result['checkProductTypeForWalkingCustomer'] ?? false) === true) {
+            return response()->json($result);
+        }
+
+        Toastr::success(translate('order_placed_successfully'));
+        return response()->json([
+            'orderId' => (int)($result['orderId'] ?? 0),
+            'cartId' => (string)($result['cartId'] ?? ''),
+        ]);
+    }
+
+    private function getSessionCartLineItems(array $cart): array
+    {
+        return collect($cart)
+            ->filter(fn($item) => is_array($item))
+            ->filter(function ($item) {
+                $productId = (int)($item['id'] ?? 0);
+                $quantity = (int)($item['quantity'] ?? 0);
+                return $productId > 0 && $quantity > 0;
+            })
+            ->values()
+            ->all();
+    }
+
+    private function getOrderAmountData(string $cartId, array $cartLineItems, int $branchId): array
+    {
+        $installationCharge = 0.0;
+        $exchangeCharge = 0.0;
+        $hasIncludeTaxModel = false;
+        $hasExcludeTaxModel = false;
+
+        $subTotalCalculation = [
+            'countItem' => 0,
+            'totalQuantity' => 0,
+            'taxCalculate' => 0,
+            'totalTaxShow' => 0,
+            'totalTax' => 0,
+            'totalIncludeTax' => 0,
+            'subtotal' => 0,
+            'discountOnProduct' => 0,
+            'productSubtotal' => 0,
+        ];
+
+        foreach ($cartLineItems as $lineItem) {
+            if (!is_array($lineItem)) {
+                continue;
+            }
+
+            $quantity = max(0, (int)($lineItem['quantity'] ?? 0));
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $installationCharge += (float)($lineItem['installation_charge'] ?? 0) * $quantity;
+            $exchangeCharge += (float)($lineItem['exchange_charge'] ?? 0);
+
+            $productId = (int)($lineItem['id'] ?? 0);
+            if ($productId <= 0) {
+                continue;
+            }
+
+            $product = $this->productRepo->getFirstWhere(params: ['id' => $productId], relations: ['clearanceSale' => function ($query) {
+                return $query->active();
+            }]);
+            if (!$product) {
+                continue;
+            }
+            $lineTaxModel = strtolower((string)($product['tax_model'] ?? ($lineItem['tax_model'] ?? 'exclude')));
+            if ($lineTaxModel === 'include') {
+                $hasIncludeTaxModel = true;
+            } else {
+                $hasExcludeTaxModel = true;
+            }
+
+            $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
+                product: $product,
+                cartItem: $lineItem,
+                calculation: $subTotalCalculation
+            );
+            $subTotalCalculation['countItem'] += $cartSubTotalCalculation['countItem'];
+            $subTotalCalculation['totalQuantity'] += $cartSubTotalCalculation['totalQuantity'];
+            $subTotalCalculation['taxCalculate'] += $cartSubTotalCalculation['taxCalculate'];
+            $subTotalCalculation['totalTaxShow'] += $cartSubTotalCalculation['totalTaxShow'];
+            $subTotalCalculation['totalTax'] += $cartSubTotalCalculation['totalTax'];
+            $subTotalCalculation['totalIncludeTax'] += $cartSubTotalCalculation['totalIncludeTax'];
+            $subTotalCalculation['productSubtotal'] += $cartSubTotalCalculation['productSubtotal'];
+            $subTotalCalculation['subtotal'] += $cartSubTotalCalculation['subtotal'];
+            $subTotalCalculation['discountOnProduct'] += $cartSubTotalCalculation['discountOnProduct'];
+        }
+        $cartPayload = $this->posCartStateService->getPayload(
+            cartId: $cartId,
+            branchId: $branchId,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id()
+        );
+        $itemPrice = (float)$subTotalCalculation['subtotal'] + (float)$subTotalCalculation['discountOnProduct'];
+        $taxModel = ($hasIncludeTaxModel && !$hasExcludeTaxModel) ? 'include' : 'exclude';
+        $summary = OrderManager::calculatePosRetailVatSummary(
+            itemPrice: $itemPrice,
+            itemDiscount: (float)$subTotalCalculation['discountOnProduct'],
+            extraDiscountInput: abs((float)($cartPayload['ext_discount'] ?? 0)),
+            extraDiscountType: (string)($cartPayload['ext_discount_type'] ?? 'amount'),
+            couponDiscount: abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            totalInstallationPrice: $installationCharge,
+            totalExchangePrice: $exchangeCharge,
+            taxModel: $taxModel
+        );
+        $total = (float)$summary['totalAmount'];
+
+        return [
+            'amount' => (float)usdToDefaultCurrency(amount: $total),
+            'installationCharge' => (float)usdToDefaultCurrency(amount: $installationCharge),
+            'exchangeCharge' => (float)usdToDefaultCurrency(amount: $exchangeCharge),
+        ];
+    }
+
+    public function cancelOrder(Request $request): JsonResponse
+    {
+        $context = $this->validateWriteContext($request, true);
+        $branchId = $context['branch_id'];
+        $cartId = $context['cart_id'];
+
+        $this->posCartStateService->deleteCart(
+            cartId: $cartId,
+            branchId: $branchId,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id()
+        );
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId, 'admin', (int)auth('admin')->id());
+        $cartNames = $this->POSService->getCartNames($branchId, 'admin', (int)auth('admin')->id());
+        $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames, branchId: $branchId);
+        return response()->json([
+            'message' => $cartId . ' ' . translate('order_is_cancel'),
+            'status' => 'success',
+            'view' => view(POSOrder::CANCEL_ORDER[VIEW], compact('totalHoldOrders', 'cartItems'))->render(),
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getAllHoldOrdersView(Request $request): JsonResponse
+    {
+        $branchId = (int)($request['branch_id'] ?? 1);
+        if ($branchId <= 0) {
+            $branchId = 1;
+        }
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders($branchId, 'admin', (int)auth('admin')->id());
+        $cartNames = $this->POSService->getCartNames($branchId, 'admin', (int)auth('admin')->id());
+        $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames, branchId: $branchId);
+        if (!empty($request['customer'])) {
+            $searchValue = strtolower($request['customer']);
+            $filteredItems = collect($cartItems)->filter(function ($item) use ($searchValue) {
+                return str_contains(strtolower($item['customerName']), $searchValue) !== false;
+            });
+            $cartItems = $filteredItems->all();
+        }
+        return response()->json([
+            'flag' => 'inactive',
+            'totalHoldOrders' => $totalHoldOrders,
+            'view' => view(POSOrder::HOLD_ORDERS[VIEW], compact('totalHoldOrders', 'cartItems'))->render(),
+        ]);
+    }
+
+    /**
+     * @return array
+     */
+    protected function getCustomerDataFromSessionForPOS(): array
+    {
+        $cartId = trim((string)request()->input('cart_id', ''));
+        if ($cartId === '' || Str::contains($cartId, 'walking-customer')) {
+            $currentCustomer = translate('walking_customer');
+            $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => '0']);
+        } else {
+            $userId = explode('-', $cartId)[2];
+            $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => $userId]);
+            $currentCustomer = $currentCustomerData['f_name'] . ' ' . $currentCustomerData['l_name'] . ' (' . $currentCustomerData['phone'] . ')';
+        }
+        return [
+            'currentCustomer' => $currentCustomer,
+            'currentCustomerData' => $currentCustomerData
+        ];
+    }
+
+
+    /**
+     * @param array $cartNames
+     * @return array
+     */
+    protected function getHoldOrderCalculationData(array $cartNames, int $branchId): array
+    {
+        $cartData = [];
+        foreach ($cartNames as $cartName) {
+            $customerCartData = $this->getCustomerCartData(cartName: $cartName);
+            $CartItemData = $this->calculateCartItemsData(cartName: $cartName, customerCartData: $customerCartData, branchId: $branchId);
+            $cartData[$cartName] = array_merge($customerCartData[$cartName], $CartItemData);
+        }
+        return $cartData;
+    }
+
+    /**
+     * @param string $cartName
+     * @return array
+     */
+    protected function getCustomerCartData(string $cartName): array
+    {
+        $customerCartData = [];
+        if (Str::contains($cartName, 'walking-customer')) {
+            $currentCustomerInfo = [
+                'customerName' => translate('walking_customer'),
+                'customerPhone' => "",
+            ];
+            $customerId = 0;
+        } else {
+            $customerId = explode('-', $cartName)[2];
+            $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => $customerId]);
+            $currentCustomerInfo = $this->cartService->getCustomerInfo(currentCustomerData: $currentCustomerData, customerId: $customerId);
+        }
+        $customerCartData[$cartName] = [
+            'customerName' => $currentCustomerInfo['customerName'],
+            'customerPhone' => $currentCustomerInfo['customerPhone'],
+            'customerId' => $customerId,
+        ];
+        return $customerCartData;
+    }
+
+    protected function calculateCartItemsData(string $cartName, array $customerCartData, int $branchId): array
+    {
+        $cartItemValue = [];
+        $installationTotal = 0.0;
+        $exchangeTotal = 0.0;
+        $hasIncludeTaxModel = false;
+        $hasExcludeTaxModel = false;
+        $subTotalCalculation = [
+            'countItem' => 0,
+            'totalQuantity' => 0,
+            'taxCalculate' => 0,
+            'totalTaxShow' => 0,
+            'totalTax' => 0,
+            'totalIncludeTax' => 0,
+            'subtotal' => 0,
+            'discountOnProduct' => 0,
+            'productSubtotal' => 0,
+        ];
+        $cartPayload = $this->posCartStateService->getPayload(
+            cartId: $cartName,
+            branchId: $branchId,
+            actorType: 'admin',
+            actorId: (int)auth('admin')->id()
+        );
+        if (!empty($cartPayload)) {
+            foreach ($cartPayload as $cartItem) {
+                if (is_array($cartItem)) {
+                    $product = $this->productRepo->getFirstWhere(params: ['id' => $cartItem['id']], relations: ['clearanceSale' => function ($query) {
+                        return $query->active();
+                    }]);
+                    if (!$product) {
+                        continue;
+                    }
+                    $lineTaxModel = strtolower((string)($product['tax_model'] ?? ($cartItem['tax_model'] ?? 'exclude')));
+                    if ($lineTaxModel === 'include') {
+                        $hasIncludeTaxModel = true;
+                    } else {
+                        $hasExcludeTaxModel = true;
+                    }
+                    $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
+                        product: $product,
+                        cartItem: $cartItem,
+                        calculation: $subTotalCalculation
+                    );
+                    if ($cartItem['customerId'] == $customerCartData[$cartName]['customerId']) {
+                        $cartItem['productSubtotal'] = $cartSubTotalCalculation['productSubtotal'];
+                        $subTotalCalculation['customerOnHold'] = $cartItem['customerOnHold'];
+                        $installationTotal += (float)($cartItem['installation_charge'] ?? 0) * (int)($cartItem['quantity'] ?? 0);
+                        $exchangeTotal += (float)($cartItem['exchange_charge'] ?? 0);
+                        $cartItemValue[] = $cartItem;
+
+                        $subTotalCalculation['countItem'] += $cartSubTotalCalculation['countItem'];
+                        $subTotalCalculation['totalQuantity'] += $cartSubTotalCalculation['totalQuantity'];
+                        $subTotalCalculation['taxCalculate'] += $cartSubTotalCalculation['taxCalculate'];
+                        $subTotalCalculation['totalTaxShow'] += $cartSubTotalCalculation['totalTaxShow'];
+                        $subTotalCalculation['totalTax'] += $cartSubTotalCalculation['totalTax'];
+                        $subTotalCalculation['totalIncludeTax'] += $cartSubTotalCalculation['totalIncludeTax'];
+                        $subTotalCalculation['productSubtotal'] += $cartSubTotalCalculation['productSubtotal'];
+                        $subTotalCalculation['subtotal'] += $cartSubTotalCalculation['subtotal'];
+                        $subTotalCalculation['discountOnProduct'] += $cartSubTotalCalculation['discountOnProduct'];
+                    }
+                }
+            }
+        }
+
+        $taxModel = ($hasIncludeTaxModel && !$hasExcludeTaxModel) ? 'include' : 'exclude';
+        $summary = OrderManager::calculatePosRetailVatSummary(
+            itemPrice: (float)$subTotalCalculation['subtotal'] + (float)$subTotalCalculation['discountOnProduct'],
+            itemDiscount: (float)$subTotalCalculation['discountOnProduct'],
+            extraDiscountInput: abs((float)($cartPayload['ext_discount'] ?? 0)),
+            extraDiscountType: (string)($cartPayload['ext_discount_type'] ?? 'amount'),
+            couponDiscount: abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            totalInstallationPrice: $installationTotal,
+            totalExchangePrice: $exchangeTotal,
+            taxModel: $taxModel
+        );
+
+        $totalCalculation = $this->cartService->getTotalCalculation(
+            subTotalCalculation: $subTotalCalculation,
+            cartName: $cartName,
+            installationCharge: $installationTotal,
+            exchangeCharge: $exchangeTotal
+        );
+        return [
+            'countItem' => $subTotalCalculation['countItem'],
+            'total' => $summary['totalAmount'],
+            'subtotal' => $subTotalCalculation['subtotal'],
+            'taxableBase' => $summary['taxableBase'],
+            'subTotalWithVat' => $summary['subTotalWithVat'],
+            'taxCalculate' => $summary['taxTotal'],
+            'totalTaxShow' => $summary['taxTotal'],
+            'totalTax' => $summary['taxTotal'],
+            'discountOnProduct' => $subTotalCalculation['discountOnProduct'],
+            'productSubtotal' => $subTotalCalculation['productSubtotal'],
+            'cartItemValue' => $cartItemValue,
+            'couponDiscount' => abs((float)($cartPayload['coupon_discount'] ?? 0)),
+            'extraDiscount' => $summary['extraDiscount'],
+            'customerOnHold' => $subTotalCalculation['customerOnHold'] ?? false,
+            'totalInstallationPrice' => $installationTotal,
+            'totalExchangePrice' => $exchangeTotal,
+            'legacyTotalBeforeVat' => $totalCalculation['total'],
+            'add_to_cart_time' => $cartPayload['add_to_cart_time'] ?? null,
+        ];
+    }
+
+    protected function getCartData(string $cartName, int $branchId): array
+    {
+        $customerCartData = $this->getCustomerCartData(cartName: $cartName);
+        $cartItemData = $this->calculateCartItemsData(cartName: $cartName, customerCartData: $customerCartData, branchId: $branchId);
+        return array_merge($customerCartData[$cartName], $cartItemData);
+    }
+
+    private function validateWriteContext(Request $request, bool $mustExistCart): array
+    {
+        $branchId = (int)$request->input('branch_id', 0);
+        $cartId = trim((string)$request->input('cart_id', ''));
+        if ($branchId <= 0 || $cartId === '' || !$this->cartService->cartBelongsToBranch($cartId, $branchId)) {
+            throw ValidationException::withMessages([
+                'cart_id' => [translate('invalid_request')],
+            ]);
+        }
+
+        if ($mustExistCart) {
+            $this->posCartStateService->assertCart(
+                cartId: $cartId,
+                branchId: $branchId,
+                actorType: 'admin',
+                actorId: (int)auth('admin')->id()
+            );
+        } else {
+            $this->posCartStateService->ensureCart(
+                cartId: $cartId,
+                branchId: $branchId,
+                actorType: 'admin',
+                actorId: (int)auth('admin')->id()
+            );
+        }
+
+        return [
+            'branch_id' => $branchId,
+            'cart_id' => $cartId,
+        ];
+    }
+}

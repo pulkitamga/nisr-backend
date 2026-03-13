@@ -1,0 +1,28 @@
+<div class="modal fade" id="showOwnerModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-2 d-flex">
+                <h3>{{ translate('Assign Owner') }}</h3>
+                <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
+                    <i class="tio-clear"></i>
+                </button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="updateTicketOwnerForm"  method="POST">
+                    @csrf
+                    <input type="hidden" name="ticket_id" id="owner_ticket_id">
+                    <div class="form-group mt-2">
+                        <label>{{ translate('Select Supervisor') }}</label>
+                        <select class="form-control" name="owner_id" id="owner-employee-id">
+                            <option value="">{{ translate('Select Supervisor') }}</option>
+                        </select>
+                    </div>
+                    <div class="text-end mt-2">
+                        <button type="submit" class="btn btn-xs btn-primary">{{ translate('Update') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

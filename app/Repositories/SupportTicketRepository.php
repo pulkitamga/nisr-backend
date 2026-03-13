@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Contracts\Repositories\SupportTicketRepositoryInterface;
+use App\Models\SupportTicketStatusMaster;
+use App\Models\SupportTicket;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
+
+class SupportTicketRepository implements SupportTicketRepositoryInterface
+{
+    public function __construct(
+        private readonly SupportTicket $supportTicket,
+    ) {}
+
+
+    public function add(array $data): string|object
+    {
+        return $this->supportTicket->create($data);
+    }
+
+    public function getQuery()
+    {
+        return $this->supportTicket->newQuery();
+    }
+
+    public function getFirstWhere(array $params, array $relations = []): ?Model
+    {
+        return $this->supportTicket->where($params)->with($relations)->first();
+    }
+
+    public function getList(array $orderBy = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
+    {
+        $query = $this->supportTicket->with($relations)
+            ->when(!empty($orderBy), function ($query) use ($orderBy) {
+                return $query->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
+            });
+        return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit);
+    }
+
+    public function getListWhere(array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
+    {
+        $query = $this->supportTicket
+            ->with($relations)
+            ->when($searchValue, function ($query) use ($searchValue) {
+                $query->where(function ($q) use ($searchValue) {
+                    $q->where('subject', 'like', "%{$searchValue}%")
+                        ->orWhere('type', 'like', "%{$searchValue}%")
+                        ->orWhere('description', 'like', "%{$searchValue}%")
+                        ->orWhere('priority', 'like', "%{$searchValue}%")
+                        ->orWhere('status', 'like', "%{$searchValue}%")
+                        ->orWhereHas('status_details', function ($statusQuery) use ($searchValue) {
+                            $statusQuery->where('name', 'like', "%{$searchValue}%");
+                        })
+                        ->orWhereHas('customer', function ($customerQuery) use ($searchValue) {
+                            $customerQuery->where('f_name', 'like', "%{$searchValue}%")
+                                ->orWhere('l_name', 'like', "%{$searchValue}%")
+                                ->orWhereRaw(
+                                    "CONCAT(COALESCE(f_name, ''), ' ', COALESCE(l_name, '')) LIKE ?",
+                                    ["%{$searchValue}%"]
+                                )
+                                ->orWhere('email', 'like', "%{$searchValue}%")
+                                ->orWhere('phone', 'like', "%{$searchValue}%");
+                        })
+                        ->orWhereHas('relatedInboxMessages', function ($inboxQuery) use ($searchValue) {
+                            $inboxQuery->where('sender_name', 'like', "%{$searchValue}%")
+                                ->orWhere('sender_email', 'like', "%{$searchValue}%")
+                                ->orWhere('sender_phone', 'like', "%{$searchValue}%");
+                        });
+                });
+            })
+            ->when(isset($filters['id']), function ($query) use ($filters) {
+                $query->where('id', $filters['id']);
+            })
+            ->when(isset($filters['priority']) && $filters['priority'] != 'all', function ($query) use ($filters) {
+                $query->where('priority', $filters['priority']);
+            })
+            ->when(isset($filters['request_type']), function ($query) use ($filters) {
+                $query->where('request_type', $filters['request_type']);
+            })
+            ->when(isset($filters['status']) && $filters['status'] != 'all', function ($query) use ($filters) {
+                $statusFilter = (string)$filters['status'];
+                $statusName = null;
+
+                if (is_numeric($statusFilter)) {
+                    $statusName = strtolower(trim((string)(SupportTicketStatusMaster::query()
+                        ->where('id', (int)$statusFilter)
+                        ->value('name') ?? '')));
+                }
+
+                $query->where(function ($statusQuery) use ($statusFilter, $statusName) {
+                    $statusQuery->where('status', $statusFilter);
+
+                    // Compatibility for older tickets that carried a cross-master status ID
+                    // while still representing the same status name (e.g. "Assigned").
+                    if (!empty($statusName)) {
+                        $statusQuery->orWhereHas('status_details', function ($statusDetailsQuery) use ($statusName) {
+                            $statusDetailsQuery->whereRaw('LOWER(name) = ?', [$statusName]);
+                        });
+                    }
+                });
+            })
+            ->when(!empty($filters['type']) && $filters['type'] != 'all', function ($query) use ($filters) {
+                Log::info('Applying type filter', ['type' => $filters['type']]);
+                $query->whereRaw('LOWER(type) = ?', [strtolower($filters['type'])]);
+            })
+            ->when(!empty($orderBy), function ($query) use ($orderBy) {
+                return $query->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
+            });
+
+        $filters += ['searchValue' => $searchValue];
+
+        Log::info('Final query before execution', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+        ]);
+
+        return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit)->appends($filters);
+    }
+
+
+    public function update(string $id, array $data): bool
+    {
+        return $this->supportTicket->where('id', $id)->update($data);
+    }
+
+    public function delete(array $params): bool
+    {
+        $this->supportTicket->where($params)->delete();
+        return true;
+    }
+}

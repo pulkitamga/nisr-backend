@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Enums;
+
+enum SessionKey
+{
+    const ADMIN_RECAPTCHA_KEY = 'adminRecaptchaSessionKey';
+    const VENDOR_RECAPTCHA_KEY = 'vendorRecaptchaSessionKey';
+    const WHOLESALER_RECAPTCHA_KEY = 'vendorRecaptchaSessionKey';
+    const CURRENT_USER = 'current_user';
+    const CART_NAME = 'cart_name';
+    const LAST_ORDER = 'last_order';
+    const POS_BRANCH_ID = 'pos_branch_id';
+    const PRODUCT_COMPARE_LIST = 'compare_list';
+    const FORGOT_PASSWORD_IDENTIFY = 'forgot_password_identity';
+}
