@@ -105,8 +105,6 @@
             text-align: left;
         }
 
-<<<<<<< ahmed5
-=======
         .kpi-value.percentage {
             color: #0f766e;
         }
@@ -298,33 +296,6 @@
         </table>
     </div>
 
-<<<<<<< ahmed5
-    <table class="kpi-grid">
-        <tr>
-            <td>
-                <div class="kpi-label">{{ translate('total_activations') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['total_activations'] ?? 0)) }}</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('activation_rate') }}</div>
-                <div class="kpi-value">{{ number_format((float)($kpi['activation_rate'] ?? 0), 1) }}%</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('active_warranties') }}</div>
-                <div class="kpi-value">{{ number_format((int)($kpi['active_warranties'] ?? 0)) }}</div>
-            </td>
-            <td>
-                <div class="kpi-label">{{ translate('avg_warranty_months') }}</div>
-                <div class="kpi-value">
-                    {{ ($kpi['avg_warranty_months'] ?? null) !== null ? number_format((float)$kpi['avg_warranty_months'], 1) : translate('na') }}
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <table>
-        <thead>
-=======
     <!-- Chart Row: Activation Trend + Method Distribution side by side -->
     @if(!empty($trendChartImage) || !empty($methodChartImage))
         <div class="chart-row">
@@ -487,69 +458,9 @@ color:#6b7280;
                 <td width="20%"></td>
  
             </tr>
-<<<<<<< ahmed5
-        </thead>
-        <tbody>
-            @forelse($methodBreakdown as $row)
-                <tr>
-                    <td>{{ $row['label'] }}</td>
-                    <td>{{ number_format((int)$row['count']) }}</td>
-                    <td>{{ number_format((float)$row['percentage'], 1) }}%</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="3">{{ translate('no_data_found') }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>{{ translate('serial') }}</th>
-                <th>{{ translate('product') }}</th>
-                <th>{{ translate('customer') }}</th>
-                <th>{{ translate('branch') }}</th>
-                <th>{{ translate('activation_method') }}</th>
-                <th>{{ translate('activation_date') }}</th>
-                <th>{{ translate('warranty_end') }}</th>
-                <th>{{ translate('status') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($activationRowsForPdf as $warranty)
-                @php
-                    $customerName = trim(
-                        ((string)($warranty->user?->f_name ?? '')) . ' ' . ((string)($warranty->user?->l_name ?? ''))
-                    );
-                    if ($customerName === '') {
-                        $customerName = $warranty->activated_by_name ?? '-';
-                    }
-                @endphp
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $warranty->serial_number }}</td>
-                    <td>{{ $warranty->product?->name ?? '-' }}</td>
-                    <td>{{ $customerName }}</td>
-                    <td>{{ $warranty->branch?->branch_name ?? '-' }}</td>
-                    <td>{{ translate($warranty->activation_method ?: 'unknown') }}</td>
-                    <td>{{ optional($warranty->activation_date)->format('Y-m-d H:i') ?? '-' }}</td>
-                    <td>{{ optional($warranty->end_date)->format('Y-m-d') ?? '-' }}</td>
-                    <td>{{ translate($warranty->status) }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="9">{{ translate('no_data_found') }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-=======
         </table>
  
     </div>
->>>>>>> local
 </body>
 </html>
