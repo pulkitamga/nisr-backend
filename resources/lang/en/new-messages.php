@@ -12651,4 +12651,11 @@ return [
 	"avg_order_value" => "Avg order value",
 	"total_revenue" => "Total revenue",
 	"end_to_end" => "End to end",
+	"resolved_claims" => "Resolved claims",
+	"no_data_found_for_selected_period" => "No data found for selected period",
+	"activation_method_breakdown" => "Activation method breakdown",
+	"top_products_by_claim_volume" => "Top products by claim volume",
+	"warranty_trend" => "Warranty trend",
+	"stacked_bar_chart_showing_daily_claims_by_status" => "Stacked bar chart showing daily claims by status",
+
 ];

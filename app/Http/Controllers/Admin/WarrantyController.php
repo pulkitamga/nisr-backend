@@ -626,16 +626,32 @@ class WarrantyController extends Controller
         }
 
         if ($download === 'pdf') {
+
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
             $claimsForPdf = $detailQuery->get();
+
+            // Receive chart images from JS
+            $statusChartImage = $request->input('status_chart');
+            $trendChartImage  = $request->input('trend_chart');
+
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-claims-pdf',
-                data: compact('kpi', 'claimsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl', 'statusChartData', 'trendChartData'),
+                data: compact(
+                    'kpi',
+                    'claimsForPdf',
+                    'fromDate',
+                    'toDate',
+                    'filters',
+                    'isRtl',
+                    'statusChartImage',
+                    'trendChartImage'
+                ),
+
                 fileName: 'warranty-claims-report.pdf',
                 orientation: 'landscape'
             );
         }
-
         $dataLimit = getWebConfig('pagination_limit') ?? 10;
         $claims = $detailQuery->paginate($dataLimit)->withQueryString();
 
@@ -800,6 +816,12 @@ class WarrantyController extends Controller
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             $slaRowsForPdf = $slaSummaryRows->values();
+
+            // Get chart images from request
+            $complianceChartImage = $request->input('compliance_chart');
+            $typeChartImage = $request->input('type_chart');
+            $trendChartImage = $request->input('trend_chart');
+
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-sla-pdf',
                 data: compact(
@@ -809,10 +831,11 @@ class WarrantyController extends Controller
                     'toDate',
                     'filters',
                     'isRtl',
-                    'slaComplianceChartData',
-                    'slaTypeChartData',
-                    'slaTrendChartData'
+                    'complianceChartImage',
+                    'typeChartImage',
+                    'trendChartImage'
                 ),
+
                 fileName: 'warranty-sla-report.pdf',
                 orientation: 'landscape'
             );
@@ -977,6 +1000,11 @@ class WarrantyController extends Controller
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             $activationRowsForPdf = $detailQuery->get();
+
+            // Get chart images from request
+            $trendChartImage = $request->input('trend_chart');
+            $methodChartImage = $request->input('method_chart');
+
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-activations-pdf',
                 data: compact(
@@ -988,8 +1016,8 @@ class WarrantyController extends Controller
                     'toDate',
                     'filters',
                     'isRtl',
-                    'activationTrendChartData',
-                    'activationMethodChartData'
+                    'trendChartImage',
+                    'methodChartImage'
                 ),
                 fileName: 'warranty-activations-report.pdf',
                 orientation: 'landscape'
@@ -1330,10 +1358,28 @@ class WarrantyController extends Controller
 
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+            // Get chart images from request
+            $trendChartImage = $request->input('trend_chart');
+            $statusChartImage = $request->input('status_chart');
+            $agingChartImage = $request->input('aging_chart');
+            $chargeChartImage = $request->input('charge_chart');
+
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-analytics-pdf',
-                data: compact('kpi', 'topProducts', 'snapshotFrom', 'snapshotTo', 'isRtl', 'statusChartData', 'trendChartData'),
-                fileName: 'warranty-analytics-report.pdf'
+                data: compact(
+                    'kpi',
+                    'topProducts',
+                    'snapshotFrom',
+                    'snapshotTo',
+                    'isRtl',
+                    'trendChartImage',
+                    'statusChartImage',
+                    'agingChartImage',
+                    'chargeChartImage'
+                ),
+                fileName: 'warranty-analytics-report.pdf',
+                orientation: 'landscape'
             );
         }
 
