@@ -1,4 +1,19 @@
 "use strict";
+
+function toggleRefundReasonValidation($form, shouldShowError) {
+    const $reason = $form.find('.js-refund-reason');
+    const $error = $form.find('.js-refund-reason-error');
+
+    if (!shouldShowError) {
+        $reason.removeClass('is-invalid');
+        $error.addClass('d-none');
+        return;
+    }
+
+    $reason.addClass('is-invalid').trigger('focus');
+    $error.removeClass('d-none');
+}
+
 $(function () {
     $(".coba").spartanMultiImagePicker({
         fieldName: 'fileUpload[]',
@@ -67,6 +82,28 @@ $(function () {
         });
     }
     });
+});
+
+$(document).on('submit', '.js-refund-request-form', function (event) {
+    const $form = $(this);
+    const reason = $.trim($form.find('.js-refund-reason').val() || '');
+
+    if (reason !== '') {
+        toggleRefundReasonValidation($form, false);
+        return true;
+    }
+
+    event.preventDefault();
+    toggleRefundReasonValidation($form, true);
+});
+
+$(document).on('input', '.js-refund-reason', function () {
+    const $form = $(this).closest('form');
+    if ($.trim($(this).val() || '') === '') {
+        return;
+    }
+
+    toggleRefundReasonValidation($form, false);
 });
 
 $('.remove-mask-img').on('click', function(){

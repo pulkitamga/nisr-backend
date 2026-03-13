@@ -1,5 +1,24 @@
 "use strict";
 
+function toggleRefundReasonValidation($form, shouldShowError) {
+    const $reason = $form.find('.js-refund-reason');
+    const $error = $form.find('.js-refund-reason-error');
+
+    if (!shouldShowError) {
+        $reason.removeClass('is-invalid');
+        $error.addClass('d-none');
+        return;
+    }
+
+    const $collapse = $reason.closest('.collapse');
+    if ($collapse.length) {
+        $collapse.collapse('show');
+    }
+
+    $reason.addClass('is-invalid').trigger('focus');
+    $error.removeClass('d-none');
+}
+
 $('.action-get-refund-details').on('click', function () {
     let route = $(this).data('route');
     getRefundDetails(route)
@@ -41,6 +60,28 @@ function digitalProductDownload(link) {
         },
     });
 }
+
+$(document).on('submit', '.js-refund-request-form', function (event) {
+    const $form = $(this);
+    const reason = $.trim($form.find('.js-refund-reason').val() || '');
+
+    if (reason !== '') {
+        toggleRefundReasonValidation($form, false);
+        return true;
+    }
+
+    event.preventDefault();
+    toggleRefundReasonValidation($form, true);
+});
+
+$(document).on('input', '.js-refund-reason', function () {
+    const $form = $(this).closest('form');
+    if ($.trim($(this).val() || '') === '') {
+        return;
+    }
+
+    toggleRefundReasonValidation($form, false);
+});
 
 let selectedFiles = [];
 $(document).on('ready', () => {
@@ -149,5 +190,4 @@ $(document).on('ready', () => {
         }
     }
 });
-
 

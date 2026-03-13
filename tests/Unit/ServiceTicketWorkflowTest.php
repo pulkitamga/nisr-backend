@@ -11,11 +11,11 @@ class ServiceTicketWorkflowTest extends TestCase
     {
         $this->assertSame(2, ServiceTicketWorkflow::STATUS_MASTER_ID);
         $this->assertSame(20, ServiceTicketWorkflow::STATUS_NEW);
-        $this->assertSame(21, ServiceTicketWorkflow::STATUS_ASSIGNED);
-        $this->assertSame(22, ServiceTicketWorkflow::STATUS_SCHEDULED);
-        $this->assertSame(23, ServiceTicketWorkflow::STATUS_READY_TO_START);
+        $this->assertSame(21, ServiceTicketWorkflow::STATUS_OPEN);
+        $this->assertSame(22, ServiceTicketWorkflow::STATUS_ASSIGNED);
+        $this->assertSame(23, ServiceTicketWorkflow::STATUS_SCHEDULED);
         $this->assertSame(24, ServiceTicketWorkflow::STATUS_IN_PROGRESS);
-        $this->assertSame(25, ServiceTicketWorkflow::STATUS_QA_PENDING);
+        $this->assertSame(25, ServiceTicketWorkflow::STATUS_COMPLETED);
         $this->assertSame(26, ServiceTicketWorkflow::STATUS_CLOSED);
     }
 
@@ -23,9 +23,9 @@ class ServiceTicketWorkflowTest extends TestCase
     {
         $this->assertSame(
             [
+                ServiceTicketWorkflow::STATUS_OPEN,
                 ServiceTicketWorkflow::STATUS_ASSIGNED,
                 ServiceTicketWorkflow::STATUS_SCHEDULED,
-                ServiceTicketWorkflow::STATUS_READY_TO_START,
                 ServiceTicketWorkflow::STATUS_IN_PROGRESS,
             ],
             ServiceTicketWorkflow::activeSlaStatuses()
@@ -35,12 +35,11 @@ class ServiceTicketWorkflowTest extends TestCase
     public function test_cancel_is_allowed_only_in_service_execution_stages(): void
     {
         $this->assertFalse(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_NEW));
-        $this->assertFalse(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_ASSIGNED));
+        $this->assertFalse(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_OPEN));
+        $this->assertTrue(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_ASSIGNED));
         $this->assertTrue(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_SCHEDULED));
-        $this->assertTrue(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_READY_TO_START));
         $this->assertTrue(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_IN_PROGRESS));
-        $this->assertFalse(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_QA_PENDING));
+        $this->assertFalse(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_COMPLETED));
         $this->assertFalse(ServiceTicketWorkflow::canCancelFromStatus(ServiceTicketWorkflow::STATUS_CLOSED));
     }
 }
-

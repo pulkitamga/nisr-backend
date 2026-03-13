@@ -62,14 +62,18 @@
                     </div>
                 </div>
 
-                <form action="{{route('refund-store')}}" method="post" enctype="multipart/form-data">
+                <form action="{{route('refund-store')}}" method="post" enctype="multipart/form-data" class="js-refund-request-form">
                     @csrf
                     <div class="form-group mb-4">
                         <input type="hidden" name="order_details_id" value="{{$order_details->id}}">
                         <input type="hidden" name="amount" value="{{$refund_amount}}">
-                        <label for="comment">{{translate('refund_reason')}}</label>
-                        <textarea name="refund_reason" class="form-control" rows="4"
-                                  placeholder="{{  translate('refund_reason')}}" required></textarea>
+                        <label for="refund_reason_{{$id}}">{{translate('refund_reason')}}</label>
+                        <textarea id="refund_reason_{{$id}}" name="refund_reason" class="form-control js-refund-reason" rows="4"
+                                  placeholder="{{  translate('refund_reason')}}" required
+                                  aria-describedby="refund-reason-error-{{$id}}"></textarea>
+                        <small class="text-danger d-none js-refund-reason-error" id="refund-reason-error-{{$id}}">
+                            {{ translate('refund_reason') }} {{ translate('is_required') }}
+                        </small>
                     </div>
                     <div class="form-group">
                         <label>{{translate('Attachment')}}</label>

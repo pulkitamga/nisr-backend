@@ -110,17 +110,22 @@
                     </div>
                 </div>
 
-                <form action="{{route('refund-store')}}" method="post" enctype="multipart/form-data">
+                <form action="{{route('refund-store')}}" method="post" enctype="multipart/form-data" class="js-refund-request-form">
                     @csrf
                     <h6 class="d-flex gap-2 align-items-center cursor-pointer" data-toggle="collapse"
-                        data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        data-target="#collapseExample{{$id}}" aria-expanded="false" aria-controls="collapseExample{{$id}}">
                         {{translate('give_a_refund_reason')}} <i class="tio-chevron-down"></i>
                     </h6>
-                    <div class="collapse" id="collapseExample">
+                    <div class="collapse" id="collapseExample{{$id}}">
                         <input type="hidden" name="order_details_id" value="{{$order_details->id}}">
                         <input type="hidden" name="amount" value="{{$refund_amount}}">
-                        <textarea rows="4" class="form-control" name="refund_reason"
-                                  placeholder="{{translate('write_here')}}..."></textarea>
+                        <textarea rows="4" class="form-control js-refund-reason" name="refund_reason"
+                                  placeholder="{{translate('write_here')}}..."
+                                  aria-describedby="refund-reason-error-{{$id}}"></textarea>
+                        <small class="text-danger d-none js-refund-reason-error"
+                               id="refund-reason-error-{{$id}}">
+                            {{ translate('refund_reason') }} {{ translate('is_required') }}
+                        </small>
                     </div>
 
                     <div class="mt-3">

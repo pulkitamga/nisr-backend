@@ -113,6 +113,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     @endphp
                     @foreach($tickets as $key => $ticket)
                     @php
+                    $normalizedStatusName = \Illuminate\Support\Str::snake((string)($ticket->status_details->name ?? ''));
                     $priorityClass = match(strtolower($ticket->priority)) {
                     'low' => 'badge-soft-primary',
                     'medium' => 'badge-soft-info',
@@ -120,8 +121,9 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     'urgent' => 'badge-soft-danger',
                     default => 'badge-soft-dark',
                     };
-                    $statusClass = match(strtolower($ticket->status_details->name ?? '')) {
+                    $statusClass = match($normalizedStatusName) {
                     'new' => 'badge-soft-primary',
+                    'open' => 'badge-soft-primary',
                     'assigned' => 'badge-soft-info',
                     'scheduled' => 'badge-soft-warning',
                     'in_progress' => 'badge-soft-primary',
@@ -159,12 +161,12 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                                     data-route="{{ route('admin.support-ticket.service.estimate') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="estimate">{{translate('Create Estimate')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_ASSIGNED)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_OPEN)
                                 <span id="assign-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.assign') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="assign">{{translate('Assign')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_SCHEDULED && $job)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_ASSIGNED && $job)
                                 <span id="schedule-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.schedule') }}"
                                     data-ticket-id="{{ $ticket->id }}"
@@ -174,7 +176,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                                     data-route="{{ route('admin.support-ticket.service.estimate') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="estimate">{{translate('Revise Estimate')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_READY_TO_START && $job)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_SCHEDULED && $job)
                                 <span id="start-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.start-job') }}"
                                     data-job-id="{{ $job->id ?? '' }}"
@@ -191,13 +193,13 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                                     data-job-id="{{ $job->id ?? '' }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-action="change-order">{{translate('Change Order')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_QA_PENDING && $job && !$qaConfirmed)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_COMPLETED && $job && !$qaConfirmed)
                                 <span id="qa-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.qa') }}"
                                     data-ticket-id="{{ $ticket->id }}"
                                     data-job-id="{{ $job->id ?? '' }}"
                                     data-action="qa">{{translate('QA Confirmation')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_QA_PENDING && $job && $qaConfirmed)
+                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_COMPLETED && $job && $qaConfirmed)
                                 <span id="close-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-success action-btn"
                                     data-route="{{ route('admin.support-ticket.service.close') }}"
                                     data-ticket-id="{{ $ticket->id }}"

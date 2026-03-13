@@ -78,7 +78,7 @@
                             <div class="card-body">
                                 <div class="row">
                                     <form action="{{route('refund-store')}}" method="post"
-                                          enctype="multipart/form-data">
+                                          enctype="multipart/form-data" class="js-refund-request-form">
                                         @csrf
                                         <input type="hidden" name="order_details_id" value="{{$order_details->id}}">
                                         <input type="hidden" name="amount" value="{{$refund_amount}}">
@@ -86,8 +86,12 @@
                                             <div class="form-group">
                                                 <label class="input-label"
                                                        for="name">{{translate('refund_reason')}}</label>
-                                                <textarea class="form-control" name="refund_reason" cols="120"
-                                                          required>{{old('details')}}</textarea>
+                                                <textarea class="form-control js-refund-reason" name="refund_reason" cols="120"
+                                                          required
+                                                          aria-describedby="refund-reason-error">{{ old('refund_reason') }}</textarea>
+                                                <small class="text-danger d-none js-refund-reason-error" id="refund-reason-error">
+                                                    {{ translate('refund_reason') }} {{ translate('is_required') }}
+                                                </small>
                                             </div>
                                         </div>
                                         <div class="col-md-8">
@@ -146,6 +150,35 @@
                     });
                 }
             });
+        });
+
+        $(document).on('submit', '.js-refund-request-form', function (event) {
+            const $form = $(this);
+            const $reason = $form.find('.js-refund-reason');
+            const $error = $form.find('.js-refund-reason-error');
+
+            if ($.trim($reason.val()) !== '') {
+                $reason.removeClass('is-invalid');
+                $error.addClass('d-none');
+                return true;
+            }
+
+            event.preventDefault();
+            $reason.addClass('is-invalid').trigger('focus');
+            $error.removeClass('d-none');
+        });
+
+        $(document).on('input', '.js-refund-reason', function () {
+            const $reason = $(this);
+            const $form = $reason.closest('form');
+            const $error = $form.find('.js-refund-reason-error');
+
+            if ($.trim($reason.val()) === '') {
+                return;
+            }
+
+            $reason.removeClass('is-invalid');
+            $error.addClass('d-none');
         });
     </script>
 @endpush

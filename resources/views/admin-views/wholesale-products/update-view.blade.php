@@ -187,18 +187,27 @@
 
     const BASE_UNIT_PRICE = parseFloat({{ $ProductData->product->getVariationPrice($ProductData->variation_type, $ProductData->variation_key) }});
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const $ = window.jQuery || window.$;
-        const okButtonText = @json(__('OK'));
-        const tierNamePlaceholder = @json(__('Tier Name'));
+        document.addEventListener('DOMContentLoaded', function () {
+            const okButtonText = @json(__('OK'));
         const minQtyPlaceholder = @json(__('Min qty'));
         const maxQtyPlaceholder = @json(__('Max qty'));
+        const removeButtonText = @json(translate('Remove'));
+        const allKnownTierNames = new Set([
+            ...Array.from(document.querySelectorAll('#range-rows input[name="tier[]"]')).map(input => input.value),
+            ...(window.remainingTiers || []).map(tier => tier.name)
+        ]);
 
         function calculateFinalPrice(row) {
             const discount = parseFloat(row.querySelector('.discount-input')?.value || 0);
             const finalPrice = BASE_UNIT_PRICE - (BASE_UNIT_PRICE * discount / 100);
             const finalInput = row.querySelector('.final-price-input');
             if (finalInput) finalInput.value = finalPrice.toFixed(2);
+        }
+
+        function updateRowNumbers() {
+            document.querySelectorAll('#range-rows .row-number').forEach((el, idx) => {
+                el.textContent = (idx + 1) + '.';
+            });
         }
 
         // Run on all existing rows
@@ -226,19 +235,21 @@
 
             const rows = document.querySelectorAll('#range-rows tr.range-row');
             const newIndex = rows.length + 1;
+            const nextTier = window.remainingTiers.shift();
 
             const newRow = document.createElement('tr');
             newRow.className = 'range-row';
+            newRow.dataset.isNew = '1';
             newRow.innerHTML = `
                 <td class="text-center row-number">${newIndex}.</td>
-                <td><input type="text" class="form-control" name="tier[]" placeholder="${tierNamePlaceholder}" required></td>
+                <td><input type="text" class="form-control" name="tier[]" value="${nextTier.name}" readonly></td>
                 <td><input type="number" class="form-control" name="min_qty[]" placeholder="${minQtyPlaceholder}" required min="1"></td>
                 <td><input type="number" class="form-control" name="max_qty[]" placeholder="${maxQtyPlaceholder}"></td>
                 <td><input type="number" step="0.01" class="form-control unit-price-input" value="${BASE_UNIT_PRICE.toFixed(2)}" readonly></td>
                 <td><input type="number" step="0.01" class="form-control discount-input" name="discount[]" value="0" min="0" max="100"></td>
                 <td><input type="number" step="0.01" class="form-control final-price-input" name="final_price[]" value="${BASE_UNIT_PRICE.toFixed(2)}" readonly></td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-danger remove-product-btn">{{ translate('Remove') }}</button>
+                    <button type="button" class="btn btn-danger remove-product-btn">${removeButtonText}</button>
                 </td>
             `;
             document.getElementById('range-rows').appendChild(newRow);
@@ -247,16 +258,18 @@
         // Remove row + update serial numbers
         document.addEventListener('click', function (e) {
             if (e.target && e.target.classList.contains('remove-product-btn')) {
-                e.target.closest('tr').remove();
-                document.querySelectorAll('#range-rows .row-number').forEach((el, idx) => {
-                    el.textContent = (idx + 1) + '.';
-                });
+                const row = e.target.closest('tr');
+                const tierInput = row?.querySelector('input[name="tier[]"]');
+                const tierName = tierInput?.value?.trim();
+
+                if (tierName && allKnownTierNames.has(tierName) && !(window.remainingTiers || []).some(tier => tier.name === tierName)) {
+                    window.remainingTiers = [...(window.remainingTiers || []), { name: tierName }];
+                }
+
+                row?.remove();
+                updateRowNumbers();
             }
         });
     });
 </script>
 @endsection
-
-@push('script_2')
-<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/whole-sale.js') }}"></script>
-@endpush

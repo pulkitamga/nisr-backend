@@ -36,6 +36,7 @@ use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // New
 use App\Services\ServiceWorkflowNotificationService;
 use App\Support\ServiceTicketWorkflow;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 class ServiceTicketController extends BaseController
 {
     private const SERVICE_INVOICE_LINK_EXPIRE_HOURS = 24;
@@ -129,10 +130,44 @@ class ServiceTicketController extends BaseController
         ]);
     }
 
+    private function resolveJobStatus(ServiceJob $job): string
+    {
+        $status = Str::of((string) $job->status)
+            ->trim()
+            ->lower()
+            ->replace([' ', '-'], '_')
+            ->value();
+
+        if ($status !== '') {
+            return $status;
+        }
+
+        if ($job->completed_at) {
+            return 'completed';
+        }
+
+        if ($job->started_at) {
+            return 'in_progress';
+        }
+
+        if ($job->scheduled_at) {
+            return 'scheduled';
+        }
+
+        return 'assigned';
+    }
+
     private function ensureJobStatus(ServiceJob $job, array $allowedStatuses, string $actionLabel): bool
     {
-        if (!in_array((string)$job->status, $allowedStatuses, true)) {
-            Toastr::error("Cannot {$actionLabel} while job status is '{$job->status}'.");
+        $jobStatus = $this->resolveJobStatus($job);
+
+        if ($jobStatus !== (string) $job->status) {
+            $job->update(['status' => $jobStatus]);
+            $job->refresh();
+        }
+
+        if (!in_array($jobStatus, $allowedStatuses, true)) {
+            Toastr::error("Cannot {$actionLabel} while job status is '{$jobStatus}'.");
             return false;
         }
 
@@ -292,8 +327,8 @@ class ServiceTicketController extends BaseController
         $estimate->save();
 
         // Keep workflow moving forward, but do not regress if estimate is revised later.
-        $nextStatus = (int)$ticket->status < ServiceTicketWorkflow::STATUS_ASSIGNED
-            ? ServiceTicketWorkflow::STATUS_ASSIGNED
+        $nextStatus = (int)$ticket->status < ServiceTicketWorkflow::STATUS_OPEN
+            ? ServiceTicketWorkflow::STATUS_OPEN
             : (int)$ticket->status;
         $this->supportTicketRepo->update($ticket->id, ['status' => $nextStatus]);
 
@@ -359,7 +394,7 @@ class ServiceTicketController extends BaseController
         $this->supportTicketRepo->update($ticketId, [
             'employee_id' => $employeeId,
             'priority' => $priority,
-            'status' => ServiceTicketWorkflow::STATUS_SCHEDULED,
+            'status' => ServiceTicketWorkflow::STATUS_ASSIGNED,
             'sla_hours' => $slaHours,
         ]);
 
@@ -454,7 +489,7 @@ class ServiceTicketController extends BaseController
 
 
         $this->supportTicketRepo->update($ticketId, [
-            'status' => ServiceTicketWorkflow::STATUS_READY_TO_START,
+            'status' => ServiceTicketWorkflow::STATUS_SCHEDULED,
         ]);
 
         $this->supportTicketConvRepo->add([
@@ -813,7 +848,7 @@ class ServiceTicketController extends BaseController
                 ]);
             }
 
-            $this->supportTicketRepo->update((string)$ticketId, ['status' => ServiceTicketWorkflow::STATUS_QA_PENDING]);
+            $this->supportTicketRepo->update((string)$ticketId, ['status' => ServiceTicketWorkflow::STATUS_COMPLETED]);
         });
 
         SupportTicketNotification::create([
@@ -1034,7 +1069,7 @@ class ServiceTicketController extends BaseController
         }
 
         $forceClose = (bool)$request->force_close;
-        if ((int)$ticket->status !== ServiceTicketWorkflow::STATUS_QA_PENDING && !$forceClose) {
+        if ((int)$ticket->status !== ServiceTicketWorkflow::STATUS_COMPLETED && !$forceClose) {
             Toastr::error("Ticket #{$ticket->id} must be completed before closing.");
             return redirect()->back();
         }
