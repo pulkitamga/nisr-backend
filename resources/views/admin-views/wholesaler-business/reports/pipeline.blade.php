@@ -77,22 +77,19 @@
 
 @section('content')
     @php
-        $isRtl =
-            session('direction') === 'rtl' ||
-            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl = session('direction') === 'rtl'
+            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
-    <div class="content container-fluid wholesale-pipeline-page {{ $isRtl ? 'text-right' : '' }}"
-        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid wholesale-pipeline-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
                 <div>
                     <h2 class="h1 mb-1">{{ translate('wholesale_pipeline_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        {{ translate('report_period') }}: {{ $dateRange }}
+                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
                     </p>
                 </div>
-                <span class="badge badge-light text-dark">{{ translate('updated') }}
-                    {{ now()->format('M d, Y h:i A') }}</span>
+                <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
             </div>
         </div>
 
@@ -103,29 +100,18 @@
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year"
-                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
-                                <option value="this_month"
-                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
-                                <option value="this_week"
-                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
-                                    {{ translate('today') }}</option>
-                                <option value="custom_date"
-                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
-                                    {{ translate('custom_range') }}</option>
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
@@ -133,9 +119,8 @@
                             <label class="form-label mb-1">{{ translate('wholesaler') }}</label>
                             <select class="form-control" name="wholesaler_id">
                                 <option value="0">{{ translate('all') }}</option>
-                                @foreach ($wholesalers as $wholesaler)
-                                    <option value="{{ $wholesaler->id }}"
-                                        {{ (int) ($filters['wholesaler_id'] ?? 0) === (int) $wholesaler->id ? 'selected' : '' }}>
+                                @foreach($wholesalers as $wholesaler)
+                                    <option value="{{ $wholesaler->id }}" {{ (int)($filters['wholesaler_id'] ?? 0) === (int)$wholesaler->id ? 'selected' : '' }}>
                                         {{ $wholesaler->name }}
                                     </option>
                                 @endforeach
@@ -145,21 +130,16 @@
                             <label class="form-label mb-1">{{ translate('tier') }}</label>
                             <select class="form-control" name="tier">
                                 <option value="">{{ translate('all') }}</option>
-                                @foreach ($tiers as $tier)
-                                    <option value="{{ $tier }}"
-                                        {{ ($filters['tier'] ?? '') === $tier ? 'selected' : '' }}>{{ $tier }}
-                                    </option>
+                                @foreach($tiers as $tier)
+                                    <option value="{{ $tier }}" {{ ($filters['tier'] ?? '') === $tier ? 'selected' : '' }}>{{ $tier }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
-                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline', array_merge(request()->query(), ['download' => 'excel'])) }}"
-                                class="btn btn-outline-success">{{ translate('excel') }}</a>
-                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline', array_merge(request()->query(), ['download' => 'pdf'])) }}"
-                                class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <a href="{{ route('admin.wholesale.dashboard.reports.pipeline', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger">{{ translate('PDF') }}</a>
                         </div>
                     </div>
                 </form>
@@ -224,8 +204,7 @@
                         <p class="kpi-label mb-2">{{ translate('cycle_time') }}</p>
                         <p class="kpi-value">
                             {{ $kpi['avg_po_to_quote_hours'] !== null ? number_format((float) $kpi['avg_po_to_quote_hours'], 1) . 'h' : translate('na') }}
-                            /
-                            {{ $kpi['avg_quote_to_confirm_hours'] !== null ? number_format((float) $kpi['avg_quote_to_confirm_hours'], 1) . 'h' : translate('na') }}
+                            / {{ $kpi['avg_quote_to_confirm_hours'] !== null ? number_format((float) $kpi['avg_quote_to_confirm_hours'], 1) . 'h' : translate('na') }}
                         </p>
                         <small class="text-muted">{{ translate('po_to_quote_slash_quote_to_confirmed') }}</small>
                     </div>
@@ -237,7 +216,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ translate('stage_trend') }}{{ $dateRange }}</h4>
+                        <h4 class="mb-0">{{ translate('stage_trend_last_6_months') }}</h4>
                         <span class="badge-soft">{{ translate('pipeline_velocity') }}</span>
                     </div>
                     <div class="card-body">
@@ -249,7 +228,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('stage_snapshot') }}</h4>
-                        <span class="badge-soft">{{ $dateRange }}</span>
+                        <span class="badge-soft">90D</span>
                     </div>
                     <div class="card-body">
                         <canvas id="wholesale-stage-snapshot" height="220"></canvas>
@@ -263,8 +242,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('top_product_volume') }}</h4>
-                        <span class="badge-soft">{{ translate('share') }}
-                            {{ number_format((float) $kpi['top_product_share'], 1) }}%</span>
+                        <span class="badge-soft">{{ translate('share') }} {{ number_format((float) $kpi['top_product_share'], 1) }}%</span>
                     </div>
                     <div class="card-body">
                         <canvas id="wholesale-product-volume" height="220"></canvas>
@@ -288,7 +266,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0">
-                        <h4 class="mb-0">{{ translate('tier_revenue_breakdown') }}{{ $dateRange }}</h4>
+                        <h4 class="mb-0">{{ translate('tier_revenue_breakdown_90d') }}</h4>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -308,8 +286,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">
-                                            {{ translate('no_tier_revenue_data_in_this_period') }}</td>
+                                        <td colspan="3" class="text-center text-muted py-4">{{ translate('no_tier_revenue_data_in_this_period') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -489,9 +466,7 @@
                         labels,
                         datasets: [{
                             data: counts,
-                            backgroundColor: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd',
-                                '#bfdbfe'
-                            ],
+                            backgroundColor: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
                             borderWidth: 0
                         }]
                     },
@@ -514,53 +489,6 @@
                     $('.custom-date-range').show();
                 } else {
                     $('.custom-date-range').hide();
-                }
-            });
-        });
-        // PDF Download with chart images - EXACTLY like CRM Insights
-        $(document).ready(function() {
-            $('.btn-outline-danger[href*="download=pdf"]').on('click', function(e) {
-                e.preventDefault();
-
-                // Get all chart canvases
-                const stageCanvas = document.getElementById('wholesale-stage-snapshot');
-                const trendCanvas = document.getElementById('wholesale-pipeline-trend');
-                const productCanvas = document.getElementById('wholesale-product-volume');
-                const tierCanvas = document.getElementById('wholesale-tier-mix');
-
-                if (stageCanvas && trendCanvas && productCanvas && tierCanvas) {
-                    // Convert canvases to base64 images
-                    const stageImage = stageCanvas.toDataURL('image/png');
-                    const trendImage = trendCanvas.toDataURL('image/png');
-                    const productImage = productCanvas.toDataURL('image/png');
-                    const tierImage = tierCanvas.toDataURL('image/png');
-
-                    // Get current URL
-                    const url = new URL($(this).attr('href'));
-
-                    // Create a form to POST the images
-                    const form = $('<form method="POST" action="' + url.pathname + '"></form>');
-                    form.append('@csrf');
-                    form.append('<input type="hidden" name="download" value="pdf">');
-                    form.append('<input type="hidden" name="stage_snapshot_chart" value="' + stageImage +
-                        '">');
-                    form.append('<input type="hidden" name="pipeline_trend_chart" value="' + trendImage +
-                        '">');
-                    form.append('<input type="hidden" name="top_products_chart" value="' + productImage +
-                        '">');
-                    form.append('<input type="hidden" name="tier_mix_chart" value="' + tierImage + '">');
-
-                    // Add all current query parameters from the URL
-                    url.searchParams.forEach((value, key) => {
-                        form.append('<input type="hidden" name="' + key + '" value="' + value +
-                            '">');
-                    });
-
-                    $('body').append(form);
-                    form.submit();
-                } else {
-                    // Fallback to regular link if canvases not found
-                    window.location.href = $(this).attr('href');
                 }
             });
         });

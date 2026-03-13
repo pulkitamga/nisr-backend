@@ -3,7 +3,7 @@
 <head>
     <title>{{ translate('branch_stock_report') }}</title>
     <style>
-        body { 
+        body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 12px;
             direction: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }};

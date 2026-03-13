@@ -347,7 +347,7 @@ class WarrantyController extends Controller
         return redirect()->route('admin.warranty.activation.list');
     }
 
-
+   
 
     // Activation List
     public function activationList(Request $request)
@@ -614,10 +614,7 @@ class WarrantyController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array
-                {
-                    return $this->rows;
-                }
+                public function array(): array { return $this->rows; }
                 public function headings(): array
                 {
                     return ['Claim Number', 'Serial', 'Status', 'Customer', 'Submitted At', 'Resolution Due', 'Branch'];
@@ -626,32 +623,16 @@ class WarrantyController extends Controller
         }
 
         if ($download === 'pdf') {
-
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
-
             $claimsForPdf = $detailQuery->get();
-
-            // Receive chart images from JS
-            $statusChartImage = $request->input('status_chart');
-            $trendChartImage  = $request->input('trend_chart');
-
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-claims-pdf',
-                data: compact(
-                    'kpi',
-                    'claimsForPdf',
-                    'fromDate',
-                    'toDate',
-                    'filters',
-                    'isRtl',
-                    'statusChartImage',
-                    'trendChartImage'
-                ),
-
+                data: compact('kpi', 'claimsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
                 fileName: 'warranty-claims-report.pdf',
                 orientation: 'landscape'
             );
         }
+
         $dataLimit = getWebConfig('pagination_limit') ?? 10;
         $claims = $detailQuery->paginate($dataLimit)->withQueryString();
 
@@ -802,10 +783,7 @@ class WarrantyController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array
-                {
-                    return $this->rows;
-                }
+                public function array(): array { return $this->rows; }
                 public function headings(): array
                 {
                     return ['Claim Number', 'Serial', 'Product', 'SLA Type', 'Due Date', 'Completed At', 'SLA Status', 'Claim Status'];
@@ -816,26 +794,9 @@ class WarrantyController extends Controller
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             $slaRowsForPdf = $slaSummaryRows->values();
-
-            // Get chart images from request
-            $complianceChartImage = $request->input('compliance_chart');
-            $typeChartImage = $request->input('type_chart');
-            $trendChartImage = $request->input('trend_chart');
-
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-sla-pdf',
-                data: compact(
-                    'kpi',
-                    'slaRowsForPdf',
-                    'fromDate',
-                    'toDate',
-                    'filters',
-                    'isRtl',
-                    'complianceChartImage',
-                    'typeChartImage',
-                    'trendChartImage'
-                ),
-
+                data: compact('kpi', 'slaRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
                 fileName: 'warranty-sla-report.pdf',
                 orientation: 'landscape'
             );
@@ -986,10 +947,7 @@ class WarrantyController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array
-                {
-                    return $this->rows;
-                }
+                public function array(): array { return $this->rows; }
                 public function headings(): array
                 {
                     return ['Serial', 'Product', 'Customer', 'Branch', 'Activation Method', 'Activated At', 'Status', 'Warranty End'];
@@ -1000,25 +958,9 @@ class WarrantyController extends Controller
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             $activationRowsForPdf = $detailQuery->get();
-
-            // Get chart images from request
-            $trendChartImage = $request->input('trend_chart');
-            $methodChartImage = $request->input('method_chart');
-
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-activations-pdf',
-                data: compact(
-                    'kpi',
-                    'methodBreakdown',
-                    'topProducts',
-                    'activationRowsForPdf',
-                    'fromDate',
-                    'toDate',
-                    'filters',
-                    'isRtl',
-                    'trendChartImage',
-                    'methodChartImage'
-                ),
+                data: compact('kpi', 'methodBreakdown', 'topProducts', 'activationRowsForPdf', 'fromDate', 'toDate', 'filters', 'isRtl'),
                 fileName: 'warranty-activations-report.pdf',
                 orientation: 'landscape'
             );
@@ -1060,9 +1002,9 @@ class WarrantyController extends Controller
             ->selectRaw($completedColumn . ' as completed_at')
             ->selectRaw(
                 'CASE ' .
-                    'WHEN ' . $completedColumn . ' IS NOT NULL THEN IF(' . $completedColumn . ' <= ' . $dueColumn . ', 1, 0) ' .
-                    'ELSE IF(' . $dueColumn . ' >= NOW(), 1, 0) ' .
-                    'END as is_within_sla'
+                'WHEN ' . $completedColumn . ' IS NOT NULL THEN IF(' . $completedColumn . ' <= ' . $dueColumn . ', 1, 0) ' .
+                'ELSE IF(' . $dueColumn . ' >= NOW(), 1, 0) ' .
+                'END as is_within_sla'
             )
             ->whereNotNull($dueColumn)
             ->whereBetween($dueColumn, [$fromDate, $toDate]);
@@ -1345,41 +1287,17 @@ class WarrantyController extends Controller
             $rows = $topProducts->map(fn($row) => [(string)$row->product_name, (int)$row->claims_count])->values()->all();
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array
-                {
-                    return $this->rows;
-                }
-                public function headings(): array
-                {
-                    return ['Product', 'Claims'];
-                }
+                public function array(): array { return $this->rows; }
+                public function headings(): array { return ['Product', 'Claims']; }
             }, 'warranty-analytics-report.xlsx');
         }
 
         if ($download === 'pdf') {
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
-
-            // Get chart images from request
-            $trendChartImage = $request->input('trend_chart');
-            $statusChartImage = $request->input('status_chart');
-            $agingChartImage = $request->input('aging_chart');
-            $chargeChartImage = $request->input('charge_chart');
-
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-analytics-pdf',
-                data: compact(
-                    'kpi',
-                    'topProducts',
-                    'snapshotFrom',
-                    'snapshotTo',
-                    'isRtl',
-                    'trendChartImage',
-                    'statusChartImage',
-                    'agingChartImage',
-                    'chargeChartImage'
-                ),
-                fileName: 'warranty-analytics-report.pdf',
-                orientation: 'landscape'
+                data: compact('kpi', 'topProducts', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                fileName: 'warranty-analytics-report.pdf'
             );
         }
 

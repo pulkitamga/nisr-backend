@@ -16,7 +16,7 @@
         .meta {
             margin-bottom: 10px;
         }
-        table { 
+        table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px;
@@ -32,14 +32,6 @@
         .left {
             text-align: {{ (session('direction') === 'rtl' || app()->getLocale() === 'ar') ? 'right' : 'left' }};
         }
-        .chart-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .chart-container img {
-            max-width: 100%;
-            height: auto;
-        }
     </style>
 </head>
 <body>
@@ -49,27 +41,6 @@
     <div>{{ translate('from') }}: {{ $filters['from'] ?? '-' }} | {{ translate('to') }}: {{ $filters['to'] ?? '-' }}</div>
     <div>{{ translate('exported_at') }}: {{ optional($exportedAt ?? now())->format('Y-m-d H:i:s') }}</div>
 </div>
-
-@if(!empty($chartData['labels']) && !empty($chartData['datasets']))
-    @php
-        $chartConfig = [
-            'type' => 'line',
-            'data' => $chartData,
-            'options' => [
-                'responsive' => true,
-                'maintainAspectRatio' => false,
-                'plugins' => [
-                    'legend' => ['position' => 'bottom']
-                ]
-            ]
-        ];
-        $encodedConfig = urlencode(json_encode($chartConfig));
-        $chartUrl = 'https://quickchart.io/chart?c=' . $encodedConfig . '&width=800&height=400&backgroundColor=white';
-    @endphp
-    <div class="chart-container">
-        <img src="{{ $chartUrl }}" alt="{{ translate('stock_transfer_chart') }}">
-    </div>
-@endif
 
 <table>
     <thead>
@@ -145,3 +116,4 @@
 </table>
 </body>
 </html>
+

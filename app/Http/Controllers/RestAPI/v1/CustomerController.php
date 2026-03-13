@@ -480,9 +480,10 @@ class CustomerController extends Controller
                 'updated_at'          => now(),
             ];
             BillingAddress::insert($billing_data);
-        } 
-        
-        ShippingAddress::insert($address);
+        } else {
+            ShippingAddress::insert($address);
+        }
+
         return response()->json(['message' => translate('successfully added!')], 200);
     }
 

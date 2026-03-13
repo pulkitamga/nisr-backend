@@ -1,42 +1,24 @@
 <table>
     <thead>
         <tr>
-            <th>{{ translate('Date') }}</th>
-            <th>{{ translate('Type') }}</th>
-            <th>{{ translate('Quantity') }}</th>
-            <th>{{ translate('Reference') }}</th>
-            <th>{{ translate('Description') }}</th>
+            <th>{{ __('Date') }}</th>
+            <th>{{ __('Type') }}</th>
+            <th>{{ __('Quantity') }}</th>
+            <th>{{ __('Reference') }}</th>
         </tr>
     </thead>
     <tbody>
         @foreach($history as $log)
-        @php
-        // Ensure data is treated as an array
-        $logData = is_array($log) ? $log : $log->toArray();
-        $isStockIn = ($logData['type'] ?? '') === 'IN';
-        $reference = $logData['reference'] ?? 'N/A';
-        @endphp
         <tr>
-            {{-- Date Formatting --}}
-            <td>{{ \Carbon\Carbon::parse($logData['created_at'])->format('Y-m-d H:i A') }}</td>
-
-            {{-- Transaction Type --}}
-            <td>{{ $isStockIn ? translate('Stock In') : translate('Stock Out') }}</td>
-
-            {{-- Signed Quantity --}}
-            <td>{{ ($isStockIn ? '+' : '-') . ($logData['quantity'] ?? 0) }}</td>
-
-            {{-- Reference Code --}}
-            <td>{{ $reference }}</td>
-
-            {{-- Contextual Description --}}
+            <td>{{ $log->created_at->format('Y-m-d') }}</td>
             <td>
-                @if($reference === 'BRANCH TRANSFER')
-                {{ $isStockIn ? translate('Received from') : translate('Sent to') }}
-                {{ $logData['from_branch'] ?? $logData['to_branch'] ?? translate('Branch') }}
-                @else
-                {{ $logData['remarks'] ?? '' }}
-                @endif
+                {{-- Matching the logic from your table --}}
+                {{ $log->received_from_branch == request('branch_id') ? __('Transfer In') : __('Transfer Out') }}
+            </td>
+            <td>{{ $log->quantity }}</td>
+            <td>
+                {{ __('Request') }} #{{ $log->stock_requests_id }}
+                {{ $log->stockRequest->reference ?? '' }}
             </td>
         </tr>
         @endforeach

@@ -11916,7 +11916,6 @@ return [
 	"insights" => "الرؤى",
 	"auto_summary" => "ملخص تلقائي",
 	"top_deal_owners_by_value_90d" => "أفضل ملاك الصفقات حسب القيمة (90 يومًا)",
-	"top_deal_owners_by_value" => "أفضل ملاك الصفقات حسب القيمة",
 	"no_owner_activity_in_this_period" => "لا توجد نشاطات للملاك في هذه الفترة.",
 	"voip_trend_last_12_months" => "اتجاه الاتصالات (آخر 12 شهرًا)",
 	"volume_completion_duration" => "الحجم، الإكمال، المدة",
@@ -12140,13 +12139,4 @@ return [
 	"Repair fee" => "Repair fee",
 	"Inspection fee" => "Inspection fee",
 	"payment_handled" => "Payment handled",
-	"Stock_Transfer_History" => "سجل نقل المخزون",
-	"Stock History" => "Stock History",
-	"weekly_breakdown" => "Weekly breakdown",
-	"crm_trend" => "اتجاه إدارة علاقات العملاء",
-	"tier_revenue_breakdown" => "تفصيل الإيرادات حسب الفئة",
-	"no_data_available" => "لا توجد بيانات متاحة",
-    'revenue_trend' => 'اتجاه الإيرادات',
-    'delivery_status_breakdown' => 'توزيع حالة التسليم',
-
 ];

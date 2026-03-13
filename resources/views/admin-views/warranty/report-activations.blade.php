@@ -76,26 +76,15 @@
 
 @section('content')
     @php
-        $isRtl =
-            session('direction') === 'rtl' ||
-            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
-        $activationMethods = [
-            'all',
-            'user_public_form',
-            'admin_manual',
-            'auto_activation',
-            'mobile_app',
-            'order_activation',
-            'replacement',
-            'unknown',
-        ];
+        $isRtl = session('direction') === 'rtl'
+            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $activationMethods = ['all', 'user_public_form', 'admin_manual', 'auto_activation', 'mobile_app', 'order_activation', 'replacement', 'unknown'];
         if (!in_array($filters['activation_method'] ?? 'all', $activationMethods, true)) {
             $activationMethods[] = $filters['activation_method'];
         }
     @endphp
 
-    <div class="content container-fluid warranty-activation-page {{ $isRtl ? 'text-right' : '' }}"
-        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid warranty-activation-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
@@ -118,38 +107,26 @@
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year"
-                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
-                                <option value="this_month"
-                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
-                                <option value="this_week"
-                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
-                                    {{ translate('today') }}</option>
-                                <option value="custom_date"
-                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
-                                    {{ translate('custom_range') }}</option>
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('activation_method') }}</label>
                             <select class="form-control" name="activation_method">
-                                @foreach ($activationMethods as $method)
-                                    <option value="{{ $method }}"
-                                        {{ ($filters['activation_method'] ?? 'all') === $method ? 'selected' : '' }}>
+                                @foreach($activationMethods as $method)
+                                    <option value="{{ $method }}" {{ ($filters['activation_method'] ?? 'all') === $method ? 'selected' : '' }}>
                                         {{ $method === 'all' ? translate('all') : translate($method) }}
                                     </option>
                                 @endforeach
@@ -157,17 +134,16 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('search') }}</label>
-                            <input type="text" class="form-control" name="search"
-                                value="{{ $filters['search'] ?? '' }}" placeholder="{{ translate('search_by_serial') }}">
+                            <input type="text" class="form-control" name="search" value="{{ $filters['search'] ?? '' }}"
+                                   placeholder="{{ translate('search_by_serial') }}">
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.warranty.report.activations') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.warranty.report.activations') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                             <a href="{{ route('admin.warranty.report.activations', array_merge(request()->query(), ['download' => 'excel'])) }}"
-                                class="btn btn-outline-success">{{ translate('excel') }}</a>
+                               class="btn btn-outline-success">{{ translate('excel') }}</a>
                             <a href="{{ route('admin.warranty.report.activations', array_merge(request()->query(), ['download' => 'pdf'])) }}"
-                                class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                               class="btn btn-outline-danger">{{ translate('PDF') }}</a>
                         </div>
                     </div>
                 </form>
@@ -179,7 +155,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('total_activations') }}</p>
-                        <p class="metric-value">{{ number_format((int) $kpi['total_activations']) }}</p>
+                        <p class="metric-value">{{ number_format((int)$kpi['total_activations']) }}</p>
                     </div>
                 </div>
             </div>
@@ -187,7 +163,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('activation_rate') }}</p>
-                        <p class="metric-value">{{ number_format((float) $kpi['activation_rate'], 1) }}%</p>
+                        <p class="metric-value">{{ number_format((float)$kpi['activation_rate'], 1) }}%</p>
                     </div>
                 </div>
             </div>
@@ -195,7 +171,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('active_warranties') }}</p>
-                        <p class="metric-value">{{ number_format((int) $kpi['active_warranties']) }}</p>
+                        <p class="metric-value">{{ number_format((int)$kpi['active_warranties']) }}</p>
                     </div>
                 </div>
             </div>
@@ -204,7 +180,7 @@
                     <div class="card-body">
                         <p class="metric-label">{{ translate('avg_warranty_months') }}</p>
                         <p class="metric-value">
-                            {{ $kpi['avg_warranty_months'] !== null ? number_format((float) $kpi['avg_warranty_months'], 1) : translate('na') }}
+                            {{ $kpi['avg_warranty_months'] !== null ? number_format((float)$kpi['avg_warranty_months'], 1) : translate('na') }}
                         </p>
                     </div>
                 </div>
@@ -256,13 +232,12 @@
                                 @forelse($methodBreakdown as $row)
                                     <tr>
                                         <td>{{ $row['label'] }}</td>
-                                        <td class="text-end">{{ number_format((int) $row['count']) }}</td>
-                                        <td class="text-end">{{ number_format((float) $row['percentage'], 1) }}%</td>
+                                        <td class="text-end">{{ number_format((int)$row['count']) }}</td>
+                                        <td class="text-end">{{ number_format((float)$row['percentage'], 1) }}%</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center py-4 text-muted">
-                                            {{ translate('no_data_found') }}</td>
+                                        <td colspan="3" class="text-center py-4 text-muted">{{ translate('no_data_found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -290,12 +265,11 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $product->product_name }}</td>
-                                        <td class="text-end">{{ number_format((int) $product->total) }}</td>
+                                        <td class="text-end">{{ number_format((int)$product->total) }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center py-4 text-muted">
-                                            {{ translate('no_data_found') }}</td>
+                                        <td colspan="3" class="text-center py-4 text-muted">{{ translate('no_data_found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -308,7 +282,7 @@
         <div class="card table-card">
             <div class="card-header border-0 d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ translate('activation_details') }}</h4>
-                <span class="badge badge-soft-dark">{{ number_format((int) $activations->total()) }}</span>
+                <span class="badge badge-soft-dark">{{ number_format((int)$activations->total()) }}</span>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -329,9 +303,7 @@
                         @forelse($activations as $warranty)
                             @php
                                 $customerName = trim(
-                                    ((string) ($warranty->user?->f_name ?? '')) .
-                                        ' ' .
-                                        ((string) ($warranty->user?->l_name ?? '')),
+                                    ((string)($warranty->user?->f_name ?? '')) . ' ' . ((string)($warranty->user?->l_name ?? ''))
                                 );
                                 if ($customerName === '') {
                                     $customerName = $warranty->activated_by_name ?? '-';
@@ -348,14 +320,12 @@
                                 <td>{{ optional($warranty->activation_date)->format('Y-m-d H:i') ?? '-' }}</td>
                                 <td>{{ optional($warranty->end_date)->format('Y-m-d') ?? '-' }}</td>
                                 <td>
-                                    <span
-                                        class="badge badge-soft-{{ $statusClass }}">{{ translate($warranty->status) }}</span>
+                                    <span class="badge badge-soft-{{ $statusClass }}">{{ translate($warranty->status) }}</span>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}
-                                </td>
+                                <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -397,16 +367,12 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
-                            }
+                            legend: { display: false }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
+                                ticks: { precision: 0 }
                             }
                         }
                     }
@@ -421,18 +387,14 @@
                         labels: methodData.labels || [],
                         datasets: [{
                             data: methodData.counts || [],
-                            backgroundColor: ['#7c3aed', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444',
-                                '#64748b', '#14b8a6'
-                            ]
+                            backgroundColor: ['#7c3aed', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#64748b', '#14b8a6']
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
+                            legend: { position: 'bottom' }
                         }
                     }
                 });
@@ -447,65 +409,6 @@
                     $('.custom-date-range').hide();
                 }
             });
-        });
-        // PDF Download with chart images
-        $('.btn-outline-danger[href*="download=pdf"]').on('click', function(e) {
-            e.preventDefault();
-
-            const $button = $(this);
-            let href = $button.attr('href');
-
-            setTimeout(function() {
-                const trendCanvas = document.getElementById('activation-trend-chart');
-                const methodCanvas = document.getElementById('activation-method-chart');
-
-                if (trendCanvas && methodCanvas) {
-                    try {
-                        const trendImage = trendCanvas.toDataURL('image/png');
-                        const methodImage = methodCanvas.toDataURL('image/png');
-
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = href;
-
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = '_token';
-                        csrfInput.value = '{{ csrf_token() }}';
-                        form.appendChild(csrfInput);
-
-                        const trendInput = document.createElement('input');
-                        trendInput.type = 'hidden';
-                        trendInput.name = 'trend_chart';
-                        trendInput.value = trendImage;
-                        form.appendChild(trendInput);
-
-                        const methodInput = document.createElement('input');
-                        methodInput.type = 'hidden';
-                        methodInput.name = 'method_chart';
-                        methodInput.value = methodImage;
-                        form.appendChild(methodInput);
-
-                        const urlParams = new URLSearchParams(window.location.search);
-                        urlParams.forEach((value, key) => {
-                            const input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = key;
-                            input.value = value;
-                            form.appendChild(input);
-                        });
-
-                        document.body.appendChild(form);
-                        form.submit();
-                        document.body.removeChild(form);
-                    } catch (error) {
-                        console.error('Error capturing charts:', error);
-                        window.open(href, '_blank');
-                    }
-                } else {
-                    window.open(href, '_blank');
-                }
-            }, 500);
         });
     </script>
 @endpush

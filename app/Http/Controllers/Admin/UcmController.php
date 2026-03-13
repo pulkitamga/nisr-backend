@@ -231,14 +231,8 @@ class UcmController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array
-                {
-                    return $this->rows;
-                }
-                public function headings(): array
-                {
-                    return ['Agent', 'Calls', 'Total Duration (min)', 'Avg Duration (min)'];
-                }
+                public function array(): array { return $this->rows; }
+                public function headings(): array { return ['Agent', 'Calls', 'Total Duration (min)', 'Avg Duration (min)']; }
             }, 'ucm-insights-report.xlsx');
         }
 
@@ -259,11 +253,6 @@ class UcmController extends Controller
             ->orderBy('agent_name')
             ->get();
 
-        $trendChart = $request->input('trend_chart');
-        $statusChart = $request->input('status_chart');
-        $directionChart = $request->input('direction_chart');
-        $hourlyChart = $request->input('hourly_chart');
-
         return view('admin-views.crm.reports.voip', compact(
             'kpi',
             'trendChartData',
@@ -275,11 +264,7 @@ class UcmController extends Controller
             'snapshotFrom',
             'snapshotTo',
             'filters',
-            'filterAgents',
-            'trendChart',
-            'statusChart',
-            'directionChart',
-            'hourlyChart'
+            'filterAgents'
         ));
     }
 
@@ -324,7 +309,8 @@ class UcmController extends Controller
         Builder|\Illuminate\Database\Eloquent\Builder $query,
         array $filters,
         string $callAlias = 'crm_calls'
-    ): void {
+    ): void
+    {
         if (($filters['direction'] ?? '') !== '') {
             $query->where('direction', $filters['direction']);
         }

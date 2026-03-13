@@ -77,23 +77,19 @@
 
 @section('content')
     @php
-        $isRtl =
-            session('direction') === 'rtl' ||
-            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl = session('direction') === 'rtl'
+            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
-    <div class="content container-fluid warranty-analytics-page {{ $isRtl ? 'text-right' : '' }}"
-        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid warranty-analytics-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
                 <div>
                     <h2 class="h1 mb-1">{{ translate('warranty_analytics_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
-                        {{ $snapshotTo->format('M d, Y') }}
+                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
                     </p>
                 </div>
-                <span class="badge badge-light text-dark">{{ translate('updated') }}
-                    {{ now()->format('M d, Y h:i A') }}</span>
+                <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
             </div>
         </div>
 
@@ -104,44 +100,31 @@
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year"
-                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
-                                <option value="this_month"
-                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
-                                <option value="this_week"
-                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
-                                    {{ translate('today') }}</option>
-                                <option value="custom_date"
-                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
-                                    {{ translate('custom_range') }}</option>
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('claim_status') }}</label>
-                            <input type="text" class="form-control" name="claim_status"
-                                value="{{ $filters['claim_status'] ?? '' }}" placeholder="{{ translate('all') }}">
+                            <input type="text" class="form-control" name="claim_status" value="{{ $filters['claim_status'] ?? '' }}" placeholder="{{ translate('all') }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('product') }}</label>
                             <select class="form-control" name="product_id">
                                 <option value="0">{{ translate('all') }}</option>
-                                @foreach ($products as $product)
-                                    <option value="{{ $product->id }}"
-                                        {{ (int) ($filters['product_id'] ?? 0) === (int) $product->id ? 'selected' : '' }}>
+                                @foreach($products as $product)
+                                    <option value="{{ $product->id }}" {{ (int)($filters['product_id'] ?? 0) === (int)$product->id ? 'selected' : '' }}>
                                         {{ $product->name }}
                                     </option>
                                 @endforeach
@@ -149,12 +132,9 @@
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.warranty.report.analytics') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
-                            <a href="{{ route('admin.warranty.report.analytics', array_merge(request()->query(), ['download' => 'excel'])) }}"
-                                class="btn btn-outline-success">{{ translate('excel') }}</a>
-                            <a href="{{ route('admin.warranty.report.analytics', array_merge(request()->query(), ['download' => 'pdf'])) }}"
-                                class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                            <a href="{{ route('admin.warranty.report.analytics') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.warranty.report.analytics', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <a href="{{ route('admin.warranty.report.analytics', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger">{{ translate('PDF') }}</a>
                         </div>
                     </div>
                 </form>
@@ -238,9 +218,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('warranty_trend_last_12_months') }}</h4>
-                        <span class="badge-soft">
-                            {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
-                        </span>
+                        <span class="badge-soft">{{ translate('activations_claims_resolved') }}</span>
                     </div>
                     <div class="card-body">
                         <canvas id="warranty-trend-chart" height="120"></canvas>
@@ -251,9 +229,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('claim_status_mix') }}</h4>
-                        <span class="badge-soft">
-                            {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
-                        </span>
+                        <span class="badge-soft">90D</span>
                     </div>
                     <div class="card-body">
                         <canvas id="warranty-status-chart" height="220"></canvas>
@@ -291,9 +267,8 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                       <h4 class="mb-0">{{ translate('top_products_by_claim_volume') }}</h4>
-                        <span class="badge-soft">{{ translate('charge_value') }}
-                            {{ number_format((float) $kpi['total_charge_amount'], 2) }}</span>
+                        <h4 class="mb-0">{{ translate('top_products_by_claim_volume_90d') }}</h4>
+                        <span class="badge-soft">{{ translate('charge_value') }} {{ number_format((float) $kpi['total_charge_amount'], 2) }}</span>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -313,8 +288,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">
-                                            {{ translate('no_product_claim_records_in_this_period') }}</td>
+                                        <td colspan="3" class="text-center text-muted py-4">{{ translate('no_product_claim_records_in_this_period') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -415,9 +389,7 @@
                         labels: statusData.labels || [],
                         datasets: [{
                             data: statusData.counts || [],
-                            backgroundColor: ['#dc2626', '#f59e0b', '#2563eb', '#0f766e', '#7c3aed',
-                                '#64748b', '#14b8a6', '#84cc16'
-                            ]
+                            backgroundColor: ['#dc2626', '#f59e0b', '#2563eb', '#0f766e', '#7c3aed', '#64748b', '#14b8a6', '#84cc16']
                         }]
                     },
                     options: {
@@ -504,81 +476,6 @@
                     $('.custom-date-range').hide();
                 }
             });
-        });
-        // PDF Download with chart images
-        $('.btn-outline-danger[href*="download=pdf"]').on('click', function(e) {
-            e.preventDefault();
-
-            const $button = $(this);
-            let href = $button.attr('href');
-
-            setTimeout(function() {
-                const trendCanvas = document.getElementById('warranty-trend-chart');
-                const statusCanvas = document.getElementById('warranty-status-chart');
-                const agingCanvas = document.getElementById('warranty-aging-chart');
-                const chargeCanvas = document.getElementById('warranty-charge-chart');
-
-                if (trendCanvas && statusCanvas && agingCanvas && chargeCanvas) {
-                    try {
-                        const trendImage = trendCanvas.toDataURL('image/png');
-                        const statusImage = statusCanvas.toDataURL('image/png');
-                        const agingImage = agingCanvas.toDataURL('image/png');
-                        const chargeImage = chargeCanvas.toDataURL('image/png');
-
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = href;
-
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = '_token';
-                        csrfInput.value = '{{ csrf_token() }}';
-                        form.appendChild(csrfInput);
-
-                        const trendInput = document.createElement('input');
-                        trendInput.type = 'hidden';
-                        trendInput.name = 'trend_chart';
-                        trendInput.value = trendImage;
-                        form.appendChild(trendInput);
-
-                        const statusInput = document.createElement('input');
-                        statusInput.type = 'hidden';
-                        statusInput.name = 'status_chart';
-                        statusInput.value = statusImage;
-                        form.appendChild(statusInput);
-
-                        const agingInput = document.createElement('input');
-                        agingInput.type = 'hidden';
-                        agingInput.name = 'aging_chart';
-                        agingInput.value = agingImage;
-                        form.appendChild(agingInput);
-
-                        const chargeInput = document.createElement('input');
-                        chargeInput.type = 'hidden';
-                        chargeInput.name = 'charge_chart';
-                        chargeInput.value = chargeImage;
-                        form.appendChild(chargeInput);
-
-                        const urlParams = new URLSearchParams(window.location.search);
-                        urlParams.forEach((value, key) => {
-                            const input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = key;
-                            input.value = value;
-                            form.appendChild(input);
-                        });
-
-                        document.body.appendChild(form);
-                        form.submit();
-                        document.body.removeChild(form);
-                    } catch (error) {
-                        console.error('Error capturing charts:', error);
-                        window.open(href, '_blank');
-                    }
-                } else {
-                    window.open(href, '_blank');
-                }
-            }, 500);
         });
     </script>
 @endpush

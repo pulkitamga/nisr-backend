@@ -36,7 +36,7 @@ class StockTransferReportController extends Controller
                 'from' => 'nullable|date',
                 'to' => 'nullable|date',
                 'from_branch_id' => 'nullable|exists:branches,id',
-                'to_branch_id' => 'nullable|exists:branches,id', 
+                'to_branch_id' => 'nullable|exists:branches,id',
                 'status' => 'nullable|in:pending,approved,rejected',
             ]);
 

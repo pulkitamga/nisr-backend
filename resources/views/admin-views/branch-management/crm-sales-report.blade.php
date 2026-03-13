@@ -11,15 +11,14 @@
     <div class="content container-fluid {{ $isRtl ? 'text-right' : 'text-left' }}">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
-                <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/order_report.png') }}"
-                    alt="">
+                <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/order_report.png') }}" alt="">
                 {{ translate('crm_sales_report') }}
             </h2>
         </div>
 
         <div class="card mb-3">
             <div class="card-body">
-                <form id="crm-sales-filter-form" class="row g-2 align-items-start">
+                <form id="crm-sales-filter-form" class="row g-2 align-items-end">
                     <div class="col-md-2">
                         <label class="form-label mb-1">{{ translate('date_range') }}</label>
                         <select class="form-control" name="date_type" id="crm-date-type">
@@ -62,10 +61,8 @@
                     </div>
 
                     <div class="col-12 d-flex flex-wrap gap-2 mt-2">
-                        <button type="submit" id="crm-load-btn"
-                            class="btn btn--primary">{{ translate('filter') }}</button>
-                        <button type="button" id="crm-reset-btn"
-                            class="btn btn-outline-secondary">{{ translate('reset') }}</button>
+                        <button type="submit" id="crm-load-btn" class="btn btn--primary">{{ translate('filter') }}</button>
+                        <button type="button" id="crm-reset-btn" class="btn btn-outline-secondary">{{ translate('reset') }}</button>
                         <button type="button" id="crm-export-excel" class="btn btn-outline-success">
                             <i class="tio-download-to me-1"></i>{{ translate('excel') }}
                         </button>
@@ -114,7 +111,7 @@
 
         <div class="card mb-3">
             <div class="card-body">
-                <canvas id="crm-sales-chart" height="400"></canvas>
+                <canvas id="crm-sales-chart" height="110"></canvas>
             </div>
         </div>
 
@@ -152,7 +149,7 @@
     <script>
         'use strict';
 
-        (function() {
+        (function () {
             const form = document.getElementById('crm-sales-filter-form');
             const loadBtn = document.getElementById('crm-load-btn');
             const resetBtn = document.getElementById('crm-reset-btn');
@@ -258,14 +255,6 @@
                                 position: 'bottom',
                             },
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true, // start from 0
-                                ticks: {
-                                    autoSkip: true // auto adjust ticks
-                                }
-                            }
-                        }
                     },
                 });
             };
@@ -296,8 +285,7 @@
 
             const loadReport = async () => {
                 setLoading(true);
-                tableBody.innerHTML =
-                    `<tr><td colspan="8" class="text-center py-4">${text.loading}...</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4">${text.loading}...</td></tr>`;
 
                 try {
                     const payload = buildPayload();
@@ -305,8 +293,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute('content') || '{{ csrf_token() }}',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json',
                         },
@@ -322,8 +309,7 @@
                     renderChart(data.chartData || {});
                     renderTable(data.pivotData || {});
                 } catch (error) {
-                    tableBody.innerHTML =
-                        `<tr><td colspan="8" class="text-center py-4 text-danger">${error.message || text.failedToLoad}</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">${error.message || text.failedToLoad}</td></tr>`;
                 } finally {
                     setLoading(false);
                 }
@@ -331,42 +317,13 @@
 
             const runExport = (type) => {
                 const query = buildQueryString(buildPayload());
-                const url = type === 'excel' ?
-                    `{{ route('admin.crm.sales-report-export-excel') }}?${query}` :
-                    `{{ route('admin.crm.sales-report-export-pdf') }}?${query}`;
+                const url = type === 'excel'
+                    ? `{{ route('admin.crm.sales-report-export-excel') }}?${query}`
+                    : `{{ route('admin.crm.sales-report-export-pdf') }}?${query}`;
 
                 window.open(url, '_blank');
             };
 
-            const exportPdf = () => {
-
-                const chartCanvas = document.getElementById('crm-sales-chart');
-
-                let chartImage = '';
-                if (chartCanvas) {
-                    chartImage = chartCanvas.toDataURL('image/png');
-                }
-
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `{{ route('admin.crm.sales-report-export-pdf') }}`;
-
-                const csrf = document.createElement('input');
-                csrf.type = 'hidden';
-                csrf.name = '_token';
-                csrf.value = document.querySelector('meta[name="csrf-token"]').content;
-
-                const imageInput = document.createElement('input');
-                imageInput.type = 'hidden';
-                imageInput.name = 'chart_image';
-                imageInput.value = chartImage;
-
-                form.appendChild(csrf);
-                form.appendChild(imageInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            };
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
                 loadReport();
@@ -382,7 +339,7 @@
             });
 
             exportExcelBtn.addEventListener('click', () => runExport('excel'));
-           exportPdfBtn.addEventListener('click', exportPdf);
+            exportPdfBtn.addEventListener('click', () => runExport('pdf'));
 
             toggleCustomDate();
             loadReport();

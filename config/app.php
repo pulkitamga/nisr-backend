@@ -166,7 +166,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         App\Providers\SocialLoginServiceProvider::class,
         Madnest\Madzipper\MadzipperServiceProvider::class,
-        
+
 
         /*
          * Package Service Providers...

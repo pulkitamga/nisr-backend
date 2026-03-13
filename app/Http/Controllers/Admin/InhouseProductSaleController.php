@@ -97,7 +97,7 @@ class InhouseProductSaleController extends BaseController
                 'labels' => $chartData['branch_product_labels'],
                 'colors' => ['#0ea5e9']
             ]
-        ]; 
+        ];
 
         foreach ($charts as $key => $config) {
             // Generate chart image using a service like QuickChart or similar

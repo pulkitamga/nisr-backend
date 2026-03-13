@@ -41,11 +41,7 @@
     <div>{{ translate('from') }}: {{ $filters['from'] ?? '-' }} | {{ translate('to') }}: {{ $filters['to'] ?? '-' }}</div>
     <div>{{ translate('exported_at') }}: {{ optional($exportedAt ?? now())->format('Y-m-d H:i:s') }}</div>
 </div>
-@if(!empty($chartImage))
-    <div style="text-align:center; margin-bottom:15px;">
-        <img src="{{ $chartImage }}" style="width:100%; max-height:300px;">
-    </div>
-@endif
+
 <table>
     <thead>
     <tr>

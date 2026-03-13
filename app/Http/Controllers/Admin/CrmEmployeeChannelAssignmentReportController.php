@@ -47,9 +47,6 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
-        // Get chart image from request (sent via POST/GET from frontend)
-        $data['channelChart'] = $request->input('channel_chart');
-
         return app(ReportPdfService::class)->download(
             view: CrmEmployeeChannelAssignmentReport::EXPORT_PDF[VIEW],
             data: $data,
@@ -58,17 +55,6 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         );
     }
 
-    private function chartImage($config)
-    {
-        $url = "https://quickchart.io/chart?width=700&height=350&c=" . urlencode(json_encode($config));
-
-        try {
-            $image = file_get_contents($url);
-            return 'data:image/png;base64,' . base64_encode($image);
-        } catch (\Exception $e) {
-            return null;
-        }
-    }
     private function buildReportData(Request $request): array
     {
         [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
@@ -287,13 +273,13 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->values()
             ->sortBy(fn($row) => $row->report_date . '|' . strtolower((string)$row->employee_name) . '|' . $row->channel)
             ->map(function ($row) {
-                $row->report_date = (string)$row->report_date;
-                $row->employee_id = (int)$row->employee_id;
-                $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
-                $row->channel = strtolower(trim((string)$row->channel));
-                $row->total_count = (int)$row->total_count;
-                return $row;
-            });
+            $row->report_date = (string)$row->report_date;
+            $row->employee_id = (int)$row->employee_id;
+            $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
+            $row->channel = strtolower(trim((string)$row->channel));
+            $row->total_count = (int)$row->total_count;
+            return $row;
+        });
     }
 
     private function getInboxRows(

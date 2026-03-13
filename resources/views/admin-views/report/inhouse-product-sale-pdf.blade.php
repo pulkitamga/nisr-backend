@@ -17,7 +17,7 @@
     h2 { margin-bottom: 10px; }
     h3 { margin: 15px 0 8px; }
 
-    .meta { 
+    .meta {
         margin-bottom: 10px;
         font-size: 10px;
     }

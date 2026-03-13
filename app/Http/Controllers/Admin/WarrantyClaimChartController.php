@@ -37,7 +37,7 @@ class WarrantyClaimChartController extends Controller
         return view('admin-views.warranty.claim-chart', compact(
             'startDate',
             'endDate',
-            'selectedDateType', 
+            'selectedDateType',
             'selectedFrom',
             'selectedTo',
             'cards',
@@ -324,7 +324,6 @@ class WarrantyClaimChartController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $chartImage = $request->input('chart_image');
         $locale = session('locale', config('app.locale'));
         app()->setLocale($locale);
 
@@ -349,7 +348,7 @@ class WarrantyClaimChartController extends Controller
 
         return app(ReportPdfService::class)->download(
             view: 'admin-views.warranty.pdf-claims',
-           data: compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end', 'chartImage'),
+            data: compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end'),
             fileName: 'warranty-claims.pdf'
         );
     }

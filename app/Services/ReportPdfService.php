@@ -27,9 +27,6 @@ class ReportPdfService
             'default_font' => 'dejavusans',
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'curlAllow' => true,
-            'allow_html_remote' => true,
-            'showImageErrors' => true,
         ]);
 
         if ($this->resolveRtl($data)) {

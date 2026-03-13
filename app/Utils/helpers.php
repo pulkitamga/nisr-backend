@@ -444,31 +444,25 @@ class helpers
     //     return $data;
     // }
 
-     public static function set_data_format_for_json_data($data)
+    public static function set_data_format_for_json_data($data)
     {
-        // 1. Process Colors
-        $colors_decoded = is_array($data['colors']) ? $data['colors'] : json_decode($data['colors'], true);
-        $colors = is_array($colors_decoded) ? $colors_decoded : [];
- 
+        $colors = is_array($data['colors']) ? $data['colors'] : json_decode($data['colors']);
         $query_data = Color::whereIn('code', $colors)->pluck('name', 'code')->toArray();
         $color_process = [];
         foreach ($query_data as $key => $color) {
-            $color_process[] = [
+            $color_process[] = array(
                 'name' => $color,
                 'code' => $key,
-            ];
+            );
         }
- 
-        // 2. Process Color Images
-        $color_image_raw = isset($data['color_image']) ? (is_array($data['color_image']) ? $data['color_image'] : json_decode($data['color_image'])) : null;
-        $color_image = is_iterable($color_image_raw) ? $color_image_raw : [];
- 
+
+        $color_image = isset($data['color_image']) ? (is_array($data['color_image']) ? $data['color_image'] : json_decode($data['color_image'])) : null;
         $color_final = [];
         foreach ($color_process as $color) {
             $image_name = null;
-            if (!empty($color_image)) {
+            if ($color_image) {
                 foreach ($color_image as $image) {
-                    if (isset($image->color) && '#' . $image->color == $color['code']) {
+                    if ($image->color && '#' . $image->color == $color['code']) {
                         $image_name = $image->image_name;
                     }
                 }
@@ -479,43 +473,36 @@ class helpers
                 'image' => $image_name,
             ];
         }
- 
-        // 3. Process General Arrays (Categories, Images, Choice Options)
-        $data['category_ids'] = is_array($data['category_ids']) ? $data['category_ids'] : (json_decode($data['category_ids'], true) ?? []);
-        $data['images'] = is_array($data['images']) ? $data['images'] : (json_decode($data['images'], true) ?? []);
-        $data['choice_options'] = is_array($data['choice_options']) ? $data['choice_options'] : (json_decode($data['choice_options'], true) ?? []);
- 
+
+        $variation = [];
+        $data['category_ids'] = is_array($data['category_ids']) ? $data['category_ids'] : json_decode($data['category_ids']);
+        $data['images'] = is_array($data['images']) ? $data['images'] : json_decode($data['images']);
         $data['colors'] = $colors;
         $data['color_image'] = $color_image;
         $data['colors_formatted'] = $color_final;
- 
-        // 4. Process Attributes
         $attributes = [];
-        $attr_decoded = is_array($data['attributes']) ? $data['attributes'] : json_decode($data['attributes'], true);
-        if (is_array($attr_decoded)) {
-            foreach ($attr_decoded as $attribute) {
+        if ((is_array($data['attributes']) ? $data['attributes'] : json_decode($data['attributes'])) != null) {
+            $attributes_arr = is_array($data['attributes']) ? $data['attributes'] : json_decode($data['attributes']);
+            foreach ($attributes_arr as $attribute) {
                 $attributes[] = (int)$attribute;
             }
         }
         $data['attributes'] = $attributes;
- 
-        // 5. Process Variations (The most common crash point)
-        $variation = [];
-        $variation_decoded = is_array($data['variation']) ? $data['variation'] : json_decode($data['variation'], true);
-        $variation_arr = is_array($variation_decoded) ? $variation_decoded : [];
- 
+        $data['choice_options'] = is_array($data['choice_options']) ? $data['choice_options'] : json_decode($data['choice_options']);
+        $variation_arr = is_array($data['variation']) ? $data['variation'] : json_decode($data['variation'], true);
         foreach ($variation_arr as $var) {
             $variation[] = [
-                'type' => $var['type'] ?? null,
-                'price' => (float)($var['price'] ?? 0),
-                'sku' => $var['sku'] ?? null,
-                'qty' => (int)($var['qty'] ?? 0),
+                'type' => $var['type'],
+                'price' => (float)$var['price'],
+                'sku' => $var['sku'],
+                'qty' => (int)$var['qty'],
             ];
         }
         $data['variation'] = $variation;
- 
         return $data;
     }
+
+
     public static function product_data_formatting($data, $multi_data = false)
     {
         if ($data) {

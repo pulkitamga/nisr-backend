@@ -193,11 +193,7 @@ class ChattingController extends BaseController
         }
         $allChattingUsers?->map(function ($chatting) use ($allChattingUsers, $customerId) {
             $filterColumn = !is_null($chatting?->admin_id) ? 'admin_id' : (!is_null($chatting?->seller_id) ? 'seller_id' : 'delivery_man_id');
-$filterId = $chatting?->admin_id 
-    ?? ($chatting?->seller_id 
-        ? $chatting?->shop?->id 
-        : $chatting?->deliveryMan?->id
-    );
+            $filterId = $chatting?->admin_id ?? ($chatting?->seller_id ? $chatting->shop->id : $chatting->deliveryMan->id);
             $filter = [
                 'user_id' => $customerId,
                 $filterColumn => $filterId,

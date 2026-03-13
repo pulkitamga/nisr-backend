@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Log;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\File;
 use ZipArchive;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class EncryptionController extends Controller
 {
@@ -17,7 +16,7 @@ class EncryptionController extends Controller
 
     public function __construct()
     {
-        $this->boltPath = base_path('bolt-runner.php');
+        $this->boltPath = base_path('vendor/bin/bolt');
         $this->storagePath = storage_path('app/encryption');
 
         // Create directories if they don't exist
@@ -36,281 +35,24 @@ class EncryptionController extends Controller
 
         return view('encryption.index', compact('encryptedFiles', 'key'));
     }
-public function encrypt(Request $request)
-{
-    $request->validate([
-        'key' => 'required|string|min:8',
-        'folders' => 'sometimes|array',
-        'files' => 'sometimes|array',
-    ]);
 
-    $key = $request->key;
-    $selectedFolders = $request->input('folders', []);
-    $selectedFiles = $request->input('files', []);
-
-    // First, let's list all available commands
-    $listProcess = new Process([
-        PHP_BINARY,
-        $this->boltPath,
-        'list'  // Symfony Console command to list all commands
-    ]);
-    $listProcess->run();
-    \Log::info('Available Bolt commands: ' . $listProcess->getOutput());
-    \Log::info('List command error: ' . $listProcess->getErrorOutput());
-
-    // Also try --help
-    $helpProcess = new Process([
-        PHP_BINARY,
-        $this->boltPath,
-        '--help'
-    ]);
-    $helpProcess->run();
-    \Log::info('Bolt help: ' . $helpProcess->getOutput());
-
-    // Check if we have anything to encrypt
-    if (empty($selectedFolders) && empty($selectedFiles)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No folders or files provided'
-        ], 400);
-    }
-
-    $timestamp = now()->format('Y-m_d-H-i-s');
-    $outputDir = $this->storagePath . DIRECTORY_SEPARATOR . "encrypted_{$timestamp}";
-    $zipFile = $this->storagePath . DIRECTORY_SEPARATOR . "encrypted_project_{$timestamp}.zip";
-
-    // Create output directory
-    if (!File::exists($outputDir)) {
-        File::makeDirectory($outputDir, 0755, true);
-    }
-
-    session(['encryption_key' => $key]);
-
-    $results = [
-        'success' => [],
-        'failed' => []
-    ];
-
-    $filesToEncrypt = [];
-
-    // --- Handle folders first - collect all PHP files ---
-    foreach ($selectedFolders as $folder) {
-        $folderPath = base_path($folder);
-
-        if (!File::exists($folderPath) || !File::isDirectory($folderPath)) {
-            $results['failed'][] = $folder . ': Folder not found';
-            continue;
-        }
-
-        $allFiles = File::allFiles($folderPath);
-        foreach ($allFiles as $file) {
-            if ($file->getExtension() === 'php') {
-                // Get relative path from project root
-                $relativePath = str_replace(base_path() . DIRECTORY_SEPARATOR, '', $file->getPathname());
-                // Store relative path with forward slashes for consistency
-                $filesToEncrypt[] = str_replace('\\', '/', $relativePath);
-            }
-        }
-    }
-
-    // Add individually selected files (avoid duplicates)
-    foreach ($selectedFiles as $file) {
-        $normalizedFile = str_replace('\\', '/', $file);
-        if (!in_array($normalizedFile, $filesToEncrypt)) {
-            $filesToEncrypt[] = $normalizedFile;
-        }
-    }
-
-    // If no files to encrypt, return error
-    if (empty($filesToEncrypt)) {
-        File::deleteDirectory($outputDir);
-        return response()->json([
-            'success' => false,
-            'message' => 'No PHP files found to encrypt',
-            'results' => $results
-        ], 400);
-    }
-
-    // --- Encrypt all collected files ---
-    foreach ($filesToEncrypt as $relativePath) {
-        $sourceFile = base_path(str_replace('/', DIRECTORY_SEPARATOR, $relativePath));
-
-        if (!File::exists($sourceFile)) {
-            $results['failed'][] = $relativePath . ': File not found';
-            continue;
-        }
-
-        try {
-            // Create temporary directories with unique names
-            $tempId = uniqid();
-            $tempInputDir = storage_path('app' . DIRECTORY_SEPARATOR . 'encryption' . DIRECTORY_SEPARATOR . "input_{$tempId}");
-            $tempOutputDir = storage_path('app' . DIRECTORY_SEPARATOR . 'encryption' . DIRECTORY_SEPARATOR . "output_{$tempId}");
-
-            File::makeDirectory($tempInputDir, 0755, true);
-            File::makeDirectory($tempOutputDir, 0755, true);
-
-            // Parse the relative path
-            $relativePathParts = explode('/', $relativePath);
-            $filename = array_pop($relativePathParts);
-            
-            // Create a flat structure in temp input
-            $tempInputFile = $tempInputDir . DIRECTORY_SEPARATOR . $filename;
-            
-            File::copy($sourceFile, $tempInputFile);
-            
-            \Log::info('Input file copied to: ' . $tempInputFile);
-
-            // Try different command formats that might work with Symfony Console
-            $commandFormats = [
-                ['encrypt:file', $tempInputFile, $key, $tempOutputDir],  // Command with colon
-                ['encrypt', $tempInputFile, $key, $tempOutputDir],       // Simple command
-                ['file:encrypt', $tempInputFile, $key, $tempOutputDir],  // Alternative format
-                ['encode', $tempInputFile, $key, $tempOutputDir],        // Encode command
-                ['crypt', $tempInputFile, $key, $tempOutputDir],         // Crypt command
-            ];
-
-            $success = false;
-            $lastError = '';
-
-            foreach ($commandFormats as $index => $format) {
-                $command = array_merge([PHP_BINARY, $this->boltPath], $format);
-                
-                $process = new Process($command);
-                $process->setWorkingDirectory(base_path());
-                $process->run();
-
-                \Log::info("Trying format {$index}: " . $process->getCommandLine());
-                \Log::info("Output: " . $process->getOutput());
-                \Log::info("Error: " . $process->getErrorOutput());
-                \Log::info("Exit code: " . $process->getExitCode());
-
-                // Check if output directory has files
-                if (File::exists($tempOutputDir)) {
-                    $files = File::allFiles($tempOutputDir);
-                    if (!empty($files)) {
-                        $success = true;
-                        \Log::info("Format {$index} created files!");
-                        break;
-                    }
-                }
-                
-                $lastError = $process->getErrorOutput() ?: $process->getOutput();
-                
-                // Small delay between attempts
-                usleep(100000);
-            }
-
-            if (!$success) {
-                throw new \Exception("All command formats failed to create encrypted files. Last error: " . $lastError);
-            }
-
-            // List all files in output directory
-            $outputFiles = [];
-            if (File::exists($tempOutputDir)) {
-                $allOutputFiles = File::allFiles($tempOutputDir);
-                foreach ($allOutputFiles as $file) {
-                    $outputFiles[] = $file->getPathname();
-                    \Log::info('Found in output: ' . $file->getPathname());
-                }
-            }
-
-            // Look for any .bolt file
-            $foundEncryptedFile = null;
-            foreach ($outputFiles as $outputFile) {
-                if (pathinfo($outputFile, PATHINFO_EXTENSION) === 'bolt') {
-                    $foundEncryptedFile = $outputFile;
-                    \Log::info('Found bolt file: ' . $outputFile);
-                    break;
-                }
-            }
-
-            if ($foundEncryptedFile && File::exists($foundEncryptedFile)) {
-                // Create destination directory in final output
-                $destDir = $outputDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, dirname($relativePath));
-                File::makeDirectory($destDir, 0755, true);
-                
-                // Copy encrypted file to final destination
-                $destFile = $outputDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath) . '.bolt';
-                File::copy($foundEncryptedFile, $destFile);
-                
-                $results['success'][] = $relativePath;
-                \Log::info('Successfully encrypted: ' . $relativePath);
-            } else {
-                $results['failed'][] = $relativePath . ': No .bolt file created';
-            }
-
-            // Cleanup
-            File::deleteDirectory($tempInputDir);
-            File::deleteDirectory($tempOutputDir);
-
-        } catch (\Exception $e) {
-            $results['failed'][] = $relativePath . ': ' . $e->getMessage();
-            \Log::error('Encryption exception: ' . $e->getMessage());
-            
-            // Cleanup on error
-            if (isset($tempInputDir) && File::exists($tempInputDir)) {
-                File::deleteDirectory($tempInputDir);
-            }
-            if (isset($tempOutputDir) && File::exists($tempOutputDir)) {
-                File::deleteDirectory($tempOutputDir);
-            }
-        }
-    }
-
-    // Copy essential unencrypted files
-    $this->copyEssentialFiles($outputDir);
-
-    // Only create zip if we have successful encryptions
-    if (empty($results['success'])) {
-        File::deleteDirectory($outputDir);
-        return response()->json([
-            'success' => false,
-            'message' => 'Encryption failed: No files were successfully encrypted',
-            'results' => $results
-        ], 400);
-    }
-
-    $this->createZip($outputDir, $zipFile);
-    File::deleteDirectory($outputDir);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Encryption completed',
-        'results' => $results,
-        'download_url' => route('encryption.download', ['filename' => basename($zipFile)])
-    ]);
-}
-/**
+    /**
      * Encrypt the project
-     */ public function encryptol(Request $request)
+     */
+    public function encrypt(Request $request)
     {
         $request->validate([
             'key' => 'required|string|min:8',
-            'folders' => 'sometimes|array',
-            'files' => 'sometimes|array',
+            'folders' => 'required|array',
         ]);
 
         $key = $request->key;
-        $selectedFolders = $request->input('folders', []);
-        $selectedFiles = $request->input('files', []);
-
-        // Check if we have anything to encrypt
-        if (empty($selectedFolders) && empty($selectedFiles)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No folders or files provided'
-            ], 400);
-        }
-
+        $selectedFolders = $request->folders;
         $timestamp = now()->format('Y-m-d_H-i-s');
         $outputDir = $this->storagePath . "/encrypted_{$timestamp}";
         $zipFile = $this->storagePath . "/encrypted_project_{$timestamp}.zip";
 
-        // Create output directory
-        if (!File::exists($outputDir)) {
-            File::makeDirectory($outputDir, 0755, true);
-        }
-
+        // Store key in session for this session only
         session(['encryption_key' => $key]);
 
         $results = [
@@ -318,239 +60,35 @@ public function encrypt(Request $request)
             'failed' => []
         ];
 
-        // Handle individual files
-        // foreach ($selectedFiles as $file) {
-        //     $sourceFile = base_path($file);
-        //     if (File::exists($sourceFile)) {
-        //         try {
+        // Available folders to encrypt
+        $folders = [
+            'app' => base_path('app'),
+            'bootstrap' => base_path('bootstrap'),
+            'config' => base_path('config'),
+            'database' => base_path('database'),
+            'resources/views' => base_path('resources/views'),
+            'routes' => base_path('routes'),
+            'Modules' => base_path('Modules'),
+        ];
 
+        foreach ($selectedFolders as $folder) {
+            if (isset($folders[$folder]) && File::exists($folders[$folder])) {
+                $source = $folders[$folder];
+                $destination = $outputDir . '/' . $folder;
 
-        //             $relativePath = $file;
-
-        //             // $destFile = $outputDir . '/' . $relativePath;
-        //             $destFile = $outputDir . '/' . $relativePath . '.bolt';
-        //             $destDir = dirname($destFile);
-
-        //             if (!File::exists($destDir)) {
-        //                 File::makeDirectory($destDir, 0755, true);
-        //             }
-
-        //             $tempDir = storage_path('app/encryption/tmp_' . uniqid());
-        //             $tempOutput = storage_path('app/encryption/tmp_enc_' . uniqid());
-
-        //             // create temp folders
-        //             File::makeDirectory($tempDir, 0755, true);
-        //             File::makeDirectory($tempOutput, 0755, true);
-
-        //             // copy file into temp folder
-        //             $tempFile = $tempDir . '/' . basename($sourceFile);
-        //             File::copy($sourceFile, $tempFile);
-
-        //             // run bolt on folder
-        //             $process = new Process([
-        //                 PHP_BINARY,
-        //                 $this->boltPath,
-        //                 '-encrypt',
-        //                 $tempDir,
-        //                 $key,
-        //                 $tempOutput
-        //             ]);
-
-        //             $process->run();
-
-        //             if (!$process->isSuccessful()) {
-        //                 throw new ProcessFailedException($process);
-        //             }
-
-        //             // encrypted file path
-        //             // $encryptedFile = $tempOutput . '/' . basename($sourceFile);
-        //             $encryptedFile = $tempOutput . '/' . basename($tempDir) . '/' . basename($sourceFile) . '.bolt';
-
-        //             if (File::exists($encryptedFile)) {
-        //                 File::copy($encryptedFile, $destFile);
-        //             } else {
-        //                 throw new \Exception("Encrypted file not created");
-        //             }
-
-        //             // cleanup temp folders
-        //             File::deleteDirectory($tempDir);
-        //             File::deleteDirectory($tempOutput);
-        //             // $process = new Process([
-        //             //     PHP_BINARY,
-        //             //     $this->boltPath,
-        //             //     'encrypt',
-        //             //     $sourceFile,
-        //             //     $key,
-        //             //     $destFile
-        //             // ]);
-        //             // $process->mustRun();
-
-        //             if (!File::exists($destFile)) {
-        //                 $results['failed'][] = $file . ' : encrypted file not created';
-        //                 continue;
-        //             }
-
-        //             $results['success'][] = $file;
-        //         } catch (\Exception $e) {
-        //             $results['failed'][] = $file . ': ' . $e->getMessage();
-        //         }
-        //     } else {
-        //         $results['failed'][] = $file . ': File not found';
-        //     }
-        // }
-        
-        // Handle individual files
-foreach ($selectedFiles as $file) {
-    $sourceFile = base_path($file);
-    if (File::exists($sourceFile)) {
-        try {
-            $relativePath = $file;
-            $destFile = $outputDir . '/' . $relativePath . '.bolt';
-            $destDir = dirname($destFile);
-
-            if (!File::exists($destDir)) {
-                File::makeDirectory($destDir, 0755, true);
-            }
-
-            $tempDir = storage_path('app/encryption/tmp_' . uniqid());
-            $tempOutput = storage_path('app/encryption/tmp_enc_' . uniqid());
-
-            // Create temp folders
-            File::makeDirectory($tempDir, 0755, true);
-            File::makeDirectory($tempOutput, 0755, true);
-
-            // Create the same folder structure in temp dir
-            $tempFilePath = $tempDir . '/' . $relativePath;
-            File::ensureDirectoryExists(dirname($tempFilePath));
-            File::copy($sourceFile, $tempFilePath);
-
-            // Run bolt on the parent directory of the file
-$process = new Process([
-    PHP_BINARY,
-    $this->boltPath,
-    '-encrypt',
-    $tempDir,     // folder
-    $key,
-    $tempOutput   // output folder
-]);
-
-            $process->run();
-
-            // DEBUG: Capture all output and files
-            $debug = [
-                'command' => $process->getCommandLine(),
-                'output' => $process->getOutput(),
-                'error' => $process->getErrorOutput(),
-                'exit_code' => $process->getExitCode(),
-                'temp_dir' => $tempDir,
-                'temp_output' => $tempOutput,
-                'files_in_temp_output' => []
-            ];
-
-            // List all files in tempOutput
-            if (File::exists($tempOutput)) {
-                $allFiles = File::allFiles($tempOutput);
-                foreach ($allFiles as $f) {
-                    $debug['files_in_temp_output'][] = [
-                        'path' => $f->getPathname(),
-                        'name' => $f->getFilename(),
-                        'relative' => $f->getRelativePathname()
-                    ];
+                try {
+                    $this->encryptDirectory($source, $destination, $key);
+                    $results['success'][] = $folder;
+                } catch (\Exception $e) {
+                    $results['failed'][] = $folder . ': ' . $e->getMessage();
                 }
             }
-
-            // Log the debug info
-            \Log::info('Bolt Debug', $debug);
-
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
-            }
-
-            // Try multiple possible locations for the encrypted file
-            $encryptedFileName = basename($sourceFile) . '.bolt';
-            $foundEncryptedFile = null;
-            
-            // Possible locations to check
-            $possibleLocations = [
-                $tempOutput . '/' . $encryptedFileName,
-                $tempOutput . '/' . basename($tempDir) . '/' . $encryptedFileName,
-                $tempOutput . '/' . str_replace(base_path(), '', dirname($sourceFile)) . '/' . $encryptedFileName,
-                $tempOutput . '/' . $relativePath . '.bolt'
-            ];
-            
-            foreach ($possibleLocations as $location) {
-                if (File::exists($location)) {
-                    $foundEncryptedFile = $location;
-                    break;
-                }
-            }
-            
-            // If still not found, search recursively
-            if (!$foundEncryptedFile && File::exists($tempOutput)) {
-                $encryptedFiles = File::allFiles($tempOutput);
-                foreach ($encryptedFiles as $encFile) {
-                    if ($encFile->getFilename() === $encryptedFileName) {
-                        $foundEncryptedFile = $encFile->getPathname();
-                        break;
-                    }
-                }
-            }
-
-            if ($foundEncryptedFile && File::exists($foundEncryptedFile)) {
-                File::copy($foundEncryptedFile, $destFile);
-                
-                if (!File::exists($destFile)) {
-                    throw new \Exception("Failed to copy encrypted file to destination");
-                }
-                
-                $results['success'][] = $file;
-            } else {
-                // Return debug info in the response
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Encryption failed - Bolt output debug',
-                    'debug' => $debug,
-                    'file' => $file
-                ], 400);
-            }
-
-            // Cleanup temp folders
-            File::deleteDirectory($tempDir);
-            File::deleteDirectory($tempOutput);
-
-        } catch (\Exception $e) {
-            $results['failed'][] = $file . ': ' . $e->getMessage();
-            
-            // Cleanup on error
-            if (File::exists($tempDir)) File::deleteDirectory($tempDir);
-            if (File::exists($tempOutput)) File::deleteDirectory($tempOutput);
         }
-    } else {
-        $results['failed'][] = $file . ': File not found';
-    }
-}
-        // Handle folders (similar pattern)
-        // foreach ($selectedFolders as $folder) {
-        //     // ... folder handling code ...
-        // }
 
         // Copy essential unencrypted files
         $this->copyEssentialFiles($outputDir);
 
-        // 👇 IMPORTANT: Only create zip and return download URL if there are successful encryptions
-        if (empty($results['success'])) {
-            // Clean up the empty directory
-            File::deleteDirectory($outputDir);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Encryption failed: No files were successfully encrypted',
-                'results' => $results
-            ], 400);
-        }
-
-        $debugFiles = File::allFiles($outputDir);
-        // Create zip archive (only if we have successful encryptions)
+        // Create zip archive
         $this->createZip($outputDir, $zipFile);
 
         // Cleanup
@@ -560,66 +98,66 @@ $process = new Process([
             'success' => true,
             'message' => 'Encryption completed',
             'results' => $results,
-            'download_url' => route('encryption.download', ['filename' => basename($zipFile)]),
-            'debug_files' => collect($debugFiles)->map(fn($f) => $f->getRelativePathname())
+            'download_url' => route('encryption.download', ['filename' => basename($zipFile)])
         ]);
     }
-    // public function encryptControllers(Request $request)
-    // {
-    //     $request->validate([
-    //         'password' => 'required|string|min:8',
-    //         'controllers' => 'required|array',
-    //     ]);
 
-    //     $password = $request->password;
-    //     $selectedControllers = $request->controllers;
-    //     $timestamp = now()->format('Y-m-d_H-i-s');
-    //     $outputDir = $this->storagePath . "/controllers_encrypt_{$timestamp}";
-    //     $zipFile = $this->storagePath . "/controllers_encrypt_{$timestamp}.zip";
+    public function encryptControllers(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string|min:8',
+            'controllers' => 'required|array',
+        ]);
 
-    //     $results = ['success' => [], 'failed' => []];
+        $password = $request->password;
+        $selectedControllers = $request->controllers;
+        $timestamp = now()->format('Y-m-d_H-i-s');
+        $outputDir = $this->storagePath . "/controllers_encrypt_{$timestamp}";
+        $zipFile = $this->storagePath . "/controllers_encrypt_{$timestamp}.zip";
 
-    //     foreach ($selectedControllers as $controller) {
-    //         $controllerPath = app_path("Http/Controllers/{$controller}.php");
+        $results = ['success' => [], 'failed' => []];
 
-    //         if (File::exists($controllerPath)) {
-    //             try {
-    //                 // Create directory structure
-    //                 $destDir = $outputDir . '/app/Http/Controllers';
-    //                 if (!File::exists($destDir)) {
-    //                     File::makeDirectory($destDir, 0755, true);
-    //                 }
+        foreach ($selectedControllers as $controller) {
+            $controllerPath = app_path("Http/Controllers/{$controller}.php");
 
-    //                 $destFile = $destDir . '/' . $controller . '.php';
+            if (File::exists($controllerPath)) {
+                try {
+                    // Create directory structure
+                    $destDir = $outputDir . '/app/Http/Controllers';
+                    if (!File::exists($destDir)) {
+                        File::makeDirectory($destDir, 0755, true);
+                    }
 
-    //                 // Encrypt using OpenSSL
-    //                 $data = file_get_contents($controllerPath);
-    //                 $key = hash('sha256', $password, true);
-    //                 $iv = random_bytes(16);
-    //                 $encrypted = openssl_encrypt($data, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
-    //                 $final = base64_encode($iv . $encrypted);
+                    $destFile = $destDir . '/' . $controller . '.php';
 
-    //                 file_put_contents($destFile, $final);
-    //                 $results['success'][] = $controller;
-    //             } catch (\Exception $e) {
-    //                 $results['failed'][] = $controller . ': ' . $e->getMessage();
-    //             }
-    //         } else {
-    //             $results['failed'][] = $controller . ': File not found';
-    //         }
-    //     }
+                    // Encrypt using OpenSSL
+                    $data = file_get_contents($controllerPath);
+                    $key = hash('sha256', $password, true);
+                    $iv = random_bytes(16);
+                    $encrypted = openssl_encrypt($data, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+                    $final = base64_encode($iv . $encrypted);
 
-    //     // Create zip
-    //     $this->createZip($outputDir, $zipFile);
-    //     File::deleteDirectory($outputDir);
+                    file_put_contents($destFile, $final);
+                    $results['success'][] = $controller;
+                } catch (\Exception $e) {
+                    $results['failed'][] = $controller . ': ' . $e->getMessage();
+                }
+            } else {
+                $results['failed'][] = $controller . ': File not found';
+            }
+        }
 
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Controllers encrypted successfully!',
-    //         'results' => $results,
-    //         'download_url' => route('encryption.download', ['filename' => basename($zipFile)])
-    //     ]);
-    // }
+        // Create zip
+        $this->createZip($outputDir, $zipFile);
+        File::deleteDirectory($outputDir);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Controllers encrypted successfully!',
+            'results' => $results,
+            'download_url' => route('encryption.download', ['filename' => basename($zipFile)])
+        ]);
+    }
     /**
      * Decrypt the project
      */
@@ -813,14 +351,11 @@ $process = new Process([
     {
         $zip = new ZipArchive();
 
-        if ($zip->open($destination, ZipArchive::CREATE | ZipArchive::OVERWRITE)) {
-
+        if ($zip->open($destination, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $files = File::allFiles($source);
 
             foreach ($files as $file) {
-
-                $relativePath = str_replace($source . DIRECTORY_SEPARATOR, '', $file->getPathname());
-
+                $relativePath = substr($file->getPathname(), strlen($source) + 1);
                 $zip->addFile($file->getPathname(), $relativePath);
             }
 

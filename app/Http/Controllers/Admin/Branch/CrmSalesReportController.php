@@ -87,18 +87,17 @@ class CrmSalesReportController extends Controller
     }
 
     public function exportPdf(Request $request): Response
-{
-    $data = $this->buildReportData($request);
-    $data['exportedAt'] = now();
-    $data['chartImage'] = $request->input('chart_image'); // add this
+    {
+        $data = $this->buildReportData($request);
+        $data['exportedAt'] = now();
 
-    return app(ReportPdfService::class)->download(
-        view: 'admin-views.branch-management.crm-sales-report-pdf',
-        data: $data,
-        fileName: 'crm-sales-report.pdf',
-        orientation: 'landscape'
-    );
-}
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.branch-management.crm-sales-report-pdf',
+            data: $data,
+            fileName: 'crm-sales-report.pdf',
+            orientation: 'landscape'
+        );
+    }
 
     private function buildReportData(Request $request): array
     {
@@ -206,14 +205,17 @@ class CrmSalesReportController extends Controller
                 break;
 
             case 'custom_date':
-                if ($from && $to) {
-                    $fromDate = Carbon::parse($from)->startOfDay();
-                    $toDate = Carbon::parse($to)->endOfDay();
-                } else {
+                try {
+                    $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
+                } catch (\Throwable) {
                     $fromDate = now()->subDays(29)->startOfDay();
-                    $toDate = now()->endOfDay();
                 }
 
+                try {
+                    $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                } catch (\Throwable) {
+                    $toDate = now()->endOfDay();
+                }
                 break;
 
             case 'this_year':
@@ -261,11 +263,12 @@ class CrmSalesReportController extends Controller
             ->groupBy('order_id');
 
         $data = [];
-        $orderMap = $this->getAllAgentOrderIds();
+
         foreach ($agents as $agent) {
             $agentId = (int)$agent->id;
-
-            $agentOrderIds = $orderMap[$agentId] ?? [];
+            $agentOrderIds = $agentId > 0
+                ? $this->getAgentOrderIds($agentId)
+                : $this->getUnassignedDealOrderIds();
             if (empty($agentOrderIds)) {
                 $data[(int)$agent->id] = [
                     'id' => $agentId,
@@ -607,25 +610,5 @@ class CrmSalesReportController extends Controller
         }
 
         return $stats;
-    }
-
-    private function getAllAgentOrderIds(): array
-    {
-        return Deal::query()
-            ->whereNotNull('order_id')
-            ->select('order_id', 'owner_id', 'employee_id')
-            ->get()
-            ->groupBy(function ($deal) {
-                return $deal->owner_id ?: $deal->employee_id ?: 0;
-            })
-            ->map(function ($deals) {
-                return $deals->pluck('order_id')
-                    ->map(fn($id) => (int)$id)
-                    ->filter(fn($id) => $id > 0)
-                    ->unique()
-                    ->values()
-                    ->all();
-            })
-            ->toArray();
     }
 }
