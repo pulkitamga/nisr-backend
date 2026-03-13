@@ -163,7 +163,7 @@ class EmailVerificationController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required',
             'temporary_token' => 'required',
-            'token' => 'required',
+            'token' => 'required|digits:4',
         ]);
 
         if ($validator->fails()) {

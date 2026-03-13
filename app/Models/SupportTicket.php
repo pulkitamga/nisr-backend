@@ -17,6 +17,7 @@ class SupportTicket extends Model
 
     protected $fillable = [
         'request_type',
+        'service_id',
         'customer_id',
         'company_id',
         'source_id',
@@ -46,6 +47,7 @@ class SupportTicket extends Model
 
     protected $casts = [
         'id' => 'integer',
+        'service_id' => 'integer',
         'customer_id' => 'integer',
         'company_id' => 'integer',
         'source_id' => 'integer',

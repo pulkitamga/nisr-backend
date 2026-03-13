@@ -107,7 +107,7 @@ class ForgotPasswordController extends Controller
 
                     return response()->json(['message' => translate('please_try_again_after').' '.CarbonInterval::seconds($time)->cascade()->forHumans()], 200);
                 }else {
-                    $token = (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
+                    $token = \App\Support\OtpManager::numericToken(4);
                     $reset_data = PasswordReset::where(['identity' => $customer['phone']])->latest()->first();
                     if($reset_data){
                         $reset_data->token = $token;
@@ -174,7 +174,7 @@ class ForgotPasswordController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'identity' => 'required',
-            'otp' => 'required',
+            'otp' => 'required|digits:4',
             'password' => 'required|same:confirm_password|min:8',
         ]);
 

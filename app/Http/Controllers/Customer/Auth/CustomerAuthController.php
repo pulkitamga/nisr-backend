@@ -626,7 +626,7 @@ class CustomerAuthController extends Controller
             $timeDifferance = 0;
         }
 
-        $newTokenGenerate = (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
+        $newTokenGenerate = \App\Support\OtpManager::numericToken(4);
         if ($timeDifferance == 0) {
             if ($token) {
                 $token->token = $newTokenGenerate;

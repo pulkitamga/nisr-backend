@@ -306,7 +306,7 @@ class ProductController extends Controller
     {
         $user = Helpers::getCustomerInformation($request);
 
-        $product = Product::with(['reviews.customer', 'seller.shop', 'tags', 'digitalVariation', 'clearanceSale' => function ($query) {
+        $product = Product::with(['reviews.customer', 'seller.shop', 'tags', 'digitalVariation', 'service', 'clearanceSale' => function ($query) {
                 return $query->active();
             }])
             ->withCount(['wishList' => function ($query) use ($user) {
@@ -336,6 +336,7 @@ class ProductController extends Controller
             $product['reviews_count'] = $product->reviews->count();
             $product['digital_product_authors_names'] = $this->productService->getProductAuthorsInfo(product: $product)['names'];
             $product['digital_product_publishing_house_names'] = $this->productService->getProductPublishingHouseInfo(product: $product)['names'];
+            $product['service'] = $this->formatServicePayload($product->service);
 
             if ($user != 'offline' && count($restockRequestedIds) > 0) {
 
@@ -351,6 +352,27 @@ class ProductController extends Controller
             }
         }
         return response()->json($product, 200);
+    }
+
+    private function formatServicePayload(mixed $service): ?array
+    {
+        if (!$service) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $service->id,
+            'service_id' => $service->service_id,
+            'title' => $service->title,
+            'base_price_inshop' => $service->base_price_inshop,
+            'base_price_mobile' => $service->base_price_mobile,
+            'parts_cost' => $service->parts_cost,
+            'included_km_mobile' => $service->included_km_mobile,
+            'travel_fee_per_km' => $service->travel_fee_per_km,
+            'labor_hours' => $service->labor_hours,
+            'parts_included' => $service->parts_included,
+            'call_center_flag' => (bool) $service->call_center_flag,
+        ];
     }
 
     public function getBestSellingProducts(Request $request): JsonResponse

@@ -35,7 +35,7 @@ class PhoneVerificationController extends Controller
             ], 200);
         }
 
-        $token = (env('APP_MODE') == 'live') ? rand(1000, 9999) : 1234;
+        $token = \App\Support\OtpManager::numericToken(4);
         DB::table('phone_or_email_verifications')->insert([
             'phone_or_email' => $request['phone'],
             'token' => $token,
@@ -77,7 +77,7 @@ class PhoneVerificationController extends Controller
         }
 
         if ($time_differance == 0) {
-            $new_token = (env('APP_MODE') == 'live') ? rand(1000, 9999) : 1234;
+            $new_token = \App\Support\OtpManager::numericToken(4);
             if ($token) {
                 $token->token = $new_token;
                 $token->otp_hit_count = 0;
@@ -114,7 +114,7 @@ class PhoneVerificationController extends Controller
         $validator = Validator::make($request->all(), [
             'phone' => 'required',
             'temporary_token' => 'required',
-            'otp' => 'required',
+            'otp' => 'required|digits:4',
         ]);
 
         if ($validator->fails()) {

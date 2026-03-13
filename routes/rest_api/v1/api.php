@@ -24,6 +24,7 @@ use App\Http\Controllers\RestAPI\v1\OrderController;
 use App\Http\Controllers\RestAPI\v1\PageApiController;
 use App\Http\Controllers\RestAPI\v1\ProductController;
 use App\Http\Controllers\RestAPI\v1\SellerController;
+use App\Http\Controllers\RestAPI\v1\ServiceRequestController;
 use App\Http\Controllers\RestAPI\v1\ShippingMethodController;
 use App\Http\Controllers\RestAPI\v1\TrackingController;
 use App\Http\Controllers\RestAPI\v1\WarrantyActivationApiController;
@@ -314,6 +315,16 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
                 Route::get('conv/{ticket_id}', 'get_support_ticket_conv');
                 Route::post('reply/{ticket_id}', 'reply_support_ticket');
                 Route::get('close/{id}', 'support_ticket_close');
+            });
+        });
+
+        Route::group(['prefix' => 'service-request'], function () {
+            Route::controller(ServiceRequestController::class)->group(function () {
+                Route::get('reference', 'referenceData');
+                Route::post('/', 'create');
+                Route::get('/', 'index');
+                Route::get('{id}', 'show');
+                Route::post('{id}/reply', 'reply');
             });
         });
 

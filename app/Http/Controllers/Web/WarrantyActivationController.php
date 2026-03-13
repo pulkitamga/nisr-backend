@@ -247,7 +247,7 @@ class WarrantyActivationController extends Controller
         }
 
         if (!$isValid && $this->isWarrantyTestOtpAllowed()) {
-            $isValid = hash_equals($this->warrantyTestOtp(), (string)$request->otp);
+            $isValid = \App\Support\OtpManager::matchesWarrantyToken((string)$request->otp);
         }
 
         if (!$isValid) {
@@ -422,19 +422,17 @@ class WarrantyActivationController extends Controller
 
     private function generateWarrantyOtp(): string
     {
-        return $this->isWarrantyTestOtpAllowed()
-            ? $this->warrantyTestOtp()
-            : (string) rand(1000, 9999);
+        return \App\Support\OtpManager::warrantyToken();
     }
 
     private function isWarrantyTestOtpAllowed(): bool
     {
-        return env('APP_MODE') !== 'live';
+        return \App\Support\OtpManager::testModeEnabled();
     }
 
     private function warrantyTestOtp(): string
     {
-        return '0000';
+        return \App\Support\OtpManager::warrantyToken();
     }
 
     public function activateFromOrder(Request $request)

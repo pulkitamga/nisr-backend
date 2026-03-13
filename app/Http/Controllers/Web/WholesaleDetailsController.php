@@ -9,7 +9,6 @@ use App\Contracts\Repositories\ProductTagRepositoryInterface;
 use App\Contracts\Repositories\ReviewRepositoryInterface;
 use App\Contracts\Repositories\SellerRepositoryInterface;
 use App\Contracts\Repositories\TagRepositoryInterface;
-use App\Contracts\Repositories\ServiceRequestRepositoryInterface;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Review;
@@ -25,8 +24,9 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use App\Models\VehicleMake;
 use App\Models\VehicleYear;
-use App\Models\InboxMessage;
 use App\Http\Requests\ServiceRequestFormRequest;
+use App\Services\ServiceRequestSubmissionService;
+use Illuminate\Support\Facades\Log;
 
 
 class   WholesaleDetailsController extends Controller
@@ -45,7 +45,7 @@ class   WholesaleDetailsController extends Controller
         private readonly TagRepositoryInterface            $tagRepo,
         private readonly SellerRepositoryInterface         $sellerRepo,
         private readonly ProductService                    $productService,
-        private readonly ServiceRequestRepositoryInterface $serviceRequestRepo
+        private readonly ServiceRequestSubmissionService   $serviceRequestSubmissionService
 
     ) {}
 
@@ -212,38 +212,27 @@ class   WholesaleDetailsController extends Controller
 
     public function storeServiceRequest(ServiceRequestFormRequest $request)
     {
-        $validated = $request->validated();
+        if (!auth('customer')->check()) {
+            Toastr::error(translate('please_login_first'));
+            return redirect()->route('customer.auth.login');
+        }
 
-        $serviceRequest = $this->serviceRequestRepo->create($validated);
+        try {
+            $this->serviceRequestSubmissionService->submit(
+                validated: $request->validated(),
+                customer: auth('customer')->user(),
+                notificationLink: route('account-tickets')
+            );
+        } catch (\Throwable $exception) {
+            Log::error('Wholesale service request pipeline creation failed', [
+                'customer_id' => auth('customer')->id(),
+                'service_id' => $request->input('service_id'),
+                'error' => $exception->getMessage(),
+            ]);
 
-        InboxMessage::create([
-            'subject'       => 'New Service Request For - ' . $serviceRequest->service->title,
-            'body'          => 'A new service request has been submitted.',
-            'contact_id'   => $serviceRequest->customer_id ?? null,
-            'sender_name'   => $serviceRequest->customer->name ?? 'N/A',
-            'sender_email'  => $serviceRequest->customer->email ?? null,
-            'sender_phone'  => $serviceRequest->customer->phone ?? null,
-            'pipeline'       => 'form',
-            'message_type'  => 'service',
-            'status'        => 'new',
-            'details'       => [
-                'service_id'     => $serviceRequest->service->service_id,
-                'service_option' => $serviceRequest->service_option,
-                'country'        => $serviceRequest->country,
-                'state'          => $serviceRequest->state,
-                'city'           => $serviceRequest->city,
-                'area'           => $serviceRequest->area,
-                'address'        => $serviceRequest->address,
-                'latitude'       => $serviceRequest->latitude,
-                'longitude'      => $serviceRequest->longitude,
-                'vehicle_type'   => $serviceRequest->vehicle_type,
-                'vehicle_make'   => $serviceRequest->vehicle_make,
-                'vehicle_model'  => $serviceRequest->vehicle_model,
-                'vehicle_year'   => $serviceRequest->vehicle_year,
-                'vehicle_mileage' => $serviceRequest->vehicle_mileage,
-                'vin'            => $serviceRequest->vin,
-            ]
-        ]);
+            Toastr::error(translate('something_went_wrong'));
+            return redirect()->back();
+        }
 
         Toastr::success(translate('Service request created successfully.'));
 

@@ -79,7 +79,7 @@ class LoginController extends Controller
         }
 
         if (isset($delivery_man)) {
-            $otp = (env('APP_MODE') == 'live') ? rand(1000, 9999) : 1234;
+            $otp = \App\Support\OtpManager::numericToken(4);
 
             PasswordReset::insert([
                 'identity' => $delivery_man->phone,
@@ -130,7 +130,7 @@ class LoginController extends Controller
     public function otp_verification_submit(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'otp' => 'required',
+            'otp' => 'required|digits:4',
         ]);
 
         if ($validator->fails()) {

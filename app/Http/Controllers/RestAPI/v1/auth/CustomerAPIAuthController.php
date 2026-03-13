@@ -228,7 +228,7 @@ class CustomerAPIAuthController extends Controller
             ], 403);
         }
 
-        $token = (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
+        $token = \App\Support\OtpManager::numericToken(4);
         $this->phoneOrEmailVerificationRepo->updateOrCreate(params: ['phone_or_email' => $request['phone']], value: [
             'phone_or_email' => $request['phone'],
             'token' => $token,
@@ -280,7 +280,7 @@ class CustomerAPIAuthController extends Controller
                 ], 403);
             }
 
-            $token = (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
+            $token = \App\Support\OtpManager::numericToken(4);
 
             $this->phoneOrEmailVerificationRepo->updateOrCreate(params: ['phone_or_email' => $request['email']], value: [
                 'phone_or_email' => $request['email'],
@@ -329,7 +329,7 @@ class CustomerAPIAuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required',
-            'token' => 'required'
+            'token' => 'required|digits:4'
         ]);
 
         if ($validator->fails()) {
@@ -375,7 +375,7 @@ class CustomerAPIAuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required',
-            'token' => 'required'
+            'token' => 'required|digits:4'
         ]);
 
         if ($validator->fails()) {
@@ -548,7 +548,7 @@ class CustomerAPIAuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required',
-            'token' => 'required'
+            'token' => 'required|digits:4'
         ]);
 
         if ($validator->fails()) {
@@ -639,7 +639,7 @@ class CustomerAPIAuthController extends Controller
     public function customerSocialLogin(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'token' => 'required',
+            'token' => 'required|digits:4',
             'unique_id' => 'required',
             'email' => 'required_if:medium,google,facebook',
             'medium' => 'required|in:google,facebook,apple',
@@ -842,7 +842,7 @@ class CustomerAPIAuthController extends Controller
                 return response()->json(['errors' => $errors], 403);
             }
 
-            $token = (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
+            $token = \App\Support\OtpManager::numericToken(4);
 
             DB::table('password_resets')->updateOrInsert(['identity' => $request['email_or_phone']], [
                 'token' => $token,
@@ -910,7 +910,7 @@ class CustomerAPIAuthController extends Controller
         $validator = Validator::make($request->all(), [
             'type' => 'required|in:phone,email',
             'email_or_phone' => 'required',
-            'token' => 'required'
+            'token' => 'required|digits:4'
         ]);
 
         $user = $this->customerRepo->getByIdentity(filters: ['identity' => $request['email_or_phone']]);

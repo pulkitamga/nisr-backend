@@ -63,7 +63,7 @@ class ForgotPasswordController extends Controller
         } elseif ($verification_by == 'phone') {
             $seller = Seller::where('phone', 'like', "%{$request['identity']}%")->first();
             if (isset($seller)) {
-                $token = (env('APP_MODE') == 'live') ? rand(1000, 9999) : 1234;
+                $token = \App\Support\OtpManager::numericToken(4);
                 DB::table('password_resets')->insert([
                     'identity' => $seller['phone'],
                     'token' => $token,
@@ -84,7 +84,7 @@ class ForgotPasswordController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'identity' => 'required',
-            'otp' => 'required'
+            'otp' => 'required|digits:4'
         ]);
 
         if ($validator->fails()) {
@@ -111,7 +111,7 @@ class ForgotPasswordController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'identity' => 'required',
-            'otp' => 'required',
+            'otp' => 'required|digits:4',
             'password' => 'required|same:confirm_password|min:8',
         ]);
 

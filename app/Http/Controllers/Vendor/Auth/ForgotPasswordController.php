@@ -103,7 +103,7 @@ class ForgotPasswordController extends BaseController
         } elseif ($verificationBy == 'phone') {
             $vendor = $this->vendorRepo->getFirstWhere(['identity' => $request['identity']]);
             if (isset($vendor)) {
-                $token = (env('APP_MODE') == 'live') ? rand(1000, 9999) : 1234;
+                $token = \App\Support\OtpManager::numericToken(4);
                 $this->passwordResetRepo->add($this->passwordResetService->getAddData(identity: $request['identity'], token: $token, userType: 'seller'));
 
                 $paymentPublishedStatus = config('get_payment_publish_status') ?? 0;

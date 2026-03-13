@@ -14,7 +14,7 @@ class CustomerAuthService
 {
     public function getCustomerVerificationToken(): string
     {
-        return (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
+        return \App\Support\OtpManager::numericToken(4);
     }
 
     public function getCustomerLoginDataReset(): array

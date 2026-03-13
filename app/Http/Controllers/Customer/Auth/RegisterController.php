@@ -177,7 +177,7 @@ class RegisterController extends Controller
     public function verifyRegistration(Request $request): RedirectResponse|JsonResponse
     {
         Validator::make($request->all(), [
-            'token' => 'required',
+            'token' => 'required|digits:4',
         ]);
 
         $firebaseOTPVerification = getWebConfig(name: 'firebase_otp_verification') ?? [];
@@ -354,7 +354,7 @@ class RegisterController extends Controller
     public function ajax_verify(Request $request): JsonResponse
     {
         Validator::make($request->all(), [
-            'token' => 'required',
+            'token' => 'required|digits:4',
         ]);
 
         $email_status = getLoginConfig(key: 'email_verification');
