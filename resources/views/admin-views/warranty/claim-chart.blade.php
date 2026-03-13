@@ -612,5 +612,36 @@
                 $('#claimsTotal').text(res.total);
             });
         });
+        $('#exportPdfBtn').on('click', function(e) {
+    e.preventDefault();
+
+    const chartCanvas = document.getElementById('claimsChart');
+
+    if (!chartCanvas) {
+        window.open($(this).attr('href'), '_blank');
+        return;
+    }
+
+    const chartImage = chartCanvas.toDataURL('image/png');
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = $(this).attr('href');
+
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_token';
+    csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
+
+    const chartInput = document.createElement('input');
+    chartInput.type = 'hidden';
+    chartInput.name = 'chart_image';
+    chartInput.value = chartImage;
+    form.appendChild(chartInput);
+
+    document.body.appendChild(form);
+    form.submit();
+});
     </script>
 @endpush
