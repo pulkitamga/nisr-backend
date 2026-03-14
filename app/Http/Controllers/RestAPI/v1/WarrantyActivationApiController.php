@@ -9,6 +9,7 @@ use App\Models\Warranty;
 use App\Models\Blacklist;
 use App\Models\ActivationReview;
 use App\Models\Policy;
+use App\Models\ViewToken;
 use App\Models\WarrantyTimelineEvent;
 use App\Services\FirebaseService;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Carbon\Carbon;
 use App\Models\Branch;
+use Illuminate\Support\Str;
 
 class WarrantyActivationApiController extends Controller
 {
@@ -199,10 +201,13 @@ class WarrantyActivationApiController extends Controller
 
             Cache::forget($cacheKey);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Warranty activated successfully'
-            ]);
+            return response()->json(
+                $this->buildActivationResponse(
+                    $warranty->fresh(['product']),
+                    (string)$request->email,
+                    $flagged
+                )
+            );
         }
 
 
@@ -232,7 +237,12 @@ class WarrantyActivationApiController extends Controller
 
 
         return response()->json([
-            'status' => true,
+            'success' => true,
+            'status' => 'otp_required',
+            'next_step' => 'otp',
+            'masked_contact' => $this->maskContact((string)$request->email),
+            'warranty_public_id' => $warranty->warranty_public_id,
+            'policy_version' => $this->resolvePublishedPolicyVersion(),
             'message' => 'OTP sent successfully'
         ]);
     }
@@ -314,10 +324,13 @@ class WarrantyActivationApiController extends Controller
         Cache::forget("otp_session:{$request->serial_number}:{$request->email}");
         Cache::forget("contact_for_otp:{$request->serial_number}:{$request->email}");
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Warranty activated successfully'
-        ]);
+        return response()->json(
+            $this->buildActivationResponse(
+                $warranty->fresh(['product']),
+                (string)$request->email,
+                (bool)$flagged
+            )
+        );
     }
 
     public function resendOtp(Request $request)
@@ -372,7 +385,9 @@ class WarrantyActivationApiController extends Controller
         }
 
         return response()->json([
-            'status' => true,
+            'success' => true,
+            'status' => 'otp_required',
+            'masked_contact' => $this->maskContact((string)$request->email),
             'message' => 'OTP resent successfully'
         ]);
     }
@@ -403,9 +418,7 @@ class WarrantyActivationApiController extends Controller
             'invoice_number' => $request->invoice_number,
             'activated_ip' => request()->ip(),
             'activation_method' => 'mobile_app',
-            'policy_version' => Policy::published()
-                ->orderByDesc('published_at')
-                ->first()?->version ?? null,
+            'policy_version' => $this->resolvePublishedPolicyVersion(),
             'consent_checked' => true,
             'consent_timestamp' => now(),
             'consent_ip' => request()->ip(),
@@ -446,6 +459,94 @@ class WarrantyActivationApiController extends Controller
                 'decision_due' => $submittedAt->copy()->addDays(3),
             ]);
         }
+    }
+
+    private function buildActivationResponse(
+        Warranty $warranty,
+        string $contact,
+        bool $flagged,
+    ): array {
+        $viewToken = $this->createViewToken($warranty, $contact);
+        $status = $warranty->status;
+        $message = $status === 'pending_review'
+            ? 'Warranty activation submitted for review'
+            : 'Warranty activated successfully';
+
+        return [
+            'success' => true,
+            'status' => $status,
+            'activation_status' => $status,
+            'next_step' => $status === 'pending_review' ? 'pending_review' : 'success',
+            'message' => $message,
+            'masked_contact' => $this->maskContact($contact),
+            'requires_review' => $flagged || $status === 'pending_review',
+            'warranty_public_id' => $warranty->warranty_public_id,
+            'view_token' => $viewToken,
+            'serial_number' => $warranty->serial_number,
+            'start_date' => optional($warranty->start_date)?->toIso8601String(),
+            'end_date' => optional($warranty->end_date)?->toIso8601String(),
+            'valid_until' => optional($warranty->end_date)?->toIso8601String(),
+            'policy_version' => $warranty->policy_version,
+            'available_actions' => [
+                'can_claim' => $status === 'active',
+                'can_pay' => false,
+                'can_view_claim' => false,
+            ],
+        ];
+    }
+
+    private function createViewToken(Warranty $warranty, string $contact): string
+    {
+        if (!$warranty->warranty_public_id) {
+            $warranty->warranty_public_id = (string)Str::uuid();
+            $warranty->save();
+        }
+
+        $token = (string)Str::uuid();
+
+        ViewToken::create([
+            'jti' => $token,
+            'warranty_public_id' => $warranty->warranty_public_id,
+            'recipient_hash' => hash_hmac('sha256', $contact, config('app.key')),
+            'scope' => 'warranty:view',
+            'issued_at' => now(),
+            'expires_at' => now()->addMinutes(getWebConfig('view_token_ttl_minutes') ?? 10),
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return $token;
+    }
+
+    private function resolvePublishedPolicyVersion(): ?string
+    {
+        return Policy::query()
+            ->published()
+            ->orderByDesc('effective_date')
+            ->orderByDesc('published_at')
+            ->value('version');
+    }
+
+    private function maskContact(string $contact): string
+    {
+        if ($contact === '') {
+            return '****';
+        }
+
+        if (str_contains($contact, '@')) {
+            [$localPart, $domain] = explode('@', $contact, 2);
+            if (strlen($localPart) <= 2) {
+                return substr($localPart, 0, 1) . '***@' . $domain;
+            }
+
+            return substr($localPart, 0, 2) . '***@' . $domain;
+        }
+
+        if (strlen($contact) <= 4) {
+            return '****';
+        }
+
+        return str_repeat('*', strlen($contact) - 4) . substr($contact, -4);
     }
 
     private function generateWarrantyOtp(): string

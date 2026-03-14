@@ -18,7 +18,9 @@ use App\Models\State;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketConv;
 use App\Models\User;
+use App\Models\Warranty;
 use App\Models\Wishlist;
+use Carbon\Carbon;
 use App\Traits\CommonTrait;
 use App\Traits\FileManagerTrait;
 use App\Traits\PdfGenerator;
@@ -685,6 +687,42 @@ class CustomerController extends Controller
             ->where(['order_id' => $request['order_id']])
             ->get();
 
+        $order = $detailsList->first()?->order;
+        $customerId = $user == 'offline' ? null : $user->id;
+        $deliveredDays = $order ? Carbon::parse($order->updated_at)->diffInDays(now()) : null;
+        $warrantyActivationDays = (int)(getWebConfig('warranty_activation_days') ?? 7);
+        $productIds = $detailsList->pluck('product_id')->filter()->unique()->values()->toArray();
+        $warrantiesByProduct = [];
+        if ($customerId && !empty($productIds)) {
+            $warrantiesByProduct = Warranty::query()
+                ->where('final_user_id', $customerId)
+                ->where('invoice_number', $request['order_id'])
+                ->whereIn('product_id', $productIds)
+                ->where('activation_method', 'order_activation')
+                ->whereNotNull('activation_date')
+                ->orderBy('activation_date')
+                ->get()
+                ->groupBy('product_id');
+        }
+
+        $consumedWarrantyCountByProduct = [];
+        $orderDetailWarrantyMap = [];
+        foreach ($detailsList as $detail) {
+            $productId = (int)$detail->product_id;
+            $detailQty = max(0, (int)$detail->qty);
+            $productWarranties = collect($warrantiesByProduct[$productId] ?? [])->values();
+            $offset = $consumedWarrantyCountByProduct[$productId] ?? 0;
+            $detailWarranties = $productWarranties->slice($offset, $detailQty)->values();
+            $consumedWarrantyCountByProduct[$productId] = $offset + $detailWarranties->count();
+
+            $orderDetailWarrantyMap[$detail->id] = [
+                'items' => $detailWarranties,
+                'first' => $detailWarranties->first(),
+                'activated_count' => $detailWarranties->count(),
+                'remaining_count' => max(0, $detailQty - $detailWarranties->count()),
+            ];
+        }
+
         // Calculate totals correctly based on tax_model
         $totalTax = 0;
         $subtotal = 0;
@@ -721,7 +759,18 @@ class CustomerController extends Controller
             ];
         })->toArray();
 
-        $detailsList->map(function ($query) use ($user, $totalTax, $subtotal, $totalDiscount, $totalExcludedTax, $taxBreakdown) {
+        $detailsList->map(function ($query) use (
+            $user,
+            $totalTax,
+            $subtotal,
+            $totalDiscount,
+            $totalExcludedTax,
+            $taxBreakdown,
+            $order,
+            $orderDetailWarrantyMap,
+            $deliveredDays,
+            $warrantyActivationDays
+        ) {
             $query['variation'] = json_decode($query['variation'], true);
             $product = json_decode($query['product_details'], true);
             $product['thumbnail_full_url'] = $query?->productAllStatus?->thumbnail_full_url;
@@ -757,6 +806,37 @@ class CustomerController extends Controller
                 // Add tax breakdown
                 $query->order->tax_breakdown = $taxBreakdown;
             }
+
+            $warrantyData = $orderDetailWarrantyMap[$query->id] ?? [
+                'first' => null,
+                'activated_count' => 0,
+                'remaining_count' => (int)$query->qty,
+            ];
+            $firstWarranty = $warrantyData['first'];
+            $isDeliveredItem = $order
+                && $order->order_status === 'delivered'
+                && $query->delivery_status === 'delivered';
+            $isTraceable = (bool)($query?->productAllStatus?->is_traceable ?? $query?->product?->is_traceable ?? false);
+            $withinActivationWindow = $deliveredDays !== null
+                ? $deliveredDays <= $warrantyActivationDays
+                : false;
+
+            $query['is_traceable'] = $isTraceable;
+            $query['warranty_status'] = $firstWarranty?->statusLabel() ?? 'not_activated';
+            $query['warranty_public_id'] = $firstWarranty?->warranty_public_id;
+            $query['serial_number'] = $firstWarranty?->serial_number;
+            $query['activated_count'] = (int)($warrantyData['activated_count'] ?? 0);
+            $query['remaining_count'] = (int)($warrantyData['remaining_count'] ?? 0);
+            $query['warranty_activation_window_open'] = $withinActivationWindow;
+            $query['warranty_support_message'] = !$isTraceable
+                ? 'This item does not support serial-based warranty activation'
+                : (!$isDeliveredItem
+                    ? 'Warranty activation becomes available after delivery'
+                    : (!$withinActivationWindow
+                        ? 'The activation window has closed for this item'
+                        : ((int)($warrantyData['remaining_count'] ?? 0) <= 0
+                            ? 'All warranty units for this item are already activated'
+                            : 'Activation window is open for this delivered item')));
 
             return $query;
         });

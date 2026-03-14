@@ -456,6 +456,18 @@ class WarrantyActivationController extends Controller
             return back();
         }
 
+        $deliveredDays = Carbon::parse($detail->order->updated_at)->diffInDays(now());
+        $warrantyActivationDays = (int)(getWebConfig('warranty_activation_days') ?? 7);
+        $isDeliveredItem = $detail->order->order_status === 'delivered'
+            && $detail->delivery_status === 'delivered';
+        $isTraceable = (bool)($detail->product?->is_traceable);
+        $withinActivationWindow = $deliveredDays <= $warrantyActivationDays;
+
+        if (!$isDeliveredItem || !$isTraceable || !$withinActivationWindow) {
+            Toastr::error(translate('This order item is not eligible for warranty activation'));
+            return back();
+        }
+
         $activatedCount = Warranty::where('invoice_number', $detail->order_id)
             ->where('product_id', $detail->product_id)
             ->where('final_user_id', auth('customer')->id())

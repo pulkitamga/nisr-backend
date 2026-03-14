@@ -12614,4 +12614,5 @@ return [
 	"Go to product page" => "Go to product page",
 	"No tier available!" => "No tier available!",
 	"There are no more tiers to add." => "There are no more tiers to add.",
+	"Service image" => "Service image",
 ];

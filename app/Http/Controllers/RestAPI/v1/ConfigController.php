@@ -119,6 +119,7 @@ class ConfigController extends Controller
             'primary_color_light' => $systemColors['primary_light'] ?? '',
             'brand_setting' => (string)getWebConfig(name: 'product_brand'),
             'digital_product_setting' => (string)getWebConfig(name: 'digital_product'),
+            'services_product_status' => (int)getWebConfig(name: 'services'),
             'system_default_currency' => (int)getWebConfig(name: 'system_default_currency'),
             'digital_payment' => (boolean)getWebConfig(name: 'digital_payment')['status'] ?? 0,
             'cash_on_delivery' => (boolean)getWebConfig(name: 'cash_on_delivery')['status'] ?? 0,

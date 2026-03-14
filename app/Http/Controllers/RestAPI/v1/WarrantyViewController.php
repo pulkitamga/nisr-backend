@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Events\DigitalProductOtpVerificationEvent;
 use Illuminate\Http\Request;
 use App\Models\Warranty;
+use App\Models\WarrantyClaim;
+use App\Models\WarrantyClaimPayment;
 use App\Models\ViewToken;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -145,6 +147,7 @@ class WarrantyViewController extends Controller
                 'status' => 'otp_required',
                 'otp_method' => $otpMethod,
                 'temp_token' => encrypt($sessionData),
+                'masked_contact' => $this->maskContact((string)$request->contact),
                 'message' => translate('OTP sent successfully')
             ]);
         }
@@ -271,14 +274,205 @@ class WarrantyViewController extends Controller
         $token->update(['used_at' => now()]);
 
         $warranty = Warranty::where('warranty_public_id', $warranty_public_id)
-            ->with(['timelineEvents' => fn($q) => $q->latest()->paginate(10)])
+            ->with([
+                'product:id,name,sku',
+                'user:id,f_name,l_name,email,phone',
+                'claims' => fn($query) => $query
+                    ->latest('updated_at')
+                    ->with([
+                        'attachments',
+                        'payments',
+                        'timelineEvents' => fn($timelineQuery) => $timelineQuery->latest('timestamp'),
+                    ]),
+                'timelineEvents' => fn($query) => $query->latest('timestamp'),
+            ])
             ->firstOrFail();
+
+        $isOwner = $request->user()
+            && $warranty->final_user_id
+            && (int)$request->user()->id === (int)$warranty->final_user_id;
+        $openClaim = $warranty->claims->first(
+            fn(WarrantyClaim $claim) => !in_array($claim->status, ['closed', 'rejected'], true)
+        );
+        $payment = $openClaim ? $this->resolveActiveClaimPayment($openClaim) : null;
 
         return response()->json([
             'success' => true,
-            'warranty' => $warranty,
-            'timeline_events' => $warranty->timelineEvents()->latest()->paginate(10),
+            'warranty' => $this->formatWarrantyData($warranty, !$isOwner),
+            'timeline_events' => $this->formatTimelineEvents($warranty->timelineEvents),
+            'open_claim' => $openClaim ? $this->formatClaimSummary($openClaim) : null,
+            'payment' => $openClaim ? $this->formatPaymentSummary($payment) : null,
+            'available_actions' => [
+                'can_claim' => $warranty->statusLabel() === 'active' && $openClaim === null,
+                'can_pay' => $payment !== null && !empty($payment->payment_link),
+                'can_view_claim' => $openClaim !== null,
+            ],
         ]);
+    }
+
+    private function formatWarrantyData(Warranty $warranty, bool $maskOwner): array
+    {
+        $customerName = trim((string)($warranty->user?->f_name . ' ' . $warranty->user?->l_name));
+        if ($customerName === '') {
+            $customerName = (string)($warranty->activated_by_name ?? '');
+        }
+
+        $email = (string)($warranty->user?->email ?? $warranty->activated_by_email ?? '');
+        $phone = (string)($warranty->user?->phone ?? $warranty->activated_by_phone ?? '');
+
+        return [
+            'warranty_public_id' => $warranty->warranty_public_id,
+            'serial_number' => $warranty->serial_number,
+            'status' => $warranty->statusLabel(),
+            'activation_status' => $warranty->status,
+            'activation_date' => optional($warranty->activation_date)?->toIso8601String(),
+            'start_date' => optional($warranty->start_date)?->toIso8601String(),
+            'end_date' => optional($warranty->end_date)?->toIso8601String(),
+            'policy_version' => $warranty->policy_version,
+            'remaining_days' => $warranty->remaining_days,
+            'product_name' => $warranty->product?->name,
+            'customer_name' => $maskOwner ? $this->maskName($customerName) : $customerName,
+            'activated_by_name' => $maskOwner ? $this->maskName($customerName) : $customerName,
+            'email' => $maskOwner ? $this->maskEmail($email) : $email,
+            'activated_by_email' => $maskOwner ? $this->maskEmail($email) : $email,
+            'phone' => $maskOwner ? $this->maskPhone($phone) : $phone,
+            'activated_by_phone' => $maskOwner ? $this->maskPhone($phone) : $phone,
+            'product' => [
+                'id' => $warranty->product?->id,
+                'name' => $warranty->product?->name,
+                'sku' => $warranty->product?->sku,
+            ],
+        ];
+    }
+
+    private function formatClaimSummary(WarrantyClaim $claim): array
+    {
+        $latestEventAt = $claim->timelineEvents->first()?->timestamp
+            ?? $claim->updated_at
+            ?? $claim->submitted_at;
+
+        return [
+            'claim_number' => $claim->claim_number,
+            'status' => $claim->status,
+            'grouped_status' => $this->groupClaimStatus($claim->status),
+            'latest_event_at' => optional($latestEventAt)?->toIso8601String(),
+            'updated_at' => optional($claim->updated_at)?->toIso8601String(),
+        ];
+    }
+
+    private function formatPaymentSummary(?WarrantyClaimPayment $payment): ?array
+    {
+        if (!$payment) {
+            return null;
+        }
+
+        return [
+            'required' => $payment->payment_status === 'pending',
+            'payment_id' => $payment->id,
+            'status' => $payment->payment_status,
+            'amount' => (float)$payment->amount,
+            'amount_label' => number_format((float)$payment->amount, 2),
+            'redirect_link' => $payment->payment_link,
+            'expires_at' => optional($payment->payment_link_expires_at)?->toIso8601String(),
+        ];
+    }
+
+    private function formatTimelineEvents($events): array
+    {
+        return $events
+            ->take(20)
+            ->map(fn($event) => [
+                'event_type' => $event->event_type,
+                'description' => $event->description,
+                'timestamp' => optional($event->timestamp ?? $event->created_at)?->toIso8601String(),
+                'created_at' => optional($event->created_at)?->toIso8601String(),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function resolveActiveClaimPayment(WarrantyClaim $claim): ?WarrantyClaimPayment
+    {
+        return $claim->payments
+            ->sortByDesc('id')
+            ->first(function (WarrantyClaimPayment $payment) {
+                if ($payment->payment_status !== 'pending') {
+                    return false;
+                }
+
+                if ($payment->payment_link_expires_at && $payment->payment_link_expires_at->isPast()) {
+                    return false;
+                }
+
+                return true;
+            });
+    }
+
+    private function groupClaimStatus(string $status): string
+    {
+        return match ($status) {
+            'new', 'triage_pending', 'approved', 'rma_issued' => 'Submitted',
+            'received', 'diagnosis_pending', 'repair_pending', 'replacement_pending', 'qc_pending' => 'In Service',
+            'waiting_customer', 'waiting_parts', 'waiting_payment' => 'Waiting',
+            'shipped_ready', 'dispatched', 'resolved' => 'Ready/Delivered',
+            'closed', 'rejected' => 'Ended',
+            default => 'Submitted',
+        };
+    }
+
+    private function maskContact(string $contact): string
+    {
+        if ($contact === '') {
+            return '****';
+        }
+
+        if (str_contains($contact, '@')) {
+            return $this->maskEmail($contact);
+        }
+
+        return $this->maskPhone($contact);
+    }
+
+    private function maskEmail(string $email): string
+    {
+        if ($email === '' || !str_contains($email, '@')) {
+            return $email;
+        }
+
+        [$localPart, $domain] = explode('@', $email, 2);
+        if (strlen($localPart) <= 2) {
+            return substr($localPart, 0, 1) . '***@' . $domain;
+        }
+
+        return substr($localPart, 0, 2) . '***@' . $domain;
+    }
+
+    private function maskPhone(string $phone): string
+    {
+        $digitsOnly = preg_replace('/\D+/', '', $phone ?? '');
+        if (!$digitsOnly || strlen($digitsOnly) <= 4) {
+            return '****';
+        }
+
+        return str_repeat('*', strlen($digitsOnly) - 4) . substr($digitsOnly, -4);
+    }
+
+    private function maskName(string $name): string
+    {
+        $trimmed = trim($name);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        return collect(preg_split('/\s+/', $trimmed) ?: [])
+            ->map(function (string $part) {
+                if (strlen($part) <= 1) {
+                    return $part . '*';
+                }
+
+                return substr($part, 0, 1) . str_repeat('*', max(strlen($part) - 1, 1));
+            })
+            ->implode(' ');
     }
 
     private function dispatchLookupOtp(Warranty $warranty, string $contact, string $otp): void

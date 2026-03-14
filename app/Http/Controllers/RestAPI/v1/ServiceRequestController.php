@@ -4,6 +4,8 @@ namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceRequestFormRequest;
+use App\Models\CmsService;
+use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceInvoice;
 use App\Models\SupportTicket;
@@ -15,6 +17,7 @@ use App\Utils\Helpers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ServiceRequestController extends Controller
@@ -55,6 +58,51 @@ class ServiceRequestController extends Controller
             ],
             'makes' => $makes,
             'years' => $years,
+        ], 200);
+    }
+
+    public function catalog(): JsonResponse
+    {
+        $isEnabled = (bool) getWebConfig(name: 'services');
+
+        if (!$isEnabled) {
+            return response()->json([
+                'enabled' => false,
+                'showcase_cards' => [],
+                'services' => [],
+            ], 200);
+        }
+
+        $showcaseCards = CmsService::query()
+            ->with('translations')
+            ->whereIn('type', ['request_card_1', 'request_card_2', 'request_card_3'])
+            ->where('is_active', 1)
+            ->orderByRaw("
+                case type
+                    when 'request_card_1' then 1
+                    when 'request_card_2' then 2
+                    when 'request_card_3' then 3
+                    else 99
+                end
+            ")
+            ->get()
+            ->map(fn (CmsService $card) => $this->formatShowcaseCard($card))
+            ->values();
+
+        $services = Product::query()
+            ->with(['translations', 'service'])
+            ->where('product_type', 'services')
+            ->active()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Product $product) => $this->formatCatalogProduct($product))
+            ->filter()
+            ->values();
+
+        return response()->json([
+            'enabled' => true,
+            'showcase_cards' => $showcaseCards,
+            'services' => $services,
         ], 200);
     }
 
@@ -320,6 +368,49 @@ class ServiceRequestController extends Controller
             'payment_link_expires_at' => $invoice->payment_link_expires_at?->toIso8601String(),
             'generated_at' => $invoice->generated_at?->toIso8601String(),
             'paid_at' => $invoice->paid_at?->toIso8601String(),
+        ];
+    }
+
+    private function formatCatalogProduct(Product $product): ?array
+    {
+        if (!$product->service) {
+            return null;
+        }
+
+        return [
+            'product_id' => (int) $product->id,
+            'slug' => $product->slug,
+            'name' => getTranslatedValue($product, 'name', $product->name ?? ''),
+            'description' => Str::of(strip_tags((string) $product->details))
+                ->squish()
+                ->limit(160)
+                ->value(),
+            'thumbnail_full_url' => $product->thumbnail_full_url,
+            'service' => [
+                'id' => (int) $product->service->id,
+                'service_id' => $product->service->service_id,
+                'title' => $product->service->title ?: $product->name,
+                'base_price_inshop' => $product->service->base_price_inshop,
+                'base_price_mobile' => $product->service->base_price_mobile,
+                'parts_cost' => $product->service->parts_cost,
+                'included_km_mobile' => $product->service->included_km_mobile,
+                'travel_fee_per_km' => $product->service->travel_fee_per_km,
+                'labor_hours' => $product->service->labor_hours,
+                'parts_included' => $product->service->parts_included,
+                'call_center_flag' => (bool) $product->service->call_center_flag,
+            ],
+        ];
+    }
+
+    private function formatShowcaseCard(CmsService $card): array
+    {
+        return [
+            'id' => (int) $card->id,
+            'type' => $card->type,
+            'heading' => getTranslatedValue($card, 'heading', $card->heading ?? ''),
+            'description' => getTranslatedValue($card, 'description', $card->description ?? ''),
+            'image_url' => $card->image ? url(Storage::url($card->image)) : null,
+            'button_link' => $card->button_link,
         ];
     }
 

@@ -29,6 +29,8 @@ use App\Http\Controllers\RestAPI\v1\ShippingMethodController;
 use App\Http\Controllers\RestAPI\v1\TrackingController;
 use App\Http\Controllers\RestAPI\v1\WarrantyActivationApiController;
 use App\Http\Controllers\RestAPI\v1\WarrantyClaimController;
+use App\Http\Controllers\RestAPI\v1\WarrantyCustomerController;
+use App\Http\Controllers\RestAPI\v1\WarrantyPolicyApiController;
 use App\Http\Controllers\RestAPI\v1\WarrantyViewController;
 use Illuminate\Support\Facades\Route;
 
@@ -127,6 +129,10 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
 
     Route::controller(ConfigController::class)->group(function () {
         Route::get('config', 'configuration');
+    });
+
+    Route::prefix('services')->controller(ServiceRequestController::class)->group(function () {
+        Route::get('catalog', 'catalog');
     });
 
     Route::group(['prefix' => 'shipping-method', 'middleware' => 'apiGuestCheck'], function () {
@@ -460,11 +466,30 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
     });
 
     Route::post('warranty/claim', [WarrantyClaimController::class, 'store']);
+    Route::get('warranty/policy', [WarrantyPolicyApiController::class, 'show']);
     Route::prefix('warranty')->controller(WarrantyViewController::class)->group(function () {
         Route::get('start',  'lookupStart');
         Route::post('lookup',  'lookupSubmit');
         Route::post('lookup/verify', 'lookupVerify');
         Route::get('view/{warranty_public_id}', 'view')->name('api.warranty.view');
+    });
+
+    Route::group(['prefix' => 'customer', 'middleware' => 'auth:api'], function () {
+        Route::prefix('warranties')->controller(WarrantyCustomerController::class)->group(function () {
+            Route::get('/', 'warranties');
+            Route::get('{warranty_public_id}', 'warrantyDetail');
+        });
+
+        Route::prefix('warranty-claims')->controller(WarrantyCustomerController::class)->group(function () {
+            Route::get('/', 'claims');
+            Route::get('{claim_number}', 'claimDetail');
+            Route::post('{claim_number}/payment-request', 'claimPaymentRequest');
+        });
+
+        Route::prefix('orders')->controller(WarrantyCustomerController::class)->group(function () {
+            Route::get('{order_id}/warranty-support', 'orderWarrantySupport');
+            Route::post('{order_detail_id}/warranty-activate', 'activateOrderWarranty');
+        });
     });
 
     Route::post('contact-us', 'GeneralController@contact_store');
