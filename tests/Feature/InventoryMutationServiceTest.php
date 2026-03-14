@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ProductStockTransaction;
 use App\Services\InventoryMutationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -110,6 +111,44 @@ class InventoryMutationServiceTest extends TestCase
         $this->assertSame(10, (int)DB::table('product_stocks')->where('id', $fixture['product_stock_id'])->value('qty'));
         $this->assertSame(10, (int)DB::table('products')->where('id', $fixture['product_id'])->value('current_stock'));
         $this->assertSame(10, $this->getProductVariationQty($fixture['product_id'], 'Right'));
+    }
+
+    public function test_delete_for_product_removes_transactions_via_product_stock_ids(): void
+    {
+        $branchId = $this->createBranch('DeleteFlow-Branch');
+        $fixture = $this->seedProductStock(qty: 10, variant: 'DeleteMe', branchId: $branchId);
+
+        DB::table('product_stock_transactions')->insert([
+            [
+                'product_stock_id' => $fixture['product_stock_id'],
+                'type' => 'IN',
+                'quantity' => 10,
+                'reason' => 'initial_stock',
+                'remarks' => 'seeded for deletion test',
+                'from_branch_id' => null,
+                'to_branch_id' => $branchId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'product_stock_id' => $fixture['product_stock_id'],
+                'type' => 'OUT',
+                'quantity' => 2,
+                'reason' => 'manual_adjustment',
+                'remarks' => 'seeded for deletion test',
+                'from_branch_id' => $branchId,
+                'to_branch_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $this->assertSame(2, DB::table('product_stock_transactions')->where('product_stock_id', $fixture['product_stock_id'])->count());
+
+        ProductStockTransaction::deleteForProduct($fixture['product_id']);
+
+        $this->assertSame(0, DB::table('product_stock_transactions')->where('product_stock_id', $fixture['product_stock_id'])->count());
+        $this->assertSame(1, DB::table('product_stocks')->where('id', $fixture['product_stock_id'])->count());
     }
 
     public function test_order_status_delivered_then_returned_is_reversible_for_stock_and_flags(): void

@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Traits\StorageTrait;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Facades\App;
 
 /**
  * App\Models\BusinessPage
@@ -53,6 +55,21 @@ class BusinessPage extends Model
         return $this->morphOne(Attachment::class, 'attachable')->where(['file_type' => 'banner']);
     }
 
+    public function translations(): MorphMany
+    {
+        return $this->morphMany(Translation::class, 'translationable');
+    }
+
+    public function getTitleAttribute($title): string|null
+    {
+        return $this->getTranslatedFieldValue('title', $title);
+    }
+
+    public function getDescriptionAttribute($description): string|null
+    {
+        return $this->getTranslatedFieldValue('description', $description);
+    }
+
     public function getBannerFullUrlAttribute(): string|null|array
     {
         $banner = $this->banner;
@@ -70,6 +87,25 @@ class BusinessPage extends Model
         static::deleted(function ($model) {
             cacheRemoveByType(type: 'business_pages');
         });
+    }
+
+    private function getTranslatedFieldValue(string $key, string|null $fallback): string|null
+    {
+        if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
+            return $fallback;
+        }
+
+        if (!$this->relationLoaded('translations')) {
+            $this->load('translations');
+        }
+
+        $locale = strpos(url()->current(), '/api') ? App::getLocale() : getDefaultLanguage();
+        $locale = resolveAppLocale($locale);
+
+        return $this->translations
+            ->first(function ($translation) use ($locale, $key) {
+                return $translation->locale === $locale && $translation->key === $key;
+            })?->value ?? $fallback;
     }
 
 }

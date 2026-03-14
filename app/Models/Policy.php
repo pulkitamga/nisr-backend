@@ -14,7 +14,6 @@ class Policy extends Model
         'version',
         'locale',
         'effective_date',
-        'status',
         'content_html',
         'content_text',
         'slug',
@@ -34,7 +33,7 @@ class Policy extends Model
 
     public function scopePublished($query)
     {
-        return $query->where('status', 'published')->whereNotNull('published_at');
+        return $query->whereNotNull('published_at');
     }
 
     public function getValueAttribute(): ?string

@@ -133,6 +133,9 @@ function getProductTypeFunctionality() {
         elementProductColorSwitcherByIDFunctionality("reset");
         $("#digital_product_type_show").hide();
         $("#digital_file_ready").val("");
+        $('input[name="is_traceable"], input[name="is_warranty"]').prop("checked", false);
+        $("#current_stock").val(0);
+        $("#current_stock_display").val(0);
 
         $(".service_product_show").show();
         $(".digital-product-sections-show").hide();

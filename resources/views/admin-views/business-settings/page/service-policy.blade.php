@@ -11,9 +11,14 @@
 $language = getWebConfig(name: 'pnc_language') ?? null;
 $defaultLanguage = $language[0] ?? 'en';
 
-$translations = [];
-foreach ($service_policy->translations as $translation) {
-$translations[$translation->locale][$translation->key] = $translation->value;
+$policyTranslations = [];
+foreach (($service_policy?->translations ?? collect()) as $translation) {
+$policyTranslations[$translation->locale][$translation->key] = $translation->value;
+}
+
+$pageTranslations = [];
+foreach (($servicePolicyPage?->translations ?? collect()) as $translation) {
+$pageTranslations[$translation->locale][$translation->key] = $translation->value;
 }
 
 @endphp
@@ -53,10 +58,15 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 id="{{ $lang }}-form">
 
                                 @php
+                                $titleValue = $lang == $defaultLanguage
+                                ? ($servicePolicyPage?->getRawOriginal('title') ?? '')
+                                : ($pageTranslations[$lang]['title'] ?? '');
                                 $termValue = $lang == $defaultLanguage
-                                ? ($service_policy->value ?? '')
-                                : ($translations[$lang]['value'] ?? '');
+                                ? ($service_policy?->value ?? '')
+                                : ($policyTranslations[$lang]['value'] ?? '');
                                 @endphp
+                                <label>{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                <input type="text" name="title[]" value="{{ $titleValue }}" class="form-control mb-3" maxlength="255">
                                 <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <input type="hidden" name="lang[]" value="{{ $lang }}">
 

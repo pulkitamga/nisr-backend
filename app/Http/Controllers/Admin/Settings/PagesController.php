@@ -16,6 +16,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
+use App\Models\BusinessPage;
 use App\Models\BusinessSetting;
 use App\Models\Policy;
 use Illuminate\Support\Str;
@@ -49,8 +50,13 @@ class PagesController extends BaseController
     }
     public function getServicePolicyView(): View
     {
-        $service_policy = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'service_policy'], relations: ['translations']);
-        return view(Pages::SERVICE_POLICY[VIEW], compact('service_policy'));
+        $service_policy = $this->getOrCreateServicePolicySetting();
+        $servicePolicyPage = $this->getOrCreateServicePolicyPage();
+
+        $service_policy->loadMissing('translations');
+        $servicePolicyPage->loadMissing('translations');
+
+        return view(Pages::SERVICE_POLICY[VIEW], compact('service_policy', 'servicePolicyPage'));
     }
     public function getWarrantyPolicyView(): View
     {
@@ -80,6 +86,12 @@ class PagesController extends BaseController
                 id: $terms_condition->id
             );
 
+            $this->syncBusinessPage(
+                request: $request,
+                type: 'terms_condition',
+                defaultLangIndex: $defaultLangIndex,
+            );
+
             Toastr::success(translate('terms_condition_updated_successfully'));
         } else {
             Toastr::error(translate('default_language_data_not_found'));
@@ -89,8 +101,7 @@ class PagesController extends BaseController
     }
     public function updateServicePolicy(ServicePolicyRequest $request): RedirectResponse
     {
-
-        $service_policy = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'service_policy']);
+        $service_policy = $this->getOrCreateServicePolicySetting();
 
         $dataArray = $request->value ?? []; // safe fallback
         $defaultLang = getDefaultLanguage() ?? 'en';
@@ -106,6 +117,9 @@ class PagesController extends BaseController
                 model: BusinessSetting::class,
                 id: $service_policy->id
             );
+
+            $this->syncServicePolicyPage($request, $defaultLangIndex);
+
             Toastr::success(translate('service_policy_updated_successfully'));
         } else {
             Toastr::error(translate('default_language_data_not_found'));
@@ -113,6 +127,7 @@ class PagesController extends BaseController
 
 
         clearWebConfigCacheKeys();
+        cacheRemoveByType(type: 'business_pages');
         return back();
     }
     public function updateWarrantyPolicy(WarrantyPolicyRequest $request): RedirectResponse
@@ -143,7 +158,6 @@ class PagesController extends BaseController
 
             $policy->update([
                 'locale' => $locale,
-                'status' => 'published',
                 'effective_date' => $publishedAt->toDateString(),
                 'content_html' => $value,
                 'content_text' => strip_tags($value),
@@ -167,7 +181,6 @@ class PagesController extends BaseController
             $policy = Policy::create([
                 'version' => $version,
                 'locale' => $locale,
-                'status' => 'published',
                 'effective_date' => $publishedAt->toDateString(),
                 'content_html' => $value,
                 'content_text' => strip_tags($value),
@@ -212,6 +225,12 @@ class PagesController extends BaseController
                 request: $request,
                 model: BusinessSetting::class,
                 id: $privacy_policy->id
+            );
+
+            $this->syncBusinessPage(
+                request: $request,
+                type: 'privacy_policy',
+                defaultLangIndex: $defaultLangIndex,
             );
 
             Toastr::success(translate('privacy_policy_updated_successfully'));
@@ -276,6 +295,13 @@ class PagesController extends BaseController
                 model: BusinessSetting::class,
                 id: $setting->id
             );
+
+            $this->syncBusinessPage(
+                request: $request,
+                type: $page,
+                defaultLangIndex: $defaultLangIndex,
+                status: (int) $request->get('status', 0),
+            );
         }
 
         clearWebConfigCacheKeys();
@@ -310,6 +336,13 @@ class PagesController extends BaseController
                 request: $request,
                 model: BusinessSetting::class,
                 id: $aboutUs->id
+            );
+
+            $this->syncBusinessPage(
+                request: $request,
+                type: 'about_us',
+                defaultLangIndex: $defaultLangIndex,
+                contentField: 'about_us',
             );
 
             Toastr::success(translate('about_us_updated_successfully'));
@@ -349,5 +382,125 @@ class PagesController extends BaseController
         clearWebConfigCacheKeys();
         Toastr::success(translate('cookie_settings_updated_successfully'));
         return redirect()->back();
+    }
+
+    private function getOrCreateServicePolicySetting(): BusinessSetting
+    {
+        return BusinessSetting::firstOrCreate(
+            ['type' => 'service_policy'],
+            ['value' => '']
+        );
+    }
+
+    private function getOrCreateServicePolicyPage(): BusinessPage
+    {
+        return BusinessPage::firstOrCreate(
+            ['slug' => 'service-policy'],
+            [
+                'title' => 'Service Policy',
+                'description' => '',
+                'status' => 1,
+                'default_status' => 1,
+            ]
+        );
+    }
+
+    private function syncServicePolicyPage(ServicePolicyRequest $request, int $defaultLangIndex): void
+    {
+        $this->syncBusinessPage(
+            request: $request,
+            type: 'service_policy',
+            defaultLangIndex: $defaultLangIndex,
+        );
+    }
+
+    private function syncBusinessPage(
+        Request $request,
+        string $type,
+        int $defaultLangIndex,
+        string $contentField = 'value',
+        int $status = 1
+    ): void {
+        $page = $this->getOrCreateBusinessPageForType($type);
+        $titles = $request->input('title', []);
+        $contentValues = $request->input($contentField, []);
+
+        $defaultTitle = $titles[$defaultLangIndex] ?? $page->getRawOriginal('title') ?? $this->getDefaultBusinessPageTitle($type);
+        $defaultDescription = $contentValues[$defaultLangIndex] ?? $page->getRawOriginal('description') ?? '';
+
+        $page->fill([
+            'title' => $defaultTitle,
+            'description' => $defaultDescription,
+            'status' => $status,
+            'default_status' => 1,
+        ]);
+        $page->save();
+
+        foreach (($request->lang ?? []) as $index => $lang) {
+            if ($lang === getDefaultLanguage()) {
+                continue;
+            }
+
+            if (!empty($titles[$index] ?? null)) {
+                $this->translationRepo->updateData(
+                    model: BusinessPage::class,
+                    id: (string) $page->id,
+                    lang: $lang,
+                    key: 'title',
+                    value: $titles[$index]
+                );
+            }
+
+            if (array_key_exists($index, $contentValues)) {
+                $this->translationRepo->updateData(
+                    model: BusinessPage::class,
+                    id: (string) $page->id,
+                    lang: $lang,
+                    key: 'description',
+                    value: $contentValues[$index] ?? ''
+                );
+            }
+        }
+
+        $page->touch();
+    }
+
+    private function getOrCreateBusinessPageForType(string $type): BusinessPage
+    {
+        return BusinessPage::firstOrCreate(
+            ['slug' => $this->getBusinessPageSlug($type)],
+            [
+                'title' => $this->getDefaultBusinessPageTitle($type),
+                'description' => '',
+                'status' => 1,
+                'default_status' => 1,
+            ]
+        );
+    }
+
+    private function getBusinessPageSlug(string $type): string
+    {
+        return match ($type) {
+            'terms_condition' => 'terms-and-conditions',
+            'privacy_policy' => 'privacy-policy',
+            'service_policy' => 'service-policy',
+            'about_us' => 'about-us',
+            default => $type,
+        };
+    }
+
+    private function getDefaultBusinessPageTitle(string $type): string
+    {
+        return match ($type) {
+            'terms_condition' => 'Terms & Conditions',
+            'privacy_policy' => 'Privacy Policy',
+            'service_policy' => 'Service Policy',
+            'shipping-policy' => 'Shipping Policy',
+            'return-policy' => 'Return Policy',
+            'refund-policy' => 'Refund Policy',
+            'cancellation-policy' => 'Cancellation Policy',
+            'about_us' => 'About Us',
+            default => 'Page',
+        };
     }
 }

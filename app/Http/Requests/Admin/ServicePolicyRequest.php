@@ -19,13 +19,17 @@ class ServicePolicyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'value' => 'required',
+            'lang' => 'required|array|min:1',
+            'title' => 'required|array|min:1',
+            'title.*' => 'required|string|max:255',
+            'value' => 'required|array|min:1',
         ];
     }
 
     public function messages(): array
     {
         return [
+            'title.required' => translate('the_title_field_is_required'),
             'value.required' => translate('the_value_field_is_required'),
         ];
     }

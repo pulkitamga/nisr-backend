@@ -158,6 +158,7 @@ class ConfigController extends Controller
             'about_us' => getWebConfig(name: 'about_us'),
             'privacy_policy' => getWebConfig(name: 'privacy_policy'),
             'faq' => $this->cacheHelpTopicTable(),
+            'business_pages' => $this->cacheBusinessPagesTable(),
             'terms_&_conditions' => getWebConfig(name: 'terms_condition'),
             'refund_policy' => getWebConfig(name: 'refund-policy'),
             'return_policy' => getWebConfig(name: 'return-policy'),

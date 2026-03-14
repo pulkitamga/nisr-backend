@@ -22,9 +22,11 @@ use App\Models\Shop;
 use App\Models\StockClearanceProduct;
 use App\Models\StockClearanceSetup;
 use App\Models\Tag;
+use App\Models\Translation;
 use App\Utils\BrandManager;
 use App\Utils\ProductManager;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -204,7 +206,8 @@ trait CacheManagerTrait
      public function cacheBusinessPagesTable()
     {
         return Cache::remember(CACHE_FOR_BUSINESS_PAGES_LIST, CACHE_FOR_3_HOURS, function () {
-            return BusinessPage::where('status', 1)->with(['banner'])->get();
+            $this->ensureCoreBusinessPagesExist();
+            return BusinessPage::where('status', 1)->with(['banner', 'translations'])->get();
         });
     }
 
@@ -515,5 +518,150 @@ trait CacheManagerTrait
             $product['flash_deal_end_date'] = $flashDealEndDate;
             return $product;
         });
+    }
+
+    private function ensureCoreBusinessPagesExist(): void
+    {
+        $pageDefinitions = $this->coreBusinessPageDefinitions();
+        $settings = BusinessSetting::whereIn('type', array_keys($pageDefinitions))
+            ->with('translations')
+            ->get()
+            ->keyBy('type');
+
+        foreach ($pageDefinitions as $type => $definition) {
+            $setting = $settings->get($type);
+            if (!$setting) {
+                continue;
+            }
+
+            $existingPage = BusinessPage::where('slug', $definition['slug'])->first();
+            if ($existingPage) {
+                continue;
+            }
+
+            $description = $this->extractBusinessPageDescription(setting: $setting, definition: $definition);
+            $status = $this->extractBusinessPageStatus(setting: $setting, definition: $definition);
+
+            $page = BusinessPage::create([
+                'title' => $definition['title'],
+                'slug' => $definition['slug'],
+                'description' => $description,
+                'status' => $status,
+                'default_status' => 1,
+            ]);
+
+            $this->copyBusinessPageDescriptionTranslations(
+                page: $page,
+                setting: $setting,
+                definition: $definition
+            );
+        }
+    }
+
+    private function coreBusinessPageDefinitions(): array
+    {
+        return [
+            'terms_condition' => [
+                'slug' => 'terms-and-conditions',
+                'title' => 'Terms & Conditions',
+                'translation_key' => 'value',
+                'json_content' => false,
+            ],
+            'privacy_policy' => [
+                'slug' => 'privacy-policy',
+                'title' => 'Privacy Policy',
+                'translation_key' => 'value',
+                'json_content' => false,
+            ],
+            'service_policy' => [
+                'slug' => 'service-policy',
+                'title' => 'Service Policy',
+                'translation_key' => 'value',
+                'json_content' => false,
+            ],
+            'about_us' => [
+                'slug' => 'about-us',
+                'title' => 'About Us',
+                'translation_key' => 'about_us',
+                'json_content' => false,
+            ],
+            'refund-policy' => [
+                'slug' => 'refund-policy',
+                'title' => 'Refund Policy',
+                'translation_key' => 'value',
+                'json_content' => true,
+            ],
+            'return-policy' => [
+                'slug' => 'return-policy',
+                'title' => 'Return Policy',
+                'translation_key' => 'value',
+                'json_content' => true,
+            ],
+            'cancellation-policy' => [
+                'slug' => 'cancellation-policy',
+                'title' => 'Cancellation Policy',
+                'translation_key' => 'value',
+                'json_content' => true,
+            ],
+            'shipping-policy' => [
+                'slug' => 'shipping-policy',
+                'title' => 'Shipping Policy',
+                'translation_key' => 'value',
+                'json_content' => true,
+            ],
+        ];
+    }
+
+    private function extractBusinessPageDescription(BusinessSetting $setting, array $definition): string
+    {
+        if (!($definition['json_content'] ?? false)) {
+            return (string) ($setting->value ?? '');
+        }
+
+        $decoded = json_decode((string) $setting->value, true);
+        return is_array($decoded) ? (string) ($decoded['content'] ?? '') : (string) ($setting->value ?? '');
+    }
+
+    private function extractBusinessPageStatus(BusinessSetting $setting, array $definition): int
+    {
+        if (!($definition['json_content'] ?? false)) {
+            return 1;
+        }
+
+        $decoded = json_decode((string) $setting->value, true);
+        return (int) (($decoded['status'] ?? 0) ? 1 : 0);
+    }
+
+    private function copyBusinessPageDescriptionTranslations(
+        BusinessPage $page,
+        BusinessSetting $setting,
+        array $definition
+    ): void {
+        $translations = $setting->translations instanceof Collection
+            ? $setting->translations
+            : collect($setting->translations);
+
+        foreach ($translations as $translation) {
+            if (($translation->locale ?? 'en') === 'en') {
+                continue;
+            }
+
+            $translationKey = $definition['translation_key'] ?? 'value';
+            if (($translation->key ?? null) !== $translationKey) {
+                continue;
+            }
+
+            Translation::updateOrCreate(
+                [
+                    'translationable_type' => BusinessPage::class,
+                    'translationable_id' => $page->id,
+                    'locale' => $translation->locale,
+                    'key' => 'description',
+                ],
+                [
+                    'value' => (string) ($translation->value ?? ''),
+                ]
+            );
+        }
     }
 }

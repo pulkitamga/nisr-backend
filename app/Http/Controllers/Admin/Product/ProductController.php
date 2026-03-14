@@ -268,7 +268,7 @@ class ProductController extends BaseController
         $this->productSeoRepo->add(data: $service->getProductSEOData(request: $request, product: $savedProduct, action: 'add'));
 
         // 6️⃣ Handle stock for branch and product stock
-        if ($request->filled('branch_id')) {
+        if ($savedProduct->product_type === 'physical' && $request->filled('branch_id')) {
 
             $branchId  = $request->branch_id;
             $productId = $savedProduct->id;
@@ -625,7 +625,7 @@ class ProductController extends BaseController
         $this->updateProductAuthorAndPublishingHouse(request: $request, product: $product);
 
         $this->productRepo->update(id: $id, data: $dataArray);
-        if ($request->product_type == 'service') {
+        if ($request->product_type === 'services') {
 
             $serviceExists = $this->serviceRepo->getFirstWhere(['product_id' => $id]);
 
@@ -635,6 +635,10 @@ class ProductController extends BaseController
                 $serviceArray['product_id'] = $id;
                 $this->serviceRepo->add($serviceArray);
             }
+
+            ProductStockTransaction::deleteForProduct((int)$id);
+            ProductStock::where('product_id', $id)->delete();
+            ManageBranchProductStock::where('product_id', $id)->delete();
         }
 
         $this->productRepo->addRelatedTags(request: $request, product: $product);
@@ -1127,7 +1131,7 @@ class ProductController extends BaseController
             $this->wishlistRepo->delete(params: ['product_id' => $id]);
             $this->flashDealProductRepo->delete(params: ['product_id' => $id]);
             $this->dealOfTheDayRepo->delete(params: ['product_id' => $id]);
-            ProductStockTransaction::where('product_id', $id)->delete();
+            ProductStockTransaction::deleteForProduct((int)$id);
             ProductStock::where('product_id', $id)->delete();
             ManageBranchProductStock::where('product_id', $id)->delete();
             WholeSaleProducts::where('product_id', $id)->delete();

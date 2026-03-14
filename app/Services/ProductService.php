@@ -461,8 +461,8 @@ class ProductService
             'match_makes' => $request->match_makes ?? null,
             'match_models' => $request->match_models ?? null,
             'match_years' => $request->match_years ?? null,
-            'is_traceable' => $request->has('is_traceable') ? 1 : 0,
-            'is_warranty' => $request->has('is_warranty') ? 1 : 0,
+            'is_traceable' => $request['product_type'] == 'physical' && $request->has('is_traceable') ? 1 : 0,
+            'is_warranty' => $request['product_type'] == 'physical' && $request->has('is_warranty') ? 1 : 0,
         ];
     }
     public function getUpdateProductData(object $request, object $product, string $updateBy): array
@@ -547,7 +547,7 @@ class ProductService
             'attributes' => $request['product_type'] == 'physical'
                 ? ($lockPhysicalInventoryShape ? $existingAttributes : json_encode($request['choice_attributes']))
                 : json_encode([]),
-            'current_stock' => $request['product_type'] == 'physical' ? max(0, (int)$stockCount) : 20,
+            'current_stock' => $request['product_type'] == 'physical' ? max(0, (int)$stockCount) : 0,
             'minimum_order_qty' => $request['minimum_order_qty'],
             'video_provider' => 'youtube',
             'video_url' => $request['video_url'],
@@ -561,8 +561,8 @@ class ProductService
             'match_makes'  => $request->match_makes ?? null,
             'match_models' => $request->match_models ?? null,
             'match_years'  => $request->match_years ?? null,
-            'is_traceable' => $request->has('is_traceable') ? 1 : 0,
-            'is_warranty' => $request->has('is_warranty') ? 1 : 0,
+            'is_traceable' => $request['product_type'] == 'physical' && $request->has('is_traceable') ? 1 : 0,
+            'is_warranty' => $request['product_type'] == 'physical' && $request->has('is_warranty') ? 1 : 0,
             'meta_image' => $request->file('meta_image') ? $this->update(dir: 'product/meta/', oldImage: $product['meta_image'], format: 'png', image: $request['meta_image']) : $product['meta_image'],
         ];
 

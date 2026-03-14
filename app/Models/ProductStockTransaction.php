@@ -40,6 +40,21 @@ class ProductStockTransaction extends Model
     }
     /* ================= HELPERS ================= */
 
+    public static function deleteForProduct(int $productId): void
+    {
+        $stockIds = ProductStock::query()
+            ->where('product_id', $productId)
+            ->pluck('id');
+
+        if ($stockIds->isEmpty()) {
+            return;
+        }
+
+        self::query()
+            ->whereIn('product_stock_id', $stockIds)
+            ->delete();
+    }
+
     public static function logStockIn(ProductStock $stock, int $qty,  string $reason,string $remarks = '', ?int $toBranchId = null)
     {
         self::create([

@@ -634,7 +634,7 @@ class ProductController extends BaseController
             $this->wishlistRepo->delete(params: ['product_id' => $id]);
             $this->flashDealProductRepo->delete(params: ['product_id' => $id]);
             $this->dealOfTheDayRepo->delete(params: ['product_id' => $id]);
-            ProductStockTransaction::where('product_id', $id)->delete();
+            ProductStockTransaction::deleteForProduct((int)$id);
             ProductStock::where('product_id', $id)->delete();
             ManageBranchProductStock::where('product_id', $id)->delete();
             $service->deleteImages(product: $product);
