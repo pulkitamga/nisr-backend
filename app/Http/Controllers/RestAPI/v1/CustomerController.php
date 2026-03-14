@@ -691,7 +691,6 @@ class CustomerController extends Controller
         $order = $detailsList->first()?->order;
         $customerId = $user == 'offline' ? null : $user->id;
         $deliveredDays = $order ? Carbon::parse($order->updated_at)->diffInDays(now()) : null;
-        $warrantyActivationDays = (int)(getWebConfig('warranty_activation_days') ?? 7);
         $productIds = $detailsList->pluck('product_id')->filter()->unique()->values()->toArray();
         $warrantiesByProduct = [];
         if ($customerId && !empty($productIds)) {
@@ -769,8 +768,7 @@ class CustomerController extends Controller
             $taxBreakdown,
             $order,
             $orderDetailWarrantyMap,
-            $deliveredDays,
-            $warrantyActivationDays
+            $deliveredDays
         ) {
             $query['variation'] = json_decode($query['variation'], true);
             $product = json_decode($query['product_details'], true);
@@ -817,24 +815,19 @@ class CustomerController extends Controller
             $isDeliveredItem = $order
                 ? WarrantyOrderSupport::isDeliveredItem($order, $query)
                 : false;
-            $isTraceable = (bool)($query?->productAllStatus?->is_traceable ?? $query?->product?->is_traceable ?? false);
-            $withinActivationWindow = WarrantyOrderSupport::isWithinActivationWindow(
-                $deliveredDays,
-                $warrantyActivationDays
-            );
+            $isWarrantyEnabled = (bool)($query?->productAllStatus?->is_warranty ?? $query?->product?->is_warranty ?? false);
             $remainingCount = (int)($warrantyData['remaining_count'] ?? 0);
 
-            $query['is_traceable'] = $isTraceable;
+            $query['is_warranty'] = $isWarrantyEnabled;
             $query['warranty_status'] = $firstWarranty?->statusLabel() ?? 'not_activated';
             $query['warranty_public_id'] = $firstWarranty?->warranty_public_id;
             $query['serial_number'] = $firstWarranty?->serial_number;
             $query['activated_count'] = (int)($warrantyData['activated_count'] ?? 0);
             $query['remaining_count'] = $remainingCount;
-            $query['warranty_activation_window_open'] = $withinActivationWindow;
+            $query['warranty_activation_window_open'] = $isDeliveredItem;
             $query['warranty_support_message'] = WarrantyOrderSupport::supportMessage(
-                $isTraceable,
+                $isWarrantyEnabled,
                 $isDeliveredItem,
-                $withinActivationWindow,
                 $remainingCount
             );
 

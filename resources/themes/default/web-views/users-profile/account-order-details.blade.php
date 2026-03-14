@@ -6,10 +6,6 @@
 <div class="container pb-5 mb-2 mb-md-4 mt-3 rtl __inline-47 text-align-direction">
     <div class="row g-3">
         @include('web-views.partials._profile-aside')
-        @php
-        $warrantyActivationDays = getWebConfig('warranty_activation_days') ?? 7;
-        $deliveredDays = \Carbon\Carbon::parse($order->updated_at)->diffInDays(now());
-        @endphp
         <section class="col-lg-9">
             @include('web-views.users-profile.account-details.partial')
             <div class="bg-white border-lg rounded mobile-full">

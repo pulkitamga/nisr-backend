@@ -513,8 +513,6 @@ class UserProfileController extends Controller
             'orderDetailWarrantyMap' => $orderDetailWarrantyMap,
             'refund_day_limit' => getWebConfig(name: 'refund_day_limit'),
             'current_date' => Carbon::now(),
-            'warrantyActivationDays' => (int)(getWebConfig('warranty_activation_days') ?? 7),
-            'deliveredDays' => Carbon::parse($order->updated_at)->diffInDays(now()),
         ]);
     }
 

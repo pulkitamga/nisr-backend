@@ -48,10 +48,10 @@
                                         $activatedCount = (int)($warrantyData['activated_count'] ?? 0);
                                         $remainingCount = (int)($warrantyData['remaining_count'] ?? (int)$detail->qty);
                                         $isDeliveredItem = \App\Support\WarrantyOrderSupport::isDeliveredItem($order, $detail);
-                                        $isWarrantyEnabled = (bool)($detail?->product?->is_traceable);
-                                        $withinActivationWindow = \App\Support\WarrantyOrderSupport::isWithinActivationWindow($deliveredDays, $warrantyActivationDays);
-                                        $canActivateWarranty = \App\Support\WarrantyOrderSupport::canActivate($isWarrantyEnabled, $isDeliveredItem, $withinActivationWindow, $remainingCount);
+                                        $isWarrantyEnabled = (bool)($detail?->product?->is_warranty);
+                                        $canActivateWarranty = \App\Support\WarrantyOrderSupport::canActivate($isWarrantyEnabled, $isDeliveredItem, $remainingCount);
                                         $defaultTicketType = ($isWarrantyEnabled && $warranty) ? 'service' : 'retail';
+                                        $supportMessage = \App\Support\WarrantyOrderSupport::supportMessage($isWarrantyEnabled, $isDeliveredItem, $remainingCount);
                                     @endphp
                                     <tr class="border-bottom">
                                         <td>
@@ -81,7 +81,7 @@
                                                         </a>
                                                     @else
                                                         <span class="badge badge-soft-secondary">
-                                                            {{ $isDeliveredItem ? translate('warranty_not_eligible') : translate('available_after_delivery') }}
+                                                            {{ $supportMessage }}
                                                         </span>
                                                     @endif
                                                 @else

@@ -313,8 +313,9 @@ class WarrantyActivationController extends Controller
     {
         $defaultDuration = $this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? '12';
         $duration = $warranty->product->warranty_duration ?? $defaultDuration;
-        $start = now();
-        $end = $start->copy()->addMonths($duration);
+        $purchaseDate = Carbon::parse($request->purchase_date);
+        $start = $purchaseDate->copy();
+        $end = $purchaseDate->copy()->addMonths($duration);
         $autoApprove = $this->businessSettingRepo->getFirstWhere(['type' => 'warranty_auto_approve_off_platform'])['value'] ?? '0';
 
         $status = ($flagged && $autoApprove != '1') ? 'pending_review' : 'active';
@@ -323,10 +324,10 @@ class WarrantyActivationController extends Controller
 
         $warranty->update([
             'status' => $status,
-            'activation_date' => now(),
+            'activation_date' => $purchaseDate,
             'start_date' => $start,
             'end_date' => $end,
-            'purchase_date' => $request->purchase_date,
+            'purchase_date' => $purchaseDate,
             'retailer_branch_id' => $request->retailer_branch_id ?? null,
             'retailer_name' => $request->retailer_name ?? null,
             'invoice_number' => $request->invoice_number,
@@ -457,16 +458,10 @@ class WarrantyActivationController extends Controller
             return back();
         }
 
-        $deliveredDays = Carbon::parse($detail->order->updated_at)->diffInDays(now());
-        $warrantyActivationDays = (int)(getWebConfig('warranty_activation_days') ?? 7);
         $isDeliveredItem = WarrantyOrderSupport::isDeliveredItem($detail->order, $detail);
-        $isTraceable = (bool)($detail->product?->is_traceable);
-        $withinActivationWindow = WarrantyOrderSupport::isWithinActivationWindow(
-            $deliveredDays,
-            $warrantyActivationDays
-        );
+        $isWarrantyEnabled = (bool)($detail->product?->is_warranty);
 
-        if (!$isDeliveredItem || !$isTraceable || !$withinActivationWindow) {
+        if (!$isDeliveredItem || !$isWarrantyEnabled) {
             Toastr::error(translate('This order item is not eligible for warranty activation'));
             return back();
         }
@@ -501,8 +496,9 @@ class WarrantyActivationController extends Controller
         }
 
         $defaultDuration = (int)($this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? 12);
-        $start = $detail->updated_at ?? now();
-        $end = Carbon::parse($start)->copy()->addMonths($defaultDuration);
+        $purchaseDate = WarrantyOrderSupport::resolvePurchaseDate($detail->order, $detail);
+        $start = $purchaseDate->copy();
+        $end = $purchaseDate->copy()->addMonths($defaultDuration);
 
         $activatedSerials = [];
         $failedSerials = [];
@@ -534,10 +530,10 @@ class WarrantyActivationController extends Controller
             $warranty->update([
                 'product_id' => $warranty->product_id ?? $detail->product_id,
                 'status' => 'active',
-                'activation_date' => now(),
+                'activation_date' => $purchaseDate,
                 'start_date' => $start,
                 'end_date' => $end,
-                'purchase_date' => $detail->updated_at,
+                'purchase_date' => $purchaseDate,
                 'invoice_number' => $detail->order_id,
                 'final_user_id' => auth('customer')->id(),
                 'activation_method' => 'order_activation',

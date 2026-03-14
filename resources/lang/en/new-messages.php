@@ -11686,6 +11686,7 @@ return [
 	"mirror_comparison_is_disabled" => "Mirror comparison is disabled",
 	"warranty_and_support" => "Warranty and support",
 	"available_after_delivery" => "Available after delivery",
+	"warranty_ready_for_activation_for_this_delivered_item" => "Ready for activation for this delivered item",
 	"create_support_ticket" => "Create support ticket",
 	"activate_warranty" => "Activate warranty",
 	"view_warranty" => "View warranty",
@@ -12623,4 +12624,5 @@ return [
 	"No tier available!" => "No tier available!",
 	"There are no more tiers to add." => "There are no more tiers to add.",
 	"Service image" => "Service image",
+	"An active warranty already exists for this serial." => "An active warranty already exists for this serial.",
 ];

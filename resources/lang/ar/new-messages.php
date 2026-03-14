@@ -10736,6 +10736,7 @@ return [
 	"stock_in" => "المخزون في",
 	"warranty_and_support" => "الضمان والدعم",
 	"available_after_delivery" => "متاح بعد التسليم",
+	"warranty_ready_for_activation_for_this_delivered_item" => "جاهز للتفعيل لهذا العنصر بعد التسليم",
 	"activate_warranty" => "تفعيل الضمان",
 	"view_warranty" => "عرض الضمان",
 	"public_warranty_form" => "نموذج الضمان العام",

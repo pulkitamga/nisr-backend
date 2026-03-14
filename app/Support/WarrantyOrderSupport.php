@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Carbon\Carbon;
+
 class WarrantyOrderSupport
 {
     public static function isDeliveredItem($order, $detail): bool
@@ -17,45 +19,42 @@ class WarrantyOrderSupport
         return strtolower((string)($detail->delivery_status ?? '')) === 'delivered';
     }
 
-    public static function isWithinActivationWindow(?int $deliveredDays, int $activationWindowDays): bool
+    public static function resolvePurchaseDate($order, $detail = null): Carbon
     {
-        return $deliveredDays !== null && $deliveredDays <= $activationWindowDays;
+        $source = $order->created_at
+            ?? $detail?->created_at
+            ?? now();
+
+        return Carbon::parse($source);
     }
 
     public static function canActivate(
-        bool $isTraceable,
+        bool $isWarrantyEnabled,
         bool $isDeliveredItem,
-        bool $withinActivationWindow,
         int $remainingCount,
     ): bool {
-        return $isTraceable
+        return $isWarrantyEnabled
             && $isDeliveredItem
-            && $withinActivationWindow
             && $remainingCount > 0;
     }
 
     public static function supportMessage(
-        bool $isTraceable,
+        bool $isWarrantyEnabled,
         bool $isDeliveredItem,
-        bool $withinActivationWindow,
         int $remainingCount,
     ): string {
-        if (!$isTraceable) {
-            return translate('serial_based_warranty_activation_not_supported');
+        if (!$isWarrantyEnabled) {
+            return translate('no_warranty');
         }
 
         if (!$isDeliveredItem) {
             return translate('available_after_delivery');
         }
 
-        if (!$withinActivationWindow) {
-            return translate('warranty_activation_window_closed_for_this_item');
-        }
-
         if ($remainingCount <= 0) {
             return translate('all_warranty_units_for_this_item_are_already_activated');
         }
 
-        return translate('warranty_activation_window_open_for_this_delivered_item');
+        return translate('warranty_ready_for_activation_for_this_delivered_item');
     }
 }

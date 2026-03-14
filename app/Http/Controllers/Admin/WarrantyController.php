@@ -317,6 +317,11 @@ class WarrantyController extends Controller
             'docs' => 'nullable|file|mimes:pdf,jpg|max:2048',
         ]);
 
+        if (Warranty::query()->where('serial_number', $request->serial_number)->active()->exists()) {
+            Toastr::error(translate('An active warranty already exists for this serial.'));
+            return back();
+        }
+
         $warranty = Warranty::where('serial_number', $request->serial_number)->firstOrFail();
         $docPath = $request->hasFile('docs') ? $request->file('docs')->store('warranty/manual', 'public') : null;
 
@@ -1418,6 +1423,11 @@ class WarrantyController extends Controller
         $request->validate([
             'review_notes' => 'nullable|string|max:1000'
         ]);
+
+        if (Warranty::query()->where('serial_number', $review->warranty?->serial_number)->active()->exists()) {
+            Toastr::error(translate('An active warranty already exists for this serial.'));
+            return back();
+        }
 
         $review->update([
             'status' => 'approved',

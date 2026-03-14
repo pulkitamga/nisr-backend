@@ -148,14 +148,12 @@ class WarrantyCustomerController extends Controller
         }
 
         $deliveredDays = Carbon::parse($order->updated_at)->diffInDays(now());
-        $warrantyActivationDays = (int)(getWebConfig('warranty_activation_days') ?? 7);
         $orderDetailWarrantyMap = $this->buildOrderDetailWarrantyMap($order, $customer->id);
 
         $items = $order->details->map(function (OrderDetail $detail) use (
             $order,
             $orderDetailWarrantyMap,
-            $deliveredDays,
-            $warrantyActivationDays
+            $deliveredDays
         ) {
             $warrantyData = $orderDetailWarrantyMap[$detail->id] ?? [
                 'items' => collect(),
@@ -165,17 +163,12 @@ class WarrantyCustomerController extends Controller
             ];
 
             $isDeliveredItem = WarrantyOrderSupport::isDeliveredItem($order, $detail);
-            $isTraceable = (bool)($detail->product?->is_traceable);
-            $withinActivationWindow = WarrantyOrderSupport::isWithinActivationWindow(
-                $deliveredDays,
-                $warrantyActivationDays
-            );
+            $isWarrantyEnabled = (bool)($detail->product?->is_warranty);
             $firstWarranty = $warrantyData['first'];
             $remainingCount = (int)($warrantyData['remaining_count'] ?? 0);
             $canActivate = WarrantyOrderSupport::canActivate(
-                $isTraceable,
+                $isWarrantyEnabled,
                 $isDeliveredItem,
-                $withinActivationWindow,
                 $remainingCount
             );
 
@@ -187,21 +180,20 @@ class WarrantyCustomerController extends Controller
                     ?? $detail->productAllStatus?->name
                     ?? 'Product',
                 'quantity' => (int)$detail->qty,
-                'is_traceable' => $isTraceable,
+                'is_warranty' => $isWarrantyEnabled,
                 'warranty_status' => $firstWarranty?->statusLabel() ?? 'not_activated',
                 'warranty_public_id' => $firstWarranty?->warranty_public_id,
                 'serial_number' => $firstWarranty?->serial_number,
                 'activated_count' => (int)($warrantyData['activated_count'] ?? 0),
                 'remaining_count' => $remainingCount,
-                'warranty_activation_window_open' => $withinActivationWindow,
-                'activation_window_days' => $warrantyActivationDays,
+                'warranty_activation_window_open' => $isDeliveredItem,
+                'activation_window_days' => null,
                 'delivered_days' => $deliveredDays,
                 'can_activate' => $canActivate,
                 'can_view_warranty' => $firstWarranty?->warranty_public_id !== null,
                 'warranty_support_message' => $this->buildWarrantySupportMessage(
-                    isTraceable: $isTraceable,
+                    isWarrantyEnabled: $isWarrantyEnabled,
                     isDeliveredItem: $isDeliveredItem,
-                    withinActivationWindow: $withinActivationWindow,
                     remainingCount: $remainingCount
                 ),
                 'existing_warranties' => collect($warrantyData['items'] ?? [])
@@ -219,7 +211,7 @@ class WarrantyCustomerController extends Controller
                 'id' => $order->id,
                 'status' => $order->order_status,
                 'delivered_days' => $deliveredDays,
-                'activation_window_days' => $warrantyActivationDays,
+                'activation_window_days' => null,
             ],
             'items' => $items,
         ]);
@@ -259,16 +251,10 @@ class WarrantyCustomerController extends Controller
             ], 404);
         }
 
-        $deliveredDays = Carbon::parse($detail->order->updated_at)->diffInDays(now());
-        $warrantyActivationDays = (int)(getWebConfig('warranty_activation_days') ?? 7);
         $isDeliveredItem = WarrantyOrderSupport::isDeliveredItem($detail->order, $detail);
-        $isTraceable = (bool)($detail->product?->is_traceable);
-        $withinActivationWindow = WarrantyOrderSupport::isWithinActivationWindow(
-            $deliveredDays,
-            $warrantyActivationDays
-        );
+        $isWarrantyEnabled = (bool)($detail->product?->is_warranty);
 
-        if (!$isDeliveredItem || !$isTraceable || !$withinActivationWindow) {
+        if (!$isDeliveredItem || !$isWarrantyEnabled) {
             return response()->json([
                 'success' => false,
                 'message' => 'This order item is not eligible for warranty activation',
@@ -312,8 +298,9 @@ class WarrantyCustomerController extends Controller
         }
 
         $defaultDuration = (int)($this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? 12);
-        $start = $detail->updated_at ?? now();
-        $end = Carbon::parse($start)->copy()->addMonths($defaultDuration);
+        $purchaseDate = WarrantyOrderSupport::resolvePurchaseDate($detail->order, $detail);
+        $start = $purchaseDate->copy();
+        $end = $purchaseDate->copy()->addMonths($defaultDuration);
 
         $activatedSerials = [];
         $failedSerials = [];
@@ -348,10 +335,10 @@ class WarrantyCustomerController extends Controller
             $warranty->update([
                 'product_id' => $warranty->product_id ?? $detail->product_id,
                 'status' => 'active',
-                'activation_date' => now(),
+                'activation_date' => $purchaseDate,
                 'start_date' => $start,
                 'end_date' => $end,
-                'purchase_date' => $detail->updated_at,
+                'purchase_date' => $purchaseDate,
                 'invoice_number' => $detail->order_id,
                 'final_user_id' => $customer->id,
                 'activation_method' => 'order_activation',
@@ -731,15 +718,13 @@ class WarrantyCustomerController extends Controller
     }
 
     private function buildWarrantySupportMessage(
-        bool $isTraceable,
+        bool $isWarrantyEnabled,
         bool $isDeliveredItem,
-        bool $withinActivationWindow,
         int $remainingCount,
     ): string {
         return WarrantyOrderSupport::supportMessage(
-            $isTraceable,
+            $isWarrantyEnabled,
             $isDeliveredItem,
-            $withinActivationWindow,
             $remainingCount
         );
     }

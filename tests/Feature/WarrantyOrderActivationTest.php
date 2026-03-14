@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Http\Controllers\Admin\WarrantyController as AdminWarrantyController;
 use App\Http\Controllers\RestAPI\v1\WarrantyCustomerController;
+use App\Models\ActivationReview;
 use App\Models\BusinessSetting;
 use App\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -154,6 +156,176 @@ class WarrantyOrderActivationTest extends TestCase
         ]);
     }
 
+    public function test_api_order_activation_does_not_expire_and_uses_order_purchase_date(): void
+    {
+        $customer = $this->makeCustomer(109);
+        $productId = $this->createProduct(isTraceable: true);
+        $orderId = $this->createOrder(customerId: $customer->id);
+        $orderDetailId = $this->createOrderDetail(orderId: $orderId, productId: $productId, quantity: 1);
+        $purchaseDate = now()->subDays(45)->startOfSecond();
+
+        DB::table('orders')
+            ->where('id', $orderId)
+            ->update([
+                'created_at' => $purchaseDate,
+                'updated_at' => $purchaseDate,
+            ]);
+
+        DB::table('warranties')->insert([
+            'serial_number' => 'SERIAL-OLD-ORDER',
+            'product_id' => $productId,
+            'status' => 'preactivated',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controller = $this->makeController();
+        $request = $this->makeRequest([
+            'serial_numbers' => ['SERIAL-OLD-ORDER'],
+            'agree_terms' => '1',
+        ], $customer);
+
+        $response = $controller->activateOrderWarranty($request, $orderDetailId);
+        $payload = $response->getData(true);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($payload['success']);
+        $this->assertSame(['SERIAL-OLD-ORDER'], $payload['activated_serials']);
+
+        $warranty = DB::table('warranties')
+            ->where('serial_number', 'SERIAL-OLD-ORDER')
+            ->first();
+
+        $this->assertNotNull($warranty);
+        $this->assertSame($purchaseDate->format('Y-m-d H:i:s'), $warranty->activation_date);
+        $this->assertSame($purchaseDate->format('Y-m-d H:i:s'), $warranty->start_date);
+        $this->assertSame($purchaseDate->format('Y-m-d H:i:s'), $warranty->purchase_date);
+    }
+
+    public function test_api_order_activation_rejects_traceable_product_without_warranty_flag(): void
+    {
+        $customer = $this->makeCustomer(119);
+        $productId = $this->createProduct(isTraceable: true, isWarranty: false);
+        $orderId = $this->createOrder(customerId: $customer->id);
+        $orderDetailId = $this->createOrderDetail(orderId: $orderId, productId: $productId, quantity: 1);
+
+        DB::table('warranties')->insert([
+            'serial_number' => 'SERIAL-NO-WARRANTY-FLAG',
+            'product_id' => $productId,
+            'status' => 'preactivated',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controller = $this->makeController();
+        $request = $this->makeRequest([
+            'serial_numbers' => ['SERIAL-NO-WARRANTY-FLAG'],
+            'agree_terms' => '1',
+        ], $customer);
+
+        $response = $controller->activateOrderWarranty($request, $orderDetailId);
+        $payload = $response->getData(true);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertFalse($payload['success']);
+
+        $this->assertDatabaseHas('warranties', [
+            'serial_number' => 'SERIAL-NO-WARRANTY-FLAG',
+            'status' => 'preactivated',
+            'final_user_id' => null,
+            'activation_method' => null,
+        ]);
+    }
+
+    public function test_admin_manual_activation_rejects_already_active_serial(): void
+    {
+        $productId = $this->createProduct(isTraceable: true);
+        $purchaseDate = now()->subDays(2)->startOfSecond();
+        $endDate = now()->addMonths(12)->startOfSecond();
+
+        DB::table('warranties')->insert([
+            'serial_number' => 'SERIAL-ACTIVE-MANUAL-BLOCK',
+            'product_id' => $productId,
+            'status' => 'active',
+            'activation_date' => $purchaseDate,
+            'start_date' => $purchaseDate,
+            'end_date' => $endDate,
+            'purchase_date' => $purchaseDate,
+            'activation_method' => 'user_public_form',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controller = new AdminWarrantyController();
+        $request = Request::create('/admin/warranty/activation/manual', 'POST', [
+            'serial_number' => 'SERIAL-ACTIVE-MANUAL-BLOCK',
+            'purchase_date' => now()->toDateString(),
+            'reason' => 'Customer requested duplicate activation',
+        ]);
+
+        $response = $controller->manualActivate($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertDatabaseHas('warranties', [
+            'serial_number' => 'SERIAL-ACTIVE-MANUAL-BLOCK',
+            'status' => 'active',
+            'activation_method' => 'user_public_form',
+            'purchase_date' => $purchaseDate->format('Y-m-d H:i:s'),
+        ]);
+        $this->assertDatabaseMissing('warranty_timeline_events', [
+            'warranty_id' => DB::table('warranties')
+                ->where('serial_number', 'SERIAL-ACTIVE-MANUAL-BLOCK')
+                ->value('id'),
+            'event_type' => 'manual_activated',
+        ]);
+    }
+
+    public function test_admin_activation_approval_rejects_already_active_serial(): void
+    {
+        $productId = $this->createProduct(isTraceable: true);
+        $purchaseDate = now()->subDays(3)->startOfSecond();
+        $endDate = now()->addMonths(12)->startOfSecond();
+        $warrantyId = DB::table('warranties')->insertGetId([
+            'serial_number' => 'SERIAL-ACTIVE-APPROVAL-BLOCK',
+            'product_id' => $productId,
+            'status' => 'active',
+            'activation_date' => $purchaseDate,
+            'start_date' => $purchaseDate,
+            'end_date' => $endDate,
+            'purchase_date' => $purchaseDate,
+            'activation_method' => 'user_public_form',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $review = ActivationReview::query()->create([
+            'warranty_id' => $warrantyId,
+            'status' => 'pending',
+        ]);
+
+        $controller = new AdminWarrantyController();
+        $request = Request::create('/admin/warranty/review/approve', 'POST', [
+            'review_notes' => 'Attempting duplicate approval',
+        ]);
+
+        $response = $controller->approveActivation($review, $request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertDatabaseHas('warranties', [
+            'id' => $warrantyId,
+            'status' => 'active',
+            'activation_method' => 'user_public_form',
+        ]);
+        $this->assertDatabaseHas('activation_reviews', [
+            'id' => $review->id,
+            'status' => 'pending',
+        ]);
+        $this->assertDatabaseMissing('warranty_timeline_events', [
+            'warranty_id' => $warrantyId,
+            'event_type' => 'activation_approved',
+        ]);
+    }
+
     private function createTables(): void
     {
         if (!Schema::hasTable('translations')) {
@@ -194,8 +366,13 @@ class WarrantyOrderActivationTest extends TestCase
                 $table->string('name')->nullable();
                 $table->boolean('status')->default(1);
                 $table->boolean('is_traceable')->default(0);
+                $table->boolean('is_warranty')->default(0);
                 $table->softDeletes();
                 $table->timestamps();
+            });
+        } elseif (!Schema::hasColumn('products', 'is_warranty')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->boolean('is_warranty')->default(0);
             });
         }
 
@@ -295,6 +472,18 @@ class WarrantyOrderActivationTest extends TestCase
                 $table->timestamps();
             });
         }
+
+        if (!Schema::hasTable('activation_reviews')) {
+            Schema::create('activation_reviews', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('warranty_id');
+                $table->string('status')->nullable();
+                $table->text('review_notes')->nullable();
+                $table->unsignedBigInteger('agent_id')->nullable();
+                $table->timestamp('reviewed_at')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     private function seedBusinessSettings(): void
@@ -332,12 +521,13 @@ class WarrantyOrderActivationTest extends TestCase
         return $customer;
     }
 
-    private function createProduct(bool $isTraceable): int
+    private function createProduct(bool $isTraceable, bool $isWarranty = true): int
     {
         return DB::table('products')->insertGetId([
             'name' => 'Traceable Product',
             'status' => 1,
             'is_traceable' => $isTraceable ? 1 : 0,
+            'is_warranty' => $isWarranty ? 1 : 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

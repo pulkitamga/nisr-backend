@@ -399,8 +399,9 @@ class WarrantyActivationApiController extends Controller
 
         $duration = $warranty->product->warranty_duration ?? $defaultDuration;
 
-        $start = now();
-        $end = $start->copy()->addMonths($duration);
+        $purchaseDate = Carbon::parse($request->purchase_date);
+        $start = $purchaseDate->copy();
+        $end = $purchaseDate->copy()->addMonths($duration);
 
         $autoApprove = $this->businessSettingRepo
             ->getFirstWhere(['type' => 'warranty_auto_approve_off_platform'])['value'] ?? '0';
@@ -409,10 +410,10 @@ class WarrantyActivationApiController extends Controller
 
         $warranty->update([
             'status' => $status,
-            'activation_date' => now(),
+            'activation_date' => $purchaseDate,
             'start_date' => $start,
             'end_date' => $end,
-            'purchase_date' => $request->purchase_date,
+            'purchase_date' => $purchaseDate,
             'retailer_branch_id' => $request->retailer_branch_id ?? null,
             'retailer_name' => $request->retailer_name ?? null,
             'invoice_number' => $request->invoice_number,
