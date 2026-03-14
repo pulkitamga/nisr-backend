@@ -8,6 +8,7 @@ use App\Models\ViewToken;
 use App\Events\DigitalProductOtpVerificationEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Brian2694\Toastr\Facades\Toastr;
@@ -229,6 +230,7 @@ class WarrantyViewController extends Controller
 
         $warranty = Warranty::where('warranty_public_id', $warranty_public_id)
             ->with([
+                'user:id,f_name,l_name,email,phone',
                 'timelineEvents' => fn($q) => $q->latest()->paginate(10),
                 'claims' => fn($q) => $q->latest('submitted_at'),
             ])
@@ -239,8 +241,20 @@ class WarrantyViewController extends Controller
             ->paginate(10);
         $latestClaim = $warranty->claims->first();
         $openClaim = $warranty->claims->first(fn($claim) => !in_array($claim->status, ['closed', 'rejected'], true));
+        $warranty->product_name = $warranty->product_id
+            ? DB::table('products')->where('id', $warranty->product_id)->value('name')
+            : null;
 
-        if (!$isOwner) {
+        $customerName = trim(implode(' ', array_filter([
+            $warranty->user?->f_name,
+            $warranty->user?->l_name,
+        ])));
+
+        if ($isOwner) {
+            $warranty->activated_by_name = $customerName !== '' ? $customerName : $warranty->activated_by_name;
+            $warranty->activated_by_email = $warranty->user?->email ?? $warranty->activated_by_email;
+            $warranty->activated_by_phone = $warranty->user?->phone ?? $warranty->activated_by_phone;
+        } else {
             $warranty->activated_by_name = '****';
             $warranty->activated_by_email = '****';
             $warranty->activated_by_phone = '****';

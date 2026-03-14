@@ -1283,6 +1283,7 @@
                 setHiddenField(locationSelects.area, hiddenLocationFields.area);
             });
 
+            setHiddenField(locationSelects.country, hiddenLocationFields.country);
             loadStates(locationSelects.country.val());
         });
     </script>

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ServiceRequestFormRequest extends FormRequest
 {
@@ -26,13 +27,13 @@ class ServiceRequestFormRequest extends FormRequest
             'customer_id' => 'nullable|exists:users,id',
             'service_option' => 'required|string|in:in_shop,mobile',
 
-            'country' => ['exclude_unless:service_option,mobile', 'required', 'string'],
-            'state' => ['exclude_unless:service_option,mobile', 'required', 'string'],
-            'city' => ['exclude_unless:service_option,mobile', 'required', 'string'],
-            'area' => ['exclude_unless:service_option,mobile', 'required', 'string'],
-            'address' => ['exclude_unless:service_option,mobile', 'required', 'string'],
-            'latitude' => ['exclude_unless:service_option,mobile', 'required', 'string'],
-            'longitude' => ['exclude_unless:service_option,mobile', 'required', 'string'],
+            'country' => ['nullable', 'string', Rule::requiredIf($this->input('service_option') === 'mobile')],
+            'state' => ['nullable', 'string', Rule::requiredIf($this->input('service_option') === 'mobile')],
+            'city' => ['nullable', 'string', Rule::requiredIf($this->input('service_option') === 'mobile')],
+            'area' => ['nullable', 'string', Rule::requiredIf($this->input('service_option') === 'mobile')],
+            'address' => ['nullable', 'string', Rule::requiredIf($this->input('service_option') === 'mobile')],
+            'latitude' => ['nullable', 'string'],
+            'longitude' => ['nullable', 'string'],
 
             'vehicle_type' => 'required|string',
             'vehicle_make' => 'required',

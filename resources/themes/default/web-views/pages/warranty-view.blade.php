@@ -11,6 +11,9 @@
             <p><strong>{{ translate('Status') }}:</strong> {{ translate($warranty->status) }}</p>
             <p><strong>{{ translate('Start Date') }}:</strong> {{ $warranty->start_date ? $warranty->start_date->format('Y-m-d') : 'N/A' }}</p>
             <p><strong>{{ translate('End Date') }}:</strong> {{ $warranty->end_date ? $warranty->end_date->format('Y-m-d') : 'N/A' }}</p>
+            @if ($warranty->product_name)
+            <p><strong>{{ translate('Product Name') }}:</strong> {{ $warranty->product_name }}</p>
+            @endif
             <p><strong>{{ translate('Customer Name') }}:</strong> {{ $warranty->activated_by_name }}</p>
             <p><strong>{{ translate('Email') }}:</strong> {{ $warranty->activated_by_email }}</p>
             <p><strong>{{ translate('Phone') }}:</strong> {{ $warranty->activated_by_phone }}</p>
