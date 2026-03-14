@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -130,6 +131,18 @@ class Warranty extends Model
     {
         return $query->where('status', 'active')->where('end_date', '>', now());
     }
+
+    public function scopeEligibleForOrderActivation(Builder $query, string $serialNumber, int $productId): Builder
+    {
+        return $query
+            ->where('serial_number', trim($serialNumber))
+            ->whereIn('status', ['preactivated', 'cancelled'])
+            ->where(function (Builder $subQuery) use ($productId) {
+                $subQuery->where('product_id', $productId)
+                    ->orWhereNull('product_id');
+            });
+    }
+
     // Add to Warranty model
     public function scopeInBranch($query, $branchId)
     {

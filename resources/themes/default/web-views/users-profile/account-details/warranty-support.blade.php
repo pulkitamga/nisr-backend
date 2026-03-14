@@ -13,10 +13,20 @@
             <div class="card mt-3 border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                        <h5 class="mb-0 text-capitalize">{{ translate('warranty_and_support') }}</h5>
-                        <span class="fs-12 text-muted">
-                            {{ translate('order') }} #{{ $order->id }}
-                        </span>
+                        <div>
+                            <h5 class="mb-0 text-capitalize">{{ translate('warranty_and_support') }}</h5>
+                            <small class="text-muted d-block mt-1">
+                                {{ translate('all_customers_can_use_public_warranty_form') }}
+                            </small>
+                        </div>
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <a href="{{ route('warranty.activate') }}" class="btn btn-sm btn-outline-primary">
+                                {{ translate('public_warranty_form') }}
+                            </a>
+                            <span class="fs-12 text-muted">
+                                {{ translate('order') }} #{{ $order->id }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -37,10 +47,10 @@
                                         $warranty = $warrantyData['first'] ?? null;
                                         $activatedCount = (int)($warrantyData['activated_count'] ?? 0);
                                         $remainingCount = (int)($warrantyData['remaining_count'] ?? (int)$detail->qty);
-                                        $isDeliveredItem = $order->order_status === 'delivered' && $detail->delivery_status === 'delivered';
+                                        $isDeliveredItem = \App\Support\WarrantyOrderSupport::isDeliveredItem($order, $detail);
                                         $isWarrantyEnabled = (bool)($detail?->product?->is_traceable);
-                                        $withinActivationWindow = $deliveredDays <= $warrantyActivationDays;
-                                        $canActivateWarranty = $isDeliveredItem && $isWarrantyEnabled && $withinActivationWindow && $remainingCount > 0;
+                                        $withinActivationWindow = \App\Support\WarrantyOrderSupport::isWithinActivationWindow($deliveredDays, $warrantyActivationDays);
+                                        $canActivateWarranty = \App\Support\WarrantyOrderSupport::canActivate($isWarrantyEnabled, $isDeliveredItem, $withinActivationWindow, $remainingCount);
                                         $defaultTicketType = ($isWarrantyEnabled && $warranty) ? 'service' : 'retail';
                                     @endphp
                                     <tr class="border-bottom">

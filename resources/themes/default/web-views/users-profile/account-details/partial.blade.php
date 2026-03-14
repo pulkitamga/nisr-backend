@@ -57,7 +57,9 @@
             class="get-view-by-onclick {{Request::is('account-order-details')  ? 'active' :''}}">{{translate('order_summary')}}</button>
     <button data-link="{{ route('account-order-details-vendor-info', ['id'=>$order->id]) }}"
             class="get-view-by-onclick {{Request::is('account-order-details-vendor-info')  ? 'active' :''}}">{{translate('vendor_info')}}</button>
-    @if($order->order_type != 'POS')
+    <button data-link="{{ route('account-order-details-warranty-support', ['id'=>$order->id]) }}"
+            class="get-view-by-onclick {{Request::is('account-order-details-warranty-support')  ? 'active' :''}}">{{translate('warranty_and_support')}}</button>
+    @if(strtolower((string)$order->order_type) != 'pos')
         @if(!$isOrderOnlyDigital)
             <button data-link="{{ route('account-order-details-delivery-man-info', ['id'=>$order->id]) }}"
                     class="get-view-by-onclick {{Request::is('account-order-details-delivery-man-info') ? 'active':''}}">
@@ -66,8 +68,6 @@
         @endif
         <button data-link="{{ route('account-order-details-reviews', ['id'=>$order->id]) }}"
                 class="get-view-by-onclick {{Request::is('account-order-details-reviews')  ? 'active' :''}}">{{translate('reviews')}}</button>
-        <button data-link="{{ route('account-order-details-warranty-support', ['id'=>$order->id]) }}"
-                class="get-view-by-onclick {{Request::is('account-order-details-warranty-support')  ? 'active' :''}}">{{translate('warranty_and_support')}}</button>
     <button data-link="{{ route('track-order.order-wise-result-view',['order_id'=>$order['id']])}}"
             class="get-view-by-onclick {{Request::is('track-order/order-wise-result-view*')  ? 'active' :''}}">{{translate('track_order')}}</button>
     @endif

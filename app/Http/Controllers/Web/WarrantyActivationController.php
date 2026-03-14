@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\Controller;
+use App\Support\WarrantyOrderSupport;
 use Illuminate\Support\Facades\Log;
 use App\Services\FirebaseService;
 use Brian2694\Toastr\Facades\Toastr;
@@ -458,10 +459,12 @@ class WarrantyActivationController extends Controller
 
         $deliveredDays = Carbon::parse($detail->order->updated_at)->diffInDays(now());
         $warrantyActivationDays = (int)(getWebConfig('warranty_activation_days') ?? 7);
-        $isDeliveredItem = $detail->order->order_status === 'delivered'
-            && $detail->delivery_status === 'delivered';
+        $isDeliveredItem = WarrantyOrderSupport::isDeliveredItem($detail->order, $detail);
         $isTraceable = (bool)($detail->product?->is_traceable);
-        $withinActivationWindow = $deliveredDays <= $warrantyActivationDays;
+        $withinActivationWindow = WarrantyOrderSupport::isWithinActivationWindow(
+            $deliveredDays,
+            $warrantyActivationDays
+        );
 
         if (!$isDeliveredItem || !$isTraceable || !$withinActivationWindow) {
             Toastr::error(translate('This order item is not eligible for warranty activation'));
@@ -505,16 +508,11 @@ class WarrantyActivationController extends Controller
         $failedSerials = [];
 
         foreach ($serialNumbers as $serialNumber) {
-            $warranty = Warranty::where('serial_number', $serialNumber)
-                ->whereIn('status', ['preactivated', 'cancelled'])
+            $warranty = Warranty::query()
+                ->eligibleForOrderActivation($serialNumber, (int)$detail->product_id)
                 ->first();
 
             if (!$warranty) {
-                $failedSerials[] = $serialNumber;
-                continue;
-            }
-
-            if ((int)$warranty->product_id !== (int)$detail->product_id) {
                 $failedSerials[] = $serialNumber;
                 continue;
             }
@@ -534,6 +532,7 @@ class WarrantyActivationController extends Controller
             }
 
             $warranty->update([
+                'product_id' => $warranty->product_id ?? $detail->product_id,
                 'status' => 'active',
                 'activation_date' => now(),
                 'start_date' => $start,

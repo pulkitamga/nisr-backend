@@ -24,6 +24,7 @@ use Carbon\Carbon;
 use App\Traits\CommonTrait;
 use App\Traits\FileManagerTrait;
 use App\Traits\PdfGenerator;
+use App\Support\WarrantyOrderSupport;
 use App\Utils\CustomerManager;
 use App\Utils\Helpers;
 use Illuminate\Http\JsonResponse;
@@ -814,29 +815,28 @@ class CustomerController extends Controller
             ];
             $firstWarranty = $warrantyData['first'];
             $isDeliveredItem = $order
-                && $order->order_status === 'delivered'
-                && $query->delivery_status === 'delivered';
-            $isTraceable = (bool)($query?->productAllStatus?->is_traceable ?? $query?->product?->is_traceable ?? false);
-            $withinActivationWindow = $deliveredDays !== null
-                ? $deliveredDays <= $warrantyActivationDays
+                ? WarrantyOrderSupport::isDeliveredItem($order, $query)
                 : false;
+            $isTraceable = (bool)($query?->productAllStatus?->is_traceable ?? $query?->product?->is_traceable ?? false);
+            $withinActivationWindow = WarrantyOrderSupport::isWithinActivationWindow(
+                $deliveredDays,
+                $warrantyActivationDays
+            );
+            $remainingCount = (int)($warrantyData['remaining_count'] ?? 0);
 
             $query['is_traceable'] = $isTraceable;
             $query['warranty_status'] = $firstWarranty?->statusLabel() ?? 'not_activated';
             $query['warranty_public_id'] = $firstWarranty?->warranty_public_id;
             $query['serial_number'] = $firstWarranty?->serial_number;
             $query['activated_count'] = (int)($warrantyData['activated_count'] ?? 0);
-            $query['remaining_count'] = (int)($warrantyData['remaining_count'] ?? 0);
+            $query['remaining_count'] = $remainingCount;
             $query['warranty_activation_window_open'] = $withinActivationWindow;
-            $query['warranty_support_message'] = !$isTraceable
-                ? 'This item does not support serial-based warranty activation'
-                : (!$isDeliveredItem
-                    ? 'Warranty activation becomes available after delivery'
-                    : (!$withinActivationWindow
-                        ? 'The activation window has closed for this item'
-                        : ((int)($warrantyData['remaining_count'] ?? 0) <= 0
-                            ? 'All warranty units for this item are already activated'
-                            : 'Activation window is open for this delivered item')));
+            $query['warranty_support_message'] = WarrantyOrderSupport::supportMessage(
+                $isTraceable,
+                $isDeliveredItem,
+                $withinActivationWindow,
+                $remainingCount
+            );
 
             return $query;
         });

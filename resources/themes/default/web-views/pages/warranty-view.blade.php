@@ -19,7 +19,7 @@
 
     @if ($warranty->isActive())
     <a href="{{ route('warranty.claim.create', $warranty->warranty_public_id) }}" class="btn btn--primary mb-4">
-        {{ translate('Claim Warranty') }}
+        {{ translate('start_claim_process') }}
     </a>
     @endif
 
