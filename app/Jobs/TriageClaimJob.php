@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class TriageClaimJob implements ShouldQueue
 {
@@ -21,10 +22,13 @@ class TriageClaimJob implements ShouldQueue
         $redFlags = $this->hasRedFlags($this->claim);
         $hasActiveWarranty = $this->claim->warranty && $this->claim->warranty->isActive();
 
-        if ($hasActiveWarranty && !$redFlags) {
-            $this->claim->update(['status' => 'approved']);
-            \App\Services\RMAService::issueRMA($this->claim);
-        } else {
+        try {
+            if ($hasActiveWarranty && !$redFlags) {
+                $this->claim->update(['status' => 'approved']);
+                \App\Services\RMAService::issueRMA($this->claim);
+                return;
+            }
+
             $this->claim->update(['status' => 'triage_pending']);
 
             $agentEmailSetting = getWebConfig(name: 'warranty_agent_email');
@@ -35,8 +39,14 @@ class TriageClaimJob implements ShouldQueue
                 $agentEmail = 'agent@yourapp.com';
             }
 
-            // Send event or mail directly
             event(new \App\Events\ClaimForReviewEvent($this->claim, $agentEmail));
+        } catch (\Throwable $exception) {
+            Log::error('Warranty claim triage side effect failed', [
+                'claim_id' => $this->claim->id,
+                'claim_number' => $this->claim->claim_number,
+                'status' => $this->claim->status,
+                'message' => $exception->getMessage(),
+            ]);
         }
     }
 

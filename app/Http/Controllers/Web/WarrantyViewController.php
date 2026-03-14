@@ -228,12 +228,17 @@ class WarrantyViewController extends Controller
         }
 
         $warranty = Warranty::where('warranty_public_id', $warranty_public_id)
-            ->with(['timelineEvents' => fn($q) => $q->latest()->paginate(10)])
+            ->with([
+                'timelineEvents' => fn($q) => $q->latest()->paginate(10),
+                'claims' => fn($q) => $q->latest('submitted_at'),
+            ])
             ->firstOrFail();
 
         $timelineEvents = $warranty->timelineEvents()
             ->latest()
             ->paginate(10);
+        $latestClaim = $warranty->claims->first();
+        $openClaim = $warranty->claims->first(fn($claim) => !in_array($claim->status, ['closed', 'rejected'], true));
 
         if (!$isOwner) {
             $warranty->activated_by_name = '****';
@@ -241,7 +246,7 @@ class WarrantyViewController extends Controller
             $warranty->activated_by_phone = '****';
         }
 
-        return view(VIEW_FILE_NAMES['warranty_view'], compact('warranty', 'isOwner', 'timelineEvents'));
+        return view(VIEW_FILE_NAMES['warranty_view'], compact('warranty', 'isOwner', 'timelineEvents', 'latestClaim', 'openClaim'));
     }
 
     public function share(Request $request, Warranty $warranty)

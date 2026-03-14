@@ -6,6 +6,7 @@ use App\Models\WarrantyClaim;
 use App\Notifications\RMAIssued;  
 use Illuminate\Support\Str;
 use App\Models\Branch;
+use Illuminate\Support\Facades\Log;
 
 class RMAService
 {
@@ -25,28 +26,36 @@ class RMAService
         $instructions = self::generateInstructions($claim);
         $user = $warranty?->user;
 
-        if ($user) {
-            $user->notify(new RMAIssued($claim, $instructions));
-            return;
-        }
-
-        $email = $warranty?->activated_by_email;
-        if (is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $mailConfig = getWebConfig(name: 'mail_config');
-            $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
-
-            if ($mailEnabled) {
-                $data = [
-                    'userName' => $warranty?->activated_by_name ?? 'Customer',
-                    'subject' => translate('RMA Issued'),
-                    'title' => translate('Your RMA') . ' ' . $claim->rma_number,
-                    'rmaNumber' => $claim->rma_number,
-                    'instructions' => $instructions,
-                    'userType' => 'customer',
-                    'templateName' => 'rma-issued',
-                ];
-                event(new EmailVerificationEvent($email, $data));
+        try {
+            if ($user) {
+                $user->notify(new RMAIssued($claim, $instructions));
+                return;
             }
+
+            $email = $warranty?->activated_by_email;
+            if (is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $mailConfig = getWebConfig(name: 'mail_config');
+                $mailEnabled = is_array($mailConfig) && (($mailConfig['status'] ?? 0) == 1);
+
+                if ($mailEnabled) {
+                    $data = [
+                        'userName' => $warranty?->activated_by_name ?? 'Customer',
+                        'subject' => translate('RMA Issued'),
+                        'title' => translate('Your RMA') . ' ' . $claim->rma_number,
+                        'rmaNumber' => $claim->rma_number,
+                        'instructions' => $instructions,
+                        'userType' => 'customer',
+                        'templateName' => 'rma-issued',
+                    ];
+                    event(new EmailVerificationEvent($email, $data));
+                }
+            }
+        } catch (\Throwable $exception) {
+            Log::error('Warranty RMA notification failed', [
+                'claim_id' => $claim->id,
+                'claim_number' => $claim->claim_number,
+                'message' => $exception->getMessage(),
+            ]);
         }
     }
 

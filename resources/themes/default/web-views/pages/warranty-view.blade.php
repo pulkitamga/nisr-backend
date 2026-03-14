@@ -17,10 +17,28 @@
         </div>
     </div>
 
-    @if ($warranty->isActive())
+    @if ($latestClaim)
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-3">{{ translate('Latest Claim') }}</h3>
+            <p><strong>{{ translate('Claim Number') }}:</strong> {{ $latestClaim->claim_number }}</p>
+            <p><strong>{{ translate('Claim Status') }}:</strong> {{ translate($latestClaim->status) }}</p>
+            <p><strong>{{ translate('Submitted On') }}:</strong> {{ $latestClaim->submitted_at ? $latestClaim->submitted_at->format('Y-m-d H:i:s') : 'N/A' }}</p>
+            @if ($latestClaim->response_due)
+            <p><strong>{{ translate('Expected Response') }}:</strong> {{ $latestClaim->response_due->format('Y-m-d H:i:s') }}</p>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    @if ($warranty->isActive() && !$openClaim)
     <a href="{{ route('warranty.claim.create', $warranty->warranty_public_id) }}" class="btn btn--primary mb-4">
         {{ translate('start_claim_process') }}
     </a>
+    @elseif ($openClaim)
+    <div class="alert alert-warning mb-4" role="alert">
+        {{ translate('There is already an open claim for this warranty.') }}
+    </div>
     @endif
 
     <h3>{{ translate('Activity Log') }}</h3>
