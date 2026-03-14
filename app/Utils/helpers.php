@@ -273,15 +273,36 @@ class helpers
             return ShippingMethod::where(['status' => 1])->where(['creator_id' => $seller_id, 'creator_type' => $type])->get();
         }
     }
-  
-        public static function set_data_format($data)
+
+    private static function decodeNestedJsonValue($value, bool $assoc = true, int $maxDepth = 5)
+    {
+        $decoded = $value;
+        $depth = 0;
+
+        while (is_string($decoded) && $depth < $maxDepth) {
+            $trimmedValue = trim($decoded);
+            if ($trimmedValue === '') {
+                return null;
+            }
+
+            $nextValue = json_decode($decoded, $assoc);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                break;
+            }
+
+            $decoded = $nextValue;
+            $depth++;
+        }
+
+        return $decoded;
+    }
+
+    public static function set_data_format($data)
 {
     // Safe colors
     $colors = [];
     if (!empty($data['colors'])) {
-        $colors = is_array($data['colors'])
-            ? $data['colors']
-            : json_decode($data['colors'], true);
+        $colors = self::decodeNestedJsonValue($data['colors'], true);
 
         if (!is_array($colors)) {
             $colors = [];
@@ -317,7 +338,7 @@ class helpers
     $data['category_ids'] = !empty($data['category_ids'])
         ? (is_array($data['category_ids'])
             ? $data['category_ids']
-            : json_decode($data['category_ids'], true) ?? [])
+            : self::decodeNestedJsonValue($data['category_ids'], true) ?? [])
         : [];
 
     $data['colors'] = $colors;
@@ -328,7 +349,11 @@ class helpers
     if (!empty($data['attributes'])) {
         $attributes_arr = is_array($data['attributes'])
             ? $data['attributes']
-            : json_decode($data['attributes'], true);
+            : self::decodeNestedJsonValue($data['attributes'], true);
+
+        if (!is_array($attributes_arr) && !is_null($attributes_arr) && $attributes_arr !== '') {
+            $attributes_arr = [$attributes_arr];
+        }
 
         if (is_array($attributes_arr)) {
             foreach ($attributes_arr as $attribute) {
@@ -343,7 +368,7 @@ class helpers
     $data['choice_options'] = !empty($data['choice_options'])
         ? (is_array($data['choice_options'])
             ? $data['choice_options']
-            : json_decode($data['choice_options'], true) ?? [])
+            : self::decodeNestedJsonValue($data['choice_options'], true) ?? [])
         : [];
 
     // Safe variation
@@ -352,7 +377,7 @@ class helpers
     if (!empty($data['variation'])) {
         $variation_arr = is_array($data['variation'])
             ? $data['variation']
-            : json_decode($data['variation'], true);
+            : self::decodeNestedJsonValue($data['variation'], true);
 
         if (is_array($variation_arr)) {
             foreach ($variation_arr as $var) {
@@ -446,8 +471,13 @@ class helpers
 
     public static function set_data_format_for_json_data($data)
     {
-        $colors = is_array($data['colors']) ? $data['colors'] : json_decode($data['colors']);
-        $query_data = Color::whereIn('code', $colors)->pluck('name', 'code')->toArray();
+        $colors = self::decodeNestedJsonValue($data['colors'] ?? [], true);
+        if (!is_array($colors)) {
+            $colors = [];
+        }
+        $query_data = !empty($colors)
+            ? Color::whereIn('code', $colors)->pluck('name', 'code')->toArray()
+            : [];
         $color_process = [];
         foreach ($query_data as $key => $color) {
             $color_process[] = array(
@@ -456,14 +486,20 @@ class helpers
             );
         }
 
-        $color_image = isset($data['color_image']) ? (is_array($data['color_image']) ? $data['color_image'] : json_decode($data['color_image'])) : null;
+        $color_image = isset($data['color_image'])
+            ? self::decodeNestedJsonValue($data['color_image'], true)
+            : [];
+        if (!is_array($color_image)) {
+            $color_image = [];
+        }
         $color_final = [];
         foreach ($color_process as $color) {
             $image_name = null;
             if ($color_image) {
                 foreach ($color_image as $image) {
-                    if ($image->color && '#' . $image->color == $color['code']) {
-                        $image_name = $image->image_name;
+                    $imageColor = data_get($image, 'color');
+                    if ($imageColor && '#' . $imageColor == $color['code']) {
+                        $image_name = data_get($image, 'image_name');
                     }
                 }
             }
@@ -475,27 +511,42 @@ class helpers
         }
 
         $variation = [];
-        $data['category_ids'] = is_array($data['category_ids']) ? $data['category_ids'] : json_decode($data['category_ids']);
-        $data['images'] = is_array($data['images']) ? $data['images'] : json_decode($data['images']);
+        $data['category_ids'] = self::decodeNestedJsonValue($data['category_ids'] ?? [], true);
+        if (!is_array($data['category_ids'])) {
+            $data['category_ids'] = [];
+        }
+        $data['images'] = self::decodeNestedJsonValue($data['images'] ?? [], true);
+        if (!is_array($data['images'])) {
+            $data['images'] = [];
+        }
         $data['colors'] = $colors;
         $data['color_image'] = $color_image;
         $data['colors_formatted'] = $color_final;
         $attributes = [];
-        if ((is_array($data['attributes']) ? $data['attributes'] : json_decode($data['attributes'])) != null) {
-            $attributes_arr = is_array($data['attributes']) ? $data['attributes'] : json_decode($data['attributes']);
+        $attributes_arr = self::decodeNestedJsonValue($data['attributes'] ?? null, true);
+        if (!is_array($attributes_arr) && !is_null($attributes_arr) && $attributes_arr !== '') {
+            $attributes_arr = [$attributes_arr];
+        }
+        if (is_array($attributes_arr)) {
             foreach ($attributes_arr as $attribute) {
                 $attributes[] = (int)$attribute;
             }
         }
         $data['attributes'] = $attributes;
-        $data['choice_options'] = is_array($data['choice_options']) ? $data['choice_options'] : json_decode($data['choice_options']);
-        $variation_arr = is_array($data['variation']) ? $data['variation'] : json_decode($data['variation'], true);
+        $data['choice_options'] = self::decodeNestedJsonValue($data['choice_options'] ?? [], true);
+        if (!is_array($data['choice_options'])) {
+            $data['choice_options'] = [];
+        }
+        $variation_arr = self::decodeNestedJsonValue($data['variation'] ?? [], true);
+        if (!is_array($variation_arr)) {
+            $variation_arr = [];
+        }
         foreach ($variation_arr as $var) {
             $variation[] = [
-                'type' => $var['type'],
-                'price' => (float)$var['price'],
-                'sku' => $var['sku'],
-                'qty' => (int)$var['qty'],
+                'type' => $var['type'] ?? '',
+                'price' => (float)($var['price'] ?? 0),
+                'sku' => $var['sku'] ?? '',
+                'qty' => (int)($var['qty'] ?? 0),
             ];
         }
         $data['variation'] = $variation;
