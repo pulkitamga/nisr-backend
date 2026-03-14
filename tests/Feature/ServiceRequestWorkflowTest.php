@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Contracts\Repositories\ServiceRequestRepositoryInterface;
 use App\Http\Controllers\RestAPI\v1\ServiceRequestController;
+use App\Http\Requests\ServiceRequestFormRequest;
 use App\Models\InboxMessage;
 use App\Models\Service;
 use App\Models\ServiceRequest;
@@ -43,6 +44,77 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->createTestSchema();
     }
 
+    public function test_create_returns_created_ticket_summary_for_valid_request(): void
+    {
+        DB::table('support_ticket_status_master')->insert([
+            'id' => ServiceTicketWorkflow::STATUS_NEW,
+            'master_id' => ServiceTicketWorkflow::STATUS_MASTER_ID,
+            'name' => 'new',
+            'status' => 'active',
+            'position' => 1,
+        ]);
+
+        $customer = User::query()->create([
+            'f_name' => 'Nour',
+            'l_name' => 'Hassan',
+            'email' => 'nour@example.com',
+            'phone' => '201111111111',
+            'password' => 'secret',
+        ]);
+
+        $service = Service::query()->create([
+            'service_id' => 'SRV-200',
+            'title' => 'Battery Check',
+            'base_price_inshop' => 90,
+            'base_price_mobile' => 130,
+            'included_km_mobile' => 20,
+            'travel_fee_per_km' => 4,
+            'parts_included' => ['battery'],
+            'call_center_flag' => false,
+        ]);
+
+        $workflowNotifier = $this->createMock(ServiceWorkflowNotificationService::class);
+        $workflowNotifier->expects($this->once())->method('notify');
+
+        $submissionService = $this->makeSubmissionService($workflowNotifier);
+
+        $request = $this->getMockBuilder(ServiceRequestFormRequest::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validated', 'user'])
+            ->getMock();
+
+        $request->expects($this->once())
+            ->method('validated')
+            ->willReturn([
+                'service_id' => $service->id,
+                'service_option' => 'in_shop',
+                'vehicle_type' => 'Sedan',
+                'vehicle_make' => 'Toyota',
+                'vehicle_model' => 'Corolla',
+                'vehicle_year' => 2023,
+                'vehicle_mileage' => 22000,
+                'vin' => 'VIN-200',
+            ]);
+        $request->expects($this->once())
+            ->method('user')
+            ->willReturn($customer);
+
+        $response = (new ServiceRequestController($submissionService))->create($request);
+        $payload = $response->getData(true);
+
+        $this->assertSame(201, $response->status());
+        $this->assertSame('Service request created successfully.', $payload['message']);
+        $this->assertSame(1, $payload['ticket_id']);
+        $this->assertSame('Battery Check', $payload['ticket']['service']['title']);
+        $this->assertSame('in_shop', $payload['ticket']['service_option']);
+        $this->assertSame('In Shop', $payload['ticket']['service_option_label']);
+        $this->assertSame('Toyota', $payload['ticket']['vehicle']['make']);
+        $this->assertNull($payload['ticket']['location']);
+        $this->assertTrue($payload['ticket']['can_reply']);
+        $this->assertSame(1, SupportTicket::query()->count());
+        $this->assertSame(1, ServiceRequest::query()->count());
+    }
+
     public function test_submission_service_creates_linked_ticket_and_inbox_message(): void
     {
         DB::table('support_ticket_status_master')->insert([
@@ -72,13 +144,6 @@ class ServiceRequestWorkflowTest extends TestCase
             'call_center_flag' => false,
         ]);
 
-        $serviceRequestRepo = new class implements ServiceRequestRepositoryInterface {
-            public function create(array $data): ServiceRequest
-            {
-                return ServiceRequest::query()->create($data);
-            }
-        };
-
         $workflowNotifier = $this->createMock(ServiceWorkflowNotificationService::class);
         $workflowNotifier
             ->expects($this->once())
@@ -89,15 +154,12 @@ class ServiceRequestWorkflowTest extends TestCase
                     && (int) $ticket->service_id === (int) $service->id),
                 'ticket_created',
                 'Service Ticket Created',
-                $this->stringContains((string) $customer->id === '' ? '#' : '#'),
+                $this->stringContains('service ticket'),
                 null,
                 [['type' => 'customer', 'id' => $customer->id]]
             );
 
-        $submissionService = new ServiceRequestSubmissionService(
-            $serviceRequestRepo,
-            $workflowNotifier
-        );
+        $submissionService = $this->makeSubmissionService($workflowNotifier);
 
         $ticket = $submissionService->submit([
             'service_id' => $service->id,
@@ -161,6 +223,113 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('Toyota', $payload['makes'][0]['name']);
         $this->assertSame('Corolla', $payload['makes'][0]['models'][0]['name']);
         $this->assertSame(2025, $payload['years'][0]['year']);
+    }
+
+    public function test_show_returns_formatted_service_request_details(): void
+    {
+        DB::table('support_ticket_status_master')->insert([
+            'id' => ServiceTicketWorkflow::STATUS_NEW,
+            'master_id' => ServiceTicketWorkflow::STATUS_MASTER_ID,
+            'name' => 'new',
+            'status' => 'active',
+            'position' => 1,
+        ]);
+
+        $customer = User::query()->create([
+            'f_name' => 'Layla',
+            'l_name' => 'Omar',
+            'email' => 'layla@example.com',
+            'phone' => '201000000010',
+            'password' => 'secret',
+        ]);
+
+        $service = Service::query()->create([
+            'service_id' => 'SRV-300',
+            'title' => 'Brake Inspection',
+            'base_price_inshop' => 200,
+            'base_price_mobile' => 260,
+            'included_km_mobile' => 15,
+            'travel_fee_per_km' => 3,
+            'parts_included' => ['pads'],
+            'call_center_flag' => false,
+        ]);
+
+        $ticket = SupportTicket::query()->create([
+            'service_id' => $service->id,
+            'customer_id' => $customer->id,
+            'subject' => 'Brake Inspection',
+            'type' => 'service',
+            'sub_type' => 'service',
+            'request_type' => 'service_request',
+            'priority' => 'medium',
+            'description' => 'Customer requested a brake inspection.',
+            'status' => ServiceTicketWorkflow::STATUS_NEW,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        InboxMessage::query()->create([
+            'subject' => 'Brake Inspection',
+            'body' => 'A new service request has been submitted.',
+            'contact_id' => $customer->id,
+            'sender_name' => 'Layla Omar',
+            'sender_email' => $customer->email,
+            'sender_phone' => $customer->phone,
+            'pipeline' => 'form',
+            'message_type' => 'service',
+            'related_ticket_id' => $ticket->id,
+            'details' => [
+                'service_request_id' => 44,
+                'service_id' => $service->id,
+                'service_option' => 'mobile',
+                'country' => 'Egypt',
+                'state' => 'Cairo',
+                'city' => 'Nasr City',
+                'area' => 'Zone 2',
+                'address' => 'Street 20',
+                'latitude' => '30.0500',
+                'longitude' => '31.2400',
+                'vehicle_type' => 'SUV',
+                'vehicle_make' => 'Toyota',
+                'vehicle_model' => 'Prado',
+                'vehicle_year' => 2024,
+                'vehicle_mileage' => 12000,
+                'vin' => 'VIN-300',
+            ],
+            'status' => 'converted',
+            'convert_type' => 'ticket',
+            'convert_sub_type' => 'service',
+        ]);
+
+        SupportTicketConv::query()->create([
+            'support_ticket_id' => $ticket->id,
+            'admin_id' => 0,
+            'customer_message' => 'Can you confirm the mobile appointment window?',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $request = Request::create('/api/v1/customer/service-request/' . $ticket->id, 'GET');
+        $request->setUserResolver(fn () => $customer);
+
+        $response = $this->makeController()->show($request, $ticket->id);
+        $payload = $response->getData(true);
+
+        $this->assertSame(200, $response->status());
+        $this->assertSame($ticket->id, $payload['id']);
+        $this->assertSame('Brake Inspection', $payload['service']['title']);
+        $this->assertSame('mobile', $payload['service_option']);
+        $this->assertSame('SUV', $payload['vehicle']['type']);
+        $this->assertSame('Street 20', $payload['location']['address']);
+        $this->assertCount(2, $payload['messages']);
+        $this->assertSame(
+            'Can you confirm the mobile appointment window?',
+            $payload['messages'][1]['customer_message']
+        );
+        $this->assertSame(44, $payload['service_request']['service_request_id']);
+        $this->assertSame('Mobile Service', $payload['service_request']['service_option_label']);
+        $this->assertSame([], $payload['activities']);
+        $this->assertSame([], $payload['invoices']);
     }
 
     public function test_reply_adds_customer_message_for_open_service_request(): void
@@ -262,9 +431,31 @@ class ServiceRequestWorkflowTest extends TestCase
         );
     }
 
+    private function makeSubmissionService(
+        ServiceWorkflowNotificationService $workflowNotifier
+    ): ServiceRequestSubmissionService {
+        return new ServiceRequestSubmissionService(
+            $this->makeServiceRequestRepository(),
+            $workflowNotifier
+        );
+    }
+
+    private function makeServiceRequestRepository(): ServiceRequestRepositoryInterface
+    {
+        return new class implements ServiceRequestRepositoryInterface {
+            public function create(array $data): ServiceRequest
+            {
+                return ServiceRequest::query()->create($data);
+            }
+        };
+    }
+
     private function createTestSchema(): void
     {
         foreach ([
+            'activity_log',
+            'service_invoices',
+            'service_jobs',
             'support_ticket_convs',
             'support_tickets',
             'inbox_messages',
@@ -278,6 +469,51 @@ class ServiceRequestWorkflowTest extends TestCase
         ] as $table) {
             Schema::dropIfExists($table);
         }
+
+        Schema::create('activity_log', function (Blueprint $table) {
+            $table->id();
+            $table->string('log_name')->nullable();
+            $table->text('description');
+            $table->string('subject_type')->nullable();
+            $table->unsignedBigInteger('subject_id')->nullable();
+            $table->string('event')->nullable();
+            $table->string('causer_type')->nullable();
+            $table->unsignedBigInteger('causer_id')->nullable();
+            $table->text('properties')->nullable();
+            $table->uuid('batch_uuid')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('service_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('ticket_id');
+            $table->unsignedBigInteger('technician_id')->nullable();
+            $table->string('status')->nullable();
+            $table->string('service_mode')->nullable();
+            $table->timestamp('scheduled_at')->nullable();
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->text('remarks')->nullable();
+            $table->text('description')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+
+        Schema::create('service_invoices', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('ticket_id');
+            $table->unsignedBigInteger('job_id')->nullable();
+            $table->decimal('subtotal', 10, 2)->nullable();
+            $table->decimal('tax', 10, 2)->nullable();
+            $table->decimal('total', 10, 2)->nullable();
+            $table->string('payment_status')->nullable();
+            $table->string('payment_link')->nullable();
+            $table->timestamp('payment_link_expires_at')->nullable();
+            $table->timestamp('generated_at')->nullable();
+            $table->timestamp('paid_at')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
