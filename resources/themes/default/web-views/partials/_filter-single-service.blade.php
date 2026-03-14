@@ -1,4 +1,5 @@
 @php($overallRating = getOverallRating($product->reviews))
+@php($serviceTitle = $product->translations->firstWhere('key', 'service_tittle')->value ?? $product->service->title)
 
 <div class="product-single-hover style--card h-100">
     <div class="overflow-hidden position-relative">
@@ -46,7 +47,7 @@
             @endif
             <div class="text-center">
                 <a href="{{route('service',$product->slug)}}">
-                    {{ $product->service->title }}
+                    {{ $serviceTitle }}
                 </a>
             </div>
             <div class="justify-content-between text-center mb-3">

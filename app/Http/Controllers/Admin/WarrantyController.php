@@ -376,6 +376,7 @@ class WarrantyController extends Controller
         $warranty->load([
             'user',
             'product',
+            'claims',
             'timelineEvents.user',
             'originalWarranty',
             'replacements.newWarranty',

@@ -48,6 +48,7 @@ class EnvironmentSettingsController extends BaseController
         try {
             $this->setEnvironmentValue(envKey: 'APP_DEBUG', envValue: $request['app_debug'] ?? env('APP_DEBUG'));
             $this->setEnvironmentValue(envKey: 'APP_MODE', envValue: $request['app_mode'] ?? env('APP_MODE'));
+            Artisan::call('optimize:clear');
             Toastr::success(translate('environment_variables_updated_successfully'));
         } catch (Exception $exception) {
             Log::error('Environment settings update failed', ['exception' => $exception->getMessage()]);

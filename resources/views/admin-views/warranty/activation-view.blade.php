@@ -16,6 +16,9 @@
 @endpush
 
 @section('content')
+@php
+    $hasOpenClaim = $warranty->claims->contains(fn($claim) => !in_array($claim->status, ['closed', 'rejected'], true));
+@endphp
 <div class="content container-fluid">
     <div class="page-header">
         <div class="row align-items-center">
@@ -27,13 +30,25 @@
                     </span>
                 </h1>
             </div>
-            <div class="col-sm-auto">
+            <div class="col-sm-auto d-flex gap-2">
+                @if($warranty->status === 'active' && !$hasOpenClaim)
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#manualClaimModal">
+                        <i class="tio-add-circle"></i> {{ translate('Add Manual Claim') }}
+                    </button>
+                @endif
+
                 <a href="{{ route('admin.warranty.activation.list') }}" class="btn btn-light">
                     <i class="tio-arrow-backward"></i> {{ translate('Back to List') }}
                 </a>
             </div>
         </div>
     </div>
+
+    @if($warranty->status === 'active' && $hasOpenClaim)
+        <div class="alert alert-warning">
+            {{ translate('There is already an open claim for this warranty.') }}
+        </div>
+    @endif
 
     <div class="row">
         <!-- Warranty Info -->
@@ -212,6 +227,45 @@
         </div>
     </div>
 </div>
+
+@if($warranty->status === 'active' && !$hasOpenClaim)
+<div class="modal fade" id="manualClaimModal" tabindex="-1" aria-labelledby="manualClaimModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('admin.warranty.claim.submit') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manualClaimModalLabel">{{ translate('Add Manual Claim') }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="serial_number" value="{{ $warranty->serial_number }}">
+                    <div class="form-group">
+                        <label class="input-label">{{ translate('Serial Number') }}</label>
+                        <input type="text" class="form-control" value="{{ $warranty->serial_number }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="input-label" for="manual-claim-description">{{ translate('Description') }}</label>
+                        <textarea
+                            id="manual-claim-description"
+                            name="description"
+                            rows="4"
+                            class="form-control"
+                            placeholder="{{ translate('Enter Description') }}"
+                            required>{{ old('description') }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Submit Claim') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('css_or_js')

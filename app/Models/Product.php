@@ -523,7 +523,8 @@ class Product extends Model
         if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
             return $name;
         }
-        return $this->translations[0]->value ?? $name;
+
+        return $this->translations->firstWhere('key', 'name')->value ?? $name;
     }
 
     public function getDetailsAttribute($detail): string|null
@@ -531,7 +532,8 @@ class Product extends Model
         if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
             return $detail;
         }
-        return $this->translations[1]->value ?? $detail;
+
+        return $this->translations->firstWhere('key', 'description')->value ?? $detail;
     }
     public function getThumbnailFullUrlAttribute(): string|null|array
     {
@@ -603,11 +605,7 @@ class Product extends Model
 
         static::addGlobalScope('translate', function (Builder $builder) {
             $builder->with(['translations' => function ($query) {
-                if (strpos(url()->current(), '/api')) {
-                    return $query->where('locale', App::getLocale());
-                } else {
-                    return $query->where('locale', getDefaultLanguage());
-                }
+                return $query->where('locale', App::getLocale());
             }, 'reviews' => function ($query) {
                 $query->whereNull('delivery_man_id');
             }]);

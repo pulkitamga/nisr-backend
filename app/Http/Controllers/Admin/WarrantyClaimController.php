@@ -281,13 +281,25 @@ class WarrantyClaimController extends Controller
             return back()->withErrors($validator);
         }
 
+        $warranty = Warranty::where('serial_number', $request->serial_number)->firstOrFail();
+
+        if (!$warranty->isActive()) {
+            Toastr::error(translate('Warranty is not active or expired.'));
+            return back()->withInput();
+        }
+
+        if ($warranty->claims()->open()->exists()) {
+            Toastr::error(translate('There is already an open claim for this warranty.'));
+            return back()->withInput();
+        }
+
         $claimNumber = 'CLAIM-' . Str::upper(Str::random(8));
         $submittedAt = now();
         $firstResponseDue = $submittedAt->copy()->addHours(24);
         $resolutionDue = $submittedAt->copy()->addDays(3);
 
         $claim = WarrantyClaim::create([
-            'warranty_id' => Warranty::where('serial_number', $request->serial_number)->first()->id,
+            'warranty_id' => $warranty->id,
             'serial_number' => $request->serial_number,
             'claim_number' => $claimNumber,
             'status' => 'new',

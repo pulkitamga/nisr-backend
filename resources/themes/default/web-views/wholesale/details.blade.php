@@ -161,7 +161,7 @@
                             </div>
                         </div>
                      @php
-                            $locale = getDefaultLanguage();
+                            $locale = app()->getLocale();
                             $serviceTranslations = $product->translations
                                 ->where('locale', $locale)
                                 ->filter(fn($t) => in_array($t->key, ['service_tittle', 'parts_included']));
