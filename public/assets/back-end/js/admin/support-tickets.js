@@ -78,6 +78,22 @@ function syncSupportFollowUpDateVisibility() {
     return shouldShowDate;
 }
 
+function syncComplainFollowUpDateVisibility() {
+    const shouldShowDate = isInProgressStatusSelected('#complain-follow-up-status');
+    const $dateRow = $('#complain-ticket-next-follow-up-date-row');
+
+    if (!$dateRow.length) {
+        return shouldShowDate;
+    }
+
+    $dateRow.removeClass('d-none');
+    if (!shouldShowDate) {
+        $dateRow.addClass('d-none');
+    }
+
+    return shouldShowDate;
+}
+
 function setWholesaleFollowUpContext(ticketId, departmentId, employeeId, statusId, statusName) {
     const normalizedTicketId = Number(ticketId || 0);
     const $modal = $('#showWholesaleFollowUpModal');
@@ -239,6 +255,12 @@ function handleFollowUpSubmit(formSelector, modalSelector) {
         event.preventDefault();
 
         if (formSelector === '#updateSupportTicketFollowUpForm') {
+            const ticketId = Number($('#support-follow-up-ticket-id').val() || 0);
+            if (ticketId <= 0) {
+                toastr.error(getDataText('support-ticket-ticket-id-required', 'Ticket ID is required.'));
+                return;
+            }
+
             const isInProgressStatus = syncSupportFollowUpDateVisibility();
             if (isInProgressStatus && !$('#support-ticket-next-follow-up-date').val()) {
                 toastr.error(getDataText(
@@ -281,6 +303,24 @@ function handleFollowUpSubmit(formSelector, modalSelector) {
                     'Follow-up date is required for In Progress',
                 ));
                 $('#wholesale-ticket-next-follow-up-date').trigger('focus');
+                return;
+            }
+        }
+
+        if (formSelector === '#updateComplainTicketFollowUpForm') {
+            const ticketId = Number($('#complain-follow-up-ticket-id').val() || 0);
+            if (ticketId <= 0) {
+                toastr.error(getDataText('support-ticket-ticket-id-required', 'Ticket ID is required.'));
+                return;
+            }
+
+            const isInProgressStatus = syncComplainFollowUpDateVisibility();
+            if (isInProgressStatus && !$('#complain-ticket-next-follow-up-date').val()) {
+                toastr.error(getDataText(
+                    'support-ticket-follow-up-date-required',
+                    'Follow-up date is required for In Progress',
+                ));
+                $('#complain-ticket-next-follow-up-date').trigger('focus');
                 return;
             }
         }
@@ -371,10 +411,11 @@ $(document).on('click', '[data-target="#showComplainFollowUpModal"], [data-bs-ta
     let statusId = $(this).data('status-id');
     let statusName = $(this).data('status-name');
 
-    $('#support-follow-up-ticket-id').val(ticketId || '');
-    $('#support-follow-up-department-id').val(departmentId || '');
-    $('#support-follow-up-employee-id').val(employeeId || '');
+    $('#complain-follow-up-ticket-id').val(ticketId || '');
+    $('#complain-follow-up-department-id').val(departmentId || '');
+    $('#complain-follow-up-employee-id').val(employeeId || '');
     prefillFollowUpStatus('#complain-follow-up-status', statusId, statusName);
+    syncComplainFollowUpDateVisibility();
 });
 
 $(document).on('click', '[data-target="#showWholesaleFollowUpModal"], [data-bs-target="#showWholesaleFollowUpModal"]', function () {
@@ -411,12 +452,8 @@ $(function () {
         syncSupportFollowUpDateVisibility();
     });
 
-    $('#complain-follow-up-status').on('change', function () {
-        let status = Number($(this).val() || 0);
-        $('#complain-ticket-next-follow-up-date-row').removeClass().addClass('row d-none');
-        if (status === 39) {
-            $('#complain-ticket-next-follow-up-date-row').removeClass().addClass('row');
-        }
+    $('#complain-follow-up-status').on('change select2:select', function () {
+        syncComplainFollowUpDateVisibility();
     });
 
     $('#showComplainFollowUpModal').on('show.bs.modal', function (event) {
@@ -426,10 +463,11 @@ $(function () {
         const employeeId = button.data('employee-id');
         const statusId = button.data('status-id');
         const statusName = button.data('status-name');
-        $('#support-follow-up-ticket-id').val(ticketId || '');
-        $('#support-follow-up-department-id').val(departmentId || '');
-        $('#support-follow-up-employee-id').val(employeeId || '');
+        $('#complain-follow-up-ticket-id').val(ticketId || '');
+        $('#complain-follow-up-department-id').val(departmentId || '');
+        $('#complain-follow-up-employee-id').val(employeeId || '');
         prefillFollowUpStatus('#complain-follow-up-status', statusId, statusName);
+        syncComplainFollowUpDateVisibility();
     });
 
     $('#showWholesaleFollowUpModal').on('show.bs.modal', function (event) {

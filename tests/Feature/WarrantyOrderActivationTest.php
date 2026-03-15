@@ -202,6 +202,90 @@ class WarrantyOrderActivationTest extends TestCase
         $this->assertSame($purchaseDate->format('Y-m-d H:i:s'), $warranty->purchase_date);
     }
 
+    public function test_customer_warranty_detail_returns_product_code_without_sku_field(): void
+    {
+        $customer = User::query()->create([
+            'f_name' => 'Warranty',
+            'l_name' => 'Owner',
+            'email' => 'owner@example.com',
+            'phone' => '201234567890',
+            'password' => bcrypt('password'),
+            'is_active' => 1,
+        ]);
+        $productId = $this->createProduct(isTraceable: true);
+
+        DB::table('products')
+            ->where('id', $productId)
+            ->update(['code' => 'PRD-001']);
+
+        DB::table('warranties')->insert([
+            'serial_number' => 'SERIAL-CODE-001',
+            'product_id' => $productId,
+            'status' => 'active',
+            'activation_date' => now()->subDay(),
+            'start_date' => now()->subDay(),
+            'end_date' => now()->addYear(),
+            'final_user_id' => $customer->id,
+            'activated_by_name' => 'Snapshot Name',
+            'activated_by_email' => 'snapshot@example.com',
+            'activated_by_phone' => '200000000000',
+            'warranty_public_id' => 'warranty-code-001',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controller = $this->makeController();
+        $request = Request::create('/api/v1/warranties/warranty-code-001', 'GET');
+        $request->setUserResolver(fn() => $customer);
+
+        $response = $controller->warrantyDetail($request, 'warranty-code-001');
+        $payload = $response->getData(true);
+
+        $this->assertTrue($payload['success']);
+        $this->assertSame('Traceable Product', $payload['warranty']['product']['name']);
+        $this->assertSame('PRD-001', $payload['warranty']['product']['code']);
+        $this->assertArrayNotHasKey('sku', $payload['warranty']['product']);
+    }
+
+    public function test_customer_warranties_returns_active_warranty_without_charges_table(): void
+    {
+        $customer = User::query()->create([
+            'f_name' => 'Warranty',
+            'l_name' => 'Owner',
+            'email' => 'owner-list@example.com',
+            'phone' => '201234567891',
+            'password' => bcrypt('password'),
+            'is_active' => 1,
+        ]);
+        $productId = $this->createProduct(isTraceable: true);
+
+        DB::table('warranties')->insert([
+            'serial_number' => 'SERIAL-LIST-001',
+            'product_id' => $productId,
+            'status' => 'active',
+            'activation_date' => now()->subDay(),
+            'start_date' => now()->subDay(),
+            'end_date' => now()->addYear(),
+            'final_user_id' => $customer->id,
+            'warranty_public_id' => 'warranty-list-001',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controller = $this->makeController();
+        $request = Request::create('/api/v1/customer/warranties', 'GET');
+        $request->setUserResolver(fn() => $customer);
+
+        $response = $controller->warranties($request);
+        $payload = $response->getData(true);
+
+        $this->assertTrue($payload['success']);
+        $this->assertCount(1, $payload['warranties']);
+        $this->assertSame('warranty-list-001', $payload['warranties'][0]['warranty_public_id']);
+        $this->assertSame('SERIAL-LIST-001', $payload['warranties'][0]['serial_number']);
+        $this->assertSame('active', $payload['warranties'][0]['status']);
+    }
+
     public function test_api_order_activation_rejects_traceable_product_without_warranty_flag(): void
     {
         $customer = $this->makeCustomer(119);
@@ -360,17 +444,41 @@ class WarrantyOrderActivationTest extends TestCase
             });
         }
 
+        if (!Schema::hasTable('users')) {
+            Schema::create('users', function (Blueprint $table) {
+                $table->id();
+                $table->string('f_name')->nullable();
+                $table->string('l_name')->nullable();
+                $table->string('name')->nullable();
+                $table->string('email')->nullable();
+                $table->string('phone')->nullable();
+                $table->string('password')->nullable();
+                $table->integer('is_active')->default(1);
+                $table->rememberToken();
+                $table->timestamps();
+            });
+        }
+
         if (!Schema::hasTable('products')) {
             Schema::create('products', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->nullable();
+                $table->string('code')->nullable();
                 $table->boolean('status')->default(1);
                 $table->boolean('is_traceable')->default(0);
                 $table->boolean('is_warranty')->default(0);
                 $table->softDeletes();
                 $table->timestamps();
             });
-        } elseif (!Schema::hasColumn('products', 'is_warranty')) {
+        }
+
+        if (Schema::hasTable('products') && !Schema::hasColumn('products', 'code')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->string('code')->nullable();
+            });
+        }
+
+        if (Schema::hasTable('products') && !Schema::hasColumn('products', 'is_warranty')) {
             Schema::table('products', function (Blueprint $table) {
                 $table->boolean('is_warranty')->default(0);
             });
@@ -430,6 +538,9 @@ class WarrantyOrderActivationTest extends TestCase
                 $table->timestamp('end_date')->nullable();
                 $table->timestamp('purchase_date')->nullable();
                 $table->unsignedBigInteger('final_user_id')->nullable();
+                $table->string('activated_by_name')->nullable();
+                $table->string('activated_by_email')->nullable();
+                $table->string('activated_by_phone')->nullable();
                 $table->string('invoice_number')->nullable();
                 $table->string('activation_method')->nullable();
                 $table->boolean('consent_checked')->default(false);
@@ -439,6 +550,14 @@ class WarrantyOrderActivationTest extends TestCase
                 $table->string('warranty_public_id')->nullable();
                 $table->softDeletes();
                 $table->timestamps();
+            });
+        }
+
+        if (Schema::hasTable('warranties') && !Schema::hasColumn('warranties', 'activated_by_name')) {
+            Schema::table('warranties', function (Blueprint $table) {
+                $table->string('activated_by_name')->nullable();
+                $table->string('activated_by_email')->nullable();
+                $table->string('activated_by_phone')->nullable();
             });
         }
 
@@ -469,6 +588,17 @@ class WarrantyOrderActivationTest extends TestCase
                 $table->text('description')->nullable();
                 $table->timestamp('timestamp')->nullable();
                 $table->unsignedBigInteger('user_id')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        if (!Schema::hasTable('warranty_claims')) {
+            Schema::create('warranty_claims', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('warranty_id');
+                $table->string('status')->nullable();
+                $table->timestamp('submitted_at')->nullable();
+                $table->softDeletes();
                 $table->timestamps();
             });
         }
@@ -525,6 +655,7 @@ class WarrantyOrderActivationTest extends TestCase
     {
         return DB::table('products')->insertGetId([
             'name' => 'Traceable Product',
+            'code' => 'TRACE-001',
             'status' => 1,
             'is_traceable' => $isTraceable ? 1 : 0,
             'is_warranty' => $isWarranty ? 1 : 0,

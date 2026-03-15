@@ -247,9 +247,9 @@
             <div class="modal-body pt-0">
                 <form id="updateComplainTicketFollowUpForm" action="{{ route('admin.complaints.update-complain-follow-up') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="ticket_id" id="support-follow-up-ticket-id">
-                    <input type="hidden" name="department_id" id="support-follow-up-department-id">
-                    <input type="hidden" name="employee_id" id="support-follow-up-employee-id">
+                    <input type="hidden" name="ticket_id" id="complain-follow-up-ticket-id">
+                    <input type="hidden" name="department_id" id="complain-follow-up-department-id">
+                    <input type="hidden" name="employee_id" id="complain-follow-up-employee-id">
                     <div class="row mt-3">
                         <div class="col-md-12">
                             <div class="form-group">
@@ -264,7 +264,16 @@
                                     ['id' => 41, 'name' => 'Resolved'],
                                     ['id' => 42, 'name' => 'Closed']
                                     ] as $status)
-                                    <option value="{{ $status['id'] }}" data-status-name="{{ strtolower($status['name'] ?? '') }}">{{ translate($status['name']) }}</option>
+                                    @php
+                                        $complainStatusName = strtolower(trim((string) ($status['name'] ?? '')));
+                                        $complainNormalizedStatusName = str_replace([' ', '-'], '_', $complainStatusName);
+                                        $complainRequiresFollowUpDate = in_array($complainNormalizedStatusName, ['in_progress', 'inprogress'], true) ? 1 : 0;
+                                    @endphp
+                                    <option value="{{ $status['id'] }}"
+                                        data-status-name="{{ $complainStatusName }}"
+                                        data-require-follow-up-date="{{ $complainRequiresFollowUpDate }}">
+                                        {{ translate($status['name']) }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -273,16 +282,16 @@
                     <div class="row d-none" id="complain-ticket-next-follow-up-date-row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="control-label" for="support-ticket-next-follow-up-date">{{ translate('Next Follow-Up Date') }}</label>
-                                <input type="date" name="ticket-next-follow-up-date" id="support-ticket-next-follow-up-date" class="form-control">
+                                <label class="control-label" for="complain-ticket-next-follow-up-date">{{ translate('Next Follow-Up Date') }}</label>
+                                <input type="date" name="ticket-next-follow-up-date" id="complain-ticket-next-follow-up-date" class="form-control">
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="control-label" for="support-follow-up-note">{{ translate('Note') }}</label>
-                                <textarea rows="3" class="form-control" name="ticket-follow-up-note" id="support-follow-up-note" placeholder="{{ translate('Enter follow-up note') }}"></textarea>
+                                <label class="control-label" for="complain-follow-up-note">{{ translate('Note') }}</label>
+                                <textarea rows="3" class="form-control" name="ticket-follow-up-note" id="complain-follow-up-note" placeholder="{{ translate('Enter follow-up note') }}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -326,6 +335,8 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
+<span id="support-ticket-ticket-id-required" data-text="{{ translate('Ticket ID is required.') }}"></span>
+<span id="support-ticket-follow-up-date-required" data-text="{{ translate('follow_up_date_required_for_in_progress') }}"></span>
 @endsection
 
 @push('script')

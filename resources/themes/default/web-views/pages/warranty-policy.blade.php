@@ -19,7 +19,7 @@
                         @if($policy)
                             <p><strong>{{ translate('Version') }}: {{ $policy->version ?? '-' }}</strong></p>
                             <p><strong>{{ translate('Effective Date') }}: {{ optional($policy->published_at)->format('Y-m-d') ?? '-' }}</strong></p>
-                            <div>{!! getTranslatedValue($policy, 'value', $policy->value ?? '') !!}</div>
+                            <div>{!! $policyValue ?? $policy->value ?? '' !!}</div>
                         @else
                             <p class="mb-0">{{ translate('No policy available right now.') }}</p>
                         @endif

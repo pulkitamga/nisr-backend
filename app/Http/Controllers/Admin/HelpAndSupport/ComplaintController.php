@@ -98,6 +98,22 @@ class ComplaintController extends BaseController
         return in_array($normalizedStatusName, ['in_progress', 'inprogress'], true);
     }
 
+    private function resolveDepartmentAndEmployeeIds(Request $request, mixed $ticket): array
+    {
+        $departmentId = (int) $request->input('department_id', 0);
+        $employeeId = (int) $request->input('employee_id', 0);
+
+        if ($departmentId <= 0) {
+            $departmentId = (int) ($ticket->department_id ?? 0);
+        }
+
+        if ($employeeId <= 0) {
+            $employeeId = (int) ($ticket->employee_id ?? 0);
+        }
+
+        return [$departmentId > 0 ? $departmentId : null, $employeeId > 0 ? $employeeId : null];
+    }
+
     private function resolveStatusMasterIdByTicketType(?string $ticketType): int
     {
         return match (strtolower(trim((string)$ticketType))) {
@@ -386,8 +402,6 @@ class ComplaintController extends BaseController
             ], 422);
         }
 
-        $iDepartmentId = $request->input('department_id');
-        $iEmployeeId = $request->input('employee_id');
         $success = 1;
 
         // Validate ticket existence
@@ -400,6 +414,7 @@ class ComplaintController extends BaseController
         }
 
         $oldTicket = $custRequestTicket->first();
+        [$iDepartmentId, $iEmployeeId] = $this->resolveDepartmentAndEmployeeIds($request, $oldTicket);
         $iTicketStatus = (int)$request->input('ticket-follow-up-status');
         $dTicketFollowUpDate = $request->input('ticket-next-follow-up-date');
         $iTicketNote = $request->input('ticket-follow-up-note');
@@ -699,8 +714,6 @@ class ComplaintController extends BaseController
             ], 422);
         }
 
-        $departmentId = $request->input('department_id');
-        $employeeId = $request->input('employee_id');
         $statusId = (int)$request->input('ticket-follow-up-status');
         $followUpDate = $request->input('ticket-next-follow-up-date');
         $note = $request->input('ticket-follow-up-note');
@@ -711,6 +724,7 @@ class ComplaintController extends BaseController
         }
 
         $oldTicket = $ticket->first();
+        [$departmentId, $employeeId] = $this->resolveDepartmentAndEmployeeIds($request, $oldTicket);
         $oldStatusName = SupportTicketStatusMaster::find((int)$oldTicket->status)?->name ?? (string)$oldTicket->status;
 
         if (!SupportTicketStatusMaster::where(['id' => $statusId, 'master_id' => 1, 'status' => 'active'])->exists()) {
@@ -832,8 +846,6 @@ class ComplaintController extends BaseController
         return response()->json(['success' => 0, 'message' => translate('Ticket ID is required.')], 422);
     }
 
-    $departmentId = $request->input('department_id');
-    $employeeId   = $request->input('employee_id');
     $statusId     = $request->input('ticket-follow-up-status');
     $followUpDate = $request->input('ticket-next-follow-up-date');
     $note         = $request->input('ticket-follow-up-note');
@@ -846,6 +858,7 @@ class ComplaintController extends BaseController
     }
 
     $oldTicket = $ticket->first();
+    [$departmentId, $employeeId] = $this->resolveDepartmentAndEmployeeIds($request, $oldTicket);
 
     // Validate status
     if (!SupportTicketStatusMaster::where([
@@ -1011,8 +1024,6 @@ class ComplaintController extends BaseController
         return response()->json(['success' => 0, 'message' => translate('Ticket ID is required.')], 422);
     }
 
-    $departmentId  = $request->input('department_id');
-    $employeeId    = $request->input('employee_id');
     $statusId      = $request->input('ticket-follow-up-status');
     $followUpDate  = $request->input('ticket-next-follow-up-date');
     $note          = $request->input('ticket-follow-up-note');
@@ -1026,6 +1037,7 @@ class ComplaintController extends BaseController
     }
 
     $oldTicket = $ticket->first();
+    [$departmentId, $employeeId] = $this->resolveDepartmentAndEmployeeIds($request, $oldTicket);
 
     // Validate status
     if (!SupportTicketStatusMaster::where([

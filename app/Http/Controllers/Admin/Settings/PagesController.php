@@ -140,14 +140,12 @@ class PagesController extends BaseController
             $defaultLangIndex = 0;
         }
         $value = $data['value'][$defaultLangIndex] ?? ($data['value'][0] ?? '');
-        $locale = $data['locale'] ?? ($data['lang'][$defaultLangIndex] ?? $defaultLang);
         $publishedAt = isset($data['published_at']) ? \Carbon\Carbon::parse($data['published_at']) : now();
 
-        $slugBase = Str::slug("warranty-policy-{$version}-{$locale}");
+        $slugBase = Str::slug("warranty-policy-{$version}");
         $slug = $slugBase;
 
         $policy = Policy::where('version', $version)
-            ->where('locale', $locale)
             ->first();
 
         if ($policy) {
@@ -157,7 +155,6 @@ class PagesController extends BaseController
             }
 
             $policy->update([
-                'locale' => $locale,
                 'effective_date' => $publishedAt->toDateString(),
                 'content_html' => $value,
                 'content_text' => strip_tags($value),
@@ -180,7 +177,6 @@ class PagesController extends BaseController
 
             $policy = Policy::create([
                 'version' => $version,
-                'locale' => $locale,
                 'effective_date' => $publishedAt->toDateString(),
                 'content_html' => $value,
                 'content_text' => strip_tags($value),

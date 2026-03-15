@@ -275,7 +275,7 @@ class WarrantyViewController extends Controller
 
         $warranty = Warranty::where('warranty_public_id', $warranty_public_id)
             ->with([
-                'product:id,name,sku',
+                'product:id,name,code',
                 'user:id,f_name,l_name,email,phone',
                 'claims' => fn($query) => $query
                     ->latest('updated_at')
@@ -340,7 +340,7 @@ class WarrantyViewController extends Controller
             'product' => [
                 'id' => $warranty->product?->id,
                 'name' => $warranty->product?->name,
-                'sku' => $warranty->product?->sku,
+                'code' => $warranty->product?->code,
             ],
         ];
     }

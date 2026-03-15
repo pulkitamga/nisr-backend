@@ -11,25 +11,14 @@ class WarrantyPolicyApiController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
-        $locale = $request->query('locale', app()->getLocale());
-        if (!preg_match('/^[a-z]{2,3}(_[a-z]{2,3})?$/', (string)$locale)) {
-            $locale = app()->getLocale();
-        }
+        $locale = Policy::normalizeLocale($request->query('locale', app()->getLocale()));
 
         $policy = Policy::query()
+            ->with('translations')
             ->published()
-            ->where('locale', $locale)
             ->orderByDesc('effective_date')
             ->orderByDesc('published_at')
             ->first();
-
-        if (!$policy) {
-            $policy = Policy::query()
-                ->published()
-                ->orderByDesc('effective_date')
-                ->orderByDesc('published_at')
-                ->first();
-        }
 
         if (!$policy) {
             return response()->json([
@@ -42,11 +31,11 @@ class WarrantyPolicyApiController extends Controller
             'success' => true,
             'policy' => [
                 'version' => $policy->version,
-                'locale' => $policy->locale,
+                'locale' => $locale,
                 'effective_date' => optional($policy->effective_date)->toDateString(),
                 'published_at' => optional($policy->published_at)?->toIso8601String(),
-                'content_html' => $policy->content_html,
-                'content_text' => $policy->content_text,
+                'content_html' => $policy->getLocalizedContentHtml($locale),
+                'content_text' => $policy->getLocalizedContentText($locale),
             ],
         ]);
     }

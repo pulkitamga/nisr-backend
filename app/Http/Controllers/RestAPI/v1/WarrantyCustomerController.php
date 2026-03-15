@@ -393,14 +393,13 @@ class WarrantyCustomerController extends Controller
     {
         return Warranty::query()
             ->with([
-                'product:id,name,sku',
+                'product:id,name,code',
                 'user:id,f_name,l_name,email,phone',
                 'claims' => fn($query) => $query
                     ->latest('updated_at')
                     ->with([
                         'attachments',
                         'payments',
-                        'charges',
                         'timelineEvents' => fn($timelineQuery) => $timelineQuery->latest('timestamp'),
                     ]),
                 'timelineEvents' => fn($query) => $query->latest('timestamp'),
@@ -415,9 +414,8 @@ class WarrantyCustomerController extends Controller
             ->with([
                 'attachments',
                 'payments',
-                'charges',
                 'timelineEvents' => fn($query) => $query->latest('timestamp'),
-                'warranty.product:id,name,sku',
+                'warranty.product:id,name,code',
                 'warranty.user:id,f_name,l_name,email,phone',
             ])
             ->whereHas('warranty', fn($query) => $query->where('final_user_id', $customerId));
@@ -487,7 +485,7 @@ class WarrantyCustomerController extends Controller
             'product' => [
                 'id' => $warranty->product?->id,
                 'name' => $warranty->product?->name,
-                'sku' => $warranty->product?->sku,
+                'code' => $warranty->product?->code,
             ],
         ];
     }
