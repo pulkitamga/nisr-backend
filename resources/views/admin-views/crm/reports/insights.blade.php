@@ -77,19 +77,23 @@
 
 @section('content')
     @php
-        $isRtl = session('direction') === 'rtl'
-            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl =
+            session('direction') === 'rtl' ||
+            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
-    <div class="content container-fluid crm-insights-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid crm-insights-page {{ $isRtl ? 'text-right' : '' }}"
+        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
                 <div>
                     <h2 class="h1 mb-1">{{ translate('crm_insights_report') }}</h2>
                     <p class="mb-0 opacity-75">
-                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
+                        {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
+                        {{ $snapshotTo->format('M d, Y') }}
                     </p>
                 </div>
-                <span class="badge badge-light text-dark">{{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}</span>
+                <span class="badge badge-light text-dark">{{ translate('updated') }}
+                    {{ now()->format('M d, Y h:i A') }}</span>
             </div>
         </div>
 
@@ -100,18 +104,29 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
-                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
-                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
-                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
+                                <option value="this_year"
+                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
+                                    {{ translate('this_year') }}</option>
+                                <option value="this_month"
+                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
+                                    {{ translate('this_month') }}</option>
+                                <option value="this_week"
+                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
+                                    {{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
+                                    {{ translate('today') }}</option>
+                                <option value="custom_date"
+                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
+                                    {{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
@@ -119,8 +134,9 @@
                             <label class="form-label mb-1">{{ translate('department') }}</label>
                             <select class="form-control" name="department_id">
                                 <option value="0">{{ translate('all') }}</option>
-                                @foreach($departments as $department)
-                                    <option value="{{ $department->id }}" {{ (int)($filters['department_id'] ?? 0) === (int)$department->id ? 'selected' : '' }}>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->id }}"
+                                        {{ (int) ($filters['department_id'] ?? 0) === (int) $department->id ? 'selected' : '' }}>
                                         {{ $department->name }}
                                     </option>
                                 @endforeach
@@ -130,8 +146,9 @@
                             <label class="form-label mb-1">{{ translate('owner') }}</label>
                             <select class="form-control" name="owner_id">
                                 <option value="0">{{ translate('all') }}</option>
-                                @foreach($owners as $owner)
-                                    <option value="{{ $owner->id }}" {{ (int)($filters['owner_id'] ?? 0) === (int)$owner->id ? 'selected' : '' }}>
+                                @foreach ($owners as $owner)
+                                    <option value="{{ $owner->id }}"
+                                        {{ (int) ($filters['owner_id'] ?? 0) === (int) $owner->id ? 'selected' : '' }}>
                                         {{ $owner->name }}
                                     </option>
                                 @endforeach
@@ -141,25 +158,38 @@
                             <label class="form-label mb-1">{{ translate('message_status') }}</label>
                             <select class="form-control" name="message_status">
                                 <option value="">{{ translate('all') }}</option>
-                                <option value="new" {{ ($filters['message_status'] ?? '') === 'new' ? 'selected' : '' }}>{{ translate('new') }}</option>
-                                <option value="converted" {{ ($filters['message_status'] ?? '') === 'converted' ? 'selected' : '' }}>{{ translate('converted') }}</option>
-                                <option value="spam" {{ ($filters['message_status'] ?? '') === 'spam' ? 'selected' : '' }}>{{ translate('spam') }}</option>
+                                <option value="new"
+                                    {{ ($filters['message_status'] ?? '') === 'new' ? 'selected' : '' }}>
+                                    {{ translate('new') }}</option>
+                                <option value="converted"
+                                    {{ ($filters['message_status'] ?? '') === 'converted' ? 'selected' : '' }}>
+                                    {{ translate('converted') }}</option>
+                                <option value="spam"
+                                    {{ ($filters['message_status'] ?? '') === 'spam' ? 'selected' : '' }}>
+                                    {{ translate('spam') }}</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('deal_status') }}</label>
                             <select class="form-control" name="deal_status">
                                 <option value="">{{ translate('all') }}</option>
-                                <option value="open" {{ ($filters['deal_status'] ?? '') === 'open' ? 'selected' : '' }}>{{ translate('open') }}</option>
-                                <option value="won" {{ ($filters['deal_status'] ?? '') === 'won' ? 'selected' : '' }}>{{ translate('won') }}</option>
-                                <option value="lost" {{ ($filters['deal_status'] ?? '') === 'lost' ? 'selected' : '' }}>{{ translate('lost') }}</option>
+                                <option value="open" {{ ($filters['deal_status'] ?? '') === 'open' ? 'selected' : '' }}>
+                                    {{ translate('open') }}</option>
+                                <option value="won" {{ ($filters['deal_status'] ?? '') === 'won' ? 'selected' : '' }}>
+                                    {{ translate('won') }}</option>
+                                <option value="lost" {{ ($filters['deal_status'] ?? '') === 'lost' ? 'selected' : '' }}>
+                                    {{ translate('lost') }}</option>
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.crm.insights-report') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
-                            <a href="{{ route('admin.crm.insights-report', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
-                            <a href="{{ route('admin.crm.insights-report', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                            <a href="{{ route('admin.crm.insights-report') }}"
+                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.crm.insights-report', array_merge(request()->query(), ['download' => 'excel'])) }}"
+                                class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <button type="button" id="export-insights-pdf" class="btn btn-outline-danger">
+                                {{ translate('PDF') }}
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -221,7 +251,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ translate('crm_trend_last_12_months') }}</h4>
+                       <h4 class="mb-0">{{ translate('crm_trend') }} ({{ $snapshotFrom->format('d M, Y') }} - {{ $snapshotTo->format('d M, Y') }})</h4>
                         <span class="badge-soft">{{ translate('messages_leads_deals') }}</span>
                     </div>
                     <div class="card-body">
@@ -233,7 +263,7 @@
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('deal_stage_mix') }}</h4>
-                        <span class="badge-soft">90D</span>
+                        <span class="badge-soft">{{ $snapshotFrom->format('d M, Y') }} - {{ $snapshotTo->format('d M, Y') }} </span>
                     </div>
                     <div class="card-body">
                         <canvas id="crm-stage-chart" height="220"></canvas>
@@ -273,7 +303,23 @@
 
         <div class="card">
             <div class="card-header border-0">
-                <h4 class="mb-0">{{ translate('top_deal_owners_by_value_90d') }}</h4>
+                @php
+                    // Extract just the date part from chart title
+                    $datePart = match ($filters['date_type'] ?? 'this_year') {
+                        'today' => '(' . $snapshotFrom->format('j F Y') . ')',
+                        'this_week' => '(' . $snapshotFrom->format('M d') . ' - ' . $snapshotTo->format('M d, Y') . ')',
+                        'this_month' => '(' . $snapshotFrom->format('F Y') . ')',
+                        'this_year' => '(' . $snapshotFrom->format('Y') . ')',
+                        'custom_date' => '(' .
+                            $snapshotFrom->format('j F Y') .
+                            ' - ' .
+                            $snapshotTo->format('j F Y') .
+                            ')',
+                        default => '(' . translate('last_12_months') . ')',
+                    };
+                @endphp
+
+                <h4 class="mb-0">{{ translate('top_deal_owners_by_value') }} ({{ $snapshotFrom->format('d M, Y') }} - {{ $snapshotTo->format('d M, Y') }})</h4>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -289,7 +335,10 @@
                     <tbody>
                         @forelse ($topOwners as $owner)
                             @php
-                                $averageValue = (int) $owner->deals_count > 0 ? (float) $owner->total_value / (int) $owner->deals_count : 0;
+                                $averageValue =
+                                    (int) $owner->deals_count > 0
+                                        ? (float) $owner->total_value / (int) $owner->deals_count
+                                        : 0;
                             @endphp
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
@@ -300,7 +349,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">{{ translate('no_owner_activity_in_this_period') }}</td>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    {{ translate('no_owner_activity_in_this_period') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -392,7 +442,9 @@
                         labels: stageData.labels || [],
                         datasets: [{
                             data: stageData.counts || [],
-                            backgroundColor: ['#0f766e', '#14b8a6', '#1d4ed8', '#0ea5e9', '#f59e0b', '#e11d48', '#64748b', '#84cc16']
+                            backgroundColor: ['#0f766e', '#14b8a6', '#1d4ed8', '#0ea5e9', '#f59e0b',
+                                '#e11d48', '#64748b', '#84cc16'
+                            ]
                         }]
                     },
                     options: {
@@ -450,5 +502,66 @@
                 }
             });
         });
+        const exportBtn = document.getElementById('export-insights-pdf');
+
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+
+                const trendChart = document.getElementById('crm-trend-chart');
+                const stageChart = document.getElementById('crm-stage-chart');
+                const statusChart = document.getElementById('crm-message-status-chart');
+
+                const trendImg = trendChart ? trendChart.toDataURL('image/png') : '';
+                const stageImg = stageChart ? stageChart.toDataURL('image/png') : '';
+                const statusImg = statusChart ? statusChart.toDataURL('image/png') : '';
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{{ route('admin.crm.insights-report') }}";
+
+                // CSRF
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = "{{ csrf_token() }}";
+                form.appendChild(csrf);
+
+                // Download flag
+                const download = document.createElement('input');
+                download.type = 'hidden';
+                download.name = 'download';
+                download.value = 'pdf';
+                form.appendChild(download);
+
+                // Chart images
+                const charts = {
+                    trend_chart: trendImg,
+                    stage_chart: stageImg,
+                    status_chart: statusImg
+                };
+
+                Object.keys(charts).forEach(name => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = charts[name];
+                    form.appendChild(input);
+                });
+
+                // ⭐ Include current filters
+                const params = new URLSearchParams(window.location.search);
+
+                params.forEach((value, key) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
     </script>
 @endpush

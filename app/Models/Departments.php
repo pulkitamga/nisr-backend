@@ -29,4 +29,8 @@ class Departments extends Model
     {
         return $this->belongsTo(Admin::class,'head_id');
     }
+      public function inboxMessages()
+    {
+        return $this->hasMany(InboxMessage::class, 'department_id');
+    }
 }
