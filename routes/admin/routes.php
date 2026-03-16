@@ -1060,7 +1060,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(CrmDealSalesReport::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_crm_deal_sales_performance|report.export,admin')
                 ->name('crm-sales-performance-export-excel');
-            Route::get(CrmDealSalesReport::EXPORT_PDF[URI], 'exportPdf')
+            Route::match(['GET', 'POST'], CrmDealSalesReport::EXPORT_PDF[URI], 'exportPdf')
                 ->middleware('permission:report.export_crm_deal_sales_performance|report.export,admin')
                 ->name('crm-sales-performance-export-pdf');
         });
