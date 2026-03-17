@@ -18,10 +18,10 @@
                     <div class="col-md-3">
                         <label class="form-label">{{ translate('date_type') }}</label>
                         <select class="form-control" id="dateType">
-                            <option value="">{{ translate('all_time') }}</option>
-                            <option value="day">{{ translate('today') }}</option>
+                            <option value="year">{{ translate('this_year') }}</option>
                             <option value="week">{{ translate('this_week') }}</option>
                             <option value="month">{{ translate('this_month') }}</option>
+                            <option value="day">{{ translate('today') }}</option>
                             <option value="custom">{{ translate('custom_range') }}</option>
                         </select>
                     </div>
@@ -156,7 +156,9 @@
         <!-- ================= CHART ================= -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">{{ translate('branch_stock_chart') }}</h5>
+                <h5 class="mb-0">
+                    {{ translate('branch_stock_chart') }}(<span id="chartDateRange"></span>)
+                </h5>
             </div>
             <div class="card-body">
                 <canvas id="stockBarChart" height="300"></canvas>
@@ -166,7 +168,10 @@
         <!-- ================= DATA TABLE ================= -->
         <div class="card mt-4">
             <div class="card-header">
-                <h5 class="mb-0">{{ translate('branch_stock_details') }}</h5>
+                <h5 class="mb-0">{{ translate('branch_stock_details') }}(<span id="tableDateRange"></span>)
+                    <small class="text-muted" id="tableDateRange"></small>
+                </h5>
+
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -187,13 +192,15 @@
                         <tbody id="stockTableBody">
                             <!-- Data will be populated by JavaScript -->
                             <tr>
-                                <td colspan="7" class="text-center text-muted">{{ translate('no_data_available_apply_filters_to_see_results') }}
+                                <td colspan="7" class="text-center text-muted">
+                                    {{ translate('no_data_available_apply_filters_to_see_results') }}
                                 </td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="@if (request()->has('variation_type') && request('variation_type')) 5 @else 4 @endif" class="text-end">{{ translate('total_stock') }}:</th>
+                                <th colspan="@if (request()->has('variation_type') && request('variation_type')) 5 @else 4 @endif" class="text-end">
+                                    {{ translate('total_stock') }}:</th>
                                 <th id="tableTotalStock">0</th>
                                 <th></th>
                             </tr>
@@ -226,7 +233,11 @@
             requestFailed: @json(translate('request_failed')),
             exportFailed: @json(translate('export_failed')),
             exporting: @json(translate('exporting')),
-            months: [@json(translate('jan')), @json(translate('feb')), @json(translate('mar')), @json(translate('apr')), @json(translate('may')), @json(translate('jun')), @json(translate('jul')), @json(translate('aug')), @json(translate('sep')), @json(translate('oct')), @json(translate('nov')), @json(translate('dec'))],
+            months: [@json(translate('jan')), @json(translate('feb')), @json(translate('mar')),
+                @json(translate('apr')), @json(translate('may')), @json(translate('jun')),
+                @json(translate('jul')), @json(translate('aug')), @json(translate('sep')),
+                @json(translate('oct')), @json(translate('nov')), @json(translate('dec'))
+            ],
             am: @json(translate('am')),
             pm: @json(translate('pm'))
         };
@@ -323,16 +334,23 @@
             document.getElementById('productFilter').value = '';
             document.getElementById('branchFilter').value = '';
             document.getElementById('variationFilter').value = '';
-            document.getElementById('dateType').value = '';
+            document.getElementById('dateType').value = 'year';
             document.getElementById('fromDate').value = '';
             document.getElementById('toDate').value = '';
             document.getElementById('variationWrapper').classList.add('d-none');
             document.getElementById('customDateFields').classList.add('d-none');
 
+            // Clear date range displays
+            document.getElementById('chartDateRange').textContent = '';
+            document.getElementById('tableDateRange').textContent = '';
+
             fetchStockData();
         });
 
         document.addEventListener('DOMContentLoaded', function() {
+            const initialDateRange = getDateRangeText('year', '', '');
+            document.getElementById('chartDateRange').textContent = initialDateRange;
+            document.getElementById('tableDateRange').textContent = initialDateRange;
             fetchStockData();
         });
 
@@ -374,6 +392,13 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        // Calculate and display date range
+                        const dateRangeText = getDateRangeText(dateType, fromDate, toDate);
+
+                        // Update both date range displays
+                        document.getElementById('chartDateRange').textContent = dateRangeText;
+                        document.getElementById('tableDateRange').textContent = dateRangeText;
+
                         updateAllStatistics(data);
                         updateStockBarChart(data);
                         updateStockTable(data);
@@ -393,7 +418,8 @@
                 return;
             }
 
-            document.getElementById('totalStockQty').innerText = Number(data.total_stats.current_stock || 0).toLocaleString();
+            document.getElementById('totalStockQty').innerText = Number(data.total_stats.current_stock || 0)
+                .toLocaleString();
             document.getElementById('totalStockIn').innerText = Number(data.total_stats.total_in || 0).toLocaleString();
             document.getElementById('totalStockOut').innerText = Number(data.total_stats.total_out || 0).toLocaleString();
         }
@@ -448,7 +474,8 @@
                         x: {
                             title: {
                                 display: true,
-                                text: data.mode === 'branch-products' ? branchStockI18n.products : branchStockI18n.branches
+                                text: data.mode === 'branch-products' ? branchStockI18n.products : branchStockI18n
+                                    .branches
                             }
                         }
                     }
@@ -476,7 +503,8 @@
             }
 
             if (!items.length) {
-                tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center text-muted">${branchStockI18n.noDataSelectedFilters}</td></tr>`;
+                tableBody.innerHTML =
+                    `<tr><td colspan="${colSpan}" class="text-center text-muted">${branchStockI18n.noDataSelectedFilters}</td></tr>`;
                 updateTableTotals(0);
                 return;
             }
@@ -487,7 +515,8 @@
             items.forEach((item, index) => {
                 const currentStock = Number(item.current_stock || 0);
                 totalQty += currentStock;
-                const lastUpdated = item.last_updated ? formatDateStandard(new Date(item.last_updated)) : branchStockI18n.notAvailable;
+                const lastUpdated = item.last_updated ? formatDateStandard(new Date(item.last_updated)) :
+                    branchStockI18n.notAvailable;
                 const variationValue = hasVariation ? document.getElementById('variationFilter').value : '';
 
                 html += `
@@ -526,6 +555,70 @@
         document.getElementById('exportPDF').addEventListener('click', function() {
             exportReport('pdf');
         });
+        branchStockI18n // Helper function to get formatted date range
+        function getDateRangeText(dateType, fromDate, toDate) {
+            const months = branchStockI18n.months;
+            const now = new Date();
+
+            // If no date type selected (empty string), default to current year
+            if (!dateType || dateType === '') {
+                const year = now.getFullYear();
+                return `01 Jan ${year} - 31 Dec ${year}`;
+            }
+
+            switch (dateType) {
+                case 'day':
+                    return now.toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                        })
+                        .replace(/ /g, ' ');
+
+                case 'week': {
+                    const start = new Date(now);
+                    start.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+                    const end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+
+                    const formatDate = (date) => {
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const month = months[date.getMonth()];
+                        const year = date.getFullYear();
+                        return `${day} ${month} ${year}`;
+                    };
+                    return `${formatDate(start)} - ${formatDate(end)}`;
+                }
+
+                case 'month': {
+                    const year = now.getFullYear();
+                    const month = months[now.getMonth()];
+                    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+                    return `01 ${month} ${year} - ${lastDay.toString().padStart(2, '0')} ${month} ${year}`;
+                }
+
+                case 'year': {
+                    const year = now.getFullYear();
+                    return `01 Jan ${year} - 31 Dec ${year}`;
+                }
+
+                case 'custom':
+                    if (fromDate && toDate) {
+                        const formatCustom = (dateStr) => {
+                            const date = new Date(dateStr);
+                            const day = date.getDate().toString().padStart(2, '0');
+                            const month = months[date.getMonth()];
+                            const year = date.getFullYear();
+                            return `${day} ${month} ${year}`;
+                        };
+                        return `${formatCustom(fromDate)} - ${formatCustom(toDate)}`;
+                    }
+                    return 'All Time';
+
+                default:
+                    return 'All Time';
+            }
+        }
 
         function exportReport(exportType) {
             const productId = document.getElementById('productFilter').value;
@@ -536,13 +629,18 @@
             const toDate = document.getElementById('toDate')?.value || '';
             const chartImage = stockChart ? stockChart.toBase64Image() : '';
 
+            // Get the formatted date range to pass to PDF
+            const dateRangeText = getDateRangeText(dateType, fromDate, toDate);
+
             if (variationType) {
                 variationType = variationType.replace(/-$/, '');
             }
 
-            const btn = exportType === 'excel' ? document.getElementById('exportReport') : document.getElementById('exportPDF');
+            const btn = exportType === 'excel' ? document.getElementById('exportReport') : document.getElementById(
+                'exportPDF');
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${branchStockI18n.exporting}...`;
+            btn.innerHTML =
+                `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${branchStockI18n.exporting}...`;
             btn.disabled = true;
 
             const requestData = {
@@ -551,7 +649,8 @@
                 variation_type: variationType,
                 date_type: dateType,
                 export_type: exportType,
-                chart_image: chartImage
+                chart_image: chartImage,
+                date_range: dateRangeText // Add date range to request
             };
 
             if (dateType === 'custom') {
@@ -641,5 +740,3 @@
         }
     </style>
 @endpush
-
-

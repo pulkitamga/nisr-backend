@@ -183,6 +183,7 @@ class BranchChartController extends BaseAdminController
                     'day'   => [now()->startOfDay(), now()->endOfDay()],
                     'week'  => [now()->startOfWeek(), now()->endOfWeek()],
                     'month' => [now()->startOfMonth(), now()->endOfMonth()],
+                    'year'  => [now()->startOfYear(), now()->endOfYear()],
                     default => [null, null],
                 };
             }
@@ -197,22 +198,22 @@ class BranchChartController extends BaseAdminController
 
         if ($branchId && !$productId) {
 
-     $rows = ProductStockTransaction::query()
-    ->join('product_stocks', 'product_stocks.id', '=', 'product_stock_transactions.product_stock_id')
-    ->join('products', 'products.id', '=', 'product_stocks.product_id')
-    ->where(function ($q) use ($branchId) {
-        $q->where('to_branch_id', $branchId)
-          ->orWhere('from_branch_id', $branchId);
-    })
-    ->selectRaw("
+            $rows = ProductStockTransaction::query()
+                ->join('product_stocks', 'product_stocks.id', '=', 'product_stock_transactions.product_stock_id')
+                ->join('products', 'products.id', '=', 'product_stocks.product_id')
+                ->where(function ($q) use ($branchId) {
+                    $q->where('to_branch_id', $branchId)
+                        ->orWhere('from_branch_id', $branchId);
+                })
+                ->selectRaw("
         products.id AS product_id,
         products.name AS product_name,
         SUM(CASE WHEN type='IN'  AND to_branch_id = ? THEN quantity ELSE 0 END) AS total_in,
         SUM(CASE WHEN type='OUT' AND from_branch_id = ? THEN quantity ELSE 0 END) AS total_out,
         MAX(product_stock_transactions.created_at) AS last_updated
     ", [$branchId, $branchId])
-    ->groupBy('products.id', 'products.name')
-    ->get();
+                ->groupBy('products.id', 'products.name')
+                ->get();
 
 
             $products = [];
@@ -225,7 +226,7 @@ class BranchChartController extends BaseAdminController
                     'branch_id'     => $branchId,
                     'branch_name'   => Branch::find($branchId)?->branch_name,
                     'product_id'    => $row->product_id,
-                 'product_name'  => $row->product_name,
+                    'product_name'  => $row->product_name,
                     'current_stock' => $currentStock,
                     'total_in'      => (int)$row->total_in,
                     'total_out'     => (int)$row->total_out,
@@ -344,7 +345,7 @@ class BranchChartController extends BaseAdminController
         return $this->getGlobalStockData();
     }
 
-     private function generatePeriods($startDate, $endDate, $periodType)
+    private function generatePeriods($startDate, $endDate, $periodType)
     {
         $periods = [];
         $current = Carbon::parse($startDate);
@@ -495,20 +496,51 @@ class BranchChartController extends BaseAdminController
         $chartImage = null,
         $totalStats = []
     ) {
+        // Use the date range from the request if provided
+        $dateRange = $filters['date_range'] ?? 'All Time';
+        $startDate = null;
+        $endDate = null;
+
+        if (!empty($filters['date_type'])) {
+            switch ($filters['date_type']) {
+                case 'day':
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->endOfDay();
+                    break;
+                case 'week':
+                    $startDate = now()->startOfWeek();
+                    $endDate = now()->endOfWeek();
+                    break;
+                case 'month':
+                    $startDate = now()->startOfMonth();
+                    $endDate = now()->endOfMonth();
+                    break;
+                case 'year':
+                    $startDate = now()->startOfYear();
+                    $endDate = now()->endOfYear();
+                    break;
+                case 'custom':
+                    if (!empty($filters['from_date']) && !empty($filters['to_date'])) {
+                        $startDate = Carbon::parse($filters['from_date']);
+                        $endDate = Carbon::parse($filters['to_date']);
+                    }
+                    break;
+            }
+        }
+
         $data = [
-            'branches'    => $branches,
-            'totalStats'  => $totalStats,
-            'product'     => $product,
-            'filters'     => $filters,
-            'chartImage'  => $chartImage,
-            'exportDate'  => now()->format('d M Y H:i'),
-            'dateRange'   =>
-            !empty($filters['from_date']) && !empty($filters['to_date'])
-                ? Carbon::parse($filters['from_date'])->format('d M Y')
-                . ' - ' .
-                Carbon::parse($filters['to_date'])->format('d M Y')
-                : 'All Time',
-            'hasChart' => !empty($chartImage),
+            'branches'   => $branches,
+            'totalStats' => $totalStats,
+            'product'    => $product,
+            'filters'    => $filters,
+            'chartImage' => $chartImage,
+            'exportDate' => now()->format('d M Y H:i'),
+            'dateRange'  => $dateRange, // Use the formatted date range from frontend
+            'startDate'  => $startDate ? $startDate->format('Y-m-d') : null,
+            'endDate'    => $endDate ? $endDate->format('Y-m-d') : null,
+            'startDateFormatted' => $startDate ? $startDate->format('d M Y') : null,
+            'endDateFormatted'   => $endDate ? $endDate->format('d M Y') : null,
+            'hasChart'   => !empty($chartImage),
         ];
 
         return app(ReportPdfService::class)->download(

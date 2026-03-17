@@ -1,223 +1,612 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ app()->getLocale() }}"
+    dir="{{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+
 <head>
+    <meta charset="UTF-8">
     <title>{{ translate('branch_stock_report') }}</title>
     <style>
         body {
-            font-family: 'DejaVu Sans', sans-serif;
-            font-size: 12px;
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 11px;
+            color: #111827;
+            margin: 15px;
             direction: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }};
             text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
-            unicode-bidi: embed;
         }
-        .header {
-            text-align: center;
+
+        /* Header Styles with Logo */
+        .report-header {
+            background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            overflow: hidden;
         }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            color: #333;
+
+        .header-content {
+            float: left;
+            width: 70%;
         }
-        .header .subtitle {
-            color: #666;
+
+        .logo-container {
+            float: right;
+            width: 25%;
+            text-align: right;
+        }
+
+        .logo-container img {
+            max-width: 100px;
+            max-height: 50px;
+            object-fit: contain;
+        }
+
+        .logo-container .fallback-logo {
+            color: white;
+            font-weight: bold;
             font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
         }
-        .filter-info {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 5px;
+
+        .header-content h2 {
+            margin: 0 0 5px 0;
+            font-size: 20px;
+        }
+
+        .header-content p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 11px;
+        }
+
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* Filter Summary */
+        .filter-summary {
+            background: #f8fafc;
+            border-left: 4px solid #0f766e;
+            padding: 12px 15px;
+            border-radius: 6px;
             margin-bottom: 20px;
+            font-size: 10px;
+            color: #1e293b;
         }
-        .filter-info table {
+
+        .filter-summary strong {
+            color: #0f766e;
+        }
+
+        /* KPI Container */
+        .kpi-wrapper {
+            background: #f3f6fb;
+            padding: 7px;
+            border-radius: 10px;
+            margin-bottom: 20px;
             width: 100%;
         }
-        .filter-info td {
-            padding: 5px;
+
+        .kpi-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px 0;
+            table-layout: fixed;
         }
-        .filter-info .label {
-            font-weight: bold;
-            width: 150px;
+
+        .kpi-table td {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px !important;
+            padding: 12px 8px;
+            vertical-align: top;
+            height: 70px;
         }
-        .chart-container {
+
+        .kpi-label {
+            color: #5f6672;
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin: 0 0 6px 0;
             text-align: center;
-            margin: 20px 0;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            text-align: center;
+        }
+
+        .kpi-value.total-stock {
+            color: #3498db;
+        }
+
+        .kpi-value.total-in {
+            color: #2ecc71;
+        }
+
+        .kpi-value.total-out {
+            color: #e74c3c;
+        }
+
+        /* Chart Container - FIXED */
+        .chart-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+            margin-bottom: 20px;
             page-break-inside: avoid;
+            width: 100%;
         }
-        .chart-container img {
-            max-width: 100%;
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0f766e;
+        }
+
+        .chart-header h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #0f766e;
+            font-weight: 600;
+        }
+
+        .badge-soft {
+            background: rgba(15, 118, 110, 0.1);
+            color: #0f766e;
+            border-radius: 999px;
+            font-size: 10px;
+            padding: 4px 10px;
+            font-weight: 600;
+        }
+
+        .chart-image {
+            width: 100%;
             height: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            max-height: 250px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
         }
-        .chart-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #333;
+
+        .no-chart {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            color: #64748b;
+            font-size: 12px;
+            border: 1px dashed #cbd5e1;
         }
+
+        .no-chart p {
+            margin: 10px 0 0;
+        }
+
+        /* Table Container - FIXED to appear right after chart */
+        .table-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            clear: both;
+        }
+
+        .table-header {
+            background: #0f766e;
+            color: white;
+            padding: 12px 15px;
+        }
+
+        .table-header h5 {
+            margin: 0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .badge-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 999px;
+            font-size: 11px;
+            padding: 3px 10px;
+            margin-left: 10px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            direction: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }};
+            font-size: 9.5px;
         }
+
         th {
-            background-color: #4e73df;
-            color: white;
-            padding: 10px;
-            text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
-            border: 1px solid #ddd;
+            background: #f1f5f9;
+            font-weight: 600;
+            padding: 10px 6px;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            text-transform: uppercase;
+            font-size: 9px;
         }
+
         td {
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 8px 6px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
         }
+
         tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #f8fafc;
         }
+
         .total-row {
-            font-weight: bold;
-            background-color: #e9ecef !important;
+            background: #f8fafc !important;
+            font-weight: 700;
         }
+
+        .total-row td {
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 700;
+            border-top: 2px solid #0f766e;
+            border-bottom: 2px solid #0f766e;
+        }
+
+        .value-ltr {
+            direction: ltr;
+            unicode-bidi: embed;
+            display: inline-block;
+        }
+
+        /* Stock badges */
+        .stock-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .stock-in {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .stock-out {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stock-inout-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .stock-inout-item {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        /* No Data */
+        .no-data-message {
+            text-align: center;
+            padding: 50px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+            color: #6b7280;
+            font-size: 13px;
+            margin: 20px 0;
+        }
+
+        .no-data-message h3 {
+            color: #374151;
+            margin: 0 0 10px 0;
+        }
+
+        /* Footer */
         .footer {
             margin-top: 30px;
             padding-top: 10px;
-            border-top: 1px solid #ddd;
+            border-top: 1px dashed #d1d5db;
+            font-size: 8px;
+            color: #6b7280;
             text-align: center;
-            font-size: 10px;
-            color: #666;
         }
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-style: italic;
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin: 20px 0 10px 0;
-            color: #333;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
+
+        .footer-table td {
+            border: none;
+            padding: 2px;
+            background: transparent;
         }
-        /* New styles for better layout */
-        .content-wrapper {
-            margin-bottom: 20px;
+
+        .text-left {
+            text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
         }
-        .data-section {
-            margin-bottom: 30px;
+
+        .text-right {
+            text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'left' : 'right' }};
         }
+
+        /* RTL Support */
+        @if (session('direction') === 'rtl' || app()->getLocale() === 'ar')
+            .header-content {
+                float: right;
+                text-align: right;
+            }
+
+            .logo-container {
+                float: left;
+                text-align: left;
+            }
+
+            .filter-summary {
+                border-left: none;
+                border-right: 4px solid #0f766e;
+            }
+
+            .badge-count {
+                margin-left: 0;
+                margin-right: 10px;
+            }
+
+            .stock-inout-item {
+                flex-direction: row-reverse;
+            }
+        @endif
     </style>
 </head>
+
 <body>
-    <div class="header">
-        <h1>{{ translate('branch_stock_report') }}</h1>
-        <div class="subtitle">{{ translate('generated_on') }}: <span dir="ltr">{{ $exportDate }}</span></div>
-    </div>
 
-    <div class="filter-info">
-        <table>
-            <tr>
-                <td class="label">{{ translate('date_range') }}:</td>
-                <td><span dir="ltr">{{ $dateRange }}</span></td>
-            </tr>
-            @if(isset($product))
-            <tr>
-                <td class="label">{{ translate('product') }}:</td>
-                <td>{{ $product->name }}</td>
-            </tr>
-            @endif
-            @if(!empty($filters['variation_type']))
-            <tr>
-                <td class="label">{{ translate('variation') }}:</td>
-                <td>{{ $filters['variation_type'] }}</td>
-            </tr>
-            @endif
-            @if(!empty($filters['branch_id']))
-            <tr>
-                @php
-                    $branch = \App\Models\Branch::find($filters['branch_id']);
-                @endphp
-                <td class="label">{{ translate('branch') }}:</td>
-                <td>{{ $branch ? $branch->branch_name : translate('selected_branch') }}</td>
-            </tr>
-            @endif
-        </table>
-    </div>
-
-    @if(!empty($branches) && count($branches) > 0)
-        <div class="content-wrapper">
-            <!-- Stock Details Section -->
-            <div class="data-section">
-                <div class="section-title">{{ translate('stock_details') }}</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>{{ translate('branch_name') }}</th>
-                            <th>{{ translate('stock_quantity') }}</th>
-                            @if(isset($product))
-                            <th>{{ translate('product') }}</th>
-                            @endif
-                            @if(!empty($filters['variation_type']))
-                            <th>{{ translate('variation') }}</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php $totalStock = 0; @endphp
-                        @foreach($branches as $index => $branch)
-                            @php $totalStock += $branch['current_stock']; @endphp
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $branch['branch_name'] }}</td>
-                                <td>{{ number_format($branch['current_stock']) ?? 0 }}</td>
-                                @if(isset($product))
-                                <td>{{ $product->name }}</td>
-                                @endif
-                                @if(!empty($filters['variation_type']))
-                                <td>{{ $filters['variation_type'] }}</td>
-                                @endif
-                            </tr>
-                        @endforeach
-                        <tr class="total-row">
-                            <td colspan="2"><strong>{{ translate('total') }}</strong></td>
-                            <td><strong>{{ number_format($totalStock) }}</strong></td>
-                            @if(isset($product))
-                            <td></td>
-                            @endif
-                            @if(!empty($filters['variation_type']))
-                            <td></td>
-                            @endif
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Chart Section - AFTER THE TABLE -->
-            @if($hasChart)
-                <div class="section-title">{{ translate('stock_visualization') }}</div>
-                <div class="chart-container">
-                    <div class="chart-title">{{ translate('branch_stock_distribution_chart') }}</div>
-                    <img src="{{ $chartImage }}" alt="{{ translate('stock_chart') }}" />
-                    <p style="font-size: 11px; color: #666; margin-top: 5px;">
-                        {{ translate('chart_shows_stock_distribution_across_branches_higher_bars_indicate_more_stock') }}
-                    </p>
-                </div>
+    <!-- Modern Header with Logo -->
+    <div class="report-header clearfix">
+        <div class="header-content">
+            <h2>{{ translate('branch_stock_report') }}</h2>
+            <p>
+                <span dir="ltr">{{ $startDateFormatted ?? '' }} - {{ $endDateFormatted ?? '' }}</span>
+            </p>
+        </div>
+        <div class="logo-container">
+            @php
+                $logoUrl = null;
+                if (\Illuminate\Support\Facades\Schema::hasTable('business_settings')) {
+                    $businessLogo = \Illuminate\Support\Facades\DB::table('business_settings')
+                        ->where('type', 'company_logo')
+                        ->first();
+                    if ($businessLogo && !empty($businessLogo->value)) {
+                        $logoPath = public_path('storage/' . $businessLogo->value);
+                        if (file_exists($logoPath)) {
+                            $extension = pathinfo($logoPath, PATHINFO_EXTENSION);
+                            $logoUrl =
+                                'data:image/' . $extension . ';base64,' . base64_encode(file_get_contents($logoPath));
+                        }
+                    }
+                }
+                if (!$logoUrl) {
+                    $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
+                    if (file_exists($defaultLogoPath)) {
+                        $logoUrl = 'data:image/webp;base64,' . base64_encode(file_get_contents($defaultLogoPath));
+                    }
+                }
+            @endphp
+            @if (!empty($logoUrl))
+                <img src="{{ $logoUrl }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px;">
+            @else
+                <span class="fallback-logo">{{ config('app.name') }}</span>
             @endif
         </div>
+    </div>
+
+    <!-- Filter Summary -->
+    <div class="filter-summary">
+        <strong>{{ translate('filters_applied') }}:</strong>
+        <span dir="ltr">
+            @if (!empty($startDateFormatted) && !empty($endDateFormatted))
+                {{ $startDateFormatted }} - {{ $endDateFormatted }}
+            @else
+                {{ $dateRange ?? 'All Time' }}
+            @endif
+        </span>
+        @if (isset($product))
+            | {{ translate('product') }}: <strong>{{ $product->name }}</strong>
+        @endif
+        @if (!empty($filters['variation_type']))
+            | {{ translate('variation') }}: <strong>{{ $filters['variation_type'] }}</strong>
+        @endif
+        @if (!empty($filters['branch_id']))
+            @php
+                $branch = \App\Models\Branch::find($filters['branch_id']);
+            @endphp
+            | {{ translate('branch') }}:
+            <strong>{{ $branch ? $branch->branch_name : translate('selected_branch') }}</strong>
+        @endif
+    </div>
+
+    <!-- KPI Cards -->
+    @if (!empty($branches) && count($branches) > 0)
+        @php
+            $totalStock = $totalStats['current_stock'] ?? collect($branches)->sum('current_stock');
+            $totalIn = $totalStats['total_in'] ?? collect($branches)->sum('total_in');
+            $totalOut = $totalStats['total_out'] ?? collect($branches)->sum('total_out');
+        @endphp
+
+        <div class="kpi-wrapper">
+            <table class="kpi-table" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td>
+                        <div class="kpi-label">{{ translate('total_stock_quantity') }}</div>
+                        <div class="kpi-value total-stock">
+                            <strong>{{ number_format($totalStock) }}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="kpi-label">{{ translate('total_in') }}</div>
+                        <div class="kpi-value total-in">
+                            <strong>{{ number_format($totalIn) }}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="kpi-label">{{ translate('total_out') }}</div>
+                        <div class="kpi-value total-out">
+                            <strong>{{ number_format($totalOut) }}</strong>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Chart Section - FIXED: Better handling of chart image -->
+        @if ($hasChart && !empty($chartImage))
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h4>{{ translate('branch_stock_chart') }}({{ $startDateFormatted ?? '' }} -
+                        {{ $endDateFormatted ?? '' }})</h4>
+
+                </div>
+                <img src="{{ $chartImage }}" class="chart-image" alt="{{ translate('branch_stock_chart') }}" />
+            </div>
+        @else
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h4>{{ translate('branch_stock_chart') }}</h4>
+                    <span class="badge-soft">{{ $startDateFormatted ?? '' }} - {{ $endDateFormatted ?? '' }}</span>
+                </div>
+                <div class="no-chart">
+                    <strong>{{ translate('chart_data_not_available') }}</strong>
+                    <p>{{ translate('no_stock_data_for_selected_filters') }}</p>
+                </div>
+            </div>
+        @endif
+
+        <!-- Stock Details Table - Now appears immediately after chart -->
+        <div class="table-container">
+            <div class="table-header">
+                <h5>
+                    {{ translate('branch_stock_details') }} ({{ $startDateFormatted ?? '' }} -
+                    {{ $endDateFormatted ?? '' }})
+                </h5>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{{ translate('branch_name') }}</th>
+                        <th>{{ translate('product_name') }}</th>
+                        @if (!empty($filters['variation_type']))
+                            <th>{{ translate('variation') }}</th>
+                        @endif
+                        <th>{{ translate('current_stock') }}</th>
+                        <th>{{ translate('stock_in_out') }}</th>
+                        <th>{{ translate('last_updated') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $totalStockCalc = 0; @endphp
+                    @foreach ($branches as $index => $branch)
+                        @php
+                            $totalStockCalc += $branch['current_stock'] ?? 0;
+                            $lastUpdated = isset($branch['last_updated'])
+                                ? \Carbon\Carbon::parse($branch['last_updated'])->format('M d, Y H:i')
+                                : translate('na_symbol');
+                            $stockIn = $branch['total_in'] ?? 0;
+                            $stockOut = $branch['total_out'] ?? 0;
+
+                            // Determine product name to display
+                            $productName = translate('all_products');
+                            if (isset($product) && $product) {
+                                $productName = $product->name;
+                            } elseif (isset($branch['product_name']) && $branch['product_name']) {
+                                $productName = $branch['product_name'];
+                            }
+                        @endphp
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td><strong>{{ $branch['branch_name'] ?? translate('na_symbol') }}</strong></td>
+                            <td>{{ $productName }}</td>
+                            @if (!empty($filters['variation_type']))
+                                <td>{{ $filters['variation_type'] }}</td>
+                            @endif
+                            <td class="value-ltr"><strong>{{ number_format($branch['current_stock'] ?? 0) }}</strong>
+                            </td>
+                            <td>
+                                <div class="stock-inout-container">
+                                    <div class="stock-inout-item">
+                                        <span class="stock-badge stock-in">⬆️ IN</span>
+                                        <span class="value-ltr">{{ number_format($stockIn) }}</span>
+                                    </div>
+                                    <div class="stock-inout-item">
+                                        <span class="stock-badge stock-out">⬇️ OUT</span>
+                                        <span class="value-ltr">{{ number_format($stockOut) }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="value-ltr">{{ $lastUpdated }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="{{ !empty($filters['variation_type']) ? 4 : 3 }}" class="text-right">
+                            <strong>{{ translate('total_stock') }}:</strong>
+                        </td>
+                        <td><strong>{{ number_format($totalStockCalc) }}</strong></td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     @else
-        <div class="no-data">
+        <div class="no-data-message">
             <h3>{{ translate('no_stock_data_found') }}</h3>
             <p>{{ translate('no_stock_records_match_the_selected_filters') }}</p>
         </div>
     @endif
 
+    <!-- Footer -->
     <div class="footer">
-        <p>{{ translate('generated_by_sales_central_system') }} | {{ translate('page') }} 1 {{ translate('of') }} 1</p>
+        <table class="footer-table">
+            <tr>
+                <td width="20%" class="text-left">
+                    {{ translate('page') }} {PAGENO}
+                </td>
+                <td width="60%" style="text-align:center;">
+                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} |
+                    {{ translate('branch_stock_report') }}<br>
+                    {{ translate('generated_by') }}: <span
+                        style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
+                    <span style="color:red;">{{ config('app.name') }}</span>
+                </td>
+                <td width="20%"></td>
+            </tr>
+        </table>
     </div>
+
 </body>
+
 </html>

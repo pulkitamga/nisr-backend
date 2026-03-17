@@ -7,7 +7,8 @@
     <div class="content container-fluid {{ $isRtl ? 'text-right' : 'text-left' }}">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
-                <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/order_report.png') }}" alt="">
+                <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/order_report.png') }}"
+                    alt="">
                 {{ translate('stock_transfer_report') }}
             </h2>
         </div>
@@ -15,7 +16,7 @@
         <div class="card mb-3">
             <div class="card-body">
                 <form id="transfer-report-filter-form" class="row g-2 align-items-end">
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('date_range') }}</label>
                         <select class="form-control" id="transfer-date-type" name="date_type">
                             <option value="this_year">{{ translate('this_year') }}</option>
@@ -26,17 +27,17 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2 custom-date-range" id="transfer-from-wrapper" style="display:none;">
+                    <div class="col-md-3 custom-date-range" id="transfer-from-wrapper" style="display:none;">
                         <label class="form-label mb-1">{{ translate('from') }}</label>
                         <input type="date" class="form-control" id="transfer-from" name="from">
                     </div>
 
-                    <div class="col-md-2 custom-date-range" id="transfer-to-wrapper" style="display:none;">
+                    <div class="col-md-3 custom-date-range" id="transfer-to-wrapper" style="display:none;">
                         <label class="form-label mb-1">{{ translate('to') }}</label>
                         <input type="date" class="form-control" id="transfer-to" name="to">
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('from_branch') }}</label>
                         <select class="form-control" id="from-branch-id" name="from_branch_id">
                             <option value="">{{ translate('all') }}</option>
@@ -46,7 +47,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('to_branch') }}</label>
                         <select class="form-control" id="to-branch-id" name="to_branch_id">
                             <option value="">{{ translate('all') }}</option>
@@ -56,7 +57,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('status') }}</label>
                         <select class="form-control" id="transfer-status" name="status">
                             <option value="">{{ translate('all') }}</option>
@@ -66,9 +67,11 @@
                         </select>
                     </div>
 
-                    <div class="col-12 d-flex flex-wrap gap-2 mt-2">
-                        <button type="submit" id="transfer-load-btn" class="btn btn--primary">{{ translate('filter') }}</button>
-                        <button type="button" id="transfer-reset-btn" class="btn btn-outline-secondary">{{ translate('reset') }}</button>
+                    <div class="col-md-12 d-flex justify-content-center gap-2 mt-3">
+                        <button type="submit" id="transfer-load-btn"
+                            class="btn btn--primary">{{ translate('filter') }}</button>
+                        <button type="button" id="transfer-reset-btn"
+                            class="btn btn-outline-secondary">{{ translate('reset') }}</button>
                         <button type="button" id="transfer-export-excel" class="btn btn-outline-success">
                             <i class="tio-download-to me-1"></i>{{ translate('excel') }}
                         </button>
@@ -132,14 +135,28 @@
         </div>
 
         <div class="card mb-3">
+            <div class="card-header border-0">
+                <h4 class="mb-0">
+                    {{ translate('stock_transfer_chart') }}
+
+                    <small class="text-muted ms-2">
+                        (<span id="chart-period">-</span>)
+                    </small>
+                </h4>
+            </div>
+
             <div class="card-body">
-                <canvas id="transfer-report-chart" height="110"></canvas>
+                <canvas id="transfer-report-chart" height="400"></canvas>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header border-0">
-                <h4 class="mb-0">{{ translate('transfer_details') }}</h4>
+                <h4 class="mb-0">{{ translate('transfer_details') }}
+                   <small class="text-muted ms-2">
+    (<span id="transfer-period">-</span>)
+</small>
+                </h4>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -169,7 +186,7 @@
     <script>
         'use strict';
 
-        (function () {
+        (function() {
             const form = document.getElementById('transfer-report-filter-form');
             const loadBtn = document.getElementById('transfer-load-btn');
             const resetBtn = document.getElementById('transfer-reset-btn');
@@ -242,18 +259,23 @@
             };
 
             const renderStats = (stats) => {
-                document.getElementById('stat-total-transfers').textContent = toInt(stats.total_transfers).toLocaleString();
-                document.getElementById('stat-pending').textContent = toInt(stats.pending_transfers).toLocaleString();
-                document.getElementById('stat-approved').textContent = toInt(stats.approved_transfers).toLocaleString();
-                document.getElementById('stat-rejected').textContent = toInt(stats.rejected_transfers).toLocaleString();
-                document.getElementById('stat-total-qty').textContent = toInt(stats.total_quantity).toLocaleString();
+                document.getElementById('stat-total-transfers').textContent = toInt(stats.total_transfers)
+                    .toLocaleString();
+                document.getElementById('stat-pending').textContent = toInt(stats.pending_transfers)
+                    .toLocaleString();
+                document.getElementById('stat-approved').textContent = toInt(stats.approved_transfers)
+                    .toLocaleString();
+                document.getElementById('stat-rejected').textContent = toInt(stats.rejected_transfers)
+                    .toLocaleString();
+                document.getElementById('stat-total-qty').textContent = toInt(stats.total_quantity)
+                    .toLocaleString();
 
-                const fromBranch = stats.top_from_branch && stats.top_from_branch.name
-                    ? `${stats.top_from_branch.name} (${toInt(stats.top_from_branch.count)})`
-                    : '-';
-                const toBranch = stats.top_to_branch && stats.top_to_branch.name
-                    ? `${stats.top_to_branch.name} (${toInt(stats.top_to_branch.count)})`
-                    : '-';
+                const fromBranch = stats.top_from_branch && stats.top_from_branch.name ?
+                    `${stats.top_from_branch.name} (${toInt(stats.top_from_branch.count)})` :
+                    '-';
+                const toBranch = stats.top_to_branch && stats.top_to_branch.name ?
+                    `${stats.top_to_branch.name} (${toInt(stats.top_to_branch.count)})` :
+                    '-';
 
                 document.getElementById('stat-top-route').textContent = `${fromBranch} -> ${toBranch}`;
             };
@@ -314,8 +336,10 @@
                 }
 
                 tableBody.innerHTML = rows.map((transfer, index) => {
-                    const quantity = (transfer.products || []).reduce((sum, product) => sum + toInt(product.quantity), 0);
-                    const date = transfer.transfer_date ? new Date(transfer.transfer_date).toLocaleDateString() : '-';
+                    const quantity = (transfer.products || []).reduce((sum, product) => sum + toInt(product
+                        .quantity), 0);
+                    const date = transfer.transfer_date ? new Date(transfer.transfer_date)
+                        .toLocaleDateString() : '-';
                     const from = (transfer.from_branch && transfer.from_branch.branch_name) ||
                         (transfer.fromBranch && transfer.fromBranch.branch_name) || '-';
                     const to = (transfer.to_branch && transfer.to_branch.branch_name) ||
@@ -337,7 +361,8 @@
 
             const loadReport = async () => {
                 setLoading(true);
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">${text.loading}...</td></tr>`;
+                tableBody.innerHTML =
+                    `<tr><td colspan="6" class="text-center py-4">${text.loading}...</td></tr>`;
 
                 try {
                     const payload = buildPayload();
@@ -360,8 +385,10 @@
                     renderStats(data.statistics || {});
                     renderChart(data.chartData || {});
                     renderTable(data.transfers || []);
+                    updateReportPeriod(data.filters || {});
                 } catch (error) {
-                    tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">${error.message || text.failedToLoad}</td></tr>`;
+                    tableBody.innerHTML =
+                        `<tr><td colspan="6" class="text-center py-4 text-danger">${error.message || text.failedToLoad}</td></tr>`;
                 } finally {
                     setLoading(false);
                 }
@@ -370,9 +397,9 @@
             const runExport = (type) => {
                 const payload = buildPayload();
                 const query = buildQueryString(payload);
-                const url = type === 'excel'
-                    ? `{{ route('admin.stock.transfer-report-export-excel') }}?${query}`
-                    : `{{ route('admin.stock.transfer-report-export-pdf') }}?${query}`;
+                const url = type === 'excel' ?
+                    `{{ route('admin.stock.transfer-report-export-excel') }}?${query}` :
+                    `{{ route('admin.stock.transfer-report-export-pdf') }}?${query}`;
 
                 window.open(url, '_blank');
             };
@@ -397,5 +424,29 @@
             toggleCustomDate();
             loadReport();
         })();
+        const formatDate = (date) => {
+            if (!date) return '-';
+
+            const d = new Date(date);
+
+            return d.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        };
+
+        const updateReportPeriod = (filters) => {
+
+            if (!filters) return;
+
+            const from = formatDate(filters.from);
+            const to = formatDate(filters.to);
+
+            const period = `${from} to ${to}`;
+
+            document.getElementById('chart-period').textContent = period;
+            document.getElementById('transfer-period').textContent = period;
+        };
     </script>
 @endpush
