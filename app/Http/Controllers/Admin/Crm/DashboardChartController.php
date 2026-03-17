@@ -915,7 +915,7 @@ class DashboardChartController extends Controller
     }
 
 
-    public function exportPdf(Request $request)
+     public function exportPdf(Request $request)
     {
         // ✅ 1. Get language from request
         $language = $request->get('lang', app()->getLocale());

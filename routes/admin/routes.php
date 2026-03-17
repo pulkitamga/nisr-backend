@@ -1915,7 +1915,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::get('chart-view', [DashboardChartController::class, 'chartView'])->name('chart.view')->middleware('permission:crm_section.read,admin');
         Route::get('chart-data', [DashboardChartController::class, 'getChartData'])->name('chart.data')->middleware('permission:crm_section.read,admin');
         Route::get('export-excel', [DashboardChartController::class, 'exportExcel'])->name('export.excel')->middleware('permission:crm_section.read,admin');
-        Route::get('export-pdf', [DashboardChartController::class, 'exportPdf'])->name('export.pdf')->middleware('permission:crm_section.read,admin');
+        Route::post('export-pdf', [DashboardChartController::class, 'exportPdf'])->name('export.pdf')->middleware('permission:crm_section.read,admin');
 
         Route::middleware('permission:crm_section.read,admin')->group(function () {
             Route::controller(CrmDashboardController::class)->group(function () {

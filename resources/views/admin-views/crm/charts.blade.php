@@ -1160,16 +1160,35 @@
         window.exportFullPDF = function() {
             const filters = getFilters();
             filters.lang = "{{ app()->getLocale() }}";
+            filters._token = "{{ csrf_token() }}";
 
             const chartCanvas = document.getElementById('mainChart');
 
             if (chartCanvas) {
-                // ✅ send base64 directly
+                // Get base64 image data
                 filters.chart_image = chartCanvas.toDataURL('image/png');
+                console.log('Chart image length:', filters.chart_image.length);
             }
 
-            const params = new URLSearchParams(filters).toString();
-            window.open(`{{ route('admin.crm.export.pdf') }}?${params}`, '_blank');
+            // Create a form and submit via POST (NOT window.open with params)
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route('admin.crm.export.pdf') }}';
+            form.target = '_blank'; // Opens in new tab
+
+            // Add all filters as hidden inputs
+            Object.keys(filters).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = filters[key];
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            console.log('Submitting POST form...');
+            form.submit();
+            document.body.removeChild(form);
         };
     </script>
 @endpush
