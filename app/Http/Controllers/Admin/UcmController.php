@@ -67,6 +67,9 @@ class UcmController extends Controller
     public function insightsReport(Request $request): View|BinaryFileResponse|Response
     {
         [$snapshotFrom, $snapshotTo] = $this->resolveDateRange($request);
+        // Calculate the dynamic range label
+        // Format date range for display
+        $rangeLabel = $snapshotFrom->format('d M Y') . ' - ' . $snapshotTo->format('d M Y');
         $resolvedAgentSql = $this->resolvedAgentIdSql('crm_calls');
 
         $filters = [
@@ -231,16 +234,39 @@ class UcmController extends Controller
 
             return Excel::download(new class($rows) implements FromArray, WithHeadings {
                 public function __construct(private readonly array $rows) {}
-                public function array(): array { return $this->rows; }
-                public function headings(): array { return ['Agent', 'Calls', 'Total Duration (min)', 'Avg Duration (min)']; }
+                public function array(): array
+                {
+                    return $this->rows;
+                }
+                public function headings(): array
+                {
+                    return ['Agent', 'Calls', 'Total Duration (min)', 'Avg Duration (min)'];
+                }
             }, 'ucm-insights-report.xlsx');
         }
 
         if ($download === 'pdf') {
+
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+            // ✅ Get chart images from request
+            $trendChart = $request->input('trend_chart');
+            $statusChart = $request->input('status_chart');
+            $directionChart = $request->input('direction_chart');
+
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.crm.reports.voip-pdf',
-                data: compact('kpi', 'topAgents', 'filters', 'snapshotFrom', 'snapshotTo', 'isRtl'),
+                data: compact(
+                    'kpi',
+                    'topAgents',
+                    'filters',
+                    'snapshotFrom',
+                    'snapshotTo',
+                    'isRtl',
+                    'trendChart',
+                    'statusChart',
+                    'directionChart' 
+                ),
                 fileName: 'ucm-insights-report.pdf'
             );
         }
@@ -264,7 +290,8 @@ class UcmController extends Controller
             'snapshotFrom',
             'snapshotTo',
             'filters',
-            'filterAgents'
+            'filterAgents',
+            'rangeLabel'
         ));
     }
 
@@ -309,8 +336,7 @@ class UcmController extends Controller
         Builder|\Illuminate\Database\Eloquent\Builder $query,
         array $filters,
         string $callAlias = 'crm_calls'
-    ): void
-    {
+    ): void {
         if (($filters['direction'] ?? '') !== '') {
             $query->where('direction', $filters['direction']);
         }
