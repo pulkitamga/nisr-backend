@@ -63,13 +63,14 @@ class Policy extends Model
         $resolvedLocale = self::normalizeLocale($locale);
 
         return $this->translations
-            ->first(fn (Translation $translation) => $translation->locale === $resolvedLocale && $translation->key === $key)
+            ->first(fn(Translation $translation) => $translation->locale === $resolvedLocale && $translation->key === $key)
             ?->value ?? $fallback;
     }
 
     public function getLocalizedContentHtml(?string $locale = null): ?string
     {
-        return $this->getTranslatedFieldValue('value', $locale, $this->content_html ?? $this->content_text);
+        // Use $this->value (the actual DB column) as the fallback
+        return $this->getTranslatedFieldValue('value', $locale, $this->value);
     }
 
     public function getLocalizedContentText(?string $locale = null): ?string
@@ -85,12 +86,12 @@ class Policy extends Model
 
     public function getValueAttribute(): ?string
     {
-        return $this->content_html ?? $this->content_text;
+        // Simply return the raw attribute from the DB
+        return $this->attributes['value'] ?? null;
     }
 
     public function setValueAttribute(?string $value): void
     {
-        $this->attributes['content_html'] = $value;
-        $this->attributes['content_text'] = $value !== null ? strip_tags($value) : null;
+        $this->attributes['value'] = $value;
     }
 }
