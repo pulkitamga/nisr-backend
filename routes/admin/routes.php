@@ -2250,8 +2250,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->group(function () {
                 Route::controller(WholesaleDashboardController::class)->group(function () {
                     Route::get(WholeSaler::DASHBOARD[URI], 'index')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('index');
-                    Route::get('reports/revenue', 'revenueReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.revenue');
-                    Route::get('reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline');
+                    Route::match(['GET', 'POST'], 'reports/revenue', 'revenueReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.revenue');
+                    Route::match(['GET', 'POST'], 'reports/pipeline', 'pipelineReport')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('reports.pipeline');
                     Route::post(WholeSaler::ORDER_STATUS[URI], 'getOrderStatus')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-status');
                     Route::get(WholeSaler::EARNING_STATISTICS[URI], 'getEarningStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('earning-statistics');
                     Route::get(WholeSaler::ORDER_STATISTICS[URI], 'getOrderStatistics')->middleware('permission:wholesaler_section.wholesaler_dashboard,admin')->name('order-statistics');
