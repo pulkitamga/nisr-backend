@@ -47,6 +47,36 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
 
+        // Get chart image from request (sent via POST/GET from frontend)
+        $data['channelChart'] = $request->input('channel_chart');
+
+        // Ensure month labels are not duplicated by decoding the chart data if it exists
+        if ($request->has('chart_data')) {
+            $chartData = json_decode($request->input('chart_data'), true);
+            // Merge chart data but preserve original month labels
+            if (isset($chartData['labels']) && isset($data['monthlyRows'])) {
+                // Make sure we're not overriding month labels with chart labels
+                foreach ($data['monthlyRows'] as $index => $row) {
+                    if (isset($row->month_label) && isset($chartData['labels'][$index])) {
+                        // Keep the original month_label, don't replace it
+                        // But ensure it's not an array
+                        if (is_array($row->month_label)) {
+                            $row->month_label = $row->month_label[0] ?? 'Unknown';
+                        }
+                    }
+                }
+            }
+        }
+
+        // Additional check: make sure all month labels are strings, not arrays
+        if (isset($data['monthlyRows'])) {
+            foreach ($data['monthlyRows'] as $row) {
+                if (isset($row->month_label) && is_array($row->month_label)) {
+                    $row->month_label = $row->month_label[0] ?? 'Unknown';
+                }
+            }
+        }
+
         return app(ReportPdfService::class)->download(
             view: CrmEmployeeChannelAssignmentReport::EXPORT_PDF[VIEW],
             data: $data,
@@ -55,6 +85,17 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         );
     }
 
+    private function chartImage($config)
+    {
+        $url = "https://quickchart.io/chart?width=700&height=350&c=" . urlencode(json_encode($config));
+
+        try {
+            $image = file_get_contents($url);
+            return 'data:image/png;base64,' . base64_encode($image);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
     private function buildReportData(Request $request): array
     {
         [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
@@ -119,6 +160,12 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             periodStrategy: $periodStrategy,
             displayChannels: $displayChannels
         );
+
+        // Get the month labels directly from monthlyRows (they're already correct)
+        $monthLabels = $monthlyRows->pluck('month_label')->map(function ($label) {
+            return is_string($label) ? substr($label, 0, 3) : $label;
+        })->values()->all();
+
         $summary = $this->buildSummary($monthlyRows, $employeesForMatrix, $displayChannels);
 
         return [
@@ -145,7 +192,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             'monthlyRows' => $monthlyRows,
             'summary' => $summary,
             'chart' => [
-                'labels' => $monthlyRows->pluck('month_label')->all(),
+                'labels' => $monthLabels, // Use the cleaned labels
                 'series' => collect($displayChannels)->map(function (string $channel) use ($monthlyRows, $channelLabels) {
                     return [
                         'name' => (string)($channelLabels[$channel] ?? $channel),
@@ -273,13 +320,13 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->values()
             ->sortBy(fn($row) => $row->report_date . '|' . strtolower((string)$row->employee_name) . '|' . $row->channel)
             ->map(function ($row) {
-            $row->report_date = (string)$row->report_date;
-            $row->employee_id = (int)$row->employee_id;
-            $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
-            $row->channel = strtolower(trim((string)$row->channel));
-            $row->total_count = (int)$row->total_count;
-            return $row;
-        });
+                $row->report_date = (string)$row->report_date;
+                $row->employee_id = (int)$row->employee_id;
+                $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
+                $row->channel = strtolower(trim((string)$row->channel));
+                $row->total_count = (int)$row->total_count;
+                return $row;
+            });
     }
 
     private function getInboxRows(
@@ -646,7 +693,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             foreach ($period as $date) {
                 $sequence[] = [
                     'key' => $date->format('Y-m'),
-                    'label' => $date->locale(app()->getLocale())->translatedFormat('M'),
+                    'label' => $date->format('M'), // This should be just "Jan", not "JanJan"
                 ];
             }
 

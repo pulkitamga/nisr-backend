@@ -1084,7 +1084,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(CrmEmployeeChannelAssignmentReport::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_crm_employee_channel_assignment|report.export,admin')
                 ->name('crm-employee-channel-assignment-export-excel');
-            Route::get(CrmEmployeeChannelAssignmentReport::EXPORT_PDF[URI], 'exportPdf')
+            Route::match(['GET', 'POST'], CrmEmployeeChannelAssignmentReport::EXPORT_PDF[URI], 'exportPdf')
                 ->middleware('permission:report.export_crm_employee_channel_assignment|report.export,admin')
                 ->name('crm-employee-channel-assignment-export-pdf');
         });
