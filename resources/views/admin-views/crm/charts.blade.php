@@ -307,23 +307,29 @@
                 <div class="col-lg-3 col-md-6 mb-3">
                     <label class="form-label">{{ translate('Channel') }}</label>
                     <select id="pipelineFilter" class="form-control" name="Channel">
-                        <option {{ !request()->has('Channel') ? 'selected' : '' }} disabled>{{ translate('select_Channel') }}
+                        <option {{ !request()->has('Channel') ? 'selected' : '' }} disabled>
+                            {{ translate('select_Channel') }}
                         </option>
-                        <option {{ request()->has('Channel') && request('status') == '' ? 'selected' : '' }} value="">
+                        <option {{ request()->has('Channel') && request('status') == '' ? 'selected' : '' }}
+                            value="">
                             {{ translate('All') }}</option>
-                        <option {{ request('Channel') == 'email' ? 'selected' : '' }} value="email">{{ translate('email') }}
+                        <option {{ request('Channel') == 'email' ? 'selected' : '' }} value="email">
+                            {{ translate('email') }}
                         </option>
-                        <option {{ request('Channel') == 'form' ? 'selected' : '' }} value="form">{{ translate('form') }}
+                        <option {{ request('Channel') == 'form' ? 'selected' : '' }} value="form">
+                            {{ translate('form') }}
                         </option>
-                        <option {{ request('Channel') == 'chat' ? 'selected' : '' }} value="chat">{{ translate('chat') }}
+                        <option {{ request('Channel') == 'chat' ? 'selected' : '' }} value="chat">
+                            {{ translate('chat') }}
                         </option>
                         <option {{ request('Channel') == 'social' ? 'selected' : '' }} value="social">
                             {{ translate('social') }}</option>
-                        <option {{ request('Channel') == 'phone' ? 'selected' : '' }} value="phone">{{ translate('phone') }}
+                        <option {{ request('Channel') == 'phone' ? 'selected' : '' }} value="phone">
+                            {{ translate('phone') }}
                         </option>
                     </select>
                 </div>
-                 <div class="col-lg-3 col-md-6 mb-3">
+                <div class="col-lg-3 col-md-6 mb-3">
                     <label class="form-label">{{ translate('Message Type') }}</label>
                     <select id="messageType" class="form-control">
                         <option value="">{{ translate('All Types') }}</option>
@@ -538,7 +544,8 @@
                             endDate: moment(),
                             ranges: {
                                 [crmChartText.today]: [moment(), moment()],
-                                [crmChartText.yesterday]: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                                [crmChartText.yesterday]: [moment().subtract(1, 'days'), moment().subtract(1,
+                                    'days')],
                                 [crmChartText.last7days]: [moment().subtract(6, 'days'), moment()],
                                 [crmChartText.last30days]: [moment().subtract(29, 'days'), moment()],
                                 [crmChartText.thisMonth]: [moment().startOf('month'), moment().endOf('month')]
@@ -712,7 +719,8 @@
                 const groupBy = $('#groupByFilter').val();
 
 
-                $('#applyFilter').prop('disabled', true).html('<i class="tio-refresh spinner"></i> ' + crmChartText.loading);
+                $('#applyFilter').prop('disabled', true).html('<i class="tio-refresh spinner"></i> ' + crmChartText
+                    .loading);
 
                 $.ajax({
                     url: '{{ route('admin.crm.chart.data') }}',
@@ -1153,8 +1161,14 @@
             const filters = getFilters();
             filters.lang = "{{ app()->getLocale() }}";
 
-            const params = new URLSearchParams(filters).toString();
+            const chartCanvas = document.getElementById('mainChart');
 
+            if (chartCanvas) {
+                // ✅ send base64 directly
+                filters.chart_image = chartCanvas.toDataURL('image/png');
+            }
+
+            const params = new URLSearchParams(filters).toString();
             window.open(`{{ route('admin.crm.export.pdf') }}?${params}`, '_blank');
         };
     </script>

@@ -924,47 +924,54 @@ class DashboardChartController extends Controller
         app()->setLocale($language);
         \Carbon\Carbon::setLocale($language);
 
-        // DEBUG (optional – remove later)
-        // dd(app()->getLocale());
-
         $startDate = $request->input('start_date');
         $endDate   = $request->input('end_date');
         $departmentId = $request->input('department_id');
         $messageType = $request->input('message_type');
         $status = $request->input('status');
         $pipeline = $request->input('pipeline');
+        $groupBy = $request->input('group_by', 'daily');
+        $crmChart = $request->input('chart_image');
 
-        $query = InboxMessage::query()
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
-
+        // Get department name if ID is provided
+        $departmentName = 'All Departments';
         if ($departmentId) {
-            $query->where('department_id', $departmentId);
+            $department = Departments::find($departmentId);
+            $departmentName = $department ? $department->name : 'All Departments';
         }
 
-        if ($messageType) {
-            $query->where('convert_sub_type', $messageType);
-        }
+        // Get the chart data using your existing method
+        $chartDataResponse = $this->getChartData($request);
+        $chartData = $chartDataResponse->getData(true);
 
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        if ($pipeline) {
-            $query->where('pipeline', $pipeline);
-        }
-
-        $dailyData = $query->select(
-            DB::raw('DATE(created_at) as date'),
-            DB::raw('COUNT(*) as total')
-        )
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+        // Build the data array for PDF
+        $data = [
+            'filters' => [
+                'from' => $startDate,
+                'to' => $endDate,
+                'department' => $departmentName,
+                'pipeline' => $pipeline ?: 'All Pipelines',
+                'status' => $status ?: 'All Status',
+                'message_type' => $messageType ?: 'All Types',
+                'period_type' => $groupBy,
+            ],
+            'summary' => $chartData['data']['summary'] ?? [
+                'total' => 0,
+                'assigned' => 0,
+                'pending' => 0,
+                'converted' => 0,
+                'ignored' => 0,
+                'spam' => 0,
+            ],
+            'daily_stats' => $chartData['data']['daily_stats'] ?? [],
+            'crmChart' => $crmChart, // Pass the chart to the view
+            'exportedAt' => now(),
+        ];
 
         return app(ReportPdfService::class)->download(
             view: 'admin-views.crm.export-pdf',
-            data: ['data' => $dailyData],
-            fileName: 'crm-report.pdf',
+            data: $data,
+            fileName: 'crm-analytics-report.pdf',
             orientation: 'landscape'
         );
     }
