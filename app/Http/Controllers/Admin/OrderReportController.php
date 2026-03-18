@@ -11,7 +11,6 @@ use App\Models\Order;
 use App\Models\Seller;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use FontLib\Table\Type\name;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
@@ -22,9 +21,9 @@ class OrderReportController extends Controller
 {
     public function __construct(
         private readonly VendorRepositoryInterface $vendorRepo,
-    )
-    {
-    }
+    ) {}
+
+    // ================== ORDER LIST METHOD ==================
     public function order_list(Request $request)
     {
         $seller_id = $request->seller_id ?? 'all';
@@ -32,30 +31,38 @@ class OrderReportController extends Controller
         $from = $request->from;
         $to = $request->to;
         $search = $request->search;
-        $query_param = ['seller_id'=>$seller_id, 'search' => $request->search, 'date_type' => $date_type, 'from' => $from, 'to' => $to];
-        $sellers = Seller::where(['status'=>'approved'])->get();
+        $query_param = ['seller_id' => $seller_id, 'search' => $request->search, 'date_type' => $date_type, 'from' => $from, 'to' => $to];
+        $sellers = Seller::where(['status' => 'approved'])->get();
 
         $chart_data = self::order_report_chart_filter($request);
+
+        // chartVal बनाएँ
+        $chartVal = [];
+        foreach(($chart_data['order_amount'] ?? []) as $amount) {
+            $chartVal[] = usdToDefaultCurrency(amount: $amount);
+        }
 
         $orders = self::all_order_table_data_filter($request);
         $orders = $orders->latest('updated_at')->paginate(Helpers::pagination_limit())->appends($query_param);
 
-        $ongoing_order_query = Order::whereIn('order_status',['out_for_delivery','processing','confirmed', 'pending']);
+        // order counts
+        $ongoing_order_query = Order::whereIn('order_status', ['out_for_delivery', 'processing', 'confirmed', 'pending']);
         $ongoing_order = self::order_count($request, $ongoing_order_query);
 
-        $cancel_order_query = Order::whereIn('order_status',['canceled','failed','returned']);
+        $cancel_order_query = Order::whereIn('order_status', ['canceled', 'failed', 'returned']);
         $canceled_order = self::order_count($request, $cancel_order_query);
 
-        $delivered_order_query = Order::where('order_status','delivered');
+        $delivered_order_query = Order::where('order_status', 'delivered');
         $delivered_order = self::order_count($request, $delivered_order_query);
 
-        $order_count = array(
-            'ongoing_order'=>$ongoing_order,
-            'canceled_order'=>$canceled_order,
-            'delivered_order'=>$delivered_order,
-            'total_order'=>$canceled_order+$ongoing_order+$delivered_order,
-        );
+        $order_count = [
+            'ongoing_order' => $ongoing_order,
+            'canceled_order' => $canceled_order,
+            'delivered_order' => $delivered_order,
+            'total_order' => $canceled_order + $ongoing_order + $delivered_order,
+        ];
 
+        // due amount & settled amount
         $due_amount_order_query = Order::whereNotIn('order_status', ['delivered', 'canceled', 'returned', 'failed'])
             ->when($seller_id != 'all', function ($query) use ($seller_id) {
                 $query->when($seller_id == 'inhouse', function ($q) {
@@ -66,7 +73,7 @@ class OrderReportController extends Controller
             });
         $due_amount = self::date_wise_common_filter($due_amount_order_query, $date_type, $from, $to)->sum('order_amount');
 
-        $settled_amount_query = Order::where('order_status','delivered')
+        $settled_amount_query = Order::where('order_status', 'delivered')
             ->when($seller_id != 'all', function ($query) use ($seller_id) {
                 $query->when($seller_id == 'inhouse', function ($q) {
                     $q->where(['seller_id' => 1, 'seller_is' => 'admin']);
@@ -76,6 +83,7 @@ class OrderReportController extends Controller
             });
         $settled_amount = self::date_wise_common_filter($settled_amount_query, $date_type, $from, $to)->sum('order_amount');
 
+        // payment stats
         $digital_payment_query = Order::where(['order_status' => 'delivered'])->whereNotIn('payment_method', ['cash', 'cash_on_delivery', 'pay_by_wallet', 'offline_payment']);
         $digital_payment = self::pie_chart_common_query($request, $digital_payment_query)->sum('order_amount');
 
@@ -98,9 +106,156 @@ class OrderReportController extends Controller
             'digital_payment' => $digital_payment,
         ];
 
-        return view('admin-views.report.order-index', compact('orders', 'order_count', 'payment_data', 'chart_data', 'due_amount', 'settled_amount', 'sellers', 'seller_id', 'search', 'date_type', 'from', 'to'));
+        return view('admin-views.report.order-index', compact(
+            'orders',
+            'order_count',
+            'payment_data', 
+            'chart_data',
+            'due_amount',
+            'settled_amount',
+            'sellers',
+            'seller_id',
+            'search',
+            'date_type',
+            'from',
+            'to',
+            'chartVal'
+        ));
     }
 
+    // ================== PDF EXPORT METHOD (modified) ==================
+    public function exportOrderReportInPDF(Request $request)
+    {
+        $dateType = $request['date_type'] ?? 'this_year';
+
+        $orders = self::all_order_table_data_filter($request)->latest('updated_at')->get();
+        $seller = $request->has('seller_id') && $request['seller_id'] != 'inhouse' && $request['seller_id'] != 'all'
+            ? (Seller::with('shop')->find($request['seller_id'])->f_name)
+            : ($request['seller_id'] ?? 'all');
+
+        $chart_data = self::order_report_chart_filter($request);
+
+        // --- Payment statistics ---
+        $digital_payment_query = Order::where(['order_status' => 'delivered'])->whereNotIn('payment_method', ['cash', 'cash_on_delivery', 'pay_by_wallet', 'offline_payment']);
+        $digital_payment = self::pie_chart_common_query($request, $digital_payment_query)->sum('order_amount');
+
+        $cash_payment_query = Order::where(['order_status' => 'delivered'])->whereIn('payment_method', ['cash', 'cash_on_delivery']);
+        $cash_payment = self::pie_chart_common_query($request, $cash_payment_query)->sum('order_amount');
+
+        $wallet_payment_query = Order::where(['order_status' => 'delivered'])->where(['payment_method' => 'pay_by_wallet']);
+        $wallet_payment = self::pie_chart_common_query($request, $wallet_payment_query)->sum('order_amount');
+
+        $offline_payment_query = Order::where(['payment_method' => 'offline_payment']);
+        $offline_payment = self::pie_chart_common_query($request, $offline_payment_query)->sum('order_amount');
+
+        $total_payment = $cash_payment + $wallet_payment + $digital_payment + $offline_payment;
+
+        $cash_percentage = $total_payment > 0 ? round(($cash_payment / $total_payment) * 100, 2) : 0;
+        $digital_percentage = $total_payment > 0 ? round(($digital_payment / $total_payment) * 100, 2) : 0;
+        $wallet_percentage = $total_payment > 0 ? round(($wallet_payment / $total_payment) * 100, 2) : 0;
+        $offline_percentage = $total_payment > 0 ? round(($offline_payment / $total_payment) * 100, 2) : 0;
+
+        // --- Order counts ---
+        $ongoing_order_query = Order::whereIn('order_status', ['out_for_delivery', 'processing', 'confirmed', 'pending']);
+        $ongoing_order = self::order_count($request, $ongoing_order_query);
+
+        $cancel_order_query = Order::whereIn('order_status', ['canceled', 'failed', 'returned']);
+        $canceled_order = self::order_count($request, $cancel_order_query);
+
+        $delivered_order_query = Order::where('order_status', 'delivered');
+        $delivered_order = self::order_count($request, $delivered_order_query);
+
+        $order_count = [
+            'ongoing_order' => $ongoing_order,
+            'canceled_order' => $canceled_order,
+            'delivered_order' => $delivered_order,
+            'total_order' => $canceled_order + $ongoing_order + $delivered_order,
+        ];
+
+        // --- Date range ---
+        $from = $request['from'];
+        $to = $request['to'];
+        $date_type = $request['date_type'] ?? 'this_year';
+
+        if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
+            $fromDate = \Carbon\Carbon::parse($from)->format('d M, Y');
+            $toDate = \Carbon\Carbon::parse($to)->format('d M, Y');
+            $dateRange = $fromDate . ' - ' . $toDate;
+        } else {
+            switch ($date_type) {
+                case 'this_year':
+                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                    break;
+                case 'this_month':
+                    $dateRange = now()->startOfMonth()->format('d M, Y') . ' - ' . now()->endOfMonth()->format('d M, Y');
+                    break;
+                case 'this_week':
+                    $dateRange = now()->startOfWeek()->format('d M, Y') . ' - ' . now()->endOfWeek()->format('d M, Y');
+                    break;
+                case 'today':
+                    $dateRange = now()->format('d M, Y');
+                    break;
+                default:
+                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+            }
+        }
+
+        // --- Summary totals ---
+        $totalOrderAmount = $orders->sum('order_amount') ?? 0;
+        $totalProductDiscount = $orders->sum('details_sum_discount') ?? 0;
+        $totalCouponDiscount = $orders->sum('discount_amount') ?? 0;
+        $totalTax = $orders->sum('details_sum_tax') ?? 0;
+        $totalOrderCommission = $orders->sum('admin_commission') ?? 0;
+
+        $totalDeliveryCharge = 0;
+        $totalDeliverymanIncentive = 0;
+        foreach ($orders as $order) {
+            $totalDeliveryCharge += ($order->shipping_cost - ($order->extra_discount_type == 'free_shipping_over_order_amount' ? $order->extra_discount : 0));
+            $totalDeliverymanIncentive += ($order->delivery_type == 'self_delivery' && $order->delivery_man_id) ? $order->deliveryman_charge : 0;
+        }
+
+        // --- चार्ट images (POST से) ---
+        $trendChart = $request->input('trend_chart');
+        $stageChart = $request->input('stage_chart');
+
+        // --- Data array (सभी keys के साथ) ---
+        $data = [
+            'orders' => $orders,
+            'total_orders' => count($orders),
+            'seller' => $seller,
+            'type' => $request->has('seller_id') ? ($request['seller_id'] != 'inhouse' ? 'seller' : $request['seller_id']) : 'all',
+            'company_name' => getWebConfig('company_name'),
+            'company_email' => getWebConfig('company_email'),
+            'company_phone' => getWebConfig('company_phone'),
+            'company_web_logo' => getWebConfig('company_web_logo'),
+            'date_type' => $date_type,
+            'date_range' => $dateRange,
+            'order_count' => $order_count,
+            'cash_payment' => $cash_payment,
+            'digital_payment' => $digital_payment,
+            'wallet_payment' => $wallet_payment,
+            'offline_payment' => $offline_payment,
+            'total_payment' => $total_payment,
+            'cash_percentage' => $cash_percentage,
+            'digital_percentage' => $digital_percentage,
+            'wallet_percentage' => $wallet_percentage,
+            'offline_percentage' => $offline_percentage,
+            'total_order_amount' => $totalOrderAmount,
+            'total_product_discount' => $totalProductDiscount,
+            'total_coupon_discount' => $totalCouponDiscount,
+            'total_tax' => $totalTax,
+            'total_order_commission' => $totalOrderCommission,
+            'total_delivery_charge' => $totalDeliveryCharge,
+            'total_deliveryman_incentive' => $totalDeliverymanIncentive,
+            'trend_chart' => $trendChart,
+            'stage_chart' => $stageChart,
+        ];
+
+        $mpdfView = View::make('admin-views.transaction.total_orders_report_pdf', ['data' => $data]);
+        Helpers::gen_mpdf($mpdfView, 'order_report_', $dateType, 'portrait');
+    }
+
+    // ================== CHART HELPER METHODS ==================
     public function order_report_chart_filter($request)
     {
         $from = $request['from'];
@@ -114,7 +269,7 @@ class OrderReportController extends Controller
             $current_end_year = date('Y-12-31');
             $from_year = Carbon::parse($from)->format('Y');
             return self::order_report_same_year($request, $current_start_year, $current_end_year, $from_year, $number, $default_inc);
-        } elseif ($date_type == 'this_month') { //this month table
+        } elseif ($date_type == 'this_month') {
             $current_month_start = date('Y-m-01');
             $current_month_end = date('Y-m-t');
             $inc = 1;
@@ -142,7 +297,6 @@ class OrderReportController extends Controller
             } elseif ($from_month == $to_month) {
                 return self::order_report_same_month($request, $start_date, $end_date, $from_month, $to_day, $from_day);
             }
-
         }
     }
 
@@ -187,9 +341,9 @@ class OrderReportController extends Controller
             }
         }
 
-        return array(
+        return [
             'order_amount' => $order_amount,
-        );
+        ];
     }
 
     public function order_report_this_week($request)
@@ -221,10 +375,11 @@ class OrderReportController extends Controller
             }
         }
 
-        return array(
+        return [
             'order_amount' => $order_amount,
-        );
+        ];
     }
+
     public function getOrderReportForToday($request): array
     {
         $number = 1;
@@ -268,15 +423,15 @@ class OrderReportController extends Controller
             }
         }
 
-        return array(
+        return [
             'order_amount' => $order_amount,
-        );
+        ];
     }
 
     public function order_report_chart_common_query($request, $start_date, $end_date)
     {
         $sellerId = $request['seller_id'] ?? 'all';
-        return Order::where([ 'order_status'=>'delivered'])
+        return Order::where(['order_status' => 'delivered'])
             ->when($sellerId != 'all', function ($query) use ($sellerId) {
                 $query->when($sellerId == 'inhouse', function ($q) {
                     $q->where(['seller_id' => 1, 'seller_is' => 'admin']);
@@ -295,29 +450,29 @@ class OrderReportController extends Controller
         $date_type = $request['date_type'] ?? 'this_year';
 
         $query_f = $query->when($seller_id != 'all', function ($query) use ($seller_id) {
-                $query->when($seller_id == 'inhouse', function ($q) {
-                    $q->where(['seller_id' => 1, 'seller_is' => 'admin']);
-                })->when($seller_id != 'inhouse', function ($q) use ($seller_id) {
-                    $q->where(['seller_id' => $seller_id, 'seller_is' => 'seller']);
-                });
+            $query->when($seller_id == 'inhouse', function ($q) {
+                $q->where(['seller_id' => 1, 'seller_is' => 'admin']);
+            })->when($seller_id != 'inhouse', function ($q) use ($seller_id) {
+                $q->where(['seller_id' => $seller_id, 'seller_is' => 'seller']);
             });
+        });
 
-        return self::date_wise_common_filter($query_f, $date_type, $from, $to);;
+        return self::date_wise_common_filter($query_f, $date_type, $from, $to);
     }
 
-    public function orderReportExportExcel(Request $request):BinaryFileResponse
+    public function orderReportExportExcel(Request $request): BinaryFileResponse
     {
         $orders = self::all_order_table_data_filter($request)->latest('updated_at')->get();
-        $vendor = $request->has('seller_id') && $request['seller_id'] != 'inhouse' && $request['seller_id'] != 'all' ? ( $this->vendorRepo->getFirstWhere(params: ['id'=>$request['seller_id']],relations: ['shop'])):($request['seller_id'] ?? 'all');
+        $vendor = $request->has('seller_id') && $request['seller_id'] != 'inhouse' && $request['seller_id'] != 'all' ? ($this->vendorRepo->getFirstWhere(params: ['id' => $request['seller_id']], relations: ['shop'])) : ($request['seller_id'] ?? 'all');
         $data = [
-            'orders' =>$orders,
-            'search' =>$request['search'],
+            'orders' => $orders,
+            'search' => $request['search'],
             'vendor' => $vendor,
             'from' => $request['from'],
             'to' => $request['to'],
             'dateType' => $request['date_type'] ?? 'this_year'
         ];
-        return Excel::download(new OrderReportExport($data),Report::ORDER_REPORT_LIST);
+        return Excel::download(new OrderReportExport($data), Report::ORDER_REPORT_LIST);
     }
 
     public function all_order_table_data_filter($request)
@@ -343,7 +498,8 @@ class OrderReportController extends Controller
         return self::date_wise_common_filter($orders_query, $date_type, $from, $to);
     }
 
-    public function order_count($request, $query){
+    public function order_count($request, $query)
+    {
         $from = $request['from'];
         $to = $request['to'];
         $seller_id = $request['seller_id'] ?? 'all';
@@ -357,8 +513,7 @@ class OrderReportController extends Controller
             });
         });
 
-        $count = self::date_wise_common_filter($query_f, $date_type, $from, $to)->count();
-        return $count;
+        return self::date_wise_common_filter($query_f, $date_type, $from, $to)->count();
     }
 
     public function date_wise_common_filter($query, $date_type, $from, $to)
@@ -380,51 +535,5 @@ class OrderReportController extends Controller
                 return $query->whereDate('updated_at', '>=', $from)
                     ->whereDate('updated_at', '<=', $to);
             });
-    }
-
-    public function exportOrderReportInPDF(Request $request)
-    {
-        $dateType = $request['date_type'] ?? 'this_year';
-
-        $orders = self::all_order_table_data_filter($request)->latest('updated_at')->get();
-        $seller = $request->has('seller_id') && $request['seller_id'] != 'inhouse' && $request['seller_id'] != 'all' ? (Seller::with('shop')->find($request['seller_id'])->f_name) : ($request['seller_id'] ?? 'all');
-
-        $totalOrderAmount = $orders->sum('order_amount') ?? 0;
-        $totalProductDiscount = $orders->sum('details_sum_discount') ?? 0;
-        $totalCouponDiscount = $orders->sum('discount_amount') ?? 0;
-        $totalTax = $orders->sum('details_sum_tax') ?? 0;
-        $totalOrderCommission = $orders->sum('admin_commission') ?? 0;
-
-        $totalDeliveryCharge = 0;
-        $totalDeliverymanIncentive = 0;
-        foreach($orders as $order){
-            $totalDeliveryCharge += ($order->shipping_cost - ($order->extra_discount_type == 'free_shipping_over_order_amount' ? $order->extra_discount : 0));
-            $totalDeliverymanIncentive += ($order->delivery_type=='self_delivery' && $order->delivery_man_id) ? $order->deliveryman_charge : 0;
-        }
-
-        $data = [
-            'orders' => $orders,
-            'total_orders' => count($orders),
-            'search' => $request['search'],
-            'seller' => $seller,
-            'type' => $request->has('seller_id') ? ($request['seller_id'] != 'inhouse' ? 'seller' : $request['seller_id']) : 'all',
-            'from' => $request['from'],
-            'to' => $request['to'],
-            'company_name' => getWebConfig(name: 'company_name'),
-            'company_email' => getWebConfig(name: 'company_email'),
-            'company_phone' => getWebConfig(name: 'company_phone'),
-            'company_web_logo' => getWebConfig(name: 'company_web_logo'),
-            'date_type' => $request['date_type'] ?? 'this_year',
-            'total_order_amount' => $totalOrderAmount,
-            'total_product_discount' => $totalProductDiscount,
-            'total_coupon_discount' => $totalCouponDiscount,
-            'total_tax' => $totalTax,
-            'total_order_commission' => $totalOrderCommission,
-            'total_delivery_charge' => $totalDeliveryCharge,
-            'total_deliveryman_incentive' => $totalDeliverymanIncentive,
-        ];
-
-        $mpdfView = View::make('admin-views.transaction.total_orders_report_pdf', ['data'=>$data]);
-        Helpers::gen_mpdf($mpdfView, 'order_transaction_summary_report_', $dateType);
     }
 }

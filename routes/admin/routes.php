@@ -1381,7 +1381,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:report.export_order_sales|report.export,admin')->group(function () {
             Route::controller(OrderReportController::class)->group(function () {
                 Route::get('order-report-excel', 'orderReportExportExcel')->name('order-report-excel');
-                Route::get('order-report-pdf', 'exportOrderReportInPDF')->name('order-report-pdf');
+                Route::match(['get', 'post'], 'order-report-pdf', 'exportOrderReportInPDF')->name('order-report-pdf');
             });
         });
 
