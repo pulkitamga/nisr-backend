@@ -18,7 +18,7 @@
 
         <div class="card mb-3">
             <div class="card-body">
-                <form id="crm-sales-filter-form" class="row g-2 align-items-end">
+                <form id="crm-sales-filter-form" class="row g-2 align-items-start">
                     <div class="col-md-2">
                         <label class="form-label mb-1">{{ translate('date_range') }}</label>
                         <select class="form-control" name="date_type" id="crm-date-type">
@@ -111,7 +111,7 @@
 
         <div class="card mb-3">
             <div class="card-body">
-                <canvas id="crm-sales-chart" height="110"></canvas>
+                <canvas id="crm-sales-chart" height="210"></canvas>
             </div>
         </div>
 
@@ -315,14 +315,76 @@
                 }
             };
 
-            const runExport = (type) => {
-                const query = buildQueryString(buildPayload());
-                const url = type === 'excel'
-                    ? `{{ route('admin.crm.sales-report-export-excel') }}?${query}`
-                    : `{{ route('admin.crm.sales-report-export-pdf') }}?${query}`;
+           const runExport = (type) => {
+    const payload = buildPayload();
+    const query = buildQueryString(payload);
+    
+    if (type === 'excel') {
+        const url = `{{ route('admin.crm.sales-report-export-excel') }}?${query}`;
+        window.open(url, '_blank');
+    } else if (type === 'pdf') {
+        // Capture chart for PDF
+        const chartCanvas = document.getElementById('crm-sales-chart');
+        
+        if (!chartCanvas) {
+            const url = `{{ route('admin.crm.sales-report-export-pdf') }}?${query}`;
+            window.open(url, '_blank');
+            return;
+        }
 
+        // Add small delay to ensure chart is rendered
+        setTimeout(() => {
+            try {
+                const chartImage = chartCanvas.toDataURL('image/png');
+                
+                console.log('Chart captured:', {
+                    length: chartImage.length,
+                    valid: chartImage.startsWith('data:image/png;base64,')
+                });
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `{{ route('admin.crm.sales-report-export-pdf') }}`;
+                form.target = '_blank';
+
+                // Add CSRF token
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = '{{ csrf_token() }}';
+                form.appendChild(csrf);
+
+                // Add chart image
+                const chartInput = document.createElement('input');
+                chartInput.type = 'hidden';
+                chartInput.name = 'chart_image';
+                chartInput.value = chartImage;
+                form.appendChild(chartInput);
+
+                // Add all filter parameters
+                Object.entries(payload).forEach(([key, value]) => {
+                    if (value !== null && value !== '') {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = String(value);
+                        form.appendChild(input);
+                    }
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+                
+                setTimeout(() => document.body.removeChild(form), 100);
+                
+            } catch (error) {
+                console.error('Error capturing chart:', error);
+                const url = `{{ route('admin.crm.sales-report-export-pdf') }}?${query}`;
                 window.open(url, '_blank');
-            };
+            }
+        }, 500);
+    }
+};
 
             form.addEventListener('submit', (event) => {
                 event.preventDefault();

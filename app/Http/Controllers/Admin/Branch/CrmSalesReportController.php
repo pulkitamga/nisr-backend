@@ -86,18 +86,33 @@ class CrmSalesReportController extends Controller
         );
     }
 
-    public function exportPdf(Request $request): Response
-    {
-        $data = $this->buildReportData($request);
-        $data['exportedAt'] = now();
+   public function exportPdf(Request $request): Response
+{
+    $data = $this->buildReportData($request);
+    $data['exportedAt'] = now();
+    
+    // IMPORTANT: Get chart image from request (sent via POST from JavaScript)
+    $chartImage = $request->input('chart_image');
+    
+    // Add chart image to data array
+    $data['chartImage'] = $chartImage;
+    
+    // Add filters for display in PDF
+    $data['filters'] = [
+        'from' => $data['filters']['from'] ?? '-',
+        'to' => $data['filters']['to'] ?? '-',
+        'date_type' => $data['filters']['date_type'] ?? 'this_year',
+        'sale_type' => $data['filters']['sale_type'] ? translate($data['filters']['sale_type']) : translate('all'),
+        'agent' => $data['filters']['agent_id'] ? Admin::find($data['filters']['agent_id'])->name : translate('all'),
+    ];
 
-        return app(ReportPdfService::class)->download(
-            view: 'admin-views.branch-management.crm-sales-report-pdf',
-            data: $data,
-            fileName: 'crm-sales-report.pdf',
-            orientation: 'landscape'
-        );
-    }
+    return app(ReportPdfService::class)->download(
+        view: 'admin-views.branch-management.crm-sales-report-pdf',
+        data: $data,
+        fileName: 'crm-sales-report.pdf',
+        orientation: 'landscape'
+    );
+}
 
     private function buildReportData(Request $request): array
     {
