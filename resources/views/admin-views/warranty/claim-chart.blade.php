@@ -106,7 +106,8 @@
                     <div class="col-md-3">
                         <label class="form-label">{{ translate('date_range') }}</label>
                         <select class="form-control" name="date_type" id="dateTypeFilter">
-                            <option value="this_year" {{ ($selectedDateType ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
+                            <option value="this_year"
+                                {{ ($selectedDateType ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
                                 {{ translate('this_year') }}
                             </option>
                             <option value="this_month" {{ ($selectedDateType ?? '') === 'this_month' ? 'selected' : '' }}>
@@ -118,7 +119,8 @@
                             <option value="today" {{ ($selectedDateType ?? '') === 'today' ? 'selected' : '' }}>
                                 {{ translate('today') }}
                             </option>
-                            <option value="custom_date" {{ ($selectedDateType ?? '') === 'custom_date' ? 'selected' : '' }}>
+                            <option value="custom_date"
+                                {{ ($selectedDateType ?? '') === 'custom_date' ? 'selected' : '' }}>
                                 {{ translate('custom_range') }}
                             </option>
                         </select>
@@ -127,13 +129,15 @@
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($selectedDateType ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                         <label class="form-label">{{ translate('from') }}</label>
-                        <input type="date" class="form-control" name="from" id="fromDateFilter" value="{{ $selectedFrom ?? $startDate->toDateString() }}">
+                        <input type="date" class="form-control" name="from" id="fromDateFilter"
+                            value="{{ $selectedFrom ?? $startDate->toDateString() }}">
                     </div>
 
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($selectedDateType ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
                         <label class="form-label">{{ translate('to') }}</label>
-                        <input type="date" class="form-control" name="to" id="toDateFilter" value="{{ $selectedTo ?? $endDate->toDateString() }}">
+                        <input type="date" class="form-control" name="to" id="toDateFilter"
+                            value="{{ $selectedTo ?? $endDate->toDateString() }}">
                     </div>
 
                     <div class="col-md-2">
@@ -248,18 +252,25 @@
 
         <div class="chart-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="mb-0">{{ translate('claims_by_day') }} ({{ translate('stacked') }})</h4>
+                <h4 class="mb-0">
+                    {{ translate('claims') }}
+                    (<span id="dateRangeText">
+                        {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
+                    </span>)
+                </h4>
                 <span class="badge badge-soft-primary" id="dateRangeLabel">
                     {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
                 </span>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mb-3">
-                <a id="exportExcelBtn" href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
+                <a id="exportExcelBtn"
+                    href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
                     class="btn btn-success">
                     <i class="tio-file-excel"></i> {{ translate('export_excel') }}
                 </a>
-                <a id="exportPdfBtn" href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
+                <a id="exportPdfBtn"
+                    href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
                     class="btn btn-danger">
                     <i class="tio-file-pdf"></i> {{ translate('export_pdf') }}
                 </a>
@@ -273,108 +284,106 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">{{ translate('claims_list') }} <span class="badge badge-soft-dark"
                         id="claimsTotal">{{ $claims->total() }}</span></h5>
-            </div>    
-                <div class="table-responsive datatable-custom">
-                    <table
-                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
-                        <thead class="thead-light thead-50 text-capitalize">
-                            <tr>
-                                <th>{{ translate('SL') }}</th>
-                                <th>{{ translate('claim_number') }}</th>
-                                <th>{{ translate('serial') }}</th>
-                                <th>{{ translate('product') }}</th>
-                                <th>{{ translate('warranty_months') }}</th>
-                                <th>{{ translate('warranty_end_date') }}</th>
-                                <th>{{ translate('remaining') }}</th>
-                                <th>{{ translate('status') }}</th>
-                                <th>{{ translate('customer') }}</th>
-                                <th>{{ translate('branch') }}</th>
-                                <th>{{ translate('submitted_at') }}</th>
-                                <th>{{ translate('sla_due') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody id="claimTableBody">
-                            @foreach ($claims as $key => $claim)
-                                @php
-                                    $badge = match ($claim->status) {
-                                        'new', 'waiting_customer', 'waiting_parts', 'waiting_payment' => 'warning',
-                                        'rejected', 'closed' => 'danger',
-                                        default => 'success',
-                                    };
+            </div>
+            <div class="table-responsive datatable-custom">
+                <table
+                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+                    <thead class="thead-light thead-50 text-capitalize">
+                        <tr>
+                            <th>{{ translate('SL') }}</th>
+                            <th>{{ translate('claim_number') }}</th>
+                            <th>{{ translate('serial') }}</th>
+                            <th>{{ translate('product') }}</th>
+                            <th>{{ translate('warranty_months') }}</th>
+                            <th>{{ translate('warranty_end_date') }}</th>
+                            <th>{{ translate('remaining') }}</th>
+                            <th>{{ translate('status') }}</th>
+                            <th>{{ translate('customer') }}</th>
+                            <th>{{ translate('branch') }}</th>
+                            <th>{{ translate('submitted_at') }}</th>
+                            <th>{{ translate('sla_due') }}</th>
+                            <th class="text-center">{{ translate('action') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="claimTableBody">
+                        @foreach ($claims as $key => $claim)
+                            @php
+                                $badge = match ($claim->status) {
+                                    'new', 'waiting_customer', 'waiting_parts', 'waiting_payment' => 'warning',
+                                    'rejected', 'closed' => 'danger',
+                                    default => 'success',
+                                };
 
-                                    $warranty = $claim->warranty;
-                                    $productName = $warranty?->product?->name ?? '-';
-                                    $warrantyMonths = $warranty?->warranty_months ?? '-';
-                                    $endDate = $warranty?->end_date ? $warranty->end_date->format('Y-m-d') : '-';
+                                $warranty = $claim->warranty;
+                                $productName = $warranty?->product?->name ?? '-';
+                                $warrantyMonths = $warranty?->warranty_months ?? '-';
+                                $endDate = $warranty?->end_date ? $warranty->end_date->format('Y-m-d') : '-';
 
-                                    // Corrected remaining calculation
-                                    if ($warranty && $warranty->end_date) {
-                                        $now = now()->startOfDay();
-                                        $end = $warranty->end_date->startOfDay();
-                                        if ($now > $end) {
-                                            $remaining =
-                                                '<span class="badge badge-soft-danger">' .
-                                                translate('expired') .
-                                                '</span>';
-                                        } else {
-                                            $months = $now->diffInMonths($end);
-                                            $days = $now->copy()->addMonths($months)->diffInDays($end);
-                                            if ($months > 0 && $days > 0) {
-                                                $remaining =
-                                                    $months .
-                                                    ' ' .
-                                                    translate('months') .
-                                                    ' ' .
-                                                    $days .
-                                                    ' ' .
-                                                    translate('days');
-                                            } elseif ($months > 0) {
-                                                $remaining = $months . ' ' . translate('months');
-                                            } else {
-                                                $remaining = $days . ' ' . translate('days');
-                                            }
-                                        }
+                                // Corrected remaining calculation
+                                if ($warranty && $warranty->end_date) {
+                                    $now = now()->startOfDay();
+                                    $end = $warranty->end_date->startOfDay();
+                                    if ($now > $end) {
+                                        $remaining =
+                                            '<span class="badge badge-soft-danger">' . translate('expired') . '</span>';
                                     } else {
-                                        $remaining = '-';
+                                        $months = $now->diffInMonths($end);
+                                        $days = $now->copy()->addMonths($months)->diffInDays($end);
+                                        if ($months > 0 && $days > 0) {
+                                            $remaining =
+                                                $months .
+                                                ' ' .
+                                                translate('months') .
+                                                ' ' .
+                                                $days .
+                                                ' ' .
+                                                translate('days');
+                                        } elseif ($months > 0) {
+                                            $remaining = $months . ' ' . translate('months');
+                                        } else {
+                                            $remaining = $days . ' ' . translate('days');
+                                        }
                                     }
-                                @endphp
-                                <tr>
-                                    <td>{{ $claims->firstItem() + $key }}</td>
-                                    <td>{{ $claim->claim_number }}</td>
-                                    <td>{{ $claim->serial_number }}</td>
-                                    <td>{{ $productName }}</td>
-                                    <td>{{ $warrantyMonths }}</td>
-                                    <td>{{ $endDate }}</td>
-                                    <td>{!! $remaining !!}</td>
-                                    <td>
-                                        <span class="badge badge-soft-{{ $badge }} fz-12">
-                                            {{ translate($claim->status) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $claim->warranty?->user?->name ?? ($claim->warranty?->activated_by_name ?? '') }}
-                                    </td>
-                                    <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
-                                    <td>{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</td>
-                                    <td>{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</td>
-                                    <td class="text-center">
-                                        <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
-                                            class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    @if ($claims->isEmpty())
-                        @include('layouts.back-end._empty-state', [
-                            'text' => 'no_record_found',
-                            'image' => 'default',
-                        ])
-                    @endif
-                </div>
-                <div class="px-4 py-3 d-flex justify-content-end" id="paginationLinks">
-                    {{ $claims->appends(request()->query())->links() }}
-                </div>
+                                } else {
+                                    $remaining = '-';
+                                }
+                            @endphp
+                            <tr>
+                                <td>{{ $claims->firstItem() + $key }}</td>
+                                <td>{{ $claim->claim_number }}</td>
+                                <td>{{ $claim->serial_number }}</td>
+                                <td>{{ $productName }}</td>
+                                <td>{{ $warrantyMonths }}</td>
+                                <td>{{ $endDate }}</td>
+                                <td>{!! $remaining !!}</td>
+                                <td>
+                                    <span class="badge badge-soft-{{ $badge }} fz-12">
+                                        {{ translate($claim->status) }}
+                                    </span>
+                                </td>
+                                <td>{{ $claim->warranty?->user?->name ?? ($claim->warranty?->activated_by_name ?? '') }}
+                                </td>
+                                <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
+                                <td>{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</td>
+                                <td>{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</td>
+                                <td class="text-center">
+                                    <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
+                                        class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @if ($claims->isEmpty())
+                    @include('layouts.back-end._empty-state', [
+                        'text' => 'no_record_found',
+                        'image' => 'default',
+                    ])
+                @endif
+            </div>
+            <div class="px-4 py-3 d-flex justify-content-end" id="paginationLinks">
+                {{ $claims->appends(request()->query())->links() }}
+            </div>
         </div>
     </div>
 @endsection
@@ -406,7 +415,7 @@
 
                 // ===== CHART + CARDS =====
                 $.get('{{ route('admin.warranty.claim.chart.data') }}', formData, function(res) {
-
+                    $('#dateRangeText').text(res.date_range_label);
                     $('#card-total').text(res.cards.total);
                     $('#card-new').text(res.cards.new);
                     $('#card-approved').text(res.cards.approved);
@@ -611,6 +620,62 @@
                 refreshTable(res);
                 $('#claimsTotal').text(res.total);
             });
+        });
+        $('#exportPdfBtn').on('click', function(e) {
+            e.preventDefault();
+
+            const chartCanvas = document.getElementById('claimsChart');
+            const href = $(this).attr('href');
+
+            if (!chartCanvas) {
+                window.open(href, '_blank');
+                return;
+            }
+
+            // Add small delay to ensure chart is rendered
+            setTimeout(function() {
+                try {
+                    const chartImage = chartCanvas.toDataURL('image/png');
+
+                    console.log('Chart image length:', chartImage.length);
+                    console.log('Valid format:', chartImage.startsWith('data:image/png;base64,'));
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = href;
+
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+
+                    const chartInput = document.createElement('input');
+                    chartInput.type = 'hidden';
+                    chartInput.name = 'chart_image';
+                    chartInput.value = chartImage;
+                    form.appendChild(chartInput);
+
+                    // Add all current query parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    urlParams.forEach((value, key) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+
+                    setTimeout(() => document.body.removeChild(form), 100);
+
+                } catch (error) {
+                    console.error('Error capturing chart:', error);
+                    window.open(href, '_blank');
+                }
+            }, 500);
         });
     </script>
 @endpush

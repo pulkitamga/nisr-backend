@@ -76,11 +76,13 @@
 
 @section('content')
     @php
-        $isRtl = session('direction') === 'rtl'
-            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl =
+            session('direction') === 'rtl' ||
+            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
 
-    <div class="content container-fluid warranty-sla-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid warranty-sla-page {{ $isRtl ? 'text-right' : '' }}"
+        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
@@ -103,36 +105,53 @@
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
-                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
-                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
-                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
+                                <option value="this_year"
+                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
+                                    {{ translate('this_year') }}</option>
+                                <option value="this_month"
+                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
+                                    {{ translate('this_month') }}</option>
+                                <option value="this_week"
+                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
+                                    {{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
+                                    {{ translate('today') }}</option>
+                                <option value="custom_date"
+                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
+                                    {{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('sla_type') }}</label>
                             <select class="form-control" name="sla_type">
-                                <option value="all" {{ ($filters['sla_type'] ?? 'all') === 'all' ? 'selected' : '' }}>{{ translate('all') }}</option>
-                                <option value="response" {{ ($filters['sla_type'] ?? '') === 'response' ? 'selected' : '' }}>{{ translate('first_response_sla') }}</option>
-                                <option value="resolution" {{ ($filters['sla_type'] ?? '') === 'resolution' ? 'selected' : '' }}>{{ translate('resolution_sla') }}</option>
+                                <option value="all" {{ ($filters['sla_type'] ?? 'all') === 'all' ? 'selected' : '' }}>
+                                    {{ translate('all') }}</option>
+                                <option value="response"
+                                    {{ ($filters['sla_type'] ?? '') === 'response' ? 'selected' : '' }}>
+                                    {{ translate('first_response_sla') }}</option>
+                                <option value="resolution"
+                                    {{ ($filters['sla_type'] ?? '') === 'resolution' ? 'selected' : '' }}>
+                                    {{ translate('resolution_sla') }}</option>
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.warranty.report.sla') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.warranty.report.sla') }}"
+                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                             <a href="{{ route('admin.warranty.report.sla', array_merge(request()->query(), ['download' => 'excel'])) }}"
-                               class="btn btn-outline-success">{{ translate('excel') }}</a>
+                                class="btn btn-outline-success">{{ translate('excel') }}</a>
                             <a href="{{ route('admin.warranty.report.sla', array_merge(request()->query(), ['download' => 'pdf'])) }}"
-                               class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                                class="btn btn-outline-danger">{{ translate('PDF') }}</a>
                         </div>
                     </div>
                 </form>
@@ -144,7 +163,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('total_deadlines') }}</p>
-                        <p class="metric-value">{{ number_format((int)$kpi['total_deadlines']) }}</p>
+                        <p class="metric-value">{{ number_format((int) $kpi['total_deadlines']) }}</p>
                     </div>
                 </div>
             </div>
@@ -152,7 +171,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('sla_compliance') }}</p>
-                        <p class="metric-value">{{ number_format((float)$kpi['compliance'], 1) }}%</p>
+                        <p class="metric-value">{{ number_format((float) $kpi['compliance'], 1) }}%</p>
                     </div>
                 </div>
             </div>
@@ -160,7 +179,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('on_time') }}</p>
-                        <p class="metric-value">{{ number_format((int)$kpi['on_time']) }}</p>
+                        <p class="metric-value">{{ number_format((int) $kpi['on_time']) }}</p>
                     </div>
                 </div>
             </div>
@@ -169,7 +188,7 @@
                     <div class="card-body">
                         <p class="metric-label">{{ translate('avg_breach_hours') }}</p>
                         <p class="metric-value">
-                            {{ $kpi['avg_breach_hours'] !== null ? number_format((float)$kpi['avg_breach_hours'], 1) . 'h' : translate('na') }}
+                            {{ $kpi['avg_breach_hours'] !== null ? number_format((float) $kpi['avg_breach_hours'], 1) . 'h' : translate('na') }}
                         </p>
                     </div>
                 </div>
@@ -203,11 +222,11 @@
                 <div class="card chart-card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('breached_claims') }}</h4>
-                        <span class="badge-soft">{{ number_format((int)$kpi['breached']) }}</span>
+                        <span class="badge-soft">{{ number_format((int) $kpi['breached']) }}</span>
                     </div>
                     <div class="card-body d-flex align-items-center justify-content-center">
                         <div class="text-center">
-                            <h1 class="display-4 text-danger mb-1">{{ number_format((int)$kpi['breached']) }}</h1>
+                            <h1 class="display-4 text-danger mb-1">{{ number_format((int) $kpi['breached']) }}</h1>
                             <p class="text-muted mb-0">{{ translate('deadline_breaches_in_period') }}</p>
                         </div>
                     </div>
@@ -228,7 +247,7 @@
         <div class="card table-card">
             <div class="card-header border-0 d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ translate('sla_details') }}</h4>
-                <span class="badge badge-soft-dark">{{ number_format((int)$slaDetails->total()) }}</span>
+                <span class="badge badge-soft-dark">{{ number_format((int) $slaDetails->total()) }}</span>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -248,9 +267,10 @@
                     <tbody>
                         @forelse($slaDetails as $row)
                             @php
-                                $slaTypeLabel = $row->sla_type_key === 'response'
-                                    ? translate('first_response_sla')
-                                    : translate('resolution_sla');
+                                $slaTypeLabel =
+                                    $row->sla_type_key === 'response'
+                                        ? translate('first_response_sla')
+                                        : translate('resolution_sla');
                             @endphp
                             <tr>
                                 <td>{{ $slaDetails->firstItem() + $loop->index }}</td>
@@ -263,15 +283,17 @@
                                     {{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->format('Y-m-d H:i') : '-' }}
                                 </td>
                                 <td>
-                                    <span class="badge badge-soft-{{ (int)$row->is_within_sla === 1 ? 'success' : 'danger' }}">
-                                        {{ (int)$row->is_within_sla === 1 ? translate('on_time') : translate('breached') }}
+                                    <span
+                                        class="badge badge-soft-{{ (int) $row->is_within_sla === 1 ? 'success' : 'danger' }}">
+                                        {{ (int) $row->is_within_sla === 1 ? translate('on_time') : translate('breached') }}
                                     </span>
                                 </td>
                                 <td>{{ translate($row->status) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}</td>
+                                <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -309,7 +331,9 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom' }
+                            legend: {
+                                position: 'bottom'
+                            }
                         }
                     }
                 });
@@ -331,11 +355,17 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: { precision: 0 }
+                                ticks: {
+                                    precision: 0
+                                }
                             }
                         }
                     }
@@ -368,12 +398,16 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom' }
+                            legend: {
+                                position: 'bottom'
+                            }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: { precision: 0 }
+                                ticks: {
+                                    precision: 0
+                                }
                             }
                         }
                     }
@@ -390,5 +424,55 @@
                 }
             });
         });
+       $('.btn-outline-danger[href*="download=pdf"]').on('click', function(e) {
+    e.preventDefault();
+
+    setTimeout(function() {
+
+        const complianceCanvas = document.getElementById('sla-compliance-chart');
+        const typeCanvas = document.getElementById('sla-type-chart');
+        const trendCanvas = document.getElementById('sla-trend-chart');
+
+        if (complianceCanvas && typeCanvas && trendCanvas) {
+            try {
+                // ✅ Use compressed images (better for mPDF)
+                const complianceImage = complianceCanvas.toDataURL('image/jpeg', 0.7);
+                const typeImage = typeCanvas.toDataURL('image/jpeg', 0.7);
+                const trendImage = trendCanvas.toDataURL('image/jpeg', 0.7);
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+
+                // ✅ FIXED: correct route (NOT href)
+                form.action = "{{ route('admin.warranty.report.sla') }}";
+
+                // CSRF
+                form.innerHTML += `<input type="hidden" name="_token" value="{{ csrf_token() }}">`;
+
+                // ✅ IMPORTANT: tell controller it's PDF
+                form.innerHTML += `<input type="hidden" name="download" value="pdf">`;
+
+                // charts
+                form.innerHTML += `<input type="hidden" name="compliance_chart" value="${complianceImage}">`;
+                form.innerHTML += `<input type="hidden" name="type_chart" value="${typeImage}">`;
+                form.innerHTML += `<input type="hidden" name="trend_chart" value="${trendImage}">`;
+
+                // keep filters
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.forEach((value, key) => {
+                    form.innerHTML += `<input type="hidden" name="${key}" value="${value}">`;
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+
+            } catch (error) {
+                console.error(error);
+                alert('Chart capture failed');
+            }
+        }
+
+    }, 400);
+});
     </script>
 @endpush

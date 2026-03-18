@@ -76,8 +76,9 @@
 
 @section('content')
     @php
-        $isRtl = session('direction') === 'rtl'
-            || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl =
+            session('direction') === 'rtl' ||
+            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
         $claimStatuses = [
             'all',
             'new',
@@ -100,7 +101,8 @@
         ];
     @endphp
 
-    <div class="content container-fluid warranty-report-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid warranty-report-page {{ $isRtl ? 'text-right' : '' }}"
+        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
@@ -123,26 +125,38 @@
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
-                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
-                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
-                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
+                                <option value="this_year"
+                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
+                                    {{ translate('this_year') }}</option>
+                                <option value="this_month"
+                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
+                                    {{ translate('this_month') }}</option>
+                                <option value="this_week"
+                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
+                                    {{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
+                                    {{ translate('today') }}</option>
+                                <option value="custom_date"
+                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
+                                    {{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range"
+                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('status') }}</label>
                             <select class="form-control" name="status">
-                                @foreach($claimStatuses as $status)
-                                    <option value="{{ $status }}" {{ ($filters['status'] ?? 'all') === $status ? 'selected' : '' }}>
+                                @foreach ($claimStatuses as $status)
+                                    <option value="{{ $status }}"
+                                        {{ ($filters['status'] ?? 'all') === $status ? 'selected' : '' }}>
                                         {{ $status === 'all' ? translate('all') : translate($status) }}
                                     </option>
                                 @endforeach
@@ -150,16 +164,19 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('search') }}</label>
-                            <input type="text" class="form-control" name="search" value="{{ $filters['search'] ?? '' }}"
-                                   placeholder="{{ translate('search_by_claim_or_serial') }}">
+                            <input type="text" class="form-control" name="search"
+                                value="{{ $filters['search'] ?? '' }}"
+                                placeholder="{{ translate('search_by_claim_or_serial') }}">
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.warranty.report.claims') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.warranty.report.claims') }}"
+                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                             <a href="{{ route('admin.warranty.report.claims', array_merge(request()->query(), ['download' => 'excel'])) }}"
-                               class="btn btn-outline-success">{{ translate('excel') }}</a>
-                            <a href="{{ route('admin.warranty.report.claims', array_merge(request()->query(), ['download' => 'pdf'])) }}"
-                               class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                                class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <button type="button" id="export-claims-pdf" class="btn btn-outline-danger">
+                                {{ translate('PDF') }}
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -171,7 +188,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('total_claims') }}</p>
-                        <p class="metric-value">{{ number_format((int)$kpi['total_claims']) }}</p>
+                        <p class="metric-value">{{ number_format((int) $kpi['total_claims']) }}</p>
                     </div>
                 </div>
             </div>
@@ -179,7 +196,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('claim_rate') }}</p>
-                        <p class="metric-value">{{ number_format((float)$kpi['claim_rate'], 1) }}%</p>
+                        <p class="metric-value">{{ number_format((float) $kpi['claim_rate'], 1) }}%</p>
                     </div>
                 </div>
             </div>
@@ -187,7 +204,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('open_claims') }}</p>
-                        <p class="metric-value">{{ number_format((int)$kpi['open_claims']) }}</p>
+                        <p class="metric-value">{{ number_format((int) $kpi['open_claims']) }}</p>
                     </div>
                 </div>
             </div>
@@ -195,7 +212,7 @@
                 <div class="card metric-card h-100">
                     <div class="card-body">
                         <p class="metric-label">{{ translate('resolved') }}</p>
-                        <p class="metric-value">{{ number_format((int)$kpi['resolved_claims']) }}</p>
+                        <p class="metric-value">{{ number_format((int) $kpi['resolved_claims']) }}</p>
                     </div>
                 </div>
             </div>
@@ -206,7 +223,8 @@
                 <div class="card chart-card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('claims_volume_trend') }}</h4>
-                        <span class="badge-soft">{{ translate('date_range') }}</span>
+                        <span class="badge-soft">{{ $fromDate->format('M d, Y') }} -
+                            {{ $toDate->format('M d, Y') }}</span>
                     </div>
                     <div class="card-body chart-holder">
                         <canvas id="claims-trend-chart"></canvas>
@@ -217,7 +235,8 @@
                 <div class="card chart-card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">{{ translate('claim_status_mix') }}</h4>
-                        <span class="badge-soft">{{ translate('distribution') }}</span>
+                        <span class="badge-soft">{{ $fromDate->format('M d, Y') }} -
+                            {{ $toDate->format('M d, Y') }}</span>
                     </div>
                     <div class="card-body chart-holder">
                         <canvas id="claims-status-chart"></canvas>
@@ -228,8 +247,19 @@
 
         <div class="card table-card">
             <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">{{ translate('claims_table') }}</h4>
-                <span class="badge badge-soft-dark">{{ number_format((int)$claims->total()) }}</span>
+                <h4 class="mb-0">
+                    {{ translate('claims_table') }}
+                </h4>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge-soft">
+                        {{ $fromDate->format('M d, Y') }} - {{ $toDate->format('M d, Y') }}
+                    </span>
+
+                    <span class="badge badge-soft-dark">
+                        {{ number_format((int) $claims->total()) }}
+                    </span>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
@@ -251,14 +281,19 @@
                         @forelse($claims as $claim)
                             @php
                                 $customerName = trim(
-                                    ((string)($claim->warranty?->user?->f_name ?? '')) . ' ' . ((string)($claim->warranty?->user?->l_name ?? ''))
+                                    ((string) ($claim->warranty?->user?->f_name ?? '')) .
+                                        ' ' .
+                                        ((string) ($claim->warranty?->user?->l_name ?? '')),
                                 );
                                 if ($customerName === '') {
-                                    $customerName = $claim->warranty?->activated_by_name ?? $claim->activated_by_name ?? '-';
+                                    $customerName =
+                                        $claim->warranty?->activated_by_name ?? ($claim->activated_by_name ?? '-');
                                 }
                                 $statusClass = in_array($claim->status, ['resolved', 'closed'])
                                     ? 'success'
-                                    : (in_array($claim->status, ['rejected']) ? 'danger' : 'warning');
+                                    : (in_array($claim->status, ['rejected'])
+                                        ? 'danger'
+                                        : 'warning');
                             @endphp
                             <tr>
                                 <td>{{ $claims->firstItem() + $loop->index }}</td>
@@ -276,14 +311,15 @@
                                 <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
                                 <td class="text-center">
                                     <a class="btn btn-sm btn-outline-info"
-                                       href="{{ route('admin.warranty.claim.view', $claim->id) }}">
+                                        href="{{ route('admin.warranty.claim.view', $claim->id) }}">
                                         {{ translate('view') }}
                                     </a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">{{ translate('no_data_found') }}</td>
+                                <td colspan="10" class="text-center py-4 text-muted">{{ translate('no_data_found') }}
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -325,12 +361,16 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: {
+                                display: false
+                            }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: { precision: 0 }
+                                ticks: {
+                                    precision: 0
+                                }
                             }
                         }
                     }
@@ -345,14 +385,18 @@
                         labels: statusData.labels || [],
                         datasets: [{
                             data: statusData.counts || [],
-                            backgroundColor: ['#0f766e', '#1d4ed8', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b', '#06b6d4', '#84cc16']
+                            backgroundColor: ['#0f766e', '#1d4ed8', '#f59e0b', '#ef4444', '#8b5cf6',
+                                '#64748b', '#06b6d4', '#84cc16'
+                            ]
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom' }
+                            legend: {
+                                position: 'bottom'
+                            }
                         }
                     }
                 });
@@ -368,5 +412,68 @@
                 }
             });
         });
+        // PDF Export Functionality (similar to CRM insights report)
+        const exportBtn = document.getElementById('export-claims-pdf');
+
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+
+                const trendChart = document.getElementById('claims-trend-chart');
+                const statusChart = document.getElementById('claims-status-chart');
+
+                let trendImg = '';
+                let statusImg = '';
+
+                if (trendChart) {
+                    trendImg = trendChart.toDataURL('image/png', 1.0);
+                }
+
+                if (statusChart) {
+                    statusImg = statusChart.toDataURL('image/png', 1.0);
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{{ route('admin.warranty.report.claims') }}";
+
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = "{{ csrf_token() }}";
+                form.appendChild(csrf);
+
+                const download = document.createElement('input');
+                download.type = 'hidden';
+                download.name = 'download';
+                download.value = 'pdf';
+                form.appendChild(download);
+
+                const charts = {
+                    trend_chart: trendImg,
+                    status_chart: statusImg
+                };
+
+                Object.keys(charts).forEach(name => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = charts[name];
+                    form.appendChild(input);
+                });
+
+                const params = new URLSearchParams(window.location.search);
+
+                params.forEach((value, key) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
     </script>
 @endpush

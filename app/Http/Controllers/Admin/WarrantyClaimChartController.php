@@ -230,6 +230,75 @@ class WarrantyClaimChartController extends Controller
 
     private function prepareChartData($start, $end, Request $request = null)
     {
+        $dateType = $request->input('date_type', 'this_year');
+
+        // ✅ Decide grouping
+        if ($dateType === 'this_year') {
+            $groupFormat = '%Y-%m';   // monthly
+            $labelFormat = 'M Y';
+            $step = 'month';
+        } elseif ($dateType === 'this_month' || $dateType === 'this_week') {
+            $groupFormat = '%Y-%m-%d'; // daily
+            $labelFormat = 'd M';
+            $step = 'day';
+        } elseif ($dateType === 'today') {
+            $groupFormat = '%Y-%m-%d %H'; // hourly
+            $labelFormat = 'H:00';
+            $step = 'hour';
+        } else {
+            // custom logic
+            $diffDays = $start->diffInDays($end);
+
+            if ($diffDays > 60) {
+                $groupFormat = '%Y-%m'; // monthly
+                $labelFormat = 'M Y';
+                $step = 'month';
+            } else {
+                $groupFormat = '%Y-%m-%d'; // daily
+                $labelFormat = 'd M';
+                $step = 'day';
+            }
+        }
+
+        // ✅ Generate labels dynamically
+        $period = \Carbon\CarbonPeriod::create($start, "1 {$step}", $end);
+
+        $labels = [];
+        $dateKeys = [];
+
+        foreach ($period as $date) {
+            if ($step === 'month') {
+                $labels[] = $date->format('M Y');
+                $dateKeys[] = $date->format('Y-m');
+            } elseif ($step === 'hour') {
+                $labels[] = $date->format('H:00');
+                $dateKeys[] = $date->format('Y-m-d H');
+            } else {
+                $labels[] = $date->format('d M');
+                $dateKeys[] = $date->format('Y-m-d');
+            }
+        }
+
+        // ✅ Query with dynamic grouping
+        $query = WarrantyClaim::select(
+            DB::raw("DATE_FORMAT(submitted_at, '{$groupFormat}') as grp"),
+            'status',
+            DB::raw('COUNT(*) as count')
+        )->whereBetween('submitted_at', [$start, $end->copy()->endOfDay()]);
+
+        if ($request) {
+            if ($request->filled('branch_id')) {
+                $query->where('branch_id', $request->branch_id);
+            }
+            if ($request->filled('product_id')) {
+                $query->whereHas('warranty', function ($q) use ($request) {
+                    $q->where('product_id', $request->product_id);
+                });
+            }
+        }
+
+        $raw = $query->groupBy('grp', 'status')->get()->groupBy('grp');
+
         $statuses = [
             'new',
             'approved',
@@ -244,40 +313,11 @@ class WarrantyClaimChartController extends Controller
             'closed'
         ];
 
-        $period = \Carbon\CarbonPeriod::create($start, $end);
-        $labels = [];
-        $dateKeys = [];
-        foreach ($period as $date) {
-            $labels[] = $date->format('d M');
-            $dateKeys[] = $date->format('Y-m-d');
-        }
-
-        $query = WarrantyClaim::select(
-            DB::raw('DATE(submitted_at) as date'),
-            'status',
-            DB::raw('COUNT(*) as count')
-        )
-            ->whereBetween('submitted_at', [$start, $end->copy()->endOfDay()]);
-
-        if ($request) {
-            if ($request->filled('branch_id')) {
-                $query->where('branch_id', $request->branch_id);
-            }
-            if ($request->filled('product_id')) {
-                $query->whereHas('warranty', function ($q) use ($request) {
-                    $q->where('product_id', $request->product_id);
-                });
-            }
-        }
-
-        $raw = $query->groupBy('date', 'status')
-            ->get()
-            ->groupBy('date');
-
         $datasets = [];
+
         foreach ($statuses as $status) {
-            $data = array_map(function ($date) use ($raw, $status) {
-                $dayData = $raw->get($date);
+            $data = array_map(function ($key) use ($raw, $status) {
+                $dayData = $raw->get($key);
                 if ($dayData) {
                     $record = $dayData->firstWhere('status', $status);
                     return $record ? (int) $record->count : 0;
@@ -335,8 +375,10 @@ class WarrantyClaimChartController extends Controller
         $claims = $query->get();
 
         $cards = $this->getCardsData($start, $end, $request);
-
         $dailyBreakdown = $this->getDailyBreakdown($start, $end, $request);
+
+        // Get chart image from request (if sent via POST)
+        $chartImage = $request->input('chart_image');
 
         $filters = [
             'date_range' => $start->format('d M Y') . ' - ' . $end->format('d M Y'),
@@ -348,7 +390,7 @@ class WarrantyClaimChartController extends Controller
 
         return app(ReportPdfService::class)->download(
             view: 'admin-views.warranty.pdf-claims',
-            data: compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end'),
+            data: compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end', 'chartImage'),
             fileName: 'warranty-claims.pdf'
         );
     }
