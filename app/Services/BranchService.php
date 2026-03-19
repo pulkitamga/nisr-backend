@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Branch;
 use App\Traits\FileManagerTrait;
 use Illuminate\Support\Str;
 
@@ -117,15 +118,26 @@ class BranchService
             'email'             => $request['email'],
             'status'            => $request['status'] == 'active' ? 'active' : 'inactive',
             'shipping_method_city'  => $request['shipping_method_city'],
-            'shipping_methods_area'  => isset($request['shipping_methods_area'])
-                ? implode(',', $request['shipping_methods_area'])
-                : null,
-            'delivery_restriction'   => isset($request['delivery_restriction'])
-                ? implode(',', $request['delivery_restriction'])
-                : null,
             'manager_id'        => $request['manager_id'],
         ];
     }
+
+    public function syncAreaRelations(Branch $branch, object $request): void
+    {
+        $branch->shippingAreas()->sync($this->normalizeAreaIds(data_get($request, 'shipping_methods_area', [])));
+        $branch->deliveryRestrictions()->sync($this->normalizeAreaIds(data_get($request, 'delivery_restriction', [])));
+    }
+
+    private function normalizeAreaIds(mixed $areaIds): array
+    {
+        return collect(is_array($areaIds) ? $areaIds : [$areaIds])
+            ->map(fn ($id) => (int)$id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     public function getAddManager(object $request): array
     {
         return [

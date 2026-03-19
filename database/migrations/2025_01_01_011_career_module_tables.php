@@ -18,6 +18,21 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if ($this->allTablesExist([
+            'career_jobs',
+            'career_sections',
+            'career_benefits',
+            'career_cards',
+            'career_applies',
+            'career_interviews',
+            'career_activities',
+            'career_offers',
+            'career_rejections',
+            'career_talent_pool',
+        ])) {
+            return;
+        }
+
         // Career Jobs - Job postings
         Schema::create('career_jobs', function (Blueprint $table) {
             $table->id();
@@ -142,15 +157,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('career_talent_pool');
-        Schema::dropIfExists('career_rejections');
-        Schema::dropIfExists('career_offers');
-        Schema::dropIfExists('career_activities');
-        Schema::dropIfExists('career_interviews');
-        Schema::dropIfExists('career_applies');
-        Schema::dropIfExists('career_cards');
-        Schema::dropIfExists('career_benefits');
-        Schema::dropIfExists('career_sections');
-        Schema::dropIfExists('career_jobs');
+        // Historical catch-up migration: do not drop live module tables on rollback.
+    }
+
+    private function allTablesExist(array $tables): bool
+    {
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

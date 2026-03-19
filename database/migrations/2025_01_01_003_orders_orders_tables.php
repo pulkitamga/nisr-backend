@@ -14,6 +14,33 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if ($this->allTablesExist([
+            'orders',
+            'order_details',
+            'order_status_histories',
+            'order_transactions',
+            'order_expected_delivery_histories',
+            'order_delivery_verifications',
+            'shipping_addresses',
+            'billing_addresses',
+            'coupons',
+            'offline_payment_methods',
+            'offline_payments',
+            'refund_requests',
+            'refund_statuses',
+            'refund_transactions',
+            'carts',
+            'cart_shippings',
+            'wallet_transactions',
+            'customer_wallets',
+            'customer_wallet_histories',
+            'loyalty_point_transactions',
+            'paytabs_invoices',
+            'add_fund_bonus_categories',
+        ])) {
+            return;
+        }
+
         // Orders
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
@@ -351,27 +378,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('add_fund_bonus_categories');
-        Schema::dropIfExists('paytabs_invoices');
-        Schema::dropIfExists('loyalty_point_transactions');
-        Schema::dropIfExists('customer_wallet_histories');
-        Schema::dropIfExists('customer_wallets');
-        Schema::dropIfExists('wallet_transactions');
-        Schema::dropIfExists('cart_shippings');
-        Schema::dropIfExists('carts');
-        Schema::dropIfExists('refund_transactions');
-        Schema::dropIfExists('refund_statuses');
-        Schema::dropIfExists('refund_requests');
-        Schema::dropIfExists('offline_payments');
-        Schema::dropIfExists('offline_payment_methods');
-        Schema::dropIfExists('coupons');
-        Schema::dropIfExists('billing_addresses');
-        Schema::dropIfExists('shipping_addresses');
-        Schema::dropIfExists('order_delivery_verifications');
-        Schema::dropIfExists('order_expected_delivery_histories');
-        Schema::dropIfExists('order_transactions');
-        Schema::dropIfExists('order_status_histories');
-        Schema::dropIfExists('order_details');
-        Schema::dropIfExists('orders');
+        // Historical catch-up migration: do not drop live module tables on rollback.
+    }
+
+    private function allTablesExist(array $tables): bool
+    {
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

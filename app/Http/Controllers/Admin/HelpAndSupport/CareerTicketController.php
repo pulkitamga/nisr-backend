@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\HelpAndSupport;
 
+use App\Enums\TicketDispatchTarget;
+use App\Enums\SupportTicketStatusGroup;
 use App\Contracts\Repositories\SupportTicketRepositoryInterface;
 use App\Contracts\Repositories\SupportTicketConvRepositoryInterface;
 use App\Contracts\Repositories\DepartmentRepositoryInterface;
@@ -29,21 +31,12 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CareerTicketExport;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; 
+use App\Support\CareerTicketWorkflow;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 class CareerTicketController extends BaseController
 {
-    private const STATUS_NEW = 27;
-    private const STATUS_OPEN = 28;
-    private const STATUS_ASSIGNED = 29;
-    private const STATUS_SCREENING = 30;
-    private const STATUS_INTERVIEW = 31;
-    private const STATUS_OFFER = 32;
-    private const STATUS_HIRED = 33;
-    private const STATUS_REJECTED = 34;
-    private const STATUS_CLOSED = 35;
-
     public function __construct(
         private readonly SupportTicketRepositoryInterface $supportTicketRepo,
         private readonly SupportTicketConvRepositoryInterface $supportTicketConvRepo,
@@ -107,7 +100,10 @@ class CareerTicketController extends BaseController
         $tickets = $query->paginate(getWebConfig('pagination_limit'));
         $departments = $this->departmentRepo->getListWhere(orderBy: ['id' => 'desc'], dataLimit: 'all');
         $employees = $this->adminRepo->getEmployeeListWhere(orderBy: ['id' => 'desc'], dataLimit: 'all');
-        $statuses = SupportTicketStatusMaster::where(['master_id' => 3, 'status' => 'active'])
+        $statuses = SupportTicketStatusMaster::where([
+            'master_id' => SupportTicketStatusGroup::Career->value,
+            'status' => 'active',
+        ])
             ->orderBy('position', 'asc')
             ->get();
 
@@ -147,14 +143,7 @@ class CareerTicketController extends BaseController
     /**
      * 🔄 Status flow
      */
-    $statusFlow = [
-        self::STATUS_NEW => self::STATUS_ASSIGNED,
-        self::STATUS_OPEN => self::STATUS_ASSIGNED,
-        self::STATUS_ASSIGNED => self::STATUS_SCREENING,
-        self::STATUS_SCREENING => self::STATUS_INTERVIEW,
-        self::STATUS_INTERVIEW => self::STATUS_OFFER,
-        self::STATUS_OFFER => self::STATUS_CLOSED,
-    ];
+    $statusFlow = CareerTicketWorkflow::nextStatusMap();
 
     $nextStatusId = $statusFlow[$currentStatusId] ?? null;
 
@@ -176,14 +165,14 @@ class CareerTicketController extends BaseController
     /**
      * 🕒 SLA Pause / Resume
      */
-    if ($nextStatusId === self::STATUS_SCREENING) {
+    if ($nextStatusId === CareerTicketWorkflow::STATUS_SCREENING) {
         $updateData['sla_paused_at'] = now();
         $this->logCareerActivity(
             $ticket->id,
             'status_change',
             'Moved to waiting: ' . ($request->waiting_reason ?? 'No reason')
         );
-    } elseif ($ticket->sla_paused_at && $nextStatusId !== self::STATUS_SCREENING) {
+    } elseif ($ticket->sla_paused_at && $nextStatusId !== CareerTicketWorkflow::STATUS_SCREENING) {
         $updateData['sla_paused_at'] = null;
     }
 
@@ -264,7 +253,7 @@ class CareerTicketController extends BaseController
         if ($statusId === 30) {
             SupportTicketNotification::create([
                 'ticket_id' => $ticketId,
-                'notification_for' => 1,
+                'notification_for' => TicketDispatchTarget::Employee->value,
                 'user_id' => auth('admin')->user()->employee_id ?? 0,
                 'title' => 'Review Candidate',
                 'message' => 'Review due within 1 business day.',
@@ -284,7 +273,7 @@ class CareerTicketController extends BaseController
     ]);
 
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
-    if (!in_array((int) $ticket->status, [self::STATUS_NEW, self::STATUS_OPEN], true)) {
+    if (!in_array((int) $ticket->status, [CareerTicketWorkflow::STATUS_NEW, CareerTicketWorkflow::STATUS_OPEN], true)) {
         Toastr::error(translate('invalid_status'));
         return back();
     }
@@ -293,7 +282,7 @@ class CareerTicketController extends BaseController
     $this->supportTicketRepo->update($request->ticket_id, [
         'employee_id' => $request->recruiter_id,
         'priority' => $request->priority,
-        'status' => self::STATUS_ASSIGNED,
+        'status' => CareerTicketWorkflow::STATUS_ASSIGNED,
     ]);
 
     $recruiter = $this->adminRepo->getById($request->recruiter_id);
@@ -369,7 +358,7 @@ class CareerTicketController extends BaseController
 
     $ticketId = $request->ticket_id;
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
-    if (!in_array((int) $ticket->status, [self::STATUS_ASSIGNED, self::STATUS_SCREENING], true)) {
+    if (!in_array((int) $ticket->status, [CareerTicketWorkflow::STATUS_ASSIGNED, CareerTicketWorkflow::STATUS_SCREENING], true)) {
         Toastr::error(translate('invalid_status'));
         return back();
     }
@@ -391,7 +380,7 @@ class CareerTicketController extends BaseController
             'created_at' => now(),
         ]);
 
-        $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_CLOSED]);
+        $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_CLOSED]);
         $this->logCareerActivity($ticketId, 'screening_rejected', $request->notes);
 
         // Customer notification
@@ -416,7 +405,7 @@ class CareerTicketController extends BaseController
 
     } else {
         // Qualified: Move to Interview
-        $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_INTERVIEW]);
+        $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_INTERVIEW]);
         $this->logCareerActivity($ticketId, 'screening_qualified', $request->notes);
 
         // Customer notification
@@ -479,7 +468,7 @@ class CareerTicketController extends BaseController
 
     $ticketId = $request->ticket_id;
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
-    if ((int) $ticket->status !== self::STATUS_INTERVIEW) {
+    if ((int) $ticket->status !== CareerTicketWorkflow::STATUS_INTERVIEW) {
         Toastr::error(translate('invalid_status'));
         return back();
     }
@@ -495,7 +484,7 @@ class CareerTicketController extends BaseController
         'created_at' => now(),
     ]);
 
-    $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_INTERVIEW]);
+    $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_INTERVIEW]);
     $scheduledAtFormatted = Carbon::parse($request->scheduled_at)->format('d M Y, g:i A');
 
     $this->logCareerActivity(
@@ -569,7 +558,7 @@ public function conductInterview(Request $request): RedirectResponse
 
     $ticketId = $interview->ticket_id;
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
-    if ((int) $ticket->status !== self::STATUS_INTERVIEW) {
+    if ((int) $ticket->status !== CareerTicketWorkflow::STATUS_INTERVIEW) {
         Toastr::error(translate('invalid_status'));
         return back();
     }
@@ -593,7 +582,7 @@ public function conductInterview(Request $request): RedirectResponse
             'status' => 'sent',
             'created_at' => now(),
         ]);
-        $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_OFFER]);
+        $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_OFFER]);
         $this->logCareerActivity($ticketId, 'interview_pass', $request->notes);
 
         // Customer notification
@@ -622,7 +611,7 @@ public function conductInterview(Request $request): RedirectResponse
             'reason_code' => $request->outcome,
             'closure_message' => $request->notes,
         ]);
-        $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_CLOSED]);
+        $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_CLOSED]);
         $this->logCareerActivity($ticketId, 'interview_fail', $request->notes);
 
         // Customer notification
@@ -682,7 +671,7 @@ public function conductInterview(Request $request): RedirectResponse
 
     $ticketId = $request->ticket_id;
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
-    if ((int) $ticket->status !== self::STATUS_OFFER) {
+    if ((int) $ticket->status !== CareerTicketWorkflow::STATUS_OFFER) {
         Toastr::error(translate('invalid_status'));
         return back();
     }
@@ -708,7 +697,7 @@ public function conductInterview(Request $request): RedirectResponse
         ]);
     }
 
-    $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_HIRED]);
+    $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_HIRED]);
     $this->logCareerActivity($ticketId, 'offer_signed', "Signed offer attached, start date: {$request->start_date}");
 
     $link = route('admin.support-ticket.career.single', $ticketId);
@@ -760,7 +749,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
 
     $ticketId = $request->ticket_id;
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
-    if ((int) $ticket->status !== self::STATUS_OFFER) {
+    if ((int) $ticket->status !== CareerTicketWorkflow::STATUS_OFFER) {
         Toastr::error(translate('invalid_status'));
         return back();
     }
@@ -776,7 +765,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
         'closure_message' => $request->reason,
     ]);
 
-    $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_CLOSED]);
+    $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_CLOSED]);
     $this->logCareerActivity($ticketId, 'offer_declined', $request->reason);
 
     $link = route('admin.support-ticket.career.single', $ticketId);
@@ -828,7 +817,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
 
     $ticketId = $request->ticket_id;
     $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
-    if (!in_array((int) $ticket->status, [self::STATUS_ASSIGNED, self::STATUS_SCREENING, self::STATUS_INTERVIEW, self::STATUS_OFFER], true)) {
+    if (!in_array((int) $ticket->status, [CareerTicketWorkflow::STATUS_ASSIGNED, CareerTicketWorkflow::STATUS_SCREENING, CareerTicketWorkflow::STATUS_INTERVIEW, CareerTicketWorkflow::STATUS_OFFER], true)) {
         Toastr::error(translate('invalid_status'));
         return back();
     }
@@ -839,7 +828,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
         'closure_message' => $request->closure_message,
     ]);
 
-    $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_REJECTED]);
+    $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_REJECTED]);
     $this->logCareerActivity($ticketId, 'rejected', $request->closure_message);
 
     $link = route('admin.support-ticket.career.single', $ticketId);
@@ -893,7 +882,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
 
         $ticketId = $request->ticket_id;
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
-        if (!in_array((int) $ticket->status, [self::STATUS_REJECTED, self::STATUS_CLOSED], true)) {
+        if (!in_array((int) $ticket->status, [CareerTicketWorkflow::STATUS_REJECTED, CareerTicketWorkflow::STATUS_CLOSED], true)) {
             Toastr::error(translate('invalid_status'));
             return back();
         }
@@ -904,7 +893,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
             'recontact_date' => $request->recontact_date,
         ]);
 
-        $this->supportTicketRepo->update($ticketId, ['status' => self::STATUS_CLOSED]);
+        $this->supportTicketRepo->update($ticketId, ['status' => CareerTicketWorkflow::STATUS_CLOSED]);
         $this->logCareerActivity($ticketId, 'talent_pool', "Added to talent pool with consent: " . ($request->consent ? 'Yes' : 'No'));
 
         Toastr::success(translate('added_to_talent_pool_successfully'));
@@ -949,7 +938,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
         ]);
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
-        if (in_array((int) $ticket->status, [self::STATUS_HIRED, self::STATUS_CLOSED], true)) {
+        if (in_array((int) $ticket->status, [CareerTicketWorkflow::STATUS_HIRED, CareerTicketWorkflow::STATUS_CLOSED], true)) {
             Toastr::error(translate('invalid_status'));
             return back();
         }

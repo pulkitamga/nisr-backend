@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AdminNotificationRecipientType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,7 @@ class AdminNotification extends Model
     protected $fillable = [
         'notifiable_id',
         'notifiable_type',
-        'notification_for', // 1=employee, 2=department, 3=customer
+        'notification_for',
         'employee_id',
         'department_id',
         'customer_id',
@@ -27,6 +28,7 @@ class AdminNotification extends Model
     ];
 
     protected $casts = [
+        'notification_for' => 'integer',
         'status' => 'integer',
         'is_active' => 'boolean',
     ];
@@ -62,17 +64,20 @@ class AdminNotification extends Model
      * ------------------------------------------------*/
     public function scopeForEmployee(Builder $query, int $employeeId)
     {
-        return $query->where('notification_for', 1)->where('employee_id', $employeeId);
+        return $query->where('notification_for', AdminNotificationRecipientType::Employee->value)
+            ->where('employee_id', $employeeId);
     }
 
     public function scopeForDepartment(Builder $query, int $departmentId)
     {
-        return $query->where('notification_for', 2)->where('department_id', $departmentId);
+        return $query->where('notification_for', AdminNotificationRecipientType::Department->value)
+            ->where('department_id', $departmentId);
     }
 
     public function scopeForCustomer(Builder $query, int $customerId)
     {
-        return $query->where('notification_for', 3)->where('customer_id', $customerId);
+        return $query->where('notification_for', AdminNotificationRecipientType::Customer->value)
+            ->where('customer_id', $customerId);
     }
 
     public function scopeUnread(Builder $query)

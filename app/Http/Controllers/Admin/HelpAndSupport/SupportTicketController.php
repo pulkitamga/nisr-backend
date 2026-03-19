@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\HelpAndSupport;
 use App\Contracts\Repositories\SupportTicketConvRepositoryInterface;
 use App\Contracts\Repositories\SupportTicketRepositoryInterface;
 use App\Contracts\Repositories\DepartmentRepositoryInterface;
+use App\Enums\SupportTicketStatusGroup;
 use App\Enums\ViewPaths\Admin\SupportTicket;
 use App\Contracts\Repositories\AdminRepositoryInterface;
 use App\Contracts\Repositories\SupportTicketActivityRepositoryInterface;
@@ -27,7 +28,12 @@ use App\Exports\SupportTicketExport;
 use App\Models\Departments;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
+use App\Support\CareerTicketWorkflow;
+use App\Support\ComplaintTicketWorkflow;
+use App\Support\RetailTicketWorkflow;
+use App\Support\SupportTicketLifecycle;
 use App\Support\ServiceTicketWorkflow;
+use App\Support\WholesaleTicketWorkflow;
 use Illuminate\Validation\ValidationException;
 class SupportTicketController extends BaseController
 {
@@ -73,12 +79,12 @@ class SupportTicketController extends BaseController
     {
 
         $defaultStatusIds = [
-            'support'   => 1,
+            'support'   => SupportTicketLifecycle::STATUS_NEW,
             'service'   => ServiceTicketWorkflow::STATUS_NEW,
-            'career'    => 26,
-            'complaint' => 36,
-            'retail'    => 43,
-            'wholesale' => 56,
+            'career'    => CareerTicketWorkflow::STATUS_NEW,
+            'complaint' => ComplaintTicketWorkflow::STATUS_NEW,
+            'retail'    => RetailTicketWorkflow::STATUS_NEW,
+            'wholesale' => WholesaleTicketWorkflow::STATUS_NEW,
         ];
         $statusFilter = $request->get('status', $defaultStatusIds[$status] ?? null);
         $tickets = $this->supportTicketRepo->getListWhere(
@@ -103,12 +109,12 @@ class SupportTicketController extends BaseController
         );
 
         $masterIds = [
-            'support'   => 1,
+            'support'   => SupportTicketStatusGroup::Support->value,
             'service'   => ServiceTicketWorkflow::STATUS_MASTER_ID,
-            'career'    => 3,
-            'complaint' => 4,
-            'retail'    => 5,
-            'wholesale' => 6,
+            'career'    => SupportTicketStatusGroup::Career->value,
+            'complaint' => SupportTicketStatusGroup::Complaint->value,
+            'retail'    => SupportTicketStatusGroup::Retail->value,
+            'wholesale' => SupportTicketStatusGroup::Wholesale->value,
         ];
 
         $masterId = $masterIds[$status] ?? 0;
@@ -179,11 +185,7 @@ class SupportTicketController extends BaseController
                 $currentName = strtolower($currentStatus->name);
 
                 // 🔹 Status flow mapping (clear readable logic)
-                $statusFlow = [
-                    'new' => 'open',
-                    'open' => 'closed',
-                    'closed' => 'open', // Reopen leads to Open
-                ];
+                $statusFlow = SupportTicketLifecycle::defaultStatusFlow();
 
                 $nextStatusName = $statusFlow[$currentName] ?? 'closed';
             }
@@ -478,12 +480,12 @@ class SupportTicketController extends BaseController
     private function resolveStatusMasterIdByType(string $type): int
     {
         return match (strtolower($type)) {
-            'support' => 1,
-            'service' => 2,
-            'career' => 3,
-            'complaint' => 4,
-            'retail' => 5,
-            'wholesale' => 6,
+            'support' => SupportTicketLifecycle::STATUS_MASTER_ID,
+            'service' => ServiceTicketWorkflow::STATUS_MASTER_ID,
+            'career' => CareerTicketWorkflow::STATUS_MASTER_ID,
+            'complaint' => ComplaintTicketWorkflow::STATUS_MASTER_ID,
+            'retail' => RetailTicketWorkflow::STATUS_MASTER_ID,
+            'wholesale' => WholesaleTicketWorkflow::STATUS_MASTER_ID,
             default => 0,
         };
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\SupportTicketRequestType;
 use App\Contracts\Repositories\ServiceRequestRepositoryInterface;
 use App\Models\InboxMessage;
 use App\Models\ServiceRequest;
@@ -51,7 +52,7 @@ class ServiceRequestSubmissionService
                 'subject' => $subject,
                 'type' => 'service',
                 'sub_type' => 'service',
-                'request_type' => 'service_request',
+                'request_type' => SupportTicketRequestType::Service->value,
                 'priority' => 'medium',
                 'description' => $this->buildTicketDescription($serviceRequest),
                 'status' => $this->resolveDefaultStatusId(),

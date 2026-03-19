@@ -14,6 +14,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if ($this->allTablesExist([
+            'support_tickets',
+            'support_ticket_status_master',
+            'support_ticket_activities',
+            'support_ticket_convs',
+            'support_ticket_department_employee',
+            'support_tickets_notification',
+            'help_topics',
+        ])) {
+            return;
+        }
+
         // Support Tickets
         Schema::create('support_tickets', function (Blueprint $table) {
             $table->id();
@@ -96,12 +108,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('help_topics');
-        Schema::dropIfExists('support_tickets_notification');
-        Schema::dropIfExists('support_ticket_department_employee');
-        Schema::dropIfExists('support_ticket_convs');
-        Schema::dropIfExists('support_ticket_activities');
-        Schema::dropIfExists('support_ticket_status_master');
-        Schema::dropIfExists('support_tickets');
+        // Historical catch-up migration: do not drop live module tables on rollback.
+    }
+
+    private function allTablesExist(array $tables): bool
+    {
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

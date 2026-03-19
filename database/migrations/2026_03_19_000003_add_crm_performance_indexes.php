@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -17,147 +18,127 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Leads table indexes
-        Schema::table('leads', function (Blueprint $table) {
-            // Composite index for owner's leads by status
-            $table->index(['status', 'owner_id'], 'idx_leads_status_owner');
+        $this->addIndexIfTableColumnsExist('leads', ['status', 'owner_id'], 'idx_leads_status_owner');
+        $this->addIndexIfTableColumnsExist('leads', ['status', 'employee_id'], 'idx_leads_status_employee');
+        $this->addIndexIfTableColumnsExist('leads', ['department_id', 'status'], 'idx_leads_department_status');
+        $this->addIndexIfTableColumnsExist('leads', ['company_id'], 'idx_leads_company');
+        $this->addIndexIfTableColumnsExist('leads', ['contact_id'], 'idx_leads_contact');
+        $this->addIndexIfTableColumnsExist('leads', ['utm_source'], 'idx_leads_utm_source');
+        $this->addIndexIfTableColumnsExist('leads', ['utm_campaign'], 'idx_leads_utm_campaign');
 
-            // Composite index for employee's leads by status
-            $table->index(['status', 'employee_id'], 'idx_leads_status_employee');
+        $this->addIndexIfTableColumnsExist('deals', ['stage', 'created_at'], 'idx_deals_stage_created');
+        $this->addIndexIfTableColumnsExist('deals', ['stage', 'owner_id'], 'idx_deals_stage_owner');
+        $this->addIndexIfTableColumnsExist('deals', ['status'], 'idx_deals_status');
+        $this->addIndexIfTableColumnsExist('deals', ['lead_id'], 'idx_deals_lead');
+        $this->addIndexIfTableColumnsExist('deals', ['priority', 'status'], 'idx_deals_priority_status');
 
-            // Index for department queries
-            $table->index(['department_id', 'status'], 'idx_leads_department_status');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['status', 'owner_id'], 'idx_inbox_status_owner');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['department_id', 'status'], 'idx_inbox_department_status');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['employee_id', 'status'], 'idx_inbox_employee_status');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['message_type'], 'idx_inbox_message_type');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['pipeline'], 'idx_inbox_pipeline');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['related_lead_id'], 'idx_inbox_related_lead');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['related_ticket_id'], 'idx_inbox_related_ticket');
+        $this->addIndexIfTableColumnsExist('inbox_messages', ['related_warranty_id'], 'idx_inbox_related_warranty');
 
-            // Index for company/contact queries
-            $table->index('company_id', 'idx_leads_company');
-            $table->index('contact_id', 'idx_leads_contact');
-
-            // Index for UTM tracking
-            $table->index('utm_source', 'idx_leads_utm_source');
-            $table->index('utm_campaign', 'idx_leads_utm_campaign');
-        });
-
-        // Deals table indexes
-        Schema::table('deals', function (Blueprint $table) {
-            // Composite index for pipeline forecasting
-            $table->index(['stage', 'created_at'], 'idx_deals_stage_created');
-
-            // Composite index for owner's deals by stage
-            $table->index(['stage', 'owner_id'], 'idx_deals_stage_owner');
-
-            // Index for status queries
-            $table->index('status', 'idx_deals_status');
-
-            // Index for lead relationship
-            $table->index('lead_id', 'idx_deals_lead');
-
-            // Index for priority queries
-            $table->index(['priority', 'status'], 'idx_deals_priority_status');
-        });
-
-        // Inbox messages indexes
-        Schema::table('inbox_messages', function (Blueprint $table) {
-            // Composite index for owner's messages by status
-            $table->index(['status', 'owner_id'], 'idx_inbox_status_owner');
-
-            // Composite index for department's messages
-            $table->index(['department_id', 'status'], 'idx_inbox_department_status');
-
-            // Composite index for employee's messages
-            $table->index(['employee_id', 'status'], 'idx_inbox_employee_status');
-
-            // Index for message type
-            $table->index('message_type', 'idx_inbox_message_type');
-
-            // Index for pipeline/source
-            $table->index('pipeline', 'idx_inbox_pipeline');
-
-            // Index for related entities
-            $table->index('related_lead_id', 'idx_inbox_related_lead');
-            $table->index('related_ticket_id', 'idx_inbox_related_ticket');
-            $table->index('related_warranty_id', 'idx_inbox_related_warranty');
-        });
-
-        // Lead activity indexes (if table exists)
-        if (Schema::hasTable('lead_activity')) {
-            Schema::table('lead_activity', function (Blueprint $table) {
-                // Composite index for timeline queries
-                $table->index(['lead_id', 'created_at'], 'idx_lead_activity_timeline');
-            });
-        }
-
-        // Deal activities indexes
-        Schema::table('deal_activities', function (Blueprint $table) {
-            // Composite index for timeline queries
-            $table->index(['deal_id', 'created_at'], 'idx_deal_activities_timeline');
-        });
-
-        // Lead calls indexes (if table exists)
-        if (Schema::hasTable('lead_call')) {
-            Schema::table('lead_call', function (Blueprint $table) {
-                $table->index(['lead_id', 'created_at'], 'idx_lead_calls_timeline');
-            });
-        }
-
-        // Deal calls indexes (if table exists)
-        if (Schema::hasTable('deal_calls')) {
-            Schema::table('deal_calls', function (Blueprint $table) {
-                $table->index(['deal_id', 'created_at'], 'idx_deal_calls_timeline');
-            });
-        }
+        $this->addIndexIfTableColumnsExist('lead_activity', ['lead_id', 'created_at'], 'idx_lead_activity_timeline');
+        $this->addIndexIfTableColumnsExist('deal_activities', ['deal_id', 'created_at'], 'idx_deal_activities_timeline');
+        $this->addIndexIfTableColumnsExist('lead_call', ['lead_id', 'created_at'], 'idx_lead_calls_timeline');
+        $this->addIndexIfTableColumnsExist('deal_calls', ['deal_id', 'created_at'], 'idx_deal_calls_timeline');
     }
 
     public function down(): void
     {
-        Schema::table('leads', function (Blueprint $table) {
-            $table->dropIndex('idx_leads_status_owner');
-            $table->dropIndex('idx_leads_status_employee');
-            $table->dropIndex('idx_leads_department_status');
-            $table->dropIndex('idx_leads_company');
-            $table->dropIndex('idx_leads_contact');
-            $table->dropIndex('idx_leads_utm_source');
-            $table->dropIndex('idx_leads_utm_campaign');
-        });
+        $this->dropIndexIfExists('leads', 'idx_leads_status_owner');
+        $this->dropIndexIfExists('leads', 'idx_leads_status_employee');
+        $this->dropIndexIfExists('leads', 'idx_leads_department_status');
+        $this->dropIndexIfExists('leads', 'idx_leads_company');
+        $this->dropIndexIfExists('leads', 'idx_leads_contact');
+        $this->dropIndexIfExists('leads', 'idx_leads_utm_source');
+        $this->dropIndexIfExists('leads', 'idx_leads_utm_campaign');
 
-        Schema::table('deals', function (Blueprint $table) {
-            $table->dropIndex('idx_deals_stage_created');
-            $table->dropIndex('idx_deals_stage_owner');
-            $table->dropIndex('idx_deals_status');
-            $table->dropIndex('idx_deals_lead');
-            $table->dropIndex('idx_deals_priority_status');
-        });
+        $this->dropIndexIfExists('deals', 'idx_deals_stage_created');
+        $this->dropIndexIfExists('deals', 'idx_deals_stage_owner');
+        $this->dropIndexIfExists('deals', 'idx_deals_status');
+        $this->dropIndexIfExists('deals', 'idx_deals_lead');
+        $this->dropIndexIfExists('deals', 'idx_deals_priority_status');
 
-        Schema::table('inbox_messages', function (Blueprint $table) {
-            $table->dropIndex('idx_inbox_status_owner');
-            $table->dropIndex('idx_inbox_department_status');
-            $table->dropIndex('idx_inbox_employee_status');
-            $table->dropIndex('idx_inbox_message_type');
-            $table->dropIndex('idx_inbox_pipeline');
-            $table->dropIndex('idx_inbox_related_lead');
-            $table->dropIndex('idx_inbox_related_ticket');
-            $table->dropIndex('idx_inbox_related_warranty');
-        });
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_status_owner');
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_department_status');
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_employee_status');
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_message_type');
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_pipeline');
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_related_lead');
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_related_ticket');
+        $this->dropIndexIfExists('inbox_messages', 'idx_inbox_related_warranty');
 
-        if (Schema::hasTable('lead_activity')) {
-            Schema::table('lead_activity', function (Blueprint $table) {
-                $table->dropIndex('idx_lead_activity_timeline');
-            });
+        $this->dropIndexIfExists('lead_activity', 'idx_lead_activity_timeline');
+        $this->dropIndexIfExists('deal_activities', 'idx_deal_activities_timeline');
+        $this->dropIndexIfExists('lead_call', 'idx_lead_calls_timeline');
+        $this->dropIndexIfExists('deal_calls', 'idx_deal_calls_timeline');
+    }
+
+    private function addIndexIfTableColumnsExist(string $tableName, array $columns, string $indexName): void
+    {
+        if (
+            !Schema::hasTable($tableName)
+            || !$this->tableHasColumns($tableName, $columns)
+            || $this->indexExists($tableName, $indexName)
+        ) {
+            return;
         }
 
-        Schema::table('deal_activities', function (Blueprint $table) {
-            $table->dropIndex('idx_deal_activities_timeline');
+        Schema::table($tableName, function (Blueprint $table) use ($columns, $indexName) {
+            $table->index($columns, $indexName);
         });
+    }
 
-        if (Schema::hasTable('lead_call')) {
-            Schema::table('lead_call', function (Blueprint $table) {
-                $table->dropIndex('idx_lead_calls_timeline');
-            });
+    private function dropIndexIfExists(string $tableName, string $indexName): void
+    {
+        if (!Schema::hasTable($tableName) || !$this->indexExists($tableName, $indexName)) {
+            return;
         }
 
-        if (Schema::hasTable('deal_calls')) {
-            Schema::table('deal_calls', function (Blueprint $table) {
-                $table->dropIndex('idx_deal_calls_timeline');
-            });
+        Schema::table($tableName, function (Blueprint $table) use ($indexName) {
+            $table->dropIndex($indexName);
+        });
+    }
+
+    private function tableHasColumns(string $tableName, array $columns): bool
+    {
+        foreach ($columns as $column) {
+            if (!Schema::hasColumn($tableName, $column)) {
+                return false;
+            }
         }
+
+        return true;
+    }
+
+    private function indexExists(string $tableName, string $indexName): bool
+    {
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $indexes = DB::select("PRAGMA index_list('{$tableName}')");
+
+            foreach ($indexes as $index) {
+                if (($index->name ?? null) === $indexName) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        $indexes = DB::select("SHOW INDEX FROM `{$tableName}`");
+
+        foreach ($indexes as $index) {
+            if (($index->Key_name ?? null) === $indexName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 };

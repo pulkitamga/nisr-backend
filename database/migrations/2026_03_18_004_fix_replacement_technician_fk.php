@@ -2,48 +2,71 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * FIX: Standardize warranty_replacements technician_id foreign key
- *
- * ISSUE: Migration references 'admins' table, model uses 'users' table
- *
- * DECISION: This fix assumes technicians are in the 'users' table
- * Adjust if technicians are actually admins
- */
 return new class extends Migration
 {
     public function up(): void
     {
-        // Drop existing foreign key
-        Schema::table('warranty_replacements', function (Blueprint $table) {
-            $table->dropForeign(['technician_id']);
-        });
+        if (
+            !Schema::hasTable('warranty_replacements')
+            || !Schema::hasColumn('warranty_replacements', 'technician_id')
+            || $this->foreignKeyExists('warranty_replacements', 'technician_id')
+            || !Schema::hasTable('admins')
+            || $this->hasInvalidForeignValues('warranty_replacements', 'technician_id', 'admins', 'id')
+        ) {
+            return;
+        }
 
-        // Recreate with users table (matching the model)
-        Schema::table('warranty_replacements', function (Blueprint $table) {
-            $table->foreignId('technician_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->onDelete('set null')
-                  ->change();
+        Schema::table('warranty_replacements', function (Blueprint $table): void {
+            $table->foreign('technician_id')
+                ->references('id')
+                ->on('admins')
+                ->nullOnDelete();
         });
     }
 
     public function down(): void
     {
-        // Revert to admins table
-        Schema::table('warranty_replacements', function (Blueprint $table) {
-            $table->dropForeign(['technician_id']);
-        });
+        // Catch-up migration: do not remove live warranty replacement foreign keys on rollback.
+    }
 
-        Schema::table('warranty_replacements', function (Blueprint $table) {
-            $table->foreignId('technician_id')
-                  ->nullable()
-                  ->constrained('admins')
-                  ->onDelete('set null')
-                  ->change();
-        });
+    private function hasInvalidForeignValues(
+        string $sourceTable,
+        string $sourceColumn,
+        string $targetTable,
+        string $targetColumn
+    ): bool {
+        return DB::table($sourceTable)
+            ->whereNotNull($sourceColumn)
+            ->whereNotIn($sourceColumn, DB::table($targetTable)->select($targetColumn))
+            ->exists();
+    }
+
+    private function foreignKeyExists(string $tableName, string $columnName): bool
+    {
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $foreignKeys = DB::select("PRAGMA foreign_key_list('{$tableName}')");
+
+            foreach ($foreignKeys as $foreignKey) {
+                if (($foreignKey->from ?? null) === $columnName) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        $databaseName = DB::getDatabaseName();
+        $foreignKeys = DB::select(
+            'SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ? AND REFERENCED_TABLE_NAME IS NOT NULL',
+            [$databaseName, $tableName, $columnName]
+        );
+
+        return !empty($foreignKeys);
     }
 };

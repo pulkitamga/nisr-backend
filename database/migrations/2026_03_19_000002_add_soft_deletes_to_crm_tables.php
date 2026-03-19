@@ -12,23 +12,31 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('leads', function (Blueprint $table) {
-            $table->softDeletes();
-        });
+        if (Schema::hasTable('leads') && !Schema::hasColumn('leads', 'deleted_at')) {
+            Schema::table('leads', function (Blueprint $table) {
+                $table->softDeletes();
+            });
+        }
 
-        Schema::table('deals', function (Blueprint $table) {
-            $table->softDeletes();
-        });
+        if (Schema::hasTable('deals') && !Schema::hasColumn('deals', 'deleted_at')) {
+            Schema::table('deals', function (Blueprint $table) {
+                $table->softDeletes();
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('leads', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        if (Schema::hasTable('leads') && Schema::hasColumn('leads', 'deleted_at')) {
+            Schema::table('leads', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
 
-        Schema::table('deals', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        if (Schema::hasTable('deals') && Schema::hasColumn('deals', 'deleted_at')) {
+            Schema::table('deals', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
     }
 };

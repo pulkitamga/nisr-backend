@@ -115,6 +115,27 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame(1, ServiceRequest::query()->count());
     }
 
+    public function test_create_requires_authenticated_customer(): void
+    {
+        $submissionService = $this->createMock(ServiceRequestSubmissionService::class);
+        $submissionService->expects($this->never())->method('submit');
+
+        $request = $this->getMockBuilder(ServiceRequestFormRequest::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['user'])
+            ->getMock();
+
+        $request->expects($this->once())
+            ->method('user')
+            ->willReturn(null);
+
+        $response = (new ServiceRequestController($submissionService))->create($request);
+        $payload = $response->getData(true);
+
+        $this->assertSame(401, $response->status());
+        $this->assertSame('Please login first', $payload['message']);
+    }
+
     public function test_submission_service_creates_linked_ticket_and_inbox_message(): void
     {
         DB::table('support_ticket_status_master')->insert([
@@ -183,7 +204,7 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame($service->id, (int) $ticket->service_id);
         $this->assertSame($customer->id, (int) $ticket->customer_id);
         $this->assertSame('service', $ticket->type);
-        $this->assertSame('service_request', $ticket->request_type);
+        $this->assertSame(0, $ticket->request_type);
         $this->assertSame(ServiceTicketWorkflow::STATUS_NEW, (int) $ticket->status);
 
         $this->assertSame(1, ServiceRequest::query()->count());
@@ -260,7 +281,7 @@ class ServiceRequestWorkflowTest extends TestCase
             'subject' => 'Brake Inspection',
             'type' => 'service',
             'sub_type' => 'service',
-            'request_type' => 'service_request',
+            'request_type' => 0,
             'priority' => 'medium',
             'description' => 'Customer requested a brake inspection.',
             'status' => ServiceTicketWorkflow::STATUS_NEW,
@@ -355,7 +376,7 @@ class ServiceRequestWorkflowTest extends TestCase
             'subject' => 'Open request',
             'type' => 'service',
             'sub_type' => 'service',
-            'request_type' => 'service_request',
+            'request_type' => 0,
             'priority' => 'medium',
             'description' => 'Initial request',
             'status' => ServiceTicketWorkflow::STATUS_NEW,
@@ -403,7 +424,7 @@ class ServiceRequestWorkflowTest extends TestCase
             'subject' => 'Closed request',
             'type' => 'service',
             'sub_type' => 'service',
-            'request_type' => 'service_request',
+            'request_type' => 0,
             'priority' => 'medium',
             'description' => 'Initial request',
             'status' => ServiceTicketWorkflow::STATUS_CLOSED,
@@ -616,7 +637,7 @@ class ServiceRequestWorkflowTest extends TestCase
             $table->string('subject')->nullable();
             $table->string('type')->nullable();
             $table->string('sub_type')->nullable();
-            $table->string('request_type')->nullable();
+            $table->integer('request_type')->nullable();
             $table->string('priority')->nullable();
             $table->text('description')->nullable();
             $table->unsignedBigInteger('status')->nullable();

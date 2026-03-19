@@ -14,66 +14,93 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if ($this->allTablesExist([
+            'leads',
+            'deals',
+            'lead_activity',
+            'crm_calls',
+            'lead_note',
+            'lead_task',
+            'lead_call',
+            'lead_file',
+            'inbox_messages',
+            'inbox_activities',
+            'inbox_calls',
+            'inbox_tasks',
+            'inbox_notes',
+            'inbox_files',
+            'inbox_suggestions',
+            'deal_activities',
+            'deal_calls',
+            'deal_notes',
+            'deal_tasks',
+            'deal_files',
+        ])) {
+            return;
+        }
+
         // Leads
         Schema::create('leads', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name')->nullable();
-            $table->string('last_name')->nullable();
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('company_name')->nullable();
-            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('set null');
-            $table->foreignId('contact_id')->nullable()->constrained('contacts')->onDelete('set null');
-            $table->enum('status', ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost'])->default('new');
-            $table->enum('source', ['website', 'referral', 'social_media', 'email', 'phone', 'event', 'other'])->default('website');
-            $table->foreignId('assigned_to')->nullable()->constrained('admins')->onDelete('set null');
-            $table->decimal('estimated_value', 12, 2)->default(0);
-            $table->foreignId('currency_id')->nullable();
-            $table->date('expected_close_date')->nullable();
+            $table->enum('party_type', ['wholesale', 'retail', 'service']);
+            $table->unsignedBigInteger('company_id')->nullable();
+            $table->unsignedBigInteger('contact_id')->nullable();
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unsignedBigInteger('po_id')->nullable();
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->nullable();
+            $table->unsignedBigInteger('owner_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->string('utm_source')->nullable();
+            $table->string('utm_campaign')->nullable();
+            $table->string('utm_medium')->nullable();
+            $table->string('utm_term')->nullable();
+            $table->string('utm_content')->nullable();
+            $table->enum('status', ['new', 'working', 'qualified', 'disqualified', 'converted'])->default('new');
+            $table->enum('escalation_level', ['none', 'l1', 'l2'])->default('none');
+            $table->timestamp('escalated_at')->nullable();
+            $table->unsignedBigInteger('escalated_by')->nullable();
             $table->timestamp('converted_at')->nullable();
-            $table->timestamp('won_at')->nullable();
-            $table->timestamp('lost_at')->nullable();
-            $table->text('notes')->nullable();
-            $table->text('lost_reason')->nullable();
-            $table->json('tags')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('admins')->onDelete('set null');
+            $table->timestamp('response_due')->nullable();
+            $table->timestamp('resolution_due')->nullable();
+            $table->timestamp('first_response_at')->nullable();
+            $table->integer('reopen_count')->default(0);
+            $table->timestamp('sla_paused_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
-            $table->index(['status', 'assigned_to'], 'idx_leads_status_assigned');
-            $table->index('company_id', 'idx_leads_company');
-            $table->index('contact_id', 'idx_leads_contact');
-            $table->index('email', 'idx_leads_email');
         });
 
         // Deals
         Schema::create('deals', function (Blueprint $table) {
             $table->id();
-            $table->string('deal_name');
-            $table->text('description')->nullable();
-            $table->decimal('amount', 12, 2)->default(0);
-            $table->foreignId('currency_id')->nullable();
-            $table->enum('status', ['prospect', 'qualified', 'proposal', 'negotiation', 'won', 'lost'])->default('prospect');
-            $table->string('pipeline_stage')->default('lead');
-            $table->foreignId('lead_id')->nullable()->constrained('leads')->onDelete('set null');
-            $table->foreignId('contact_id')->nullable()->constrained('contacts')->onDelete('set null');
-            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('set null');
-            $table->foreignId('assigned_to')->nullable()->constrained('admins')->onDelete('set null');
-            $table->date('expected_close_date')->nullable();
-            $table->timestamp('won_at')->nullable();
-            $table->timestamp('lost_at')->nullable();
-            $table->integer('probability')->default(0);
-            $table->text('notes')->nullable();
-            $table->text('lost_reason')->nullable();
+            $table->enum('related_party_type', ['company', 'contact']);
             $table->unsignedBigInteger('related_party_id')->nullable();
-            $table->string('related_party_type')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('admins')->onDelete('set null');
+            $table->unsignedBigInteger('contact_id')->nullable();
+            $table->enum('stage', ['join_request', 'register', 'confirmed_order', 'negotiation', 'closed']);
+            $table->unsignedBigInteger('owner_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('low');
+            $table->decimal('value', 15, 2)->nullable();
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unsignedBigInteger('po_id')->nullable();
+            $table->string('status', 50)->default('register');
+            $table->enum('escalation_level', ['none', 'l1', 'l2'])->default('none');
+            $table->timestamp('escalated_at')->nullable();
+            $table->unsignedBigInteger('escalated_by')->nullable();
+            $table->timestamp('response_due')->nullable();
+            $table->timestamp('resolution_due')->nullable();
+            $table->timestamp('first_response_at')->nullable();
+            $table->integer('reopen_count')->default(0);
+            $table->timestamp('sla_paused_at')->nullable();
             $table->timestamps();
+            $table->unsignedBigInteger('lead_id')->nullable();
+            $table->string('quotation_id')->nullable();
+            $table->string('quotation_status')->default('draft');
+            $table->string('order_id')->nullable();
+            $table->string('payment_status')->nullable();
+            $table->string('fulfillment_status')->nullable();
+            $table->unsignedBigInteger('employee_id')->nullable();
             $table->softDeletes();
-
-            $table->index(['pipeline_stage', 'expected_close_date'], 'idx_deals_pipeline_date');
-            $table->index('status', 'idx_deals_status');
-            $table->index(['related_party_id', 'related_party_type'], 'idx_deals_related_party');
         });
 
         // Lead Activities (calls, emails, meetings, notes)
@@ -171,66 +198,100 @@ return new class extends Migration
         // Inbox Messages (CRM communication hub)
         Schema::create('inbox_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('subject')->nullable();
-            $table->text('message');
-            $table->enum('status', ['unread', 'read', 'archived'])->default('unread');
-            $table->foreignId('admin_id')->nullable()->constrained('admins')->onDelete('set null');
+            $table->longText('body')->nullable();
+            $table->unsignedBigInteger('contact_id')->nullable();
+            $table->string('sender_name')->nullable();
+            $table->string('sender_email')->nullable();
+            $table->string('sender_phone')->nullable();
+            $table->enum('pipeline', ['email', 'form', 'chat', 'social', 'phone']);
+            $table->enum('message_type', ['support', 'service', 'career', 'warranty', 'contact'])->nullable();
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unsignedBigInteger('related_lead_id')->nullable();
+            $table->unsignedBigInteger('related_ticket_id')->nullable();
+            $table->unsignedBigInteger('related_warranty_id')->nullable();
+            $table->json('details')->nullable();
+            $table->enum('status', ['new', 'processing', 'converted', 'ignored', 'spam'])->default('new');
+            $table->enum('escalation_level', ['none', 'l1', 'l2'])->default('none');
+            $table->timestamp('escalated_at')->nullable();
+            $table->unsignedBigInteger('escalated_by')->nullable();
+            $table->double('spam_score', 8, 2)->nullable();
+            $table->unsignedBigInteger('owner_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->nullable();
+            $table->longText('attachment')->nullable();
+            $table->longText('reply')->nullable();
+            $table->date('follow_up_date')->nullable();
+            $table->longText('message')->nullable();
+            $table->string('convert_type')->nullable();
+            $table->string('convert_sub_type')->nullable();
+            $table->timestamp('response_due')->nullable();
+            $table->timestamp('resolution_due')->nullable();
+            $table->timestamp('first_response_at')->nullable();
+            $table->integer('reopen_count')->default(0);
+            $table->timestamp('sla_paused_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // Inbox Activities
         Schema::create('inbox_activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('inbox_message_id')->nullable()->constrained('inbox_messages')->onDelete('cascade');
-            $table->string('activity_type');
-            $table->text('description')->nullable();
-            $table->foreignId('admin_id')->nullable()->constrained('admins')->onDelete('set null');
+            $table->unsignedBigInteger('message_id');
+            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->string('title');
+            $table->string('activity_type')->nullable();
+            $table->longText('details')->nullable();
+            $table->string('subject');
+            $table->date('note_date');
             $table->timestamps();
         });
 
         // Inbox Calls
         Schema::create('inbox_calls', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->enum('direction', ['inbound', 'outbound'])->default('inbound');
-            $table->timestamp('call_date')->nullable();
-            $table->integer('duration_seconds')->default(0);
-            $table->enum('status', ['scheduled', 'completed', 'missed'])->default('completed');
-            $table->text('notes')->nullable();
+            $table->unsignedBigInteger('message_id');
+            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->string('title');
+            $table->string('from');
+            $table->string('to');
+            $table->json('guests')->nullable();
+            $table->string('location')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
 
         // Inbox Tasks
         Schema::create('inbox_tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->string('title');
+            $table->unsignedBigInteger('message_id');
+            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->string('name');
             $table->text('description')->nullable();
-            $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
-            $table->date('due_date')->nullable();
-            $table->foreignId('admin_id')->nullable()->constrained('admins')->onDelete('set null');
-            $table->timestamp('completed_at')->nullable();
+            $table->date('due_date');
+            $table->enum('status', ['pending', 'complete'])->default('pending');
             $table->timestamps();
         });
 
         // Inbox Notes
         Schema::create('inbox_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('message_id');
+            $table->unsignedBigInteger('employee_id')->nullable();
             $table->text('note');
-            $table->foreignId('admin_id')->nullable()->constrained('admins')->onDelete('set null');
+            $table->date('noted_at');
             $table->timestamps();
         });
 
         // Inbox Files
         Schema::create('inbox_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->string('file_name');
-            $table->string('file_path');
-            $table->string('file_type')->nullable();
-            $table->foreignId('uploaded_by')->nullable()->constrained('admins')->onDelete('set null');
+            $table->unsignedBigInteger('message_id');
+            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->string('file');
             $table->timestamps();
         });
 
@@ -310,25 +371,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('deal_files');
-        Schema::dropIfExists('deal_tasks');
-        Schema::dropIfExists('deal_notes');
-        Schema::dropIfExists('deal_calls');
-        Schema::dropIfExists('deal_activities');
-        Schema::dropIfExists('inbox_suggestions');
-        Schema::dropIfExists('inbox_files');
-        Schema::dropIfExists('inbox_notes');
-        Schema::dropIfExists('inbox_tasks');
-        Schema::dropIfExists('inbox_calls');
-        Schema::dropIfExists('inbox_activities');
-        Schema::dropIfExists('inbox_messages');
-        Schema::dropIfExists('lead_file');
-        Schema::dropIfExists('lead_call');
-        Schema::dropIfExists('lead_task');
-        Schema::dropIfExists('lead_note');
-        Schema::dropIfExists('crm_calls');
-        Schema::dropIfExists('lead_activity');
-        Schema::dropIfExists('deals');
-        Schema::dropIfExists('leads');
+        // Historical catch-up migration: do not drop live module tables on rollback.
+    }
+
+    private function allTablesExist(array $tables): bool
+    {
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

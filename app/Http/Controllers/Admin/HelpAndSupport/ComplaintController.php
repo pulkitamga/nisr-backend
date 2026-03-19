@@ -2,6 +2,15 @@
 
 namespace App\Http\Controllers\Admin\HelpAndSupport;
 
+use App\Enums\TicketDispatchTarget;
+use App\Enums\SupportTicketRequestType;
+use App\Enums\SupportTicketStatusGroup;
+use App\Support\CareerTicketWorkflow;
+use App\Support\ComplaintTicketWorkflow;
+use App\Support\RetailTicketWorkflow;
+use App\Support\ServiceTicketWorkflow;
+use App\Support\SupportTicketLifecycle;
+use App\Support\WholesaleTicketWorkflow;
 use Carbon\Carbon;
 use App\Contracts\Repositories\SupportTicketConvRepositoryInterface;
 use App\Contracts\Repositories\SupportTicketRepositoryInterface;
@@ -117,12 +126,12 @@ class ComplaintController extends BaseController
     private function resolveStatusMasterIdByTicketType(?string $ticketType): int
     {
         return match (strtolower(trim((string)$ticketType))) {
-            'support' => 1,
-            'service' => 2,
-            'career' => 3,
-            'complaint' => 4,
-            'retail' => 5,
-            'wholesale' => 6,
+            'support' => SupportTicketLifecycle::STATUS_MASTER_ID,
+            'service' => ServiceTicketWorkflow::STATUS_MASTER_ID,
+            'career' => CareerTicketWorkflow::STATUS_MASTER_ID,
+            'complaint' => ComplaintTicketWorkflow::STATUS_MASTER_ID,
+            'retail' => RetailTicketWorkflow::STATUS_MASTER_ID,
+            'wholesale' => WholesaleTicketWorkflow::STATUS_MASTER_ID,
             default => 0,
         };
     }
@@ -143,7 +152,7 @@ class ComplaintController extends BaseController
 
     public function getListView(Request $request): View
     {
-        $status = $request->get('status', 36);
+        $status = $request->get('status', ComplaintTicketWorkflow::STATUS_NEW);
 
         $tickets = $this->supportTicketRepo->getListWhere(
             orderBy: ['id' => 'desc'],
@@ -152,7 +161,7 @@ class ComplaintController extends BaseController
             filters: [
                 'priority' => $request['priority'],
                 'status' => $status,
-                'request_type' => 1
+                'request_type' => SupportTicketRequestType::Standard->value,
             ],
             dataLimit: getWebConfig('pagination_limit')
         );
@@ -163,8 +172,14 @@ class ComplaintController extends BaseController
             dataLimit: 'all'
         );
 
-        $aInProgressStatus = SupportTicketStatusMaster::where(['master_id' => 4, 'status' => 'active'])->orderBy('position')->get();
-        $aAllStatus = SupportTicketStatusMaster::where(['master_id' => 4, 'status' => 'active'])->orderBy('position')->get();
+        $aInProgressStatus = SupportTicketStatusMaster::where([
+            'master_id' => SupportTicketStatusGroup::Complaint->value,
+            'status' => 'active',
+        ])->orderBy('position')->get();
+        $aAllStatus = SupportTicketStatusMaster::where([
+            'master_id' => SupportTicketStatusGroup::Complaint->value,
+            'status' => 'active',
+        ])->orderBy('position')->get();
         return view(Complaint::INDEX[VIEW], compact('tickets', 'getDepartment', 'aInProgressStatus', 'aAllStatus'));
     }
 
@@ -326,7 +341,7 @@ class ComplaintController extends BaseController
             }
             SupportTicketNotification::create([
                 'ticket_id' => $ticketId,
-                'notification_for' => 1,
+                'notification_for' => TicketDispatchTarget::Employee->value,
                 'user_id' => $deptEmployeeId,
                 'title' => 'Task Assigned to You',
                 'message' => 'A new task has been assigned to you. Please review and take necessary action.',
@@ -431,7 +446,7 @@ class ComplaintController extends BaseController
 
         $statusExists = SupportTicketStatusMaster::where([
             'id' => $iTicketStatus,
-            'master_id' => 5, // Retail master_id
+            'master_id' => RetailTicketWorkflow::STATUS_MASTER_ID,
             'status' => 'active'
         ])->exists();
 
@@ -442,21 +457,21 @@ class ComplaintController extends BaseController
             ], 400);
         }
 
-        if ($this->isAssignedStatusForMaster($iTicketStatus, 5) && (int)($oldTicket->employee_id ?? 0) <= 0) {
+        if ($this->isAssignedStatusForMaster($iTicketStatus, RetailTicketWorkflow::STATUS_MASTER_ID) && (int)($oldTicket->employee_id ?? 0) <= 0) {
             return response()->json([
                 'success' => 0,
                 'message' => translate('assign_employee_before_setting_assigned_status')
             ], 422);
         }
 
-        if ($iTicketStatus == 46 && empty($dTicketFollowUpDate)) {
+        if (in_array($iTicketStatus, RetailTicketWorkflow::followUpRequiredStatuses(), true) && empty($dTicketFollowUpDate)) {
             return response()->json([
                 'success' => 0,
                 'message' => translate("Please select ticket follow-up date for In Progress status.")
             ], 400);
         }
 
-        if ($iTicketStatus == 54 && (empty($iTicketRemainderDayAfter) || empty($iTicketRemainderInterval) || empty($iTicketRemainderCycle))) {
+        if (in_array($iTicketStatus, RetailTicketWorkflow::reminderCycleRequiredStatuses(), true) && (empty($iTicketRemainderDayAfter) || empty($iTicketRemainderInterval) || empty($iTicketRemainderCycle))) {
             return response()->json([
                 'success' => 0,
                 'message' => translate("Please select ticket remainder day, interval, and cycle for Refund Rejected status.")
@@ -480,12 +495,12 @@ class ComplaintController extends BaseController
         ]);
 
         $aTicketUpdate = ['status' => $iTicketStatus];
-        if ($iTicketStatus == 46) { // In Progress
+        if ($iTicketStatus === RetailTicketWorkflow::STATUS_IN_PROGRESS) {
             $aTicketUpdate['follow_up_date'] = date('Y-m-d', strtotime($dTicketFollowUpDate));
         }
         $this->supportTicketRepo->update(id: $iTicketId, data: $aTicketUpdate);
 
-        if ($iTicketStatus == 48) {
+        if ($iTicketStatus === RetailTicketWorkflow::STATUS_CLOSED) {
             $aAutoReply = [
                 'support_ticket_id' => $iTicketId,
                 'admin_message' => 'The support team has marked this support ticket as closed. All related processes have been completed. If any further assistance is required, the customer may choose to reopen the ticket ',
@@ -541,14 +556,14 @@ class ComplaintController extends BaseController
             $sMessage = null;
 
             switch ($iTicketStatus) {
-                case 44: // Open
+                case RetailTicketWorkflow::STATUS_OPEN:
                     $sTitle = "Pending Task: Action Required";
                     $sMessage = "A task assigned to you has not been responded to. Please take action or escalate as needed.";
                     $dScheduleDate = Carbon::now()->addHours($config['duration'])->toDateTimeString();
 
                     $aTicketCronData[] = [
                         'ticket_id' => $iTicketId,
-                        'send_for' => 0, // Dept Head
+                        'send_for' => TicketDispatchTarget::DepartmentHead->value,
                         'sender_id' => $custRequestTicket->department->head_id,
                         'title' => $sTitle,
                         'message' => $sMessage,
@@ -560,7 +575,7 @@ class ComplaintController extends BaseController
 
                     $aTicketCronData[] = [
                         'ticket_id' => $iTicketId,
-                        'send_for' => 1, // Dept Emp
+                        'send_for' => TicketDispatchTarget::Employee->value,
                         'sender_id' => $custRequestTicket->employee_id,
                         'title' => $sTitle,
                         'message' => $sMessage,
@@ -571,7 +586,7 @@ class ComplaintController extends BaseController
                     ];
                     break;
 
-                case 46: // In Progress
+                case RetailTicketWorkflow::STATUS_IN_PROGRESS:
                     $dFollowUpDate = Carbon::parse($dTicketFollowUpDate);
                     if ($config['type'] == 'after') {
                         $sTitle = "Follow-up Reminder: Task Pending";
@@ -585,7 +600,7 @@ class ComplaintController extends BaseController
 
                     $aTicketCronData[] = [
                         'ticket_id' => $iTicketId,
-                        'send_for' => 0, // Dept Head
+                        'send_for' => TicketDispatchTarget::DepartmentHead->value,
                         'sender_id' => $custRequestTicket->department->head_id,
                         'title' => $sTitle,
                         'message' => $sMessage,
@@ -597,7 +612,7 @@ class ComplaintController extends BaseController
 
                     $aTicketCronData[] = [
                         'ticket_id' => $iTicketId,
-                        'send_for' => 1, // Dept Emp
+                        'send_for' => TicketDispatchTarget::Employee->value,
                         'sender_id' => $custRequestTicket->employee_id,
                         'title' => $sTitle,
                         'message' => $sMessage,
@@ -608,14 +623,14 @@ class ComplaintController extends BaseController
                     ];
                     break;
 
-                case 51:
+                case RetailTicketWorkflow::STATUS_RMA_ISSUED:
                     $sTitle = "Your Response is Needed";
                     $sMessage = "We are waiting for your response regarding your RMA request. Please provide an update at the earliest.";
                     $dScheduleDate = Carbon::now()->addHours($config['duration'])->toDateTimeString();
 
                     $aTicketCronData[] = [
                         'ticket_id' => $iTicketId,
-                        'send_for' => 2, // Customer
+                        'send_for' => TicketDispatchTarget::Customer->value,
                         'sender_id' => $custRequestTicket->customer_id,
                         'title' => $sTitle,
                         'message' => $sMessage,
@@ -626,14 +641,14 @@ class ComplaintController extends BaseController
                     ];
                     break;
 
-                case 52:
+                case RetailTicketWorkflow::STATUS_RMA_RECEIVED:
                     $sTitle = "Task Completed: Please Verify";
                     $sMessage = "The department has marked your RMA request as received. Please verify and close the ticket if resolved.";
                     $dScheduleDate = Carbon::now()->addHours($config['duration'])->toDateTimeString();
 
                     $aTicketCronData[] = [
                         'ticket_id' => $iTicketId,
-                        'send_for' => 2,
+                        'send_for' => TicketDispatchTarget::Customer->value,
                         'sender_id' => $custRequestTicket->customer_id,
                         'title' => $sTitle,
                         'message' => $sMessage,
@@ -645,7 +660,7 @@ class ComplaintController extends BaseController
 
                     SupportTicketNotification::create([
                         'ticket_id' => $iTicketId,
-                        'notification_for' => 2, // Customer
+                        'notification_for' => TicketDispatchTarget::Customer->value,
                         'user_id' => 0,
                         'customer_id' => $custRequestTicket->customer_id,
                         'title' => $sTitle,
@@ -655,7 +670,7 @@ class ComplaintController extends BaseController
                     ]);
                     break;
 
-                case 54:
+                case RetailTicketWorkflow::STATUS_REFUND_REJECTED:
                     $dRemainderDate = Carbon::now()->addDays($iTicketRemainderDayAfter)->toDateTimeString();
                     $dFollowUpDate = Carbon::parse($dRemainderDate);
                     $iHours = 0;
@@ -664,7 +679,7 @@ class ComplaintController extends BaseController
                         $dScheduleDate = $dFollowUpDate->copy()->addHours($iHours)->toDateTimeString();
                         $aTicketCronData[] = [
                             'ticket_id' => $iTicketId,
-                            'send_for' => 1,
+                            'send_for' => TicketDispatchTarget::Employee->value,
                             'sender_id' => $custRequestTicket->employee_id,
                             'title' => "Reminder: Refund Rejected Task on Hold",
                             'message' => "Reminder: The refund request (Ticket ID: {$iTicketId}) is on hold due to rejection. Please take necessary steps or escalate if needed.",
@@ -676,7 +691,7 @@ class ComplaintController extends BaseController
                     }
                     SupportTicketNotification::create([
                         'ticket_id' => $iTicketId,
-                        'notification_for' => 2, // Customer
+                        'notification_for' => TicketDispatchTarget::Customer->value,
                         'user_id' => 0,
                         'customer_id' => $custRequestTicket->customer_id,
                         'title' => "Reminder: Refund Request Rejected",
@@ -727,18 +742,22 @@ class ComplaintController extends BaseController
         [$departmentId, $employeeId] = $this->resolveDepartmentAndEmployeeIds($request, $oldTicket);
         $oldStatusName = SupportTicketStatusMaster::find((int)$oldTicket->status)?->name ?? (string)$oldTicket->status;
 
-        if (!SupportTicketStatusMaster::where(['id' => $statusId, 'master_id' => 1, 'status' => 'active'])->exists()) {
+        if (!SupportTicketStatusMaster::where([
+            'id' => $statusId,
+            'master_id' => SupportTicketLifecycle::STATUS_MASTER_ID,
+            'status' => 'active',
+        ])->exists()) {
             return response()->json(['success' => 0, 'message' => translate('invalid_status')], 422);
         }
 
-        if ($this->isAssignedStatusForMaster($statusId, 1) && (int)($oldTicket->employee_id ?? 0) <= 0) {
+        if ($this->isAssignedStatusForMaster($statusId, SupportTicketLifecycle::STATUS_MASTER_ID) && (int)($oldTicket->employee_id ?? 0) <= 0) {
             return response()->json([
                 'success' => 0,
                 'message' => translate('assign_employee_before_setting_assigned_status')
             ], 422);
         }
 
-        $isInProgressStatus = $this->isInProgressStatusForMaster($statusId, 1);
+        $isInProgressStatus = $this->isInProgressStatusForMaster($statusId, SupportTicketLifecycle::STATUS_MASTER_ID);
 
         if (empty($note)) {
             return response()->json(['success' => 0, 'message' => translate('note_required')], 422);
@@ -820,7 +839,7 @@ class ComplaintController extends BaseController
             if ($isInProgressStatus) {
                 $cronData[] = [
                     'ticket_id' => $ticketId,
-                    'send_for' => 1,
+                    'send_for' => TicketDispatchTarget::Employee->value,
                     'sender_id' => $employeeId ?? 0,
                     'title' => 'Follow-up Reminder',
                     'message' => 'Please follow up on the support ticket.',
@@ -850,7 +869,7 @@ class ComplaintController extends BaseController
     $followUpDate = $request->input('ticket-next-follow-up-date');
     $note         = $request->input('ticket-follow-up-note');
 
-    $complaintMasterId = 4;
+    $complaintMasterId = ComplaintTicketWorkflow::STATUS_MASTER_ID;
 
     $ticket = $this->supportTicketRepo->getListWhere(filters: ['id' => $ticketId]);
     if ($ticket->isEmpty()) {
@@ -881,7 +900,7 @@ class ComplaintController extends BaseController
         return response()->json(['success' => 0, 'message' => 'Note required'], 400);
     }
 
-    if ($statusId == 39 && empty($followUpDate)) {
+    if ($statusId == ComplaintTicketWorkflow::STATUS_IN_PROGRESS && empty($followUpDate)) {
         return response()->json(['success' => 0, 'message' => 'Follow-up date required for In Progress'], 400);
     }
 
@@ -897,7 +916,7 @@ class ComplaintController extends BaseController
 
     // Update Ticket
     $updateData = ['status' => $statusId];
-    if ($statusId == 39) {
+    if ($statusId == ComplaintTicketWorkflow::STATUS_IN_PROGRESS) {
         $updateData['follow_up_date'] = date('Y-m-d', strtotime($followUpDate));
     }
 
@@ -935,7 +954,7 @@ class ComplaintController extends BaseController
     }
 
     // Send to Customer on specific statuses
-    if (in_array($statusId, [41, 42])) { // Resolved / Closed
+    if (in_array((int)$statusId, ComplaintTicketWorkflow::customerNotifiableStatuses(), true)) {
         $recipients[] = ['type' => 'customer', 'id' => $oldTicket->customer_id];
     }
 
@@ -964,11 +983,11 @@ class ComplaintController extends BaseController
 
     foreach ($cronConfigs as $config) {
         switch ($statusId) {
-            case 37: // Open
-            case 38: // Assigned
+            case ComplaintTicketWorkflow::STATUS_OPEN:
+            case ComplaintTicketWorkflow::STATUS_ASSIGNED:
                 $cronData[] = [
                     'ticket_id'     => $ticketId,
-                    'send_for'      => 0,
+                    'send_for'      => TicketDispatchTarget::DepartmentHead->value,
                     'sender_id'     => $oldTicket->department->head_id ?? 0,
                     'title'         => 'Action Required',
                     'message'       => 'A complaint requires your attention.',
@@ -979,7 +998,7 @@ class ComplaintController extends BaseController
                 ];
                 $cronData[] = [
                     'ticket_id'     => $ticketId,
-                    'send_for'      => 1,
+                    'send_for'      => TicketDispatchTarget::Employee->value,
                     'sender_id'     => $oldTicket->employee_id ?? 0,
                     'title'         => 'Action Required',
                     'message'       => 'A complaint has been assigned to you.',
@@ -990,10 +1009,10 @@ class ComplaintController extends BaseController
                 ];
                 break;
 
-            case 39: // In Progress
+            case ComplaintTicketWorkflow::STATUS_IN_PROGRESS:
                 $cronData[] = [
                     'ticket_id'     => $ticketId,
-                    'send_for'      => 1,
+                    'send_for'      => TicketDispatchTarget::Employee->value,
                     'sender_id'     => $oldTicket->employee_id ?? 0,
                     'title'         => 'Follow-up Reminder',
                     'message'       => 'Please follow up on the complaint ticket.',
@@ -1029,7 +1048,7 @@ class ComplaintController extends BaseController
     $note          = $request->input('ticket-follow-up-note');
 
     // Wholesale Ticket Master
-    $wholesaleMasterId = 6;
+    $wholesaleMasterId = WholesaleTicketWorkflow::STATUS_MASTER_ID;
 
     $ticket = $this->supportTicketRepo->getListWhere(filters: ['id' => $ticketId]);
     if ($ticket->isEmpty()) {
@@ -1060,7 +1079,7 @@ class ComplaintController extends BaseController
     }
 
     // Follow-up requirement
-    if ($statusId == 59 && empty($followUpDate)) {
+    if (in_array((int) $statusId, WholesaleTicketWorkflow::followUpRequiredStatuses(), true) && empty($followUpDate)) {
         return response()->json(['success' => 0, 'message' => 'Follow-up date required for In Progress'], 400);
     }
 
@@ -1076,7 +1095,7 @@ class ComplaintController extends BaseController
 
     // Update ticket
     $updateData = ['status' => $statusId];
-    if ($statusId == 59) {
+    if ((int) $statusId === WholesaleTicketWorkflow::STATUS_IN_PROGRESS) {
         $updateData['follow_up_date'] = date('Y-m-d', strtotime($followUpDate));
     }
     $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
@@ -1110,7 +1129,7 @@ class ComplaintController extends BaseController
     }
 
     // Also customer notification when status = resolved/closed
-    if (in_array($statusId, [61, 62])) {
+    if (in_array((int) $statusId, WholesaleTicketWorkflow::customerNotifiableStatuses(), true)) {
         $recipients[] = ['type' => 'customer', 'id' => $oldTicket->customer_id];
     }
 
@@ -1136,13 +1155,13 @@ class ComplaintController extends BaseController
     foreach ($cronConfigs as $config) {
 
         switch ($statusId) {
-            case 57: // Open
-            case 58: // Assigned
+            case WholesaleTicketWorkflow::STATUS_OPEN:
+            case WholesaleTicketWorkflow::STATUS_ASSIGNED:
 
                 // To Department Head
                 $cronData[] = [
                     'ticket_id'     => $ticketId,
-                    'send_for'      => 0,
+                    'send_for'      => TicketDispatchTarget::DepartmentHead->value,
                     'sender_id'     => $oldTicket->department->head_id ?? 0,
                     'title'         => 'Wholesale Action Required',
                     'message'       => 'A wholesale ticket requires your attention.',
@@ -1155,7 +1174,7 @@ class ComplaintController extends BaseController
                 // To Employee
                 $cronData[] = [
                     'ticket_id'     => $ticketId,
-                    'send_for'      => 1,
+                    'send_for'      => TicketDispatchTarget::Employee->value,
                     'sender_id'     => $oldTicket->employee_id ?? 0,
                     'title'         => 'Wholesale Ticket Assigned',
                     'message'       => 'A wholesale ticket has been assigned to you.',
@@ -1166,10 +1185,10 @@ class ComplaintController extends BaseController
                 ];
                 break;
 
-            case 59: // In Progress  
+            case WholesaleTicketWorkflow::STATUS_IN_PROGRESS:
                 $cronData[] = [
                     'ticket_id'     => $ticketId,
-                    'send_for'      => 1,
+                    'send_for'      => TicketDispatchTarget::Employee->value,
                     'sender_id'     => $oldTicket->employee_id ?? 0,
                     'title'         => 'Wholesale Follow-up Reminder',
                     'message'       => 'Please follow up on this wholesale ticket.',
@@ -1180,15 +1199,15 @@ class ComplaintController extends BaseController
                 ];
                 break;
 
-            case 61: // Resolved
-            case 62: // Closed
+            case WholesaleTicketWorkflow::STATUS_RESOLVED:
+            case WholesaleTicketWorkflow::STATUS_CLOSED:
 
                 $recipients = [
                     ['type' => 'customer', 'id' => $oldTicket->customer_id]
                 ];
 
-                $title = $statusId == 61 ? 'Wholesale Ticket Resolved' : 'Wholesale Ticket Closed';
-                $message = $statusId == 61 ? 'Your wholesale ticket has been resolved.' : 'Your wholesale ticket has been closed.';
+                $title = (int) $statusId === WholesaleTicketWorkflow::STATUS_RESOLVED ? 'Wholesale Ticket Resolved' : 'Wholesale Ticket Closed';
+                $message = (int) $statusId === WholesaleTicketWorkflow::STATUS_RESOLVED ? 'Your wholesale ticket has been resolved.' : 'Your wholesale ticket has been closed.';
                 $link = route('admin.support-ticket.details', $ticketId);
 
                 $this->notificationRepo->notifyRecipients(

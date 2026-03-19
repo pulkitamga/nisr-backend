@@ -40,6 +40,8 @@ $('#city').on('change',function (){
 });
 
 function fFetchCitiesArea(iCityId = 0){
+    const selectedAreaValues = ($('#shipping_methods_area').val() || []).map(String);
+
     $.ajax({
         url: $("#route-get-cities-area").data("url"), // Update with your route name
         method: "GET",
@@ -52,10 +54,12 @@ function fFetchCitiesArea(iCityId = 0){
             $('#shipping_methods_area').append(`<option value="0" disabled="">---Select---</option>`);
             // Populate modal table with new data
             response.data.forEach((area, index) => {
+                const isSelected = selectedAreaValues.includes(String(area.id));
                 $('#shipping_methods_area').append(`
-                    <option value='${area.id}' selected>${area.name}</option>
+                    <option value='${area.id}' ${isSelected ? 'selected' : ''}>${area.name}</option>
                 `);
             });
+            $('#shipping_methods_area').trigger('change');
         },
         complete: function () {
             $("#loading").fadeOut();

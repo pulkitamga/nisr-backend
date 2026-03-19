@@ -165,6 +165,7 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
     });
 
     Route::get('faq', 'GeneralController@faq');
+    Route::get('contacts', 'GeneralController@contacts');
 
     Route::group(['prefix' => 'notifications'], function () {
         Route::get('/', 'NotificationController@list');
@@ -327,10 +328,12 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
         Route::group(['prefix' => 'service-request'], function () {
             Route::controller(ServiceRequestController::class)->group(function () {
                 Route::get('reference', 'referenceData');
-                Route::post('/', 'create');
-                Route::get('/', 'index');
-                Route::get('{id}', 'show');
-                Route::post('{id}/reply', 'reply');
+                Route::middleware('auth:api')->group(function () {
+                    Route::post('/', 'create');
+                    Route::get('/', 'index');
+                    Route::get('{id}', 'show');
+                    Route::post('{id}/reply', 'reply');
+                });
             });
         });
 

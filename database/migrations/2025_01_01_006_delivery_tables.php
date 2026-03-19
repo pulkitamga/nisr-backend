@@ -14,6 +14,20 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if ($this->allTablesExist([
+            'delivery_men',
+            'deliveryman_wallets',
+            'delivery_man_transactions',
+            'delivery_histories',
+            'deliveryman_notifications',
+            'shipping_methods',
+            'shipping_types',
+            'shipping_method_areas',
+            'category_shipping_costs',
+        ])) {
+            return;
+        }
+
         // Delivery Men
         Schema::create('delivery_men', function (Blueprint $table) {
             $table->id();
@@ -131,14 +145,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('category_shipping_costs');
-        Schema::dropIfExists('shipping_method_areas');
-        Schema::dropIfExists('shipping_types');
-        Schema::dropIfExists('shipping_methods');
-        Schema::dropIfExists('deliveryman_notifications');
-        Schema::dropIfExists('delivery_histories');
-        Schema::dropIfExists('delivery_man_transactions');
-        Schema::dropIfExists('deliveryman_wallets');
-        Schema::dropIfExists('delivery_men');
+        // Historical catch-up migration: do not drop live module tables on rollback.
+    }
+
+    private function allTablesExist(array $tables): bool
+    {
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

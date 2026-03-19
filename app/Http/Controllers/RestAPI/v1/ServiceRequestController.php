@@ -17,6 +17,7 @@ use App\Utils\Helpers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -108,13 +109,25 @@ class ServiceRequestController extends Controller
 
     public function create(ServiceRequestFormRequest $request): JsonResponse
     {
+        $customer = $request->user();
+
+        if (!$customer) {
+            return response()->json(['message' => 'Please login first'], 401);
+        }
+
         try {
             $ticket = $this->serviceRequestSubmissionService->submit(
                 validated: $request->validated(),
-                customer: $request->user()
+                customer: $customer
             );
         } catch (\Throwable $exception) {
             report($exception);
+            Log::error('Service request API creation failed', [
+                'user_id' => $customer->id,
+                'service_id' => $request->input('service_id'),
+                'service_option' => $request->input('service_option'),
+                'error' => $exception->getMessage(),
+            ]);
 
             return response()->json([
                 'errors' => [
@@ -219,7 +232,7 @@ class ServiceRequestController extends Controller
         return SupportTicket::query()
             ->where('customer_id', $customerId)
             ->where('type', 'service')
-            ->where('request_type', 'service_request');
+            ->where('sub_type', 'service');
     }
 
     private function formatSummary(SupportTicket $ticket): array

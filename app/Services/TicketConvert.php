@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TicketDispatchTarget;
 use App\Models\SupportTicket;
 use App\Models\InboxMessage;
 use App\Models\SupportTicketStatusMaster;
@@ -72,7 +73,7 @@ class TicketConvert
 
                 SupportTicketNotification::create([
                     'ticket_id'        => $ticket->id,
-                    'notification_for' => 1,
+                    'notification_for' => TicketDispatchTarget::Employee->value,
                     'user_id'          => $deptEmployeeId,
                     'title'            => 'Task Assigned to You',
                     'message'          => 'A new task has been assigned to you. Please review and take necessary action.',

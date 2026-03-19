@@ -24,6 +24,7 @@ class CronSenderDetail extends Model
     ];
 
     protected $casts = [
+        'send_for' => 'integer',
         'send_date' => 'date',
     ];
 

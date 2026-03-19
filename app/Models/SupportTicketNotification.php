@@ -22,6 +22,10 @@ class SupportTicketNotification extends Model
         'is_active',
     ];
 
+    protected $casts = [
+        'notification_for' => 'integer',
+    ];
+
     /**
      * Get the user associated with the notification.
      */

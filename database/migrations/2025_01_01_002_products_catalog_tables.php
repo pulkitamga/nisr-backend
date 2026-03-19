@@ -14,6 +14,38 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if ($this->allTablesExist([
+            'products',
+            'categories',
+            'brands',
+            'attributes',
+            'colors',
+            'product_stocks',
+            'product_stock_transactions',
+            'tags',
+            'product_tag',
+            'product_seos',
+            'product_compares',
+            'wishlists',
+            'reviews',
+            'review_replies',
+            'digital_product_authors',
+            'digital_product_publishing_houses',
+            'digital_product_variations',
+            'publishing_houses',
+            'authors',
+            'digital_product_otp_verifications',
+            'most_demandeds',
+            'deal_of_the_days',
+            'feature_deals',
+            'flash_deals',
+            'flash_deal_products',
+            'restock_products',
+            'restock_product_customers',
+        ])) {
+            return;
+        }
+
         // Products
         Schema::create('products', function (Blueprint $table) {
             $table->id();
@@ -335,32 +367,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('restock_product_customers');
-        Schema::dropIfExists('restock_products');
-        Schema::dropIfExists('flash_deal_products');
-        Schema::dropIfExists('flash_deals');
-        Schema::dropIfExists('feature_deals');
-        Schema::dropIfExists('deal_of_the_days');
-        Schema::dropIfExists('most_demandeds');
-        Schema::dropIfExists('digital_product_otp_verifications');
-        Schema::dropIfExists('authors');
-        Schema::dropIfExists('publishing_houses');
-        Schema::dropIfExists('digital_product_variations');
-        Schema::dropIfExists('digital_product_publishing_houses');
-        Schema::dropIfExists('digital_product_authors');
-        Schema::dropIfExists('review_replies');
-        Schema::dropIfExists('reviews');
-        Schema::dropIfExists('wishlists');
-        Schema::dropIfExists('product_compares');
-        Schema::dropIfExists('product_seos');
-        Schema::dropIfExists('product_tag');
-        Schema::dropIfExists('tags');
-        Schema::dropIfExists('product_stock_transactions');
-        Schema::dropIfExists('product_stocks');
-        Schema::dropIfExists('colors');
-        Schema::dropIfExists('attributes');
-        Schema::dropIfExists('brands');
-        Schema::dropIfExists('categories');
-        Schema::dropIfExists('products');
+        // Historical catch-up migration: do not drop live module tables on rollback.
+    }
+
+    private function allTablesExist(array $tables): bool
+    {
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

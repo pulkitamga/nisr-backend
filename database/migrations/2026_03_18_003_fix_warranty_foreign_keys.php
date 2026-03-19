@@ -2,56 +2,122 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * FIX: Add missing foreign key constraints to warranties table
- *
- * ISSUES:
- * 1. distributor_id has no foreign key
- * 2. retailer_branch_id has no foreign key
- *
- * NOTES:
- * - Requires distributors table to exist
- * - If distributors table doesn't exist, add index instead
- */
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('warranties', function (Blueprint $table) {
-            // Try to add foreign key for distributor_id
-            // Will fail gracefully if distributors table doesn't exist
-            try {
-                $table->foreignId('distributor_id_new')->nullable()->change();
+        if (!Schema::hasTable('warranties')) {
+            return;
+        }
 
-                // Copy existing data
-                DB::statement('UPDATE warranties SET distributor_id_new = distributor_id');
-
-                // Drop old column
-                $table->dropColumn('distributor_id');
-
-                // Rename new column
-                DB::statement('ALTER TABLE warranties CHANGE distributor_id_new distributor_id BIGINT UNSIGNED NULL');
-            } catch (\Exception $e) {
-                // Just add index if foreign key fails
-                if (!Schema::hasIndex('warranties', 'warranties_distributor_id_index')) {
-                    $table->index('distributor_id');
-                }
-            }
-
-            // Add foreign key for retailer_branch_id (should exist - branches table)
-            $table->foreign('retailer_branch_id')
-                  ->references('id')
-                  ->on('branches')
-                  ->onDelete('set null');
-        });
+        $this->ensureDistributorLookupIndex();
+        $this->ensureRetailerBranchForeignKey();
     }
 
     public function down(): void
     {
-        Schema::table('warranties', function (Blueprint $table) {
-            $table->dropForeign(['retailer_branch_id']);
+        // Catch-up migration: do not remove live warranty foreign keys or indexes on rollback.
+    }
+
+    private function ensureDistributorLookupIndex(): void
+    {
+        if (
+            !Schema::hasColumn('warranties', 'distributor_id')
+            || $this->indexExists('warranties', 'idx_warranties_distributor_id')
+            || $this->indexExists('warranties', 'warranties_distributor_id_index')
+        ) {
+            return;
+        }
+
+        Schema::table('warranties', function (Blueprint $table): void {
+            $table->index('distributor_id', 'idx_warranties_distributor_id');
         });
+    }
+
+    private function ensureRetailerBranchForeignKey(): void
+    {
+        if (
+            !Schema::hasTable('branches')
+            || !Schema::hasColumn('warranties', 'retailer_branch_id')
+            || $this->foreignKeyExists('warranties', 'retailer_branch_id')
+            || $this->hasInvalidForeignValues('warranties', 'retailer_branch_id', 'branches', 'id')
+        ) {
+            return;
+        }
+
+        Schema::table('warranties', function (Blueprint $table): void {
+            $table->foreign('retailer_branch_id')
+                ->references('id')
+                ->on('branches')
+                ->nullOnDelete();
+        });
+    }
+
+    private function hasInvalidForeignValues(
+        string $sourceTable,
+        string $sourceColumn,
+        string $targetTable,
+        string $targetColumn
+    ): bool {
+        return DB::table($sourceTable)
+            ->whereNotNull($sourceColumn)
+            ->whereNotIn($sourceColumn, DB::table($targetTable)->select($targetColumn))
+            ->exists();
+    }
+
+    private function foreignKeyExists(string $tableName, string $columnName): bool
+    {
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $foreignKeys = DB::select("PRAGMA foreign_key_list('{$tableName}')");
+
+            foreach ($foreignKeys as $foreignKey) {
+                if (($foreignKey->from ?? null) === $columnName) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        $databaseName = DB::getDatabaseName();
+        $foreignKeys = DB::select(
+            'SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ? AND REFERENCED_TABLE_NAME IS NOT NULL',
+            [$databaseName, $tableName, $columnName]
+        );
+
+        return !empty($foreignKeys);
+    }
+
+    private function indexExists(string $tableName, string $indexName): bool
+    {
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $indexes = DB::select("PRAGMA index_list('{$tableName}')");
+
+            foreach ($indexes as $index) {
+                if (($index->name ?? null) === $indexName) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        $indexes = DB::select("SHOW INDEX FROM `{$tableName}`");
+
+        foreach ($indexes as $index) {
+            if (($index->Key_name ?? null) === $indexName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 };

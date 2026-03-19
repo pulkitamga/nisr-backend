@@ -4,6 +4,7 @@ namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use App\Models\ContactPageModel;
 use App\Models\GuestUser;
 use App\Models\HelpTopic;
 use App\Utils\Helpers;
@@ -13,6 +14,45 @@ use Illuminate\Support\Facades\Validator;
 
 class GeneralController extends Controller
 {
+    public function contacts(): JsonResponse
+    {
+        $contact = ContactPageModel::query()
+            ->where('is_active', 1)
+            ->latest('id')
+            ->first();
+
+        if (!$contact) {
+            $contact = ContactPageModel::query()->latest('id')->first();
+        }
+
+        if (!$contact) {
+            return response()->json([
+                'success' => true,
+                'data' => null,
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'phone' => $contact->phone,
+                'email' => $contact->email,
+                'address' => $contact->location,
+                'latitude' => null,
+                'longitude' => null,
+                'title' => null,
+                'description' => null,
+                'image' => null,
+                'title_ar' => null,
+                'title_en' => null,
+                'description_ar' => null,
+                'description_en' => null,
+                'address_ar' => null,
+                'address_en' => null,
+            ],
+        ], 200);
+    }
+
     public function faq(): JsonResponse
     {
         return response()->json(HelpTopic::orderBy('ranking')->get(), 200);

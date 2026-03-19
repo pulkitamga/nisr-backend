@@ -865,7 +865,7 @@ class UserProfileController extends Controller
         $aNotificationData = [
             [
                 'ticket_id' => $id,
-                'notification_for' => 0, // Dept Head
+                'notification_for' => \App\Enums\TicketDispatchTarget::DepartmentHead->value,
                 'user_id' => $aSupportTicket->head_id,
                 'customer_id' => 0,
                 'title' => 'Task Closed by Customer',
@@ -875,7 +875,7 @@ class UserProfileController extends Controller
             ],
             [
                 'ticket_id' => $id,
-                'notification_for' => 1, // Dept Employee
+                'notification_for' => \App\Enums\TicketDispatchTarget::Employee->value,
                 'user_id' => $aSupportTicket->employee_id,
                 'customer_id' => 0,
                 'title' => 'Task Closed by Customer',

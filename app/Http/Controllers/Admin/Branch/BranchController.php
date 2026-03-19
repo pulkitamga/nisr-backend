@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use App\Services\ShopService;
 use App\Traits\PaginatorTrait;
 use App\Services\BranchService;
+use Illuminate\Support\Collection;
 use App\Exports\BranchListExport;
 use App\Exports\VendorListExport;
 use Illuminate\Http\JsonResponse;
@@ -95,7 +96,7 @@ class BranchController extends BaseController
         $branches = $this->branchRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            relations: ['manager', 'translations'],
+            relations: ['manager', 'translations', 'shippingAreas', 'deliveryRestrictions'],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
         foreach ($branches as $branch) {
@@ -164,6 +165,7 @@ class BranchController extends BaseController
     {
 
         $branch = $this->branchRepo->add(data: $this->branchService->getAddData($request));
+        $this->branchService->syncAreaRelations($branch, $request);
         $id = $branch->id;
         $this->translationRepo->add(
             request: $request,
@@ -296,15 +298,11 @@ class BranchController extends BaseController
         );
         $aBranchDetails = $this->branchRepo->getFirstWhere(
             params: ['id' => $id],
-            relations: ['translations']
+            relations: ['manager', 'translations', 'shippingAreas', 'deliveryRestrictions']
         );
 
-        $shipping_methods_area = isset($aBranchDetails['shipping_methods_area'])
-            ? explode(',', $aBranchDetails['shipping_methods_area'])
-            : [];
-        $delivery_restriction = isset($aBranchDetails['delivery_restriction'])
-            ? explode(',', $aBranchDetails['delivery_restriction'])
-            : [];
+        $shipping_methods_area = $aBranchDetails?->shippingAreas?->pluck('id')->map(fn ($id) => (string)$id)->all() ?? [];
+        $delivery_restriction = $aBranchDetails?->deliveryRestrictions?->pluck('id')->map(fn ($id) => (string)$id)->all() ?? [];
         $aUniqueCities = ShippingMethodArea::with('city')
             ->get()
             ->unique('city_id')
@@ -316,7 +314,7 @@ class BranchController extends BaseController
             });
         $states = State::all();
 
-        $admins = $this->getActiveBranchManagers();
+        $admins = $this->getActiveBranchManagers($aBranchDetails);
 
         return view(Branch::UPDATE[VIEW], compact('aBranchDetails', 'aShippingMethodArea', 'aDeliveryRestriction', 'shipping_methods_area', 'delivery_restriction', 'aUniqueCities', 'admins', 'states'));
     }
@@ -328,6 +326,7 @@ class BranchController extends BaseController
             return response()->json(['message' => translate('Branch not found')]);
         }
         $this->branchRepo->update(id: $request['id'], data: $this->branchService->getAddData($request));
+        $this->branchService->syncAreaRelations($aBranchDetails, $request);
         $id = $request['id'];
         $this->translationRepo->update(
             request: $request,
@@ -515,7 +514,7 @@ class BranchController extends BaseController
             ->values();
     }
 
-    public function getActiveBranchManagers()
+    public function getActiveBranchManagers(?BranchModel $branch = null): Collection
     {
         $branchManagerRoles = array_values(array_unique(array_filter([
             AdminPermissionRegistry::branchManagerRole(),
@@ -530,7 +529,7 @@ class BranchController extends BaseController
             ->get();
 
         if ($branchManagers->isNotEmpty()) {
-            return $branchManagers;
+            return $this->appendCurrentBranchManager($branchManagers, $branch);
         }
 
         $leadEmployeeIds = Lead::query()
@@ -561,13 +560,33 @@ class BranchController extends BaseController
             ->all();
 
         if (empty($assignedIds)) {
-            return collect();
+            return $this->appendCurrentBranchManager(collect(), $branch);
         }
 
-        return Admin::query()
+        return $this->appendCurrentBranchManager(Admin::query()
             ->active()
             ->whereIn('id', $assignedIds)
             ->orderBy('name')
-            ->get();
+            ->get(), $branch);
+    }
+
+    private function appendCurrentBranchManager(Collection $managers, ?BranchModel $branch = null): Collection
+    {
+        $currentManagerId = (int)data_get($branch, 'manager_id', 0);
+
+        if ($currentManagerId <= 0 || $managers->contains(fn ($manager) => (int)$manager->id === $currentManagerId)) {
+            return $managers->values();
+        }
+
+        $currentManager = Admin::query()->find($currentManagerId);
+
+        if (!$currentManager) {
+            return $managers->values();
+        }
+
+        return $managers
+            ->prepend($currentManager)
+            ->unique('id')
+            ->values();
     }
 }

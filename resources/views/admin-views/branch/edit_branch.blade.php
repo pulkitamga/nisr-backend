@@ -9,6 +9,13 @@
 $languages = getWebConfig(name: 'pnc_language') ?? null;
 $defaultLanguage = $language[0]['code'] ?? 'en';
 $translations = [];
+$selectedCountry = old('branch_country', $aBranchDetails['branch_country']);
+$selectedState = old('branch_state', $aBranchDetails['branch_state']);
+$selectedManagerId = (string)old('manager_id', $aBranchDetails['manager_id']);
+$selectedStatus = old('status', $aBranchDetails['status']);
+$selectedCityId = (string)old('shipping_method_city', $aBranchDetails['shipping_method_city']);
+$selectedShippingAreas = collect(old('shipping_methods_area', $shipping_methods_area))->map(fn ($id) => (string)$id)->all();
+$selectedDeliveryRestrictions = collect(old('delivery_restriction', $delivery_restriction))->map(fn ($id) => (string)$id)->all();
 foreach ($aBranchDetails->translations as $translation) {
 $translations[$translation->locale][$translation->key] = $translation->value;
 }
@@ -75,13 +82,12 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             <input class="form-control" type="text" name="email" value="{{$aBranchDetails['email']}}" placeholder="{{translate('company@gmail.com')}}">
                         </div>
                     </div>
-                    @php($countryCode = getWebConfig(name: 'country_code'))
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('country')}} </label>
                             <select id="branch_country" name="branch_country" class="form-control js-select2-custom">
                                 @foreach(COUNTRIES as $country)
-                                <option value="{{$country['code']}}" {{ $aBranchDetails['branch_country']?($aBranchDetails['branch_country']==$country['code']?'selected':''):'' }}>
+                                <option value="{{$country['code']}}" {{ $selectedCountry === $country['code'] ? 'selected' : '' }}>
                                     {{$country['name']}}
                                 </option>
                                 @endforeach
@@ -93,7 +99,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             <label class="title-color d-flex">{{translate('state')}} </label>
                             <select id="branch_state" name="branch_state" class="form-control js-select2-custom">
                                 @foreach($states as $state)
-                                <option value="{{$state['name']}}" {{ $aBranchDetails['branch_state']?($aBranchDetails['branch_state']==$state['name']?'selected':''):'' }}>
+                                <option value="{{$state['name']}}" {{ $selectedState === $state['name'] ? 'selected' : '' }}>
                                     {{$state['name']}}
                                 </option>
                                 @endforeach
@@ -113,7 +119,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                 <option value="">{{ translate('Select_Manager') }}</option>
 
                                 @forelse($admins as $manager)
-                                <option value="{{ $manager->id }}">{{ $manager->name }}</option>
+                                <option value="{{ $manager->id }}" {{ $selectedManagerId === (string)$manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
                                 @empty
                                 <option value="">{{ translate('No Managers') }}</option>
                                 @endforelse
@@ -125,8 +131,8 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('Status')}}</label>
                             <select class="form-control" name="status" id="status">
-                                <option value="active" {{$aBranchDetails['status']?($aBranchDetails['status']=='active'?'selected':''):'' }}>{{ __("Active") }}</option>
-                                <option value="inactive" {{$aBranchDetails['status']?($aBranchDetails['status']=='inactive'?'selected':''):'' }}>{{ __("Block") }}</option>
+                                <option value="active" {{ $selectedStatus === 'active' ? 'selected' : '' }}>{{ __("Active") }}</option>
+                                <option value="inactive" {{ $selectedStatus === 'inactive' ? 'selected' : '' }}>{{ __("Block") }}</option>
                             </select>
 
                         </div>
@@ -242,9 +248,9 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('City')}} </label>
                             <select id="city" name="shipping_method_city" class="form-control js-select2-custom">
-                                <option value="0" selected="" disabled="">---Select---</option>
+                                <option value="0" {{ $selectedCityId === '' ? 'selected' : '' }} disabled="">---Select---</option>
                                 @foreach($aUniqueCities as $city)
-                                <option value="{{$city['city_id']}}" {{ $aBranchDetails['shipping_method_city']?($aBranchDetails['shipping_method_city']==$city['city_id']?'selected':''):'' }}>
+                                <option value="{{$city['city_id']}}" {{ $selectedCityId === (string)$city['city_id'] ? 'selected' : '' }}>
                                     {{$city['city_name']}}
                                 </option>
                                 @endforeach
@@ -256,7 +262,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             <label class="title-color d-flex">{{translate('Shipping_Method_Area')}}</label>
                             <select class="js-example-basic-multiple js-states js-example-responsive form-control" name="shipping_methods_area[]" id="shipping_methods_area" multiple="multiple">
                                 @foreach ($aShippingMethodArea as $key => $a)
-                                <option value="{{ $a['id'] }}" {{ in_array($a['id'], $shipping_methods_area) ? 'selected' : '' }}>
+                                <option value="{{ $a['id'] }}" {{ in_array((string)$a['id'], $selectedShippingAreas, true) ? 'selected' : '' }}>
                                     {{ $a['area'] }}
                                 </option>
                                 @endforeach
@@ -268,7 +274,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             <label class="title-color d-flex">{{translate('Delivery_restriction')}}</label>
                             <select class="js-example-basic-multiple js-states js-example-responsive form-control" name="delivery_restriction[]" id="delivery_restriction" multiple="multiple">
                                 @foreach ($aDeliveryRestriction as $key => $a)
-                                <option value="{{ $a['id'] }}" {{ in_array($a['id'], $delivery_restriction) ? 'selected' : '' }}>
+                                <option value="{{ $a['id'] }}" {{ in_array((string)$a['id'], $selectedDeliveryRestrictions, true) ? 'selected' : '' }}>
                                     {{ $a['area'] }}
                                 </option>
                                 @endforeach

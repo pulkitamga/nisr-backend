@@ -2181,11 +2181,8 @@ class WebController extends Controller
         foreach ($areas as $area) {
             $polygon = json_decode($area->coordinates); // Automatically cast to array
             if ($polygon != null && $this->isPointInPolygon($latitude, $longitude, $polygon)) {
-                $branches = Branch::where(function ($query) use ($area) {
-                    $query->where('shipping_methods_area', 'like', $area->id . ',%') // Starts with
-                        ->orWhere('shipping_methods_area', 'like', '%,' . $area->id . ',%') // Contains
-                        ->orWhere('shipping_methods_area', 'like', '%,' . $area->id) // Ends with
-                        ->orWhere('shipping_methods_area', $area->id); // Is exactly
+                $branches = Branch::whereHas('shippingAreas', function ($query) use ($area) {
+                    $query->where('shipping_method_areas.id', $area->id);
                 })->get();
 
                 $aSystemBranch = Branch::where(['id' => 1, 'status' => 'active'])->get();

@@ -14,6 +14,20 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if ($this->allTablesExist([
+            'services',
+            'service_requests',
+            'service_jobs',
+            'service_job_items',
+            'service_job_activities',
+            'service_estimates',
+            'service_invoices',
+            'service_change_orders',
+            'service_cancellations',
+        ])) {
+            return;
+        }
+
         // Services
         Schema::create('services', function (Blueprint $table) {
             $table->id();
@@ -171,14 +185,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('service_cancellations');
-        Schema::dropIfExists('service_change_orders');
-        Schema::dropIfExists('service_invoices');
-        Schema::dropIfExists('service_estimates');
-        Schema::dropIfExists('service_job_activities');
-        Schema::dropIfExists('service_job_items');
-        Schema::dropIfExists('service_jobs');
-        Schema::dropIfExists('service_requests');
-        Schema::dropIfExists('services');
+        // Historical catch-up migration: do not drop live module tables on rollback.
+    }
+
+    private function allTablesExist(array $tables): bool
+    {
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

@@ -82,8 +82,6 @@ class Branch extends Model
         'sat_branch_hours_from',
         'sat_branch_hours_to',
         'shipping_method_city',
-        'shipping_methods_area',
-        'delivery_restriction',
         'branch_latitude',
         'branch_longitude',
         'manager_id',
@@ -150,7 +148,9 @@ class Branch extends Model
      */
     public function getShippingMethodsAreas(): string
     {
-        $areas = $this->shippingAreas()->pluck('area')->toArray();
+        $areas = $this->relationLoaded('shippingAreas')
+            ? $this->shippingAreas->pluck('area')->toArray()
+            : $this->shippingAreas()->pluck('area')->toArray();
         return implode(', ', $areas);
     }
 
@@ -160,7 +160,9 @@ class Branch extends Model
      */
     public function getDeliveryRestriction(): string
     {
-        $areas = $this->deliveryRestrictions()->pluck('area')->toArray();
+        $areas = $this->relationLoaded('deliveryRestrictions')
+            ? $this->deliveryRestrictions->pluck('area')->toArray()
+            : $this->deliveryRestrictions()->pluck('area')->toArray();
         return implode(', ', $areas);
     }
 

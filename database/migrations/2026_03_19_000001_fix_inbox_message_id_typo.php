@@ -12,48 +12,54 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Rename the typo column in all inbox-related tables
-        Schema::table('inbox_activities', function (Blueprint $table) {
-            $table->renameColumn('massage_id', 'message_id');
-        });
-
-        Schema::table('inbox_notes', function (Blueprint $table) {
-            $table->renameColumn('massage_id', 'message_id');
-        });
-
-        Schema::table('inbox_tasks', function (Blueprint $table) {
-            $table->renameColumn('massage_id', 'message_id');
-        });
-
-        Schema::table('inbox_calls', function (Blueprint $table) {
-            $table->renameColumn('massage_id', 'message_id');
-        });
-
-        Schema::table('inbox_files', function (Blueprint $table) {
-            $table->renameColumn('massage_id', 'message_id');
-        });
+        $this->normalizeMessageIdColumn('inbox_activities');
+        $this->normalizeMessageIdColumn('inbox_notes');
+        $this->normalizeMessageIdColumn('inbox_tasks');
+        $this->normalizeMessageIdColumn('inbox_calls');
+        $this->normalizeMessageIdColumn('inbox_files');
     }
 
     public function down(): void
     {
-        // Rollback - rename back to typo
-        Schema::table('inbox_activities', function (Blueprint $table) {
-            $table->renameColumn('message_id', 'massage_id');
-        });
+        $this->revertMessageIdColumn('inbox_activities');
+        $this->revertMessageIdColumn('inbox_notes');
+        $this->revertMessageIdColumn('inbox_tasks');
+        $this->revertMessageIdColumn('inbox_calls');
+        $this->revertMessageIdColumn('inbox_files');
+    }
 
-        Schema::table('inbox_notes', function (Blueprint $table) {
-            $table->renameColumn('message_id', 'massage_id');
-        });
+    private function normalizeMessageIdColumn(string $tableName): void
+    {
+        if (!Schema::hasTable($tableName) || Schema::hasColumn($tableName, 'message_id')) {
+            return;
+        }
 
-        Schema::table('inbox_tasks', function (Blueprint $table) {
-            $table->renameColumn('message_id', 'massage_id');
-        });
+        if (Schema::hasColumn($tableName, 'massage_id')) {
+            Schema::table($tableName, function (Blueprint $table) {
+                $table->renameColumn('massage_id', 'message_id');
+            });
+            return;
+        }
 
-        Schema::table('inbox_calls', function (Blueprint $table) {
-            $table->renameColumn('message_id', 'massage_id');
-        });
+        if (Schema::hasColumn($tableName, 'inbox_message_id')) {
+            Schema::table($tableName, function (Blueprint $table) {
+                $table->renameColumn('inbox_message_id', 'message_id');
+            });
+        }
+    }
 
-        Schema::table('inbox_files', function (Blueprint $table) {
+    private function revertMessageIdColumn(string $tableName): void
+    {
+        if (
+            !Schema::hasTable($tableName)
+            || !Schema::hasColumn($tableName, 'message_id')
+            || Schema::hasColumn($tableName, 'massage_id')
+            || Schema::hasColumn($tableName, 'inbox_message_id')
+        ) {
+            return;
+        }
+
+        Schema::table($tableName, function (Blueprint $table) {
             $table->renameColumn('message_id', 'massage_id');
         });
     }
