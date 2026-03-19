@@ -80,7 +80,7 @@ class ServiceRequestWorkflowTest extends TestCase
 
         $request = $this->getMockBuilder(ServiceRequestFormRequest::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['validated', 'user'])
+            ->onlyMethods(['validated', 'user', 'input'])
             ->getMock();
 
         $request->expects($this->once())
@@ -98,6 +98,12 @@ class ServiceRequestWorkflowTest extends TestCase
         $request->expects($this->once())
             ->method('user')
             ->willReturn($customer);
+        $request->expects($this->exactly(2))
+            ->method('input')
+            ->willReturnMap([
+                ['service_id', null, $service->id],
+                ['service_reference', null, null],
+            ]);
 
         $response = (new ServiceRequestController($submissionService))->create($request);
         $payload = $response->getData(true);
@@ -220,6 +226,61 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('VIN-123', $inboxMessage->details['vin'] ?? null);
         $this->assertSame('Street 10', $inboxMessage->details['address'] ?? null);
         $this->assertArrayHasKey('service_request_id', $inboxMessage->details);
+    }
+
+    public function test_submission_service_still_returns_ticket_when_notification_dispatch_fails(): void
+    {
+        DB::table('support_ticket_status_master')->insert([
+            'id' => ServiceTicketWorkflow::STATUS_NEW,
+            'master_id' => ServiceTicketWorkflow::STATUS_MASTER_ID,
+            'name' => 'new',
+            'status' => 'active',
+            'position' => 1,
+        ]);
+
+        $customer = User::query()->create([
+            'f_name' => 'Nadia',
+            'l_name' => 'Saber',
+            'email' => 'nadia@example.com',
+            'phone' => '201234567891',
+            'password' => 'secret',
+        ]);
+
+        $service = Service::query()->create([
+            'service_id' => 'SRV-101',
+            'title' => 'Battery Replacement',
+            'base_price_inshop' => 180,
+            'base_price_mobile' => 240,
+            'included_km_mobile' => 15,
+            'travel_fee_per_km' => 5,
+            'parts_included' => ['battery'],
+            'call_center_flag' => false,
+        ]);
+
+        $workflowNotifier = $this->createMock(ServiceWorkflowNotificationService::class);
+        $workflowNotifier
+            ->expects($this->once())
+            ->method('notify')
+            ->willThrowException(new \RuntimeException('Notification channel unavailable.'));
+
+        $submissionService = $this->makeSubmissionService($workflowNotifier);
+
+        $ticket = $submissionService->submit([
+            'service_id' => $service->id,
+            'service_option' => 'in_shop',
+            'vehicle_type' => 'Sedan',
+            'vehicle_make' => 'Toyota',
+            'vehicle_model' => 'Corolla',
+            'vehicle_year' => 2024,
+            'vehicle_mileage' => 12000,
+        ], $customer);
+
+        $this->assertNotNull($ticket->id);
+        $this->assertSame($service->id, (int) $ticket->service_id);
+        $this->assertSame($customer->id, (int) $ticket->customer_id);
+        $this->assertSame(1, ServiceRequest::query()->count());
+        $this->assertSame(1, SupportTicket::query()->count());
+        $this->assertSame(1, InboxMessage::query()->count());
     }
 
     public function test_reference_data_returns_vehicle_options_and_catalogs(): void

@@ -11,6 +11,7 @@ use App\Models\SupportTicketStatusMaster;
 use App\Models\User;
 use App\Support\ServiceTicketWorkflow;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ServiceRequestSubmissionService
 {
@@ -70,14 +71,22 @@ class ServiceRequestSubmissionService
             return $ticket->loadMissing(['service', 'status_details', 'relatedInboxMessage']);
         });
 
-        $this->workflowNotifier->notify(
-            ticket: $ticket,
-            eventKey: 'ticket_created',
-            title: 'Service Ticket Created',
-            message: "Your service ticket #{$ticket->id} has been created.",
-            link: $notificationLink,
-            recipients: [['type' => 'customer', 'id' => $ticket->customer_id]]
-        );
+        try {
+            $this->workflowNotifier->notify(
+                ticket: $ticket,
+                eventKey: 'ticket_created',
+                title: 'Service Ticket Created',
+                message: "Your service ticket #{$ticket->id} has been created.",
+                link: $notificationLink,
+                recipients: [['type' => 'customer', 'id' => $ticket->customer_id]]
+            );
+        } catch (\Throwable $exception) {
+            Log::warning('Service request notification dispatch failed', [
+                'ticket_id' => $ticket->id,
+                'customer_id' => $ticket->customer_id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
 
         return $ticket;
     }
