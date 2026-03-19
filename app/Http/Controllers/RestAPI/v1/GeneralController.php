@@ -5,7 +5,6 @@ namespace App\Http\Controllers\RestAPI\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Contact;
-use App\Models\ContactPageModel;
 use App\Models\GuestUser;
 use App\Models\HelpTopic;
 use App\Utils\Helpers;
@@ -17,27 +16,23 @@ class GeneralController extends Controller
 {
     public function contacts(): JsonResponse
     {
-        $contact = ContactPageModel::query()
-            ->where('is_active', 1)
-            ->latest('id')
-            ->first();
-
-        if (!$contact) {
-            $contact = ContactPageModel::query()->latest('id')->first();
-        }
-
-        $branch = Branch::query()
+        $branches = Branch::query()
             ->where('id', '!=', 1)
             ->where('status', 'active')
-            ->where(function ($query) {
+            ->where('branch_name', '!=', 'System')
+            ->where(function ($query): void {
                 $query->whereNotNull('phone')
                     ->orWhereNotNull('email')
                     ->orWhereNotNull('branch_address');
             })
             ->orderBy('id')
-            ->first();
+            ->get();
 
-        if (!$contact && !$branch) {
+        $phone = $this->preferredValue(getWebConfig('company_phone'));
+        $email = $this->preferredValue(getWebConfig('company_email'));
+        $address = $this->preferredValue(getWebConfig('shop_address'));
+
+        if (!$phone && !$email && !$address && $branches->isEmpty()) {
             return response()->json([
                 'success' => true,
                 'data' => null,
@@ -47,11 +42,11 @@ class GeneralController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'phone' => $this->preferredValue($contact?->phone, $branch?->phone),
-                'email' => $this->preferredValue($contact?->email, $branch?->email),
-                'address' => $this->preferredValue($contact?->location, $branch?->branch_address),
-                'latitude' => $branch?->branch_latitude,
-                'longitude' => $branch?->branch_longitude,
+                'phone' => $phone,
+                'email' => $email,
+                'address' => $address,
+                'latitude' => null,
+                'longitude' => null,
                 'title' => null,
                 'description' => null,
                 'image' => null,
@@ -61,23 +56,40 @@ class GeneralController extends Controller
                 'description_en' => null,
                 'address_ar' => null,
                 'address_en' => null,
+                'branches' => $branches->map(fn (Branch $branch): array => [
+                    'id' => (int)$branch->id,
+                    'branch_name' => $this->preferredValue($branch->branch_name) ?? '',
+                    'address' => $this->preferredValue($branch->branch_address),
+                    'phone' => $this->preferredValue($branch->phone),
+                    'email' => $this->preferredValue($branch->email),
+                    'latitude' => $branch->branch_latitude !== null ? (float)$branch->branch_latitude : null,
+                    'longitude' => $branch->branch_longitude !== null ? (float)$branch->branch_longitude : null,
+                ])->values()->all(),
             ],
         ], 200);
     }
 
-    private function preferredValue(mixed $primary, mixed $fallback): mixed
+    private function preferredValue(mixed ...$values): mixed
     {
-        $primaryValue = is_string($primary) ? trim($primary) : $primary;
-        if (!empty($primaryValue)) {
-            return $primaryValue;
+        foreach ($values as $value) {
+            $normalizedValue = is_string($value) ? trim($value) : $value;
+            if (!empty($normalizedValue)) {
+                return $normalizedValue;
+            }
         }
 
-        return is_string($fallback) ? trim($fallback) : $fallback;
+        return null;
     }
 
     public function faq(): JsonResponse
     {
-        return response()->json(HelpTopic::orderBy('ranking')->get(), 200);
+        return response()->json(
+            HelpTopic::withoutGlobalScope('translate')
+                ->with('translations')
+                ->orderBy('ranking')
+                ->get(),
+            200
+        );
     }
 
     public function get_guest_id(Request $request): JsonResponse

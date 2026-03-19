@@ -5504,6 +5504,7 @@ return [
 	"must_upload_colour_wise_images_first._Colour_is_shown_in_the_image_section_top_right" => "يجب تحميل الصور حسب اللون أولاً. اللون معروض في قسم الصور أعلى اليمين",
 	"must_upload_colour_wise_images_first._Colour_is_shown_in_the_image_section_top_right." => "يجب تحميل الصور حسب اللون أولاً. اللون معروض في قسم الصور أعلى اليمين.",
 	"must_use_country_code_before_phone_number" => "يجب استخدام رمز الدولة قبل رقم الهاتف",
+	"you_can_use_local_or_international_phone_number_format" => "يمكنك استخدام رقم الهاتف بالصيغة المحلية أو الدولية",
 	"my O updated" => "تم تحديث O الخاص بي",
 	"my product" => "منتجي",
 	"my update" => "تحديثي",

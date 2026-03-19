@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Services\FirebaseService;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Support\WarrantyLookupContactNormalizer;
 use App\Utils\SMSModule;
 
 class WarrantyViewController extends Controller
@@ -81,6 +82,7 @@ class WarrantyViewController extends Controller
  
         // 2. Warranty Checks
         $warranty = Warranty::where('serial_number', $request->serial_number)->first();
+        $normalizedContact = WarrantyLookupContactNormalizer::normalize((string)$request->contact);
  
         if ($warranty->status == 'preactivated') {
             return response()->json([
@@ -92,8 +94,9 @@ class WarrantyViewController extends Controller
         $oldPhone = $warranty->final_user_id
             ? $warranty->user?->phone
             : $warranty->activated_by_phone;
+        $normalizedOldPhone = WarrantyLookupContactNormalizer::normalize($oldPhone);
  
-        if ($oldPhone && $oldPhone != $request->contact) {
+        if ($normalizedOldPhone && $normalizedContact && $normalizedOldPhone !== $normalizedContact) {
             return response()->json([
                 'status' => 'error',
                 'message' => translate('Phone number mismatch')
@@ -113,13 +116,13 @@ class WarrantyViewController extends Controller
  
             $sessionData = [
                 'warranty_id' => $warranty->id,
-                'contact' => $request->contact,
+                'contact' => $normalizedContact ?? (string)$request->contact,
                 'otp_method' => $otpMethod,
             ];
  
             if ($otpMethod === 'firebase') {
  
-                $response = $this->firebaseService->sendOtp($request->contact);
+                $response = $this->firebaseService->sendOtp($normalizedContact ?? (string)$request->contact);
  
                 if ($response && $response['status'] === 'success') {
                     $sessionData['otp_session'] = $response['sessionInfo'];
@@ -134,12 +137,12 @@ class WarrantyViewController extends Controller
                 $otp = rand(1000, 9999);
 
                 Cache::put(
-                    "warranty_lookup:{$warranty->id}:{$request->contact}",
+                    "warranty_lookup:{$warranty->id}:{$normalizedContact}",
                     $otp,
                     now()->addMinutes(5)
                 );
 
-                $this->dispatchLookupOtp($warranty, (string)$request->contact, (string)$otp);
+                $this->dispatchLookupOtp($warranty, (string)$normalizedContact, (string)$otp);
             }
  
             return response()->json([
@@ -147,13 +150,13 @@ class WarrantyViewController extends Controller
                 'status' => 'otp_required',
                 'otp_method' => $otpMethod,
                 'temp_token' => encrypt($sessionData),
-                'masked_contact' => $this->maskContact((string)$request->contact),
+                'masked_contact' => $this->maskContact((string)($normalizedContact ?? $request->contact)),
                 'message' => translate('OTP sent successfully')
             ]);
         }
  
         // 4. Direct Success (No OTP Required)
-        return $this->generateViewTokenResponse($warranty, $request, (string)$request->contact);
+        return $this->generateViewTokenResponse($warranty, $request, (string)($normalizedContact ?? $request->contact));
     }
 
     /**
@@ -181,7 +184,7 @@ class WarrantyViewController extends Controller
         }
 
         $warrantyId = $sessionData['warranty_id'] ?? $request->warranty_id;
-        $contact = $sessionData['contact'] ?? $request->contact;
+        $contact = WarrantyLookupContactNormalizer::normalize((string)($sessionData['contact'] ?? $request->contact));
 
         if (!$warrantyId || !$contact) {
             return response()->json([

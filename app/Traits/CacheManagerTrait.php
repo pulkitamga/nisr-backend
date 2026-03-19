@@ -115,7 +115,11 @@ trait CacheManagerTrait
     public function cacheHelpTopicTable()
     {
         return Cache::remember(CACHE_HELP_TOPICS_TABLE, CACHE_FOR_3_HOURS, function () {
-            return HelpTopic::where(['type' => 'default', 'status' => 1])->get();
+            return HelpTopic::withoutGlobalScope('translate')
+                ->with('translations')
+                ->where(['type' => 'default', 'status' => 1])
+                ->orderBy('ranking')
+                ->get();
         });
     }
 

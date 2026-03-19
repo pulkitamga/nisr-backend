@@ -45,7 +45,7 @@
                         <div class="col-md-4 col-sm-6">
                             <input type="text" name="contact" class="form-control form-control-sm prepended-form-control"
                                    placeholder="{{ translate('Email or Phone Number') }}" required>
-                                                               <span class="fs-12 text-muted">* {{ translate('must_use_country_code_before_phone_number') }}</span>
+                                                               <span class="fs-12 text-muted">* {{ translate('you_can_use_local_or_international_phone_number_format') }}</span>
 
                         </div>
 

@@ -15,6 +15,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Session;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Support\WarrantyLookupContactNormalizer;
 use App\Utils\SMSModule;
 
 class WarrantyViewController extends Controller
@@ -69,8 +70,8 @@ class WarrantyViewController extends Controller
         ]);
 
         $warranty = Warranty::where('serial_number', $request->serial_number)->firstOrFail();
+        $normalizedContact = WarrantyLookupContactNormalizer::normalize((string)$request->contact);
 
-     
 
         if ($warranty->status == 'preactivated') {
             Toastr::error(translate('Warranty not found'));
@@ -78,13 +79,16 @@ class WarrantyViewController extends Controller
         }
 
         $oldPhone = $warranty->final_user_id ? $warranty->user?->phone : $warranty->activated_by_phone;
+        $normalizedOldPhone = WarrantyLookupContactNormalizer::normalize($oldPhone);
 
-        if ($oldPhone && $oldPhone != $request->contact) {
+        if ($normalizedOldPhone && $normalizedContact && $normalizedOldPhone !== $normalizedContact) {
             Toastr::error(translate('This phone number does not match the previously registered number for this serial.'));
             Log::warning('Warranty Phone mismatch', [
                 'serial' => $warranty->serial_number ?? null,
                 'old_phone' => $oldPhone,
                 'incoming_phone' => $request->contact,
+                'normalized_old_phone' => $normalizedOldPhone,
+                'normalized_incoming_phone' => $normalizedContact,
             ]);
             return back()->withInput();
         }
@@ -98,7 +102,7 @@ class WarrantyViewController extends Controller
             $otpMethod = ($firebaseOtpSetting && $firebaseOtpSetting['status'] == 1) ? 'firebase' : 'email';
 
             if ($otpMethod === 'firebase') {
-                $response = $this->firebaseService->sendOtp($request->contact);
+                $response = $this->firebaseService->sendOtp($normalizedContact ?? (string)$request->contact);
 
                 if ($response && isset($response['status']) && $response['status'] === 'success' && !empty($response['sessionInfo'])) {
                     Session::put('otp_session', $response['sessionInfo']);
@@ -108,13 +112,13 @@ class WarrantyViewController extends Controller
                 }
             } else {
                 $otp = rand(1000, 9999);
-                Cache::put("warranty_lookup:{$warranty->id}:{$request->contact}", $otp, now()->addMinutes(5));
-                $this->dispatchLookupOtp($warranty, (string)$request->contact, (string)$otp);
+                Cache::put("warranty_lookup:{$warranty->id}:{$normalizedContact}", $otp, now()->addMinutes(5));
+                $this->dispatchLookupOtp($warranty, (string)$normalizedContact, (string)$otp);
             }
 
             Session::put([
                 'warranty_id' => $warranty->id,
-                'contact' => $request->contact,
+                'contact' => $normalizedContact ?? (string)$request->contact,
                 'otp_method' => $otpMethod,
             ]);
 
@@ -123,7 +127,7 @@ class WarrantyViewController extends Controller
         }
 
         // OTP NOT REQUIRED — skip OTP and go straight to view
-        return $this->generateViewTokenAndRedirect($warranty, $request);
+        return $this->generateViewTokenAndRedirect($warranty, $request, $normalizedContact ?? (string)$request->contact);
     }
 
     public function lookupVerifyForm(Request $request)
@@ -145,16 +149,17 @@ class WarrantyViewController extends Controller
             'warranty_id' => 'required|exists:warranties,id',
             'contact' => 'required|string',
         ]);
+        $normalizedContact = WarrantyLookupContactNormalizer::normalize((string)$request->contact);
 
         $otpMethod = Session::get('otp_method', 'email');
         $isValid = false;
 
         if ($otpMethod === 'firebase') {
             $sessionInfo = Session::get('otp_session');
-            $response = $this->firebaseService->verifyOtp($sessionInfo, $request->contact, $request->otp);
+            $response = $this->firebaseService->verifyOtp($sessionInfo, $normalizedContact ?? (string)$request->contact, $request->otp);
             $isValid = ($response['status'] === 'success');
         } else {
-            $storedOtp = Cache::get("warranty_lookup:{$request->warranty_id}:{$request->contact}");
+            $storedOtp = Cache::get("warranty_lookup:{$request->warranty_id}:{$normalizedContact}");
             $isValid = filled($storedOtp) && hash_equals((string)$storedOtp, (string)$request->otp);
         }
 
@@ -164,30 +169,31 @@ class WarrantyViewController extends Controller
 
         // Clear OTP cache/session
         if ($otpMethod !== 'firebase') {
-            Cache::forget("warranty_lookup:{$request->warranty_id}:{$request->contact}");
+            Cache::forget("warranty_lookup:{$request->warranty_id}:{$normalizedContact}");
         }
         Session::forget(['otp_session', 'otp_method']);
 
         $warranty = Warranty::findOrFail($request->warranty_id);
 
-        return $this->generateViewTokenAndRedirect($warranty, $request);
+        return $this->generateViewTokenAndRedirect($warranty, $request, $normalizedContact ?? (string)$request->contact);
     }
 
     /**
      * Generate view token and redirect to warranty view page
      */
-    private function generateViewTokenAndRedirect($warranty, $request)
+    private function generateViewTokenAndRedirect($warranty, $request, ?string $contact = null)
     {
         if (!$warranty->warranty_public_id) {
             $warranty->warranty_public_id = Str::uuid();
             $warranty->save();
         }
 
+        $normalizedContact = $contact ?? WarrantyLookupContactNormalizer::normalize((string)$request->contact) ?? (string)$request->contact;
         $jti = Str::uuid();
         ViewToken::create([
             'jti' => $jti,
             'warranty_public_id' => $warranty->warranty_public_id,
-            'recipient_hash' => hash_hmac('sha256', $request->contact, config('app.key')),
+            'recipient_hash' => hash_hmac('sha256', $normalizedContact, config('app.key')),
             'scope' => 'warranty:view',
             'issued_at' => now(),
             'expires_at' => now()->addMinutes(getWebConfig('view_token_ttl_minutes') ?? 10),

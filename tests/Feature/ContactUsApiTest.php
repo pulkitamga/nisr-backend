@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Http\Controllers\RestAPI\v1\GeneralController;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -13,15 +14,27 @@ class ContactUsApiTest extends TestCase
     {
         parent::setUp();
 
-        Schema::dropIfExists('branches');
-        Schema::dropIfExists('contact_us');
+        Cache::flush();
 
-        Schema::create('contact_us', function (Blueprint $table): void {
+        Schema::dropIfExists('branches');
+        Schema::dropIfExists('business_settings');
+        Schema::dropIfExists('translations');
+
+        Schema::create('business_settings', function (Blueprint $table): void {
             $table->id();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->text('location')->nullable();
-            $table->boolean('is_active')->default(0);
+            $table->string('type')->unique();
+            $table->longText('value')->nullable();
+            $table->boolean('is_active')->default(1);
+            $table->timestamps();
+        });
+
+        Schema::create('translations', function (Blueprint $table): void {
+            $table->id();
+            $table->string('translationable_type');
+            $table->unsignedBigInteger('translationable_id');
+            $table->string('locale');
+            $table->string('key')->nullable();
+            $table->longText('value')->nullable();
             $table->timestamps();
         });
 
@@ -41,28 +54,60 @@ class ContactUsApiTest extends TestCase
 
     protected function tearDown(): void
     {
+        Cache::flush();
+
         Schema::dropIfExists('branches');
-        Schema::dropIfExists('contact_us');
+        Schema::dropIfExists('translations');
+        Schema::dropIfExists('business_settings');
 
         parent::tearDown();
     }
 
-    public function test_contacts_endpoint_returns_latest_active_contact_record(): void
+    public function test_contacts_endpoint_returns_business_settings_contact_data_and_branches(): void
     {
-        \DB::table('contact_us')->insert([
+        \DB::table('business_settings')->insert([
             [
-                'phone' => '+201111111111',
-                'email' => 'inactive@example.com',
-                'location' => 'Inactive address',
-                'is_active' => 0,
-                'created_at' => now()->subMinute(),
-                'updated_at' => now()->subMinute(),
+                'type' => 'company_phone',
+                'value' => '16870',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'phone' => '+201234567890',
-                'email' => 'support@example.com',
-                'location' => '307 Avenue, Berthelot',
-                'is_active' => 1,
+                'type' => 'company_email',
+                'value' => 'info@elnisr.com',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'type' => 'shop_address',
+                'value' => '6XWP+2QG, As Soyouf Qebli, Montaza 1, Alexandria Governorate 5516007, Egypt',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        \DB::table('branches')->insert([
+            [
+                'id' => 1,
+                'branch_name' => 'System',
+                'phone' => '0000',
+                'email' => 'system@example.com',
+                'status' => 'active',
+                'branch_address' => 'System Address',
+                'branch_latitude' => null,
+                'branch_longitude' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 11,
+                'branch_name' => 'Alexandria',
+                'phone' => '0111122223',
+                'email' => 'alex@elnisr.online',
+                'status' => 'active',
+                'branch_address' => '10 Bastour, Bab Sharqi WA Wabour Al Meyah, Bab Shar\', Alexandria Governorate 5422010, Egypt',
+                'branch_latitude' => 31.17102183,
+                'branch_longitude' => 29.89180945,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -74,9 +119,9 @@ class ContactUsApiTest extends TestCase
         $this->assertSame([
             'success' => true,
             'data' => [
-                'phone' => '+201234567890',
-                'email' => 'support@example.com',
-                'address' => '307 Avenue, Berthelot',
+                'phone' => '16870',
+                'email' => 'info@elnisr.com',
+                'address' => '6XWP+2QG, As Soyouf Qebli, Montaza 1, Alexandria Governorate 5516007, Egypt',
                 'latitude' => null,
                 'longitude' => null,
                 'title' => null,
@@ -88,6 +133,17 @@ class ContactUsApiTest extends TestCase
                 'description_en' => null,
                 'address_ar' => null,
                 'address_en' => null,
+                'branches' => [
+                    [
+                        'id' => 11,
+                        'branch_name' => 'Alexandria',
+                        'address' => '10 Bastour, Bab Sharqi WA Wabour Al Meyah, Bab Shar\', Alexandria Governorate 5422010, Egypt',
+                        'phone' => '0111122223',
+                        'email' => 'alex@elnisr.online',
+                        'latitude' => 31.17102183,
+                        'longitude' => 29.89180945,
+                    ],
+                ],
             ],
         ], $response->getData(true));
     }
@@ -103,17 +159,17 @@ class ContactUsApiTest extends TestCase
         ], $response->getData(true));
     }
 
-    public function test_contacts_endpoint_falls_back_to_active_branch_data_when_contact_cms_is_empty(): void
+    public function test_contacts_endpoint_returns_branch_data_when_only_branches_exist(): void
     {
         \DB::table('branches')->insert([
             'id' => 11,
             'branch_name' => 'Alexandria',
-            'phone' => '16870',
-            'email' => 'info@elnisr.com',
+            'phone' => '0111122223',
+            'email' => 'alex@elnisr.online',
             'status' => 'active',
-            'branch_address' => '6XWP+2QG, As Soyouf Qebli, Montaza 1, Alexandria Governorate 5516007, Egypt',
-            'branch_latitude' => 31.23352,
-            'branch_longitude' => 29.95288,
+            'branch_address' => '10 Bastour, Bab Sharqi WA Wabour Al Meyah, Bab Shar\', Alexandria Governorate 5422010, Egypt',
+            'branch_latitude' => 31.17102183,
+            'branch_longitude' => 29.89180945,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -124,11 +180,11 @@ class ContactUsApiTest extends TestCase
         $this->assertSame([
             'success' => true,
             'data' => [
-                'phone' => '16870',
-                'email' => 'info@elnisr.com',
-                'address' => '6XWP+2QG, As Soyouf Qebli, Montaza 1, Alexandria Governorate 5516007, Egypt',
-                'latitude' => 31.23352,
-                'longitude' => 29.95288,
+                'phone' => null,
+                'email' => null,
+                'address' => null,
+                'latitude' => null,
+                'longitude' => null,
                 'title' => null,
                 'description' => null,
                 'image' => null,
@@ -138,6 +194,17 @@ class ContactUsApiTest extends TestCase
                 'description_en' => null,
                 'address_ar' => null,
                 'address_en' => null,
+                'branches' => [
+                    [
+                        'id' => 11,
+                        'branch_name' => 'Alexandria',
+                        'address' => '10 Bastour, Bab Sharqi WA Wabour Al Meyah, Bab Shar\', Alexandria Governorate 5422010, Egypt',
+                        'phone' => '0111122223',
+                        'email' => 'alex@elnisr.online',
+                        'latitude' => 31.17102183,
+                        'longitude' => 29.89180945,
+                    ],
+                ],
             ],
         ], $response->getData(true));
     }

@@ -5503,6 +5503,7 @@ return [
 	"must_upload_colour_wise_images_first._Colour_is_shown_in_the_image_section_top_right" => "Must upload colour wise images first. Colour is shown in the image section top right",
 	"must_upload_colour_wise_images_first._Colour_is_shown_in_the_image_section_top_right." => "Must upload colour wise images first. Colour is shown in the image section top right.",
 	"must_use_country_code_before_phone_number" => "Must use country code before phone number",
+	"you_can_use_local_or_international_phone_number_format" => "You can use local or international phone number format",
 	"my O updated" => "My O updated",
 	"my product" => "My product",
 	"my update" => "My update",
