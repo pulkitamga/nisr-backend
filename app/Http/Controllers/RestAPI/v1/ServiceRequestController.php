@@ -115,16 +115,36 @@ class ServiceRequestController extends Controller
             return response()->json(['message' => 'Please login first'], 401);
         }
 
+        $resolvedService = $this->resolveService(
+            rawServiceId: $request->input('service_id'),
+            serviceReference: $request->input('service_reference')
+        );
+
+        if (!$resolvedService) {
+            return response()->json([
+                'errors' => [
+                    [
+                        'code' => 'invalid_service',
+                        'message' => 'Selected service is not available.',
+                    ],
+                ],
+            ], 422);
+        }
+
+        $validated = $request->validated();
+        $validated['service_id'] = (int) $resolvedService->id;
+
         try {
             $ticket = $this->serviceRequestSubmissionService->submit(
-                validated: $request->validated(),
+                validated: $validated,
                 customer: $customer
             );
         } catch (\Throwable $exception) {
             report($exception);
             Log::error('Service request API creation failed', [
                 'user_id' => $customer->id,
-                'service_id' => $request->input('service_id'),
+                'service_id' => $validated['service_id'] ?? $request->input('service_id'),
+                'service_reference' => $request->input('service_reference'),
                 'service_option' => $request->input('service_option'),
                 'error' => $exception->getMessage(),
             ]);
@@ -144,6 +164,36 @@ class ServiceRequestController extends Controller
             'ticket_id' => $ticket->id,
             'ticket' => $this->formatSummary($ticket),
         ], 201);
+    }
+
+    private function resolveService(mixed $rawServiceId, ?string $serviceReference): ?Service
+    {
+        $serviceId = is_numeric($rawServiceId) ? (int) $rawServiceId : null;
+        $trimmedReference = is_string($serviceReference) ? trim($serviceReference) : null;
+
+        if ($serviceId !== null && $serviceId > 0) {
+            $service = Service::query()->find($serviceId);
+            if ($service) {
+                return $service;
+            }
+        }
+
+        if ($trimmedReference !== null && $trimmedReference !== '') {
+            $service = Service::query()
+                ->where('service_id', $trimmedReference)
+                ->first();
+            if ($service) {
+                return $service;
+            }
+        }
+
+        if ($serviceId !== null && $serviceId > 0) {
+            return Service::query()
+                ->where('product_id', $serviceId)
+                ->first();
+        }
+
+        return null;
     }
 
     public function index(Request $request): JsonResponse

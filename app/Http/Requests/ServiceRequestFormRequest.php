@@ -23,7 +23,8 @@ class ServiceRequestFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'service_id' => 'required|exists:services,id',
+            'service_id' => 'required',
+            'service_reference' => 'nullable|string',
             'customer_id' => 'nullable|exists:users,id',
             'service_option' => 'required|string|in:in_shop,mobile',
 
