@@ -1375,7 +1375,7 @@
                                                             <div class="text-sm-center text-start">
                                                                 <h6
                                                                     class="media-tab-title text-nowrap mb-0 text-capitalize fs-14">
-                                                                    {{ translate('preparing_shipment') }}
+                                                                    {{ translate('order_Shipped') }}
                                                                 </h6>
                                                             </div>
                                                             @if (in_array($order['order_status'], ['processing', 'processed', 'out_for_delivery', 'delivered']))
@@ -1426,7 +1426,7 @@
                                                         <div class="media-body">
                                                             <div class="text-sm-center text-start">
                                                                 <h6 class="media-tab-title text-nowrap mb-0 fs-14">
-                                                                    {{ translate('order_Shipped') }}</h6>
+                                                                    {{ translate('order_delivered') }}</h6>
                                                             </div>
                                                             @if ($order['order_status'] == 'delivered')
                                                                 <div

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\Contact;
 use App\Models\ContactPageModel;
 use App\Models\GuestUser;
@@ -25,7 +26,18 @@ class GeneralController extends Controller
             $contact = ContactPageModel::query()->latest('id')->first();
         }
 
-        if (!$contact) {
+        $branch = Branch::query()
+            ->where('id', '!=', 1)
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNotNull('phone')
+                    ->orWhereNotNull('email')
+                    ->orWhereNotNull('branch_address');
+            })
+            ->orderBy('id')
+            ->first();
+
+        if (!$contact && !$branch) {
             return response()->json([
                 'success' => true,
                 'data' => null,
@@ -35,11 +47,11 @@ class GeneralController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'phone' => $contact->phone,
-                'email' => $contact->email,
-                'address' => $contact->location,
-                'latitude' => null,
-                'longitude' => null,
+                'phone' => $this->preferredValue($contact?->phone, $branch?->phone),
+                'email' => $this->preferredValue($contact?->email, $branch?->email),
+                'address' => $this->preferredValue($contact?->location, $branch?->branch_address),
+                'latitude' => $branch?->branch_latitude,
+                'longitude' => $branch?->branch_longitude,
                 'title' => null,
                 'description' => null,
                 'image' => null,
@@ -51,6 +63,16 @@ class GeneralController extends Controller
                 'address_en' => null,
             ],
         ], 200);
+    }
+
+    private function preferredValue(mixed $primary, mixed $fallback): mixed
+    {
+        $primaryValue = is_string($primary) ? trim($primary) : $primary;
+        if (!empty($primaryValue)) {
+            return $primaryValue;
+        }
+
+        return is_string($fallback) ? trim($fallback) : $fallback;
     }
 
     public function faq(): JsonResponse
