@@ -9,7 +9,6 @@
             --wr-secondary: #1d4ed8;
             --wr-soft: rgba(29, 78, 216, 0.14);
         }
-
         .warranty-sla-page .report-hero {
             background: linear-gradient(135deg, var(--wr-primary) 0%, var(--wr-secondary) 100%);
             color: #fff;
@@ -17,7 +16,6 @@
             padding: 24px;
             box-shadow: 0 12px 30px rgba(30, 64, 175, 0.24);
         }
-
         .warranty-sla-page .filter-card,
         .warranty-sla-page .metric-card,
         .warranty-sla-page .chart-card,
@@ -25,16 +23,13 @@
             border-radius: 14px;
             border: 1px solid #e5e7eb;
         }
-
         .warranty-sla-page .metric-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-
         .warranty-sla-page .metric-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(29, 78, 216, 0.12);
         }
-
         .warranty-sla-page .metric-label {
             color: #64748b;
             font-size: 0.78rem;
@@ -43,14 +38,12 @@
             font-weight: 600;
             margin-bottom: 8px;
         }
-
         .warranty-sla-page .metric-value {
             margin: 0;
             font-size: 1.5rem;
             font-weight: 700;
             color: #0f172a;
         }
-
         .warranty-sla-page .badge-soft {
             background: var(--wr-soft);
             color: var(--wr-secondary);
@@ -59,7 +52,6 @@
             padding: 4px 10px;
             font-weight: 600;
         }
-
         .warranty-sla-page .table thead th {
             text-transform: uppercase;
             font-size: 0.74rem;
@@ -67,7 +59,6 @@
             border-top: none;
             white-space: nowrap;
         }
-
         .warranty-sla-page .chart-holder {
             min-height: 280px;
         }
@@ -76,13 +67,10 @@
 
 @section('content')
     @php
-        $isRtl =
-            session('direction') === 'rtl' ||
-            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
 
-    <div class="content container-fluid warranty-sla-page {{ $isRtl ? 'text-right' : '' }}"
-        dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid warranty-sla-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
@@ -100,58 +88,39 @@
 
         <div class="card filter-card mb-3">
             <div class="card-body">
-                <form method="GET" action="{{ url()->current() }}">
+                <form method="GET" action="{{ url()->current() }}" id="filter-form">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
-                                <option value="this_year"
-                                    {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
-                                <option value="this_month"
-                                    {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
-                                <option value="this_week"
-                                    {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
-                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
-                                    {{ translate('today') }}</option>
-                                <option value="custom_date"
-                                    {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>
-                                    {{ translate('custom_range') }}</option>
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
+                                <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
                             </select>
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('from') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
-                        <div class="col-md-2 custom-date-range"
-                            style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
+                        <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('sla_type') }}</label>
                             <select class="form-control" name="sla_type">
-                                <option value="all" {{ ($filters['sla_type'] ?? 'all') === 'all' ? 'selected' : '' }}>
-                                    {{ translate('all') }}</option>
-                                <option value="response"
-                                    {{ ($filters['sla_type'] ?? '') === 'response' ? 'selected' : '' }}>
-                                    {{ translate('first_response_sla') }}</option>
-                                <option value="resolution"
-                                    {{ ($filters['sla_type'] ?? '') === 'resolution' ? 'selected' : '' }}>
-                                    {{ translate('resolution_sla') }}</option>
+                                <option value="all" {{ ($filters['sla_type'] ?? 'all') === 'all' ? 'selected' : '' }}>{{ translate('all') }}</option>
+                                <option value="response" {{ ($filters['sla_type'] ?? '') === 'response' ? 'selected' : '' }}>{{ translate('first_response_sla') }}</option>
+                                <option value="resolution" {{ ($filters['sla_type'] ?? '') === 'resolution' ? 'selected' : '' }}>{{ translate('resolution_sla') }}</option>
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.warranty.report.sla') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
-                            <a href="{{ route('admin.warranty.report.sla', array_merge(request()->query(), ['download' => 'excel'])) }}"
-                                class="btn btn-outline-success">{{ translate('excel') }}</a>
-                            <a href="{{ route('admin.warranty.report.sla', array_merge(request()->query(), ['download' => 'pdf'])) }}"
-                                class="btn btn-outline-danger">{{ translate('PDF') }}</a>
+                            <a href="{{ route('admin.warranty.report.sla') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <a href="{{ route('admin.warranty.report.sla', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success">{{ translate('excel') }}</a>
+                            <a href="#" class="btn btn-outline-danger" id="pdf-download-btn">{{ translate('PDF') }}</a>
                         </div>
                     </div>
                 </form>
@@ -267,10 +236,7 @@
                     <tbody>
                         @forelse($slaDetails as $row)
                             @php
-                                $slaTypeLabel =
-                                    $row->sla_type_key === 'response'
-                                        ? translate('first_response_sla')
-                                        : translate('resolution_sla');
+                                $slaTypeLabel = $row->sla_type_key === 'response' ? translate('first_response_sla') : translate('resolution_sla');
                             @endphp
                             <tr>
                                 <td>{{ $slaDetails->firstItem() + $loop->index }}</td>
@@ -279,21 +245,17 @@
                                 <td>{{ $row->serial_number }}</td>
                                 <td>{{ $row->product_name }}</td>
                                 <td>{{ \Carbon\Carbon::parse($row->due_date)->format('Y-m-d H:i') }}</td>
+                                <td>{{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->format('Y-m-d H:i') : '-' }}</td>
                                 <td>
-                                    {{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->format('Y-m-d H:i') : '-' }}
-                                </td>
-                                <td>
-                                    <span
-                                        class="badge badge-soft-{{ (int) $row->is_within_sla === 1 ? 'success' : 'danger' }}">
+                                    <span class="badge badge-soft-{{ (int) $row->is_within_sla === 1 ? 'success' : 'danger' }}">
                                         {{ (int) $row->is_within_sla === 1 ? translate('on_time') : translate('breached') }}
                                     </span>
                                 </td>
-                                <td>{{ translate($row->status) }}</td>
+                                <td>{{ ucwords(str_replace('_', ' ', $row->status)) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}
-                                </td>
+                                <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -308,22 +270,20 @@
 
 @push('script')
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/vendor/chart.js/dist/Chart.min.js') }}"></script>
-    <script>
-        'use strict';
+<script>
+    'use strict';
 
-        (function() {
+    (function() {
+        const complianceCtx = document.getElementById('sla-compliance-chart');
+        if (complianceCtx) {
             const complianceData = @json($slaComplianceChartData);
-            const typeData = @json($slaTypeChartData);
-            const trendData = @json($slaTrendChartData);
-
-            const complianceCtx = document.getElementById('sla-compliance-chart');
-            if (complianceCtx) {
+            if (complianceData && complianceData.labels && complianceData.labels.length > 0) {
                 new Chart(complianceCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: complianceData.labels || [],
+                        labels: complianceData.labels,
                         datasets: [{
-                            data: complianceData.counts || [],
+                            data: complianceData.counts,
                             backgroundColor: ['#16a34a', '#dc2626']
                         }]
                     },
@@ -331,23 +291,26 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
+                            legend: { position: 'bottom' }
                         }
                     }
                 });
+            } else {
+                complianceCtx.parentNode.innerHTML = '<div class="text-center py-4 text-muted">{{ translate("no_data_available") }}</div>';
             }
+        }
 
-            const typeCtx = document.getElementById('sla-type-chart');
-            if (typeCtx) {
+        const typeCtx = document.getElementById('sla-type-chart');
+        if (typeCtx) {
+            const typeData = @json($slaTypeChartData);
+            if (typeData && typeData.labels && typeData.labels.length > 0) {
                 new Chart(typeCtx, {
                     type: 'bar',
                     data: {
-                        labels: typeData.labels || [],
+                        labels: typeData.labels,
                         datasets: [{
                             label: @json(translate('total_deadlines')),
-                            data: typeData.counts || [],
+                            data: typeData.counts,
                             backgroundColor: ['#2563eb', '#f59e0b', '#64748b'],
                             borderRadius: 8
                         }]
@@ -355,32 +318,34 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
+                            y: { beginAtZero: true, ticks: { precision: 0 } }
                         }
                     }
                 });
-            }
+            } else {
+                typeCtx.style.display = 'none';
 
-            const trendCtx = document.getElementById('sla-trend-chart');
-            if (trendCtx) {
+                typeCtx.insertAdjacentHTML(
+                    'afterend',
+                    '<div class="text-center py-4 text-muted">{{ translate("no_data_available") }}</div>'
+                );
+            }
+        }
+
+        const trendCtx = document.getElementById('sla-trend-chart');
+        if (trendCtx) {
+            const trendData = @json($slaTrendChartData);
+            if (trendData && trendData.labels && trendData.labels.length > 0) {
                 new Chart(trendCtx, {
+                    type: 'bar',
                     data: {
-                        labels: trendData.labels || [],
+                        labels: trendData.labels,
                         datasets: [{
                             type: 'line',
                             label: @json(translate('total_deadlines')),
-                            data: trendData.total || [],
+                            data: trendData.total,
                             borderColor: '#1d4ed8',
                             backgroundColor: 'rgba(29, 78, 216, 0.2)',
                             borderWidth: 2,
@@ -389,7 +354,7 @@
                         }, {
                             type: 'bar',
                             label: @json(translate('breached')),
-                            data: trendData.breached || [],
+                            data: trendData.breached,
                             backgroundColor: 'rgba(220, 38, 38, 0.7)',
                             borderRadius: 8
                         }]
@@ -397,82 +362,86 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        },
+                        plugins: { legend: { position: 'bottom' } },
                         scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
+                            y: { beginAtZero: true, ticks: { precision: 0 } }
                         }
                     }
                 });
+            } else {
+                trendCtx.parentNode.innerHTML = '<div class="text-center py-4 text-muted">{{ translate("no_data_available") }}</div>';
             }
-        })();
+        }
+    })();
 
-        $(document).ready(function() {
-            $('#date_type').on('change', function() {
-                if ($(this).val() === 'custom_date') {
-                    $('.custom-date-range').show();
-                } else {
-                    $('.custom-date-range').hide();
-                }
-            });
+    $(document).ready(function() {
+        $('#date_type').on('change', function() {
+            if ($(this).val() === 'custom_date') {
+                $('.custom-date-range').show();
+            } else {
+                $('.custom-date-range').hide();
+            }
         });
-       $('.btn-outline-danger[href*="download=pdf"]').on('click', function(e) {
-    e.preventDefault();
 
-    setTimeout(function() {
+        $('#pdf-download-btn').on('click', function(e) {
+            e.preventDefault();
 
-        const complianceCanvas = document.getElementById('sla-compliance-chart');
-        const typeCanvas = document.getElementById('sla-type-chart');
-        const trendCanvas = document.getElementById('sla-trend-chart');
+            const complianceCanvas = document.getElementById('sla-compliance-chart');
+            const typeCanvas = document.getElementById('sla-type-chart');
+            const trendCanvas = document.getElementById('sla-trend-chart');
 
-        if (complianceCanvas && typeCanvas && trendCanvas) {
+            if (!complianceCanvas || !typeCanvas || !trendCanvas) {
+                alert('{{ translate("charts_not_found") }}');
+                return;
+            } 
+
             try {
-                // ✅ Use compressed images (better for mPDF)
-                const complianceImage = complianceCanvas.toDataURL('image/jpeg', 0.7);
-                const typeImage = typeCanvas.toDataURL('image/jpeg', 0.7);
-                const trendImage = trendCanvas.toDataURL('image/jpeg', 0.7);
+                const complianceImage = complianceCanvas.toDataURL('image/png'); // png recommended
+                const typeImage = typeCanvas.toDataURL('image/png');
+                const trendImage = trendCanvas.toDataURL('image/png');
 
                 const form = document.createElement('form');
                 form.method = 'POST';
-
-                // ✅ FIXED: correct route (NOT href)
                 form.action = "{{ route('admin.warranty.report.sla') }}";
+                form.style.display = 'none';
 
-                // CSRF
-                form.innerHTML += `<input type="hidden" name="_token" value="{{ csrf_token() }}">`;
+                // CSRF token
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = "{{ csrf_token() }}";
+                form.appendChild(csrfInput);
 
-                // ✅ IMPORTANT: tell controller it's PDF
-                form.innerHTML += `<input type="hidden" name="download" value="pdf">`;
+                // Download type
+                const downloadInput = document.createElement('input');
+                downloadInput.type = 'hidden';
+                downloadInput.name = 'download';
+                downloadInput.value = 'pdf';
+                form.appendChild(downloadInput);
 
-                // charts
-                form.innerHTML += `<input type="hidden" name="compliance_chart" value="${complianceImage}">`;
-                form.innerHTML += `<input type="hidden" name="type_chart" value="${typeImage}">`;
-                form.innerHTML += `<input type="hidden" name="trend_chart" value="${trendImage}">`;
+                // Chart images
+                const charts = {
+                    'compliance_chart': complianceImage,
+                    'type_chart': typeImage,
+                    'trend_chart': trendImage
+                };
 
-                // keep filters
-                const urlParams = new URLSearchParams(window.location.search);
-                urlParams.forEach((value, key) => {
-                    form.innerHTML += `<input type="hidden" name="${key}" value="${value}">`;
-                });
+                for (const key in charts) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = charts[key];
+                    form.appendChild(input);
+                }
 
                 document.body.appendChild(form);
                 form.submit();
 
-            } catch (error) {
-                console.error(error);
-                alert('Chart capture failed');
+            } catch (err) {
+                console.error('Chart capture failed:', err);
+                alert('{{ translate("chart_capture_failed") }}');
             }
-        }
-
-    }, 400);
-});
-    </script>
+        });
+    });
+</script>
 @endpush

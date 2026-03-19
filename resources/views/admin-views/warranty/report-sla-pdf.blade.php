@@ -19,7 +19,6 @@
             text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
-        /* HEADER */
         .report-header {
             background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%);
             color: white;
@@ -28,56 +27,46 @@
             margin-bottom: 20px;
             overflow: hidden;
         }
-
         .header-content {
             float: left;
             width: 70%;
         }
-
         .logo-container {
             float: right;
             width: 25%;
             text-align: right;
         }
-
         .logo-container img {
             max-width: 100px;
             max-height: 50px;
             object-fit: contain;
         }
-
         .header-content h2 {
             margin: 0 0 5px 0;
             font-size: 20px;
         }
-
         .header-content p {
             margin: 0;
             opacity: 0.9;
             font-size: 11px;
         }
-
         .clearfix::after {
             content: "";
             clear: both;
             display: table;
         }
-
-        /* KPI CONTAINER */
         .kpi-container {
             background-color: #f3f6fb;
             padding: 10px 5px;
             border-radius: 12px;
             margin-bottom: 20px;
         }
-
         .kpi-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 10px 0;
             table-layout: fixed;
         }
-
         .kpi-table td {
             background-color: #ffffff;
             border: 1px solid #e5e7eb;
@@ -87,7 +76,6 @@
             height: 55px;
             text-align: left;
         }
-
         .kpi-label {
             color: #5f6672;
             font-size: 10px;
@@ -96,24 +84,19 @@
             margin: 0 0 8px 0;
             text-align: center;
         }
-
         .kpi-value {
             font-size: 18px;
             font-weight: 700;
             color: #0f172a;
             margin: 0;
-            text-align: left;
+            text-align: center;
         }
-
         .kpi-value.percentage {
             color: #0f766e;
         }
-
         .kpi-value.small {
             font-size: 14px;
         }
-
-        /* CHART ROW */
         .chart-row {
             width: 100%;
             margin-bottom: 20px;
@@ -121,26 +104,13 @@
             overflow: hidden;
             page-break-inside: avoid;
         }
-
-
-        .chart-trend {
-            width: 68%;
-            float: left;
-            margin-right: 2%;
-        }
-
-        .chart-stage {
-            width: 30%;
-            float: left;
-        }
-
         .chart-col {
             border: 1px solid #e5e7eb;
             border-radius: 6px;
             padding: 12px;
             background: white;
+            height: 200px;
         }
-
         .chart-title {
             font-size: 13px;
             font-weight: bold;
@@ -149,107 +119,13 @@
             padding-bottom: 5px;
             margin: 0 0 12px 0;
         }
-
         .chart-image {
             width: 100%;
             height: auto;
-            max-height: 170px;
+            max-height: 160px;
+            object-fit: contain;
         }
-
-        /* TABLE */
-        .table-container {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-top: 15px;
-        }
-
-        .table-header {
-            background: #0f766e;
-            color: white;
-            padding: 10px 12px;
-        }
-
-        .table-header h3 {
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .chart-container {
-            margin: 20px 0;
-        }
-
-        .chart-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .bar-chart {
-            display: flex;
-            align-items: flex-end;
-            height: 150px;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .bar-wrapper {
-            flex: 1;
-            text-align: center;
-        }
-
-        .bar {
-            background-color: #0177CD;
-            border-radius: 4px 4px 0 0;
-            width: 100%;
-            min-height: 2px;
-        }
-
-        .bar-label {
-            margin-top: 5px;
-            font-size: 9px;
-        }
-
-        .bar-value {
-            font-size: 8px;
-        }
-
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10px;
-        }
-
-        th {
-            background: #e5e7eb;
-            font-weight: 600;
-            padding: 8px 6px;
-            text-align: center;
-        }
-
-        td {
-            padding: 6px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: center;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:nth-child(even) {
-            background: #f9fafb;
-        }
-
-        .value-ltr {
-            direction: ltr;
-            unicode-bidi: embed;
-            display: inline-block;
-        }
-
-        /* NO DATA MESSAGE */
-        .no-data-message {
+        .no-data {
             text-align: center;
             padding: 30px;
             border: 1px solid #e5e7eb;
@@ -259,8 +135,48 @@
             font-size: 12px;
             margin: 20px 0;
         }
-
-        /* FOOTER */
+        .table-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .table-header {
+            background: #0f766e;
+            color: white;
+            padding: 10px 12px;
+        }
+        .table-header h3 {
+            margin: 0;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        th {
+            background: #e5e7eb;
+            font-weight: 600;
+            padding: 8px 6px;
+            text-align: center;
+        }
+        td {
+            padding: 6px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .value-ltr {
+            direction: ltr;
+            unicode-bidi: embed;
+            display: inline-block;
+        }
         .footer {
             margin-top: 20px;
             text-align: center;
@@ -269,50 +185,29 @@
             border-top: 1px dashed #d1d5db;
             padding-top: 8px;
         }
-
         .footer-table {
             width: 100%;
             border-collapse: collapse;
             border: none;
         }
-
         .footer-table td {
             border: none;
             padding: 2px;
         }
-
-        /* RTL Support */
         @if ($isRtl)
             .header-content {
                 float: right;
                 text-align: right;
             }
-
             .logo-container {
                 float: left;
                 text-align: left;
-            }
-
-            .chart-trend {
-                float: right;
-                margin-right: 0;
-                margin-left: 2%;
-            }
-
-            .chart-stage {
-                float: right;
             }
         @endif
     </style>
 </head>
 
 <body>
-    <div style="font-size:10px; color:red;">
-    complianceChartImage: {{ isset($complianceChartImage) ? substr($complianceChartImage, 0, 50) : 'NOT SET' }} <br>
-    typeChartImage: {{ isset($typeChartImage) ? substr($typeChartImage, 0, 50) : 'NOT SET' }} <br>
-    trendChartImage: {{ isset($trendChartImage) ? substr($trendChartImage, 0, 50) : 'NOT SET' }}
-</div>
-    <!-- HEADER -->
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('sla_report') }}</h2>
@@ -320,31 +215,45 @@
         </div>
         <div class="logo-container">
             @php
-                $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
+                $logoSrc = '';
+                $logoArray = $companyLogo ?? [];
+                if (is_array($logoArray) && isset($logoArray['key'])) {
+                    $logoPath = storage_path('app/public/company/' . $logoArray['key']);
+                } else {
+                    $logoPath = storage_path('app/public/company/' . $logoArray);
+                }
+
+                if (isset($logoPath) && file_exists($logoPath)) {
+                    $logoData = base64_encode(file_get_contents($logoPath));
+                    $extension = pathinfo($logoPath, PATHINFO_EXTENSION);
+                    $mime = $extension == 'svg' ? 'svg+xml' : $extension;
+                    $logoSrc = 'data:image/' . $mime . ';base64,' . $logoData;
+                } else {
+                    $logoPathPublic = public_path('storage/company/' . (is_array($logoArray) ? ($logoArray['key'] ?? '') : $logoArray));
+                    if (file_exists($logoPathPublic)) {
+                        $logoData = base64_encode(file_get_contents($logoPathPublic));
+                        $extension = pathinfo($logoPathPublic, PATHINFO_EXTENSION);
+                        $mime = $extension == 'svg' ? 'svg+xml' : $extension;
+                        $logoSrc = 'data:image/' . $mime . ';base64,' . $logoData;
+                    }
+                }
             @endphp
-            @if (!empty($logo))
-                <img src="{{ $logo }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px;">
-            @elseif(file_exists($defaultLogoPath))
-                <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
-                    alt="Logo" style="max-width:100px; max-height:50px;">
+            @if($logoSrc)
+                <img src="{{ $logoSrc }}" style="max-width:100px; max-height:50px;">
             @endif
         </div>
     </div>
 
-    <!-- KPI CARDS - 5 in one row -->
     <div class="kpi-container">
         <table class="kpi-table" cellpadding="0" cellspacing="0">
             <tr>
                 <td style="width: 20%;">
                     <div class="kpi-label">{{ translate('total_deadlines') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['total_deadlines'] ?? 0)) }}</strong>
-                    </div>
+                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['total_deadlines'] ?? 0)) }}</strong></div>
                 </td>
                 <td style="width: 20%;">
                     <div class="kpi-label">{{ translate('sla_compliance') }}</div>
-                    <div class="kpi-value percentage">
-                        <strong>{{ number_format((float) ($kpi['compliance'] ?? 0), 1) }}%</strong>
-                    </div>
+                    <div class="kpi-value percentage"><strong>{{ number_format((float) ($kpi['compliance'] ?? 0), 1) }}%</strong></div>
                 </td>
                 <td style="width: 20%;">
                     <div class="kpi-label">{{ translate('on_time') }}</div>
@@ -356,74 +265,59 @@
                 </td>
                 <td style="width: 20%;">
                     <div class="kpi-label">{{ translate('avg_breach_hours') }}</div>
-                    <div class="kpi-value small"><strong>
+                    <div class="kpi-value small">
+                        <strong>
                             {{ ($kpi['avg_breach_hours'] ?? null) !== null ? number_format((float) $kpi['avg_breach_hours'], 1) . 'h' : translate('na') }}
-                        </strong></div>
+                        </strong>
+                    </div>
                 </td>
             </tr>
         </table>
     </div>
-@if (!empty($complianceChartImage) || !empty($typeChartImage) || isset($kpi['breached']))
-<table width="100%" style="margin-bottom:20px;">
-    <tr>
 
-        <!-- Compliance -->
-        <td width="33%">
-            <div class="chart-col">
-                <div class="chart-title">
-                    {{ translate('sla_compliance_breakdown') }} ({{ $dateRange }})
+    <table width="100%" style="margin-bottom:20px;">
+        <tr>
+            <td width="33%" style="padding-right:10px;">
+                <div class="chart-col">
+                    <div class="chart-title">{{ translate('sla_compliance_breakdown') }} ({{ $dateRange }})</div>
+                    @if(!empty($complianceChartImage))
+                        <img src="{{ $complianceChartImage }}" class="chart-image">
+                    @else
+                        <div class="no-data">{{ translate('no_data_available') }}</div>
+                    @endif
                 </div>
-
-                @if (!empty($complianceChartImage))
-                    <img src="{{ $complianceChartImage }}" class="chart-image">
-                @else
-                    <div style="height:160px;text-align:center;padding-top:60px;color:#9ca3af;">
-                        {{ translate('no_data_available') }}
+            </td>
+            <td width="33%" style="padding-right:10px; padding-left:10px;">
+                <div class="chart-col">
+                    <div class="chart-title">{{ translate('sla_by_type') }} ({{ $dateRange }})</div>
+                    @if(!empty($typeChartImage))
+                        <img src="{{ $typeChartImage }}" class="chart-image">
+                    @else
+                        <div class="no-data">{{ translate('no_data_available') }}</div>
+                    @endif
+                </div>
+            </td>
+            <td width="34%" style="padding-left:10px;">
+                <div class="chart-col" style="text-align:center;">
+                    <div class="chart-title">{{ translate('breached_claims') }}</div>
+                    <div style="margin-top:20px;">
+                        <h1 style="font-size:40px; color:#dc2626;">{{ number_format((int)($kpi['breached'] ?? 0)) }}</h1>
+                        <p style="font-size:11px; color:#6b7280;">{{ translate('deadline_breaches_in_selected_period') }}</p>
                     </div>
-                @endif
-            </div>
-        </td>
-
-        <!-- Type -->
-        <td width="33%">
-            <div class="chart-col">
-                <div class="chart-title">
-                    {{ translate('sla_by_type') }} ({{ $dateRange }})
                 </div>
+            </td>
+        </tr>
+    </table>
 
-                @if (!empty($typeChartImage))
-                    <img src="{{ $typeChartImage }}" class="chart-image">
-                @else
-                    <div style="height:160px;text-align:center;padding-top:60px;color:#9ca3af;">
-                        {{ translate('no_data_available') }}
-                    </div>
-                @endif
-            </div>
-        </td>
+    @if(!empty($trendChartImage))
+        <div style="margin-top:20px; page-break-inside:avoid;">
+            <div class="chart-title">{{ translate('sla_trend') }} ({{ $dateRange }})</div>
+            <img src="{{ $trendChartImage }}" style="width:100%; max-height:200px; object-fit:contain; border:1px solid #e5e7eb; border-radius:6px; padding:8px;">
+        </div>
+    @else
+        <div class="no-data" style="margin-top:20px;">{{ translate('no_trend_data_available') }}</div>
+    @endif
 
-        <!-- Breached -->
-        <td width="34%">
-            <div class="chart-col" style="text-align:center; height:170px;">
-                <div class="chart-title">{{ translate('breached_claims') }}</div>
-
-                <div style="margin-top:30px;">
-                    <h1 style="font-size:40px; color:#dc2626; margin:0;">
-                        {{ number_format((int) ($kpi['breached'] ?? 0)) }}
-                    </h1>
-
-                    <p style="font-size:11px; color:#6b7280;">
-                        {{ translate('deadline_breaches_in_selected_period') }}
-                    </p>
-                </div>
-            </div>
-        </td>
-
-    </tr>
-</table>
-@endif
-
-
-    <!-- SLA DETAILS TABLE -->
     <div class="table-container">
         <div class="table-header">
             <h3>{{ translate('sla_details') }} ({{ $dateRange }})</h3>
@@ -447,15 +341,12 @@
                     @foreach ($slaRowsForPdf as $row)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $row->sla_type_key === 'response' ? translate('first_response_sla') : translate('resolution_sla') }}
-                            </td>
+                            <td>{{ $row->sla_type_key === 'response' ? translate('first_response_sla') : translate('resolution_sla') }}</td>
                             <td class="value-ltr"><strong>{{ $row->claim_number }}</strong></td>
                             <td class="value-ltr">{{ $row->serial_number }}</td>
                             <td>{{ $row->product_name }}</td>
                             <td class="value-ltr">{{ \Carbon\Carbon::parse($row->due_date)->format('Y-m-d H:i') }}</td>
-                            <td class="value-ltr">
-                                {{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->format('Y-m-d H:i') : '-' }}
-                            </td>
+                            <td class="value-ltr">{{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->format('Y-m-d H:i') : '-' }}</td>
                             <td>
                                 <span style="color:{{ (int) $row->is_within_sla === 1 ? '#16a34a' : '#dc2626' }};">
                                     <strong>{{ (int) $row->is_within_sla === 1 ? translate('on_time') : translate('breached') }}</strong>
@@ -467,40 +358,21 @@
                 </tbody>
             </table>
         @else
-            <div class="no-data-message">
-                {{ translate('no_data_found_for_selected_period') }}
-            </div>
+            <div class="no-data">{{ translate('no_data_found_for_selected_period') }}</div>
         @endif
     </div>
 
-    <!-- FOOTER -->
     <div class="footer">
-
-        <!-- charts -->
-        @if (!empty($slaComplianceChartData['labels']))
-            <div class="chart-container">
-                ...
-            </div>
-        @endif
-
         <table class="footer-table">
             <tr>
-                <td width="20%" style="text-align:{{ $isRtl ? 'right' : 'left' }};">
-                    Page {PAGENO}
-                </td>
+                <td width="20%" style="text-align:{{ $isRtl ? 'right' : 'left' }};">Page {PAGENO}</td>
                 <td width="60%" style="text-align:center;">
                     {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} |
-                    {{ translate('sla_report') }}<br>
-                    {{ translate('generated_by') }}:
-                    <span style="color:#0f766e;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
-                    <span style="color:#0f766e;">{{ config('app.name') }}</span>
+                    {{ $companyName ?? config('app.name') }}
                 </td>
                 <td width="20%"></td>
             </tr>
         </table>
-
     </div>
-
 </body>
-
 </html>

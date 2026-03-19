@@ -673,7 +673,7 @@ class WarrantyController extends Controller
     }
 
     // Reports (SLA)
-   public function reportSLA(Request $request): View|BinaryFileResponse|Response
+     public function reportSLA(Request $request): View|BinaryFileResponse|Response
     {
         [$fromDate, $toDate] = $this->resolveAnalyticsDateRange($request);
         $filters = [
@@ -823,10 +823,14 @@ class WarrantyController extends Controller
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             $slaRowsForPdf = $slaSummaryRows->values();
 
-            // Get chart images from request
+            // चार्ट इमेज प्राप्त करें (POST से आई हैं)
             $complianceChartImage = $request->input('compliance_chart');
             $typeChartImage = $request->input('type_chart');
             $trendChartImage = $request->input('trend_chart');
+
+            // कंपनी का लोगो और नाम (जरूरत हो तो)
+            $companyName = getWebConfig('company_name') ?? 'ElNisr';
+            $companyLogo = getWebConfig('company_web_logo') ?? [];
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-sla-pdf',
@@ -839,9 +843,10 @@ class WarrantyController extends Controller
                     'isRtl',
                     'complianceChartImage',
                     'typeChartImage',
-                    'trendChartImage'
+                    'trendChartImage',
+                    'companyName',
+                    'companyLogo'
                 ),
-
                 fileName: 'warranty-sla-report.pdf',
                 orientation: 'landscape'
             );
@@ -864,7 +869,6 @@ class WarrantyController extends Controller
             'toDate'
         ));
     }
-
     // Reports (Activations)
     public function reportActivations(Request $request): View|BinaryFileResponse|Response
     {

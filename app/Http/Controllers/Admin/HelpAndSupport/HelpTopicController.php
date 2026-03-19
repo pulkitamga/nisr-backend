@@ -34,10 +34,11 @@ class HelpTopicController extends BaseController
 
     public function getListView(): View
     {
-        $helps = $this->helpTopicRepo->getListWhere(orderBy: ['id' => 'desc'], filters: ['type' => 'default'], dataLimit: 'all');
-        $translations = [];
+        $helps = $this->helpTopicRepo->getListWhere(orderBy: ['id' => 'desc'],filters: ['type' => 'default'],dataLimit: 'all');
+        //$translations = [];
 
         foreach ($helps as $help) {
+            $help->load('translations');
             foreach ($help->translations as $trans) {
                 $translations[$help->id][$trans->locale][$trans->key] = $trans->value;
             }
