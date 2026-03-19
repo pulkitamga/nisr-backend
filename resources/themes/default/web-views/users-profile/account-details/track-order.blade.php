@@ -166,7 +166,7 @@
                                         </div>
                                         <div class="media-body">
                                             <div class="text-sm-center">
-                                                <h6 class="media-tab-title text-nowrap mb-0 fs-14">{{ translate('order_Shipped')}}</h6>
+                                                <h6 class="media-tab-title text-nowrap mb-0 fs-14">{{ translate('order_delivered')}}</h6>
                                             </div>
                                             @if(($orderDetails['order_status']=='delivered') && \App\Utils\order_status_history($orderDetails['id'],'delivered'))
                                                 <div class="d-flex align-items-center justify-content-sm-center mt-2 gap-2">

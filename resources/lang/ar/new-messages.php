@@ -12154,4 +12154,6 @@ return [
 	"Repair fee" => "Repair fee",
 	"Inspection fee" => "Inspection fee",
 	"payment_handled" => "Payment handled",
+	"Roushdy" => "Roushdy",
+	"El Rehab" => "El Rehab",
 ];

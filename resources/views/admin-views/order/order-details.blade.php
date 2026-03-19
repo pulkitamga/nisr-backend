@@ -9,7 +9,10 @@
 
 @section('content')
     @php
+        use App\Support\AddressDisplayResolver;
+
         $shippingAddress = $shippingAddress ?? ($order['shipping_address_data'] ?? null);
+        $shippingAddressDisplay = AddressDisplayResolver::resolve($shippingAddress);
         $confirmedStageDate = $confirmedStageDate ?? ($order->created_at ?? now());
         $processingStageDate = $processingStageDate ?? $confirmedStageDate;
         $outForDeliveryStageDate = $outForDeliveryStageDate ?? $processingStageDate;
@@ -784,19 +787,19 @@
                                     @endif
                                     <div>
                                         <span>{{ translate('country') }} :</span>
-                                        <strong>{{ $shippingAddress->country ?? '' }}</strong>
+                                        <strong>{{ $shippingAddressDisplay['country'] }}</strong>
                                     </div>
                                     <div>
                                         <span>{{ translate('state') }} :</span>
-                                        <strong>{{ $shippingAddress->state ?? '' }}</strong>
+                                        <strong>{{ $shippingAddressDisplay['state'] }}</strong>
                                     </div>
                                     <div>
                                         <span>{{ translate('city') }} :</span>
-                                        <strong>{{ $shippingAddress->city ?? '' }}</strong>
+                                        <strong>{{ $shippingAddressDisplay['city'] }}</strong>
                                     </div>
                                     <div>
                                         <span>{{ translate('area') }} :</span>
-                                        <strong>{{ $shippingAddress->area ?? '' }}</strong>
+                                        <strong>{{ $shippingAddressDisplay['area'] }}</strong>
                                     </div>
                                     <div>
                                         <span>{{ translate('zip_code') }} :</span>
@@ -820,6 +823,7 @@
                 @endif
                 <div class="card">
                     @php $billing = $order['billing_address_data']; @endphp
+                    @php $billingDisplay = AddressDisplayResolver::resolve($billing); @endphp
                     @if ($billing)
                         <div class="card-body">
                             <div class="d-flex gap-2 align-items-center justify-content-between mb-4">
@@ -854,19 +858,19 @@
                                 @endif
                                 <div>
                                     <span>{{ translate('country') }} :</span>
-                                    <strong>{{ $billing->country }}</strong>
+                                    <strong>{{ $billingDisplay['country'] }}</strong>
                                 </div>
                                 <div>
                                     <span>{{ translate('state') }} :</span>
-                                    <strong>{{ $billing->state ?? '' }}</strong>
+                                    <strong>{{ $billingDisplay['state'] }}</strong>
                                 </div>
                                 <div>
                                     <span>{{ translate('city') }} :</span>
-                                    <strong>{{ $billing->city ?? '' }}</strong>
+                                    <strong>{{ $billingDisplay['city'] }}</strong>
                                 </div>
                                 <div>
                                     <span>{{ translate('area') }} :</span>
-                                    <strong>{{ $billing->area ?? '' }}</strong>
+                                    <strong>{{ $billingDisplay['area'] }}</strong>
                                 </div>
                                 <div>
                                     <span>{{ translate('zip_code') }} :</span>

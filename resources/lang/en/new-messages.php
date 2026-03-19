@@ -12631,4 +12631,5 @@ return [
 	"Service image" => "Service image",
 	"An active warranty already exists for this serial." => "An active warranty already exists for this serial.",
 	"download_csv" => "Download csv",
+	"Roushdy" => "Roushdy",
 ];

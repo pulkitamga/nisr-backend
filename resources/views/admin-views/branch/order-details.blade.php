@@ -1,3 +1,4 @@
+@php use App\Support\AddressDisplayResolver; @endphp
 @php use App\Utils\Helpers; @endphp
 @extends('layouts.back-end.app')
 
@@ -556,6 +557,7 @@
                 @if($physical_product)
                     <div class="card">
                         @php($shipping_address=$order['shipping_address_data'])
+                        @php($shippingAddressDisplay = AddressDisplayResolver::resolve($shipping_address))
                         @if($shipping_address)
                             <div class="card-body">
                                 <div class="d-flex gap-2 align-items-center justify-content-between mb-4">
@@ -579,8 +581,20 @@
                                         <strong>{{$shipping_address->phone}}</strong>
                                     </div>
                                     <div>
+                                        <span>{{translate('country')}}:</span>
+                                        <strong>{{$shippingAddressDisplay['country']}}</strong>
+                                    </div>
+                                    <div>
+                                        <span>{{translate('state')}}:</span>
+                                        <strong>{{$shippingAddressDisplay['state']}}</strong>
+                                    </div>
+                                    <div>
                                         <span>{{translate('city')}}:</span>
-                                        <strong>{{$shipping_address->city}}</strong>
+                                        <strong>{{$shippingAddressDisplay['city']}}</strong>
+                                    </div>
+                                    <div>
+                                        <span>{{translate('area')}}:</span>
+                                        <strong>{{$shippingAddressDisplay['area']}}</strong>
                                     </div>
                                     <div>
                                         <span>{{translate('zip_code')}} :</span>
@@ -603,6 +617,7 @@
                 @endif
                 <div class="card">
                     @php($billing=$order['billing_address_data'])
+                    @php($billingDisplay = AddressDisplayResolver::resolve($billing))
                     @if($billing)
                         <div class="card-body">
                             <div class="d-flex gap-2 align-items-center justify-content-between mb-4">
@@ -626,8 +641,20 @@
                                     <strong>{{$billing->phone}}</strong>
                                 </div>
                                 <div>
+                                    <span>{{translate('country')}}:</span>
+                                    <strong>{{$billingDisplay['country']}}</strong>
+                                </div>
+                                <div>
+                                    <span>{{translate('state')}}:</span>
+                                    <strong>{{$billingDisplay['state']}}</strong>
+                                </div>
+                                <div>
                                     <span>{{translate('city')}}:</span>
-                                    <strong>{{$billing->city}}</strong>
+                                    <strong>{{$billingDisplay['city']}}</strong>
+                                </div>
+                                <div>
+                                    <span>{{translate('area')}}:</span>
+                                    <strong>{{$billingDisplay['area']}}</strong>
                                 </div>
                                 <div>
                                     <span>{{translate('zip_code')}} :</span>

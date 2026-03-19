@@ -432,20 +432,40 @@ function amountDateUpdate(t) {
     });
 }
 
+function parseMapCoordinate(value) {
+    const parsedValue = parseFloat(value);
+    return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function getMapCoordinates(latitudeSelector, longitudeSelector) {
+    const latitude = parseMapCoordinate($(latitudeSelector).data('latitude'));
+    const longitude = parseMapCoordinate($(longitudeSelector).data('longitude'));
+
+    if (latitude === null || longitude === null) {
+        return null;
+    }
+
+    return { lat: latitude, lng: longitude };
+}
+
 /** shipping address  map */
 async function shippingAddressMap() {
-    let latitude = $("#shipping-latitude").data('latitude');
-    let longitude = $("#shipping-longitude").data('longitude');
-    let myLatLng = {
-        lat: latitude,
-        lng: longitude
+    const canvas = document.getElementById("location_map_canvas_shipping");
+    const coordinates = getMapCoordinates("#shipping-latitude", "#shipping-longitude");
+    if (!canvas || !coordinates || typeof google === 'undefined' || !google.maps) {
+        return null;
+    }
+
+    const myLatLng = {
+        lat: coordinates.lat,
+        lng: coordinates.lng
     };
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-    const map = new google.maps.Map(document.getElementById("location_map_canvas_shipping"), {
+    const map = new google.maps.Map(canvas, {
         center: {
-            lat: latitude,
-            lng: longitude
+            lat: coordinates.lat,
+            lng: coordinates.lng
         },
         zoom: 13,
         mapId: 'roadmap'
@@ -532,16 +552,20 @@ $(document).on("keydown", "input", function (e) {
 
 /** billing address  map */
 async function billingAddressMap() {
-    let latitude = $("#billing-latitude").data('latitude');
-    let longitude = $("#billing-longitude").data('longitude');
+    const canvas = document.getElementById("location_map_canvas_billing");
+    const coordinates = getMapCoordinates("#billing-latitude", "#billing-longitude");
+    if (!canvas || !coordinates || typeof google === 'undefined' || !google.maps) {
+        return null;
+    }
+
     var myLatLng = {
-        lat: latitude,
-        lng: longitude
+        lat: coordinates.lat,
+        lng: coordinates.lng
     };
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-    const map = new google.maps.Map(document.getElementById("location_map_canvas_billing"), {
-        center: { lat: latitude, lng: longitude },
+    const map = new google.maps.Map(canvas, {
+        center: { lat: coordinates.lat, lng: coordinates.lng },
         zoom: 13,
         mapId: 'roadmap'
     });
@@ -625,18 +649,22 @@ $(document).on("keydown", "input", function (e) {
 });
 
 async function locationShowingMap() {
-    let latitude = $("#shipping-latitude").data('latitude');
-    let longitude = $("#shipping-longitude").data('longitude');
+    const canvas = document.getElementById("location_map_canvas");
+    const coordinates = getMapCoordinates("#shipping-latitude", "#shipping-longitude");
+    if (!canvas || !coordinates || typeof google === 'undefined' || !google.maps) {
+        return null;
+    }
+
     let myLatLng = {
-        lat: latitude,
-        lng: longitude
+        lat: coordinates.lat,
+        lng: coordinates.lng
     };
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-    const map = new google.maps.Map(document.getElementById("location_map_canvas"), {
+    const map = new google.maps.Map(canvas, {
         center: {
-            lat: latitude,
-            lng: longitude
+            lat: coordinates.lat,
+            lng: coordinates.lng
         },
         zoom: 13,
         mapId: 'roadmap'
@@ -650,19 +678,25 @@ async function locationShowingMap() {
     marker.setMap(map);
     var geocoder = geocoder = new google.maps.Geocoder();
     google.maps.event.addListener(map, 'click', function (mapsMouseEvent) {
-        var latlng = new google.maps.LatLng(latitude, longitude);
-        marker.position = { lat: latitude, lng: longitude };
+        var latlng = new google.maps.LatLng(coordinates.lat, coordinates.lng);
+        marker.position = { lat: coordinates.lat, lng: coordinates.lng };
         map.panTo(latlng);
     });
+
+    return map;
 }
 
 /*End Show location on map*/
 
 async function mapCallBackFunction() {
-    shippingAddressMap();
-    billingAddressMap();
-    locationShowingMap();
+    await shippingAddressMap();
+    await billingAddressMap();
+    await locationShowingMap();
 }
+
+$(document).on('shown.bs.modal', '#locationModal', function () {
+    locationShowingMap();
+});
 
 
 $(".readUrl").on('change', function () {
