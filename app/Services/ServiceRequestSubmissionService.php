@@ -8,8 +8,8 @@ use App\Models\InboxMessage;
 use App\Models\ServiceRequest;
 use App\Models\SupportTicket as SupportTicketModel;
 use App\Models\SupportTicketStatusMaster;
-use App\Models\User;
 use App\Support\ServiceTicketWorkflow;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -20,7 +20,7 @@ class ServiceRequestSubmissionService
         private readonly ServiceWorkflowNotificationService $workflowNotifier,
     ) {}
 
-    public function submit(array $validated, User $customer, ?string $notificationLink = null): SupportTicketModel
+    public function submit(array $validated, Authenticatable $customer, ?string $notificationLink = null): SupportTicketModel
     {
         $ticket = DB::transaction(function () use ($validated, $customer): SupportTicketModel {
             $payload = $validated;
