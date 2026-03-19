@@ -12630,4 +12630,5 @@ return [
 	"There are no more tiers to add." => "There are no more tiers to add.",
 	"Service image" => "Service image",
 	"An active warranty already exists for this serial." => "An active warranty already exists for this serial.",
+	"download_csv" => "Download csv",
 ];

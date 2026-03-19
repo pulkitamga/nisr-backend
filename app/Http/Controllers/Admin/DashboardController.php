@@ -22,8 +22,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Models\Branch;
 use App\Models\LeadNotification;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends BaseController
 {
@@ -242,23 +242,37 @@ class DashboardController extends BaseController
 
     public function getRealTimeActivities(): JsonResponse
     {
-        $newOrder = $this->orderRepo->getListWhere(filters: ['checked' => 0], dataLimit: 'all')->count();
-        $restockProductList = $this->restockProductRepo->getListWhere(filters: ['added_by' => 'in_house'], dataLimit: 'all')->groupBy('product_id');
+        $newOrder = DB::table('orders')->where('checked', 0)->count();
+        $restockProductsQuery = DB::table('restock_products')
+            ->join('products', 'products.id', '=', 'restock_products.product_id')
+            ->where('products.added_by', 'admin');
+        $restockProductCount = (clone $restockProductsQuery)->distinct()->count('restock_products.product_id');
         $restockProduct = [];
-        if (count($restockProductList) == 1) {
-            $products = $this->restockProductRepo->getListWhere(orderBy: ['updated_at' => 'desc'], filters: ['added_by' => 'in_house'], relations: ['product'], dataLimit: 'all');
-            $firstProduct = $products->first();
-            $count = $products?->sum('restock_product_customers_count') ?? 0;
+
+        if ($restockProductCount === 1) {
+            $latestRestockProduct = $this->restockProductRepo->getListWhere(
+                orderBy: ['updated_at' => 'desc'],
+                filters: ['added_by' => 'in_house'],
+                relations: ['product'],
+                dataLimit: 1
+            )->first();
+
+            $count = DB::table('restock_product_customers')
+                ->join('restock_products', 'restock_products.id', '=', 'restock_product_customers.restock_product_id')
+                ->join('products', 'products.id', '=', 'restock_products.product_id')
+                ->where('products.added_by', 'admin')
+                ->count();
+
             $restockProduct = [
-                'title' => $firstProduct?->product?->name ?? '',
+                'title' => $latestRestockProduct?->product?->name ?? '',
                 'body' => $count < 100 ? translate('This_product_has') . ' ' . $count . ' ' . translate('restock_request') : translate('This_product_has') . ' 99+ ' . translate('restock_request'),
-                'image' => getStorageImages(path: $firstProduct?->product?->thumbnail_full_url ?? '', type: 'product'),
+                'image' => getStorageImages(path: $latestRestockProduct?->product?->thumbnail_full_url ?? '', type: 'product'),
                 'route' => route('admin.products.request-restock-list')
             ];
-        } elseif (count($restockProductList) > 1) {
+        } elseif ($restockProductCount > 1) {
             $restockProduct = [
                 'title' => translate('Restock_Request'),
-                'body' => count($restockProductList) < 100 ? (count($restockProductList) . ' ' . translate('products_have_restock_request')) : ('99 +' . ' ' . translate('more_products_have_restock_request')),
+                'body' => $restockProductCount < 100 ? ($restockProductCount . ' ' . translate('products_have_restock_request')) : ('99 +' . ' ' . translate('more_products_have_restock_request')),
                 'image' => dynamicAsset(path: 'public/assets/back-end/img/icons/restock-request-icon.svg'),
                 'route' => route('admin.products.request-restock-list')
             ];
@@ -273,7 +287,7 @@ class DashboardController extends BaseController
         return response()->json([
             'success' => 1,
             'new_order_count' => $newOrder,
-            'restockProductCount' => $restockProductList->count(),
+            'restockProductCount' => $restockProductCount,
             'restockProduct' => $restockProduct,
             'lead_notifications' => $leadNotifications
 

@@ -1062,33 +1062,55 @@ class WebController extends Controller
             }
 
             $order_ids = [];
-            foreach ($cart_group_ids as $group_id) {
-                $data = [
-                    'payment_method' => 'pay_by_wallet',
-                    'order_status'   => 'confirmed',
-                    'payment_status' => 'paid',
-                    'transaction_ref' => '',
-                    'order_group_id' => $unique_id,
-                    'cart_group_id'  => $group_id
-                ];
-                $order_id = OrderManager::generate_order($data);
-                $order_ids[] = $order_id;
+            // Use database transaction and row locking to ensure atomicity
+            $order_ids = DB::transaction(function () use ($user, $paymentAmount, $unique_id, $cart_group_ids, $request) {
+                // Lock the user row to prevent race conditions on wallet balance
+                $lockedUser = User::where('id', $user->id)
+                    ->lockForUpdate()
+                    ->first();
 
-                $order = Order::find($order_id);
-                \App\Services\CrmService::createOrUpdateDeal($order, 'Confirmed Order');
+                // Double-check balance with locked row
+                if ($paymentAmount > $lockedUser->wallet_balance) {
+                    throw new \Exception(translate('Inefficient_balance_in_your_wallet_to_pay_for_this_order'));
+                }
 
-                Log::info('Wallet Order Placed', [
-                    'order_id'       => $order_id,
-                    'user_id'        => $user->id,
-                    'wallet_balance' => $user->wallet_balance,
-                    'deducted'       => $paymentAmount,
-                    'cart_group_id'  => $group_id,
-                    'status'         => 'paid'
-                ]);
-            }
+                $order_ids = [];
+                foreach ($cart_group_ids as $group_id) {
+                    $data = [
+                        'payment_method' => 'pay_by_wallet',
+                        'order_status'   => 'confirmed',
+                        'payment_status' => 'paid',
+                        'transaction_ref' => '',
+                        'order_group_id' => $unique_id,
+                        'cart_group_id'  => $group_id
+                    ];
+                    $order_id = OrderManager::generate_order($data);
+                    $order_ids[] = $order_id;
 
+                    $order = Order::find($order_id);
+                    \App\Services\CrmService::createOrUpdateDeal($order, 'Confirmed Order');
 
-            CustomerManager::create_wallet_transaction($user->id, Convert::default($paymentAmount), 'order_place', 'order payment');
+                    Log::info('Wallet Order Placed', [
+                        'order_id'       => $order_id,
+                        'user_id'        => $user->id,
+                        'wallet_balance' => $lockedUser->wallet_balance,
+                        'deducted'       => $paymentAmount,
+                        'cart_group_id'  => $group_id,
+                        'status'         => 'paid'
+                    ]);
+                }
+
+                // Create wallet transaction - will throw if fails
+                CustomerManager::create_wallet_transaction(
+                    $lockedUser->id,
+                    Convert::default($paymentAmount),
+                    'order_place',
+                    'order payment'
+                );
+
+                return $order_ids;
+            });
+
             CartManager::cart_clean();
         }
 
@@ -1775,11 +1797,9 @@ class WebController extends Controller
                 $response['status'] = 0;
                 $response['redirect'] = route('shop-cart');
             }
-
-            $response['message'] = $message;
-            return $response ?? [];
         }
 
+        // Only return after processing all cart groups
         $response['message'] = $message;
 
         return $response ?? [

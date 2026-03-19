@@ -10,15 +10,15 @@ class InboxNote extends Model
     use HasFactory;
 
      protected $fillable = [
-        'massage_id',
+        'message_id',
         'employee_id',
         'note',
         'noted_at',
     ];
 
-   public function massage()
+   public function message()
     {
-        return $this->belongsTo(InboxMessage::class, 'massage_id');
+        return $this->belongsTo(InboxMessage::class, 'message_id');
     }
 
     public function employee()

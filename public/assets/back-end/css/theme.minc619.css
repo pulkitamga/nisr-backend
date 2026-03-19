@@ -1237,6 +1237,7 @@
     height: 100%;
     z-index: 100;
     background-color: rgba(19, 33, 68, 0.25);
+    pointer-events: none;
 }
 
 .hs-unfold-content.hs-unfold-reverse-y {

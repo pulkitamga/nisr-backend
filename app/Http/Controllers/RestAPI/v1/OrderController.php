@@ -462,33 +462,37 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
         $paymentAmount = OrderManager::getApiPayableAmount($request);
 
-        $user = Helpers::getCustomerInformation($request);
-        if ($paymentAmount > $user->wallet_balance) {
-            return response()->json(['message' => 'inefficient balance in your wallet to pay for this order'], 403);
-        } else {
-            $physical_product = false;
-            foreach ($carts as $cart) {
-                if ($cart->product_type == 'physical') {
-                    $physical_product = true;
+        // Check for physical products and validate shipping address before transaction
+        $physical_product = false;
+        foreach ($carts as $cart) {
+            if ($cart->product_type == 'physical') {
+                $physical_product = true;
+            }
+        }
+
+        if ($physical_product && $deliveryType !== 'pickup') {
+            $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
+            $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
+
+            if ($request->has('billing_address_id') && $request['billing_address_id']) {
+                $shipping_address = ShippingAddress::where(['customer_id' => $request->user()->id, 'id' => $request->input('billing_address_id')])->first();
+
+                if (!$shipping_address) {
+                    return response()->json(['message' => translate('address_not_found')], 403);
+                } elseif ($country_restrict_status && !self::delivery_country_exist_check($shipping_address->country)) {
+                    return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
+                } elseif ($zip_restrict_status && !self::delivery_zipcode_exist_check($shipping_address->zip)) {
+                    return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
                 }
             }
+        }
 
-            if ($physical_product && $deliveryType !== 'pickup') {
-                $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
-                $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
+        // Atomic wallet checkout with row locking to prevent race condition
+        $order_ids = DB::transaction(function () use ($request, $paymentAmount, $cart_group_ids, $deliveryType, $pickupBranchId) {
+            $user = $request->user()->lockForUpdate()->first();
 
-                if ($request->has('billing_address_id') && $request['billing_address_id']) {
-                    $shipping_address = ShippingAddress::where(['customer_id' => $request->user()->id, 'id' => $request->input('billing_address_id')])->first();
-
-                    if (!$shipping_address) {
-                        return response()->json(['message' => translate('address_not_found')], 403);
-                    } elseif ($country_restrict_status && !self::delivery_country_exist_check($shipping_address->country)) {
-                        return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
-
-                    } elseif ($zip_restrict_status && !self::delivery_zipcode_exist_check($shipping_address->zip)) {
-                        return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
-                    }
-                }
+            if ($paymentAmount > $user->wallet_balance) {
+                throw new \Exception(translate('Inefficient_balance'));
             }
 
             $unique_id = $request->user()->id . '-' . rand(000001, 999999) . '-' . time();
@@ -527,10 +531,14 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                 $order_ids[] = $order_id;
             }
 
+            // Deduct wallet balance
             CustomerManager::create_wallet_transaction($user->id, Convert::default($paymentAmount), 'order_place', 'order payment');
-            CartManager::cart_clean($request);
-            return response()->json(translate('order_placed_successfully'), 200);
-        }
+
+            return $order_ids;
+        });
+
+        CartManager::cart_clean($request);
+        return response()->json(translate('order_placed_successfully'), 200);
     }
 
     public function refund_request(Request $request): JsonResponse

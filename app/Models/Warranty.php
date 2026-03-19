@@ -114,7 +114,7 @@ class Warranty extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active' && Carbon::now()->lt($this->end_date);
+        return $this->status === 'active' && Carbon::now()->lte($this->end_date->endOfDay());
     }
 
     public function getRemainingDaysAttribute(): int
@@ -129,7 +129,7 @@ class Warranty extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'active')->where('end_date', '>', now());
+        return $query->where('status', 'active')->where('end_date', '>=', now()->startOfDay());
     }
 
     public function scopeEligibleForOrderActivation(Builder $query, string $serialNumber, int $productId): Builder

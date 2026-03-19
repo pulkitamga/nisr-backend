@@ -164,7 +164,7 @@ class SupportTicket extends Model
 
     public function activities(): HasMany
     {
-        return $this->hasMany(ServiceJobActivity::class, 'job_id');
+        return $this->hasMany(SupportTicketActivity::class, 'support_ticket_id');
     }
 
     public function careerInterviews()

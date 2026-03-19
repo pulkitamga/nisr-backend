@@ -2,14 +2,34 @@
 
 namespace App\Models;
 
+use App\Traits\HasActivityLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Lead Model - Represents a sales lead
+ *
+ * @property int $id
+ * @property string $party_type
+ * @property int $company_id
+ * @property int $contact_id
+ * @property int $department_id
+ * @property int $employee_id
+ * @property int $owner_id
+ * @property int $source_id
+ * @property string $status
+ * @property string $priority
+ * @property \Carbon\Carbon $response_due
+ * @property \Carbon\Carbon $resolution_due
+ */
 class Lead extends Model
 {
-    use HasFactory;
+    use HasActivityLog, HasFactory, SoftDeletes;
+
     protected $table = 'leads';
+
     protected $fillable = [
         'party_type',
         'po_id',
@@ -37,7 +57,26 @@ class Lead extends Model
 
     protected $casts = [
         'converted_at' => 'datetime',
+        'response_due' => 'datetime',
+        'resolution_due' => 'datetime',
+        'first_response_at' => 'datetime',
+        'escalated_at' => 'datetime',
+        'sla_paused_at' => 'datetime',
     ];
+
+    /**
+     * Configure activity logging for Lead model.
+     * Used by HasActivityLog trait.
+     */
+    protected function getActivityLogConfig(): array
+    {
+        return [
+            'prefix' => 'lead',
+            'foreign_key' => 'lead_id',
+        ];
+    }
+
+    // Relationships
 
     public function company()
     {
@@ -53,6 +92,7 @@ class Lead extends Model
     {
         return $this->belongsTo(Admin::class, 'owner_id');
     }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'contact_id');
@@ -69,7 +109,6 @@ class Lead extends Model
             ->latestOfMany();
     }
 
-
     public function department()
     {
         return $this->belongsTo(Departments::class, 'department_id', 'id');
@@ -80,36 +119,9 @@ class Lead extends Model
         return $this->belongsTo(Admin::class, 'employee_id', 'id');
     }
 
-
     public function deals()
     {
         return $this->hasMany(Deal::class, 'lead_id');
-    }
-
-    // New Relationships for lead_ tables
-    public function activities()
-    {
-        return $this->hasMany(LeadActivity::class, 'lead_id');
-    }
-
-    public function notes()
-    {
-        return $this->hasMany(LeadNote::class, 'lead_id');
-    }
-
-    public function tasks()
-    {
-        return $this->hasMany(LeadTask::class, 'lead_id');
-    }
-
-    public function calls()
-    {
-        return $this->hasMany(LeadCall::class, 'lead_id');
-    }
-
-    public function files()
-    {
-        return $this->hasMany(LeadFile::class, 'lead_id');
     }
 
     public function purchaseOrder()
@@ -120,5 +132,59 @@ class Lead extends Model
     public function escalations(): MorphMany
     {
         return $this->morphMany(Escalation::class, 'escalatable')->latest('id');
+    }
+
+    // Scopes
+
+    /**
+     * Scope to filter leads by status.
+     */
+    public function scopeWithStatus($query, string $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope to get leads assigned to a specific owner.
+     */
+    public function scopeAssignedTo($query, int $ownerId)
+    {
+        return $query->where('owner_id', $ownerId);
+    }
+
+    /**
+     * Scope to get leads for a specific department.
+     */
+    public function scopeForDepartment($query, int $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
+
+    /**
+     * Scope to get leads due for response.
+     */
+    public function scopeDueForResponse($query)
+    {
+        return $query->where('response_due', '<=', now())
+            ->whereNull('first_response_at');
+    }
+
+    // Accessors
+
+    /**
+     * Get the lead's full name from contact.
+     */
+    public function getFullNameAttribute(): string
+    {
+        return $this->contact?->name ?? '';
+    }
+
+    /**
+     * Check if lead is overdue for response.
+     */
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->response_due?->isPast() ?? false
+            && is_null($this->first_response_at);
     }
 }

@@ -139,7 +139,7 @@
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="branchSelectModalLabel">{{ translate('Select Branch') }}</h5>
-                                        <button type="button" class="close custom-close" data-bs-dismiss="modal"
+                                        <button type="button" class="close custom-close" data-dismiss="modal"
                                             aria-label="Close">
                                             &times;
                                         </button>
@@ -2849,6 +2849,23 @@
     </aside>
 </div>
 <script>
+    $(function() {
+        const branchSelectModal = $('#branchSelectModal');
+
+        if (branchSelectModal.length) {
+            branchSelectModal.appendTo('body');
+            branchSelectModal.on('hidden.bs.modal', function() {
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+            });
+        }
+
+        if (!$('.modal.show').length) {
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+    });
+
     function handlePOSClick(branchCount) {
         if (branchCount > 1) {
             $('#branchSelectModal').modal('show');

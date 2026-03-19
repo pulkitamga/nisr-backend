@@ -1133,16 +1133,15 @@ class ServiceTicketController extends BaseController
             'job_id' => 'required|exists:service_jobs,id',
             'reason' => 'required|string',
             'fee_amount' => 'required|numeric|min:0',
-            'refund_amount' => 'required|numeric|min:0',
+            'refund_amount' => 'nullable|numeric|min:0',
         ]);
 
         $ticketId = $request->input('ticket_id');
         $jobId = $request->input('job_id');
         $reason = $request->input('reason');
         $feeAmount = $request->input('fee_amount');
-        $refundAmount = $request->input('refund_amount');
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
-        $job = ServiceJob::find($jobId);
+        $job = ServiceJob::with(['items', 'invoice'])->find($jobId);
 
         if (!$ticket || !$job || (int)$job->ticket_id !== (int)$ticketId) {
             Toastr::error(translate('invalid_ticket_details'));
@@ -1156,6 +1155,15 @@ class ServiceTicketController extends BaseController
 
         if (!$this->ensureJobStatus($job, ['assigned', 'scheduled', 'in_progress'], 'cancel this ticket')) {
             return redirect()->back();
+        }
+
+        // Calculate maximum refundable amount from job invoice or items
+        $maxRefundAmount = $this->calculateMaxRefundAmount($job);
+
+        // Use server-calculated amount if not provided or exceeds maximum
+        $refundAmount = $request->input('refund_amount');
+        if ($refundAmount === null || $refundAmount > $maxRefundAmount) {
+            $refundAmount = $maxRefundAmount;
         }
 
         ServiceCancellation::create([
@@ -1300,5 +1308,25 @@ class ServiceTicketController extends BaseController
 
         Toastr::success(translate('Ticket escalated successfully'));
         return back();
+    }
+
+    /**
+     * Calculate the maximum refundable amount for a service job.
+     * Based on the job's invoice total paid amount or sum of items if no invoice exists.
+     */
+    private function calculateMaxRefundAmount(ServiceJob $job): float
+    {
+        // If job has an invoice with paid amount, use that (less any fee)
+        if ($job->invoice && $job->invoice->paid_amount > 0) {
+            return (float) $job->invoice->paid_amount;
+        }
+
+        // Otherwise, calculate from job items
+        if ($job->items && $job->items->isNotEmpty()) {
+            return (float) $job->items->sum('total_amount');
+        }
+
+        // Default to 0 if no items or invoice
+        return 0.0;
     }
 }

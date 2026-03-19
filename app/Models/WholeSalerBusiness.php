@@ -65,25 +65,7 @@ class WholeSalerBusiness extends Model
      */
     protected static function booted()
     {
-        static::updating(function ($model) {
-            activity()
-                ->causedBy(\App\Utils\Helpers::getLoggedInUser()) 
-                ->performedOn($model)
-                ->log('Wholesaler business updated');
-        });
-
-        static::creating(function ($model) {
-            activity()
-                ->causedBy(\App\Utils\Helpers::getLoggedInUser())
-                ->performedOn($model)
-                ->log('Wholesaler business created');
-        });
-
-        static::deleting(function ($model) {
-            activity()
-                ->causedBy(\App\Utils\Helpers::getLoggedInUser())
-                ->performedOn($model)
-                ->log('Wholesaler business deleted');
-        });
+        // Note: The LogsActivity trait with getActivitylogOptions() already handles logging.
+        // Manual logging removed to prevent duplicate entries in activity log.
     }
 }

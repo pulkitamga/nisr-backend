@@ -280,8 +280,24 @@ $(".action-customer-change").on("change", function () {
     });
 });
 
-$(".action-view-all-hold-orders").on("click", () => viewAllHoldOrders());
-elementViewAllHoldOrdersSearch.on("keyup", () => viewAllHoldOrders("keyup"));
+$(document)
+    .off("click", ".action-view-all-hold-orders")
+    .on("click", ".action-view-all-hold-orders", function (event) {
+        event.preventDefault();
+        viewAllHoldOrders();
+    });
+
+elementViewAllHoldOrdersSearch.off("keyup").on("keyup", () => viewAllHoldOrders("keyup"));
+
+function openHoldOrdersModal() {
+    const holdOrdersModal = $("#hold-orders-modal");
+    if (!holdOrdersModal.length) {
+        return;
+    }
+
+    holdOrdersModal.appendTo("body");
+    holdOrdersModal.modal("show");
+}
 
 function viewAllHoldOrders(action = null) {
     const branchId = $('#branch_id').data('branch') || '';
@@ -302,7 +318,7 @@ function viewAllHoldOrders(action = null) {
         success: function (data) {
             $("#hold-orders-modal-content").empty().html(data.view);
             if (action !== "keyup") {
-                $("#hold-orders-modal-btn").click();
+                openHoldOrdersModal();
             }
             $(".total_hold_orders").text(data.totalHoldOrders);
             renderViewHoldOrdersFunctionality();

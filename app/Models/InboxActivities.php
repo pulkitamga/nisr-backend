@@ -10,7 +10,7 @@ class InboxActivities extends Model
     use HasFactory;
 
     protected $fillable = [
-        'massage_id',
+        'message_id',
         'employee_id',
         'activity_type',
         'details',
@@ -23,9 +23,9 @@ class InboxActivities extends Model
         'details' => 'array',
     ];
 
-    public function massage()
+    public function message()
     {
-        return $this->belongsTo(InboxMessage::class, 'massage_id');
+        return $this->belongsTo(InboxMessage::class, 'message_id');
     }
 
     public function employee()

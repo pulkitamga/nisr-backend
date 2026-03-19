@@ -10,7 +10,7 @@ class InboxTask extends Model
     use HasFactory;
 
       protected $fillable = [
-        'massage_id',
+        'message_id',
         'employee_id',
         'department_id',
         'name',
@@ -19,9 +19,9 @@ class InboxTask extends Model
         'status',
     ];
 
-    public function massage()
+    public function message()
     {
-        return $this->belongsTo(InboxMessage::class, 'massage_id');
+        return $this->belongsTo(InboxMessage::class, 'message_id');
     }
     public function employee()
     {

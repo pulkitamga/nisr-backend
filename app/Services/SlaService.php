@@ -232,7 +232,7 @@ class SlaService
 
         switch ($entityType) {
             case 'inbox_message':
-                $data['massage_id'] = $entity->id;
+                $data['message_id'] = $entity->id;
                 $data['title'] = 'SLA Event';
                 $data['subject'] = $message;
                 $data['details'] = ['description' => $message];

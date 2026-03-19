@@ -167,7 +167,7 @@ $direction = Session::get('direction') ?? 'ltr';
         'use strict'
         setInterval(function() {
             getInitialDataForPanel();
-        }, 5000);
+        }, 15000);
     </script>
     @endif
     @if(Helpers::module_permission_check('crm_section') || Helpers::module_permission_check('wholesaler_section'))
@@ -175,7 +175,7 @@ $direction = Session::get('direction') ?? 'ltr';
         'use strict'
         setInterval(function() {
             getInitialDataForPanelEmployee();
-        }, 5000);
+        }, 15000);
     </script>
     @endif
 
@@ -201,7 +201,23 @@ $direction = Session::get('direction') ?? 'ltr';
     <script>
         "use strict";
 
+        function clearBlockedUiState() {
+            const visibleModalCount = $('.modal.show:visible').length;
+            const loadingElement = $('#loading');
+
+            if (visibleModalCount === 0) {
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+            }
+
+            if (!loadingElement.hasClass('active')) {
+                loadingElement.stop(true, true).hide();
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            clearBlockedUiState();
+
             const offcanvasEl = document.getElementById('offcanvasSetupGuide');
 
             if (offcanvasEl && offcanvasEl.getAttribute('data-status') === 'show') {
@@ -211,6 +227,15 @@ $direction = Session::get('direction') ?? 'ltr';
                 }, 500)
             }
         });
+
+        $(document).ajaxComplete(function() {
+            clearBlockedUiState();
+        });
+
+        $(document).on('hidden.bs.modal', '.modal', function() {
+            clearBlockedUiState();
+        });
+
         function getInitialDataForPanelEmployee() {
             $.ajaxSetup({
                 headers: {

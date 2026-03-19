@@ -50,7 +50,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ translate('New Notifications') }}</h5>
-                <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
@@ -58,7 +58,7 @@
                 <ul class="list-group" id="leadNotificationList"></ul>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-danger" type="button" data-bs-dismiss="modal">{{translate('cancel')}}</button>
+                <button class="btn btn-danger" type="button" data-dismiss="modal">{{translate('cancel')}}</button>
             </div>
         </div>
     </div>

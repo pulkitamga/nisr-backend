@@ -321,7 +321,7 @@ class InboxMessageController extends BaseController
             $message->save();
 
             $activity = new InboxActivities();
-            $activity->massage_id = $message->id;
+            $activity->message_id = $message->id;
             $activity->activity_type = 'conversion';
             $activity->title = 'Inquiry Converted to ' . ucfirst($request->type);
             $activity->subject = 'Converted by ' . $authUser->name;
@@ -432,7 +432,7 @@ class InboxMessageController extends BaseController
                     $message->save();
 
                     $activity = new InboxActivities();
-                    $activity->massage_id = $message->id;
+                    $activity->message_id = $message->id;
                     $activity->activity_type = 'conversion';
                     $activity->title = 'Inquiry Converted to ' . ucfirst($request->type);
                     $activity->subject = 'Converted by ' . $authUser->name;
@@ -504,7 +504,7 @@ class InboxMessageController extends BaseController
 
         // Create activity
         $activity = new InboxActivities();
-        $activity->massage_id   = $message->id;
+        $activity->message_id   = $message->id;
         $activity->activity_type = 'ignore';
         $activity->title         = 'Message Ignored';
         $activity->subject       = 'Message ignored by ' . auth('admin')->user()->name;
@@ -542,7 +542,7 @@ class InboxMessageController extends BaseController
 
         // Create activity
         $activity = new InboxActivities();
-        $activity->massage_id   = $message->id;
+        $activity->message_id   = $message->id;
         $activity->activity_type = 'spam';
         $activity->title         = 'Message Marked as Spam';
         $activity->subject       = 'Message marked spam by ' . auth('admin')->user()->name;
@@ -569,7 +569,7 @@ class InboxMessageController extends BaseController
         $message->delete(); // Soft delete
 
         $activity = new InboxActivities();
-        $activity->massage_id    = $message->id;
+        $activity->message_id    = $message->id;
         $activity->activity_type = 'delete';
         $activity->title         = 'Message Deleted';
         $activity->subject       = 'Message deleted by ' . auth('admin')->user()->name;
@@ -635,7 +635,7 @@ class InboxMessageController extends BaseController
         $message = InboxMessage::create($data);
 
         $activity = new InboxActivities();
-        $activity->massage_id    = $message->id;
+        $activity->message_id    = $message->id;
         $activity->activity_type = 'Create Message';
         $activity->title         = 'New Message Created';
         $activity->subject       = 'Message created by ' . auth('admin')->user()->name;
@@ -702,7 +702,7 @@ class InboxMessageController extends BaseController
             ?? (isset($details['description']) ? substr((string)$details['description'], 0, 255) : 'Activity logged');
 
         $activity = new InboxActivities();
-        $activity->massage_id = $message->id;
+        $activity->message_id = $message->id;
         $activity->activity_type = $request->input('activity_type', 'activity');
         $activity->title = $request->input('title', 'Activity Added');
         $activity->subject = $subject;
@@ -735,14 +735,14 @@ class InboxMessageController extends BaseController
         $lead = InboxMessage::findOrFail($id);
 
         $note = new InboxNote();
-        $note->massage_id = $lead->id;
+        $note->message_id = $lead->id;
         $note->note = $request->note;
         $note->noted_at = $request->noted_at;
         $note->employee_id = Auth::guard('admin')->id();
         $note->save();
 
         $activity = new InboxActivities();
-        $activity->massage_id = $lead->id;
+        $activity->message_id = $lead->id;
         $activity->activity_type = 'note';
         $activity->title = 'Note Added';
         $activity->subject = substr($request->note, 0, 255); // Truncate for subject
@@ -778,7 +778,7 @@ class InboxMessageController extends BaseController
         $lead = InboxMessage::findOrFail($id);
 
         $task = new InboxTask();
-        $task->massage_id = $lead->id;
+        $task->message_id = $lead->id;
         $task->name = $request->name;
         $task->description = $request->description;
         $task->due_date = $request->due_date;
@@ -789,7 +789,7 @@ class InboxMessageController extends BaseController
 
         // Log activity for task
         $activity = new InboxActivities();
-        $activity->massage_id = $lead->id;
+        $activity->message_id = $lead->id;
         $activity->activity_type = 'task';
         $activity->title = 'Task Added: ' . $request->name;
         $activity->subject = $request->description ? substr($request->description, 0, 255) : 'Task created';
@@ -831,7 +831,7 @@ class InboxMessageController extends BaseController
         $lead = InboxMessage::findOrFail($id);
 
         $call = new InboxCall();
-        $call->massage_id = $lead->id;
+        $call->message_id = $lead->id;
         $call->title = $request->title;
         $call->from = $request->from;
         $call->to = $request->to;
@@ -844,7 +844,7 @@ class InboxMessageController extends BaseController
 
         // Log activity for call
         $activity = new InboxActivities();
-        $activity->massage_id = $lead->id;
+        $activity->message_id = $lead->id;
         $activity->activity_type = 'call';
         $activity->title = 'Call Scheduled: ' . $request->title;
         $activity->subject = $request->description ? substr($request->description, 0, 255) : 'Call scheduled';
@@ -888,13 +888,13 @@ class InboxMessageController extends BaseController
             $filePath = $file->storeAs('uploads/inbox_files', $fileName, 'public');
 
             $fileModel = new InboxFile();
-            $fileModel->massage_id = $lead->id;
+            $fileModel->message_id = $lead->id;
             $fileModel->file = $filePath;
             $fileModel->employee_id = Auth::guard('admin')->id();
             $fileModel->save();
 
             $activity = new InboxActivities();
-            $activity->massage_id = $lead->id;
+            $activity->message_id = $lead->id;
             $activity->activity_type = 'file';
             $activity->title = 'File Uploaded: ' . $fileName;
             $activity->subject = 'File uploaded for lead';
@@ -942,7 +942,7 @@ class InboxMessageController extends BaseController
         $lead = InboxMessage::findOrFail($id);
         $task = InboxTask::findOrFail($task_id);
 
-        if ($task->massage_id !== $lead->id) {
+        if ($task->message_id !== $lead->id) {
             return response()->json([
                 'status' => false,
                 'message' => translate('Task does not belong to this lead!'),
@@ -957,7 +957,7 @@ class InboxMessageController extends BaseController
         $task->save();
 
         $activity = new InboxActivities();
-        $activity->massage_id = $lead->id;
+        $activity->message_id = $lead->id;
         $activity->activity_type = 'task';
         $activity->title = 'Task Updated: ' . $request->name;
         $activity->subject = $request->description ? substr($request->description, 0, 255) : 'Task updated';
@@ -990,7 +990,7 @@ class InboxMessageController extends BaseController
         $lead = InboxMessage::findOrFail($id);
         $task = InboxTask::findOrFail($task_id);
 
-        if ($task->massage_id !== $lead->id) {
+        if ($task->message_id !== $lead->id) {
             return response()->json([
                 'status' => false,
                 'message' => translate('Task does not belong to this massage!'),
@@ -1002,7 +1002,7 @@ class InboxMessageController extends BaseController
         $task->save();
 
         $activity = new InboxActivities();
-        $activity->massage_id = $lead->id;
+        $activity->message_id = $lead->id;
         $activity->activity_type = 'task';
         $activity->title = 'Task Completed: ' . $task->name;
         $activity->subject = $task->description ? substr($task->description, 0, 255) : 'Task completed';
@@ -1180,7 +1180,7 @@ class InboxMessageController extends BaseController
         $ticket->save();
 
         $activity = new InboxActivities();
-        $activity->massage_id = $ticket->id;
+        $activity->message_id = $ticket->id;
         $activity->activity_type = 'assignment_update';
         $activity->title = 'Assignment Updated';
         $activity->subject = 'Assignment updated by ' . auth('admin')->user()->name;

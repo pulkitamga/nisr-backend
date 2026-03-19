@@ -32,9 +32,16 @@ class WholeSaleProducts extends Model
 
        public function price_list_for_user()
     {
-        $userTier = auth()->guard('customer')->user()->tier;
+        $user = auth()->guard('customer')->user();
+        $userTier = $user?->tier;
+
         return $this->hasMany(WholesaleProductPriceRange::class, 'wholesale_id', 'id')
-            ->where('tier', $userTier);
+            ->when($userTier, function ($query, $tier) {
+                return $query->where('tier', $tier);
+            }, function ($query) {
+                // No user logged in - return empty relation
+                return $query->whereRaw('1 = 0');
+            });
     }
     public function product()
     {
