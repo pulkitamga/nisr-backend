@@ -14,6 +14,14 @@
             text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }};
         }
 
+        .badge .full-chart {
+            page-break-after: always;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
         .report-header {
             background: #0f766e;
             color: white;
@@ -295,7 +303,7 @@
         </div>
 
         @if (!empty($crmChart))
-           <img src="{{ $crmChart }}" style="max-width:100%; max-height:300px;">
+            <img src="{{ $crmChart }}" style="max-width:100%; max-height:300px;">
         @else
             <p style="text-align:center; color:#999;">
                 {{ translate('no_chart_available') }}
@@ -388,8 +396,7 @@
     <div class="footer">
         <table class="footer-table">
             <tr>
-                <td width="20%"
-                    style="text-align:{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; color:red;">
+                <td width="20%" style="text-align:{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; color:red;">
                     {{ translate('page') }} {PAGENO}
                 </td>
                 <td width="60%" style="text-align:center;">
