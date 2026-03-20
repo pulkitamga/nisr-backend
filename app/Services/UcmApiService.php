@@ -12,6 +12,7 @@ class UcmApiService
 {
     private const DEFAULT_API_VERSION = '1.0';
     private const COOKIE_TTL_MINUTES = 9;
+    private const TRANSPORT_FAILURE_COOLDOWN_SECONDS = 30;
 
     private ?Client $client = null;
     private array $config = [];
@@ -43,6 +44,15 @@ class UcmApiService
     public function isAvailable(): bool
     {
         return $this->client instanceof Client;
+    }
+
+    public function isInTransportFailureCooldown(): bool
+    {
+        if (!$this->isAvailable()) {
+            return false;
+        }
+
+        return Cache::has($this->transportFailureCooldownKey());
     }
 
     public function request(array $payload, bool $retryOnAuthFailure = true): array
@@ -187,13 +197,13 @@ class UcmApiService
         if ((int)($challengeResponse['status'] ?? -9) !== 0 || !is_string($challenge) || $challenge === '') {
             if (!empty($this->config['digest'])) {
                 $this->useDigestFallback = true;
-                Log::warning('UCM challenge failed, falling back to digest auth mode', [
+                $this->logErrorOnce('UCM challenge failed, falling back to digest auth mode', [
                     'status' => $challengeResponse['status'] ?? null,
                 ]);
                 return true;
             }
 
-            Log::warning('UCM challenge request failed', [
+            $this->logErrorOnce('UCM challenge request failed', [
                 'status' => $challengeResponse['status'] ?? null,
             ]);
             return false;
@@ -215,13 +225,13 @@ class UcmApiService
         if ((int)($loginResponse['status'] ?? -9) !== 0 || !is_string($cookie) || $cookie === '') {
             if (!empty($this->config['digest'])) {
                 $this->useDigestFallback = true;
-                Log::warning('UCM login failed, falling back to digest auth mode', [
+                $this->logErrorOnce('UCM login failed, falling back to digest auth mode', [
                     'status' => $loginResponse['status'] ?? null,
                 ]);
                 return true;
             }
 
-            Log::warning('UCM login failed', [
+            $this->logErrorOnce('UCM login failed', [
                 'status' => $loginResponse['status'] ?? null,
             ]);
             return false;
@@ -256,14 +266,46 @@ class UcmApiService
         try {
             $response = $this->client->post('', $options);
             $decoded = json_decode((string)$response->getBody(), true);
+            Cache::forget($this->transportFailureCooldownKey());
             return is_array($decoded) ? $decoded : ['status' => -9, 'response' => []];
         } catch (Throwable $exception) {
-            Log::error('UCM API request failed', [
+            Cache::put(
+                $this->transportFailureCooldownKey(),
+                true,
+                now()->addSeconds(self::TRANSPORT_FAILURE_COOLDOWN_SECONDS)
+            );
+            $this->logErrorOnce('UCM API request failed', [
                 'error' => $exception->getMessage(),
                 'action' => $payload['action'] ?? null,
             ]);
             return ['status' => -9, 'response' => []];
         }
+    }
+
+    /**
+     * Log error only once per minute to prevent log flooding.
+     */
+    private function logErrorOnce(string $message, array $context = []): void
+    {
+        $errorKey = 'ucm:error_log:' . md5($message . json_encode($context));
+        $alreadyLogged = Cache::get($errorKey);
+
+        if (!$alreadyLogged) {
+            Log::error($message, $context);
+            Cache::put($errorKey, true, now()->addMinute());
+        }
+    }
+
+    private function transportFailureCooldownKey(): string
+    {
+        $cacheSeed = sprintf(
+            '%s:%s:%s',
+            $this->config['host'] ?? '',
+            $this->config['port'] ?? '',
+            $this->config['username'] ?? ''
+        );
+
+        return 'ucm:transport_failure_cooldown:' . sha1($cacheSeed);
     }
 
     private function normalizeUnbridgedCall(array $call): ?array

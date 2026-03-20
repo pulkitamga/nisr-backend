@@ -94,6 +94,15 @@ function syncComplainFollowUpDateVisibility() {
     return shouldShowDate;
 }
 
+function setFollowUpDateValue(inputSelector, followUpDate) {
+    const $input = $(inputSelector);
+    if (!$input.length) {
+        return;
+    }
+
+    $input.val(followUpDate || '');
+}
+
 function setWholesaleFollowUpContext(ticketId, departmentId, employeeId, statusId, statusName) {
     const normalizedTicketId = Number(ticketId || 0);
     const $modal = $('#showWholesaleFollowUpModal');
@@ -396,10 +405,12 @@ $(document).on('click', '[data-target="#showSupportFollowUpModal"], [data-bs-tar
     let employeeId = $(this).data('employee-id');
     let statusId = $(this).data('status-id');
     let statusName = $(this).data('status-name');
+    let followUpDate = $(this).data('follow-up-date');
 
     $('#support-follow-up-ticket-id').val(ticketId || '');
     $('#support-follow-up-department-id').val(departmentId || '');
     $('#support-follow-up-employee-id').val(employeeId || '');
+    setFollowUpDateValue('#support-ticket-next-follow-up-date', followUpDate);
     prefillFollowUpStatus('#support-follow-up-status', statusId, statusName);
     syncSupportFollowUpDateVisibility();
 });
@@ -410,10 +421,12 @@ $(document).on('click', '[data-target="#showComplainFollowUpModal"], [data-bs-ta
     let employeeId = $(this).data('employee-id');
     let statusId = $(this).data('status-id');
     let statusName = $(this).data('status-name');
+    let followUpDate = $(this).data('follow-up-date');
 
     $('#complain-follow-up-ticket-id').val(ticketId || '');
     $('#complain-follow-up-department-id').val(departmentId || '');
     $('#complain-follow-up-employee-id').val(employeeId || '');
+    setFollowUpDateValue('#complain-ticket-next-follow-up-date', followUpDate);
     prefillFollowUpStatus('#complain-follow-up-status', statusId, statusName);
     syncComplainFollowUpDateVisibility();
 });
@@ -427,6 +440,7 @@ $(document).on('click', '[data-target="#showWholesaleFollowUpModal"], [data-bs-t
         $button.data('status-id'),
         $button.data('status-name'),
     );
+    setFollowUpDateValue('#wholesale-ticket-next-follow-up-date', $button.data('follow-up-date'));
 });
 
 $(function () {
@@ -441,9 +455,11 @@ $(function () {
         const employeeId = button.data('employee-id');
         const statusId = button.data('status-id');
         const statusName = button.data('status-name');
+        const followUpDate = button.data('follow-up-date');
         $('#support-follow-up-ticket-id').val(ticketId || '');
         $('#support-follow-up-department-id').val(departmentId || '');
         $('#support-follow-up-employee-id').val(employeeId || '');
+        setFollowUpDateValue('#support-ticket-next-follow-up-date', followUpDate);
         prefillFollowUpStatus('#support-follow-up-status', statusId, statusName);
         syncSupportFollowUpDateVisibility();
     });
@@ -463,9 +479,11 @@ $(function () {
         const employeeId = button.data('employee-id');
         const statusId = button.data('status-id');
         const statusName = button.data('status-name');
+        const followUpDate = button.data('follow-up-date');
         $('#complain-follow-up-ticket-id').val(ticketId || '');
         $('#complain-follow-up-department-id').val(departmentId || '');
         $('#complain-follow-up-employee-id').val(employeeId || '');
+        setFollowUpDateValue('#complain-ticket-next-follow-up-date', followUpDate);
         prefillFollowUpStatus('#complain-follow-up-status', statusId, statusName);
         syncComplainFollowUpDateVisibility();
     });
@@ -478,8 +496,10 @@ $(function () {
         const employeeId = $button.data('employee-id') || $modal.data('employee-id') || '';
         const statusId = $button.data('status-id') || $modal.data('status-id') || '';
         const statusName = $button.data('status-name') || $modal.data('status-name') || '';
+        const followUpDate = $button.data('follow-up-date') || '';
 
         setWholesaleFollowUpContext(ticketId, departmentId, employeeId, statusId, statusName);
+        setFollowUpDateValue('#wholesale-ticket-next-follow-up-date', followUpDate);
     });
 
     $('#wholesale-follow-up-status').on('change', function () {

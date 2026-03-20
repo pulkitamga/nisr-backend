@@ -4,6 +4,46 @@
 
 @push('css_or_js')
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/vendor/swiper/swiper-bundle.min.css')}}"/>
+    <style>
+        .webhook-status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .webhook-status-indicator.alive {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        .webhook-status-indicator.polling {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: #eab308;
+        }
+        .webhook-status-indicator .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .webhook-status-indicator.alive .dot {
+            background-color: #22c55e;
+        }
+        .webhook-status-indicator.polling .dot {
+            background-color: #eab308;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .webhook-info {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -46,6 +86,13 @@
                                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/ucm.png')}}" alt="{{ translate('UCM') }}">
                                         {{translate('UCM_API_Config')}}
                                     </h5>
+                                    <div id="webhook-status-container" class="ml-auto" style="display: none;">
+                                        <div class="webhook-status-indicator polling">
+                                            <span class="dot"></span>
+                                            <span class="status-text">{{translate('polling_mode')}}</span>
+                                        </div>
+                                        <div class="webhook-info" id="webhook-last-update"></div>
+                                    </div>
                                     <label class="switcher">
                                         <input type="checkbox" name="status" value="1"
                                                id="ucm_config" {{$ucm['status']??0 == 1 ? 'checked':''}} class="switcher_input toggle-switch-message"
@@ -229,6 +276,33 @@
                 loop: true,
                 pagination: { el: '.instruction-pagination-custom', clickable: true }
             });
+
+            // Webhook status monitoring
+            function updateWebhookStatus() {
+                $.get('{{ route("admin.business-settings.ucm.webhook-status") }}', function(data) {
+                    const container = $('#webhook-status-container');
+                    const indicator = container.find('.webhook-status-indicator');
+                    const statusText = indicator.find('.status-text');
+                    const lastUpdate = $('#webhook-last-update');
+
+                    container.show();
+                    indicator.removeClass('alive polling').addClass(data.mode === 'webhook' ? 'alive' : 'polling');
+                    statusText.text(data.mode === 'webhook' ? '{{ translate('webhook_active') }}' : '{{ translate('polling_mode') }}');
+
+                    if (data.last_heartbeat) {
+                        const lastTime = new Date(data.last_heartbeat);
+                        const now = new Date();
+                        const seconds = Math.floor((now - lastTime) / 1000);
+                        lastUpdate.text('{{ translate('last_event') }}: ' + seconds + ' {{ translate('seconds_ago') }}');
+                    } else {
+                        lastUpdate.text('{{ translate('no_webhook_events_yet') }}');
+                    }
+                });
+            }
+
+            // Update webhook status immediately and every 10 seconds
+            updateWebhookStatus();
+            setInterval(updateWebhookStatus, 10000);
         });
     </script>
 @endpush

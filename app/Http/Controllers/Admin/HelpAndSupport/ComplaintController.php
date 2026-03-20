@@ -37,6 +37,7 @@ use App\Models\SupportTicketActivity; // Add this import
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
 use Illuminate\Validation\ValidationException;
+use Throwable;
 class ComplaintController extends BaseController
 {
     /**
@@ -121,6 +122,29 @@ class ComplaintController extends BaseController
         }
 
         return [$departmentId > 0 ? $departmentId : null, $employeeId > 0 ? $employeeId : null];
+    }
+
+    private function normalizeFollowUpDateValue(mixed $followUpDate): ?string
+    {
+        if (blank($followUpDate)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($followUpDate)->format('Y-m-d');
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function resolveEffectiveFollowUpDate(mixed $ticket, mixed $submittedFollowUpDate, bool $requiresFollowUpDate): ?string
+    {
+        if (!$requiresFollowUpDate) {
+            return null;
+        }
+
+        return $this->normalizeFollowUpDateValue($submittedFollowUpDate)
+            ?? $this->normalizeFollowUpDateValue($ticket->follow_up_date ?? null);
     }
 
     private function resolveStatusMasterIdByTicketType(?string $ticketType): int
@@ -758,12 +782,13 @@ class ComplaintController extends BaseController
         }
 
         $isInProgressStatus = $this->isInProgressStatusForMaster($statusId, SupportTicketLifecycle::STATUS_MASTER_ID);
+        $effectiveFollowUpDate = $this->resolveEffectiveFollowUpDate($oldTicket, $followUpDate, $isInProgressStatus);
 
         if (empty($note)) {
             return response()->json(['success' => 0, 'message' => translate('note_required')], 422);
         }
 
-        if ($isInProgressStatus && empty($followUpDate)) {
+        if ($isInProgressStatus && !$effectiveFollowUpDate) {
             return response()->json(['success' => 0, 'message' => translate('follow_up_date_required_for_in_progress')], 422);
         }
 
@@ -779,7 +804,7 @@ class ComplaintController extends BaseController
         $updateData = [
             'status' => $statusId,
             // Keep follow-up date only while ticket is In Progress.
-            'follow_up_date' => $isInProgressStatus ? date('Y-m-d', strtotime($followUpDate)) : null,
+            'follow_up_date' => $effectiveFollowUpDate,
         ];
         $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
 
@@ -794,8 +819,8 @@ class ComplaintController extends BaseController
         $statusName = SupportTicketStatusMaster::find($statusId)?->name ?? 'Unknown';
         $description = "Support follow-up - Status: {$statusName} ({$statusId}), Note: " . substr($note, 0, 150);
 
-        if ($isInProgressStatus && $followUpDate) {
-            $description .= ", Follow-up Date: {$followUpDate}";
+        if ($isInProgressStatus && $effectiveFollowUpDate) {
+            $description .= ", Follow-up Date: {$effectiveFollowUpDate}";
         }
         if ($oldTicket->status != $statusId) {
             $description .= ". Status changed from {$oldStatusName}";
@@ -843,7 +868,7 @@ class ComplaintController extends BaseController
                     'sender_id' => $employeeId ?? 0,
                     'title' => 'Follow-up Reminder',
                     'message' => 'Please follow up on the support ticket.',
-                    'send_date' => Carbon::parse($followUpDate)->copy()->addHours($config['duration']),
+                    'send_date' => Carbon::parse($effectiveFollowUpDate)->copy()->addHours($config['duration']),
                     'ticket_status' => $statusId,
                     'status' => 0,
                     'is_active' => 0,
@@ -878,6 +903,8 @@ class ComplaintController extends BaseController
 
     $oldTicket = $ticket->first();
     [$departmentId, $employeeId] = $this->resolveDepartmentAndEmployeeIds($request, $oldTicket);
+    $requiresFollowUpDate = (int) $statusId === ComplaintTicketWorkflow::STATUS_IN_PROGRESS;
+    $effectiveFollowUpDate = $this->resolveEffectiveFollowUpDate($oldTicket, $followUpDate, $requiresFollowUpDate);
 
     // Validate status
     if (!SupportTicketStatusMaster::where([
@@ -900,7 +927,7 @@ class ComplaintController extends BaseController
         return response()->json(['success' => 0, 'message' => 'Note required'], 400);
     }
 
-    if ($statusId == ComplaintTicketWorkflow::STATUS_IN_PROGRESS && empty($followUpDate)) {
+    if ($requiresFollowUpDate && !$effectiveFollowUpDate) {
         return response()->json(['success' => 0, 'message' => 'Follow-up date required for In Progress'], 400);
     }
 
@@ -915,10 +942,10 @@ class ComplaintController extends BaseController
     ]);
 
     // Update Ticket
-    $updateData = ['status' => $statusId];
-    if ($statusId == ComplaintTicketWorkflow::STATUS_IN_PROGRESS) {
-        $updateData['follow_up_date'] = date('Y-m-d', strtotime($followUpDate));
-    }
+    $updateData = [
+        'status' => $statusId,
+        'follow_up_date' => $effectiveFollowUpDate,
+    ];
 
     $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
 
@@ -1016,7 +1043,7 @@ class ComplaintController extends BaseController
                     'sender_id'     => $oldTicket->employee_id ?? 0,
                     'title'         => 'Follow-up Reminder',
                     'message'       => 'Please follow up on the complaint ticket.',
-                    'send_date'     => Carbon::parse($followUpDate)->addHours($config['duration']),
+                    'send_date'     => Carbon::parse($effectiveFollowUpDate)->addHours($config['duration']),
                     'ticket_status' => $statusId,
                     'status'        => 0,
                     'is_active'     => 0,
@@ -1057,6 +1084,8 @@ class ComplaintController extends BaseController
 
     $oldTicket = $ticket->first();
     [$departmentId, $employeeId] = $this->resolveDepartmentAndEmployeeIds($request, $oldTicket);
+    $requiresFollowUpDate = in_array((int) $statusId, WholesaleTicketWorkflow::followUpRequiredStatuses(), true);
+    $effectiveFollowUpDate = $this->resolveEffectiveFollowUpDate($oldTicket, $followUpDate, $requiresFollowUpDate);
 
     // Validate status
     if (!SupportTicketStatusMaster::where([
@@ -1079,7 +1108,7 @@ class ComplaintController extends BaseController
     }
 
     // Follow-up requirement
-    if (in_array((int) $statusId, WholesaleTicketWorkflow::followUpRequiredStatuses(), true) && empty($followUpDate)) {
+    if ($requiresFollowUpDate && !$effectiveFollowUpDate) {
         return response()->json(['success' => 0, 'message' => 'Follow-up date required for In Progress'], 400);
     }
 
@@ -1094,10 +1123,10 @@ class ComplaintController extends BaseController
     ]);
 
     // Update ticket
-    $updateData = ['status' => $statusId];
-    if ((int) $statusId === WholesaleTicketWorkflow::STATUS_IN_PROGRESS) {
-        $updateData['follow_up_date'] = date('Y-m-d', strtotime($followUpDate));
-    }
+    $updateData = [
+        'status' => $statusId,
+        'follow_up_date' => $effectiveFollowUpDate,
+    ];
     $this->supportTicketRepo->update(id: $ticketId, data: $updateData);
 
     // Add conversation entry

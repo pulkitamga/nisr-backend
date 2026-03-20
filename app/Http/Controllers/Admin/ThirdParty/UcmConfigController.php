@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\ThirdParty;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
 use App\Enums\ViewPaths\Admin\Mail;
 use App\Http\Controllers\BaseController;
+use App\Http\Controllers\UcmWebhookController;
 use App\Http\Requests\Admin\UcmConfigUpdateRequest;
 use App\Services\MailService;
 use Brian2694\Toastr\Facades\Toastr;
@@ -12,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UcmConfigController extends BaseController
 {
@@ -57,5 +59,21 @@ class UcmConfigController extends BaseController
 
         Toastr::success(translate('UCM_API_Configuration_updated_successfully'));
         return back();
+    }
+
+    /**
+     * Get webhook diagnostic status for the config page.
+     */
+    public function webhookStatus(Request $request): JsonResponse
+    {
+        $lastHeartbeat = UcmWebhookController::getLastHeartbeat();
+        $isAlive = UcmWebhookController::isWebhookAlive(30);
+
+        return response()->json([
+            'webhook_alive' => $isAlive,
+            'last_heartbeat' => $lastHeartbeat,
+            'webhook_url' => url('/ucm/webhook'),
+            'mode' => $isAlive ? 'webhook' : 'polling',
+        ]);
     }
 }

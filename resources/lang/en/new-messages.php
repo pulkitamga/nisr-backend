@@ -12649,4 +12649,9 @@ return [
 	"Select State" => "Select State",
 	"Select City" => "Select City",
 	"Select Area" => "Select Area",
+	"polling_mode" => "Polling Mode",
+	"webhook_active" => "Webhook Active",
+	"last_event" => "Last event",
+	"seconds_ago" => "seconds ago",
+	"no_webhook_events_yet" => "No webhook events yet",
 ];

@@ -12157,4 +12157,9 @@ return [
 	"payment_handled" => "Payment handled",
 	"Roushdy" => "Roushdy",
 	"El Rehab" => "El Rehab",
+	"polling_mode" => "وضع الاستطلاع",
+	"webhook_active" => "Webhook نشط",
+	"last_event" => "آخر حدث",
+	"seconds_ago" => "منذ ثوانٍ",
+	"no_webhook_events_yet" => "لا توجد أحداث Webhook بعد",
 ];

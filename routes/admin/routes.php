@@ -2919,6 +2919,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         });
         Route::get('ucm', [UcmConfigController::class, 'index'])->middleware('permission:system_settings.access_ucm|system_settings.access,admin')->middleware('permission:system_settings.read,admin')->name('ucm');
         Route::post('ucm/update', [UcmConfigController::class, 'update'])->middleware('permission:system_settings.access_ucm|system_settings.access,admin')->middleware('permission:system_settings.update,admin')->name('ucm.update');
+        Route::get('ucm/webhook-status', [UcmConfigController::class, 'webhookStatus'])->middleware('permission:system_settings.access_ucm|system_settings.access,admin')->name('ucm.webhook-status');
 
         Route::group(['prefix' => 'mail', 'as' => 'mail.', 'middleware' => ['permission:system_settings.access_mail|system_settings.access_third_party|system_settings.access,admin']], function () {
 

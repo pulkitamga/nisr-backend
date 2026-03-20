@@ -2,10 +2,20 @@
 
 namespace Tests\Unit;
 
+use App\Contracts\Repositories\AdminNotificationRepositoryInterface;
+use App\Contracts\Repositories\AdminRepositoryInterface;
+use App\Contracts\Repositories\DepartmentRepositoryInterface;
+use App\Contracts\Repositories\SupportTicketActivityRepositoryInterface;
+use App\Contracts\Repositories\SupportTicketConvRepositoryInterface;
+use App\Contracts\Repositories\SupportTicketRepositoryInterface;
+use App\Http\Controllers\Admin\HelpAndSupport\ComplaintController;
 use App\Support\ComplaintTicketWorkflow;
 use App\Support\RetailTicketWorkflow;
 use App\Support\SupportTicketLifecycle;
+use App\Services\Crm\EscalationService;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
+use stdClass;
 
 class SupportAndComplaintWorkflowTest extends TestCase
 {
@@ -47,5 +57,28 @@ class SupportAndComplaintWorkflowTest extends TestCase
         $this->assertSame(54, RetailTicketWorkflow::STATUS_REFUND_REJECTED);
         $this->assertSame([46], RetailTicketWorkflow::followUpRequiredStatuses());
         $this->assertSame([54], RetailTicketWorkflow::reminderCycleRequiredStatuses());
+    }
+
+    public function test_follow_up_date_resolution_prefers_submitted_date_and_falls_back_to_existing_ticket_date(): void
+    {
+        $controller = new ComplaintController(
+            $this->createMock(SupportTicketRepositoryInterface::class),
+            $this->createMock(SupportTicketConvRepositoryInterface::class),
+            $this->createMock(DepartmentRepositoryInterface::class),
+            $this->createMock(AdminRepositoryInterface::class),
+            $this->createMock(SupportTicketActivityRepositoryInterface::class),
+            $this->createMock(AdminNotificationRepositoryInterface::class),
+            $this->createMock(EscalationService::class),
+        );
+
+        $method = new ReflectionMethod($controller, 'resolveEffectiveFollowUpDate');
+        $method->setAccessible(true);
+
+        $ticket = new stdClass();
+        $ticket->follow_up_date = '2026-03-25 14:30:00';
+
+        $this->assertSame('2026-03-28', $method->invoke($controller, $ticket, '2026-03-28', true));
+        $this->assertSame('2026-03-25', $method->invoke($controller, $ticket, null, true));
+        $this->assertNull($method->invoke($controller, $ticket, null, false));
     }
 }

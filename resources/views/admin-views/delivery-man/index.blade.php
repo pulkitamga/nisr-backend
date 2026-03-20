@@ -1,5 +1,8 @@
 @extends('layouts.back-end.app')
 @section('title',translate('add_new_delivery_man'))
+@push('css_or_js')
+    <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/css/intlTelInput.css') }}">
+@endpush
 @section('content')
     <div class="content container-fluid">
         <div class="mb-3">
@@ -33,9 +36,11 @@
                                         <div class="input-group mb-3">
                                             <div>
                                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control"
-                                                    name="country_code">
+                                                    name="country_code"
+                                                    id="delivery-man-country-code"
+                                                    data-selected-country-code="{{ old('country_code', '') }}">
                                                     @foreach ($telephoneCodes as $code)
-                                                        <option value="{{ $code['code'] }}" {{old($code['code']) == $code['code']? 'selected' : ''}}>{{ $code['name'] }}</option>
+                                                        <option value="{{ $code['code'] }}" {{ old('country_code') == $code['code'] ? 'selected' : '' }}>{{ $code['name'] }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -178,6 +183,36 @@
 @endsection
 
 @push('script_2')
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/spartan-multi-image-picker.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deliveryman.js')}}"></script>
+    <script>
+        $(function () {
+            const select = document.getElementById('delivery-man-country-code');
+            if (!select) {
+                return;
+            }
+
+            const selectedCountryCode = (select.dataset.selectedCountryCode || '').trim();
+            if (selectedCountryCode !== '') {
+                return;
+            }
+
+            const businessCountryCode = String($('.system-default-country-code').data('value') || '').trim().toLowerCase();
+            if (businessCountryCode === '' || !window.intlTelInputGlobals?.getCountryData) {
+                return;
+            }
+
+            const matchedCountry = window.intlTelInputGlobals.getCountryData().find(function (country) {
+                return String(country.iso2 || '').toLowerCase() === businessCountryCode;
+            });
+
+            if (!matchedCountry?.dialCode) {
+                return;
+            }
+
+            select.value = String(matchedCountry.dialCode);
+            $(select).trigger('change');
+        });
+    </script>
 @endpush

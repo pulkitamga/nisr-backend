@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\UcmWebhookController;
 use App\Models\CrmCall;
 use App\Models\User;
 use App\Services\UcmApiService;
@@ -24,26 +25,30 @@ use Throwable;
 
 class UcmController extends Controller
 {
-    private const LIVE_CALLS_CACHE_KEY = 'ucm:live_calls:snapshot:v1';
-    private const LIVE_CALLS_REFRESH_LOCK_KEY = 'ucm:live_calls:refresh_lock:v1';
+    private const LIVE_CALLS_CACHE_KEY = 'ucm:alive_calls:snapshot:v2'; // Changed key to force refresh
+    private const LIVE_CALLS_REFRESH_LOCK_KEY = 'ucm:alive_calls:refresh_lock:v2';
+    private const WEBHOOK_ALIVE_THRESHOLD_SECONDS = 30; // Consider webhooks alive if received within 30s
+    private const WEBHOOK_CALL_LOOKBACK_SECONDS = 180;
+    private const POLLING_CACHE_SECONDS = 10; // Cache for 10s when polling
+    private const WEBHOOK_CACHE_SECONDS = 3; // Cache for 3s when webhooks are active
 
     public function calls(): JsonResponse
     {
         $activeCalls = $this->getCachedLiveCalls();
         $adminUser = auth('admin')->user();
         $agentId = (int)($adminUser->id ?? 0);
-        $employeeExtension = $this->normalizeDigits((string)($adminUser->extension ?? ''));
+        $employeeNumbers = $this->resolveAdminCallNumbers($adminUser);
 
-        $calls = collect($activeCalls)->map(function (array $call) use ($employeeExtension, $agentId) {
+        $calls = collect($activeCalls)->map(function (array $call) use ($employeeNumbers, $agentId) {
             $caller = $this->normalizeDigits((string)($call['caller'] ?? ''));
             $callee = $this->normalizeDigits((string)($call['callee'] ?? ''));
             $callId = (string)($call['call_id'] ?? '');
             $channel = (string)($call['channel'] ?? '');
 
             $contact = $this->resolveContact($caller, $callee);
-            $isMine = $employeeExtension === ''
+            $isMine = empty($employeeNumbers)
                 ? true
-                : in_array($employeeExtension, [$caller, $callee], true);
+                : $this->matchesAnyAdminNumber($employeeNumbers, [$caller, $callee]);
 
             if ($isMine) {
                 $this->upsertCrmCall($call, $contact, $agentId);
@@ -519,8 +524,14 @@ class UcmController extends Controller
         }
 
         try {
-            $fresh = $this->fetchLiveCallsFromUcm();
-            Cache::put(self::LIVE_CALLS_CACHE_KEY, $fresh, now()->addSeconds(5));
+            if (UcmWebhookController::isWebhookAlive(self::WEBHOOK_ALIVE_THRESHOLD_SECONDS)) {
+                $fresh = $this->getRecentWebhookCalls();
+                $cacheTtl = self::WEBHOOK_CACHE_SECONDS;
+            } else {
+                $fresh = $this->fetchLiveCallsFromUcm();
+                $cacheTtl = self::POLLING_CACHE_SECONDS;
+            }
+            Cache::put(self::LIVE_CALLS_CACHE_KEY, $fresh, now()->addSeconds($cacheTtl));
             return $fresh;
         } finally {
             $lock->release();
@@ -531,6 +542,11 @@ class UcmController extends Controller
     {
         $ucm = $this->ucm();
         if (!$ucm->isAvailable()) {
+            $fallback = Cache::get(self::LIVE_CALLS_CACHE_KEY, []);
+            return is_array($fallback) ? $fallback : [];
+        }
+
+        if ($ucm->isInTransportFailureCooldown()) {
             $fallback = Cache::get(self::LIVE_CALLS_CACHE_KEY, []);
             return is_array($fallback) ? $fallback : [];
         }
@@ -547,6 +563,38 @@ class UcmController extends Controller
         }
     }
 
+    private function getRecentWebhookCalls(): array
+    {
+        $cutoff = now()->subSeconds(self::WEBHOOK_CALL_LOOKBACK_SECONDS);
+
+        return CrmCall::query()
+            ->whereIn('status', ['ringing', 'ongoing'])
+            ->where(function ($query) use ($cutoff) {
+                $query->where('updated_at', '>=', $cutoff)
+                    ->orWhere('started_at', '>=', $cutoff);
+            })
+            ->orderByDesc('updated_at')
+            ->limit(25)
+            ->get()
+            ->map(function (CrmCall $call): array {
+                return [
+                    'call_id' => (string)$call->call_id,
+                    'channel' => (string)($call->ucm_channel ?? ''),
+                    'peer_channel' => (string)($call->ucm_peer_channel ?? ''),
+                    'caller' => (string)($call->src_number ?? ''),
+                    'callee' => (string)($call->dst_number ?? ''),
+                    'status' => (string)($call->status ?? 'ringing'),
+                    'direction' => (string)($call->direction ?? 'inbound'),
+                    'started_at' => optional($call->started_at)->toIso8601String(),
+                    'ucm_uniqueid' => (string)($call->ucm_uniqueid ?? ''),
+                    'ucm_bridge_id' => (string)($call->ucm_bridge_id ?? ''),
+                    'raw' => $call->raw_payload,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
     public function accept(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -557,7 +605,7 @@ class UcmController extends Controller
         $ucmResponse = $this->ucm()->acceptCall($validated['channel']);
         $isSuccess = (int)($ucmResponse['status'] ?? -9) === 0;
         if ($isSuccess) {
-            $this->updateCallStatus($validated['call_id'] ?? null, 'ongoing');
+            $this->updateCallStatus($validated['call_id'] ?? null, 'ongoing', (int)auth('admin')->id());
         }
 
         return response()->json([
@@ -657,7 +705,7 @@ class UcmController extends Controller
         return now();
     }
 
-    private function updateCallStatus(?string $callId, string $status): void
+    private function updateCallStatus(?string $callId, string $status, ?int $agentId = null): void
     {
         if (!$callId) {
             return;
@@ -672,12 +720,53 @@ class UcmController extends Controller
         if ($status === 'ongoing' && empty($call->answered_at)) {
             $payload['answered_at'] = now();
         }
+        if ($status === 'ongoing' && $agentId) {
+            $payload['agent_id'] = $agentId;
+        }
         if ($status === 'completed') {
             $payload['call_duration'] = now()->diffInSeconds($call->call_date);
             $payload['ended_at'] = now();
         }
 
         $call->update($payload);
+    }
+
+    private function resolveAdminCallNumbers(mixed $adminUser): array
+    {
+        if (!$adminUser) {
+            return [];
+        }
+
+        return array_values(array_filter(array_unique([
+            $this->normalizeDigits((string)($adminUser->extension ?? '')),
+            $this->normalizeDigits((string)($adminUser->phone ?? '')),
+        ])));
+    }
+
+    private function matchesAnyAdminNumber(array $adminNumbers, array $callNumbers): bool
+    {
+        $normalizedCallNumbers = array_values(array_filter(array_unique(array_map(
+            fn(string $number): string => $this->normalizeDigits($number),
+            $callNumbers
+        ))));
+
+        foreach ($adminNumbers as $adminNumber) {
+            foreach ($normalizedCallNumbers as $callNumber) {
+                if ($adminNumber === '' || $callNumber === '') {
+                    continue;
+                }
+
+                if (
+                    $adminNumber === $callNumber
+                    || str_ends_with($callNumber, $adminNumber)
+                    || str_ends_with($adminNumber, $callNumber)
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private function resolveContact(string $caller, string $callee): ?User

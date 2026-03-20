@@ -220,7 +220,7 @@
                             @endif
                             @endif
                             @if(!empty($ticket->status_details) && trim(strtolower($ticket->status_details->name)) != 'closed')
-                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showWholesaleFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" title="{{ translate('Follow-up details') }}">
+                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showWholesaleFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" data-follow-up-date="{{ $ticket->follow_up_date ? \Carbon\Carbon::parse($ticket->follow_up_date)->format('Y-m-d') : '' }}" title="{{ translate('Follow-up details') }}">
                                 {{ translate('follow_Up') }}
                             </a>
                             @endif

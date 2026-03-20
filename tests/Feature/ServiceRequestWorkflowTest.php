@@ -19,6 +19,7 @@ use App\Support\ServiceTicketWorkflow;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -262,6 +263,13 @@ class ServiceRequestWorkflowTest extends TestCase
             ->expects($this->once())
             ->method('notify')
             ->willThrowException(new \RuntimeException('Notification channel unavailable.'));
+
+        Log::shouldReceive('warning')
+            ->once()
+            ->with('Service request notification dispatch failed', \Mockery::on(function (array $context) use ($customer): bool {
+                return ($context['customer_id'] ?? null) === $customer->id
+                    && ($context['error'] ?? null) === 'Notification channel unavailable.';
+            }));
 
         $submissionService = $this->makeSubmissionService($workflowNotifier);
 

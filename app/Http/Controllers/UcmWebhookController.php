@@ -8,10 +8,13 @@ use App\Utils\Helpers;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class UcmWebhookController extends Controller
 {
+    private const WEBHOOK_HEARTBEAT_KEY = 'ucm:webhook:last_heartbeat';
+
     public function handle(Request $request): JsonResponse
     {
         $config = Helpers::ucmConfig();
@@ -32,6 +35,11 @@ class UcmWebhookController extends Controller
             if ($this->processEvent($event)) {
                 $processed++;
             }
+        }
+
+        // Update heartbeat to indicate webhooks are working
+        if ($processed > 0) {
+            Cache::put(self::WEBHOOK_HEARTBEAT_KEY, now()->toIso8601String(), now()->addMinutes(5));
         }
 
         return response()->json(['ok' => true, 'processed' => $processed]);
@@ -222,5 +230,32 @@ class UcmWebhookController extends Controller
     private function normalizeDigits(string $value): string
     {
         return preg_replace('/\D+/', '', $value) ?? '';
+    }
+
+    /**
+     * Check if webhooks are actively being received.
+     * Returns true if a webhook was received within the threshold.
+     */
+    public static function isWebhookAlive(int $thresholdSeconds = 30): bool
+    {
+        $lastHeartbeat = Cache::get(self::WEBHOOK_HEARTBEAT_KEY);
+        if (!$lastHeartbeat) {
+            return false;
+        }
+
+        try {
+            $lastTime = Carbon::parse($lastHeartbeat);
+            return $lastTime->gt(now()->subSeconds($thresholdSeconds));
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Get the last webhook heartbeat timestamp.
+     */
+    public static function getLastHeartbeat(): ?string
+    {
+        return Cache::get(self::WEBHOOK_HEARTBEAT_KEY);
     }
 }
