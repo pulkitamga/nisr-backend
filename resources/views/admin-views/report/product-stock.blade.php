@@ -55,7 +55,7 @@
         <div class="card mb-3">
             <div class="card-body">
                 <form method="GET" action="{{ route('admin.stock.product-stock') }}">
-                    <div class="row g-2 align-items-end">
+                    <div class="row g-2 align-items-start">
                         <div class="col-md-3">
                             <label class="form-label mb-1">{{ translate('category') }}</label>
                             <select class="js-select2-custom form-control" name="category_id">
