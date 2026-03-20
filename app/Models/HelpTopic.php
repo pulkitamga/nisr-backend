@@ -70,19 +70,43 @@ class HelpTopic extends Model
         });
     }
 
+    // private function getTranslatedFieldValue(string $key, string|null $fallback): string|null
+    // {
+    //     if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
+    //         return $fallback;
+    //     }
+
+    //     if (!$this->relationLoaded('translations')) {
+    //         $this->load('translations');
+    //     }
+
+    //     return $this->translations
+    //         ->first(function ($translation) use ($key) {
+    //             return $translation->key === $key;
+    //         })?->value ?? $fallback;
+    // }
     private function getTranslatedFieldValue(string $key, string|null $fallback): string|null
     {
+        // 1. Skip translation for admin/seller panels
         if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
             return $fallback;
         }
-
+ 
+        // 2. Load translations relationship if not already loaded
         if (!$this->relationLoaded('translations')) {
             $this->load('translations');
         }
-
-        return $this->translations
-            ->first(function ($translation) use ($key) {
-                return $translation->key === $key;
-            })?->value ?? $fallback;
+ 
+        // 3. Get the CURRENT locale (e.g., 'en' from your Postman header)
+        $locale = app()->getLocale();
+ 
+        // 4. Look for a translation that matches BOTH the key AND the current locale
+        $translation = $this->translations
+            ->where('key', $key)
+            ->where('locale', $locale) // <--- THIS IS THE FIX
+            ->first();
+ 
+        // 5. If found, return it. If not (like when in English), return the English $fallback
+        return $translation ? $translation->value : $fallback;
     }
 }

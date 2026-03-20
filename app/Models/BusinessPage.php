@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Traits\StorageTrait;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * App\Models\BusinessPage
@@ -37,6 +38,16 @@ class BusinessPage extends Model
         'updated_at'
     ];
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            Cache::forget(CACHE_FOR_BUSINESS_PAGES_LIST);
+        });
+
+        static::deleted(function () {
+            Cache::forget(CACHE_FOR_BUSINESS_PAGES_LIST);
+        });
+    }
     protected $casts = [
         'id' => 'integer',
         'title' => 'string',
@@ -107,5 +118,4 @@ class BusinessPage extends Model
                 return $translation->locale === $locale && $translation->key === $key;
             })?->value ?? $fallback;
     }
-
 }

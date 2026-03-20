@@ -112,13 +112,15 @@ trait CacheManagerTrait
         });
     }
 
-    public function cacheHelpTopicTable()
+       public function cacheHelpTopicTable()
     {
-        return Cache::remember(CACHE_HELP_TOPICS_TABLE, CACHE_FOR_3_HOURS, function () {
-            return HelpTopic::withoutGlobalScope('translate')
-                ->with('translations')
-                ->where(['type' => 'default', 'status' => 1])
-                ->orderBy('ranking')
+        // We add the locale to the key so the cache is specific to the language requested
+        $cacheKey = CACHE_HELP_TOPICS_TABLE . '_' . app()->getLocale();
+ 
+        return Cache::remember($cacheKey, CACHE_FOR_3_HOURS, function () {
+            return HelpTopic::where(['type' => 'default', 'status' => 1])
+                ->withoutGlobalScope('translate') // <--- THIS REMOVES THE FILTER
+                ->with(['translations'])
                 ->get();
         });
     }
