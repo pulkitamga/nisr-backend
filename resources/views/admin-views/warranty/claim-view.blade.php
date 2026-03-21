@@ -241,7 +241,7 @@
                 <h6 class="mt-4">{{ translate('activity_log') }}</h6>
                 <div class="mt-4 d-flex flex-wrap gap-2 claim-actions">
 
-                    @if($claim->status === 'new')
+                    @if($claim->status === 'new' || $claim->status === 'triage_pending')
                     <button class="btn btn-primary btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.decide', $claim->id) }}" data-target="#decideModal">
                         {{ translate('Decide') }}
                     </button>

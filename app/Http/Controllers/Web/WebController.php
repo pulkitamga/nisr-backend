@@ -33,6 +33,7 @@ use App\Models\InboxMessage;
 use App\Models\ShippingType;
 use App\Models\Subscription;
 use App\Services\SlaService;
+use App\Support\OtpManager;
 use App\Traits\InHouseTrait;
 use Illuminate\Http\Request;
 use App\Utils\ProductManager;
@@ -1930,7 +1931,7 @@ class WebController extends Controller
         } else {
             $guestEmail = '';
             $guestPhone = '';
-            $token = rand(1000, 9999);
+            $token = OtpManager::numericToken(4);
 
             $orderDetailsData = OrderDetail::with('order.customer')->find($request->order_details_id);
 
@@ -2017,7 +2018,7 @@ class WebController extends Controller
         }
 
         if ($emailServicesSmtp['status'] || $smsConfigStatus) {
-            $token = rand(1000, 9999);
+            $token = OtpManager::numericToken(4);
             if ($customer['email'] == '' && $customer['phone'] == '') {
                 return response()->json([
                     'status' => $status,

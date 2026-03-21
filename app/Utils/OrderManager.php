@@ -832,7 +832,7 @@ class OrderManager
         $shippingMethodIdForOrder = $deliveryType == 'pickup' ? 0 : $shipping_method_id;
         $or = [
             'id' => $order_id,
-            'verification_code' => rand(100000, 999999),
+            'verification_code' => \App\Support\OtpManager::numericToken(6),
             'customer_id' => $getCustomerID,
             'transfer_from_branch' => $transfer_from_branch,
             'is_guest' => $isGuestUserInOrder,
@@ -1202,7 +1202,7 @@ class OrderManager
         //order data insert start
         $or = [
             'id' => $order_data['order_id'],
-            'verification_code' => rand(100000, 999999),
+            'verification_code' => \App\Support\OtpManager::numericToken(6),
             'customer_id' => $order_data['user_id'],
             'seller_id' => $order_data['seller_id'],
             'seller_is' => $order_data['seller_is'],

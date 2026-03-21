@@ -15,6 +15,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Session;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Support\OtpManager;
 use App\Support\WarrantyLookupContactNormalizer;
 use App\Utils\SMSModule;
 
@@ -111,7 +112,7 @@ class WarrantyViewController extends Controller
                     return back()->withInput();
                 }
             } else {
-                $otp = rand(1000, 9999);
+                $otp = OtpManager::warrantyToken();
                 Cache::put("warranty_lookup:{$warranty->id}:{$normalizedContact}", $otp, now()->addMinutes(5));
                 $this->dispatchLookupOtp($warranty, (string)$normalizedContact, (string)$otp);
             }
@@ -160,7 +161,7 @@ class WarrantyViewController extends Controller
             $isValid = ($response['status'] === 'success');
         } else {
             $storedOtp = Cache::get("warranty_lookup:{$request->warranty_id}:{$normalizedContact}");
-            $isValid = filled($storedOtp) && hash_equals((string)$storedOtp, (string)$request->otp);
+            $isValid = OtpManager::matchesWarrantyToken((string)$request->otp, filled($storedOtp) ? (string)$storedOtp : null);
         }
 
         if (!$isValid) {

@@ -10192,6 +10192,8 @@ return [
 	"Warranty Activate" => "تفعيل الضمان",
 	"Warranty Lookup" => "البحث عن الضمان",
 	"Enter your Serial Number and Contact to receive an OTP and verify your warranty details." => "أدخل الرقم التسلسلي وجهة الاتصال لاستلام رمز OTP والتحقق من تفاصيل الضمان.",
+	"Example: 01553883833" => "مثال: 01553883833",
+	"Enter the phone number without country code, for example 01553883833. International format is also accepted." => "أدخل رقم الهاتف بدون رمز الدولة، على سبيل المثال 01553883833. كما يتم قبول الصيغة الدولية أيضًا.",
 	"focus on highlighting" => "ركز على إبراز",
 	"how your skills experience and career goals align with the company s mission a..." => "كيف تتماشى مهاراتك وخبراتك وأهدافك المهنية مع مهمة الشركة...",
 	"fas fa-user" => "fas fa-user",

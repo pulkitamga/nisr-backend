@@ -6,7 +6,7 @@ class OtpManager
 {
     public static function testModeEnabled(): bool
     {
-        return (bool) config('otp.test_mode_enabled', env('APP_MODE') !== 'live');
+        return (bool) config('otp.test_mode_enabled');
     }
 
     public static function numericToken(int $digits): string

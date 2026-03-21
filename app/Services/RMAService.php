@@ -2,25 +2,28 @@
 namespace App\Services;
 
 use App\Events\EmailVerificationEvent;
-use App\Models\WarrantyClaim;
-use App\Notifications\RMAIssued;  
-use Illuminate\Support\Str;
 use App\Models\Branch;
+use App\Models\WarrantyClaim;
+use App\Notifications\RMAIssued;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class RMAService
 {
     public static function issueRMA(WarrantyClaim $claim)
     {
         $warranty = $claim->warranty;
-        $fallbackBranchId = $warranty?->branch_id ?: Branch::query()->value('id');
-        $resolvedBranchId = $claim->branch_id ?: $fallbackBranchId;
+
+        if (!$claim->branch_id) {
+            throw new RuntimeException('Cannot issue RMA without a claim branch.');
+        }
 
         $claim->update([
             'status' => 'rma_issued',
             'rma_number' => 'RMA-' . Str::upper(Str::random(8)),
             'rma_deadline' => now()->addDays(14),
-            'branch_id' => $resolvedBranchId,
+            'branch_id' => $claim->branch_id,
         ]);
 
         $instructions = self::generateInstructions($claim);

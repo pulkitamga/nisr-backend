@@ -5,6 +5,7 @@ namespace App\Http\Controllers\RestAPI\v1\auth;
 use App\Events\EmailVerificationEvent;
 use App\Http\Controllers\Controller;
 use App\Models\PhoneOrEmailVerification;
+use App\Support\OtpManager;
 use App\Models\User;
 use App\Utils\Helpers;
 use Carbon\Carbon;
@@ -32,7 +33,7 @@ class EmailVerificationController extends Controller
             ], 200);
         }
 
-        $token = rand(1000, 9999);
+        $token = OtpManager::numericToken(4);
         DB::table('phone_or_email_verifications')->insert([
             'phone_or_email' => $request['email'],
             'token' => $token,
@@ -99,7 +100,7 @@ class EmailVerificationController extends Controller
         }
 
         if($user && $time_differance==0){
-            $generate_new_token = rand(1000, 9999);
+            $generate_new_token = OtpManager::numericToken(4);
             if($token){
                 $token->token = $generate_new_token;
                 $token->otp_hit_count = 0;

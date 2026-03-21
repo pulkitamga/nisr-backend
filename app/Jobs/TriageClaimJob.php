@@ -24,6 +24,11 @@ class TriageClaimJob implements ShouldQueue
 
         try {
             if ($hasActiveWarranty && !$redFlags) {
+                if (!$this->claim->branch_id) {
+                    $this->claim->update(['status' => 'triage_pending']);
+                    return;
+                }
+
                 $this->claim->update(['status' => 'approved']);
                 \App\Services\RMAService::issueRMA($this->claim);
                 return;

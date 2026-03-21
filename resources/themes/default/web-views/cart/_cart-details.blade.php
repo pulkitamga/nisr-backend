@@ -519,7 +519,7 @@
                             data-exchange-charges="{{ $cartItem['exchange_charge'] }}"
                             data-cart-id="{{ $cartItem['id'] }}" {{ $cartItem['exchange_charges']> 0 ? "checked" :
                             "" }}>
-                        &nbsp; Exchange your old product and save more!
+                        &nbsp; Exchange your old product and save {{ webCurrencyConverter(amount: abs($cartItem['exchange_charge'])) }}!
                         <div class="{{ $cartItem['exchange_charges'] == 0 &&  $cartItem['exchange_qty'] == 0 ? 'd-none_exchange_qty' : '' }} exchange_qty d-flex justify-content-center align-items-center gap-3"
                             id="exchangeQTYDetails_{{ $cartItem['id'] }}">
                             <span class="exchange_qty_minus action-update-exchange-quantity-list"

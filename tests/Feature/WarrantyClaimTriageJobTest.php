@@ -65,6 +65,7 @@ class WarrantyClaimTriageJobTest extends TestCase
             'submitted_at' => now(),
             'response_due' => now()->addDay(),
             'resolution_due' => now()->addDays(3),
+            'branch_id' => 1,
         ]);
 
         $claim->setRelation('warranty', new Warranty([
@@ -82,5 +83,34 @@ class WarrantyClaimTriageJobTest extends TestCase
         (new TriageClaimJob($claim))->handle();
 
         $this->assertSame('approved', $claim->fresh()->status);
+    }
+
+    public function test_triage_job_sends_claim_to_triage_pending_when_branch_is_missing(): void
+    {
+        $claim = WarrantyClaim::query()->create([
+            'warranty_id' => 1,
+            'serial_number' => 'SERIAL508',
+            'claim_number' => 'CLM-TEST02',
+            'status' => 'new',
+            'description' => 'Battery charging problem reported by customer.',
+            'submitted_at' => now(),
+            'response_due' => now()->addDay(),
+            'resolution_due' => now()->addDays(3),
+            'branch_id' => null,
+        ]);
+
+        $claim->setRelation('warranty', new Warranty([
+            'status' => 'active',
+            'end_date' => now()->addYear(),
+            'branch_id' => 1,
+        ]));
+
+        Mockery::mock('alias:App\Services\RMAService')
+            ->shouldReceive('issueRMA')
+            ->never();
+
+        (new TriageClaimJob($claim))->handle();
+
+        $this->assertSame('triage_pending', $claim->fresh()->status);
     }
 }

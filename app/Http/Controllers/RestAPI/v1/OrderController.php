@@ -19,6 +19,7 @@ use App\Traits\CommonTrait;
 use App\Traits\FileManagerTrait;
 use App\Traits\SmsGateway;
 use App\Models\User;
+use App\Support\OtpManager;
 use App\Utils\CartManager;
 use App\Utils\Convert;
 use App\Utils\CustomerManager;
@@ -813,7 +814,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         }
 
         if ($emailServices_smtp['status'] || $smsConfigStatus) {
-            $token = rand(1000, 9999);
+            $token = OtpManager::numericToken(4);
             if ($customer['email'] == '' && $customer['phone'] == '') {
                 return response()->json([
                     'status' => $status,
@@ -953,7 +954,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         } else {
             $guest_email = '';
             $guest_phone = '';
-            $token = rand(1000, 9999);
+            $token = OtpManager::numericToken(4);
 
             $order_details_data = OrderDetail::with('order.customer')->find($request->order_details_id);
 
