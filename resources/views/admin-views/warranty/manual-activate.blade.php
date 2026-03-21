@@ -14,23 +14,35 @@
                 <div class="form-group">
                     <label>{{translate('serial_number')}}</label>
                     <div class="input-group">
-                        <input type="text" id="manualActivationSerialNumber" name="serial_number" value="{{ old('serial_number', $prefillSerial ?? '') }}" class="form-control" required>
+                        <input type="text" id="manualActivationSerialNumber" name="serial_number" value="{{ old('serial_number', $prefillSerial ?? '') }}" class="form-control @error('serial_number') is-invalid @enderror" required>
                         <div class="input-group-append">
                             @include('partials.serial-scan-button', ['targetInput' => '#manualActivationSerialNumber'])
                         </div>
                     </div>
+                    @error('serial_number')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label>{{translate('purchase_date')}}</label>
-                    <input type="date" name="purchase_date" class="form-control" required>
+                    <input type="date" name="purchase_date" value="{{ old('purchase_date') }}" class="form-control @error('purchase_date') is-invalid @enderror" required>
+                    @error('purchase_date')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label>{{ translate('Phone') }}</label>
-                    <input type="text" name="customer_phone" id="manualActivationCustomerPhone" value="{{ old('customer_phone') }}" class="form-control" placeholder="{{ translate('Enter phone number') }}">
+                    <input type="text" name="customer_phone" id="manualActivationCustomerPhone" value="{{ old('customer_phone') }}" class="form-control @error('customer_phone') is-invalid @enderror" placeholder="{{ translate('Enter phone number') }}">
+                    @error('customer_phone')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label>{{ translate('Email') }}</label>
-                    <input type="email" name="customer_email" id="manualActivationCustomerEmail" value="{{ old('customer_email') }}" class="form-control" placeholder="{{ translate('Enter email') }}">
+                    <input type="email" name="customer_email" id="manualActivationCustomerEmail" value="{{ old('customer_email') }}" class="form-control @error('customer_email') is-invalid @enderror" placeholder="{{ translate('Enter email') }}">
+                    @error('customer_email')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label>{{ translate('Suggested customer profile') }}</label>
@@ -38,14 +50,23 @@
                         <small class="text-muted" id="manualActivationCustomerSuggestionsHint">{{ translate('Enter phone or email to find an existing customer profile.') }}</small>
                     </div>
                     <small class="text-muted d-block mt-2" id="manualActivationSelectedCustomerText"></small>
+                    @error('final_user_id')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label>{{translate('reason')}}</label>
-                    <textarea name="reason" class="form-control" required></textarea>
+                    <textarea name="reason" class="form-control @error('reason') is-invalid @enderror" required>{{ old('reason') }}</textarea>
+                    @error('reason')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label>{{translate('docs')}}</label>
-                    <input type="file" name="docs" class="form-control" accept="pdf,jpg">
+                    <input type="file" name="docs" class="form-control @error('docs') is-invalid @enderror" accept="pdf,jpg">
+                    @error('docs')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
                 <button type="submit" class="btn btn--primary">{{translate('activate')}}</button>
             </form>

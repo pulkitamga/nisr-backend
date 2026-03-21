@@ -361,6 +361,19 @@ class WarrantyController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'final_user_id' => 'nullable|exists:users,id',
             'docs' => 'nullable|file|mimes:pdf,jpg|max:2048',
+        ], [
+            'serial_number.required' => translate('Please enter a serial number.'),
+            'serial_number.exists' => translate('The entered serial number was not found in warranties.'),
+            'purchase_date.required' => translate('Please select the purchase date.'),
+            'purchase_date.date' => translate('The purchase date must be a valid date.'),
+            'reason.required' => translate('Please enter the reason for manual activation.'),
+            'customer_phone.max' => translate('The phone number may not be greater than 50 characters.'),
+            'customer_email.email' => translate('Please enter a valid email address.'),
+            'customer_email.max' => translate('The email may not be greater than 255 characters.'),
+            'final_user_id.exists' => translate('The selected customer profile is invalid. Please choose a valid customer from suggestions.'),
+            'docs.file' => translate('The uploaded document must be a valid file.'),
+            'docs.mimes' => translate('The document must be a PDF or JPG file.'),
+            'docs.max' => translate('The document may not be greater than 2 MB.'),
         ]);
 
         if (Warranty::query()->where('serial_number', $request->serial_number)->active()->exists()) {
