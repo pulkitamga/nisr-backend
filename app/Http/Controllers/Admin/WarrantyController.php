@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimCharge;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -307,6 +308,48 @@ class WarrantyController extends Controller
         ]);
     }
 
+    public function manualActivateCustomerSuggestions(Request $request)
+    {
+        $phone = trim((string)$request->query('phone', ''));
+        $email = trim((string)$request->query('email', ''));
+
+        if ($phone === '' && $email === '') {
+            return response()->json(['customers' => []]);
+        }
+
+        $phoneDigits = preg_replace('/\D+/', '', $phone);
+
+        $customers = User::query()
+            ->where('user_type', 0)
+            ->where(function ($query) use ($email, $phoneDigits) {
+                if ($email !== '') {
+                    $query->where('email', 'like', '%' . $email . '%');
+                }
+
+                if ($phoneDigits !== '') {
+                    $method = $email !== '' ? 'orWhereRaw' : 'whereRaw';
+                    $query->{$method}(
+                        "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, '+', ''), '-', ''), ' ', ''), '(', ''), ')', '') like ?",
+                        ['%' . $phoneDigits . '%']
+                    );
+                }
+            })
+            ->select('id', 'name', 'f_name', 'l_name', 'phone', 'email')
+            ->limit(8)
+            ->get()
+            ->map(function (User $user) {
+                return [
+                    'id' => $user->id,
+                    'name' => trim(($user->f_name ?? '') . ' ' . ($user->l_name ?? '')) ?: ($user->name ?? ('Customer #' . $user->id)),
+                    'phone' => $user->phone,
+                    'email' => $user->email,
+                ];
+            })
+            ->values();
+
+        return response()->json(['customers' => $customers]);
+    }
+
     // Manual Activate
     public function manualActivate(Request $request)
     {
@@ -314,6 +357,9 @@ class WarrantyController extends Controller
             'serial_number' => 'required|string|exists:warranties,serial_number',
             'purchase_date' => 'required|date',
             'reason' => 'required|string',
+            'customer_phone' => 'nullable|string|max:50',
+            'customer_email' => 'nullable|email|max:255',
+            'final_user_id' => 'nullable|exists:users,id',
             'docs' => 'nullable|file|mimes:pdf,jpg|max:2048',
         ]);
 
@@ -324,6 +370,9 @@ class WarrantyController extends Controller
 
         $warranty = Warranty::where('serial_number', $request->serial_number)->firstOrFail();
         $docPath = $request->hasFile('docs') ? $request->file('docs')->store('warranty/manual', 'public') : null;
+        $customer = $request->filled('final_user_id')
+            ? User::query()->where('user_type', 0)->find($request->final_user_id)
+            : null;
 
         $startDate = now();
         $months = $warranty->warranty_months ?? ($warranty->product->warranty_duration ?? 12);
@@ -337,6 +386,10 @@ class WarrantyController extends Controller
             'purchase_date' => $request->purchase_date,
             'is_admin_manual_activation' => true,
             'activation_method' => 'admin_manual',
+            'final_user_id' => $customer?->id,
+            'activated_by_name' => $customer ? (trim(($customer->f_name ?? '') . ' ' . ($customer->l_name ?? '')) ?: $customer->name) : null,
+            'activated_by_phone' => $request->customer_phone ?: $customer?->phone,
+            'activated_by_email' => $request->customer_email ?: $customer?->email,
             'receipt_path' => $docPath,
         ]);
 

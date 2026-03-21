@@ -553,6 +553,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get('/activation/list', 'activationList')->name('activation.list')->middleware('permission:warranty_section.warranty_activation_list,admin');
             Route::get('/activation/{warranty}/view', 'activationView')->name('activation.view')->middleware('permission:warranty_section.warranty_activation_view,admin');
             Route::get('/activation/manual', 'manualActivateView')->name('activation.manual.view')->middleware('permission:warranty_section.warranty_manual_activation,admin');
+            Route::get('/activation/manual/customers', 'manualActivateCustomerSuggestions')->name('activation.manual.customers')->middleware('permission:warranty_section.warranty_manual_activation,admin');
             Route::post('/activation/manual', 'manualActivate')->name('activation.manual')->middleware('permission:warranty_section.warranty_manual_activation,admin');
             Route::get('/review/activation', 'activationReviews')->name('review.activation')->middleware('permission:warranty_section.warranty_activation_review,admin');
             Route::post('/review/activation/{review}/approve', 'approveActivation')->name('review.activation.approve')->middleware('permission:warranty_section.warranty_activation_approve,admin');
