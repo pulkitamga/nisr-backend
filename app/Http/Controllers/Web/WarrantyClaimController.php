@@ -69,6 +69,7 @@ class WarrantyClaimController extends Controller
         $claim = WarrantyClaim::create([
             'warranty_id' => $warranty->id,
             'serial_number' => $warranty->serial_number,
+            'branch_id' => $warranty->branch_id,
             'claim_number' => 'CLM-' . strtoupper(Str::random(8)),
             'status' => 'new',
             'description' => $description,
