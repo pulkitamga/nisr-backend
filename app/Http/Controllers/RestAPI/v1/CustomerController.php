@@ -53,42 +53,9 @@ class CustomerController extends Controller
 
     public function create_support_ticket(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'subject' => 'required',
-            'type' => 'required',
-            'description' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
-        }
-
-        $images = [];
-        if ($request->file('image')) {
-            foreach ($request->image as $key => $value) {
-                $image_name = $this->upload('support-ticket/', 'webp', $value);
-                $images[] = [
-                    'file_name' => $image_name,
-                    'storage' => getWebConfig(name: 'storage_connection_type') ?? 'public',
-                ];
-            }
-        }
-
-        $request['customer_id'] = $request->user()->id;
-        $request['status'] = 'pending';
-        $request['attachment'] = $images;
-
-        try {
-            CustomerManager::create_support_ticket($request);
-        } catch (\Exception $e) {
-            return response()->json([
-                'errors' => [
-                    'code' => 'failed',
-                    'message' => 'Something went wrong',
-                ],
-            ], 422);
-        }
-        return response()->json(['message' => 'Support ticket created successfully.'], 200);
+        return response()->json([
+            'message' => 'Legacy support ticket creation is disabled. Submit a CRM case through contact-us instead.',
+        ], 410);
     }
 
     public function account_delete(Request $request, $id)
@@ -113,29 +80,9 @@ class CustomerController extends Controller
 
     public function reply_support_ticket(Request $request, $ticket_id)
     {
-        DB::table('support_tickets')->where(['id' => $ticket_id])->update([
-            'status' => 'open',
-            'updated_at' => now(),
-        ]);
-
-        $images = [];
-        if ($request->file('image')) {
-            foreach ($request->image as $key => $value) {
-                $image_name = $this->upload('support-ticket/', 'webp', $value);
-                $images[] = [
-                    'file_name' => $image_name,
-                    'storage' => getWebConfig(name: 'storage_connection_type') ?? 'public',
-                ];
-            }
-        }
-
-        $support = new SupportTicketConv();
-        $support->support_ticket_id = $ticket_id;
-        $support->attachment = $images;
-        $support->admin_id = 0;
-        $support->customer_message = $request['message'];
-        $support->save();
-        return response()->json(['message' => 'Support ticket reply sent.'], 200);
+        return response()->json([
+            'message' => 'Legacy support ticket reply is disabled. Use the CRM case reply endpoint after conversion.',
+        ], 410);
     }
 
     public function get_support_tickets(Request $request)
@@ -169,14 +116,9 @@ class CustomerController extends Controller
 
     public function support_ticket_close($id)
     {
-        $ticket = SupportTicket::find($id);
-        if ($ticket) {
-            $ticket->status = 'close';
-            $ticket->updated_at = now();
-            $ticket->save();
-            return response()->json(['message' => 'Successfully close the ticket'], 200);
-        }
-        return response()->json(['message' => 'Ticket not found'], 403);
+        return response()->json([
+            'message' => 'Customer ticket closure is disabled. CRM support owns ticket closure.',
+        ], 410);
     }
 
     public function add_to_wishlist(Request $request)

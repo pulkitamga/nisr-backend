@@ -15,6 +15,7 @@ use App\Http\Controllers\RestAPI\v1\CategoryController;
 use App\Http\Controllers\RestAPI\v1\ChatController;
 use App\Http\Controllers\RestAPI\v1\ConfigController;
 use App\Http\Controllers\RestAPI\v1\CouponController;
+use App\Http\Controllers\RestAPI\v1\CrmCaseController;
 use App\Http\Controllers\RestAPI\v1\CustomerController;
 use App\Http\Controllers\RestAPI\v1\CustomerRestockRequestController;
 use App\Http\Controllers\RestAPI\v1\DealController;
@@ -335,6 +336,13 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
                     Route::post('{id}/reply', 'reply');
                 });
             });
+        });
+
+        Route::prefix('cases')->controller(CrmCaseController::class)->group(function () {
+            Route::get('/', 'index');
+            Route::get('{id}', 'show');
+            Route::get('{id}/timeline', 'timeline');
+            Route::post('{id}/reply', 'reply');
         });
 
         Route::group(['prefix' => 'compare'], function () {
