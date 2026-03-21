@@ -12,7 +12,12 @@
                 @csrf
                 <div class="form-group">
                     <label>{{ translate('Serial Number') }}</label>
-                    <input type="text" name="serial_number" class="form-control" placeholder="{{ translate('Enter serial number') }}" required>
+                    <div class="input-group">
+                        <input type="text" id="transferWarrantySerialNumber" name="serial_number" class="form-control" placeholder="{{ translate('Enter serial number') }}" required>
+                        <div class="input-group-append">
+                            @include('partials.serial-scan-button', ['targetInput' => '#transferWarrantySerialNumber'])
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>{{ translate('From Branch') }}</label>
@@ -40,4 +45,6 @@
         </div>
     </div>
 </div>
+
+@include('partials.serial-scanner-assets')
 @endsection

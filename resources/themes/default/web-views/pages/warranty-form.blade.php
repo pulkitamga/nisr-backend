@@ -59,9 +59,14 @@
                         {{-- Serial Number --}}
                         <div class="mb-3">
                             <label class="form-label">{{ translate('Serial Number') }} <span class="text-danger">*</span></label>
-                            <input type="text" name="serial_number"
-                                class="form-control @error('serial_number') is-invalid @enderror"
-                                value="{{ old('serial_number') }}" required>
+                            <div class="input-group">
+                                <input type="text" id="warrantyActivationSerialNumber" name="serial_number"
+                                    class="form-control @error('serial_number') is-invalid @enderror"
+                                    value="{{ old('serial_number') }}" required>
+                                <div class="input-group-append">
+                                    @include('partials.serial-scan-button', ['targetInput' => '#warrantyActivationSerialNumber'])
+                                </div>
+                            </div>
                             @error('serial_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
@@ -257,6 +262,8 @@
         toggle(); // initial state
     });
 </script>
+
+@include('partials.serial-scanner-assets')
 @endsection
 
 @push('script')

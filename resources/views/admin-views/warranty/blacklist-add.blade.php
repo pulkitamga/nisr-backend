@@ -21,7 +21,12 @@
 
                 <div class="form-group">
                     <label>{{ translate('Serial Number') }}</label>
-                    <input type="text" name="serial_number" class="form-control" placeholder="{{ translate('Enter serial number') }}" required>
+                    <div class="input-group">
+                        <input type="text" id="blacklistSerialNumber" name="serial_number" class="form-control" placeholder="{{ translate('Enter serial number') }}" required>
+                        <div class="input-group-append">
+                            @include('partials.serial-scan-button', ['targetInput' => '#blacklistSerialNumber'])
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group mt-3">
@@ -37,4 +42,6 @@
         </div>
     </div>
 </div>
+
+@include('partials.serial-scanner-assets')
 @endsection

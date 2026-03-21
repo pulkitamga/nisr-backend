@@ -19,8 +19,13 @@ $branches = \App\Models\Branch::where('id','!=',1)->get();
                                 <label class="text-danger font-weight-bold">
                                     {{ translate('Enter Serial Number') }} <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" name="serial_number" class="form-control" 
-                                       placeholder="{{ translate('e.g. ABC123XYZ') }}" required autocomplete="off">
+                                <div class="input-group">
+                                    <input type="text" id="receiveClaimSerialNumber" name="serial_number" class="form-control"
+                                           placeholder="{{ translate('e.g. ABC123XYZ') }}" required autocomplete="off">
+                                    <div class="input-group-append">
+                                        @include('partials.serial-scan-button', ['targetInput' => '#receiveClaimSerialNumber'])
+                                    </div>
+                                </div>
                                 <small class="text-muted">{{ translate('Must match RMA issued serial') }}</small>
                             </div>
                         </div>

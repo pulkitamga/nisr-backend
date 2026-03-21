@@ -12,7 +12,12 @@
                 @csrf
                 <div class="form-group">
                     <label>{{translate('serial_number')}}</label>
-                    <input type="text" name="serial_number" value="{{ old('serial_number', $prefillSerial ?? '') }}" class="form-control" required>
+                    <div class="input-group">
+                        <input type="text" id="manualActivationSerialNumber" name="serial_number" value="{{ old('serial_number', $prefillSerial ?? '') }}" class="form-control" required>
+                        <div class="input-group-append">
+                            @include('partials.serial-scan-button', ['targetInput' => '#manualActivationSerialNumber'])
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>{{translate('purchase_date')}}</label>
@@ -31,4 +36,6 @@
         </div>
     </div>
 </div>
+
+@include('partials.serial-scanner-assets')
 @endsection

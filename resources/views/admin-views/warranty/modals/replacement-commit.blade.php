@@ -10,7 +10,12 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>{{ translate('New Serial Number') }}</label>
-                        <input type="text" name="new_serial_number" class="form-control" required>
+                        <div class="input-group">
+                            <input type="text" id="replacementCommitSerialNumber" name="new_serial_number" class="form-control" required>
+                            <div class="input-group-append">
+                                @include('partials.serial-scan-button', ['targetInput' => '#replacementCommitSerialNumber'])
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>{{ translate('Notes') }}</label>

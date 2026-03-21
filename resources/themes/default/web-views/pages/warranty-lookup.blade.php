@@ -38,8 +38,13 @@
 
                     <div class="row g-3">
                         <div class="col-md-4 col-sm-6">
-                            <input type="text" name="serial_number" class="form-control form-control-sm prepended-form-control"
-                                   placeholder="{{ translate('Enter Serial Number') }}" required>
+                            <div class="input-group">
+                                <input type="text" id="warrantyLookupSerialNumber" name="serial_number" class="form-control form-control-sm prepended-form-control"
+                                       placeholder="{{ translate('Enter Serial Number') }}" required>
+                                <div class="input-group-append">
+                                    @include('partials.serial-scan-button', ['targetInput' => '#warrantyLookupSerialNumber'])
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-4 col-sm-6">
@@ -89,6 +94,8 @@
         </div>
     </div>
 </div>
+
+@include('partials.serial-scanner-assets')
 @endsection
 
 @push('script')

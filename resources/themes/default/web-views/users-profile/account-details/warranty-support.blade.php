@@ -172,23 +172,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="serialScannerModal" tabindex="-1" aria-labelledby="serialScannerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rtl">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-capitalize flex-grow-1">{{ translate('scan_serial_number') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="serial-reader" style="width:100%;"></div>
-                <div class="text-muted fs-12 mt-2" id="scannerFeedback"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="createSupportTicketModal" tabindex="-1" aria-labelledby="createSupportTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rtl">
@@ -239,25 +222,24 @@
         </div>
     </div>
 </div>
+
+@include('partials.serial-scanner-assets')
 @endsection
 
 @push('script')
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
     const serialI18n = {
         serialLabel: @json(translate('serial_no')),
         placeholder: @json(translate('enter_serial_number')),
         remainingLabel: @json(translate('remaining_serial_numbers_to_activate')),
         scanTitle: @json(translate('scan_barcode_or_qr')),
-        cameraUnavailable: @json(translate('camera_is_not_available_on_this_device')),
-        scannerLoadFailed: @json(translate('scanner_failed_to_load')),
-        noCameraFound: @json(translate('no_camera_found')),
-        scannerStartFailed: @json(translate('unable_to_start_camera_scanner')),
     };
 
-    let activeSerialInputId = null;
-    let html5QrCode = null;
-    let scannerRunning = false;
+    const serialScanIcon = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 7V5a1 1 0 0 1 1-1h2M20 7V5a1 1 0 0 0-1-1h-2M4 17v2a1 1 0 0 0 1 1h2M20 17v2a1 1 0 0 1-1 1h-2M7 12h10M8 9h1v6H8zM11 9h2v6h-2zM15 9h1v6h-1z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+        </svg>
+    `;
 
     function renderSerialInputs(count) {
         const container = $('#serialInputContainer');
@@ -284,11 +266,11 @@
                         <div class="input-group-append">
                             <button
                                 type="button"
-                                class="btn btn-outline-secondary scan-serial-btn text-dark"
-                                data-target-input="${inputId}"
+                                class="btn btn-outline-secondary scan-serial-btn serial-scan-btn"
+                                data-target-input="#${inputId}"
                                 title="${serialI18n.scanTitle}"
-                                style="color:#000 !important;">
-                                <i class="tio-camera text-dark" style="color:#000 !important;"></i>
+                                aria-label="${serialI18n.scanTitle}">
+                                ${serialScanIcon}
                             </button>
                         </div>
                     </div>
@@ -296,74 +278,6 @@
                 </div>
             `;
             container.append(itemHtml);
-        }
-    }
-
-    async function stopSerialScanner() {
-        if (html5QrCode && scannerRunning) {
-            try {
-                await html5QrCode.stop();
-            } catch (error) {
-            }
-            try {
-                await html5QrCode.clear();
-            } catch (error) {
-            }
-            scannerRunning = false;
-        }
-    }
-
-    async function startSerialScanner() {
-        if (!window.Html5Qrcode) {
-            $('#scannerFeedback').text(serialI18n.scannerLoadFailed);
-            return;
-        }
-
-        if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-            $('#scannerFeedback').text(serialI18n.cameraUnavailable);
-            return;
-        }
-
-        if (!html5QrCode) {
-            html5QrCode = new Html5Qrcode('serial-reader');
-        }
-
-        if (scannerRunning) {
-            return;
-        }
-
-        try {
-            const cameras = await Html5Qrcode.getCameras();
-            if (!cameras || cameras.length === 0) {
-                $('#scannerFeedback').text(serialI18n.noCameraFound);
-                return;
-            }
-
-            const preferredCamera = cameras.find((camera) =>
-                /back|rear|environment/i.test(camera.label || '')
-            );
-            const cameraId = preferredCamera ? preferredCamera.id : cameras[0].id;
-
-            await html5QrCode.start(
-                cameraId,
-                {
-                    fps: 10,
-                    qrbox: { width: 230, height: 230 }
-                },
-                function (decodedText) {
-                    if (activeSerialInputId) {
-                        $('#' + activeSerialInputId).val(decodedText);
-                    }
-                    $('#serialScannerModal').modal('hide');
-                },
-                function () {
-                }
-            );
-
-            scannerRunning = true;
-            $('#scannerFeedback').text('');
-        } catch (error) {
-            $('#scannerFeedback').text(serialI18n.scannerStartFailed);
         }
     }
 
@@ -380,21 +294,6 @@
         $('#supportTicketProductName').val($(this).data('product-name'));
         $('#supportTicketProductQty').val($(this).data('product-qty'));
         $('#supportTicketType').val($(this).data('ticket-type'));
-    });
-
-    $(document).on('click', '.scan-serial-btn', function () {
-        activeSerialInputId = $(this).data('target-input');
-        $('#scannerFeedback').text('');
-        $('#serialScannerModal').modal('show');
-    });
-
-    $('#serialScannerModal').on('shown.bs.modal', function () {
-        startSerialScanner();
-    });
-
-    $('#serialScannerModal').on('hidden.bs.modal', function () {
-        stopSerialScanner();
-        activeSerialInputId = null;
     });
 </script>
 @endpush

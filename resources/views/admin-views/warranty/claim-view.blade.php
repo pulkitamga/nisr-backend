@@ -367,6 +367,7 @@
 @include('admin-views.warranty.modals.issue-rma')
 @include('admin-views.warranty.modals.resume-claim')
 @include('admin-views.warranty.modals.resolve')
+@include('partials.serial-scanner-assets')
 
 
 @endsection

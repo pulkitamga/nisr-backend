@@ -713,7 +713,12 @@
 
                     <div class="form-group">
                         <label class="title-color">{{ translate('Serial No') }} <span class="text-danger">*</span></label>
-                        <input type="text" name="serial_no" class="form-control" required placeholder="{{ translate('Enter serial number') }}">
+                        <div class="input-group">
+                            <input type="text" id="activateWarrantySerialNo" name="serial_no" class="form-control" required placeholder="{{ translate('Enter serial number') }}">
+                            <div class="input-group-append">
+                                @include('partials.serial-scan-button', ['targetInput' => '#activateWarrantySerialNo'])
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <div class="custom-control custom-checkbox">
@@ -857,6 +862,8 @@
     data-good2-message="{{ translate('this_delivery_service_is_very_good_I_am_highly_impressed') }}"
     data-excellent="{{ translate('excellent') }}"
     data-excellent-message="{{ translate('best_delivery_service_highly_recommended') }}"></span>
+
+@include('partials.serial-scanner-assets')
 @endsection
 
 
