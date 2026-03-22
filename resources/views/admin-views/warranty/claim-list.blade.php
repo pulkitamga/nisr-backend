@@ -2,7 +2,9 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('claims'))
+@php($pageTitleKey = $pageTitleKey ?? 'claims_list')
+
+@section('title', translate($pageTitleKey))
 
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
@@ -13,7 +15,7 @@
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/warranty.png') }}" alt="">
-            {{ translate('claims_list') }}
+            {{ translate($pageTitleKey) }}
             <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $claims->total() }}</span>
         </h2>
     </div>
@@ -90,7 +92,7 @@
     <div class="card">
         <div class="card-header gap-3 align-items-center">
             <h5 class="mb-0 mr-auto">
-                {{ translate('claims_list') }}
+                {{ translate($pageTitleKey) }}
                 <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $claims->total() }}</span>
             </h5>
 

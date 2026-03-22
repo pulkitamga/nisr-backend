@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 
 if (!function_exists('translate')) {
@@ -8,51 +9,51 @@ if (!function_exists('translate')) {
     {
         $local = getDefaultLanguage();
         $resolvedLocale = resolveAppLocale($local);
+        App::setLocale($resolvedLocale);
 
-        if ($key) {
-            App::setLocale($resolvedLocale);
-            $key = getOrPutTranslateMessageValueByKey(local: $resolvedLocale, key: $key);
-
-            // if ($key && !\App\Utils\Helpers::isTranslated($key, $local)) {
-            //     $key = autoTranslator($key, 'en', $local); // assuming 'en' is source
-            // }
+        if (!$key) {
+            return $key;
         }
 
-        App::setLocale($resolvedLocale);
-        return $resolvedLocale == 'en' ? ucfirst($key) : $key;
+        $message = getTranslateMessageValueByKey(local: $resolvedLocale, key: $key);
+        return $resolvedLocale == 'en' ? ucfirst($message) : $message;
     }
 
-    function getOrPutTranslateMessageValueByKey(string $local, string $key): array|string|null
+    function getTranslateMessageValueByKey(string $local, string $key): array|string|null
     {
         try {
-            $translatedMessagesArray = include(base_path('resources/lang/' . $local . '/messages.php'));
-            $newMessagesArray = include(base_path('resources/lang/' . $local . '/new-messages.php'));
+            $messagesPath = base_path('resources/lang/' . $local . '/messages.php');
+            $newMessagesPath = base_path('resources/lang/' . $local . '/new-messages.php');
+            $translatedMessagesArray = file_exists($messagesPath) ? include($messagesPath) : [];
+            $newMessagesArray = file_exists($newMessagesPath) ? include($newMessagesPath) : [];
             $key = str_replace('"', '', $key);
-            $processedKey = ucfirst(str_replace('_', ' ', removeSpecialCharacters($key)));
+            $processedKey = formatTranslationFallback($key);
 
-            if (!array_key_exists($key, $translatedMessagesArray) && !array_key_exists($key, $newMessagesArray)) {
-                $newMessagesArray[$key] = $processedKey;
-
-                $languageFileContents = "<?php\n\nreturn [\n";
-                foreach ($newMessagesArray as $languageKey => $value) {
-                    $languageFileContents .= "\t\"" . $languageKey . "\" => \"" . $value . "\",\n";
-                }
-                $languageFileContents .= "];\n";
-
-                $targetPath = base_path('resources/lang/' . $local . '/new-messages.php');
-                file_put_contents($targetPath, $languageFileContents);
-                $message = $processedKey;
-            } elseif (array_key_exists($key, $translatedMessagesArray)) {
+            if (array_key_exists($key, $translatedMessagesArray)) {
                 $message = __('messages.' . $key);
             } elseif (array_key_exists($key, $newMessagesArray)) {
                 $message = __('new-messages.' . $key);
             } else {
-                $message = __('messages.' . $key);
+                $message = $processedKey;
             }
         } catch (\Exception $exception) {
-            $message = ucfirst(str_replace('_', ' ', removeSpecialCharacters(str_replace("\'", "'", $key))));
+            $message = formatTranslationFallback($key);
         }
         return $local == 'en' ? ucfirst($message) : $message;
+    }
+}
+
+if (!function_exists('getOrPutTranslateMessageValueByKey')) {
+    function getOrPutTranslateMessageValueByKey(string $local, string $key): array|string|null
+    {
+        return getTranslateMessageValueByKey($local, $key);
+    }
+}
+
+if (!function_exists('formatTranslationFallback')) {
+    function formatTranslationFallback(string|null $key): string
+    {
+        return ucfirst(str_replace('_', ' ', removeSpecialCharacters(str_replace('"', '', (string)$key))));
     }
 }
 
@@ -90,7 +91,18 @@ if (!function_exists('removeSpecialCharacters')) {
 if (!function_exists('getDefaultLanguage')) {
     function getDefaultLanguage(): string
     {
-        $data = getWebConfig('language');
+        $data = [];
+        try {
+            if (
+                function_exists('getWebConfig')
+                && class_exists(Schema::class)
+                && Schema::hasTable('business_settings')
+            ) {
+                $data = getWebConfig('language');
+            }
+        } catch (\Throwable) {
+            $data = [];
+        }
         $data = is_array($data) ? $data : [];
         $defaultCode = 'en';
         $direction = 'ltr';
@@ -443,4 +455,3 @@ if (!function_exists('getBusinessSettingTranslation')) {
 }
 
 }
-

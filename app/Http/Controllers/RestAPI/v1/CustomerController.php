@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -870,32 +871,26 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'f_name' => 'required',
             'l_name' => 'required',
-            'phone' => 'required',
+            'phone' => [
+                'required',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($request->user()->id),
+            ],
+            'email' => [
+                'nullable',
+                'email',
+                Rule::unique('users', 'email')->ignore($request->user()->id),
+            ],
         ], [
             'f_name.required' => translate('First name is required!'),
             'l_name.required' => translate('Last name is required!'),
+            'email.email' => translate('email_must_be_valid'),
+            'email.unique' => translate('Email_already_exists'),
+            'phone.unique' => translate('Phone_already_exists'),
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
-        }
-
-        $checkEmail = User::where('email', $request['email'])->where('id', '!=', $request->user()->id)->first();
-        if ($checkEmail) {
-            return response()->json([
-                'errors' => [
-                    ['code' => 'invalid_email', 'message' => translate('Email_already_exists')]
-                ]
-            ], 403);
-        }
-
-        $checkPhone = User::where('phone', $request['phone'])->where('id', '!=', $request->user()->id)->first();
-        if ($checkPhone) {
-            return response()->json([
-                'errors' => [
-                    ['code' => 'invalid_phone', 'message' => translate('Phone_already_exists')]
-                ]
-            ], 403);
         }
 
         if ($request->has('image')) {
@@ -911,15 +906,17 @@ class CustomerController extends Controller
         }
 
         $user = User::where(['id' => $request->user()->id])->first();
+        $isPhoneChanged = $request['phone'] != $user['phone'];
+        $isEmailChanged = $request['email'] != $user['email'];
         $userDetails = [
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
             'image' => $imageName,
-            'phone' => $user['is_phone_verified'] ? $user['phone'] : $request['phone'],
+            'phone' => $request['phone'],
             'email' => $request['email'],
-            'is_phone_verified' => $request['phone'] == $user['phone'] ? $user['is_phone_verified'] : 0,
-            'is_email_verified' => $request['email'] == $user['email'] ? $user['is_email_verified'] : 0,
-            'email_verified_at' => $request['email'] == $user['email'] ? $user['email_verified_at'] : null,
+            'is_phone_verified' => $isPhoneChanged ? 0 : $user['is_phone_verified'],
+            'is_email_verified' => $isEmailChanged ? 0 : $user['is_email_verified'],
+            'email_verified_at' => $isEmailChanged ? null : $user['email_verified_at'],
             'password' => $pass,
             'updated_at' => now(),
         ];

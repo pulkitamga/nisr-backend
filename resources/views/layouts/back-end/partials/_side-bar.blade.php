@@ -615,6 +615,14 @@
                                             <span class="text-truncate">{{ translate('makes') }}</span>
                                         </a>
                                     </li>
+                                    <li
+                                        class="nav-item {{ Request::is('admin/products/' . Product::PRODUCT_YEAR[URI]) ? 'active' : '' }}">
+                                        <a class="nav-link " href="{{ route('admin.products.product-year') }}"
+                                            title="{{ translate('years') }}">
+                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <span class="text-truncate">{{ translate('years') }}</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         @endif

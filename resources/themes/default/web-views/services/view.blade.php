@@ -14,12 +14,14 @@
 <meta property="twitter:url" content="{{env('APP_URL')}}">
 <meta property="twitter:description"
     content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)),0,160) }}">
+<link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
 @endpush
 @section('content')
 @include('layouts.front-end.partials._store-header')
 @php
-$selectedMake = request('make');
-$selectedModel = request('model');
+$selectedMake = $selectedVehicleFilters['make'] ?? null;
+$selectedModel = $selectedVehicleFilters['model'] ?? null;
+$selectedYear = $selectedVehicleFilters['year'] ?? null;
 @endphp
 
 @php($decimal_point_settings = getWebConfig(name: 'decimal_point_settings'))
@@ -134,10 +136,10 @@ $selectedModel = request('model');
                             {{-- Make --}}
                             <div>
                                 <h6 class="font-semibold fs-15 my-2">{{ translate('Make') }}</h6>
-                                <select id="make-select" name="make" class="form-control custom-select">
+                                <select id="make-select" name="make" class="form-control custom-select vehicle-select2">
                                     <option value="">{{ translate('Select Make') }}</option>
                                     @foreach($makes as $make)
-                                    <option value="{{ $make->name }}" data-id="{{ $make->id }}" {{ $selectedMake == $make->name ? 'selected' : '' }}>
+                                    <option value="{{ $make->getRawOriginal('name') }}" data-id="{{ $make->id }}" {{ $selectedMake == $make->getRawOriginal('name') ? 'selected' : '' }}>
                                         {{ $make->name }}
                                     </option>
                                     @endforeach
@@ -147,7 +149,7 @@ $selectedModel = request('model');
                             {{-- Model --}}
                             <div>
                                 <h6 class="font-semibold fs-15 my-2">{{ translate('Model') }}</h6>
-                                <select id="model-select" name="model" class="form-control custom-select" disabled>
+                                <select id="model-select" name="model" class="form-control custom-select vehicle-select2" disabled>
                                     <option value="">{{ translate('Select Model') }}</option>
                                 </select>
                             </div>
@@ -155,11 +157,11 @@ $selectedModel = request('model');
                             {{-- Year --}}
                             <div>
                                 <h6 class="font-semibold fs-15 my-2">{{ translate('Vehicle Year') }}</h6>
-                                <select id="year-select" name="year" class="form-control custom-select" disabled>
+                                <select id="year-select" name="year" class="form-control custom-select vehicle-select2" {{ $selectedYear ? '' : 'disabled' }}>
                                     <option value="">{{ translate('Select Year') }}</option>
                                     @foreach($years as $year)
-                                    <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                                        {{ $year }}
+                                    <option value="{{ $year->getRawOriginal('year') }}" {{ (string)$selectedYear === (string)$year->getRawOriginal('year') ? 'selected' : '' }}>
+                                        {{ $year->year }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -445,19 +447,34 @@ $selectedModel = request('model');
     data-product-type="{{ $data['product_type'] }}" data-min-price="{{ $data['min_price'] }}"
     data-max-price="{{ $data['max_price'] }}" data-message="{{ translate('items_found') }}"
     data-publishing-house-id="{{ request('publishing_house_id') }}" data-author-id="{{ request('author_id') }}"
-    data-offer="{{ request('offer_type') ?? '' }}" data-make="{{ request('make') }}" data-model="{{ request('model') }}"
-    data-year="{{ request('year') }}"></span>
+    data-offer="{{ request('offer_type') ?? '' }}" data-make="{{ $selectedMake }}" data-model="{{ $selectedModel }}"
+    data-year="{{ $selectedYear }}"></span>
 
 @endsection
 
 @push('script')
+<script src="{{ dynamicAsset(path: 'public/assets/select2/js/select2.min.js') }}"></script>
 <script src="{{ theme_asset(path: 'public/assets/front-end/js/product-view.js') }}"></script>
+@php($serializedModels = $models->map(function ($model) {
+    return [
+        'id' => $model->id,
+        'make_id' => $model->make_id,
+        'value' => $model->getRawOriginal('name'),
+        'label' => $model->name,
+    ];
+})->values())
 <script>
-    const models = @json($models);
-    const selectedMake = "{{ request('make') }}";
-    const selectedModel = "{{ request('model') }}";
+    const models = @json($serializedModels);
+    const selectedMake = @json($selectedMake);
+    const selectedModel = @json($selectedModel);
+    const selectedYear = @json($selectedYear);
 
     $(document).ready(function () {
+        $('.vehicle-select2').select2({
+            width: '100%',
+            dir: @json(session('direction') ?? 'ltr')
+        });
+
         // Trigger population on load if make is selected
         if (selectedMake) {
             const makeOption = $('#make-select option').filter(function () {
@@ -469,11 +486,12 @@ $selectedModel = request('model');
 
             $('#model-select').empty().prop('disabled', false).append('<option value="">' + "{{ __('Select Model') }}" + '</option>');
             filteredModels.forEach(model => {
-                const isSelected = model.name === selectedModel ? 'selected' : '';
-                $('#model-select').append(`<option value="${model.name}" ${isSelected}>${model.name}</option>`);
+                const isSelected = model.value === selectedModel ? 'selected' : '';
+                $('#model-select').append(`<option value="${model.value}" ${isSelected}>${model.label}</option>`);
             });
+            $('#model-select').trigger('change.select2');
 
-            if (selectedModel) {
+            if (selectedModel || selectedYear) {
                 $('#year-select').prop('disabled', false);
             }
         }
@@ -485,10 +503,11 @@ $selectedModel = request('model');
 
         $('#model-select').empty().prop('disabled', false).append('<option value="">' + "{{ __('Select Model') }}" + '</option>');
         filteredModels.forEach(model => {
-            $('#model-select').append(`<option value="${model.name}">${model.name}</option>`);
+            $('#model-select').append(`<option value="${model.value}">${model.label}</option>`);
         });
+        $('#model-select').val(null).trigger('change');
 
-        $('#year-select').prop('disabled', true);
+        $('#year-select').prop('disabled', true).val(null).trigger('change');
     });
 
     $('#model-select').on('change', function () {

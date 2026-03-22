@@ -33,9 +33,18 @@
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
-                                                <label for="phone2">{{translate('phone')}}</label>
+                                                <label for="phone2">{{translate('phone')}}
+                                                    @if($customerDetail['phone'] && getLoginConfig(key: 'phone_verification') && $customerDetail['is_phone_verified'])
+                                                        <span class="text-success d-inline-flex align-items-center" style="margin-inline-start:.5rem;">
+                                                            <img width="16"
+                                                                 src="{{theme_asset('assets/img/icons/verified.svg')}}"
+                                                                 class="dark-support" alt="">
+                                                            <span style="margin-inline-start:.25rem;">{{ translate('verified_account') }}</span>
+                                                        </span>
+                                                    @endif
+                                                </label>
                                                 <div class="position-relative d-flex align-items-center">
-                                                    <input type="text" id="phone" class="form-control profile-phone-with-country-picker" value="{{$customerDetail['phone']}}" placeholder="{{translate('ex').':'.'01xxxxxxxxx'}}" {{ $customerDetail['is_phone_verified'] ? 'disabled' : '' }}>
+                                                    <input type="text" id="phone" class="form-control profile-phone-with-country-picker" value="{{$customerDetail['phone']}}" placeholder="{{translate('ex').':'.'01xxxxxxxxx'}}">
                                                     <input type="hidden" name="phone" class="profile-phone-country-picker-hidden" value="{{$customerDetail['phone']}}">
 
                                                     @if($customerDetail['phone'] && getLoginConfig(key: 'phone_verification'))
@@ -59,7 +68,16 @@
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
-                                                <label for="email2">{{translate('email')}}</label>
+                                                <label for="email2">{{translate('email')}}
+                                                    @if($customerDetail['email'] && getLoginConfig(key: 'email_verification') && $customerDetail['is_email_verified'])
+                                                        <span class="text-success d-inline-flex align-items-center" style="margin-inline-start:.5rem;">
+                                                            <img width="16"
+                                                                 src="{{theme_asset('assets/img/icons/verified.svg')}}"
+                                                                 class="dark-support" alt="">
+                                                            <span style="margin-inline-start:.25rem;">{{ translate('verified_account') }}</span>
+                                                        </span>
+                                                    @endif
+                                                </label>
                                                 <div class="position-relative d-flex align-items-center">
                                                     <input type="email" id="email2" class="form-control" value="{{$customerDetail['email']}}" name="email">
 
@@ -82,6 +100,14 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        @if(getLoginConfig(key: 'phone_verification') || getLoginConfig(key: 'email_verification'))
+                                            <div class="col-12">
+                                                <div class="alert alert-warning mb-0">
+                                                    <strong>{{ translate('warning') }}:</strong>
+                                                    {{ translate('profile_contact_change_warning') }}
+                                                </div>
+                                            </div>
+                                        @endif
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label for="password2">{{translate('password')}}</label>
@@ -147,4 +173,3 @@
     </script>
     <script src="{{theme_asset('assets/js/password-strength.js')}}"></script>
 @endpush
-

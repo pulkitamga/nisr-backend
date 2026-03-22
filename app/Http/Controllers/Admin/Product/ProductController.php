@@ -22,6 +22,7 @@ use App\Exports\ProductListExport;
 use App\Models\Product as Products;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use App\Services\VehicleMakeService;
 use Brian2694\Toastr\Facades\Toastr;
 use Maatwebsite\Excel\Facades\Excel;
@@ -70,6 +71,7 @@ use App\Contracts\Repositories\DigitalProductAuthorRepositoryInterface;
 use App\Contracts\Repositories\StockClearanceProductRepositoryInterface;
 use App\Contracts\Repositories\RestockProductCustomerRepositoryInterface;
 use App\Contracts\Repositories\DigitalProductVariationRepositoryInterface;
+use Illuminate\Validation\ValidationException;
 
 
 class ProductController extends BaseController
@@ -150,10 +152,34 @@ class ProductController extends BaseController
 
         return view(Product::ADD[VIEW], compact('categories', 'brands', 'branches', 'brandSetting', 'servicesSetting', 'colors', 'attributes', 'languages', 'defaultLanguage', 'digitalProductFileTypes', 'digitalProductAuthors', 'publishingHouseList', 'makes', 'models', 'years'));
     }
-    public function getProductMakeView(): View
+    public function getProductMakeView(Request $request): View
     {
-        $makes = $this->vehicleMakeRepo->all();
-        return view(Product::PRODUCT_MAKE[VIEW], compact('makes'));
+        $query = VehicleMake::with('models')->orderBy('name');
+
+        if ($request->filled('searchValue')) {
+            $query->where('name', 'like', '%' . trim($request->searchValue) . '%');
+        }
+
+        $makes = $query->get();
+        $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
+        $defaultLanguage = $languages[0] ?? 'en';
+
+        return view(Product::PRODUCT_MAKE[VIEW], compact('makes', 'languages', 'defaultLanguage'));
+    }
+
+    public function getProductYearView(Request $request): View
+    {
+        $query = VehicleYear::query()->orderBy('year', 'desc');
+
+        if ($request->filled('searchValue')) {
+            $query->where('year', 'like', '%' . trim($request->searchValue) . '%');
+        }
+
+        $years = $query->get();
+        $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
+        $defaultLanguage = $languages[0] ?? 'en';
+
+        return view(Product::PRODUCT_YEAR[VIEW], compact('years', 'languages', 'defaultLanguage'));
     }
 
     public function getModelsByMakes(Request $request)
@@ -178,61 +204,163 @@ class ProductController extends BaseController
 
 
 
-    public function storeOrUpdateMake(Request $request)
+    public function storeOrUpdateMake(Request $request): RedirectResponse
     {
-        if ($request->filled('make_id')) {
-            // For Update
-            $request->validate([
-                'make' => 'required|string|max:255|unique:vehicle_makes,name,' . $request->make_id,
-                'model' => 'required|string',
-            ]);
+        $languages = collect($request->input('lang', []))->values();
+        $defaultLanguage = $languages->first() ?? 'en';
+        $defaultIndex = $languages->search($defaultLanguage);
+        $defaultIndex = $defaultIndex === false ? 0 : $defaultIndex;
+        $defaultName = trim($request->input("name.$defaultIndex", ''));
+        $defaultModels = $this->extractTagValues($request->input("model.$defaultIndex", ''));
 
-            $makeRequest = new Request(['name' => trim($request->make)]);
-            $make = $this->makeService->update($makeRequest, $request->make_id);
+        Validator::make($request->all(), [
+            'name' => 'required|array',
+            'name.*' => 'nullable|string|max:255',
+            'model' => 'required|array',
+            'model.*' => 'nullable|string',
+        ])->after(function ($validator) use ($defaultName, $defaultModels, $request) {
+            if ($defaultName === '') {
+                $validator->errors()->add('name.0', translate('make_is_required'));
+            }
+
+            if (empty($defaultModels)) {
+                $validator->errors()->add('model.0', translate('model_is_required'));
+            }
+
+            $uniqueRule = Validator::make(
+                ['name' => $defaultName],
+                ['name' => 'required|string|max:255|unique:vehicle_makes,name,' . $request->make_id]
+            );
+
+            if ($uniqueRule->fails()) {
+                foreach ($uniqueRule->errors()->all() as $message) {
+                    $validator->errors()->add('name.0', $message);
+                }
+            }
+        })->validate();
+
+        $this->ensureTranslatedModelCountsMatch($request, $defaultModels);
+
+        if ($request->filled('make_id')) {
+            $make = $this->makeService->update(new Request(['name' => $defaultName]), $request->make_id);
+            $this->translationRepo->update($request, VehicleMake::class, $make->id);
+            VehicleModel::withoutGlobalScopes()->where('make_id', $make->id)->get()->each(function (VehicleModel $model) {
+                $this->translationRepo->delete(VehicleModel::class, $model->id);
+            });
             $this->modelService->deleteByMakeId($make->id);
         } else {
-            // For Add
-            $request->validate([
-                'make' => 'required|string|max:255|unique:vehicle_makes,name',
-                'model' => 'required|string',
-            ]);
-
-            $makeRequest = new Request(['name' => trim($request->make)]);
-            $make = $this->makeService->store($makeRequest);
+            $make = $this->makeService->store(new Request(['name' => $defaultName]));
+            $this->translationRepo->add($request, VehicleMake::class, $make->id);
         }
 
-        $modelNames = array_filter(array_map('trim', explode(',', $request->model)));
-
-        foreach ($modelNames as $modelName) {
-            $modelRequest = new Request([
+        $savedModels = [];
+        foreach ($defaultModels as $modelName) {
+            $savedModels[] = $this->modelService->store(new Request([
                 'make_id' => $make->id,
                 'name' => $modelName,
-            ]);
-            $this->modelService->store($modelRequest);
+            ]));
         }
 
+        $this->syncVehicleModelTranslations($request, collect($savedModels));
 
-        Toastr::success(translate('Make & Models saved successfully!'));
+        Toastr::success(translate('make_and_models_saved_successfully'));
 
         return redirect()->back();
     }
 
 
-    public function getMakeModels($id)
+    public function getMakeModels($id): JsonResponse
     {
-        $make = $this->vehicleMakeRepo->find($id);
-        $models = $make->models->pluck('name')->toArray();
+        $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
+        $defaultLanguage = $languages[0] ?? 'en';
+        $make = VehicleMake::withoutGlobalScopes()
+            ->with([
+                'translations',
+                'models' => fn($query) => $query->withoutGlobalScopes()->with('translations')->orderBy('name'),
+            ])
+            ->findOrFail($id);
+
+        $models = $make->models->map(fn($model) => $model->getRawOriginal('name'))->values()->toArray();
 
         return response()->json([
-            'make' => $make->name,
+            'make' => $make->getRawOriginal('name'),
+            'names' => $this->buildTranslationPayload(
+                defaultValue: $make->getRawOriginal('name'),
+                translations: $make->translations,
+                languages: $languages,
+                defaultLanguage: $defaultLanguage
+            ),
             'models' => $models,
+            'models_by_lang' => $this->buildVehicleModelTranslationsPayload($make->models, $languages, $defaultLanguage),
         ]);
     }
 
-    public function destroyMake($id)
+    public function destroyMake($id): JsonResponse
     {
+        $this->translationRepo->delete(VehicleMake::class, $id);
+        VehicleModel::withoutGlobalScopes()->where('make_id', $id)->get()->each(function (VehicleModel $model) {
+            $this->translationRepo->delete(VehicleModel::class, $model->id);
+        });
         $this->makeService->delete($id);
-        return response()->json(['message' => 'Make deleted successfully']);
+        return response()->json(['message' => translate('make_deleted_successfully')]);
+    }
+
+    public function storeOrUpdateYear(Request $request): RedirectResponse
+    {
+        $languages = collect($request->input('lang', []))->values();
+        $defaultLanguage = $languages->first() ?? 'en';
+        $defaultIndex = $languages->search($defaultLanguage);
+        $defaultIndex = $defaultIndex === false ? 0 : $defaultIndex;
+        $defaultYear = trim((string)$request->input('year', ''));
+
+        Validator::make($request->all(), [
+            'year' => 'required|digits:4|integer|unique:vehicle_years,year,' . $request->year_id,
+            'name' => 'required|array',
+            'name.*' => 'nullable|string|max:255',
+        ])->after(function ($validator) use ($request, $defaultIndex) {
+            if (trim((string)$request->input("name.$defaultIndex", '')) === '') {
+                $validator->errors()->add("name.$defaultIndex", translate('enter_year'));
+            }
+        })->validate();
+
+        if ($request->filled('year_id')) {
+            $year = VehicleYear::withoutGlobalScopes()->findOrFail($request->year_id);
+            $year->update(['year' => $defaultYear]);
+            $this->translationRepo->update($request, VehicleYear::class, $year->id);
+            Toastr::success(translate('year_updated_successfully'));
+        } else {
+            $year = VehicleYear::create(['year' => $defaultYear]);
+            $this->translationRepo->add($request, VehicleYear::class, $year->id);
+            Toastr::success(translate('year_added_successfully'));
+        }
+
+        return redirect()->back();
+    }
+
+    public function getYearData($id): JsonResponse
+    {
+        $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
+        $defaultLanguage = $languages[0] ?? 'en';
+        $year = VehicleYear::withoutGlobalScopes()->with('translations')->findOrFail($id);
+
+        return response()->json([
+            'id' => $year->id,
+            'year' => $year->getRawOriginal('year'),
+            'names' => $this->buildTranslationPayload(
+                defaultValue: (string)$year->getRawOriginal('year'),
+                translations: $year->translations,
+                languages: $languages,
+                defaultLanguage: $defaultLanguage
+            ),
+        ]);
+    }
+
+    public function destroyYear($id): JsonResponse
+    {
+        $this->translationRepo->delete(VehicleYear::class, $id);
+        VehicleYear::where('id', $id)->delete();
+
+        return response()->json(['message' => translate('year_deleted_successfully')]);
     }
 
     public function add(ProductAddRequest $request, ProductService $service): JsonResponse|RedirectResponse
@@ -2223,5 +2351,81 @@ public function updateQuantity(Request $request): RedirectResponse
         return response()->json([
             'unit_price' => 0,
         ], 404);
+    }
+
+    private function extractTagValues(?string $value): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string)$value))));
+    }
+
+    private function ensureTranslatedModelCountsMatch(Request $request, array $defaultModels): void
+    {
+        $languages = collect($request->input('lang', []))->values();
+        $defaultLanguage = $languages->first() ?? 'en';
+
+        foreach ($languages as $index => $language) {
+            if ($language === $defaultLanguage) {
+                continue;
+            }
+
+            $translatedModels = $this->extractTagValues($request->input("model.$index", ''));
+            if (!empty($translatedModels) && count($translatedModels) !== count($defaultModels)) {
+                throw ValidationException::withMessages([
+                    "model.$index" => translate('translated_models_must_match_the_default_model_count'),
+                ]);
+            }
+        }
+    }
+
+    private function syncVehicleModelTranslations(Request $request, \Illuminate\Support\Collection $models): void
+    {
+        $languages = collect($request->input('lang', []))->values();
+        $defaultLanguage = $languages->first() ?? 'en';
+
+        foreach ($languages as $index => $language) {
+            if ($language === $defaultLanguage) {
+                continue;
+            }
+
+            $translatedModels = $this->extractTagValues($request->input("model.$index", ''));
+
+            foreach ($models as $modelIndex => $model) {
+                $translatedValue = $translatedModels[$modelIndex] ?? null;
+
+                if ($translatedValue !== null && $translatedValue !== '') {
+                    $this->translationRepo->updateData(VehicleModel::class, (string)$model->id, $language, 'name', $translatedValue);
+                }
+            }
+        }
+    }
+
+    private function buildTranslationPayload(string $defaultValue, $translations, array $languages, string $defaultLanguage): array
+    {
+        $payload = [];
+
+        foreach ($languages as $language) {
+            $payload[$language] = $language === $defaultLanguage
+                ? $defaultValue
+                : optional($translations->firstWhere('locale', $language))->value ?? '';
+        }
+
+        return $payload;
+    }
+
+    private function buildVehicleModelTranslationsPayload(\Illuminate\Support\Collection $models, array $languages, string $defaultLanguage): array
+    {
+        $payload = [];
+
+        foreach ($languages as $language) {
+            $payload[$language] = $models->map(function (VehicleModel $model) use ($language, $defaultLanguage) {
+                if ($language === $defaultLanguage) {
+                    return $model->getRawOriginal('name');
+                }
+
+                return optional($model->translations->firstWhere('locale', $language))->value ?? '';
+            })->values()->toArray();
+        }
+
+        return $payload;
     }
 }

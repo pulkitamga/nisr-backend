@@ -20,6 +20,8 @@ use Illuminate\Routing\Redirector;
 use App\Models\Product;
 use App\Contracts\Repositories\VehicleMakeRepositoryInterface;
 use App\Contracts\Repositories\VehicleModelRepositoryInterface;
+use App\Models\VehicleMake;
+use App\Models\VehicleModel;
 use App\Models\VehicleYear;
 use Illuminate\Support\Facades\Log;
 
@@ -49,13 +51,15 @@ class ServicesListController extends Controller
         $request->merge(['product_type' => 'services']);
         $categories = CategoryManager::getCategoriesWithCountingAndPriorityWiseSorting();
         $activeBrands = BrandManager::getActiveBrandWithCountingAndPriorityWiseSorting();
-        $makes = $this->vehicleMakeRepo->all();
-        $models = $this->vehicleModelRepo->all();
-        $years = VehicleYear::orderBy('year')->pluck('year');
+        $selectedVehicleFilters = $this->resolveVehicleFilters($request);
+        $makes = VehicleMake::orderBy('name')->get();
+        $models = VehicleModel::orderBy('name')->get();
+        $years = VehicleYear::orderBy('year')->get();
+        $currentYear = (string) date('Y');
 
         $data = self::getProductListRequestData(request: $request);
 
-        $hasFilter = $request->filled('make') || $request->filled('model') || $request->filled('year');
+        $hasFilter = filled($selectedVehicleFilters['make']) || filled($selectedVehicleFilters['model']) || filled($selectedVehicleFilters['year']);
 
         if ($hasFilter) {
             $query = Product::query()
@@ -64,16 +68,16 @@ class ServicesListController extends Controller
                 }])
                 ->where('product_type', 'services')
                 ->active();
-            if ($request->filled('make')) {
-                $query->whereJsonContains('match_makes', $request->make);
+            if (filled($selectedVehicleFilters['make'])) {
+                $query->whereJsonContains('match_makes', $selectedVehicleFilters['make']);
             }
 
-            if ($request->filled('model')) {
-                $query->whereJsonContains('match_models', $request->model);
+            if (filled($selectedVehicleFilters['model'])) {
+                $query->whereJsonContains('match_models', $selectedVehicleFilters['model']);
             }
 
-            if ($request->filled('year')) {
-                $query->whereJsonContains('match_years', (string)$request->year);
+            if (filled($selectedVehicleFilters['year'])) {
+                $query->whereJsonContains('match_years', (string)$selectedVehicleFilters['year']);
             }
 
 
@@ -101,6 +105,8 @@ class ServicesListController extends Controller
             'makes' => $makes,
             'models' => $models,
             'years' => $years,
+            'currentYear' => $currentYear,
+            'selectedVehicleFilters' => $selectedVehicleFilters,
         ]);
     }
 
@@ -291,7 +297,30 @@ class ServicesListController extends Controller
             'publishing_house_id' => $request['publishing_house_id'],
             'search_category_value' => $request['search_category_value'],
             'product_name' => $request['product_name'],
+            'make' => $request['make'] ?? session('vehicle_filters.make'),
+            'model' => $request['model'] ?? session('vehicle_filters.model'),
+            'year' => $request['year'] ?? session('vehicle_filters.year'),
             'page' => $request['page'] ?? 1,
+        ];
+    }
+
+    private function resolveVehicleFilters(Request $request): array
+    {
+        if ($request->hasAny(['make', 'model', 'year'])) {
+            $filters = [
+                'make' => $request->input('make') ?: null,
+                'model' => $request->input('model') ?: null,
+                'year' => $request->input('year') ?: null,
+            ];
+            session()->put('vehicle_filters', $filters);
+
+            return $filters;
+        }
+
+        return [
+            'make' => session('vehicle_filters.make'),
+            'model' => session('vehicle_filters.model'),
+            'year' => session('vehicle_filters.year'),
         ];
     }
 }

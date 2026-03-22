@@ -485,7 +485,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(Product::MULTIPLE_PRODUCT_DETAILS[URI], 'getMultipleProductDetailsView')->middleware('permission:product_management.read,admin')->name('multiple-product-details');
             Route::get(Product::PRODUCT_GALLERY[URI], 'getProductGalleryView')->middleware('permission:product_management.product_gallery,admin')->name('product-gallery');
             Route::get(Product::PRODUCT_MAKE[URI], 'getProductMakeView')->middleware('permission:product_management.product_make_setup,admin')->name('product-make');
+            Route::get(Product::PRODUCT_YEAR[URI], 'getProductYearView')->middleware('permission:product_management.product_make_setup,admin')->name('product-year');
             Route::get(Product::PRODUCT_MAKE_MODEL[URI] . '/{id}', 'getMakeModels')->middleware('permission:product_management.product_make_setup,admin')->name('make.models');
+            Route::get(Product::PRODUCT_YEAR_DATA[URI] . '/{id}', 'getYearData')->middleware('permission:product_management.product_make_setup,admin')->name('year.data');
             Route::get(Product::STOCK_LIMIT_STATUS[URI] . '/{type}', 'getStockLimitStatus')->middleware('permission:product_management.read,admin')->name('stock-limit-status');
             Route::get(Product::REQUEST_RESTOCK_LIST[URI], 'getRequestRestockListView')->middleware('permission:branch_management.request_restock_list,admin')->name('request-restock-list');
             Route::get(Product::EXPORT_RESTOCK[URI], 'exportRestockList')->middleware('permission:branch_management.request_restock_list,admin')->name('restock-export');
@@ -499,6 +501,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::get(Product::ADD[URI], 'getAddView')->middleware('permission:product_management.product_add,admin')->name('add');
                 Route::post(Product::ADD[URI], 'add')->middleware('permission:product_management.product_add,admin')->name('store');
                 Route::post(Product::MAKE_ADD[URI], 'storeOrUpdateMake')->middleware('permission:product_management.product_make_setup,admin')->name('make.store');
+                Route::post(Product::YEAR_ADD[URI], 'storeOrUpdateYear')->middleware('permission:product_management.product_make_setup,admin')->name('year.store');
                 Route::post(Product::SKU_COMBINATION[URI], 'getSkuCombinationView')->name('sku-combination');
                 Route::post(Product::DIGITAL_VARIATION_COMBINATION[URI], 'getDigitalVariationCombinationView')->name('digital-variation-combination');
                 Route::post(Product::DIGITAL_VARIATION_FILE_DELETE[URI], 'deleteDigitalVariationFile')->name('digital-variation-file-delete');
@@ -528,6 +531,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::delete(Product::DELETE[URI] . '/{id}', 'delete')->middleware('permission:product_management.product_delete,admin')->name('delete');
                 Route::delete(Product::RESTOCK_DELETE[URI] . '/{id}', 'deleteRestock')->name('restock-delete');
                 Route::delete(Product::MAKE_DELETE[URI]  . '/{id}', 'destroyMake')->middleware('permission:product_management.product_make_setup,admin')->name('make.destroy');
+                Route::delete(Product::YEAR_DELETE[URI]  . '/{id}', 'destroyYear')->middleware('permission:product_management.product_make_setup,admin')->name('year.destroy');
             });
         });
     });
@@ -2614,6 +2618,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::get(Language::DEFAULT_STATUS[URI], 'updateDefaultStatus')->name('update-default-status');
                 Route::post(Language::UPDATE[URI], 'update')->name('update');
                 Route::post(Language::TRANSLATE_ADD[URI] . '/{lang}', 'updateTranslate')->name('translate-submit');
+                Route::post(Language::TRANSLATE_SYNC[URI] . '/{lang}', 'syncStaticKeys')->name('sync-static-keys');
                 Route::any(Language::TRANSLATE_AUTO[URI] . '/{lang}', 'getAutoTranslate')->name('auto-translate');
                 Route::any(Language::TRANSLATE_AUTO_ALL[URI] . '/{lang}', 'getAutoTranslateAllMessages')->name('auto-translate-all');
             });

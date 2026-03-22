@@ -213,6 +213,14 @@ class CustomerAPIAuthController extends Controller
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
+        $authenticatedUser = auth('api')->user();
+        $existingCustomer = $this->customerRepo->getFirstWhere(params: ['phone' => $request['phone']]);
+        if ($authenticatedUser && $existingCustomer && (int)$existingCustomer->id !== (int)$authenticatedUser->id) {
+            return response()->json(['errors' => [
+                ['code' => 'phone', 'message' => translate('Phone_already_exists')]
+            ]], 403);
+        }
+
         $OTPIntervalTime = getWebConfig(name: 'otp_resend_time') ?? 60; // seconds
         $OTPVerificationData = $this->phoneOrEmailVerificationRepo->getFirstWhere(params: ['phone_or_email' => $request['phone']]);
 
@@ -255,11 +263,19 @@ class CustomerAPIAuthController extends Controller
     public function checkEmail(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required'
+            'email' => 'required|email'
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
+        }
+
+        $authenticatedUser = auth('api')->user();
+        $existingCustomer = $this->customerRepo->getFirstWhere(params: ['email' => $request['email']]);
+        if ($authenticatedUser && $existingCustomer && (int)$existingCustomer->id !== (int)$authenticatedUser->id) {
+            return response()->json(['errors' => [
+                ['code' => 'email', 'message' => translate('Email_already_exists')]
+            ]], 403);
         }
 
         $emailVerification = $this->loginSetupRepo->getFirstWhere(params: ['key' => 'email_verification'])?->value ?? 0;
@@ -913,10 +929,31 @@ class CustomerAPIAuthController extends Controller
             'token' => 'required|digits:4'
         ]);
 
-        $user = $this->customerRepo->getByIdentity(filters: ['identity' => $request['email_or_phone']]);
-
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
+        }
+
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['errors' => [
+                ['code' => 'unauthorized', 'message' => translate('please_login_your_account')]
+            ]], 401);
+        }
+
+        if ($request['type'] == 'phone') {
+            $existingCustomer = $this->customerRepo->getFirstWhere(params: ['phone' => $request['email_or_phone']]);
+            if ($existingCustomer && (int)$existingCustomer->id !== (int)$user->id) {
+                return response()->json(['errors' => [
+                    ['code' => 'phone', 'message' => translate('Phone_already_exists')]
+                ]], 403);
+            }
+        } else {
+            $existingCustomer = $this->customerRepo->getFirstWhere(params: ['email' => $request['email_or_phone']]);
+            if ($existingCustomer && (int)$existingCustomer->id !== (int)$user->id) {
+                return response()->json(['errors' => [
+                    ['code' => 'email', 'message' => translate('Email_already_exists')]
+                ]], 403);
+            }
         }
 
         $verificationData = $this->phoneOrEmailVerificationRepo->getFirstWhere(params: ['phone_or_email' => $request['email_or_phone']]);
@@ -938,13 +975,13 @@ class CustomerAPIAuthController extends Controller
         $this->phoneOrEmailVerificationRepo->delete(params: ['phone_or_email' => $request['email_or_phone']]);
 
         if ($request['type'] == 'phone') {
-            $this->customerRepo->updateWhere(['id' => $user?->id], data: [
+            $this->customerRepo->updateWhere(['id' => $user->id], data: [
                 'phone' => $request['email_or_phone'],
                 'is_phone_verified' => 1,
             ]);
             return response()->json(['message' => translate('Phone_number_is_successfully_verified')], 200);
         } else if ($request['type'] == 'email') {
-            $this->customerRepo->updateWhere(['id' => $user?->id], data: [
+            $this->customerRepo->updateWhere(['id' => $user->id], data: [
                 'email' => $request['email_or_phone'],
                 'is_email_verified' => 1,
                 'email_verified_at' => now(),

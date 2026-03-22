@@ -85,13 +85,20 @@
                                     <div class="form-group col-md-6 mb-0">
                                         <label for="phone" class="mb-2 text-capitalize">
                                             {{ translate('phone_number') }}
+                                            @if($customerDetail['phone'] && getLoginConfig(key: 'phone_verification') && $customerDetail['is_phone_verified'])
+                                                <span class="text-success d-inline-flex align-items-center" style="margin-inline-start:.5rem;">
+                                                    <img width="16"
+                                                         src="{{ theme_asset('public/assets/front-end/img/icons/verified.svg') }}"
+                                                         class="dark-support" alt="">
+                                                    <span style="margin-inline-start:.25rem;">{{ translate('verified_account') }}</span>
+                                                </span>
+                                            @endif
                                         </label>
                                         <div class="position-relative d-flex align-items-center">
 
                                         @php($userCountryAndPhone = ($customerDetail['country_code'] ? '+'.$customerDetail['country_code'] : '').$customerDetail['phone'])
                                         <input class="form-control phone-input-with-country-picker" name="phone" id="phone" type="text"
-                                               value="{{ $userCountryAndPhone }}" placeholder="{{ translate('enter_phone_number') }}" required
-                                            {{ $customerDetail['is_phone_verified'] ? 'disabled' : '' }}>
+                                               value="{{ $userCountryAndPhone }}" placeholder="{{ translate('enter_phone_number') }}" required>
 
                                         <div class="">
                                             <input type="hidden" class="country-picker-phone-number w-50" name="phone" value="{{ $customerDetail['phone'] }}" readonly>
@@ -118,7 +125,16 @@
 
                                     <div class="form-group col-md-6 mb-0">
                                         <label for="inputEmail4"
-                                               class="mb-2 text-capitalize">{{translate('email')}} </label>
+                                               class="mb-2 text-capitalize">{{translate('email')}}
+                                            @if($customerDetail['email'] && getLoginConfig(key: 'email_verification') && $customerDetail['is_email_verified'])
+                                                <span class="text-success d-inline-flex align-items-center" style="margin-inline-start:.5rem;">
+                                                    <img width="16"
+                                                         src="{{ theme_asset('public/assets/front-end/img/icons/verified.svg') }}"
+                                                         class="dark-support" alt="">
+                                                    <span style="margin-inline-start:.25rem;">{{ translate('verified_account') }}</span>
+                                                </span>
+                                            @endif
+                                        </label>
                                         <div class="position-relative d-flex align-items-center">
                                             <input type="email" class="form-control" id="account-email" name="email" value="{{$customerDetail['email']}}">
                                             @if($customerDetail['email'] && getLoginConfig(key: 'email_verification'))
@@ -139,6 +155,14 @@
                                             @endif
                                         </div>
                                     </div>
+                                    @if(getLoginConfig(key: 'phone_verification') || getLoginConfig(key: 'email_verification'))
+                                        <div class="col-12">
+                                            <div class="alert alert-warning mb-0 fs-12">
+                                                <strong>{{ translate('warning') }}:</strong>
+                                                {{ translate('profile_contact_change_warning') }}
+                                            </div>
+                                        </div>
+                                    @endif
                                     <div class="form-group col-md-6 mb-0">
                                         <label for="si-password"
                                                class="mb-2 text-capitalize">{{translate('new_password')}}</label>

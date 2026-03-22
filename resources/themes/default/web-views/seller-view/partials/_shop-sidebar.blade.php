@@ -1,6 +1,7 @@
 <aside class="col-lg-3 hidden-xs col-md-3 col-sm-4 SearchParameters __search-sidebar {{Session::get('direction') === "rtl" ? 'pl-2' : 'pr-2'}}" id="SearchParameters">
-    @php($selectedMake = request('make'))
-    @php($selectedModel = request('model'))
+    @php($selectedMake = $selectedVehicleFilters['make'] ?? request('make'))
+    @php($selectedModel = $selectedVehicleFilters['model'] ?? request('model'))
+    @php($selectedYear = $selectedVehicleFilters['year'] ?? request('year') ?? $currentYear ?? null)
     <div class="cz-sidebar __inline-35 overflow-hidden" id="shop-sidebar">
         <div class="bg-white p-3 border-bottom">
             <h6 class="font-semibold mb-0 fs-16">{{ translate('Filter_By') }}</h6>
@@ -13,10 +14,10 @@
             <div class="d-flex gap-3 flex-column">
                 <div>
                     <h6 class="font-semibold fs-15 mb-2">{{ translate('Make') }}</h6>
-                    <select id="make-select" name="make" class="form-control">
+                    <select id="make-select" name="make" class="form-control vehicle-select2">
                         <option value="">{{ translate('Select Make') }}</option>
                         @foreach($makes ?? [] as $make)
-                            <option value="{{ $make->name }}" data-id="{{ $make->id }}" {{ $selectedMake == $make->name ? 'selected' : '' }}>
+                            <option value="{{ $make->getRawOriginal('name') }}" data-id="{{ $make->id }}" {{ $selectedMake == $make->getRawOriginal('name') ? 'selected' : '' }}>
                                 {{ $make->name }}
                             </option>
                         @endforeach
@@ -25,18 +26,18 @@
 
                 <div>
                     <h6 class="font-semibold fs-15 mb-2">{{ translate('Model') }}</h6>
-                    <select id="model-select" name="model" class="form-control" disabled>
+                    <select id="model-select" name="model" class="form-control vehicle-select2" disabled>
                         <option value="">{{ translate('Select Model') }}</option>
                     </select>
                 </div>
 
                 <div>
                     <h6 class="font-semibold fs-15 mb-2">{{ translate('Vehicle Year') }}</h6>
-                    <select id="year-select" name="year" class="form-control" disabled>
+                    <select id="year-select" name="year" class="form-control vehicle-select2" {{ $selectedYear ? '' : 'disabled' }}>
                         <option value="">{{ translate('Select Year') }}</option>
                         @foreach($years ?? [] as $year)
-                            <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                                {{ $year }}
+                            <option value="{{ $year->getRawOriginal('year') }}" {{ (string) $selectedYear === (string) $year->getRawOriginal('year') ? 'selected' : '' }}>
+                                {{ $year->year }}
                             </option>
                         @endforeach
                     </select>

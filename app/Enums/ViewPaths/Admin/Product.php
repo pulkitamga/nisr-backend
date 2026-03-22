@@ -16,6 +16,14 @@ enum Product
         URI => 'make-delete',
         VIEW => ''
     ];
+    const YEAR_ADD = [
+        URI => 'year-add',
+        VIEW => ''
+    ];
+    const YEAR_DELETE = [
+        URI => 'year-delete',
+        VIEW => ''
+    ];
 
     const LIST = [
         URI => 'list',
@@ -202,8 +210,16 @@ enum Product
         URI => 'product-make',
         VIEW => 'admin-views.product.product-make'
     ];
+    const PRODUCT_YEAR = [
+        URI => 'product-year',
+        VIEW => 'admin-views.product.product-year'
+    ];
     const PRODUCT_MAKE_MODEL = [
         URI => 'models',
+        VIEW => ''
+    ];
+    const PRODUCT_YEAR_DATA = [
+        URI => 'years',
         VIEW => ''
     ];
 

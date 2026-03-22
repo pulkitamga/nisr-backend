@@ -35,12 +35,34 @@ class ServiceRequestController extends Controller
             }])
             ->select('id', 'name')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function (VehicleMake $make) {
+                return [
+                    'id' => (int) $make->id,
+                    'name' => (string) $make->getRawOriginal('name'),
+                    'display_name' => (string) $make->name,
+                    'models' => $make->models->map(function ($model) {
+                        return [
+                            'id' => (int) $model->id,
+                            'make_id' => (int) $model->make_id,
+                            'name' => (string) $model->getRawOriginal('name'),
+                            'display_name' => (string) $model->name,
+                        ];
+                    })->values(),
+                ];
+            })->values();
 
         $years = VehicleYear::query()
             ->select('id', 'year')
             ->orderBy('year', 'desc')
-            ->get();
+            ->get()
+            ->map(function (VehicleYear $year) {
+                return [
+                    'id' => (int) $year->id,
+                    'year' => (int) $year->getRawOriginal('year'),
+                    'display_year' => (string) $year->year,
+                ];
+            })->values();
 
         return response()->json([
             'service_options' => [

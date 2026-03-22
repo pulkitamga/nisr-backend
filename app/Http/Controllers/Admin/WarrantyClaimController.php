@@ -62,15 +62,20 @@ class WarrantyClaimController extends Controller
     private function renderStatusList(Request $request, string $status)
     {
         $claims = $this->buildClaimsQuery($request, $status)->paginate(20)->appends($request->query());
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        $pageTitleKey = $status;
+
+        return view('admin-views.warranty.claim-list', compact('claims', 'pageTitleKey'));
     }
 
     // All Claims
     public function all(Request $request)
     {
         $claims = $this->buildClaimsQuery($request)->paginate(20)->appends($request->query());
+        $pageTitleKey = $request->filled('status') && $request->status !== 'all'
+            ? $request->status
+            : 'claims_list';
 
-        return view('admin-views.warranty.claim-list', compact('claims'));
+        return view('admin-views.warranty.claim-list', compact('claims', 'pageTitleKey'));
     }
 
     // WarrantyClaimController.php
@@ -353,6 +358,15 @@ class WarrantyClaimController extends Controller
         // Serial Match
         if ($claim->serial_number !== $request->serial_number) {
             $msg = translate('Serial number does not match the RMA issued item.');
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => $msg], 400);
+            }
+            Toastr::error($msg);
+            return back()->withInput();
+        }
+
+        if ((int) $claim->branch_id === 1) {
+            $msg = translate('This claim is assigned to the internal System branch. Update the RMA branch before receiving the item.');
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => $msg], 400);
             }
@@ -1015,7 +1029,9 @@ class WarrantyClaimController extends Controller
             'rma_number'    => 'nullable|string|max:50',
             'return_days'   => 'required|integer|min:1',
             'instructions'  => 'required|string',
-            'branch_id'     => 'required|exists:branches,id',
+            'branch_id'     => 'required|exists:branches,id|not_in:1',
+        ], [
+            'branch_id.not_in' => translate('System branch cannot be used for customer RMA returns.'),
         ]);
 
         $rma = $request->rma_number ?: 'RMA-' . strtoupper(Str::random(6));

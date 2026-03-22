@@ -112,6 +112,13 @@ class LanguageController extends BaseController
         return response()->json($data);
     }
 
+    public function syncStaticKeys($lang, LanguageService $languageService): RedirectResponse
+    {
+        $languageService->syncStaticTranslateKeys(locales: [$lang]);
+        Toastr::success(translate('updated_successfully'));
+        return back();
+    }
+
     public function deleteTranslateKey(Request $request, $lang): void
     {
         $fullData = include(base_path('resources/lang/' . $lang . '/messages.php'));

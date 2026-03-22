@@ -64,4 +64,9 @@ enum Language
         VIEW => ''
     ];
 
+    const TRANSLATE_SYNC = [
+        URI => 'sync-static-keys',
+        VIEW => ''
+    ];
+
 }

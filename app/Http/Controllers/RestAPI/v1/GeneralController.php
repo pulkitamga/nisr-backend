@@ -114,7 +114,7 @@ class GeneralController extends Controller
             'email' => 'required',
             'name' => 'required_without:full_name',
             'full_name' => 'required_without:name',
-            'category' => 'nullable|string|in:support,warranty,complaint,partnership,contact',
+            'category' => 'nullable|string|in:support,complaint,career,service,retail,wholesale',
         ], [
             'name.required' => 'Name is Empty!',
             'mobile_number.required' => 'Mobile Number is Empty!',
@@ -132,8 +132,9 @@ class GeneralController extends Controller
         $phone = trim((string)($request->input('phone') ?: $request->input('mobile_number')));
         $category = (string)$request->input('category', 'support');
         $messageType = match ($category) {
-            'warranty' => 'warranty',
-            'partnership', 'contact' => 'contact',
+            'service' => 'service',
+            'career' => 'career',
+            'retail', 'wholesale' => 'contact',
             default => 'support',
         };
 

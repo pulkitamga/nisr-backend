@@ -7,7 +7,6 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\App;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Storage;
@@ -33,22 +32,7 @@ trait  Processor
 
     public function translate($key)
     {
-        try {
-            App::setLocale('en');
-            $lang_array = include(base_path('resources/lang/' . 'en' . '/lang.php'));
-            $processed_key = ucfirst(str_replace('_', ' ', str_ireplace(['\'', '"', ',', ';', '<', '>', '?'], ' ', $key)));
-            if (!array_key_exists($key, $lang_array)) {
-                $lang_array[$key] = $processed_key;
-                $str = "<?php return " . var_export($lang_array, true) . ";";
-                file_put_contents(base_path('resources/lang/' . 'en' . '/lang.php'), $str);
-                $result = $processed_key;
-            } else {
-                $result = __('lang.' . $key);
-            }
-            return $result;
-        } catch (\Exception $exception) {
-            return $key;
-        }
+        return function_exists('translate') ? \translate($key) : $key;
     }
 
     public function payment_config($key, $settings_type): object|null

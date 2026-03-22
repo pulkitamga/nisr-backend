@@ -26,6 +26,12 @@
                     <div class="card-header">
                         <h4 class="m-0">{{translate('language_content_table')}}</h4>
                         <div class="d-flex align-items-center gap-2">
+                            <form action="{{ route('admin.business-settings.language.sync-static-keys', [$lang]) }}" method="post" class="d-inline-block">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-primary">
+                                    {{ translate('sync_keys') }}
+                                </button>
+                            </form>
                             @if(env('APP_MODE') != 'demo')
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#warning-modal">
                                     {{ translate('Translate_All') }}

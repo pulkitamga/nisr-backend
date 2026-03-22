@@ -33,6 +33,8 @@ use App\Services\VehicleService;
 use App\Contracts\Repositories\RobotsMetaContentRepositoryInterface;
 use App\Contracts\Repositories\HelpTopicRepositoryInterface;
 use Illuminate\Support\Facades\Log;
+use App\Models\VehicleMake;
+use App\Models\VehicleModel;
 use App\Contracts\Repositories\VehicleMakeRepositoryInterface;
 use App\Contracts\Repositories\VehicleModelRepositoryInterface;
 use App\Models\VehicleYear;
@@ -138,9 +140,15 @@ class HomeController extends Controller
             $wholesaleProducts = WholeSaleProducts::with(['product', 'price_list'])->get();
         }
 
-          $makes = $this->vehicleMakeRepo->all();
-    $models = $this->vehicleModelRepo->all(); 
-    $years = VehicleYear::orderBy('year')->pluck('year');
+        $makes = VehicleMake::orderBy('name')->get();
+        $models = VehicleModel::orderBy('name')->get();
+        $years = VehicleYear::orderBy('year')->get();
+        $currentYear = (string) date('Y');
+        $selectedVehicleFilters = [
+            'make' => session('vehicle_filters.make'),
+            'model' => session('vehicle_filters.model'),
+            'year' => session('vehicle_filters.year', $currentYear),
+        ];
 
 
 
@@ -328,7 +336,9 @@ class HomeController extends Controller
                 'helpTopics',
                 'years',
                 'models',
-                'makes'
+                'makes',
+                'currentYear',
+                'selectedVehicleFilters'
 
             )
         );

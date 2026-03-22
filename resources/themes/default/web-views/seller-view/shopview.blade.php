@@ -27,6 +27,7 @@
           content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)),0,160) }}">
     <meta property="twitter:description"
           content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)),0,160) }}">
+    <link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
 @endpush
 
 @section('content')
@@ -211,12 +212,30 @@
 @endsection
 @push('script')
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/product-view.js') }}"></script>
+    <script src="{{ dynamicAsset(path: 'public/assets/select2/js/select2.min.js') }}"></script>
+    @php($selectedMake = $selectedVehicleFilters['make'] ?? request('make'))
+    @php($selectedModel = $selectedVehicleFilters['model'] ?? request('model'))
+    @php($selectedYear = $selectedVehicleFilters['year'] ?? request('year') ?? $currentYear ?? null)
+    @php($serializedModels = collect($models ?? [])->map(function ($model) {
+        return [
+            'id' => $model->id,
+            'make_id' => $model->make_id,
+            'value' => $model->getRawOriginal('name'),
+            'label' => $model->name,
+        ];
+    })->values())
     <script>
-        const models = @json($models ?? []);
-        const selectedMake = @json(request('make'));
-        const selectedModel = @json(request('model'));
+        const models = @json($serializedModels);
+        const selectedMake = @json($selectedMake);
+        const selectedModel = @json($selectedModel);
+        const selectedYear = @json($selectedYear);
 
         $(document).ready(function () {
+            $('.vehicle-select2').select2({
+                width: '100%',
+                dir: @json(session('direction') ?? 'ltr')
+            });
+
             if (selectedMake) {
                 const makeOption = $('#make-select option').filter(function () {
                     return $(this).val() === selectedMake;
@@ -227,11 +246,12 @@
 
                 $('#model-select').empty().prop('disabled', false).append('<option value="">' + "{{ __('Select Model') }}" + '</option>');
                 filteredModels.forEach(model => {
-                    const isSelected = model.name === selectedModel ? 'selected' : '';
-                    $('#model-select').append(`<option value="${model.name}" ${isSelected}>${model.name}</option>`);
+                    const isSelected = model.value === selectedModel ? 'selected' : '';
+                    $('#model-select').append(`<option value="${model.value}" ${isSelected}>${model.label}</option>`);
                 });
+                $('#model-select').trigger('change.select2');
 
-                if (selectedModel) {
+                if (selectedModel || selectedYear) {
                     $('#year-select').prop('disabled', false);
                 }
             }
@@ -243,10 +263,10 @@
 
             $('#model-select').empty().prop('disabled', false).append('<option value="">' + "{{ __('Select Model') }}" + '</option>');
             filteredModels.forEach(model => {
-                $('#model-select').append(`<option value="${model.name}">${model.name}</option>`);
+                $('#model-select').append(`<option value="${model.value}">${model.label}</option>`);
             });
-
-            $('#year-select').prop('disabled', true);
+            $('#model-select').val(null).trigger('change');
+            $('#year-select').prop('disabled', true).val(null).trigger('change');
         });
 
         $('#model-select').on('change', function () {

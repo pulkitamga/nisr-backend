@@ -28,6 +28,11 @@ class CustomerProfileUpdateRequest extends FormRequest
         return [
             'f_name' => 'required',
             'l_name' => 'required',
+            'email' => [
+                'nullable',
+                'email',
+                Rule::unique('users', 'email')->ignore(auth('customer')->id()),
+            ],
             'phone' => [
                 'required',
                 'max:20',
@@ -42,6 +47,8 @@ class CustomerProfileUpdateRequest extends FormRequest
         return [
             'f_name.required' => translate('first_name_is_required'),
             'l_name.required' => translate('last_name_is_required'),
+            'email.email' => translate('email_must_be_valid'),
+            'email.unique' => translate('Email_already_exists'),
             'phone.required' => translate('phone_number_is_required'),
             'phone.unique' => translate('phone_number_already_has_been_taken'),
             'phone.max' => translate('The_phone_number_may_not_be_greater_than_20_characters'),

@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/owl.carousel.min.css') }}">
 <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/owl.theme.default.min.css') }}">
 <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/swiper-bundle.min.css') }}">
+<link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}">
 
   
 
@@ -399,10 +400,10 @@ if($products->count() < 8) { $slides=$products->concat($products);
                             <form class="d-grid gap-3" aria-label="{{ translate('vehicle_filter_options') }}" action="{{ route('products') }}" method="GET">
                                 <div class="mb-2">
                                     <label for="make" class="form-label">{{ $findPerfectMatch['make_label'] }}</label>
-                                    <select id="make" name="make" class="form-select border my-1">
+                                    <select id="make" name="make" class="form-select border my-1 vehicle-select2">
                                         <option value="">{{ $findPerfectMatch['make_placeholder'] }}</option>
                                         @foreach($makes as $make)
-                                        <option value="{{ $make->name }}" data-id="{{ $make->id }}">{{ $make->name }}</option>
+                                        <option value="{{ $make->getRawOriginal('name') }}" data-id="{{ $make->id }}" {{ ($selectedVehicleFilters['make'] ?? null) === $make->getRawOriginal('name') ? 'selected' : '' }}>{{ $make->name }}</option>
                                         @endforeach
                                     </select>
 
@@ -410,7 +411,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
 
                                 <div class="mb-2">
                                     <label for="model" class="form-label">{{ $findPerfectMatch['model_label'] }}</label>
-                                    <select id="model" name="model" class="form-select border my-1" disabled>
+                                    <select id="model" name="model" class="form-select border my-1 vehicle-select2" disabled>
                                         <option value="">{{ $findPerfectMatch['model_placeholder'] }}</option>
                                     </select>
 
@@ -418,10 +419,10 @@ if($products->count() < 8) { $slides=$products->concat($products);
 
                                 <div class="mb-2">
                                     <label for="year" class="form-label">{{ $findPerfectMatch['year_label'] }}</label>
-                                    <select id="year" name="year" class="form-select border my-1" disabled>
+                                    <select id="year" name="year" class="form-select border my-1 vehicle-select2" {{ !empty($selectedVehicleFilters['year']) ? '' : 'disabled' }}>
                                         <option value="">{{ $findPerfectMatch['year_placeholder'] }}</option>
                                         @foreach($years as $year)
-                                        <option value="{{ $year }}">{{ $year }}</option>
+                                        <option value="{{ $year->getRawOriginal('year') }}" {{ (string)($selectedVehicleFilters['year'] ?? $currentYear) === (string)$year->getRawOriginal('year') ? 'selected' : '' }}>{{ $year->year }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -783,18 +784,61 @@ if($products->count() < 8) { $slides=$products->concat($products);
         <script src="{{ theme_asset(path: 'public/assets/front-end/js/home.js') }}"></script>
         <script src="{{ theme_asset(path: 'public/assets/front-end/js/custom-slider.js') }}"></script>
         <script src="{{ theme_asset(path: 'public/assets/front-end/js/swiper-bundle.min.js') }}"></script>
+        <script src="{{ dynamicAsset(path: 'public/assets/select2/js/select2.min.js') }}"></script>
 
+        @php($serializedModels = $models->map(function ($model) {
+            return [
+                'id' => $model->id,
+                'make_id' => $model->make_id,
+                'value' => $model->getRawOriginal('name'),
+                'label' => $model->name,
+            ];
+        })->values())
 
         <script>
-            const models = @json($models);
+            const models = @json($serializedModels);
             const modelPlaceholder = @json($findPerfectMatch['model_placeholder'] ?? 'Select Model');
+            const selectedMake = @json($selectedVehicleFilters['make'] ?? null);
+            const selectedModel = @json($selectedVehicleFilters['model'] ?? null);
+            const selectedYear = @json($selectedVehicleFilters['year'] ?? $currentYear);
+
+            function populateHomeModels(makeName, preferredModel = null) {
+                const makeId = $('#make option').filter(function() {
+                    return $(this).val() === makeName;
+                }).data('id');
+                const filteredModels = models.filter(model => model.make_id == makeId);
+                $('#model').empty().prop('disabled', false).append('<option value="">' + modelPlaceholder + '</option>');
+                filteredModels.forEach(model => {
+                    const isSelected = model.value === preferredModel ? 'selected' : '';
+                    $('#model').append(`<option value="${model.value}" ${isSelected}>${model.label}</option>`);
+                });
+                $('#model').trigger('change.select2');
+            }
+
+            $(document).ready(function () {
+                $('.vehicle-select2').select2({
+                    width: '100%',
+                    dir: @json(session('direction') ?? 'ltr')
+                });
+
+                if (selectedMake) {
+                    populateHomeModels(selectedMake, selectedModel);
+                }
+
+                if (selectedModel || selectedYear) {
+                    $('#year').prop('disabled', false);
+                }
+            });
+
             $('#make').on('change', function() {
                 const makeId = $(this).find('option:selected').data('id');
                 const filteredModels = models.filter(model => model.make_id == makeId);
                 $('#model').empty().prop('disabled', false).append('<option value="">' + modelPlaceholder + '</option>');
                 filteredModels.forEach(model => {
-                    $('#model').append(`<option value="${model.name}">${model.name}</option>`);
+                    $('#model').append(`<option value="${model.value}">${model.label}</option>`);
                 });
+                $('#model').val(null).trigger('change');
+                $('#year').prop('disabled', true).val(null).trigger('change');
 
             });
 

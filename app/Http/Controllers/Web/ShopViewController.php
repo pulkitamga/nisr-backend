@@ -87,6 +87,9 @@ class ShopViewController extends Controller
             $request->merge(['product_type' => 'physical']);
         }
 
+        $selectedVehicleFilters = $this->applyVehicleFilterDefaults($request);
+        $currentYear = (string) date('Y');
+
         self::checkShopExistence($id);
         $productAddedBy = $id == 0 ? 'admin' : 'seller';
         $productUserID = $id == 0 ? $id : Shop::where('id', $id)->first()->seller_id;
@@ -120,6 +123,8 @@ class ShopViewController extends Controller
             'makes' => $vehicleFilters['makes'],
             'models' => $vehicleFilters['models'],
             'years' => $vehicleFilters['years'],
+            'currentYear' => $currentYear,
+            'selectedVehicleFilters' => $selectedVehicleFilters,
         ]);
     }
 
@@ -128,6 +133,9 @@ class ShopViewController extends Controller
         if (!$request->filled('product_type')) {
             $request->merge(['product_type' => 'physical']);
         }
+
+        $selectedVehicleFilters = $this->applyVehicleFilterDefaults($request);
+        $currentYear = (string) date('Y');
 
         self::checkShopExistence($id);
         $productAddedBy = $id == 0 ? 'admin' : 'seller';
@@ -244,6 +252,8 @@ class ShopViewController extends Controller
             ->with('makes', $vehicleFilters['makes'])
             ->with('models', $vehicleFilters['models'])
             ->with('years', $vehicleFilters['years'])
+            ->with('currentYear', $currentYear)
+            ->with('selectedVehicleFilters', $selectedVehicleFilters)
             ->with('total_order', $totalOrder);
     }
 
@@ -252,6 +262,9 @@ class ShopViewController extends Controller
         if (!$request->filled('product_type')) {
             $request->merge(['product_type' => 'physical']);
         }
+
+        $selectedVehicleFilters = $this->applyVehicleFilterDefaults($request);
+        $currentYear = (string) date('Y');
 
         $singlePageProductCount = $request['per_page_product'] ?? 25;
         self::checkShopExistence($id);
@@ -435,6 +448,8 @@ class ShopViewController extends Controller
             ->with('makes', $vehicleFilters['makes'])
             ->with('models', $vehicleFilters['models'])
             ->with('years', $vehicleFilters['years'])
+            ->with('currentYear', $currentYear)
+            ->with('selectedVehicleFilters', $selectedVehicleFilters)
             ->with('total_order', $total_order);
     }
 
@@ -443,7 +458,28 @@ class ShopViewController extends Controller
         return [
             'makes' => VehicleMake::orderBy('name')->get(['id', 'name']),
             'models' => VehicleModel::orderBy('name')->get(['id', 'make_id', 'name']),
-            'years' => VehicleYear::orderBy('year')->pluck('year'),
+            'years' => VehicleYear::orderBy('year')->get(['id', 'year']),
+        ];
+    }
+
+    private function applyVehicleFilterDefaults(Request $request): array
+    {
+        $filters = [
+            'make' => $request['make'] ?? session('vehicle_filters.make'),
+            'model' => $request['model'] ?? session('vehicle_filters.model'),
+            'year' => $request['year'] ?? session('vehicle_filters.year'),
+        ];
+
+        if ($request->hasAny(['make', 'model', 'year'])) {
+            session()->put('vehicle_filters', $filters);
+        } elseif (filled($filters['make']) || filled($filters['model']) || filled($filters['year'])) {
+            $request->merge(array_filter($filters, fn ($value) => filled($value)));
+        }
+
+        return [
+            'make' => session('vehicle_filters.make'),
+            'model' => session('vehicle_filters.model'),
+            'year' => session('vehicle_filters.year'),
         ];
     }
 

@@ -91,13 +91,17 @@ class UserProfileController extends Controller
     {
         $imageName = $request->file('image') ? ImageManager::update('profile/', auth('customer')->user()->image, 'webp', $request->file('image')) : auth('customer')->user()->image;
         $user = auth('customer')->user();
+        $isPhoneChanged = $request['phone'] != $user['phone'];
+        $isEmailChanged = $request['email'] != $user['email'];
+
         User::find($user['id'])->update([
             'f_name' => $request['f_name'],
             'l_name' => $request['l_name'],
-            'phone' => $user['is_phone_verified'] ? $user['phone'] : $request['phone'],
+            'phone' => $request['phone'],
             'email' => $request['email'],
-            'is_phone_verified' => $request['phone'] == $user['phone'] ? $user['is_phone_verified'] : 0,
-            'is_email_verified' => $request['email'] == $user['email'] ? $user['is_email_verified'] : 0,
+            'is_phone_verified' => $isPhoneChanged ? 0 : $user['is_phone_verified'],
+            'is_email_verified' => $isEmailChanged ? 0 : $user['is_email_verified'],
+            'email_verified_at' => $isEmailChanged ? null : $user['email_verified_at'],
             'image' => $imageName,
             'password' => strlen($request['password']) > 5 ? bcrypt($request['password']) : auth('customer')->user()->password,
         ]);

@@ -267,6 +267,8 @@ class CrmCaseController extends Controller
     protected function normalizeCategory(?string $messageType): string
     {
         return match ($messageType) {
+            'service' => 'service',
+            'career' => 'career',
             'warranty' => 'warranty',
             'contact' => 'partnership',
             default => 'support',
