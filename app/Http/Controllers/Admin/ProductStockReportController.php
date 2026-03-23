@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class ProductStockReportController extends Controller
 {
@@ -47,14 +48,172 @@ class ProductStockReportController extends Controller
     public function exportPdf(Request $request): Response
     {
         $data = $this->buildReportData($request);
-        $data['exportedAt'] = now();
 
+        $data['exportedAt'] = now();
+        $data['company_web_logo'] = getWebConfig('company_web_logo');
+        $data['company_name'] = getWebConfig('company_name') ?? 'ElNisr';
+
+        // ✅ Date range fix
+        [$fromDate, $toDate, $dateType] = $this->resolveDateRange($request);
+        $data['snapshotFrom'] = $fromDate;
+        $data['snapshotTo'] = $toDate;
+        $data['filters']['date_type'] = $dateType;
+
+        // ==============================
+        // ✅ GENERATE CHART IMAGES
+        // ==============================
+        $chartImages = [];
+
+        // ===== 1. STOCK MOVEMENT (LINE) =====
+        if (!empty($data['chart']['date_labels'])) {
+            $chartImages['movement'] = $this->generateChartImage([
+                'type' => 'line',
+                'data' => [
+                    'labels' => $data['chart']['date_labels'],
+                    'datasets' => [
+                        [
+                            'label' => translate('stock_in'),
+                            'data' => $data['chart']['date_stock_in'],
+                            'borderColor' => '#16a34a',
+                            'backgroundColor' => 'rgba(22,163,74,0.1)',
+                            'fill' => false,
+                            'tension' => 0.4,
+                        ],
+                        [
+                            'label' => translate('stock_out'),
+                            'data' => $data['chart']['date_stock_out'],
+                            'borderColor' => '#dc2626',
+                            'backgroundColor' => 'rgba(220,38,38,0.1)',
+                            'fill' => false,
+                            'tension' => 0.4,
+                        ]
+                    ]
+                ],
+                'options' => [
+                    'responsive' => true,
+                    'plugins' => [
+                        'legend' => ['display' => true, 'position' => 'top']
+                    ],
+                    'scales' => ['y' => ['beginAtZero' => true]]
+                ]
+            ]);
+        }
+
+        // ===== 2. BRANCH CHART (VERTICAL BAR) =====
+        if (!empty($data['chart']['branch_labels'])) {
+            $chartImages['branch'] = $this->generateChartImage([
+                'type' => 'bar',
+                'data' => [
+                    'labels' => $data['chart']['branch_labels'],
+                    'datasets' => [
+                        [
+                            'label' => translate('current_stock'),
+                            'data' => $data['chart']['branch_values'],
+                            'backgroundColor' => '#0ea5e9',
+                        ]
+                    ]
+                ],
+                'options' => [
+                    'responsive' => true,
+                    'plugins' => ['legend' => ['display' => false]],
+                    'scales' => ['y' => ['beginAtZero' => true]]
+                ]
+            ]);
+        }
+
+        // ===== 3. PRODUCT CHART (HORIZONTAL BAR) - FIXED =====
+        if (!empty($data['chart']['product_labels'])) {
+            $chartImages['product'] = $this->generateChartImage([
+                'type' => 'bar',
+                'data' => [
+                    'labels' => $data['chart']['product_labels'],
+                    'datasets' => [
+                        [
+                            'label' => translate('current_stock'),
+                            'data' => $data['chart']['product_values'],
+                            'backgroundColor' => '#2563eb',
+                        ]
+                    ]
+                ],
+                'options' => [
+                    'indexAxis' => 'y',  // This makes it horizontal
+                    'responsive' => true,
+                    'plugins' => ['legend' => ['display' => false]],
+                    'scales' => [
+                        'x' => ['beginAtZero' => true],  // X-axis for horizontal bars
+                        'y' => ['beginAtZero' => true]
+                    ]
+                ]
+            ]);
+        }
+
+        // ===== 4. BRANCH PRODUCT CHART (HORIZONTAL BAR) - FIXED =====
+        if (!empty($data['chart']['branch_product_labels'])) {
+            $chartImages['branchProduct'] = $this->generateChartImage([
+                'type' => 'bar',
+                'data' => [
+                    'labels' => $data['chart']['branch_product_labels'],
+                    'datasets' => [
+                        [
+                            'label' => translate('current_stock'),
+                            'data' => $data['chart']['branch_product_values'],
+                            'backgroundColor' => '#7c3aed',
+                        ]
+                    ]
+                ],
+                'options' => [
+                    'indexAxis' => 'y',  // This makes it horizontal
+                    'responsive' => true,
+                    'plugins' => ['legend' => ['display' => false]],
+                    'scales' => [
+                        'x' => ['beginAtZero' => true],  // X-axis for horizontal bars
+                        'y' => ['beginAtZero' => true]
+                    ]
+                ]
+            ]);
+        }
+
+        // ✅ attach to view
+        $data['chartImages'] = $chartImages;
+
+        // ==============================
+        // ✅ GENERATE PDF
+        // ==============================
         return app(ReportPdfService::class)->download(
             view: 'admin-views.report.product-stock-pdf',
             data: $data,
             fileName: 'product-stock-analytics-report.pdf',
             orientation: 'landscape'
         );
+    }
+    private function generateChartImage(array $chartConfig): string
+    {
+        try {
+            $chartConfigJson = json_encode($chartConfig);
+            $encodedConfig = urlencode($chartConfigJson);
+            $url = "https://quickchart.io/chart?c={$encodedConfig}&width=800&height=400&format=png&devicePixelRatio=2";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
+
+            $imageData = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode == 200 && $imageData) {
+                return 'data:image/png;base64,' . base64_encode($imageData);
+            }
+
+            Log::error('QuickChart error: HTTP code ' . $httpCode);
+            return '';
+        } catch (\Exception $e) {
+            Log::error('QuickChart exception: ' . $e->getMessage());
+            return '';
+        }
     }
 
     private function buildReportData(Request $request): array
@@ -133,6 +292,10 @@ class ProductStockReportController extends Controller
         $productChartRows = $stockByProductRows->sortByDesc('current_stock')->take(12)->values();
         $branchProductChartRows = $stockByBranchProductRows->sortByDesc('current_stock')->take(16)->values();
 
+        // तिथि सीमा और अपडेटेड टाइमस्टैम्प
+        $dateRange = $this->formatDateRange($fromDate, $toDate, $dateType);
+        $updatedAt = Carbon::now()->format('M d, Y h:i A');
+
         return [
             'categories' => $categories,
             'products' => $products,
@@ -165,8 +328,30 @@ class ProductStockReportController extends Controller
                 )->all(),
                 'branch_product_values' => $branchProductChartRows->pluck('current_stock')->map(fn($value) => (int)$value)->all(),
             ],
+            'dateRange' => $dateRange,
+            'updatedAt' => $updatedAt,
         ];
     }
+
+    private function formatDateRange(Carbon $fromDate, Carbon $toDate, string $dateType): string
+    {
+        if ($dateType === 'custom_date') {
+            return $fromDate->format('d M, Y') . ' - ' . $toDate->format('d M, Y');
+        }
+
+        switch ($dateType) {
+            case 'today':
+                return $fromDate->format('d M, Y');
+            case 'this_week':
+                return $fromDate->format('d M') . ' - ' . $toDate->format('d M, Y');
+            case 'this_month':
+                return $fromDate->format('M Y');
+            case 'this_year':
+            default:
+                return $fromDate->format('M d, Y') . ' - ' . $toDate->format('M d, Y');
+        }
+    }
+
 
     private function resolveDateRange(Request $request): array
     {
@@ -609,5 +794,4 @@ class ProductStockReportController extends Controller
             'out' => array_values(array_map(fn($row) => (int)$row['out'], $map)),
         ];
     }
-
 }
