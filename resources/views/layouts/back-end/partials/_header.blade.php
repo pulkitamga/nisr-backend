@@ -57,7 +57,7 @@ use Carbon\Carbon;
                                         @foreach(json_decode($lang['value'],true) as $data)
                                         @if($data['code']==$local)
                                         <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
-                                            src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
+                                            src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                             alt="{{$data['name']}}">
                                         <span class="d-none d-sm-block">{{$data['name']}}</span>
                                         <span class="d-sm-none">{{$data['code']}}</span>
@@ -72,7 +72,7 @@ use Carbon\Carbon;
                                             <a class="dropdown-item py-1 {{$data['code']==$local ? 'active' : ':'}}"
                                                 href="javascript:">
                                                 <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
-                                                    src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
+                                                    src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                                     alt="{{$data['name']}}" />
                                                 <span class="text-capitalize">{{$data['name']}}</span>
                                             </a>
@@ -292,7 +292,7 @@ use Carbon\Carbon;
                             @foreach(json_decode($lang['value'],true) as $data)
                             @if($data['code']==$local)
                             <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
-                                src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
+                                src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                 alt="{{$data['name']}}">
                             {{$data['name']}}
                             @endif
@@ -304,7 +304,7 @@ use Carbon\Carbon;
                             <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                 <a class="dropdown-item pb-1" href="javascript:">
                                     <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
-                                        src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.($data['country_code'] ?? $data['code']).'.png')}}"
+                                        src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                         alt="{{$data['name']}}" />
                                     <span class="text-capitalize">{{$data['name']}}</span>
                                 </a>

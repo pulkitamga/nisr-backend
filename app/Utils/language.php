@@ -503,6 +503,16 @@ if (!function_exists('resolveAppLocale')) {
         return $resolvedLocales[$normalizedLocale] = 'en';
     }
 }
+
+if (!function_exists('getLanguageFlagCode')) {
+    function getLanguageFlagCode(array $languageData): string
+    {
+        $flagCode = $languageData['country_code'] ?? $languageData['code'] ?? 'en';
+
+        return strtolower(trim((string) $flagCode));
+    }
+}
+
 if (!function_exists('autoTranslator')) {
     function autoTranslator($q, $sl, $tl): array|string
     {

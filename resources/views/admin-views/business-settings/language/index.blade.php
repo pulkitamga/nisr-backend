@@ -199,7 +199,7 @@
                                             @foreach(File::files(base_path('public/assets/front-end/img/flags')) as $path)
                                                 @if(pathinfo($path)['filename'] !='en')
                                                     <option value="{{ pathinfo($path)['filename'] }}"
-                                                            title="{{ dynamicAsset(path: 'public/assets/front-end/img/flags/'.pathinfo($path)['filename'].'.png') }}">
+                                                            title="{{ dynamicAsset(path: 'public/assets/front-end/img/flags/'.strtolower(pathinfo($path)['filename']).'.png') }}">
                                                         {{ strtoupper(pathinfo($path)['filename']) }}
                                                     </option>
                                                 @endif
@@ -268,7 +268,7 @@
                                                 @foreach(File::files(base_path('public/assets/front-end/img/flags')) as $path)
                                                     <option value="{{ pathinfo($path)['filename'] }}"
                                                             {{ strtolower($data['country_code'] ?? $data['code']) == strtolower(pathinfo($path)['filename']) ? 'selected' : '' }}
-                                                            title="{{ dynamicAsset(path: 'public/assets/front-end/img/flags/'.pathinfo($path)['filename'].'.png') }}">
+                                                            title="{{ dynamicAsset(path: 'public/assets/front-end/img/flags/'.strtolower(pathinfo($path)['filename']).'.png') }}">
                                                         {{ strtoupper(pathinfo($path)['filename']) }}
                                                     </option>
                                                 @endforeach

@@ -41,7 +41,7 @@
                                     @foreach(\Illuminate\Support\Facades\File::files(base_path('public/assets/front-end/img/flags')) as $path)
                                         <option value="{{ pathinfo($path)['filename'] }}"
                                                 {{in_array(pathinfo($path)['filename'],$language)?'selected':''}}
-                                                title="{{ dynamicAsset(path: 'public/assets/front-end/img/flags/'.pathinfo($path)['filename'].'.png') }}">
+                                                title="{{ dynamicAsset(path: 'public/assets/front-end/img/flags/'.strtolower(pathinfo($path)['filename']).'.png') }}">
                                             {{ strtoupper(pathinfo($path)['filename']) }}
                                         </option>
                                     @endforeach

@@ -172,7 +172,7 @@
                         <a class="topbar-link dropdown-toggle d-flex align-items-center font-lang" href="#" data-toggle="dropdown">
                             @foreach($web_config['language'] as $data)
                             @if($data['code'] == getDefaultLanguage())
-                            <img class="me-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . ($data['country_code'] ?? $data['code']) . '.png')}}" alt="{{$data['name']}}">
+                            <img class="me-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . getLanguageFlagCode($data) . '.png')}}" alt="{{$data['name']}}">
                             {{$data['name']}}
                             @endif
                             @endforeach
@@ -182,7 +182,7 @@
                             @if($data['status'] == 1)
                             <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                 <a class="dropdown-item pb-1 d-flex align-items-center" href="javascript:">
-                                    <img class="me-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . ($data['country_code'] ?? $data['code']) . '.png')}}" alt="{{$data['name']}}" />
+                                    <img class="me-2" width="20" src="{{theme_asset(path: 'public/assets/front-end/img/flags/' . getLanguageFlagCode($data) . '.png')}}" alt="{{$data['name']}}" />
                                     <span class="text-capitalize">{{$data['name']}}</span>
                                 </a>
                             </li>
