@@ -1,8 +1,9 @@
 {{-- resources/views/admin-views/warranty/claim-list.blade.php --}}
-@php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@php($pageTitleKey = $pageTitleKey ?? 'claims_list')
+@php
+    $pageTitleKey = $pageTitleKey ?? 'claims_list';
+@endphp
 
 @section('title', translate($pageTitleKey))
 

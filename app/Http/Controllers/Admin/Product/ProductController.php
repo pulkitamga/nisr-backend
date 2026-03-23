@@ -1474,8 +1474,10 @@ public function getStockReport(Request $request): JsonResponse|View|BinaryFileRe
             'type' => strtoupper((string)$transaction->type),
             'quantity' => (int)$transaction->quantity,
             'reason' => (string)$transaction->reason,
+            'reason_label' => $this->translateStockHistoryReason((string)$transaction->reason),
             'category' => $classified['label'],
             'remarks' => (string)($transaction->remarks ?? ''),
+            'remarks_label' => $this->translateStockHistoryRemarks((string)($transaction->remarks ?? '')),
             'from_branch' => $transaction->fromBranch?->branch_name,
             'to_branch' => $transaction->toBranch?->branch_name,
         ];
@@ -1551,11 +1553,11 @@ private function exportStockReportExcel(array $reportData): BinaryFileResponse
     $rows = collect($reportData['historyRows'] ?? [])->map(function (array $row) {
         return [
             Carbon::parse($row['date'])->format('Y-m-d H:i:s'),
-            strtoupper((string)$row['type']) === 'IN' ? 'Stock In' : 'Stock Out',
+            strtoupper((string)$row['type']) === 'IN' ? translate('Stock In') : translate('Stock Out'),
             (int)$row['quantity'],
             (string)($row['category'] ?? ''),
-            str_replace('_', ' ', (string)($row['reason'] ?? '')),
-            (string)($row['remarks'] ?? ''),
+            (string)($row['reason_label'] ?? str_replace('_', ' ', (string)($row['reason'] ?? ''))),
+            (string)($row['remarks_label'] ?? ($row['remarks'] ?? '')),
             (string)($row['from_branch'] ?? ''),
             (string)($row['to_branch'] ?? ''),
         ];
@@ -1813,7 +1815,7 @@ public function updateQuantity(Request $request): RedirectResponse
             return [
                 'summaryGroup' => 'stock_in',
                 'summaryKey' => 'initial_stock',
-                'label' => 'Initial Stock',
+                'label' => translate('initial_stock'),
             ];
         }
 
@@ -1821,7 +1823,7 @@ public function updateQuantity(Request $request): RedirectResponse
             return [
                 'summaryGroup' => 'stock_in',
                 'summaryKey' => 'manual_adjust_add',
-                'label' => 'Manual Adjustment (+)',
+                'label' => translate('manual_adjust_add'),
             ];
         }
 
@@ -1829,7 +1831,7 @@ public function updateQuantity(Request $request): RedirectResponse
             return [
                 'summaryGroup' => 'stock_in',
                 'summaryKey' => 'returns',
-                'label' => 'Returns / Cancellations',
+                'label' => translate('returns'),
             ];
         }
 
@@ -1837,7 +1839,7 @@ public function updateQuantity(Request $request): RedirectResponse
             return [
                 'summaryGroup' => 'stock_out',
                 'summaryKey' => 'sales_wholesale_transfer',
-                'label' => 'Wholesale Transfer',
+                'label' => translate('sales_wholesale_transfer'),
             ];
         }
 
@@ -1845,7 +1847,7 @@ public function updateQuantity(Request $request): RedirectResponse
             return [
                 'summaryGroup' => 'stock_out',
                 'summaryKey' => 'manual_adjust_negative',
-                'label' => 'Manual Adjustment (-)',
+                'label' => translate('manual_adjust_negative'),
             ];
         }
 
@@ -1854,14 +1856,14 @@ public function updateQuantity(Request $request): RedirectResponse
                 return [
                     'summaryGroup' => 'stock_out',
                     'summaryKey' => 'sales_pos',
-                    'label' => 'POS Sale',
+                    'label' => translate('sales_pos'),
                 ];
             }
 
             return [
                 'summaryGroup' => 'stock_out',
                 'summaryKey' => 'sales_online',
-                'label' => 'Online Sale',
+                'label' => translate('sales_online'),
             ];
         }
 
@@ -1869,7 +1871,7 @@ public function updateQuantity(Request $request): RedirectResponse
             return [
                 'summaryGroup' => 'internal_transfer',
                 'summaryKey' => 'branch_transfer',
-                'label' => 'Internal Branch Transfer',
+                'label' => translate('internal_branch_transfer'),
             ];
         }
 
@@ -1877,15 +1879,49 @@ public function updateQuantity(Request $request): RedirectResponse
             return [
                 'summaryGroup' => 'stock_in',
                 'summaryKey' => 'returns',
-                'label' => 'Stock In (Other)',
+                'label' => translate('stock_in'),
             ];
         }
 
         return [
             'summaryGroup' => 'stock_out',
             'summaryKey' => 'sales_online',
-            'label' => 'Stock Out (Other)',
+            'label' => translate('stock_out'),
         ];
+    }
+
+    private function translateStockHistoryReason(string $reason): string
+    {
+        return match (strtoupper(trim($reason))) {
+            StockReason::INITIAL_STOCK => translate('initial_stock'),
+            StockReason::MANUAL_ADJUSTMENT => translate('manual_adjustment'),
+            StockReason::ORDER_PLACED => translate('order_placed'),
+            StockReason::ORDER_CANCELLED => translate('order_cancelled'),
+            StockReason::RETURN => translate('returns'),
+            StockReason::BRANCH_TRANSFER => translate('branch_transfer'),
+            StockReason::WHOLESALE_DELIVERY => translate('sales_wholesale_transfer'),
+            default => Str::headline(strtolower($reason)),
+        };
+    }
+
+    private function translateStockHistoryRemarks(string $remarks): string
+    {
+        if ($remarks === '') {
+            return '';
+        }
+
+        if ($remarks === 'Initial stock added on product creation') {
+            return translate('initial_stock_added_on_product_creation');
+        }
+
+        if (preg_match('/^Order #(\\d+) status ([a-z_]+)$/i', $remarks, $matches)) {
+            return translate('order_number_status_status', [
+                'order' => $matches[1],
+                'status' => translate(strtolower($matches[2])),
+            ]);
+        }
+
+        return $remarks;
     }
 
     // public function updateQuantity(Request $request): RedirectResponse

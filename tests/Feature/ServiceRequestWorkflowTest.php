@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\VehicleMake;
 use App\Models\VehicleYear;
 use App\Services\ServiceRequestSubmissionService;
+use App\Services\TicketConvert;
 use App\Services\ServiceWorkflowNotificationService;
 use App\Support\ServiceTicketWorkflow;
 use Illuminate\Database\Schema\Blueprint;
@@ -514,6 +515,53 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame(0, SupportTicketConv::query()->count());
     }
 
+    public function test_ticket_convert_preserves_service_ticket_contract_for_service_messages(): void
+    {
+        DB::table('support_ticket_status_master')->insert([
+            'id' => ServiceTicketWorkflow::STATUS_NEW,
+            'master_id' => ServiceTicketWorkflow::STATUS_MASTER_ID,
+            'name' => 'new',
+            'status' => 'active',
+            'position' => 1,
+        ]);
+
+        $customer = User::query()->create([
+            'f_name' => 'Sara',
+            'l_name' => 'Hassan',
+            'email' => 'sara@example.com',
+            'phone' => '201000000000',
+            'password' => 'secret',
+        ]);
+
+        $service = Service::query()->create([
+            'service_id' => 'SRV-777',
+            'title' => 'Brake Inspection',
+            'base_price_inshop' => 80,
+            'base_price_mobile' => 120,
+            'included_km_mobile' => 10,
+            'travel_fee_per_km' => 5,
+            'parts_included' => ['pads'],
+            'call_center_flag' => false,
+        ]);
+
+        $message = InboxMessage::query()->create([
+            'subject' => 'Need brake inspection',
+            'body' => 'Customer requested a brake inspection.',
+            'contact_id' => $customer->id,
+            'message_type' => 'service',
+            'details' => ['service_id' => $service->id],
+            'status' => 'new',
+        ]);
+
+        $ticket = TicketConvert::fromInboxMessage($message, 'service');
+
+        $this->assertSame('service', $ticket->type);
+        $this->assertSame('service', $ticket->sub_type);
+        $this->assertSame(0, (int) $ticket->request_type);
+        $this->assertSame($service->id, (int) $ticket->service_id);
+        $this->assertSame(ServiceTicketWorkflow::STATUS_NEW, (int) $ticket->status);
+    }
+
     private function makeController(): ServiceRequestController
     {
         return new ServiceRequestController(
@@ -703,6 +751,9 @@ class ServiceRequestWorkflowTest extends TestCase
             $table->unsignedBigInteger('service_id')->nullable();
             $table->unsignedBigInteger('source_id')->nullable();
             $table->unsignedBigInteger('customer_id')->nullable();
+            $table->unsignedBigInteger('owner_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->unsignedBigInteger('employee_id')->nullable();
             $table->string('subject')->nullable();
             $table->string('type')->nullable();
             $table->string('sub_type')->nullable();

@@ -77,19 +77,25 @@ class SupportTicketController extends BaseController
 
     public function getListView(Request $request, string $status): View
     {
-
         $defaultStatusIds = [
             'support'   => SupportTicketLifecycle::STATUS_NEW,
-            'service'   => ServiceTicketWorkflow::STATUS_NEW,
             'career'    => CareerTicketWorkflow::STATUS_NEW,
             'complaint' => ComplaintTicketWorkflow::STATUS_NEW,
             'retail'    => RetailTicketWorkflow::STATUS_NEW,
             'wholesale' => WholesaleTicketWorkflow::STATUS_NEW,
         ];
-        $statusFilter = $request->get('status', $defaultStatusIds[$status] ?? null);
+        $statusFilter = $status === 'service'
+            ? $request->get('status', 'all')
+            : $request->get('status', $defaultStatusIds[$status] ?? null);
+
+        $relations = ['department', 'employee', 'status_details', 'relatedInboxMessages', 'customer'];
+        if ($status === 'service') {
+            $relations = array_merge($relations, ['service', 'relatedInboxMessage', 'latestServiceJob', 'latestServiceJob.service']);
+        }
+
         $tickets = $this->supportTicketRepo->getListWhere(
             orderBy: ['id' => 'desc'],
-            relations: ['department', 'employee', 'status_details', 'relatedInboxMessages', 'customer'],
+            relations: $relations,
             searchValue: $request->get('searchValue'),
             filters: [
                 'priority' => $request->get('priority'),

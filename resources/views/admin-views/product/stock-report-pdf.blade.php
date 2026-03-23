@@ -1,17 +1,24 @@
+@php($isRtl = session('direction') === 'rtl' || app()->getLocale() === 'ar')
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('stock_report') }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #222; }
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            color: #222;
+            direction: {{ $isRtl ? 'rtl' : 'ltr' }};
+            text-align: {{ $isRtl ? 'right' : 'left' }};
+        }
         h2 { margin: 0 0 10px 0; }
         .meta { margin-bottom: 12px; }
         .meta div { margin-bottom: 4px; }
         .summary-grid { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-        .summary-grid th, .summary-grid td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+        .summary-grid th, .summary-grid td { border: 1px solid #ddd; padding: 6px 8px; text-align: {{ $isRtl ? 'right' : 'left' }}; }
         .history-table { width: 100%; border-collapse: collapse; }
-        .history-table th, .history-table td { border: 1px solid #ddd; padding: 6px 8px; vertical-align: top; }
+        .history-table th, .history-table td { border: 1px solid #ddd; padding: 6px 8px; vertical-align: top; text-align: {{ $isRtl ? 'right' : 'left' }}; }
         .history-table th { background: #f3f4f6; }
     </style>
 </head>
@@ -20,7 +27,7 @@
 
     <div class="meta">
         <div><strong>{{ translate('product') }}:</strong> {{ $product->name }}</div>
-        <div><strong>{{ translate('variation') }}:</strong> {{ $variation ?? 'Default' }}</div>
+        <div><strong>{{ translate('variation') }}:</strong> {{ $variation ?? translate('Default') }}</div>
         <div><strong>{{ translate('current_stock') }}:</strong> {{ $currentStock }}</div>
     </div>
 
@@ -71,14 +78,14 @@
             @forelse($historyRows as $history)
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($history['date'])->format('Y-m-d H:i') }}</td>
-                    <td>{{ strtoupper((string)$history['type']) === 'IN' ? 'Stock In' : 'Stock Out' }}</td>
+                    <td>{{ strtoupper((string)$history['type']) === 'IN' ? translate('Stock In') : translate('Stock Out') }}</td>
                     <td>{{ strtoupper((string)$history['type']) === 'IN' ? '+' : '-' }}{{ (int)$history['quantity'] }}</td>
                     <td>{{ $history['category'] }}</td>
                     <td>
-                        {{ str_replace('_', ' ', (string)$history['reason']) }}<br>
-                        {{ $history['remarks'] ?? '' }}
+                        {{ $history['reason_label'] ?? str_replace('_', ' ', (string)$history['reason']) }}<br>
+                        {{ $history['remarks_label'] ?? ($history['remarks'] ?? '') }}
                         @if ($history['from_branch'] || $history['to_branch'])
-                            <br>{{ $history['from_branch'] ? ('From: ' . $history['from_branch']) : '' }}{{ $history['to_branch'] ? (' | To: ' . $history['to_branch']) : '' }}
+                            <br>{{ $history['from_branch'] ? (translate('from') . ': ' . $history['from_branch']) : '' }}{{ $history['to_branch'] ? (' | ' . translate('to') . ': ' . $history['to_branch']) : '' }}
                         @endif
                     </td>
                 </tr>

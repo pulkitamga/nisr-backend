@@ -1,7 +1,7 @@
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
     <div>
         <div><strong>{{ translate('product') }}:</strong> {{ $product->name }}</div>
-        <div><strong>{{ translate('variation') }}:</strong> {{ $variation ?? 'Default' }}</div>
+        <div><strong>{{ translate('variation') }}:</strong> {{ $variation ?? translate('Default') }}</div>
         <div><strong>{{ translate('current_stock') }}:</strong> {{ $currentStock }}</div>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -90,7 +90,7 @@
                     <td>{{ \Carbon\Carbon::parse($history['date'])->format('d/m/Y H:i') }}</td>
                     <td>
                         <span class="{{ $history['type'] === 'IN' ? 'text-success' : 'text-danger' }} fw-semibold">
-                            {{ $history['type'] === 'IN' ? 'Stock In' : 'Stock Out' }}
+                            {{ $history['type'] === 'IN' ? translate('Stock In') : translate('Stock Out') }}
                         </span>
                     </td>
                     <td class="{{ $history['type'] === 'IN' ? 'text-success' : 'text-danger' }} fw-semibold">
@@ -98,12 +98,12 @@
                     </td>
                     <td>{{ $history['category'] }}</td>
                     <td>
-                        <div>{{ str_replace('_', ' ', $history['reason']) }}</div>
-                        <small class="text-muted">{{ $history['remarks'] }}</small>
+                        <div>{{ $history['reason_label'] ?? str_replace('_', ' ', $history['reason']) }}</div>
+                        <small class="text-muted">{{ $history['remarks_label'] ?? $history['remarks'] }}</small>
                         @if ($history['from_branch'] || $history['to_branch'])
                             <small class="d-block text-muted">
-                                {{ $history['from_branch'] ? ('From: ' . $history['from_branch']) : '' }}
-                                {{ $history['to_branch'] ? (' | To: ' . $history['to_branch']) : '' }}
+                                {{ $history['from_branch'] ? (translate('from') . ': ' . $history['from_branch']) : '' }}
+                                {{ $history['to_branch'] ? (' | ' . translate('to') . ': ' . $history['to_branch']) : '' }}
                             </small>
                         @endif
                     </td>

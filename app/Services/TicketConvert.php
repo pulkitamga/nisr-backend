@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\SupportTicketRequestType;
 use App\Enums\TicketDispatchTarget;
 use App\Models\SupportTicket;
 use App\Models\InboxMessage;
@@ -32,7 +33,7 @@ class TicketConvert
             'wholesale' => 6,
         ];
 
-        $type = strtolower($subType) ?? 'support';
+        $type = is_string($subType) && $subType !== '' ? strtolower($subType) : 'support';
         $masterId = $masterIds[$type] ?? 1;
 
         $resoneType = $reason ?? 'General Inquiry';
@@ -41,7 +42,19 @@ class TicketConvert
             ->orderBy('position', 'asc')
             ->first();
 
+        $serviceId = null;
+        $ticketSubType = $resoneType;
+        $requestType = null;
+
+        if ($type === 'service') {
+            $rawServiceId = data_get($message->details, 'service_id');
+            $serviceId = is_numeric($rawServiceId) ? (int) $rawServiceId : null;
+            $ticketSubType = 'service';
+            $requestType = SupportTicketRequestType::Service->value;
+        }
+
         $ticket = SupportTicket::create([
+            'service_id'     => $serviceId,
             'source_id'      => $message->id,
             'subject'        => $message->subject ?? 'No Subject',
             'description'    => $message->body ?? null,
@@ -51,8 +64,9 @@ class TicketConvert
             'employee_id'    => null,
             'priority'       => $priority ?? 'normal',
             'type'           => $type,
-            'sub_type'       => $resoneType,
-            'status' => $defaultStatus?->id ?? null,
+            'sub_type'       => $ticketSubType,
+            'request_type'   => $requestType,
+            'status'         => $defaultStatus?->id ?? null,
         ]);
 
         if ($departmentId) {

@@ -5,48 +5,148 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 
 if (!function_exists('translate')) {
-    function translate($key = null): string|null
+    function translate($key = null, array $replace = []): string|null
     {
-        $local = getDefaultLanguage();
-        $resolvedLocale = resolveAppLocale($local);
-        App::setLocale($resolvedLocale);
-
         if (!$key) {
             return $key;
         }
 
-        $message = getTranslateMessageValueByKey(local: $resolvedLocale, key: $key);
-        return $resolvedLocale == 'en' ? ucfirst($message) : $message;
+        $resolvedLocale = getActiveTranslationLocale();
+        if (App::currentLocale() !== $resolvedLocale) {
+            App::setLocale($resolvedLocale);
+        }
+
+        $message = getTranslateMessageValueByKey(local: $resolvedLocale, key: $key, replace: $replace);
+        return is_string($message) ? $message : null;
     }
 
-    function getTranslateMessageValueByKey(string $local, string $key): array|string|null
+    function getTranslateMessageValueByKey(string $local, string $key, array $replace = []): array|string|null
     {
+        $key = str_replace('"', '', $key);
+
         try {
-            $messagesPath = base_path('resources/lang/' . $local . '/messages.php');
-            $newMessagesPath = base_path('resources/lang/' . $local . '/new-messages.php');
-            $translatedMessagesArray = file_exists($messagesPath) ? include($messagesPath) : [];
-            $newMessagesArray = file_exists($newMessagesPath) ? include($newMessagesPath) : [];
-            $key = str_replace('"', '', $key);
+            $translationCatalog = getTranslationCatalogForLocale($local);
             $processedKey = formatTranslationFallback($key);
 
-            if (array_key_exists($key, $translatedMessagesArray)) {
-                $message = __('messages.' . $key);
-            } elseif (array_key_exists($key, $newMessagesArray)) {
-                $message = __('new-messages.' . $key);
+            if (array_key_exists($key, $translationCatalog['messages'])) {
+                $message = $translationCatalog['messages'][$key];
+            } elseif (array_key_exists($key, $translationCatalog['new-messages'])) {
+                $message = $translationCatalog['new-messages'][$key];
             } else {
                 $message = $processedKey;
             }
-        } catch (\Exception $exception) {
+        } catch (\Throwable) {
             $message = formatTranslationFallback($key);
         }
-        return $local == 'en' ? ucfirst($message) : $message;
+
+        if (is_string($message)) {
+            $message = applyTranslationReplacements($message, $replace);
+            return $local == 'en' ? ucfirst($message) : $message;
+        }
+
+        return $message;
     }
 }
 
 if (!function_exists('getOrPutTranslateMessageValueByKey')) {
-    function getOrPutTranslateMessageValueByKey(string $local, string $key): array|string|null
+    function getOrPutTranslateMessageValueByKey(string $local, string $key, array $replace = []): array|string|null
     {
-        return getTranslateMessageValueByKey($local, $key);
+        return getTranslateMessageValueByKey($local, $key, $replace);
+    }
+}
+
+if (!function_exists('getActiveTranslationLocale')) {
+    function getActiveTranslationLocale(): string
+    {
+        static $cachedLocale = null;
+        static $cachedFingerprint = null;
+
+        $appLocale = normalizeTranslationLocaleCandidate(App::getLocale());
+        $sessionLocale = normalizeTranslationLocaleCandidate((string)session('local', session('locale')));
+        $isApiRequest = str_contains((string)url()->current(), '/api');
+        $fingerprint = implode('|', [$appLocale, $sessionLocale, $isApiRequest ? '1' : '0']);
+
+        if ($cachedLocale !== null && $cachedFingerprint === $fingerprint) {
+            return $cachedLocale;
+        }
+
+        $localeToResolve = $isApiRequest && $appLocale !== ''
+            ? $appLocale
+            : ($sessionLocale !== '' ? $sessionLocale : $appLocale);
+
+        if ($localeToResolve === '') {
+            $localeToResolve = getDefaultLanguage();
+        }
+
+        $cachedLocale = resolveAppLocale($localeToResolve);
+        $cachedFingerprint = $fingerprint;
+
+        return $cachedLocale;
+    }
+}
+
+if (!function_exists('normalizeTranslationLocaleCandidate')) {
+    function normalizeTranslationLocaleCandidate(string|null $locale): string
+    {
+        $normalizedLocale = strtolower(trim((string)$locale));
+        if (
+            $normalizedLocale === ''
+            || !preg_match('/^[a-z]{2,3}(?:[_-][a-z]{2,3})?$/', $normalizedLocale)
+        ) {
+            return '';
+        }
+
+        return $normalizedLocale;
+    }
+}
+
+if (!function_exists('getTranslationCatalogForLocale')) {
+    function getTranslationCatalogForLocale(string $local): array
+    {
+        static $catalogCache = [];
+
+        $resolvedLocale = resolveAppLocale($local);
+        if (!array_key_exists($resolvedLocale, $catalogCache)) {
+            $catalogCache[$resolvedLocale] = [
+                'messages' => loadTranslationGroupCatalog($resolvedLocale, 'messages'),
+                'new-messages' => loadTranslationGroupCatalog($resolvedLocale, 'new-messages'),
+            ];
+        }
+
+        return $catalogCache[$resolvedLocale];
+    }
+}
+
+if (!function_exists('loadTranslationGroupCatalog')) {
+    function loadTranslationGroupCatalog(string $local, string $group): array
+    {
+        $path = base_path('resources/lang/' . $local . '/' . $group . '.php');
+        $messages = file_exists($path) ? include($path) : [];
+        return is_array($messages) ? $messages : [];
+    }
+}
+
+if (!function_exists('applyTranslationReplacements')) {
+    function applyTranslationReplacements(string $message, array $replace = []): string
+    {
+        if ($replace === []) {
+            return $message;
+        }
+
+        $replacements = [];
+        foreach ($replace as $key => $value) {
+            if (is_array($value)) {
+                continue;
+            }
+
+            $replacementValue = (string)$value;
+            $placeholder = ':' . $key;
+            $replacements[$placeholder] = $replacementValue;
+            $replacements[':' . ucfirst((string)$key)] = ucfirst($replacementValue);
+            $replacements[':' . strtoupper((string)$key)] = strtoupper($replacementValue);
+        }
+
+        return strtr($message, $replacements);
     }
 }
 
@@ -91,6 +191,19 @@ if (!function_exists('removeSpecialCharacters')) {
 if (!function_exists('getDefaultLanguage')) {
     function getDefaultLanguage(): string
     {
+        static $cachedLanguage = null;
+        static $cachedFingerprint = null;
+
+        $appLocale = normalizeTranslationLocaleCandidate(App::getLocale());
+        $sessionLocale = normalizeTranslationLocaleCandidate((string)session('local', session('locale')));
+        $cookieLocale = normalizeTranslationLocaleCandidate((string)(request()->cookie('local') ?? request()->cookie('locale') ?? ''));
+        $isApiRequest = str_contains((string)url()->current(), '/api');
+        $fingerprint = implode('|', [$appLocale, $sessionLocale, $cookieLocale, $isApiRequest ? '1' : '0']);
+
+        if ($cachedLanguage !== null && $cachedFingerprint === $fingerprint) {
+            return $cachedLanguage;
+        }
+
         $data = [];
         try {
             if (
@@ -130,7 +243,7 @@ if (!function_exists('getDefaultLanguage')) {
         }
         $defaultCode = $normalizeLocale($defaultCode, 'en');
 
-        if (strpos(url()->current(), '/api')) {
+        if ($isApiRequest) {
             $lang = $normalizeLocale(App::getLocale(), $defaultCode);
         } elseif (session()->has('local') || session()->has('locale')) {
             $lang = $normalizeLocale((string) session('local', session('locale')), $defaultCode);
@@ -163,10 +276,18 @@ if (!function_exists('getDefaultLanguage')) {
             break;
         }
 
-        session()->put('local', $lang);
-        session()->put('locale', $lang);
-        Session::put('direction', $direction);
+        if ((string)session('local') !== $lang) {
+            session()->put('local', $lang);
+        }
+        if ((string)session('locale') !== $lang) {
+            session()->put('locale', $lang);
+        }
+        if ((string)session('direction') !== $direction) {
+            Session::put('direction', $direction);
+        }
 
+        $cachedLanguage = $lang;
+        $cachedFingerprint = $fingerprint;
         return $lang;
     }
 }
@@ -352,28 +473,34 @@ if (!function_exists('getLanguageCode')) {
 if (!function_exists('resolveAppLocale')) {
     function resolveAppLocale(string|null $locale): string
     {
+        static $resolvedLocales = [];
+
         $normalizedLocale = strtolower(trim((string)$locale));
         if ($normalizedLocale === '') {
             return 'en';
         }
 
+        if (array_key_exists($normalizedLocale, $resolvedLocales)) {
+            return $resolvedLocales[$normalizedLocale];
+        }
+
         if (is_dir(base_path('resources/lang/' . $normalizedLocale))) {
-            return $normalizedLocale;
+            return $resolvedLocales[$normalizedLocale] = $normalizedLocale;
         }
 
         $mappedLanguageCode = getLanguageCode(country_code: $normalizedLocale);
         if (is_dir(base_path('resources/lang/' . $mappedLanguageCode))) {
-            return $mappedLanguageCode;
+            return $resolvedLocales[$normalizedLocale] = $mappedLanguageCode;
         }
 
         if (str_contains($normalizedLocale, '-')) {
             $languagePart = explode('-', $normalizedLocale)[0];
             if (is_dir(base_path('resources/lang/' . $languagePart))) {
-                return $languagePart;
+                return $resolvedLocales[$normalizedLocale] = $languagePart;
             }
         }
 
-        return 'en';
+        return $resolvedLocales[$normalizedLocale] = 'en';
     }
 }
 if (!function_exists('autoTranslator')) {

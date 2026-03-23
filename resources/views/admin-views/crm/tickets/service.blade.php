@@ -132,7 +132,9 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     default => 'badge-soft-primary',
                     };
                     $job = $ticket->latestServiceJob;
-                    $service = $job ? $services->firstWhere('id', $job->service_sku) : null;
+                    $service = $ticket->service
+                        ?? $job?->service
+                        ?? $services->firstWhere('id', (int) data_get($ticket->relatedInboxMessage?->details, 'service_id'));
                     $qaConfirmed = $job ? in_array($job->id, $qaConfirmedJobIds) : false;
                     @endphp
                     <tr>
@@ -160,11 +162,13 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                                 <span id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.estimate') }}"
                                     data-ticket-id="{{ $ticket->id }}"
+                                    data-service-id="{{ $ticket->service_id }}"
                                     data-action="estimate">{{translate('Create Estimate')}}</span>
                                 @elseif((int)$ticket->status === $serviceWorkflow::STATUS_OPEN)
                                 <span id="assign-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
                                     data-route="{{ route('admin.support-ticket.service.assign') }}"
                                     data-ticket-id="{{ $ticket->id }}"
+                                    data-service-id="{{ $ticket->service_id }}"
                                     data-action="assign">{{translate('Assign')}}</span>
                                 @elseif((int)$ticket->status === $serviceWorkflow::STATUS_ASSIGNED && $job)
                                 <span id="schedule-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
@@ -175,6 +179,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                                 <span id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-warning action-btn"
                                     data-route="{{ route('admin.support-ticket.service.estimate') }}"
                                     data-ticket-id="{{ $ticket->id }}"
+                                    data-service-id="{{ $ticket->service_id }}"
                                     data-action="estimate">{{translate('Revise Estimate')}}</span>
                                 @elseif((int)$ticket->status === $serviceWorkflow::STATUS_SCHEDULED && $job)
                                 <span id="start-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
@@ -795,6 +800,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
             let route = $(this).data('route');
             let ticketId = $(this).data('ticket-id');
             let jobId = $(this).data('job-id');
+            let serviceId = $(this).data('service-id');
 
             const actionsWithConfirmation = ['start-job', 'complete-job', 'close-ticket', 'cancel-ticket'];
             if (actionsWithConfirmation.includes(action)) {
@@ -809,24 +815,37 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     cancelButtonText: '{{ translate("No") }}'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        handleAction(action, route, ticketId, jobId);
+                        handleAction(action, route, ticketId, jobId, serviceId);
                     }
                 });
             } else {
-                handleAction(action, route, ticketId, jobId);
+                handleAction(action, route, ticketId, jobId, serviceId);
             }
         });
 
-        function handleAction(action, route, ticketId, jobId) {
+        function applyLockedService(selector, serviceId) {
+            if (!serviceId) {
+                return;
+            }
+
+            const normalizedServiceId = String(serviceId);
+            if ($(`${selector} option[value="${normalizedServiceId}"]`).length) {
+                $(selector).val(normalizedServiceId);
+            }
+        }
+
+        function handleAction(action, route, ticketId, jobId, serviceId) {
             switch (action) {
                 case 'assign':
                     $('#assignTicketId').val(ticketId);
                     $('#assignTicketForm').attr('action', route);
+                    applyLockedService('#service_id', serviceId);
                     $('#assignTicketModal').modal('show');
                     break;
                 case 'estimate':
                     $('#estimateTicketId').val(ticketId);
                     $('#estimateTicketForm').attr('action', route);
+                    applyLockedService('#estimate_service_id', serviceId);
                     applyEstimateDefaults();
                     recalculateEstimateTotals();
                     $('#estimateTicketModal').modal('show');

@@ -394,10 +394,10 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="input-label" for="inventory_action">{{ __('Inventory action') }}</label>
+                            <label class="input-label" for="inventory_action">{{ translate('inventory_action') }}</label>
                             <select class="form-control" name="inventory_action" id="inventory_action">
-                                <option value="restock">{{ __('Restock') }}</option>
-                                <option value="no_restock">{{ __('No restock') }}</option>
+                                <option value="restock">{{ translate('Restock') }}</option>
+                                <option value="no_restock">{{ translate('no_restock') }}</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -409,7 +409,7 @@
                                          alt="">
                                 </span>
                             </label>
-                            <input type="text" class="form-control" name="payment_info" placeholder="{{translate('ex').' : '.'Paypal'}}">
+                            <input type="text" class="form-control" name="payment_info" placeholder="{{ translate('ex') . ' : ' . translate('paypal') }}">
                         </div>
                         <div class="d-flex flex-wrap justify-content-end gap-3 mt-3">
                             <button type="button" class="btn btn-secondary px-3" data-dismiss="modal">{{ translate('close') }}</button>

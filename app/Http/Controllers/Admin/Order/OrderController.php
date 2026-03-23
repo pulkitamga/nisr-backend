@@ -784,7 +784,7 @@ class OrderController extends BaseController
     {
         // dd($request->q);
         $request['searchValue'] = $request->q;
-        $allCustomer = ['id' => 'all', 'text' => 'All customer'];
+        $allCustomer = ['id' => 'all', 'text' => translate('all_customer')];
         $customers = $this->customerRepo->getCustomerNameList(request: $request)->toArray();
         array_unshift($customers, $allCustomer);
 

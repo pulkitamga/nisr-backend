@@ -65,7 +65,7 @@
                     </div>
                     <div class="card-body">
                         @php
-                        $service = $supportTicket->latestServiceJob?->service;
+                        $service = $supportTicket->service ?? $supportTicket->latestServiceJob?->service;
                         @endphp
                         <p><strong>{{ translate('Service') }}:</strong>
                             <span class="bidi-auto">{{ $service ? $service->title : translate('No Service Picked') }}</span>

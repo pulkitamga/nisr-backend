@@ -181,6 +181,9 @@ class ServiceTicketController extends BaseController
             filters: ['id' => $id],
             relations: [
                 'customer',
+                'service',
+                'status_details',
+                'relatedInboxMessage',
                 'serviceJobs',
                 'serviceJobs.service',
                 'serviceJobs.technician',
@@ -202,7 +205,47 @@ class ServiceTicketController extends BaseController
             abort(404, translate('ticket_not_found'));
         }
 
+        if (!$supportTicket->service) {
+            $detailsServiceId = (int) data_get($supportTicket->relatedInboxMessage?->details, 'service_id');
+            if ($detailsServiceId > 0) {
+                $supportTicket->setRelation('service', Service::find($detailsServiceId));
+            }
+        }
+
         return view('admin-views.crm.tickets.partials.service-ticket-detail', compact('supportTicket'));
+    }
+
+    private function resolveCanonicalService(SupportTicketModel $ticket, ?int $requestedServiceId = null): Service
+    {
+        $ticket->loadMissing(['service', 'relatedInboxMessage']);
+
+        $detailsServiceId = data_get($ticket->relatedInboxMessage?->details, 'service_id');
+        $serviceId = $ticket->service_id ?: $detailsServiceId ?: $requestedServiceId;
+        $service = Service::findOrFail((int) $serviceId);
+
+        $updateData = [];
+        if ((int) ($ticket->service_id ?? 0) !== (int) $service->id) {
+            $updateData['service_id'] = $service->id;
+        }
+
+        if (strtolower((string) $ticket->type) === 'service') {
+            if ($ticket->sub_type !== 'service') {
+                $updateData['sub_type'] = 'service';
+            }
+            if ((int) ($ticket->request_type ?? -1) !== \App\Enums\SupportTicketRequestType::Service->value) {
+                $updateData['request_type'] = \App\Enums\SupportTicketRequestType::Service->value;
+            }
+        }
+
+        if (!empty($updateData)) {
+            $this->supportTicketRepo->update((string) $ticket->id, $updateData);
+            $ticket->fill($updateData);
+            if (isset($updateData['service_id'])) {
+                $ticket->setRelation('service', $service);
+            }
+        }
+
+        return $service;
     }
 
     public function updateStatus(Request $request): JsonResponse
@@ -305,7 +348,7 @@ class ServiceTicketController extends BaseController
         ]);
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
-        $service = Service::findOrFail($request->service_id);
+        $service = $this->resolveCanonicalService($ticket, (int) $request->service_id);
 
         $estimate = ServiceEstimate::create([
             'ticket_id' => $ticket->id,
@@ -374,7 +417,7 @@ class ServiceTicketController extends BaseController
         ]);
 
         $ticketId = $request->input('ticket_id');
-        $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
+        $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId], ['relatedInboxMessage']);
         if (!$ticket || !$ticket->subject || !$ticket->description || !$ticket->customer_id) {
             Toastr::error(translate('invalid_ticket_details'));
             return redirect()->back();
@@ -390,21 +433,21 @@ class ServiceTicketController extends BaseController
         $serviceId = $request->input('service_id');
         $priority = $request->input('priority');
         $slaHours = $request->input('sla_hours');
+        $service = $this->resolveCanonicalService($ticket, (int) $serviceId);
 
         $this->supportTicketRepo->update($ticketId, [
             'employee_id' => $employeeId,
             'priority' => $priority,
             'status' => ServiceTicketWorkflow::STATUS_ASSIGNED,
             'sla_hours' => $slaHours,
+            'service_id' => $service->id,
         ]);
-
-        $service = Service::findOrFail($serviceId);
 
         $job = ServiceJob::create([
             'ticket_id' => $ticketId,
             'technician_id' => $employeeId,
             'status' => 'assigned',
-            'service_sku' => $serviceId,
+            'service_sku' => $service->id,
             'priority' => $priority,
             'sla_hours' => $slaHours,
             'created_at' => now(),

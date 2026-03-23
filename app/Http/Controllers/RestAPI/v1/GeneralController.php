@@ -9,6 +9,7 @@ use App\Models\GuestUser;
 use App\Models\HelpTopic;
 use App\Models\InboxActivities;
 use App\Models\InboxMessage;
+use App\Services\TicketConvert;
 use App\Utils\Helpers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -138,7 +139,7 @@ class GeneralController extends Controller
             default => 'support',
         };
 
-        [$contact, $inboxMessage] = DB::transaction(function () use ($request, $customer, $name, $phone, $category, $messageType) {
+        [$contact, $inboxMessage, $ticket] = DB::transaction(function () use ($request, $customer, $name, $phone, $category, $messageType) {
             $contact = Contact::create([
                 'name' => $name,
                 'email' => $request['email'],
@@ -181,7 +182,22 @@ class GeneralController extends Controller
                 ],
             ]);
 
-            return [$contact, $inboxMessage];
+            $ticket = TicketConvert::fromInboxMessage(
+                message: $inboxMessage,
+                subType: $category,
+                reason: null,
+                departmentId: null,
+                priority: 'medium'
+            );
+
+            $inboxMessage->update([
+                'related_ticket_id' => $ticket->id,
+                'convert_type' => 'ticket',
+                'convert_sub_type' => $category,
+                'status' => 'converted',
+            ]);
+
+            return [$contact, $inboxMessage, $ticket];
         });
 
         return response()->json([
@@ -191,14 +207,14 @@ class GeneralController extends Controller
                 'reference' => 'CASE-' . $inboxMessage->id,
                 'category' => $category,
                 'subject' => $request['subject'],
-                'status' => 'new',
+                'status' => 'converted',
                 'priority' => 'medium',
                 'created_at' => optional($inboxMessage->created_at)?->toIso8601String(),
                 'updated_at' => optional($inboxMessage->updated_at)?->toIso8601String(),
-                'is_converted' => false,
-                'ticket_id' => null,
+                'is_converted' => true,
+                'ticket_id' => (string)$ticket->id,
                 'last_update' => optional($inboxMessage->updated_at)?->toDateTimeString(),
-                'next_step' => 'Your case is waiting for CRM triage.',
+                'next_step' => 'Your case has been converted to a support ticket.',
             ],
         ], 200);
     }
