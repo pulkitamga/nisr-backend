@@ -1586,24 +1586,37 @@ class TransactionReportController extends Controller
         if (!empty($expense_transaction_chart['discount_amount'])) {
             $labels = array_keys($expense_transaction_chart['discount_amount']);
             $values = array_values($expense_transaction_chart['discount_amount']);
-            $chartImageExpense = $this->generateChartImage([
-                'type' => 'bar',
-                'data' => [
-                    'labels' => $labels,
-                    'datasets' => [
-                        [
-                            'label' => 'Expense Amount',
-                            'data' => $values,
-                            'backgroundColor' => '#FF6B6B',
+            $chartImageExpense = '';
+            if (!empty($expense_transaction_chart['discount_amount'])) {
+                $labels = array_keys($expense_transaction_chart['discount_amount']);
+                $values = array_values($expense_transaction_chart['discount_amount']);
+
+                $chartImageExpense = $this->generateChartImage([
+                    'type' => 'line', // ✅ FIXED
+                    'data' => [
+                        'labels' => $labels,
+                        'datasets' => [
+                            [
+                                'label' => 'Expense Amount',
+                                'data' => $values,
+                                'borderColor' => '#FF6B6B', // ✅ important for line
+                                'backgroundColor' => 'transparent', // optional
+                                'fill' => false,
+                                'tension' => 0.4 // ✅ smooth curve like ApexCharts
+                            ]
+                        ]
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'plugins' => [
+                            'legend' => ['display' => false]
+                        ],
+                        'scales' => [
+                            'y' => ['beginAtZero' => true]
                         ]
                     ]
-                ],
-                'options' => [
-                    'responsive' => true,
-                    'plugins' => ['legend' => ['display' => false]],
-                    'scales' => ['y' => ['beginAtZero' => true]]
-                ]
-            ]);
+                ]);
+            }
         }
 
         $kpi_data = [
@@ -1620,9 +1633,9 @@ class TransactionReportController extends Controller
             'company_web_logo' => $company_web_logo,
             'duration' => $dateRange,
             'total_expense' => $total_expense,
-    'free_delivery' => $free_delivery,
-    'coupon_discount' => $coupon_discount,
-    'free_over_amount_discount' => $free_over_amount_discount,
+            'free_delivery' => $free_delivery,
+            'coupon_discount' => $coupon_discount,
+            'free_over_amount_discount' => $free_over_amount_discount,
         ];
 
         $mpdf_view = View::make(
