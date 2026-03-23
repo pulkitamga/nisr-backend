@@ -1,232 +1,454 @@
+@php
+    $isRtl = session('direction') === 'rtl' || app()->getLocale() === 'ar';
+@endphp
+
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+
 <head>
-<meta charset="UTF-8">
-<title>{{ translate('inhouse_product_sale_report') }}</title>
+    <meta charset="UTF-8">
+    <title>{{ translate('inhouse_product_sale_report') }}</title>
 
-<style>
-    body {
-        font-family: DejaVu Sans, sans-serif;
-        font-size: 11px;
-        color: #000;
-        direction: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }};
-        text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
-        unicode-bidi: plaintext;
-    }
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 10px;
+            color: #111827;
+            margin: 15px;
+            direction: {{ $isRtl ? 'rtl' : 'ltr' }};
+            text-align: {{ $isRtl ? 'right' : 'left' }};
+        }
 
-    h2 { margin-bottom: 10px; }
-    h3 { margin: 15px 0 8px; }
+        /* Force page breaks */
+        .page-break {
+            page-break-before: always;
+            margin-top: 20px;
+        }
+        
+        /* HEADER */
+        .report-header {
+            background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
 
-    .meta {
-        margin-bottom: 10px;
-        font-size: 10px;
-    }
+        .header-content {
+            float: left;
+            width: 70%;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 15px;
-        font-size: 9px;
-    }
+        .logo-container {
+            float: right;
+            width: 25%;
+            text-align: right;
+        }
 
-    th, td {
-        border: 1px solid #000;
-        padding: 4px;
-        text-align: center;
-    }
+        .logo-container img {
+            max-width: 100px;
+            max-height: 50px;
+            object-fit: contain;
+        }
 
-    th {
-        background: #f2f2f2;
-    }
+        .header-content h2 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: white;
+        }
 
-    .charts-section {
-        width: 100%;
-        margin-bottom: 20px;
-    }
+        .header-content p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 11px;
+            color: white;
+        }
 
-    .chart-box {
-        width: 48%;
-        float: left;
-        margin-bottom: 15px;
-    }
+        /* Clear float */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
 
-    .chart-box-right {
-        float: right;
-    }
+        /* KPI */
+        .kpi-container {
+            background: #f3f6fb;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
 
-    .chart-card {
-        border: 1px solid #ccc;
-        padding: 8px;
-    }
+        .kpi-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+        }
 
-    .chart-title {
-        text-align: center;
-        font-size: 11px;
-        font-weight: bold;
-        margin-bottom: 8px;
-    }
+        .kpi-table td {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
 
-    .chart-image {
-        width: 100%;
-        height: 140px;
-    }
+        .kpi-label {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
 
-    .clearfix {
-        clear: both;
-    }
+        .kpi-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #111827;
+        }
 
-    .footer {
-        margin-top: 20px;
-        font-size: 8px;
-        text-align: center;
-    }
-</style>
+        .kpi-meta {
+            font-size: 9px;
+            color: #4b5563;
+            margin-top: 4px;
+        }
+
+        /* CHART SECTIONS - Using table for reliable layout */
+        .chart-row-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .chart-row-table td {
+            vertical-align: top;
+            padding: 0 8px;
+        }
+        
+        .chart-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            background: #fff;
+            height: 100%;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #0f766e;
+            border-bottom: 2px solid #0f766e;
+            padding-bottom: 8px;
+        }
+
+        .chart-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        /* Chart sizing */
+        .row1-chart-img {
+            max-height: 300px;
+            width: 100%;
+            object-fit: contain;
+        }
+        
+        .row2-chart-img {
+            max-height: 350px;
+            width: 100%;
+            object-fit: contain;
+        }
+        
+        .row3-chart-img {
+            max-height: 400px;
+            width: 100%;
+            object-fit: contain;
+        }
+
+        /* TABLE */
+        .table-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 25px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #0f766e;
+            color: white;
+            padding: 12px 15px;
+            font-weight: bold;
+        }
+        
+        .table-header h4 {
+            margin: 0;
+            font-size: 13px;
+            color: white;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+        }
+
+        .matrix-table th {
+            background: #e5e7eb;
+            padding: 8px 6px;
+            font-weight: 600;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            border: 1px solid #cbd5e1;
+            padding: 6px;
+            text-align: center;
+        }
+        
+        .matrix-table td:last-child,
+        .matrix-table th:last-child {
+            text-align: right;
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 8px;
+            border-top: 1px dashed #d1d5db;
+            padding-top: 8px;
+        }
+        
+        /* RTL Support */
+        @if ($isRtl)
+            .header-content { float: right; text-align: right; }
+            .logo-container { float: left; text-align: left; }
+            .matrix-table td:last-child,
+            .matrix-table th:last-child {
+                text-align: left;
+            }
+        @endif
+    </style>
 </head>
 
 <body>
 
-<h2>{{ translate('inhouse_product_sale_report') }}</h2>
-
-<div class="meta">
-    <div><strong>{{ translate('from') }}:</strong> {{ $filters['from'] }}</div>
-    <div><strong>{{ translate('to') }}:</strong> {{ $filters['to'] }}</div>
-    <div><strong>{{ translate('exported_at') }}:</strong> {{ optional($exportedAt ?? now())->format('Y-m-d H:i:s') }}</div>
-</div>
-
-{{-- ================== CHARTS ================== --}}
-
-<div class="charts-section">
-
-    {{-- Row 1 --}}
-    <div class="chart-box">
-        <div class="chart-card">
-            <div class="chart-title">{{ translate('sales_by_date') }}</div>
-            <img class="chart-image" src="{{ $chartImages['trend'] }}">
+    <!-- HEADER with Logo - Same as CRM report -->
+    <div class="report-header clearfix">
+        <div class="header-content">
+            <h2>{{ translate('inhouse_product_sale_report') }}</h2>
+            <p>{{ translate('report_period') }}: {{ $filters['from'] }} - {{ $filters['to'] }}</p>
+            <p>{{ translate('generated_on') }}: {{ now()->format('d M Y, h:i A') }}</p>
+        </div>
+        <div class="logo-container">
+            @php
+                $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
+                $logoSrc = '';
+                $logoData = $company_web_logo ?? '';
+                $filename = is_array($logoData) ? ($logoData['key'] ?? '') : (is_string($logoData) ? $logoData : '');
+                
+                if (!empty($filename)) {
+                    $logoPath = storage_path('app/public/company/' . $filename);
+                    if (!file_exists($logoPath)) {
+                        $logoPath = public_path('storage/company/' . $filename);
+                    }
+                    if (file_exists($logoPath)) {
+                        $imageData = file_get_contents($logoPath);
+                        if ($imageData !== false) {
+                            $extension = pathinfo($logoPath, PATHINFO_EXTENSION);
+                            $mime = $extension == 'svg' ? 'svg+xml' : $extension;
+                            $logoSrc = 'data:image/' . $mime . ';base64,' . base64_encode($imageData);
+                        }
+                    }
+                }
+            @endphp
+            
+            @if($logoSrc)
+                <img src="{{ $logoSrc }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px; object-fit:contain;">
+            @elseif(file_exists($defaultLogoPath))
+                <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
+                    style="max-width:100px; max-height:50px; object-fit:contain;">
+            @endif
         </div>
     </div>
 
-    <div class="chart-box chart-box-right">
-        <div class="chart-card">
-            <div class="chart-title">{{ translate('channel_mix') }}</div>
-            <img class="chart-image" src="{{ $chartImages['channel'] }}">
-        </div>
+    <!-- KPI CARDS -->
+    <div class="kpi-container">
+        <table class="kpi-table">
+            <tr>
+                <td>
+                    <div class="kpi-label">{{ translate('total_sales') }}</div>
+                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['total_amount']), currencyCode: getCurrencyCode()) }}</div>
+                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['total_qty'] }}</div>
+                 </td>
+                 <td>
+                    <div class="kpi-label">{{ translate('POS') }}</div>
+                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['pos_amount']), currencyCode: getCurrencyCode()) }}</div>
+                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['pos_qty'] }}</div>
+                 </td>
+                 <td>
+                    <div class="kpi-label">{{ translate('online') }}</div>
+                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['online_amount']), currencyCode: getCurrencyCode()) }}</div>
+                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['online_qty'] }}</div>
+                 </td>
+                 <td>
+                    <div class="kpi-label">{{ translate('wholesale') }}</div>
+                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['wholesale_amount']), currencyCode: getCurrencyCode()) }}</div>
+                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['wholesale_qty'] }}</div>
+                 </td>
+              </tr>
+         </table>
     </div>
 
-    <div class="clearfix"></div>
+    <!-- ROW 1: Sales by Date (66%) + Channel Mix (34%) -->
+    <table class="chart-row-table" cellpadding="0" cellspacing="0">
+         <tr>
+            <td width="66%">
+                <div class="chart-box">
+                    <div class="chart-title">{{ translate('sales_by_date') }}</div>
+                    @if(!empty($chartImages['trend']))
+                        <img src="{{ $chartImages['trend'] }}" class="chart-image row1-chart-img">
+                    @endif
+                </div>
+             </td>
+            <td width="34%">
+                <div class="chart-box">
+                    <div class="chart-title">{{ translate('channel_mix') }}</div>
+                    @if(!empty($chartImages['channel']))
+                        <img src="{{ $chartImages['channel'] }}" class="chart-image row1-chart-img">
+                    @endif
+                </div>
+             </td>
+         </tr>
+     </table>
 
-    {{-- Row 2 --}}
-    <div class="chart-box">
-        <div class="chart-card">
-            <div class="chart-title">{{ translate('branch_and_sales_type') }}</div>
-            <img class="chart-image" src="{{ $chartImages['branch_type'] }}">
-        </div>
+    <!-- PAGE 2: ROW 2 (Branch & Sales Type + Sales Type & Product) -->
+    <div class="page-break">
+        <table class="chart-row-table" cellpadding="0" cellspacing="0">
+             <tr>
+                <td width="50%">
+                    <div class="chart-box">
+                        <div class="chart-title">{{ translate('branch_and_sales_type') }}</div>
+                        @if(!empty($chartImages['branch_type']))
+                            <img src="{{ $chartImages['branch_type'] }}" class="chart-image row2-chart-img">
+                        @endif
+                    </div>
+                 </td>
+                <td width="50%">
+                    <div class="chart-box">
+                        <div class="chart-title">{{ translate('sales_type_and_product') }}</div>
+                        @if(!empty($chartImages['product_type']))
+                            <img src="{{ $chartImages['product_type'] }}" class="chart-image row2-chart-img">
+                        @endif
+                    </div>
+                 </td>
+             </tr>
+         </table>
     </div>
 
-    <div class="chart-box chart-box-right">
-        <div class="chart-card">
-            <div class="chart-title">{{ translate('sales_type_and_product') }}</div>
-            <img class="chart-image" src="{{ $chartImages['product_type'] }}">
-        </div>
-    </div>
-
-    <div class="clearfix"></div>
-
-    {{-- Row 3 --}}
-    <div style="width:100%; margin-top:10px;">
-        <div class="chart-card">
+    <!-- PAGE 3: ROW 3 (Branch & Product - Full Width) -->
+    <div class="page-break">
+        <div class="chart-box">
             <div class="chart-title">{{ translate('branch_and_product') }}</div>
-            <img class="chart-image" src="{{ $chartImages['branch_product'] }}" style="height:160px;">
+            @if(!empty($chartImages['branch_product']))
+                <img src="{{ $chartImages['branch_product'] }}" class="chart-image row3-chart-img">
+            @endif
         </div>
     </div>
 
-</div>
+    <!-- TABLES: Start on PAGE 4 -->
+    <div class="page-break">
+        @php
+            $sections = [
+                'pos' => ['title' => 'POS', 'data' => $posRows],
+                'online' => ['title' => 'online', 'data' => $onlineRows],
+                'wholesale' => ['title' => 'wholesale', 'data' => $wholesaleRows],
+            ];
+        @endphp
 
-{{-- ================== SUMMARY ================== --}}
+        @foreach($sections as $type => $section)
+            <div class="table-container">
+                <div class="table-header">
+                    <h4>{{ translate($section['title']) }}</h4>
+                    @if(($filters['date_type'] ?? 'this_year') == 'this_year')
+                        <span style="color: white; font-size: 10px; margin-left: 8px;">{{ translate('monthly_breakdown') }}</span>
+                    @elseif(($filters['date_type'] ?? '') == 'this_month')
+                        <span style="color: white; font-size: 10px; margin-left: 8px;">{{ translate('daily_breakdown') }}</span>
+                    @elseif(($filters['date_type'] ?? '') == 'this_week')
+                        <span style="color: white; font-size: 10px; margin-left: 8px;">{{ translate('weekly_breakdown') }}</span>
+                    @endif
+                </div>
 
-<h3>{{ translate('sales_summary') }}</h3>
+                <table class="matrix-table">
+                    <thead>
+                         <tr>
+                            <th style="width: 5%;">{{ translate('sl') }}</th>
+                            <th style="width: 12%;">{{ translate('period') }}</th>
+                            <th style="width: 25%;">{{ translate('product') }}</th>
+                            <th style="width: 20%;">{{ translate('branch') }}</th>
+                            <th style="width: 10%;">{{ translate('qty') }}</th>
+                            <th style="width: 10%;">{{ translate('orders') }}</th>
+                            <th style="width: 18%;">{{ translate('sales') }}</th>
+                         </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($section['data'] as $index => $row)
+                             <tr>
+                                 <td>{{ $index + 1 }}</td>
+                                 <td>
+                                    @if(($filters['date_type'] ?? 'this_year') == 'this_year')
+                                        {{ $row->period_label ?? '' }} {{ now()->format('Y') }}
+                                    @elseif(($filters['date_type'] ?? '') == 'this_month')
+                                        {{ translate('day') }} {{ $row->period_label ?? '' }}
+                                    @elseif(($filters['date_type'] ?? '') == 'this_week')
+                                        {{ $row->period_label ?? '' }}
+                                    @elseif(($filters['date_type'] ?? '') == 'today')
+                                        {{ translate('today') }}
+                                    @else
+                                        {{ $row->period_label ?? '' }}
+                                    @endif
+                                 </td>
+                                 <td>{{ $row->product_name ?? '-' }}</td>
+                                 <td>{{ $row->branch_name ?? '-' }}</td>
+                                 <td>{{ number_format($row->total_qty ?? 0) }}</td>
+                                 <td>{{ number_format($row->total_orders ?? 0) }}</td>
+                                <td style="text-align: right;">
+                                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $row->total_amount ?? 0), currencyCode: getCurrencyCode()) }}
+                                 </td>
+                             </tr>
+                        @empty
+                             <tr>
+                                <td colspan="7" style="text-align: center; padding: 15px;">
+                                    {{ translate('no_data_found') }}
+                                 </td>
+                             </tr>
+                        @endforelse
+                    </tbody>
+                 </table>
+            </div>
+        @endforeach
+    </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>{{ translate('sales_type') }}</th>
-            <th>{{ translate('total_qty') }}</th>
-            <th>{{ translate('total_sales') }}</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>{{ translate('pos') }}</td>
-            <td>{{ $summary['pos_qty'] }}</td>
-            <td>{{ number_format($summary['pos_amount'], 2) }}</td>
-        </tr>
-        <tr>
-            <td>{{ translate('online') }}</td>
-            <td>{{ $summary['online_qty'] }}</td>
-            <td>{{ number_format($summary['online_amount'], 2) }}</td>
-        </tr>
-        <tr>
-            <td>{{ translate('wholesale') }}</td>
-            <td>{{ $summary['wholesale_qty'] }}</td>
-            <td>{{ number_format($summary['wholesale_amount'], 2) }}</td>
-        </tr>
-        <tr>
-            <td><strong>{{ translate('total') }}</strong></td>
-            <td><strong>{{ $summary['total_qty'] }}</strong></td>
-            <td><strong>{{ number_format($summary['total_amount'], 2) }}</strong></td>
-        </tr>
-    </tbody>
-</table>
-
-{{-- ================== DATA TABLES ================== --}}
-
-@php
-$sections = [
-    'pos' => $posRows,
-    'online' => $onlineRows,
-    'wholesale' => $wholesaleRows,
-];
-@endphp
-
-@foreach($sections as $type => $rows)
-
-<h3>{{ translate($type) }}</h3>
-
-<table>
-<thead>
-<tr>
-<th>{{ translate('sl') }}</th>
-<th>{{ translate('period') }}</th>
-<th>{{ translate('product') }}</th>
-<th>{{ translate('branch') }}</th>
-<th>{{ translate('qty') }}</th>
-<th>{{ translate('orders') }}</th>
-<th>{{ translate('sales') }}</th>
-</tr>
-</thead>
-<tbody>
-@forelse($rows as $index => $row)
-<tr>
-<td>{{ $index + 1 }}</td>
-<td>{{ $row->period_label ?? '' }}</td>
-<td>{{ $row->product_name }}</td>
-<td>{{ $row->branch_name }}</td>
-<td>{{ $row->total_qty }}</td>
-<td>{{ $row->total_orders }}</td>
-<td>{{ number_format($row->total_amount, 2) }}</td>
-</tr>
-@empty
-<tr>
-<td colspan="7">{{ translate('no_data_found') }}</td>
-</tr>
-@endforelse
-</tbody>
-</table>
-
-@endforeach
-
-<div class="footer">
-    {{ translate('generated_by') }}: {{ config('app.name') }}
-</div>
+    <!-- FOOTER - Exactly like CRM report -->
+    <div style="border-top:1px dashed #d1d5db;margin-top:20px;padding-top:8px;font-size:9px;color:#6b7280;">
+        <table width="100%">
+             <tr>
+                <td width="20%" style="text-align:left; color:red;">
+                    Page {PAGENO}
+                 </td>
+                <td width="60%" style="text-align:center;">
+                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} | {{ translate('inhouse_sales_report') }}<br>
+                    {{ translate('generated_by') }}: <span style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
+                    <span style="color:red;">{{ config('app.name') }}</span>
+                 </td>
+                <td width="20%"></td>
+             </tr>
+         </table>
+    </div>
 
 </body>
 </html>

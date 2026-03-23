@@ -148,17 +148,27 @@ class InhouseProductSaleController extends BaseController
         return 'data:image/png;base64,' . base64_encode($imageData);
     }
     public function exportPdf(Request $request): Response
-    {
-        $data = $this->buildReportData($request);
-        $data['exportedAt'] = now();
-        $data['chartImages'] = $this->generateChartImages($data['chart']);
-        return app(ReportPdfService::class)->download(
-            view: InhouseProductSale::EXPORT_PDF[VIEW],
-            data: $data,
-            fileName: 'inhouse-product-sale-report.pdf',
-            orientation: 'landscape'
-        );
-    }
+{
+    $data = $this->buildReportData($request);
+
+    $data['exportedAt'] = now();
+
+    // ✅ FIX: map all charts into one array
+    $data['chartImages'] = [
+        'trend' => $request->trend_chart,
+        'channel' => $request->channel_chart,
+        'branch_type' => $request->branch_type_chart,
+        'product_type' => $request->product_type_chart,
+        'branch_product' => $request->branch_product_chart,
+    ];
+
+    return app(ReportPdfService::class)->download(
+        view: InhouseProductSale::EXPORT_PDF[VIEW],
+        data: $data,
+        fileName: 'inhouse-product-sale-report.pdf',
+        orientation: 'landscape'
+    );
+}
 
     private function buildReportData(Request $request): array
     {

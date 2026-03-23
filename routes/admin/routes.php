@@ -614,7 +614,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::delete('/blacklist/{id}', 'blacklistRemove')->name('blacklist.remove')->middleware('permission:warranty_section.warranty_blacklist_remove,admin');
         });
         Route::controller(WarrantyController::class)->group(function () {
-          Route::match(['GET', 'POST'], '/report/claims', 'reportClaims')->name('report.claims')->middleware('permission:warranty_section.warranty_report_claims,admin');
+            Route::match(['GET', 'POST'], '/report/claims', 'reportClaims')->name('report.claims')->middleware('permission:warranty_section.warranty_report_claims,admin');
             Route::match(['GET', 'POST'], '/report/sla', 'reportSLA')->name('report.sla')->middleware('permission:warranty_section.warranty_report_sla,admin');
             Route::match(['GET', 'POST'], '/report/activations', 'reportActivations')->name('report.activations')->middleware('permission:warranty_section.warranty_report_activations,admin');
             Route::match(['GET', 'POST'], '/report/analytics', 'reportAnalytics')->name('report.analytics')->middleware('permission:warranty_section.warranty_report_claims,admin');
@@ -631,7 +631,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get('/claim-table-data', 'getTableData')->middleware('permission:warranty_section.warranty_report_claims,admin')->name('claim.table.data');
             // Export routes
             Route::get('/claim-export-excel', 'exportExcel')->middleware('permission:warranty_section.warranty_report_claims,admin')->name('claim.export.excel');
-           Route::post('/claim-export-pdf', 'exportPdf')
+            Route::post('/claim-export-pdf', 'exportPdf')
                 ->middleware('permission:warranty_section.warranty_report_claims,admin')
                 ->name('claim.export.pdf');
         });
@@ -1055,8 +1055,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get(InhouseProductSale::EXPORT_EXCEL[URI], 'exportExcel')
                 ->middleware('permission:report.export_sales_inhouse_product|report.export,admin')
                 ->name('inhouse-product-sale-export-excel');
-            Route::get(InhouseProductSale::EXPORT_PDF[URI], 'exportPdf')
-                ->middleware('permission:report.export_sales_inhouse_product|report.export,admin')
+            Route::match(['get', 'post'], InhouseProductSale::EXPORT_PDF[URI], 'exportPdf')
                 ->name('inhouse-product-sale-export-pdf');
         });
 

@@ -659,5 +659,83 @@
                 }
             });
         });
+        // PDF Download with chart images (INHOUSE REPORT)
+        $(document).ready(function() {
+            $('.btn-outline-danger[href*="export-pdf"]').on('click', function(e) {
+                e.preventDefault();
+
+                const $button = $(this);
+                let href = $button.attr('href');
+
+                setTimeout(function() {
+
+                    // Get all chart SVGs
+                    const trendChart = document.querySelector('#inhouse-sales-trend-chart svg');
+                    const channelChart = document.querySelector('#inhouse-sales-channel-chart svg');
+                    const branchTypeChart = document.querySelector(
+                    '#inhouse-branch-type-chart svg');
+                    const productTypeChart = document.querySelector(
+                        '#inhouse-product-type-chart svg');
+                    const branchProductChart = document.querySelector(
+                        '#inhouse-branch-product-chart svg');
+
+                    try {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = href;
+                        form.target = '_blank';
+
+                        // CSRF
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden';
+                        csrf.name = '_token';
+                        csrf.value = '{{ csrf_token() }}';
+                        form.appendChild(csrf);
+
+                        // Helper function
+                        const addChart = (name, svgEl) => {
+                            if (!svgEl) return;
+
+                            const svgData = svgEl.outerHTML;
+                            const base64 = 'data:image/svg+xml;base64,' + btoa(unescape(
+                                encodeURIComponent(svgData)));
+
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = name;
+                            input.value = base64;
+
+                            form.appendChild(input);
+                        };
+
+                        // Attach charts
+                        addChart('trend_chart', trendChart);
+                        addChart('channel_chart', channelChart);
+                        addChart('branch_type_chart', branchTypeChart);
+                        addChart('product_type_chart', productTypeChart);
+                        addChart('branch_product_chart', branchProductChart);
+
+                        // Query params
+                        const urlParams = new URLSearchParams(window.location.search);
+                        urlParams.forEach((value, key) => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            form.appendChild(input);
+                        });
+
+                        document.body.appendChild(form);
+                        form.submit();
+                        document.body.removeChild(form);
+
+                    } catch (error) {
+                        console.error('Chart capture error:', error);
+                        window.open(href, '_blank');
+                    }
+
+                }, 500);
+            });
+        });
     </script>
 @endpush
