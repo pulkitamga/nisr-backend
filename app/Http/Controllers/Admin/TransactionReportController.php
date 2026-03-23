@@ -1619,6 +1619,10 @@ class TransactionReportController extends Controller
             'company_email' => $company_email,
             'company_web_logo' => $company_web_logo,
             'duration' => $dateRange,
+            'total_expense' => $total_expense,
+    'free_delivery' => $free_delivery,
+    'coupon_discount' => $coupon_discount,
+    'free_over_amount_discount' => $free_over_amount_discount,
         ];
 
         $mpdf_view = View::make(
@@ -1627,6 +1631,7 @@ class TransactionReportController extends Controller
         );
         Helpers::gen_mpdf($mpdf_view, 'expense_transaction_summary_report_', $date_type);
     }
+
 
     public function pdf_order_wise_expense_transaction(Request $request)
     {
