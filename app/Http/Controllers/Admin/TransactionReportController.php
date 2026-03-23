@@ -17,6 +17,7 @@ use App\Models\Seller;
 use App\Models\Shop;
 use App\Models\User;
 use App\Utils\BackEndHelper;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -32,6 +33,109 @@ class TransactionReportController extends Controller
         private readonly VendorRepositoryInterface $vendorRepo,
         private readonly CustomerRepositoryInterface $customerRepo,
     ) {}
+    // public function order_transaction_list(Request $request)
+    // {
+    //     $search = $request['search'];
+    //     $from = $request['from'];
+    //     $to = $request['to'];
+    //     $customer_id = $request['customer_id'] ?? 'all';
+    //     $seller_id = $request['seller_id'] ?? 'all';
+    //     $status = $request['status'] ?? 'all';
+    //     $date_type = $request['date_type'] ?? 'this_year';
+    //     $payment_status = $request['payment_status'] ?? 'all';
+
+    //     $transactions = self::order_transaction_table_data_filter($request);
+
+    //     $query_param = ['search' => $search, 'status' => $status, 'customer_id' => $customer_id, 'date_type' => $date_type, 'from' => $from, 'to' => $to];
+    //     $transactions = $transactions->latest('updated_at')->paginate(Helpers::pagination_limit())->appends($query_param);
+    //     $order_transaction_chart = self::order_transaction_chart_filter($request);
+
+    //     $customers = User::whereNotIn('id', [0])->get();
+    //     $sellers = Seller::where(['status' => 'approved'])->get();
+
+    //     $in_house_orders_query = Order::where(['seller_is' => 'admin']);
+    //     $in_house_orders = self::order_transaction_count_query($in_house_orders_query, $request)->count();
+
+    //     $seller_orders_query = Order::where(['seller_is' => 'seller']);
+    //     $seller_orders = self::order_transaction_count_query($seller_orders_query, $request)->count();
+    //     $total_orders = $in_house_orders + $seller_orders;
+
+
+    //     $total_in_house_product_query = Product::where(['added_by' => 'admin'])
+    //         ->where('product_type', 'physical') // 👈 yeh line add ki gayi hai
+    //         ->when($seller_id != 'all', function ($query) use ($seller_id) {
+    //             $query->when($seller_id == 'inhouse', function ($q) {
+    //                 $q->where(['user_id' => 1]);
+    //             });
+    //         });
+
+    //     $total_in_house_products = self::date_wise_common_filter($total_in_house_product_query, $date_type, $from, $to)->count();
+
+    //     $total_seller_product_query = Product::where(['added_by' => 'seller'])
+    //         ->when($seller_id != 'all', function ($query) use ($seller_id) {
+    //             $query->when($seller_id != 'inhouse', function ($q) use ($seller_id) {
+    //                 $q->where(['user_id' => $seller_id]);
+    //             });
+    //         });
+    //     $total_seller_products = self::date_wise_common_filter($total_seller_product_query, $date_type, $from, $to)->count();
+
+    //     $total_stores_query = Shop::when($seller_id != 'all', function ($query) use ($seller_id) {
+    //         $query->when($seller_id != 'inhouse', function ($q) use ($seller_id) {
+    //             $q->where(['seller_id' => $seller_id]);
+    //         });
+    //     });
+    //     $total_stores = self::date_wise_common_filter($total_stores_query, $date_type, $from, $to)->count();
+
+    //     $order_data = [
+    //         'total_orders' => $total_orders,
+    //         'in_house_orders' => $in_house_orders,
+    //         'seller_orders' => $seller_orders,
+    //         'total_in_house_products' => $total_in_house_products,
+    //         'total_seller_products' => $total_seller_products,
+    //         'total_stores' => $total_stores,
+    //     ];
+
+    //     $digital_payment_query = Order::whereNotIn('payment_method', ['cash', 'cash_on_delivery', 'pay_by_wallet', 'offline_payment']);
+    //     $digital_payment = self::order_transaction_piechart_query($request, $digital_payment_query)->sum('order_amount');
+
+    //     $cash_payment_query = Order::whereIn('payment_method', ['cash', 'cash_on_delivery']);
+    //     $cash_payment = self::order_transaction_piechart_query($request, $cash_payment_query)->sum('order_amount');
+
+    //     $wallet_payment_query = Order::where(['payment_method' => 'pay_by_wallet']);
+    //     $wallet_payment = self::order_transaction_piechart_query($request, $wallet_payment_query)->sum('order_amount');
+
+    //     $offline_payment_query = Order::where(['payment_method' => 'offline_payment']);
+    //     $offline_payment = self::order_transaction_piechart_query($request, $offline_payment_query)->sum('order_amount');
+
+    //     $total_payment = $cash_payment + $wallet_payment + $digital_payment + $offline_payment;
+
+    //     $payment_data = [
+    //         'digital_payment' => $digital_payment,
+    //         'cash_payment' => $cash_payment,
+    //         'wallet_payment' => $wallet_payment,
+    //         'offline_payment' => $offline_payment,
+    //         'total_payment' => $total_payment,
+    //     ];
+
+    //     return view('admin-views.transaction.order-list', compact(
+    //         'customers',
+    //         'sellers',
+    //         'transactions',
+    //         'search',
+    //         'status',
+    //         'from',
+    //         'to',
+    //         'customer_id',
+    //         'seller_id',
+    //         'payment_status',
+    //         'order_data',
+    //         'date_type',
+    //         'payment_data',
+    //         'order_transaction_chart',
+    //         'dateRange',   // नया
+    //         'updatedAt'    // नया
+    //     ));
+    // }
     public function order_transaction_list(Request $request)
     {
         $search = $request['search'];
@@ -59,15 +163,13 @@ class TransactionReportController extends Controller
         $seller_orders = self::order_transaction_count_query($seller_orders_query, $request)->count();
         $total_orders = $in_house_orders + $seller_orders;
 
-
         $total_in_house_product_query = Product::where(['added_by' => 'admin'])
-            ->where('product_type', 'physical') // 👈 yeh line add ki gayi hai
+            ->where('product_type', 'physical')
             ->when($seller_id != 'all', function ($query) use ($seller_id) {
                 $query->when($seller_id == 'inhouse', function ($q) {
                     $q->where(['user_id' => 1]);
                 });
             });
-
         $total_in_house_products = self::date_wise_common_filter($total_in_house_product_query, $date_type, $from, $to)->count();
 
         $total_seller_product_query = Product::where(['added_by' => 'seller'])
@@ -116,6 +218,30 @@ class TransactionReportController extends Controller
             'total_payment' => $total_payment,
         ];
 
+        if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
+            $fromDate = Carbon::parse($from)->format('d M, Y');
+            $toDate = Carbon::parse($to)->format('d M, Y');
+            $dateRange = $fromDate . ' - ' . $toDate;
+        } else {
+            switch ($date_type) {
+                case 'this_year':
+                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                    break;
+                case 'this_month':
+                    $dateRange = now()->startOfMonth()->format('d M, Y') . ' - ' . now()->endOfMonth()->format('d M, Y');
+                    break;
+                case 'this_week':
+                    $dateRange = now()->startOfWeek()->format('d M, Y') . ' - ' . now()->endOfWeek()->format('d M, Y');
+                    break;
+                case 'today':
+                    $dateRange = now()->format('d M, Y');
+                    break;
+                default:
+                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+            }
+        }
+        $updatedAt = now()->format('M d, Y h:i A');
+
         return view('admin-views.transaction.order-list', compact(
             'customers',
             'sellers',
@@ -130,7 +256,9 @@ class TransactionReportController extends Controller
             'order_data',
             'date_type',
             'payment_data',
-            'order_transaction_chart'
+            'order_transaction_chart',
+            'dateRange',
+            'updatedAt'
         ));
     }
 
@@ -216,9 +344,190 @@ class TransactionReportController extends Controller
     /**
      * order transaction summary pdf
      */
+    // public function order_transaction_summary_pdf(Request $request)
+    // {
+
+    //     $company_phone = BusinessSetting::where('type', 'company_phone')->first()->value;
+    //     $company_email = BusinessSetting::where('type', 'company_email')->first()->value;
+    //     $company_name = BusinessSetting::where('type', 'company_name')->first()->value;
+    //     $company_web_logo = getWebConfig('company_web_logo');
+
+    //     $from = $request['from'];
+    //     $to = $request['to'];
+    //     $customer_id = $request['customer_id'] ?? 'all';
+    //     $seller_id = $request['seller_id'] ?? 'all';
+    //     $status = $request['status'] ?? 'all';
+    //     $date_type = $request['date_type'] ?? 'this_year';
+
+    //     $duration = str_replace('_', ' ', $date_type);
+    //     if ($date_type == 'custom_date') {
+    //         $duration = 'From ' . $from . ' To ' . $to;
+    //     }
+
+    //     $seller_info = $seller_id == 'all' || $seller_id == 'inhouse' ? $seller_id : Shop::where('seller_id', $seller_id)->name;
+    //     $customer_info = 'all';
+    //     if ($customer_id != 'all') {
+    //         $customer = User::select()->find($customer_id);
+    //         $customer_info = $customer->f_name . ' ' . $customer->l_name;
+    //     }
+
+    //     $transactions = self::order_transaction_table_data_filter($request)->latest('updated_at')->get();
+
+    //     $total_ordered_product_price = 0;
+    //     $total_product_discount = 0;
+    //     $total_coupon_discount = 0;
+    //     $total_discounted_amount = 0;
+    //     $total_tax = 0;
+    //     $total_delivery_charge = 0;
+    //     $total_order_amount = 0;
+    //     $total_admin_discount = 0;
+    //     $total_seller_discount = 0;
+    //     $total_admin_commission = 0;
+    //     $total_admin_net_income = 0;
+    //     $total_seller_net_income = 0;
+    //     $total_admin_shipping_discount = 0;
+    //     $total_seller_shipping_discount = 0;
+    //     $total_deliveryman_incentive = 0;
+    //     foreach ($transactions as $transaction) {
+    //         if ($transaction->order) {
+    //             $admin_coupon_discount = ($transaction->order->coupon_discount_bearer == 'inhouse' && $transaction->order->discount_type == 'coupon_discount') ? $transaction->order->discount_amount : 0;
+    //             $admin_shipping_discount = ($transaction->order->is_shipping_free && $transaction->order->free_delivery_bearer == 'admin') ? $transaction->order->extra_discount : 0;
+    //             $total_admin_shipping_discount += $admin_shipping_discount;
+
+    //             $seller_coupon_discount = ($transaction->order->coupon_discount_bearer == 'seller' && $transaction->order->discount_type == 'coupon_discount') ? $transaction->order->discount_amount : 0;
+    //             $seller_shipping_discount = ($transaction->order->is_shipping_free && $transaction->order->free_delivery_bearer == 'seller') ? $transaction->order->extra_discount : 0;
+    //             $total_seller_shipping_discount += $seller_shipping_discount;
+
+    //             $total_ordered_product_price += $transaction->orderDetails[0]?->order_details_sum_price ?? 0;
+    //             $total_product_discount += $transaction->orderDetails[0]?->order_details_sum_discount ?? 0;
+    //             $total_coupon_discount += $transaction->order->discount_amount;
+    //             $total_discounted_amount += ($transaction->orderDetails[0]?->order_details_sum_price ?? 0) - ($transaction->orderDetails[0]?->order_details_sum_discount ?? 0) - (isset($transaction->order->coupon) && $transaction->order->coupon->coupon_type != 'free_delivery' ? $transaction->order->discount_amount : 0);
+    //             $total_tax += $transaction->tax;
+    //             $total_delivery_charge += $transaction->order->shipping_cost;
+    //             $total_order_amount += $transaction->order->order_amount;
+
+    //             $total_admin_discount += $admin_coupon_discount + $admin_shipping_discount;
+    //             $total_seller_discount += $seller_coupon_discount + $seller_shipping_discount;
+    //             $total_admin_commission += $transaction->admin_commission;
+
+    //             $total_deliveryman_incentive += $transaction->order->deliveryman_charge;
+
+    //             // admin net income calculation start
+    //             $admin_net_income = 0;
+    //             if ($transaction['seller_is'] == 'admin') {
+    //                 $admin_net_income += $transaction['order_amount'] + $transaction['tax'];
+    //             }
+    //             if (isset($transaction->order->deliveryMan) && $transaction->order->deliveryMan->seller_id == '0') {
+    //                 $admin_net_income += $transaction['delivery_charge'];
+    //             }
+    //             $admin_net_income += $transaction['admin_commission'];
+
+    //             if ($transaction->order->delivery_type == 'self_delivery' && ($transaction->order->shipping_responsibility == 'inhouse_shipping' || $transaction->order->seller_is == 'admin') && $transaction->order->delivery_man_id) {
+    //                 $admin_net_income -= $transaction->order->deliveryman_charge;
+    //             }
+
+    //             if ($transaction['seller_is'] == 'seller') {
+    //                 if ($transaction->order->shipping_responsibility == 'inhouse_shipping') {
+    //                     $admin_net_income -= $transaction->order->coupon_discount_bearer == 'inhouse' ? $admin_coupon_discount : 0;
+    //                     $admin_net_income += ($transaction->order->coupon_discount_bearer == 'seller' && isset($transaction->order->coupon) && $transaction->order->coupon->coupon_type == 'free_delivery') ? $seller_coupon_discount : 0;
+    //                     $admin_net_income += ($transaction->order->free_delivery_bearer == 'seller') ? $seller_shipping_discount : 0;
+    //                 } elseif ($transaction->order->shipping_responsibility == 'sellerwise_shipping') {
+    //                     $admin_net_income -= $transaction->order->coupon_discount_bearer == 'inhouse' ? $admin_coupon_discount : 0;
+    //                     $admin_net_income -= $transaction->order->free_delivery_bearer == 'admin' ? $admin_shipping_discount : 0;
+    //                 }
+    //             }
+    //             $total_admin_net_income += $admin_net_income;
+    //             // admin net income calculation end
+
+
+    //             // seller net income calculation start
+    //             $seller_net_income = 0;
+    //             if (isset($transaction->order->deliveryMan) && $transaction->order->deliveryMan->seller_id != '0') {
+    //                 $seller_net_income += $transaction['delivery_charge'];
+    //             }
+
+    //             if ($transaction['seller_is'] == 'seller') {
+    //                 $seller_net_income += $transaction['order_amount'] + $transaction['tax'] - $transaction['admin_commission'];
+    //             }
+
+    //             if ($transaction->order->delivery_type == 'self_delivery' && $transaction->order->shipping_responsibility == 'sellerwise_shipping' && $transaction->order->delivery_man_id && $transaction->order->seller_is == 'seller') {
+    //                 $seller_net_income -= $transaction->order->deliveryman_charge;
+    //             }
+
+    //             if ($transaction['seller_is'] == 'seller') {
+    //                 if ($transaction->order->shipping_responsibility == 'inhouse_shipping') {
+    //                     $seller_net_income += $transaction->order->coupon_discount_bearer == 'inhouse' ? $admin_coupon_discount : 0;
+    //                     $seller_net_income -= ($transaction->order->coupon_discount_bearer == 'seller' && $transaction->order->coupon->coupon_type == 'free_delivery') ? $admin_coupon_discount : 0;
+    //                     $seller_net_income -= ($transaction->order->free_delivery_bearer == 'seller') ? $admin_shipping_discount : 0;
+    //                 } elseif ($transaction->order->shipping_responsibility == 'sellerwise_shipping') {
+    //                     $seller_net_income += $transaction->order->coupon_discount_bearer == 'inhouse' ? $admin_coupon_discount : 0;
+    //                     $seller_net_income += $transaction->order->free_delivery_bearer == 'admin' ? $admin_shipping_discount : 0;
+    //                     $seller_shipping_discount = 0;
+    //                 }
+    //             }
+    //             $total_seller_net_income += $seller_net_income - $seller_shipping_discount;
+    //             // seller net income calculation end
+    //         }
+    //     }
+
+    //     $in_house_orders_query = Order::where(['seller_is' => 'admin']);
+    //     $in_house_orders = self::order_transaction_count_query($in_house_orders_query, $request)->count();
+
+    //     $seller_orders_query = Order::where(['seller_is' => 'seller']);
+    //     $seller_orders = self::order_transaction_count_query($seller_orders_query, $request)->count();
+    //     $total_orders = $in_house_orders + $seller_orders;
+
+
+    //     $total_in_house_product_query = Product::where(['added_by' => 'admin'])
+    //         ->when($seller_id != 'all', function ($query) use ($seller_id) {
+    //             $query->when($seller_id == 'inhouse', function ($q) {
+    //                 $q->where(['user_id' => 1]);
+    //             });
+    //         });
+    //     $total_in_house_products = self::date_wise_common_filter($total_in_house_product_query, $date_type, $from, $to)->count();
+
+    //     $total_seller_product_query = Product::where(['added_by' => 'seller'])
+    //         ->when($seller_id != 'all', function ($query) use ($seller_id) {
+    //             $query->when($seller_id != 'inhouse', function ($q) use ($seller_id) {
+    //                 $q->where(['seller_id' => $seller_id]);
+    //             });
+    //         });
+    //     $total_seller_products = self::date_wise_common_filter($total_seller_product_query, $date_type, $from, $to)->count();
+
+    //     $total_stores_query = Shop::when($seller_id != 'all', function ($query) use ($seller_id) {
+    //         $query->when($seller_id != 'inhouse', function ($q) use ($seller_id) {
+    //             $q->where(['seller_id' => $seller_id]);
+    //         });
+    //     });
+    //     $total_stores = self::date_wise_common_filter($total_stores_query, $date_type, $from, $to)->count();
+
+    //     $data = array(
+    //         'total_ordered_product_price' => $total_ordered_product_price,
+    //         'total_product_discount' => $total_product_discount,
+    //         'total_coupon_discount' => $total_coupon_discount,
+    //         'total_discounted_amount' => $total_discounted_amount,
+    //         'total_tax' => $total_tax,
+    //         'total_delivery_charge' => $total_delivery_charge,
+    //         'total_deliveryman_incentive' => $total_deliveryman_incentive,
+    //         'total_order_amount' => $total_order_amount,
+    //         'total_admin_discount' => $total_admin_discount,
+    //         'total_seller_discount' => $total_seller_discount,
+    //         'total_admin_commission' => $total_admin_commission,
+    //         'total_admin_net_income' => $total_admin_net_income,
+    //         'total_seller_net_income' => $total_seller_net_income,
+    //         'total_orders' => $total_orders,
+    //         'in_house_orders' => $in_house_orders,
+    //         'seller_orders' => $seller_orders,
+    //         'total_in_house_products' => $total_in_house_products,
+    //         'total_seller_products' => $total_seller_products,
+    //         'total_stores' => $total_stores,
+    //     );
+
+    //     $mpdf_view = View::make('admin-views.transaction.order_transaction_summary_report_pdf', compact('data', 'company_phone', 'company_name', 'company_email', 'company_web_logo', 'status', 'duration', 'seller_info', 'customer_info'));
+    //     Helpers::gen_mpdf($mpdf_view, 'order_transaction_summary_report_', $date_type);
+    // }
     public function order_transaction_summary_pdf(Request $request)
     {
-
         $company_phone = BusinessSetting::where('type', 'company_phone')->first()->value;
         $company_email = BusinessSetting::where('type', 'company_email')->first()->value;
         $company_name = BusinessSetting::where('type', 'company_name')->first()->value;
@@ -231,20 +540,50 @@ class TransactionReportController extends Controller
         $status = $request['status'] ?? 'all';
         $date_type = $request['date_type'] ?? 'this_year';
 
-        $duration = str_replace('_', ' ', $date_type);
-        if ($date_type == 'custom_date') {
-            $duration = 'From ' . $from . ' To ' . $to;
+        // --- Date range string for display ---
+        if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
+            $fromDate = Carbon::parse($from)->format('d M, Y');
+            $toDate = Carbon::parse($to)->format('d M, Y');
+            $dateRange = $fromDate . ' - ' . $toDate;
+        } else {
+            switch ($date_type) {
+                case 'this_year':
+                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+                    break;
+                case 'this_month':
+                    $fromDate = Carbon::now()->startOfMonth()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfMonth()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+                    break;
+                case 'this_week':
+                    $fromDate = Carbon::now()->startOfWeek()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfWeek()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+                    break;
+                case 'today':
+                    $dateRange = Carbon::now()->format('d M, Y');
+                    break;
+                default:
+                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+            }
         }
 
-        $seller_info = $seller_id == 'all' || $seller_id == 'inhouse' ? $seller_id : Shop::where('seller_id', $seller_id)->name;
+        // Vendor & Customer info
+        $seller_info = $seller_id == 'all' || $seller_id == 'inhouse' ? $seller_id : Shop::where('seller_id', $seller_id)->first()?->name;
         $customer_info = 'all';
         if ($customer_id != 'all') {
             $customer = User::select()->find($customer_id);
             $customer_info = $customer->f_name . ' ' . $customer->l_name;
         }
 
+        // Get transactions
         $transactions = self::order_transaction_table_data_filter($request)->latest('updated_at')->get();
 
+        // --- Calculations for summary data (same as original) ---
         $total_ordered_product_price = 0;
         $total_product_discount = 0;
         $total_coupon_discount = 0;
@@ -260,6 +599,7 @@ class TransactionReportController extends Controller
         $total_admin_shipping_discount = 0;
         $total_seller_shipping_discount = 0;
         $total_deliveryman_incentive = 0;
+
         foreach ($transactions as $transaction) {
             if ($transaction->order) {
                 $admin_coupon_discount = ($transaction->order->coupon_discount_bearer == 'inhouse' && $transaction->order->discount_type == 'coupon_discount') ? $transaction->order->discount_amount : 0;
@@ -284,7 +624,7 @@ class TransactionReportController extends Controller
 
                 $total_deliveryman_incentive += $transaction->order->deliveryman_charge;
 
-                // admin net income calculation start
+                // admin net income
                 $admin_net_income = 0;
                 if ($transaction['seller_is'] == 'admin') {
                     $admin_net_income += $transaction['order_amount'] + $transaction['tax'];
@@ -309,10 +649,8 @@ class TransactionReportController extends Controller
                     }
                 }
                 $total_admin_net_income += $admin_net_income;
-                // admin net income calculation end
 
-
-                // seller net income calculation start
+                // seller net income
                 $seller_net_income = 0;
                 if (isset($transaction->order->deliveryMan) && $transaction->order->deliveryMan->seller_id != '0') {
                     $seller_net_income += $transaction['delivery_charge'];
@@ -338,17 +676,16 @@ class TransactionReportController extends Controller
                     }
                 }
                 $total_seller_net_income += $seller_net_income - $seller_shipping_discount;
-                // seller net income calculation end
             }
         }
 
+        // Counts for KPI cards
         $in_house_orders_query = Order::where(['seller_is' => 'admin']);
         $in_house_orders = self::order_transaction_count_query($in_house_orders_query, $request)->count();
 
         $seller_orders_query = Order::where(['seller_is' => 'seller']);
         $seller_orders = self::order_transaction_count_query($seller_orders_query, $request)->count();
         $total_orders = $in_house_orders + $seller_orders;
-
 
         $total_in_house_product_query = Product::where(['added_by' => 'admin'])
             ->when($seller_id != 'all', function ($query) use ($seller_id) {
@@ -373,7 +710,18 @@ class TransactionReportController extends Controller
         });
         $total_stores = self::date_wise_common_filter($total_stores_query, $date_type, $from, $to)->count();
 
-        $data = array(
+        // --- KPI data for PDF cards ---
+        $kpi_data = [
+            'total_orders' => $total_orders,
+            'in_house_orders' => $in_house_orders,
+            'seller_orders' => $seller_orders,
+            'total_in_house_products' => $total_in_house_products,
+            'total_seller_products' => $total_seller_products,
+            'total_stores' => $total_stores,
+        ];
+
+        // --- Summary data array ---
+        $summary_data = [
             'total_ordered_product_price' => $total_ordered_product_price,
             'total_product_discount' => $total_product_discount,
             'total_coupon_discount' => $total_coupon_discount,
@@ -387,16 +735,121 @@ class TransactionReportController extends Controller
             'total_admin_commission' => $total_admin_commission,
             'total_admin_net_income' => $total_admin_net_income,
             'total_seller_net_income' => $total_seller_net_income,
-            'total_orders' => $total_orders,
-            'in_house_orders' => $in_house_orders,
-            'seller_orders' => $seller_orders,
-            'total_in_house_products' => $total_in_house_products,
-            'total_seller_products' => $total_seller_products,
-            'total_stores' => $total_stores,
-        );
+        ];
 
-        $mpdf_view = View::make('admin-views.transaction.order_transaction_summary_report_pdf', compact('data', 'company_phone', 'company_name', 'company_email', 'company_web_logo', 'status', 'duration', 'seller_info', 'customer_info'));
+        // --- Chart data ---
+        $order_transaction_chart = self::order_transaction_chart_filter($request);
+        $payment_data = $this->getPaymentStatistics($request); // defined below
+
+        // Generate Order Bar Chart
+        $chartImageOrder = '';
+        if (!empty($order_transaction_chart['order_amount'])) {
+            $labels = array_keys($order_transaction_chart['order_amount']);
+            $values = array_values($order_transaction_chart['order_amount']);
+            $chartImageOrder = '';
+            if (!empty($order_transaction_chart['order_amount'])) {
+                $labels = array_keys($order_transaction_chart['order_amount']);
+                $values = array_values($order_transaction_chart['order_amount']);
+
+                $chartImageOrder = $this->generateChartImage([
+                    'type' => 'line', // ✅ FIXED
+                    'data' => [
+                        'labels' => $labels,
+                        'datasets' => [
+                            [
+                                'label' => 'Order Amount',
+                                'data' => $values,
+                                'borderColor' => '#0177CD',   // line color
+                                'backgroundColor' => 'rgba(1,119,205,0.2)', // light fill (optional)
+                                'fill' => true,
+                                'tension' => 0.4   // ✅ THIS MAKES IT WAVE (smooth curve)
+                            ]
+                        ]
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'plugins' => [
+                            'legend' => ['display' => false]
+                        ],
+                        'scales' => [
+                            'y' => ['beginAtZero' => true]
+                        ]
+                    ]
+                ]);
+            }
+        }
+
+        // Generate Payment Pie Chart
+        $chartImagePayment = '';
+        $paymentValues = [
+            (float)($payment_data['cash_payment'] ?? 0),
+            (float)($payment_data['digital_payment'] ?? 0),
+            (float)($payment_data['wallet_payment'] ?? 0),
+            (float)($payment_data['offline_payment'] ?? 0)
+        ];
+        if (array_sum($paymentValues) > 0) {
+            $chartImagePayment = $this->generateChartImage([
+                'type' => 'pie',
+                'data' => [
+                    'labels' => ['Cash', 'Digital', 'Wallet', 'Offline'],
+                    'datasets' => [
+                        [
+                            'data' => $paymentValues,
+                            'backgroundColor' => ['#004188', '#0177CD', '#A2CEEE', '#CDE6F5'],
+                        ]
+                    ]
+                ],
+                'options' => [
+                    'responsive' => true,
+                    'plugins' => ['legend' => ['position' => 'bottom']],
+                ]
+            ]);
+        }
+
+        // Pass all variables to view
+        $mpdf_view = View::make(
+            'admin-views.transaction.order_transaction_summary_report_pdf',
+            compact(
+                'transactions',          // for detailed table
+                'summary_data',          // summary numbers
+                'kpi_data',              // KPI cards data
+                'company_phone',
+                'company_name',
+                'company_email',
+                'company_web_logo',
+                'status',
+                'dateRange',              // actual date range
+                'seller_info',
+                'customer_info',
+                'chartImageOrder',
+                'chartImagePayment',
+                'payment_data'
+            )
+        );
         Helpers::gen_mpdf($mpdf_view, 'order_transaction_summary_report_', $date_type);
+    }
+
+    // Helper method to get payment statistics
+    private function getPaymentStatistics($request)
+    {
+        $digital_payment_query = Order::whereNotIn('payment_method', ['cash', 'cash_on_delivery', 'pay_by_wallet', 'offline_payment']);
+        $digital_payment = self::order_transaction_piechart_query($request, $digital_payment_query)->sum('order_amount');
+
+        $cash_payment_query = Order::whereIn('payment_method', ['cash', 'cash_on_delivery']);
+        $cash_payment = self::order_transaction_piechart_query($request, $cash_payment_query)->sum('order_amount');
+
+        $wallet_payment_query = Order::where(['payment_method' => 'pay_by_wallet']);
+        $wallet_payment = self::order_transaction_piechart_query($request, $wallet_payment_query)->sum('order_amount');
+
+        $offline_payment_query = Order::where(['payment_method' => 'offline_payment']);
+        $offline_payment = self::order_transaction_piechart_query($request, $offline_payment_query)->sum('order_amount');
+
+        return [
+            'digital_payment' => $digital_payment,
+            'cash_payment' => $cash_payment,
+            'wallet_payment' => $wallet_payment,
+            'offline_payment' => $offline_payment,
+        ];
     }
 
     public function pdf_order_wise_transaction(Request $request)
@@ -733,6 +1186,81 @@ class TransactionReportController extends Controller
             });
     }
 
+    // public function expense_transaction_list(Request $request)
+    // {
+    //     $search = $request['search'];
+    //     $from = $request['from'];
+    //     $to = $request['to'];
+    //     $date_type = $request['date_type'] ?? 'this_year';
+    //     $query_param = ['search' => $search, 'date_type' => $date_type, 'from' => $from, 'to' => $to];
+
+    //     $expense_transaction_chart = self::expense_transaction_chart_filter($request);
+
+    //     $expense_calculate_query = Order::with(['orderTransaction', 'coupon'])
+    //         ->where([
+    //             'order_type' => 'default_type',
+    //             'coupon_discount_bearer' => 'inhouse',
+    //             'order_status' => 'delivered'
+    //         ])
+    //         ->where(function ($query) {
+    //             $query->whereNotIn('coupon_code', ['0', 'NULL'])
+    //                 ->orWhere(function ($query) {
+    //                     $query->where([
+    //                         'extra_discount_type' => 'free_shipping_over_order_amount',
+    //                         'free_delivery_bearer' => 'seller'
+    //                     ]);
+    //                 });
+    //         })
+    //         ->whereHas('orderTransaction', function ($query) use ($search) {
+    //             $query->where(['status' => 'disburse']);
+    //         });
+    //     $expense_calculate = self::date_wise_common_filter($expense_calculate_query, $date_type, $from, $to)->latest('updated_at')->get();
+
+    //     $total_expense = 0;
+    //     $free_delivery = 0;
+    //     $coupon_discount = 0;
+    //     if ($expense_calculate) {
+    //         foreach ($expense_calculate as $calculate) {
+    //             $total_expense += ($calculate->coupon_discount_bearer == 'inhouse' ? $calculate->discount_amount : 0) + ($calculate->free_delivery_bearer == 'admin' ? $calculate->extra_discount : 0);
+    //             if (isset($calculate->coupon->coupon_type) && $calculate->coupon_discount_bearer == 'inhouse' && $calculate->coupon->coupon_type == 'free_delivery') {
+    //                 $free_delivery += $calculate->discount_amount;
+    //             } else {
+    //                 $coupon_discount += $calculate->coupon_discount_bearer == 'inhouse' ? $calculate->discount_amount : 0;
+    //             }
+
+    //             if ($calculate->is_shipping_free && $calculate->free_delivery_bearer == 'admin') {
+    //                 $free_delivery += $calculate->extra_discount;
+    //             }
+    //         }
+    //     }
+
+    //     $expense_transaction_query = Order::with(['orderTransaction', 'coupon'])
+    //         ->where([
+    //             'order_type' => 'default_type',
+    //             'coupon_discount_bearer' => 'inhouse',
+    //             'order_status' => 'delivered'
+    //         ])
+    //         ->where(function ($query) {
+    //             $query->whereNotIn('coupon_code', ['0', 'NULL'])
+    //                 ->orWhere(function ($query) {
+    //                     $query->where([
+    //                         'extra_discount_type' => 'free_shipping_over_order_amount',
+    //                         'free_delivery_bearer' => 'seller'
+    //                     ]);
+    //                 });
+    //         })
+    //         ->whereHas('orderTransaction', function ($query) use ($search) {
+    //             $query->where(['status' => 'disburse'])
+    //                 ->when($search, function ($q) use ($search) {
+    //                     $q->Where('order_id', 'like', "%{$search}%")
+    //                         ->orWhere('transaction_id', 'like', "%{$search}%");
+    //                 });
+    //         });
+    //     $expense_transactions_table = self::date_wise_common_filter($expense_transaction_query, $date_type, $from, $to);
+    //     $expense_transactions_table = $expense_transactions_table->latest('updated_at')->paginate(Helpers::pagination_limit())->appends($query_param);
+
+    //     return view('admin-views.transaction.expense-list', compact('expense_transactions_table', 'expense_transaction_chart', 'search', 'from', 'to', 'date_type', 'total_expense', 'free_delivery', 'coupon_discount'));
+    // }
     public function expense_transaction_list(Request $request)
     {
         $search = $request['search'];
@@ -806,7 +1334,44 @@ class TransactionReportController extends Controller
         $expense_transactions_table = self::date_wise_common_filter($expense_transaction_query, $date_type, $from, $to);
         $expense_transactions_table = $expense_transactions_table->latest('updated_at')->paginate(Helpers::pagination_limit())->appends($query_param);
 
-        return view('admin-views.transaction.expense-list', compact('expense_transactions_table', 'expense_transaction_chart', 'search', 'from', 'to', 'date_type', 'total_expense', 'free_delivery', 'coupon_discount'));
+        if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
+            $fromDate = Carbon::parse($from)->format('d M, Y');
+            $toDate = Carbon::parse($to)->format('d M, Y');
+            $dateRange = $fromDate . ' - ' . $toDate;
+        } else {
+            switch ($date_type) {
+                case 'this_year':
+                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                    break;
+                case 'this_month':
+                    $dateRange = now()->startOfMonth()->format('d M, Y') . ' - ' . now()->endOfMonth()->format('d M, Y');
+                    break;
+                case 'this_week':
+                    $dateRange = now()->startOfWeek()->format('d M, Y') . ' - ' . now()->endOfWeek()->format('d M, Y');
+                    break;
+                case 'today':
+                    $dateRange = now()->format('d M, Y');
+                    break;
+                default:
+                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+            }
+        }
+        $updatedAt = now()->format('M d, Y h:i A');
+        // ========================================================
+
+        return view('admin-views.transaction.expense-list', compact(
+            'expense_transactions_table',
+            'expense_transaction_chart',
+            'search',
+            'from',
+            'to',
+            'date_type',
+            'total_expense',
+            'free_delivery',
+            'coupon_discount',
+            'dateRange',
+            'updatedAt'
+        ));
     }
 
     /**
@@ -854,6 +1419,79 @@ class TransactionReportController extends Controller
     /**
      * expense transaction summary pdf
      */
+    // public function expense_transaction_summary_pdf(Request $request)
+    // {
+    //     $company_phone = BusinessSetting::where('type', 'company_phone')->first()->value;
+    //     $company_email = BusinessSetting::where('type', 'company_email')->first()->value;
+    //     $company_name = BusinessSetting::where('type', 'company_name')->first()->value;
+    //     $company_web_logo = getWebConfig('company_web_logo');
+
+    //     $search = $request['search'];
+    //     $from = $request['from'];
+    //     $to = $request['to'];
+    //     $date_type = $request['date_type'] ?? 'this_year';
+
+    //     $duration = str_replace('_', ' ', $date_type);
+    //     if ($date_type == 'custom_date') {
+    //         $duration = 'From ' . $from . ' To ' . $to;
+    //     }
+
+    //     $expense_transaction_query = Order::with(['orderTransaction', 'coupon'])
+    //         ->where([
+    //             'order_type' => 'default_type',
+    //             'coupon_discount_bearer' => 'inhouse',
+    //             'order_status' => 'delivered'
+    //         ])
+    //         ->where(function ($query) {
+    //             $query->whereNotIn('coupon_code', ['0', 'NULL'])
+    //                 ->orWhere(function ($query) {
+    //                     $query->where([
+    //                         'extra_discount_type' => 'free_shipping_over_order_amount',
+    //                         'free_delivery_bearer' => 'seller'
+    //                     ]);
+    //                 });
+    //         })
+    //         ->whereHas('orderTransaction', function ($query) use ($search) {
+    //             $query->where(['status' => 'disburse'])
+    //                 ->when($search, function ($q) use ($search) {
+    //                     $q->where('order_id', 'like', "%{$search}%")
+    //                         ->orWhere('transaction_id', 'like', "%{$search}%");
+    //                 });
+    //         });
+    //     $expense_transactions = self::date_wise_common_filter($expense_transaction_query, $date_type, $from, $to)->get();
+    //     $total_expense = 0;
+    //     $free_delivery = 0;
+    //     $coupon_discount = 0;
+    //     $free_over_amount_discount = 0;
+
+    //     if ($expense_transactions) {
+    //         foreach ($expense_transactions as $transaction) {
+    //             $total_expense += ($transaction->coupon_discount_bearer == 'inhouse' ? $transaction->discount_amount : 0) + ($transaction->free_delivery_bearer == 'admin' ? $transaction->extra_discount : 0);
+    //             if (isset($transaction->coupon->coupon_type) && $transaction->coupon->coupon_type == 'free_delivery') {
+    //                 $free_delivery += $transaction->discount_amount;
+    //             } else {
+    //                 $coupon_discount += $transaction->coupon_discount_bearer == 'inhouse' ? $transaction->discount_amount : 0;
+    //             }
+
+    //             $free_over_amount_discount += $transaction->free_delivery_bearer == 'admin' ? $transaction->extra_discount : 0;
+    //         }
+    //     }
+
+    //     $data = array(
+    //         'total_expense' => $total_expense,
+    //         'free_delivery' => $free_delivery,
+    //         'coupon_discount' => $coupon_discount,
+    //         'free_over_amount_discount' => $free_over_amount_discount,
+    //         'company_phone' => $company_phone,
+    //         'company_name' => $company_name,
+    //         'company_email' => $company_email,
+    //         'company_web_logo' => $company_web_logo,
+    //         'duration' => $duration,
+    //     );
+
+    //     $mpdf_view = View::make('admin-views.transaction.expense_transaction_summary_report_pdf', compact('data'));
+    //     Helpers::gen_mpdf($mpdf_view, 'expense_transaction_summary_report_', $date_type);
+    // }
     public function expense_transaction_summary_pdf(Request $request)
     {
         $company_phone = BusinessSetting::where('type', 'company_phone')->first()->value;
@@ -866,9 +1504,36 @@ class TransactionReportController extends Controller
         $to = $request['to'];
         $date_type = $request['date_type'] ?? 'this_year';
 
-        $duration = str_replace('_', ' ', $date_type);
-        if ($date_type == 'custom_date') {
-            $duration = 'From ' . $from . ' To ' . $to;
+        // --- Date range string ---
+        if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
+            $fromDate = Carbon::parse($from)->format('d M, Y');
+            $toDate = Carbon::parse($to)->format('d M, Y');
+            $dateRange = $fromDate . ' - ' . $toDate;
+        } else {
+            switch ($date_type) {
+                case 'this_year':
+                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+                    break;
+                case 'this_month':
+                    $fromDate = Carbon::now()->startOfMonth()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfMonth()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+                    break;
+                case 'this_week':
+                    $fromDate = Carbon::now()->startOfWeek()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfWeek()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+                    break;
+                case 'today':
+                    $dateRange = Carbon::now()->format('d M, Y');
+                    break;
+                default:
+                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
+                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
+                    $dateRange = $fromDate . ' - ' . $toDate;
+            }
         }
 
         $expense_transaction_query = Order::with(['orderTransaction', 'coupon'])
@@ -894,6 +1559,10 @@ class TransactionReportController extends Controller
                     });
             });
         $expense_transactions = self::date_wise_common_filter($expense_transaction_query, $date_type, $from, $to)->get();
+
+        // Chart data
+        $expense_transaction_chart = self::expense_transaction_chart_filter($request);
+
         $total_expense = 0;
         $free_delivery = 0;
         $coupon_discount = 0;
@@ -912,19 +1581,50 @@ class TransactionReportController extends Controller
             }
         }
 
-        $data = array(
+        // Generate Expense Bar Chart
+        $chartImageExpense = '';
+        if (!empty($expense_transaction_chart['discount_amount'])) {
+            $labels = array_keys($expense_transaction_chart['discount_amount']);
+            $values = array_values($expense_transaction_chart['discount_amount']);
+            $chartImageExpense = $this->generateChartImage([
+                'type' => 'bar',
+                'data' => [
+                    'labels' => $labels,
+                    'datasets' => [
+                        [
+                            'label' => 'Expense Amount',
+                            'data' => $values,
+                            'backgroundColor' => '#FF6B6B',
+                        ]
+                    ]
+                ],
+                'options' => [
+                    'responsive' => true,
+                    'plugins' => ['legend' => ['display' => false]],
+                    'scales' => ['y' => ['beginAtZero' => true]]
+                ]
+            ]);
+        }
+
+        $kpi_data = [
             'total_expense' => $total_expense,
             'free_delivery' => $free_delivery,
             'coupon_discount' => $coupon_discount,
             'free_over_amount_discount' => $free_over_amount_discount,
+        ];
+
+        $data = [
             'company_phone' => $company_phone,
             'company_name' => $company_name,
             'company_email' => $company_email,
             'company_web_logo' => $company_web_logo,
-            'duration' => $duration,
-        );
+            'duration' => $dateRange,
+        ];
 
-        $mpdf_view = View::make('admin-views.transaction.expense_transaction_summary_report_pdf', compact('data'));
+        $mpdf_view = View::make(
+            'admin-views.transaction.expense_transaction_summary_report_pdf',
+            compact('expense_transactions', 'kpi_data', 'chartImageExpense', 'dateRange', 'data')
+        );
         Helpers::gen_mpdf($mpdf_view, 'expense_transaction_summary_report_', $date_type);
     }
 
@@ -1144,5 +1844,35 @@ class TransactionReportController extends Controller
     public function wallet_bonus(Request $request)
     {
         return view('admin-views.transaction.wallet-bonus');
+    }
+
+    private function generateChartImage(array $chartConfig): string
+    {
+        try {
+            $chartConfigJson = json_encode($chartConfig);
+            $encodedConfig = urlencode($chartConfigJson);
+            $url = "https://quickchart.io/chart?c={$encodedConfig}&width=800&height=400&format=png&devicePixelRatio=2";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
+
+            $imageData = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode == 200 && $imageData) {
+                return 'data:image/png;base64,' . base64_encode($imageData);
+            }
+
+            Log::error('QuickChart error: HTTP code ' . $httpCode);
+            return '';
+        } catch (\Exception $e) {
+            Log::error('QuickChart exception: ' . $e->getMessage());
+            return '';
+        }
     }
 }
