@@ -23,9 +23,9 @@ interface ReviewRepositoryInterface extends RepositoryInterface
 
 
     /**
-     * @param bool $globalScope
      * @param string $whereHas
      * @param array $whereHasFilter
+     * @param bool $globalScope
      * @param array $orderBy
      * @param string|null $searchValue
      * @param array $filters
@@ -35,7 +35,7 @@ interface ReviewRepositoryInterface extends RepositoryInterface
      * @param int|null $offset
      * @return Collection|LengthAwarePaginator
      */
-    public function getListWhereHas(bool $globalScope = true, string $whereHas, array $whereHasFilter  , array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], array $nullFields = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator;
+    public function getListWhereHas(string $whereHas, array $whereHasFilter = [], bool $globalScope = true, array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], array $nullFields = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator;
 
 
     /**

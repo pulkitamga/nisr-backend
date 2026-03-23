@@ -122,7 +122,7 @@ class ReviewRepository implements ReviewRepositoryInterface
         return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit)->appends($filters);
     }
 
-    public function getListWhereHas(bool $globalScope = true, string $whereHas, array $whereHasFilter = []  , array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], array $nullFields = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
+    public function getListWhereHas(string $whereHas, array $whereHasFilter = [], bool $globalScope = true, array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], array $nullFields = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
         $query = $this->review->with($relations)->whereHas($whereHas, function ($query) use ($whereHasFilter) {
                 $query->where($whereHasFilter);
