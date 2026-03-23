@@ -7,7 +7,7 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0]['code'] ?? 'en';
+$defaultLanguage = in_array(config('app.locale'), $languages ?? [], true) ? config('app.locale') : (($languages[0] ?? 'en'));
 $translations = [];
 $selectedCountry = old('branch_country', $aBranchDetails['branch_country']);
 $selectedState = old('branch_state', $aBranchDetails['branch_state']);

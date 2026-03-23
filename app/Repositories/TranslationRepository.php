@@ -11,8 +11,24 @@ class TranslationRepository implements TranslationRepositoryInterface
         private readonly Translation $translation
     ) {}
 
+    private function resolveDefaultLocale(object $request): string
+    {
+        $requestLanguages = collect(data_get($request, 'lang', []))
+            ->filter(fn ($locale) => is_string($locale) && $locale !== '')
+            ->values();
+
+        $configuredLocale = (string) config('app.locale', 'en');
+
+        if ($requestLanguages->contains($configuredLocale)) {
+            return $configuredLocale;
+        }
+
+        return (string) ($requestLanguages->first() ?? 'en');
+    }
+
     public function add(object $request, string $model, int|string $id): bool
     {
+        $defaultLocale = $this->resolveDefaultLocale($request);
 
         $allowedFields = config('translation.translatable_fields');
 
@@ -20,7 +36,7 @@ class TranslationRepository implements TranslationRepositoryInterface
             ->keys();
 
         foreach ($request->lang as $index => $key) {
-            if ($key === 'en') continue;
+            if ($key === $defaultLocale) continue;
 
             foreach ($translatableFields as $field) {
                 if (!is_array($request[$field] ?? null)) {
@@ -45,7 +61,7 @@ class TranslationRepository implements TranslationRepositoryInterface
 
     public function update(object $request, string $model, int|string $id): bool
     {
-
+        $defaultLocale = $this->resolveDefaultLocale($request);
 
         $allowedFields = config('translation.translatable_fields');
 
@@ -53,7 +69,7 @@ class TranslationRepository implements TranslationRepositoryInterface
             ->keys();
 
         foreach ($request->lang as $index => $key) {
-            if ($key === 'en') continue; // skip default language
+            if ($key === $defaultLocale) continue;
 
             foreach ($translatableFields as $field) {
                 if (isset($request[$field][$index])) {
@@ -101,6 +117,7 @@ class TranslationRepository implements TranslationRepositoryInterface
     {
         $langs = $request->lang ?? [];
         $index = (int)$request->input('index'); 
+        $defaultLocale = $this->resolveDefaultLocale($request);
         $allowedFields = config('translation.translatable_fields');
 
         $translatableFields = collect($request->only($allowedFields))
@@ -109,7 +126,7 @@ class TranslationRepository implements TranslationRepositoryInterface
 
 
         foreach ($langs as $langIndex => $locale) {
-            if ($locale === 'en') continue; // skip default
+            if ($locale === $defaultLocale) continue;
 
             foreach ($translatableFields as $field) {
                 $value = $request->input($field)[$langIndex] ?? null;
@@ -140,6 +157,7 @@ class TranslationRepository implements TranslationRepositoryInterface
 
         $langs = $request->lang ?? [];
         $index = (int) $request->input('index', -1);
+        $defaultLocale = $this->resolveDefaultLocale($request);
 
         $allowedFields = config('translation.translatable_fields');
 
@@ -148,7 +166,7 @@ class TranslationRepository implements TranslationRepositoryInterface
             ->toArray();
 
         foreach ($langs as $langIndex => $locale) {
-            if ($locale === 'en') continue;
+            if ($locale === $defaultLocale) continue;
 
             foreach ($translatableFields as $field) {
                 $value = $request->input($field)[$langIndex] ?? null;
