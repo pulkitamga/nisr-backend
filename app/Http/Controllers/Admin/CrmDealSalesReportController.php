@@ -55,29 +55,18 @@ class CrmDealSalesReportController extends BaseController
     {
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
-
+        $data['report_title'] = translate('crm_sales_report');
         // Get chart images from request (sent via POST/GET from frontend)
         $data['employeeChart'] = $request->input('employee_chart');
         $data['statusChart'] = $request->input('status_chart');
         $data['retailWholesaleChart'] = $request->input('retail_wholesale_chart');
 
-        $html = view(CrmDealSalesReport::EXPORT_PDF[VIEW], $data)->render();
-
-        $mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4-L', // Landscape
-            'margin_top' => 10,
-            'margin_bottom' => 10,
-            'margin_left' => 10,
-            'margin_right' => 10,
-        ]);
-
-        $mpdf->WriteHTML($html);
-
-        return response(
-            $mpdf->Output('crm-sales-performance-report.pdf', 'S'),
-            200
-        )->header('Content-Type', 'application/pdf');
+        return app(\App\Services\ReportPdfService::class)->download(
+            view: CrmDealSalesReport::EXPORT_PDF[VIEW],
+            data: $data,
+            fileName: 'crm-sales-performance-report.pdf',
+            orientation: 'landscape'
+        );
     }
 
     private function buildReportData(Request $request): array

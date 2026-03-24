@@ -107,6 +107,9 @@
         }
 
         /* CHART */
+        .chart-header {
+            page-break-after: avoid;
+        }
 
         .chart-container {
             border: 1px solid #e5e7eb;
@@ -114,7 +117,6 @@
             padding: 20px;
             background: white;
             margin-bottom: 24px;
-            page-break-inside: avoid;
             text-align: center;
         }
 
@@ -125,7 +127,7 @@
 
         .chart-image {
             width: 100%;
-            max-height: 350px;
+            max-height: 270px;
         }
 
         /* TABLE */
@@ -348,7 +350,7 @@
                 ];
 
                 $encodedConfig = urlencode(json_encode($chartConfig));
-                $chartUrl = 'https://quickchart.io/chart?c=' . $encodedConfig . '&width=800&height=350';
+                $chartUrl = 'https://quickchart.io/chart?c=' . $encodedConfig . '&width=800&height=270';
             @endphp
 
             <img src="{{ $chartUrl }}" class="chart-image">
@@ -457,49 +459,6 @@
         </table>
 
     </div>
-
-    <!-- FOOTER -->
-
-    <div class="footer">
-
-        <table>
-
-            <tr>
-
-                <td class="page-info">
-                    {{ translate('page') }} {PAGENO} {{ translate('of') }} {nbpg}
-                </td>
-
-                <td class="center-info">
-
-                    {{ translate('generated_on') }}:
-                    {{ now()->translatedFormat('j F Y, h:i A') }}
-
-                    |
-
-                    {{ translate('stock_transfer_report') }}
-
-                    <br>
-
-                    {{ translate('generated_by') }}:
-                    <span style="color:red;">
-                        {{ ucfirst(auth()->user()->name ?? 'system') }}
-                    </span>
-
-                    <br>
-
-                    <span style="color:red;">{{ config('app.name') }}</span>
-
-                </td>
-
-                <td></td>
-
-            </tr>
-
-        </table>
-
-    </div>
-
 </body>
 
 </html>

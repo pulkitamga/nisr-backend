@@ -541,6 +541,7 @@ class BranchChartController extends BaseAdminController
             'startDateFormatted' => $startDate ? $startDate->format('d M Y') : null,
             'endDateFormatted'   => $endDate ? $endDate->format('d M Y') : null,
             'hasChart'   => !empty($chartImage),
+            'report_title' => translate('branch_stock_report'),
         ];
 
         return app(ReportPdfService::class)->download(

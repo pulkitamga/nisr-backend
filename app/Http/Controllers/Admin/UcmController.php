@@ -261,16 +261,21 @@ class UcmController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.crm.reports.voip-pdf',
-                data: compact(
-                    'kpi',
-                    'topAgents',
-                    'filters',
-                    'snapshotFrom',
-                    'snapshotTo',
-                    'isRtl',
-                    'trendChart',
-                    'statusChart',
-                    'directionChart' 
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'topAgents',
+                        'filters',
+                        'snapshotFrom',
+                        'snapshotTo',
+                        'isRtl',
+                        'trendChart',
+                        'statusChart',
+                        'directionChart'
+                    ),
+                    [
+                        'report_title' => translate('voip_insights_report')
+                    ]
                 ),
                 fileName: 'ucm-insights-report.pdf'
             );

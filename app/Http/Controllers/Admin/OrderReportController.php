@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Contracts\Repositories\VendorRepositoryInterface;
 use App\Enums\ExportFileNames\Admin\Report;
-use App\Utils\Helpers;
 use App\Exports\OrderReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Seller;
+use App\Services\ReportPdfService;
+use App\Utils\Helpers;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class OrderReportController extends Controller
 
         $chart_data = self::order_report_chart_filter($request);
 
+      
         $chartVal = [];
         foreach(($chart_data['order_amount'] ?? []) as $amount) {
             $chartVal[] = usdToDefaultCurrency(amount: $amount);
@@ -213,45 +215,59 @@ class OrderReportController extends Controller
             $totalDeliverymanIncentive += ($order->delivery_type == 'self_delivery' && $order->delivery_man_id) ? $order->deliveryman_charge : 0;
         }
 
+      
         $trendChart = $request->input('trend_chart');
         $stageChart = $request->input('stage_chart');
 
-       
+      
         $data = [
-             'report_title' => translate('order_report'),
-            'orders' => $orders,
-            'total_orders' => count($orders),
-            'seller' => $seller,
-            'type' => $request->has('seller_id') ? ($request['seller_id'] != 'inhouse' ? 'seller' : $request['seller_id']) : 'all',
-            'company_name' => getWebConfig('company_name'),
-            'company_email' => getWebConfig('company_email'),
-            'company_phone' => getWebConfig('company_phone'),
-            'company_web_logo' => getWebConfig('company_web_logo'),
-            'date_type' => $date_type,
-            'date_range' => $dateRange,
-            'order_count' => $order_count,
-            'cash_payment' => $cash_payment,
-            'digital_payment' => $digital_payment,
-            'wallet_payment' => $wallet_payment,
-            'offline_payment' => $offline_payment,
-            'total_payment' => $total_payment,
-            'cash_percentage' => $cash_percentage,
-            'digital_percentage' => $digital_percentage,
-            'wallet_percentage' => $wallet_percentage,
-            'offline_percentage' => $offline_percentage,
-            'total_order_amount' => $totalOrderAmount,
-            'total_product_discount' => $totalProductDiscount,
-            'total_coupon_discount' => $totalCouponDiscount,
-            'total_tax' => $totalTax,
-            'total_order_commission' => $totalOrderCommission,
-            'total_delivery_charge' => $totalDeliveryCharge,
-            'total_deliveryman_incentive' => $totalDeliverymanIncentive,
-            'trend_chart' => $trendChart,
-            'stage_chart' => $stageChart,
-        ];
-
-        $mpdfView = View::make('admin-views.transaction.total_orders_report_pdf', ['data' => $data]);
-        Helpers::gen_mpdf($mpdfView, 'order_report_', $dateType, 'portrait');
+        'report_title' => translate('order_report'),
+        'exportedAt' => now(),
+ 
+        'orders' => $orders,
+        'total_orders' => $orders->count(),
+        'seller' => $seller,
+ 
+        'company_name' => getWebConfig('company_name'),
+        'company_email' => getWebConfig('company_email'),
+        'company_phone' => getWebConfig('company_phone'),
+        'company_web_logo' => getWebConfig('company_web_logo'),
+ 
+        'date_type' => $dateType,
+        'date_range' => $dateRange,
+ 
+        'order_count' => $order_count,
+ 
+        'cash_payment' => $cash_payment,
+        'digital_payment' => $digital_payment,
+        'wallet_payment' => $wallet_payment,
+        'offline_payment' => $offline_payment,
+        'total_payment' => $total_payment,
+ 
+        'cash_percentage' => $cash_percentage,
+        'digital_percentage' => $digital_percentage,
+        'wallet_percentage' => $wallet_percentage,
+        'offline_percentage' => $offline_percentage,
+ 
+        'total_order_amount' => $totalOrderAmount,
+        'total_product_discount' => $totalProductDiscount,
+        'total_coupon_discount' => $totalCouponDiscount,
+        'total_tax' => $totalTax,
+        'total_order_commission' => $totalOrderCommission,
+        'total_delivery_charge' => $totalDeliveryCharge,
+        'total_deliveryman_incentive' => $totalDeliverymanIncentive,
+ 
+        'trend_chart' => $request->input('trend_chart'),
+        'stage_chart' => $request->input('stage_chart'),
+    ];
+ 
+    // ================= DOWNLOAD =================
+    return app(ReportPdfService::class)->download(
+        view: 'admin-views.transaction.total_orders_report_pdf',
+       data: ['data' => $data],
+        fileName: 'order-report.pdf',
+        orientation: 'portrait'
+    );
     }
 
     // ================== CHART HELPER METHODS ==================

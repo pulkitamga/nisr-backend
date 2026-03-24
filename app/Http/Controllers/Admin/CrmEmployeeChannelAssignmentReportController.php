@@ -46,7 +46,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
     {
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
-
+        $data['report_title'] = translate('crm_employee_channel_assignment_report');
         // Get chart image from request (sent via POST/GET from frontend)
         $data['channelChart'] = $request->input('channel_chart');
 

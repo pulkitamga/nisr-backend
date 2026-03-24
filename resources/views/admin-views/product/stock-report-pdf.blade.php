@@ -231,20 +231,5 @@
         </tbody>
     </table>
 </div>
-
-<!-- FOOTER -->
-<div class="footer">
-    <table width="100%">
-        <tr>
-            <td width="20%">Page {PAGENO}</td>
-            <td width="60%" style="text-align:center;">
-                Generated on: {{ now()->format('Y-m-d H:i') }} <br>
-                {{ config('app.name') }}
-            </td>
-            <td width="20%"></td>
-        </tr>
-    </table>
-</div>
-
 </body>
 </html>

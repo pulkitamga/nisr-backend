@@ -599,18 +599,24 @@ class DashboardChartController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.crm.reports.insights-pdf',
-                data: compact(
-                    'kpi',
-                    'topOwners',
-                    'snapshotFrom',
-                    'snapshotTo',
-                    'isRtl',
-                    'filters',        // ADD THIS - needed for dynamic titles
-                    'insights',        // ADD THIS - insights are missing
-                    'chartTitle',      // ADD THIS - for trend chart title
-                    'trendChart',
-                    'stageChart',
-                    'statusChart'
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'topOwners',
+                        'snapshotFrom',
+                        'snapshotTo',
+                        'isRtl',
+                        'filters',
+                        'insights',
+                        'chartTitle',
+                        'trendChart',
+                        'stageChart',
+                        'statusChart'
+                    ),
+                    [
+
+                        'report_title' => translate('crm_insights_report')
+                    ]
                 ),
                 fileName: 'crm-insights-report.pdf'
             );
@@ -915,7 +921,7 @@ class DashboardChartController extends Controller
     }
 
 
-     public function exportPdf(Request $request)
+    public function exportPdf(Request $request)
     {
         // ✅ 1. Get language from request
         $language = $request->get('lang', app()->getLocale());
@@ -966,6 +972,7 @@ class DashboardChartController extends Controller
             'daily_stats' => $chartData['data']['daily_stats'] ?? [],
             'crmChart' => $crmChart, // Pass the chart to the view
             'exportedAt' => now(),
+            'report_title' => translate('crm_analytics_report'),
         ];
 
         return app(ReportPdfService::class)->download(

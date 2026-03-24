@@ -85,7 +85,7 @@ class StockTransferReportController extends Controller
     {
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
-
+        $data['report_title'] = translate('stock_transfer_report');
         return app(ReportPdfService::class)->download(
             view: 'admin-views.branch-management.stock-transfer-report-pdf',
             data: $data,

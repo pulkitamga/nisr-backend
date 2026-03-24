@@ -57,7 +57,7 @@ public function download(
             'default_font' => 'dejavusans',
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'margin_bottom' => 20, // IMPORTANT: space for footer
+            'margin_bottom' => 35, 
         ]);
 
         $isRtl = $this->resolveRtl($data);

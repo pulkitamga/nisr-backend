@@ -563,11 +563,6 @@
         </table>
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} | {{ translate('crm_insights_report') }}
-    </div>
-
 </body>
 
 </html>

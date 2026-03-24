@@ -588,25 +588,6 @@
         </div>
     @endif
 
-    <!-- Footer -->
-    <div class="footer">
-        <table class="footer-table">
-            <tr>
-                <td width="20%" class="text-left">
-                    {{ translate('page') }} {PAGENO}
-                </td>
-                <td width="60%" style="text-align:center;">
-                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} |
-                    {{ translate('branch_stock_report') }}<br>
-                    {{ translate('generated_by') }}: <span
-                        style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
-                    <span style="color:red;">{{ config('app.name') }}</span>
-                </td>
-                <td width="20%"></td>
-            </tr>
-        </table>
-    </div>
-
 </body>
 
 </html>

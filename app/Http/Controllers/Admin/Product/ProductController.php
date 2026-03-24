@@ -1578,6 +1578,7 @@ private function exportStockReportExcel(array $reportData): BinaryFileResponse
 
 private function exportStockReportPdf(array $reportData): Response
 {
+    $reportData['report_title'] = translate('product_stock_report');
     return app(ReportPdfService::class)->download(
         view: 'admin-views.product.stock-report-pdf',
         data: $reportData,
