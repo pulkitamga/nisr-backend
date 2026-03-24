@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
+
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('Expense Transaction Statement') }}</title>
@@ -122,14 +124,29 @@
             border: 1px solid #e5e7eb;
         }
 
-        /* CHART SECTIONS */
+        /* CHART SECTIONS - Two column layout */
+        .charts-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
         .chart-box {
+            flex: 1;
+            min-width: 250px;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             padding: 15px;
             background: #fff;
-            margin-bottom: 20px;
         }
+
+        /* For RTL support */
+        @if (session('direction') === 'rtl')
+            .charts-row {
+                direction: rtl;
+            }
+        @endif
 
         .chart-title {
             font-size: 14px;
@@ -285,7 +302,7 @@
                 $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
                 $logoSrc = '';
                 $logoData = $data['company_web_logo'] ?? '';
-                $filename = is_array($logoData) ? ($logoData['key'] ?? '') : (is_string($logoData) ? $logoData : '');
+                $filename = is_array($logoData) ? $logoData['key'] ?? '' : (is_string($logoData) ? $logoData : '');
 
                 if (!empty($filename)) {
                     $logoPath = storage_path('app/public/company/' . $filename);
@@ -304,9 +321,11 @@
             @endphp
 
             @if ($logoSrc)
-                <img src="{{ $logoSrc }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px; object-fit:contain;">
+                <img src="{{ $logoSrc }}" alt="{{ translate('logo') }}"
+                    style="max-width:100px; max-height:50px; object-fit:contain;">
             @elseif(file_exists($defaultLogoPath))
-                <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}" style="max-width:100px; max-height:50px; object-fit:contain;">
+                <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
+                    style="max-width:100px; max-height:50px; object-fit:contain;">
             @endif
         </div>
     </div>
@@ -315,32 +334,65 @@
     <div class="kpi-container">
         <table class="kpi-table">
             <tr>
-                <tr>
+                <td>
                     <div class="kpi-label">{{ translate('total_Expense_Amount') }}</div>
-                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
-                 </tr>
-                 <tr>
+                    <div class="kpi-value">
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}
+                    </div>
+                </td>
+
+                <td>
                     <div class="kpi-label">{{ translate('free_Delivery_Amount') }}</div>
-                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
-                 </tr>
-                 <tr>
+                    <div class="kpi-value">
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}
+                    </div>
+                </td>
+
+                <td>
                     <div class="kpi-label">{{ translate('coupon_Discount_Amount') }}</div>
-                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
-                 </tr>
-                 <tr>
+                    <div class="kpi-value">
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
+                    </div>
+                </td>
+
+                <td>
                     <div class="kpi-label">{{ translate('free_Shipping_Over_Order_Amount_Discount') }}</div>
-                    <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
-                 </tr>
-              </table>
+                    <div class="kpi-value">
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <!-- CHART SECTION -->
-    @if(!empty($chartImageExpense))
-    <div class="chart-box">
-        <div class="chart-title">{{ translate('expense_Trend') }} <small>({{ $dateRange }})</small></div>
-        <img src="{{ $chartImageExpense }}" class="chart-image">
-    </div>
-    @endif
+   <!-- CHART SECTION - TABLE BASED -->
+<table width="100%" style="margin-bottom:20px;">
+    <tr>
+        <!-- Order Trend -->
+        @if (!empty($chartImageOrder))
+        <td width="50%" style="vertical-align: top; padding-right:10px;">
+            <div class="chart-box">
+                <div class="chart-title">
+                    {{ translate('order_trend') }} <small>({{ $dateRange }})</small>
+                </div>
+                <img src="{{ $chartImageOrder }}" class="chart-image">
+            </div>
+        </td>
+        @endif
+
+        <!-- Payment Chart -->
+        @if (!empty($chartImagePayment))
+        <td width="50%" style="vertical-align: top; padding-left:10px;">
+            <div class="chart-box">
+                <div class="chart-title">
+                    {{ translate('payment_distribution') }}
+                </div>
+                <img src="{{ $chartImagePayment }}" class="chart-image">
+            </div>
+        </td>
+        @endif
+    </tr>
+</table>
 
     <!-- MAIN SUMMARY TABLE -->
     <div class="section-heading">
@@ -353,84 +405,97 @@
                 <th style="width: 10%;">{{ translate('SL') }}</th>
                 <th style="width: 60%;">{{ translate('details') }}</th>
                 <th style="width: 30%;">{{ translate('amount') }}</th>
-             </tr>
+            </tr>
         </thead>
         <tbody>
-             <tr>
-                 <td>1</td>
-                 <td>{{ translate('total_Expense_Amount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
-             </tr>
-             <tr>
-                 <td>2</td>
-                 <td>{{ translate('free_Delivery_Amount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
-             </tr>
-             <tr>
-                 <td>3</td>
-                 <td>{{ translate('coupon_Discount_Amount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
-             </tr>
-             <tr>
-                 <td>4</td>
-                 <td>{{ translate('free_Shipping_Over_Order_Amount_Discount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
-             </tr>
+            <tr>
+                <td>1</td>
+                <td>{{ translate('total_Expense_Amount') }}</td>
+                <td class="text-right">
+                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>{{ translate('free_Delivery_Amount') }}</td>
+                <td class="text-right">
+                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}
+                </td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>{{ translate('coupon_Discount_Amount') }}</td>
+                <td class="text-right">
+                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
+                </td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>{{ translate('free_Shipping_Over_Order_Amount_Discount') }}</td>
+                <td class="text-right">
+                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
+                </td>
+            </tr>
         </tbody>
     </table>
 
     <!-- DETAILED TRANSACTIONS TABLE -->
-    @if(!empty($expense_transactions) && count($expense_transactions) > 0)
-    <div class="section-heading">
-        {{ translate('transaction_details') }}
-        <small>({{ translate('period') }}: {{ $dateRange }})</small>
-    </div>
-    <table class="detail-table">
-        <thead>
-             <tr>
-                <th>#</th>
-                <th>{{ translate('order_id') }}</th>
-                <th>{{ translate('coupon_code') }}</th>
-                <th>{{ translate('discount_type') }}</th>
-                <th>{{ translate('discount_amount') }}</th>
-                <th>{{ translate('free_delivery_bearer') }}</th>
-                <th>{{ translate('coupon_discount_bearer') }}</th>
-                <th>{{ translate('date') }}</th>
-             </tr>
-        </thead>
-        <tbody>
-            @foreach($expense_transactions as $index => $transaction)
-             <tr>
-                 <td>{{ $index + 1 }}</td>
-                 <td>{{ $transaction->order_id ?? '-' }}</td>
-                 <td>{{ $transaction->coupon_code ?? '-' }}</td>
-                 <td>{{ $transaction->discount_type ?? '-' }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->discount_amount ?? 0), currencyCode: getCurrencyCode()) }}</td>
-                 <td>{{ $transaction->free_delivery_bearer ?? '-' }}</td>
-                 <td>{{ $transaction->coupon_discount_bearer ?? '-' }}</td>
-                 <td>{{ $transaction->created_at ? $transaction->created_at->format('d M Y') : '-' }}</td>
-             </tr>
-            @endforeach
-        </tbody>
-    </table>
+    @if (!empty($expense_transactions) && count($expense_transactions) > 0)
+        <div class="section-heading">
+            {{ translate('transaction_details') }}
+            <small>({{ translate('period') }}: {{ $dateRange }})</small>
+        </div>
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ translate('order_id') }}</th>
+                    <th>{{ translate('coupon_code') }}</th>
+                    <th>{{ translate('discount_type') }}</th>
+                    <th>{{ translate('discount_amount') }}</th>
+                    <th>{{ translate('free_delivery_bearer') }}</th>
+                    <th>{{ translate('coupon_discount_bearer') }}</th>
+                    <th>{{ translate('date') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($expense_transactions as $index => $transaction)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $transaction->order_id ?? '-' }}</td>
+                        <td>{{ $transaction->coupon_code ?? '-' }}</td>
+                        <td>{{ $transaction->discount_type ?? '-' }}</td>
+                        <td class="text-right">
+                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->discount_amount ?? 0), currencyCode: getCurrencyCode()) }}
+                        </td>
+                        <td>{{ $transaction->free_delivery_bearer ?? '-' }}</td>
+                        <td>{{ $transaction->coupon_discount_bearer ?? '-' }}</td>
+                        <td>{{ $transaction->created_at ? $transaction->created_at->format('d M Y') : '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     @endif
 
     <!-- FOOTER - Green themed like Order Transaction report -->
     <div style="border-top:1px dashed #d1d5db;margin-top:20px;padding-top:8px;font-size:9px;color:#6b7280;">
         <table width="100%">
-             <tr>
+            <tr>
                 <td width="20%" style="text-align:left; color:#0f766e;">
                     Page {PAGENO}
-                 </td>
+                </td>
                 <td width="60%" style="text-align:center;">
-                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} | {{ translate('expense_transaction_statement') }}<br>
-                    {{ translate('generated_by') }}: <span style="color:#0f766e;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
+                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} |
+                    {{ translate('expense_transaction_statement') }}<br>
+                    {{ translate('generated_by') }}: <span
+                        style="color:#0f766e;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
                     <span style="color:#0f766e;">{{ config('app.name') }}</span>
-                 </td>
+                </td>
                 <td width="20%"></td>
-             </tr>
-         </table>
+            </tr>
+        </table>
     </div>
 
 </body>
+
 </html>
