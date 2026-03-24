@@ -150,6 +150,8 @@
             border-radius: 6px;
             overflow: hidden;
             margin-top: 15px;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .table-header {
@@ -167,6 +169,11 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 10px;
+            page-break-inside: avoid;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
 
         th {

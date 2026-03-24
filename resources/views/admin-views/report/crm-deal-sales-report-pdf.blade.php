@@ -165,6 +165,8 @@
             border-radius: 6px;
             overflow: hidden;
             margin-top: 15px;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
 
         .table-header {
@@ -181,6 +183,20 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 10px;
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid !important;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
         }
 
         th {
@@ -283,7 +299,8 @@
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('wholesale_won_sales') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format($summary['wholesale_won_sales'], 2) }}</strong></div>
+                    <div class="kpi-value"><strong>{{ number_format($summary['wholesale_won_sales'], 2) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('won_deals') }}</div>
@@ -399,7 +416,7 @@
     </div>
 
     <!-- FOOTER -->
-     <div style="border-top:1px dashed #d1d5db;margin-top:20px;padding-top:8px;font-size:9px;color:#6b7280;">
+    <div style="border-top:1px dashed #d1d5db;margin-top:20px;padding-top:8px;font-size:9px;color:#6b7280;">
         <table width="100%">
             <tr>
                 <td width="20%" style="text-align:left; color:red;">

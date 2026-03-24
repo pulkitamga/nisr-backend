@@ -1,9 +1,10 @@
 @php
-    $isRtl = $isRtl ?? (app()->getLocale() === 'ar' || session('direction') === 'rtl');
+    $isRtl = $isRtl ?? app()->getLocale() === 'ar' || session('direction') === 'rtl';
     $dateRange = $fromDate->format('M d, Y') . ' - ' . $toDate->format('M d, Y');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('claims_report') }}</title>
@@ -144,8 +145,8 @@
 
         .chart-image {
             width: 100%;
-            height: auto;
-            max-height: 170px;
+            height: 300px !important;
+            object-fit: contain;
         }
 
         /* TABLE */
@@ -154,6 +155,8 @@
             border-radius: 6px;
             overflow: hidden;
             margin-top: 15px;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important
         }
 
         .table-header {
@@ -171,11 +174,13 @@
         .chart-container {
             margin: 20px 0;
         }
+
         .chart-title {
             font-size: 14px;
             font-weight: bold;
             margin-bottom: 10px;
         }
+
         .bar-chart {
             display: flex;
             align-items: flex-end;
@@ -183,20 +188,24 @@
             gap: 8px;
             margin-top: 10px;
         }
+
         .bar-wrapper {
             flex: 1;
             text-align: center;
         }
+
         .bar {
             background-color: #0177CD;
             border-radius: 4px 4px 0 0;
             width: 100%;
             min-height: 2px;
         }
+
         .bar-label {
             margin-top: 5px;
             font-size: 9px;
         }
+
         .bar-value {
             font-size: 8px;
         }
@@ -205,6 +214,16 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 10px;
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid !important;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
         }
 
         th {
@@ -279,6 +298,7 @@
         @endif
     </style>
 </head>
+
 <body>
 
     <!-- HEADER -->
@@ -291,7 +311,7 @@
             @php
                 $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
             @endphp
-            @if(!empty($logo))
+            @if (!empty($logo))
                 <img src="{{ $logo }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px;">
             @elseif(file_exists($defaultLogoPath))
                 <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
@@ -310,7 +330,8 @@
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('claim_rate') }}</div>
-                    <div class="kpi-value percentage"><strong>{{ number_format($kpi['claim_rate'] ?? 0, 1) }}%</strong></div>
+                    <div class="kpi-value percentage"><strong>{{ number_format($kpi['claim_rate'] ?? 0, 1) }}%</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('open_claims') }}</div>
@@ -370,10 +391,9 @@
                 @forelse($claimsForPdf as $claim)
                     @php
                         $customerName = trim(
-                            (($claim->warranty?->user?->f_name ?? '')) . ' ' .
-                            (($claim->warranty?->user?->l_name ?? ''))
+                            ($claim->warranty?->user?->f_name ?? '') . ' ' . ($claim->warranty?->user?->l_name ?? ''),
                         );
-                        if($customerName === ''){
+                        if ($customerName === '') {
                             $customerName = $claim->warranty?->activated_by_name ?? '-';
                         }
                     @endphp
@@ -384,7 +404,8 @@
                         <td>{{ $claim->warranty?->product?->name ?? '-' }}</td>
                         <td>{{ $customerName }}</td>
                         <td>{{ ucwords(str_replace('_', ' ', $claim->status)) }}</td>
-                        <td class="value-ltr">{{ optional($claim->submitted_at ?? $claim->created_at)->format('Y-m-d H:i') }}</td>
+                        <td class="value-ltr">
+                            {{ optional($claim->submitted_at ?? $claim->created_at)->format('Y-m-d H:i') }}</td>
                         <td class="value-ltr">{{ optional($claim->resolution_due)->format('Y-m-d H:i') ?? '-' }}</td>
                         <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
                     </tr>
@@ -407,8 +428,10 @@
                     Page {PAGENO}
                 </td>
                 <td width="60%" style="text-align:center;">
-                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} | {{ translate('claims_report') }}<br>
-                    {{ translate('generated_by') }}: <span style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
+                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} |
+                    {{ translate('claims_report') }}<br>
+                    {{ translate('generated_by') }}: <span
+                        style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
                     <span style="color:red;">{{ config('app.name') }}</span>
                 </td>
                 <td width="20%"></td>
@@ -417,4 +440,5 @@
     </div>
 
 </body>
+
 </html>
