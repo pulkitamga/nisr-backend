@@ -433,22 +433,5 @@
         @endforeach
     </div>
 
-    <!-- FOOTER - Exactly like CRM report -->
-    <div style="border-top:1px dashed #d1d5db;margin-top:20px;padding-top:8px;font-size:9px;color:#6b7280;">
-        <table width="100%">
-             <tr>
-                <td width="20%" style="text-align:left; color:red;">
-                    Page {PAGENO}
-                 </td>
-                <td width="60%" style="text-align:center;">
-                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} | {{ translate('inhouse_sales_report') }}<br>
-                    {{ translate('generated_by') }}: <span style="color:red;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
-                    <span style="color:red;">{{ config('app.name') }}</span>
-                 </td>
-                <td width="20%"></td>
-             </tr>
-         </table>
-    </div>
-
 </body>
 </html>

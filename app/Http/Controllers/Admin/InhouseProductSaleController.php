@@ -152,7 +152,7 @@ class InhouseProductSaleController extends BaseController
     $data = $this->buildReportData($request);
 
     $data['exportedAt'] = now();
-
+     $data['report_title'] = translate('inhouse_product_sale_report');
     // ✅ FIX: map all charts into one array
     $data['chartImages'] = [
         'trend' => $request->trend_chart,

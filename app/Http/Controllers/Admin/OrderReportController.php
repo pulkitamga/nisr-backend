@@ -36,7 +36,6 @@ class OrderReportController extends Controller
 
         $chart_data = self::order_report_chart_filter($request);
 
-        // chartVal बनाएँ
         $chartVal = [];
         foreach(($chart_data['order_amount'] ?? []) as $amount) {
             $chartVal[] = usdToDefaultCurrency(amount: $amount);
@@ -214,12 +213,12 @@ class OrderReportController extends Controller
             $totalDeliverymanIncentive += ($order->delivery_type == 'self_delivery' && $order->delivery_man_id) ? $order->deliveryman_charge : 0;
         }
 
-        // --- चार्ट images (POST से) ---
         $trendChart = $request->input('trend_chart');
         $stageChart = $request->input('stage_chart');
 
-        // --- Data array (सभी keys के साथ) ---
+       
         $data = [
+             'report_title' => translate('order_report'),
             'orders' => $orders,
             'total_orders' => count($orders),
             'seller' => $seller,
