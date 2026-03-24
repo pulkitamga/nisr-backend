@@ -90,7 +90,7 @@ class CrmSalesReportController extends Controller
 {
     $data = $this->buildReportData($request);
     $data['exportedAt'] = now();
-    
+     $data['report_title'] = translate('crm_sales_report');
     // IMPORTANT: Get chart image from request (sent via POST from JavaScript)
     $chartImage = $request->input('chart_image');
     

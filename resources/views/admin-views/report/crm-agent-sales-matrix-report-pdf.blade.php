@@ -385,7 +385,7 @@
     </div>
 
     <!-- FOOTER -->
-    <div
+    /* <div
         style="
     border-top: 1px dashed #d1d5db;
     margin-top: 20px;
@@ -411,6 +411,6 @@
                 <td width="20%" style="border: none; padding: 2px;"></td>
             </tr>
         </table>
-    </div>
+    </div> */
 </body>
 </html>
