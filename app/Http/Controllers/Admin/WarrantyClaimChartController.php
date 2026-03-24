@@ -390,7 +390,12 @@ class WarrantyClaimChartController extends Controller
 
         return app(ReportPdfService::class)->download(
             view: 'admin-views.warranty.pdf-claims',
-            data: compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end', 'chartImage'),
+            data: array_merge(
+                compact('claims', 'cards', 'dailyBreakdown', 'filters', 'start', 'end', 'chartImage'),
+                [
+                    'report_title' => translate('warranty_claims_report')
+                ]
+            ),
             fileName: 'warranty-claims.pdf'
         );
     }

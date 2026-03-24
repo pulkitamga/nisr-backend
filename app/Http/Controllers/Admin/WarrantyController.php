@@ -418,7 +418,7 @@ class WarrantyController extends Controller
         return redirect()->route('admin.warranty.activation.list');
     }
 
-   
+
 
     // Activation List
     public function activationList(Request $request)
@@ -709,15 +709,20 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-claims-pdf',
-                data: compact(
-                    'kpi',
-                    'claimsForPdf',
-                    'fromDate',
-                    'toDate',
-                    'filters',
-                    'isRtl',
-                    'statusChartImage',
-                    'trendChartImage'
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'claimsForPdf',
+                        'fromDate',
+                        'toDate',
+                        'filters',
+                        'isRtl',
+                        'statusChartImage',
+                        'trendChartImage'
+                    ),
+                    [
+                        'report_title' => translate('warranty_claims_report')
+                    ]
                 ),
 
                 fileName: 'warranty-claims-report.pdf',
@@ -739,7 +744,7 @@ class WarrantyController extends Controller
     }
 
     // Reports (SLA)
-     public function reportSLA(Request $request): View|BinaryFileResponse|Response
+    public function reportSLA(Request $request): View|BinaryFileResponse|Response
     {
         [$fromDate, $toDate] = $this->resolveAnalyticsDateRange($request);
         $filters = [
@@ -900,19 +905,25 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-sla-pdf',
-                data: compact(
-                    'kpi',
-                    'slaRowsForPdf',
-                    'fromDate',
-                    'toDate',
-                    'filters',
-                    'isRtl',
-                    'complianceChartImage',
-                    'typeChartImage',
-                    'trendChartImage',
-                    'companyName',
-                    'companyLogo'
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'slaRowsForPdf',
+                        'fromDate',
+                        'toDate',
+                        'filters',
+                        'isRtl',
+                        'complianceChartImage',
+                        'typeChartImage',
+                        'trendChartImage',
+                        'companyName',
+                        'companyLogo'
+                    ),
+                    [
+                        'report_title' => translate('sla_report')
+                    ]
                 ),
+
                 fileName: 'warranty-sla-report.pdf',
                 orientation: 'landscape'
             );
@@ -1083,17 +1094,22 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-activations-pdf',
-                data: compact(
-                    'kpi',
-                    'methodBreakdown',
-                    'topProducts',
-                    'activationRowsForPdf',
-                    'fromDate',
-                    'toDate',
-                    'filters',
-                    'isRtl',
-                    'trendChartImage',
-                    'methodChartImage'
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'methodBreakdown',
+                        'topProducts',
+                        'activationRowsForPdf',
+                        'fromDate',
+                        'toDate',
+                        'filters',
+                        'isRtl',
+                        'trendChartImage',
+                        'methodChartImage'
+                    ),
+                    [
+                        'report_title' => translate('activation_report')
+                    ]
                 ),
                 fileName: 'warranty-activations-report.pdf',
                 orientation: 'landscape'
@@ -1136,9 +1152,9 @@ class WarrantyController extends Controller
             ->selectRaw($completedColumn . ' as completed_at')
             ->selectRaw(
                 'CASE ' .
-                'WHEN ' . $completedColumn . ' IS NOT NULL THEN IF(' . $completedColumn . ' <= ' . $dueColumn . ', 1, 0) ' .
-                'ELSE IF(' . $dueColumn . ' >= NOW(), 1, 0) ' .
-                'END as is_within_sla'
+                    'WHEN ' . $completedColumn . ' IS NOT NULL THEN IF(' . $completedColumn . ' <= ' . $dueColumn . ', 1, 0) ' .
+                    'ELSE IF(' . $dueColumn . ' >= NOW(), 1, 0) ' .
+                    'END as is_within_sla'
             )
             ->whereNotNull($dueColumn)
             ->whereBetween($dueColumn, [$fromDate, $toDate]);
@@ -1205,7 +1221,7 @@ class WarrantyController extends Controller
         return (string)($claim->activated_by_name ?? '-');
     }
 
-   public function reportAnalytics(Request $request): View|BinaryFileResponse|Response
+    public function reportAnalytics(Request $request): View|BinaryFileResponse|Response
     {
         [$snapshotFrom, $snapshotTo] = $this->resolveAnalyticsDateRange($request);
         $filters = [
@@ -1443,16 +1459,21 @@ class WarrantyController extends Controller
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.warranty.report-analytics-pdf',
-                data: compact(
-                    'kpi',
-                    'topProducts',
-                    'snapshotFrom',
-                    'snapshotTo',
-                    'isRtl',
-                    'trendChartImage',
-                    'statusChartImage',
-                    'agingChartImage',
-                    'chargeChartImage'
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'topProducts',
+                        'snapshotFrom',
+                        'snapshotTo',
+                        'isRtl',
+                        'trendChartImage',
+                        'statusChartImage',
+                        'agingChartImage',
+                        'chargeChartImage'
+                    ),
+                    [
+                        'report_title' => translate('warranty_analytics_report')
+                    ]
                 ),
                 fileName: 'warranty-analytics-report.pdf',
                 orientation: 'landscape'

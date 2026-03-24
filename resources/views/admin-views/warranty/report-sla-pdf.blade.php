@@ -361,18 +361,5 @@
             <div class="no-data">{{ translate('no_data_found_for_selected_period') }}</div>
         @endif
     </div>
-
-    <div class="footer">
-        <table class="footer-table">
-            <tr>
-                <td width="20%" style="text-align:{{ $isRtl ? 'right' : 'left' }};">Page {PAGENO}</td>
-                <td width="60%" style="text-align:center;">
-                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} |
-                    {{ $companyName ?? config('app.name') }}
-                </td>
-                <td width="20%"></td>
-            </tr>
-        </table>
-    </div>
 </body>
 </html>
