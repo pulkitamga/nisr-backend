@@ -350,15 +350,20 @@ class WholesaleDashboardController extends BaseController
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.wholesaler-business.reports.revenue-pdf',
-                data: compact(
-                    'kpi',
-                    'topWholesalers',
-                    'snapshotFrom',
-                    'snapshotTo',
-                    'isRtl',
-                    'insights',
-                    'revenueTrendChartImage',
-                    'deliveryStatusChartImage'
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'topWholesalers',
+                        'snapshotFrom',
+                        'snapshotTo',
+                        'isRtl',
+                        'insights',
+                        'revenueTrendChartImage',
+                        'deliveryStatusChartImage'
+                    ),
+                    [
+                        'report_title' => translate('wholesale_revenue_report')
+                    ]
                 ),
                 fileName: 'wholesale-revenue-report.pdf'
             );
@@ -584,17 +589,22 @@ class WholesaleDashboardController extends BaseController
 
             return app(ReportPdfService::class)->download(
                 view: 'admin-views.wholesaler-business.reports.pipeline-pdf',
-                data: compact(
-                    'kpi',
-                    'tierRevenue',
-                    'snapshotFrom',
-                    'snapshotTo',
-                    'isRtl',
-                    'insights',
-                    'stageSnapshotChartImage',
-                    'pipelineTrendChartImage',
-                    'topProductsChartImage',
-                    'tierMixChartImage'
+                data: array_merge(
+                    compact(
+                        'kpi',
+                        'tierRevenue',
+                        'snapshotFrom',
+                        'snapshotTo',
+                        'isRtl',
+                        'insights',
+                        'stageSnapshotChartImage',
+                        'pipelineTrendChartImage',
+                        'topProductsChartImage',
+                        'tierMixChartImage'
+                    ),
+                    [
+                        'report_title' => translate('wholesale_pipeline_reportt')
+                    ]
                 ),
                 fileName: 'wholesale-pipeline-report.pdf'
             );
