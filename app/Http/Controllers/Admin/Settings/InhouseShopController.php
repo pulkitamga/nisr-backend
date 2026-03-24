@@ -44,19 +44,54 @@ class InhouseShopController extends BaseController
         $temporaryClose = getWebConfig(name: 'temporary_close');
         $vacation = getWebConfig('vacation_add');
         $admin = $this->adminRepo->getFirstWhere(params: ['id' => 1]);
+        $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
+        $defaultLanguage = $languages[0] ?? 'en';
         $minimumOrderAmountStatus = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'minimum_order_amount_status']);
         $minimumOrderAmount = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'minimum_order_amount']);
         $freeDeliveryStatus = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'free_delivery_status']);
         $freeDeliveryOverAmount = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'free_delivery_over_amount']);
+        $companyNameTranslations = $this->getLanguageWiseConfigValues(
+            value: $this->businessSettingRepo->getFirstWhere(params: ['type' => 'company_name'])?->value ?? '',
+            languages: $languages,
+            defaultLanguage: $defaultLanguage
+        );
 
         if ($request->has('action') && $request['action'] == 'edit') {
-            return view(InhouseShop::UPDATE[VIEW], compact('temporaryClose', 'vacation', 'admin', 'minimumOrderAmountStatus', 'minimumOrderAmount', 'freeDeliveryStatus', 'freeDeliveryOverAmount'));
+            return view(InhouseShop::UPDATE[VIEW], compact(
+                'temporaryClose',
+                'vacation',
+                'admin',
+                'minimumOrderAmountStatus',
+                'minimumOrderAmount',
+                'freeDeliveryStatus',
+                'freeDeliveryOverAmount',
+                'languages',
+                'defaultLanguage',
+                'companyNameTranslations'
+            ));
         }
         return view(InhouseShop::VIEW[VIEW], compact('temporaryClose', 'vacation', 'admin', 'minimumOrderAmountStatus', 'minimumOrderAmount', 'freeDeliveryStatus', 'freeDeliveryOverAmount'));
     }
 
     public function update(Request $request): RedirectResponse
     {
+        $defaultLanguage = getWebConfig(name: 'pnc_language')[0] ?? 'en';
+        $request->validate([
+            'company_name.0' => 'required|string|max:255',
+            'company_name.*' => 'nullable|string|max:255',
+            'basic_lang' => 'nullable|array',
+            'basic_lang.*' => 'nullable|string',
+        ]);
+
+        if ($request->has('company_name')) {
+            $companyName = $this->prepareLanguageWiseData(
+                languages: $request->input('basic_lang', []),
+                values: $request->input('company_name', []),
+                defaultLanguage: $defaultLanguage
+            );
+            $this->businessSettingRepo->updateOrInsert(type: 'company_name', value: json_encode($companyName));
+        }
+
         $imgBanner = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'shop_banner']);
         if ($request->has('shop_banner')) {
             $imgBannerImage = $imgBanner ? $this->updateFile(dir: 'shop/', oldImage: (is_array($imgBanner['value']) ? $imgBanner['value']['image_name'] : $imgBanner['value'] ), format: 'webp', image: $request->file('shop_banner')):$this->upload('shop/', 'webp',  $request->file('shop_banner'));
@@ -103,6 +138,51 @@ class InhouseShopController extends BaseController
         clearWebConfigCacheKeys();
         Toastr::success(translate('Updated_successfully'));
         return back();
+    }
+
+    private function getLanguageWiseConfigValues(string|array|null $value, array $languages, string $defaultLanguage): array
+    {
+        $values = [];
+        foreach ($languages as $language) {
+            $values[$language] = '';
+        }
+
+        if (is_array($value)) {
+            foreach ($languages as $language) {
+                $values[$language] = $value[$language] ?? '';
+            }
+            return $values;
+        }
+
+        $decodedValue = is_string($value) ? json_decode($value, true) : null;
+        if (is_array($decodedValue) && !array_is_list($decodedValue)) {
+            foreach ($languages as $language) {
+                $values[$language] = $decodedValue[$language] ?? '';
+            }
+            return $values;
+        }
+
+        $values[$defaultLanguage] = is_string($value) ? $value : '';
+        return $values;
+    }
+
+    private function prepareLanguageWiseData(array $languages, array $values, string $defaultLanguage): array
+    {
+        $result = [];
+        foreach ($languages as $index => $language) {
+            $result[$language] = $values[$index] ?? '';
+        }
+
+        if (empty($result[$defaultLanguage] ?? null)) {
+            foreach ($result as $value) {
+                if (!empty($value)) {
+                    $result[$defaultLanguage] = $value;
+                    break;
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function getTemporaryClose(Request $request): JsonResponse

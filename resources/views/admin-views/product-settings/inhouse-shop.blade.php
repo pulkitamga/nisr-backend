@@ -90,7 +90,7 @@
                         </div>
                         <div class="media-body">
                             <div class="d-flex flex-column align-items-start gap-1 mb-3">
-                                <h3 class="text-white fz-24">{{ getWebConfig(name: 'company_name' ) }} {{ translate('shop') }}</h3>
+                                <h3 class="text-white fz-24">{{ getWebConfig(name: 'company_name' ) }}</h3>
                                 <a href="{{ route('shopView',['id'=>0]) }}" target="_blank"
                                    class="btn btn--primary d-flex gap-2 align-items-center text-nowrap"><i
                                             class="tio-globe"></i>{{ translate('visit_website') }}</a>

@@ -82,6 +82,51 @@
                 <div class="mt-5">
                     <form action="{{ route('admin.product-settings.inhouse-shop') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <div class="bg-white rounded border mb-4">
+                            <div class="border-bottom p-3">
+                                <h5 class="mb-0 text-capitalize d-flex gap-2">
+                                    <i class="tio-shop"></i>
+                                    {{ translate('edit_shop') }}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <ul class="nav nav-tabs lang_tab" id="shop-name-language-tab" role="tablist">
+                                        @foreach ($languages as $lang)
+                                            <li class="nav-item">
+                                                <a class="nav-link {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                                   id="{{ $lang }}-shop-name-link"
+                                                   data-toggle="tab"
+                                                   href="#{{ $lang }}-shop-name-form"
+                                                   role="tab">
+                                                    {{ ucfirst(getLanguageName($lang)) . '(' . strtoupper($lang) . ')' }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                <div class="tab-content" id="shop-name-language-tab-content">
+                                    @foreach ($languages as $lang)
+                                        <div class="tab-pane fade {{ $lang == $defaultLanguage ? 'show active' : '' }}"
+                                             id="{{ $lang }}-shop-name-form"
+                                             role="tabpanel">
+                                            <div class="form-group mb-0">
+                                                <label class="title-color d-flex">
+                                                    {{ translate('shop_name') }} ({{ strtoupper($lang) }})
+                                                    @if($lang == $defaultLanguage)<span class="text-danger">*</span>@endif
+                                                </label>
+                                                <input class="form-control" type="text" name="company_name[]"
+                                                       value="{{ $companyNameTranslations[$lang] ?? '' }}"
+                                                       placeholder="{{ translate('shop_name') }}"
+                                                    {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                            </div>
+                                            <input type="hidden" name="basic_lang[]" value="{{ $lang }}">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="text-center">
@@ -224,4 +269,3 @@
         </div>
     </div>
 @endsection
-
