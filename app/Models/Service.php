@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-
+use Illuminate\Database\Eloquent\Builder;
 
 class Service extends Model
 {
@@ -40,8 +40,42 @@ class Service extends Model
         return $this->belongsTo(Product::class);
     }
 
-     public function translations(): MorphMany
+    public function translations(): MorphMany
     {
         return $this->morphMany('App\Models\Translation', 'translationable');
+    }
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::addGlobalScope('translate', function (Builder $builder) {
+            $builder->with(['translations' => function ($query) {
+                if (strpos(url()->current(), '/api')) {
+                    return $query->where('locale', app()->getLocale())
+                        ->where('key', 'title');
+                } else {
+                    return $query->where('locale', getDefaultLanguage())
+                        ->where('key', 'title');
+                }
+            }]);
+        });
+    }
+    public function getTitleAttribute($title): string|null
+    {
+        if (
+            strpos(url()->current(), '/admin') ||
+            strpos(url()->current(), '/vendor') ||
+            strpos(url()->current(), '/seller')
+        ) {
+            return $title;
+        }
+
+        $currentLocale = app()->getLocale();
+        $translation = $this->translations
+            ->where('locale', $currentLocale)
+            ->where('key', 'title')
+            ->first();
+
+        return $translation->value ?? $title;
     }
 }

@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ServiceRequestController extends Controller
 {
@@ -101,27 +102,27 @@ class ServiceRequestController extends Controller
             ->whereIn('type', ['request_card_1', 'request_card_2', 'request_card_3'])
             ->where('is_active', 1)
             ->orderByRaw("
-                case type
-                    when 'request_card_1' then 1
-                    when 'request_card_2' then 2
-                    when 'request_card_3' then 3
-                    else 99
-                end
-            ")
+            case type
+                when 'request_card_1' then 1
+                when 'request_card_2' then 2
+                when 'request_card_3' then 3
+                else 99
+            end
+        ")
             ->get()
-            ->map(fn (CmsService $card) => $this->formatShowcaseCard($card))
+            ->map(fn(CmsService $card) => $this->formatShowcaseCard($card))
             ->values();
 
         $services = Product::query()
-            ->with(['translations', 'service'])
+            ->with(['translations', 'service.translations'])  // ← Added service.translations
             ->where('product_type', 'services')
             ->active()
             ->orderBy('name')
             ->get()
-            ->map(fn (Product $product) => $this->formatCatalogProduct($product))
+            ->map(fn(Product $product) => $this->formatCatalogProduct($product))
             ->filter()
             ->values();
-
+            
         return response()->json([
             'enabled' => true,
             'showcase_cards' => $showcaseCards,
@@ -233,7 +234,7 @@ class ServiceRequestController extends Controller
             ->latest('id')
             ->get();
 
-        return response()->json($tickets->map(fn (SupportTicket $ticket) => $this->formatSummary($ticket))->values(), 200);
+        return response()->json($tickets->map(fn(SupportTicket $ticket) => $this->formatSummary($ticket))->values(), 200);
     }
 
     public function show(Request $request, int $id): JsonResponse
@@ -354,20 +355,20 @@ class ServiceRequestController extends Controller
         $summary['messages'] = $messages;
         $summary['activities'] = $ticket->latestServiceJob?->activities
             ? $ticket->latestServiceJob->activities
-                ->sortByDesc('created_at')
-                ->values()
-                ->map(function ($activity) {
-                    return [
-                        'id' => (int) $activity->id,
-                        'activity_type' => $activity->activity_type,
-                        'description' => $activity->description,
-                        'created_by' => $activity->createdBy?->name,
-                        'created_at' => $activity->created_at?->toIso8601String(),
-                    ];
-                })
-                ->toArray()
+            ->sortByDesc('created_at')
+            ->values()
+            ->map(function ($activity) {
+                return [
+                    'id' => (int) $activity->id,
+                    'activity_type' => $activity->activity_type,
+                    'description' => $activity->description,
+                    'created_by' => $activity->createdBy?->name,
+                    'created_at' => $activity->created_at?->toIso8601String(),
+                ];
+            })
+            ->toArray()
             : [];
-        $summary['invoices'] = $ticket->invoices->map(fn (ServiceInvoice $invoice) => $this->formatInvoice($invoice))->values()->toArray();
+        $summary['invoices'] = $ticket->invoices->map(fn(ServiceInvoice $invoice) => $this->formatInvoice($invoice))->values()->toArray();
         $summary['service_request'] = [
             'service_request_id' => $details['service_request_id'] ?? null,
             'service_id' => $details['service_id'] ?? null,
@@ -398,7 +399,7 @@ class ServiceRequestController extends Controller
         return [
             'id' => (int) $service->id,
             'service_id' => $service->service_id,
-            'title' => $service->title,
+            'title' => getTranslatedValue($service, 'title', $service->title ?? ''),
             'base_price_inshop' => $service->base_price_inshop,
             'base_price_mobile' => $service->base_price_mobile,
             'included_km_mobile' => $service->included_km_mobile,
@@ -462,6 +463,31 @@ class ServiceRequestController extends Controller
             return null;
         }
 
+        $service = $product->service;
+
+        // Get all translations for the service title
+        $titleTranslations = [];
+
+        // If service has translations relationship loaded
+        if ($service->relationLoaded('translations')) {
+            foreach ($service->translations as $trans) {
+                if ($trans->key === 'title') {
+                    $titleTranslations[$trans->locale] = $trans->value;
+                }
+            }
+        } else {
+            // If not loaded, fetch translations manually
+            $translations = DB::table('translations')
+                ->where('translationable_type', 'App\Models\Service')
+                ->where('translationable_id', $service->id)
+                ->where('key', 'title')
+                ->get();
+
+            foreach ($translations as $trans) {
+                $titleTranslations[$trans->locale] = $trans->value;
+            }
+        }
+
         return [
             'product_id' => (int) $product->id,
             'slug' => $product->slug,
@@ -472,17 +498,18 @@ class ServiceRequestController extends Controller
                 ->value(),
             'thumbnail_full_url' => $product->thumbnail_full_url,
             'service' => [
-                'id' => (int) $product->service->id,
-                'service_id' => $product->service->service_id,
-                'title' => $product->service->title ?: $product->name,
-                'base_price_inshop' => $product->service->base_price_inshop,
-                'base_price_mobile' => $product->service->base_price_mobile,
-                'parts_cost' => $product->service->parts_cost,
-                'included_km_mobile' => $product->service->included_km_mobile,
-                'travel_fee_per_km' => $product->service->travel_fee_per_km,
-                'labor_hours' => $product->service->labor_hours,
-                'parts_included' => $product->service->parts_included,
-                'call_center_flag' => (bool) $product->service->call_center_flag,
+                'id' => (int) $service->id,
+                'service_id' => $service->service_id,
+                'title' => $service->title,  // Current locale title (from database)
+                'title_translations' => $titleTranslations,  // All translations (en, ar, etc.)
+                'base_price_inshop' => $service->base_price_inshop,
+                'base_price_mobile' => $service->base_price_mobile,
+                'parts_cost' => $service->parts_cost,
+                'included_km_mobile' => $service->included_km_mobile,
+                'travel_fee_per_km' => $service->travel_fee_per_km,
+                'labor_hours' => $service->labor_hours,
+                'parts_included' => $service->parts_included,
+                'call_center_flag' => (bool) $service->call_center_flag,
             ],
         ];
     }

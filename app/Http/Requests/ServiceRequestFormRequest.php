@@ -37,11 +37,12 @@ class ServiceRequestFormRequest extends FormRequest
             'longitude' => ['nullable', 'string'],
 
             'vehicle_type' => 'required|string',
-            'vehicle_make' => 'required',
-            'vehicle_model' => 'required',
-            'vehicle_year' => 'required|integer',
-            'vehicle_mileage' => 'required|integer',
+            'vehicle_make' => 'nullable',
+            'vehicle_model' => 'nullable',
+            'vehicle_year' => 'nullable|integer',
+            'vehicle_mileage' => 'nullable|integer',
             'vin' => 'nullable|string',
+            'problem_description' => 'nullable|string|max:2000',
         ];
     }
 }
