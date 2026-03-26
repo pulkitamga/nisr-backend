@@ -85,8 +85,23 @@ class ServiceRequestController extends Controller
         ], 200);
     }
 
-    public function catalog(): JsonResponse
+    public function catalog(Request $request): JsonResponse
     {
+        // Read locale from request
+        // $locale = $request->query('locale');
+        // if (!$locale) {
+        //     $locale = $request->header('Accept-Language');
+        // }
+
+        // // Set the locale if provided
+        // if ($locale && in_array($locale, ['en', 'ar'])) {
+        //     app()->setLocale($locale);
+        // }
+        $locale = $request->get('locale', 'en');
+
+        if (in_array($locale, ['en', 'ar'])) {
+            app()->setLocale($locale);
+        }
         $isEnabled = (bool) getWebConfig(name: 'services');
 
         if (!$isEnabled) {
@@ -114,7 +129,7 @@ class ServiceRequestController extends Controller
             ->values();
 
         $services = Product::query()
-            ->with(['translations', 'service.translations'])  // ← Added service.translations
+            ->with(['service'])
             ->where('product_type', 'services')
             ->active()
             ->orderBy('name')
@@ -122,7 +137,7 @@ class ServiceRequestController extends Controller
             ->map(fn(Product $product) => $this->formatCatalogProduct($product))
             ->filter()
             ->values();
-            
+
         return response()->json([
             'enabled' => true,
             'showcase_cards' => $showcaseCards,
@@ -399,7 +414,7 @@ class ServiceRequestController extends Controller
         return [
             'id' => (int) $service->id,
             'service_id' => $service->service_id,
-            'title' => getTranslatedValue($service, 'title', $service->title ?? ''),
+            'title' => $service->title,
             'base_price_inshop' => $service->base_price_inshop,
             'base_price_mobile' => $service->base_price_mobile,
             'included_km_mobile' => $service->included_km_mobile,
@@ -418,6 +433,7 @@ class ServiceRequestController extends Controller
             'year' => $details['vehicle_year'] ?? null,
             'mileage' => $details['vehicle_mileage'] ?? null,
             'vin' => $details['vin'] ?? null,
+            'problem_description' => $details['problem_description'] ?? null,
         ];
     }
 
@@ -465,26 +481,19 @@ class ServiceRequestController extends Controller
 
         $service = $product->service;
 
-        // Get all translations for the service title
-        $titleTranslations = [];
-
-        // If service has translations relationship loaded
+        // Format service translations
+        $serviceTranslations = [];
         if ($service->relationLoaded('translations')) {
             foreach ($service->translations as $trans) {
-                if ($trans->key === 'title') {
-                    $titleTranslations[$trans->locale] = $trans->value;
-                }
-            }
-        } else {
-            // If not loaded, fetch translations manually
-            $translations = DB::table('translations')
-                ->where('translationable_type', 'App\Models\Service')
-                ->where('translationable_id', $service->id)
-                ->where('key', 'title')
-                ->get();
-
-            foreach ($translations as $trans) {
-                $titleTranslations[$trans->locale] = $trans->value;
+                $serviceTranslations[] = [
+                    'translationable_type' => 'App\Models\Service',
+                    'translationable_id' => $service->id,
+                    'locale' => $trans->locale,
+                    'key' => $trans->key,
+                    'item_index' => $trans->item_index,
+                    'value' => $trans->value,
+                    'id' => $trans->id,
+                ];
             }
         }
 
@@ -500,8 +509,8 @@ class ServiceRequestController extends Controller
             'service' => [
                 'id' => (int) $service->id,
                 'service_id' => $service->service_id,
-                'title' => $service->title,  // Current locale title (from database)
-                'title_translations' => $titleTranslations,  // All translations (en, ar, etc.)
+                'title' => $service->title,  // This will be translated by accessor
+                'translations' => $serviceTranslations,  // ← Add this line
                 'base_price_inshop' => $service->base_price_inshop,
                 'base_price_mobile' => $service->base_price_mobile,
                 'parts_cost' => $service->parts_cost,

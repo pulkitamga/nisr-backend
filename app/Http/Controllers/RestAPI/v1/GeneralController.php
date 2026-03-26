@@ -60,7 +60,7 @@ class GeneralController extends Controller
                 'description_en' => null,
                 'address_ar' => null,
                 'address_en' => null,
-                'branches' => $branches->map(fn (Branch $branch): array => [
+                'branches' => $branches->map(fn(Branch $branch): array => [
                     'id' => (int)$branch->id,
                     'branch_name' => $this->preferredValue($branch->branch_name) ?? '',
                     'address' => $this->preferredValue($branch->branch_address),
@@ -116,12 +116,16 @@ class GeneralController extends Controller
             'name' => 'required_without:full_name',
             'full_name' => 'required_without:name',
             'category' => 'nullable|string|in:support,complaint,career,service,retail,wholesale',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120', // 5MB max
         ], [
             'name.required' => 'Name is Empty!',
             'mobile_number.required' => 'Mobile Number is Empty!',
             'subject.required' => ' Subject is Empty!',
             'message.required' => 'Message is Empty!',
             'email.required' => 'Email is Empty!',
+            'attachment.file' => 'The attachment must be a file.',
+            'attachment.mimes' => 'The attachment must be a file of type: jpg, jpeg, png, pdf, doc, docx.',
+            'attachment.max' => 'The attachment size must not exceed 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -139,7 +143,30 @@ class GeneralController extends Controller
             default => 'support',
         };
 
-        [$contact, $inboxMessage, $ticket] = DB::transaction(function () use ($request, $customer, $name, $phone, $category, $messageType) {
+        // Handle file upload - store as array format for attachment column
+        $attachmentArray = [];
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+
+            // Store file in storage/app/public/support-ticket
+            $filePath = $file->storeAs('support-ticket', $fileName, 'public');
+
+            // Format attachment as array as expected by the model
+            $attachmentArray = [
+                [
+                    'file_name' => $fileName,
+                    'storage' => 'public',
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                    'path' => $filePath,
+                ]
+            ];
+        }
+
+        [$contact, $inboxMessage, $ticket] = DB::transaction(function () use ($request, $customer, $name, $phone, $category, $messageType, $attachmentArray) {
             $contact = Contact::create([
                 'name' => $name,
                 'email' => $request['email'],
@@ -164,6 +191,8 @@ class GeneralController extends Controller
                     'subject' => $request['subject'],
                     'message' => $request['message'],
                     'contact_id' => $contact->id,
+                    'has_attachment' => !empty($attachmentArray),
+                    'attachment_count' => count($attachmentArray),
                 ],
             ]);
 
@@ -179,6 +208,7 @@ class GeneralController extends Controller
                     'pipeline' => 'form',
                     'message_type' => $messageType,
                     'category' => $category,
+                    'has_attachment' => !empty($attachmentArray),
                 ],
             ]);
 
@@ -190,6 +220,13 @@ class GeneralController extends Controller
                 priority: 'medium'
             );
 
+            // Update the ticket with attachment if it exists
+            if (!empty($attachmentArray) && $ticket) {
+                $ticket->update([
+                    'attachment' => $attachmentArray, // This will be cast to JSON automatically
+                ]);
+            }
+
             $inboxMessage->update([
                 'related_ticket_id' => $ticket->id,
                 'convert_type' => 'ticket',
@@ -199,6 +236,9 @@ class GeneralController extends Controller
 
             return [$contact, $inboxMessage, $ticket];
         });
+
+        // Get the attachment URLs using the model's accessor
+        $attachmentUrls = $ticket->attachment_full_url ?? [];
 
         return response()->json([
             'message' => 'your_message_send_successfully',
@@ -215,6 +255,8 @@ class GeneralController extends Controller
                 'ticket_id' => (string)$ticket->id,
                 'last_update' => optional($inboxMessage->updated_at)?->toDateTimeString(),
                 'next_step' => 'Your case has been converted to a support ticket.',
+                'attachments' => $attachmentUrls, // Array of attachment URLs
+                'has_attachments' => !empty($attachmentUrls),
             ],
         ], 200);
     }

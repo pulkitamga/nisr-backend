@@ -123,6 +123,7 @@ class ServiceRequestSubmissionService
             'vehicle_year' => $serviceRequest->vehicle_year,
             'vehicle_mileage' => $serviceRequest->vehicle_mileage,
             'vin' => $serviceRequest->vin,
+            'problem_description' => $serviceRequest->problem_description,
         ];
     }
 
