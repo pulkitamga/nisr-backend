@@ -191,15 +191,28 @@ class BranchController extends BaseController
         return back();
     }
 
-    public function exportList(Request $request): BinaryFileResponse
+    public function exportList(Request $request): BinaryFileResponse|RedirectResponse
     {
 
         // --- NEW: Single Product History Export Logic ---
         if ($request->has('product_id')) {
+            $authUser = auth('admin')->user();
             $productId = $request->product_id;
-            $branchId = $request->branch_id;
+            $branchId = (int)$request->branch_id;
             $variationType = $request->variation_type; // Pass this from JS
             $variantMatcher = app(VariantMatcher::class);
+
+            if ($branchId <= 0) {
+                Toastr::error(translate('you_are_not_authorized_to_export_this_branch_data'));
+
+                return redirect()->route('admin.branch.branch-stock-list');
+            }
+
+            if (!$this->canAccessBranchData($authUser, $branchId)) {
+                Toastr::error(translate('you_are_not_authorized_to_export_this_branch_data'));
+
+                return redirect()->route('admin.branch.branch-stock-list');
+            }
 
             // Replicate the logic from fGetBranchesStockList
             $history = \App\Models\StockRequestProduct::where('product_id', $productId)
@@ -255,12 +268,6 @@ class BranchController extends BaseController
 
         if (!$seller) {
             return redirect()->route('admin.branch.branch-list');
-        }
-
-
-        if (!isset($seller)) {
-            Toastr::error(translate('vendor_not_found_It_may_be_deleted'));
-            return back();
         }
 
         if ($tab == 'order') {
@@ -357,6 +364,7 @@ class BranchController extends BaseController
     $branchFilter = $request->input('branch_id', '');
     $productFilter = $request->input('product_id', '');
     $attributeFilter = $request->input('attribute', '');
+    $escapedAttributeFilter = $this->escapeLikeValue($attributeFilter);
     $branches = ManageBranchProductStock::with(['branch', 'product'])
         ->select(
             'branch_id',
@@ -371,9 +379,9 @@ class BranchController extends BaseController
         ->when(
             $attributeFilter,
             fn($q) =>
-            $q->where(function ($qq) use ($attributeFilter) {
-                $qq->where('variation_key', 'LIKE', "%$attributeFilter%")
-                   ->orWhere('variation_type', 'LIKE', "%$attributeFilter%");
+            $q->where(function ($qq) use ($escapedAttributeFilter) {
+                $qq->where('variation_key', 'LIKE', '%' . $escapedAttributeFilter . '%')
+                   ->orWhere('variation_type', 'LIKE', '%' . $escapedAttributeFilter . '%');
             })
         )
         ->groupBy(
@@ -512,6 +520,24 @@ class BranchController extends BaseController
             ->merge($transactionLogs)
             ->sortByDesc('created_at')
             ->values();
+    }
+
+    private function canAccessBranchData(?Admin $authUser, int $branchId): bool
+    {
+        if (!$authUser) {
+            return false;
+        }
+
+        if ($authUser->isSuperAdmin()) {
+            return true;
+        }
+
+        return (int)($authUser->branch_id ?? 0) === $branchId;
+    }
+
+    private function escapeLikeValue(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 
     public function getActiveBranchManagers(?BranchModel $branch = null): Collection

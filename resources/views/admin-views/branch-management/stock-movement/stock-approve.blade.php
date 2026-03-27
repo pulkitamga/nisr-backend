@@ -45,7 +45,7 @@
                     <td class="px-6 py-4 text-gray-900">{{ $product->product->name ?? __('N/A') }}</td>
                     <td class="px-6 py-4 text-gray-700">{{ $product->category->name ?? __('N/A') }}</td>
                     <td class="px-6 py-4 text-gray-800 font-semibold">{{ $product->quantity }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ $transfer->fromBranch->name ?? __('Main Branch') }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ $transfer->fromBranch->branch_name ?? translate('N/A') }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ \Carbon\Carbon::parse($transfer->transfer_date)->format('d M Y, h:i A') }}</td>
                     <td class="px-6 py-4">
                         <div class="d-flex gap-4">

@@ -55,6 +55,7 @@ use App\Models\StockRequestProduct;
 
 class StockMovementController extends Controller
 {
+    private const ACTIONABLE_TRANSFER_STATUSES = ['pending', 'Transferred'];
 
 
     public function __construct(
@@ -94,12 +95,32 @@ class StockMovementController extends Controller
 
     public function approveIndex()
     {
-        $branchId = auth('admin')->user()->branch_id;
+        $authUser = Auth::guard('admin')->user();
+        if (!$authUser) {
+            abort(403);
+        }
 
-        $transfers = StockTransfers::with(['products.product', 'products.category', 'toBranch'])
-            ->where('to_branch_id', $branchId)
+        if (!$authUser->isSuperAdmin() && !$authUser->branch_id) {
+            Toastr::error(translate('branch_manager_must_be_assigned_to_branch'));
+
+            return redirect()->route('admin.branch.index');
+        }
+
+        $transfers = StockTransfers::with([
+            'products' => function ($query) {
+                $query->whereIn('status', self::ACTIONABLE_TRANSFER_STATUSES);
+            },
+            'products.product',
+            'products.category',
+            'toBranch',
+            'fromBranch',
+        ])
+            ->when(
+                !$authUser->isSuperAdmin(),
+                fn($query) => $query->where('to_branch_id', (int)$authUser->branch_id)
+            )
             ->whereHas('products', function ($query) {
-                $query->where('status', 'pending'); 
+                $query->whereIn('status', self::ACTIONABLE_TRANSFER_STATUSES);
             })
             ->latest()
             ->get();
@@ -109,66 +130,12 @@ class StockMovementController extends Controller
 
     public function approveProduct($id)
     {
-        // Eager load the related stockTransfer and its toBranch
-        $product = StockTransferProduct::with('stockTransfer.toBranch')->findOrFail($id);
-
-        // Ensure stockTransfer exists before accessing to_branch_id
-        if (!$product->stockTransfer) {
-            return back()->with('error', 'Stock transfer not found.');
-        }
-
-        // Check if the branch manager owns this transfer
-        if ($product->stockTransfer->toBranch->id != auth('admin')->user()->branch_id) {
-            return back()->with('error', 'Unauthorized action.');
-        }
-
-        // Update the stock transfer product status to approved
-        $product->status = 'approved';
-        $product->save();
-            
-        // Insert the data into StockReceived table
-        StockReceived::create([
-            'branch_id' => $product->stockTransfer->toBranch->id,
-            'product_id' => $product->product_id, // Assuming product_id is part of StockTransferProduct model
-            'quantity_received' => $product->quantity, // Assuming quantity is part of StockTransferProduct model
-            'received_date' => now(), // Current date as received date
-            'status' => 'approved', // Status as approved
-            'approved_by' => auth('admin')->user()->name, // Assuming the admin's name is in the auth session
-        ]);
-
-        return back()->with('success', 'Stock approved and received successfully.');
+        return $this->processTransferDecision($id, 'approved');
     }
 
     public function rejectProduct($id)
     {
-        // Eager load the related stockTransfer and its toBranch
-        $product = StockTransferProduct::with('stockTransfer.toBranch')->findOrFail($id);
-
-        // Ensure stockTransfer exists before accessing to_branch_id
-        if (!$product->stockTransfer) {
-            return back()->with('error', 'Stock transfer not found.');
-        }
-
-        // Check if the branch manager owns this transfer
-        if ($product->stockTransfer->toBranch->id != auth('admin')->user()->branch_id) {
-            return back()->with('error', 'Unauthorized action.');
-        }
-
-        // Update the stock transfer product status to rejected
-        $product->status = 'rejected';
-        $product->save();
-
-        // Insert the data into StockReceived table
-        StockReceived::create([
-            'branch_id' => $product->stockTransfer->toBranch->id,
-            'product_id' => $product->product_id, // Assuming product_id is part of StockTransferProduct model
-            'quantity_received' => $product->quantity, // Assuming quantity is part of StockTransferProduct model
-            'received_date' => now(), // Current date as received date
-            'status' => 'rejected', // Status as rejected
-            'approved_by' => auth('admin')->user()->name, // Assuming the admin's name is in the auth session
-        ]);
-
-        return back()->with('success', 'Stock rejected and recorded successfully.');
+        return $this->processTransferDecision($id, 'rejected');
     }
 
 
@@ -208,6 +175,72 @@ class StockMovementController extends Controller
             'cartItems',
             'attributes'
         ));
+    }
+
+    private function processTransferDecision(int|string $id, string $decision): RedirectResponse
+    {
+        $authUser = Auth::guard('admin')->user();
+        if (!$authUser) {
+            abort(403);
+        }
+
+        if (!$authUser->isSuperAdmin() && !$authUser->branch_id) {
+            return back()->with('error', translate('branch_manager_must_be_assigned_to_branch'));
+        }
+
+        return DB::transaction(function () use ($id, $decision, $authUser) {
+            $product = StockTransferProduct::with(['stockTransfer.toBranch'])
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            $stockTransfer = $product->stockTransfer;
+            $destinationBranch = $stockTransfer?->toBranch;
+
+            if (!$stockTransfer || !$destinationBranch) {
+                return back()->with('error', translate('stock_transfer_not_found_or_destination_branch_missing'));
+            }
+
+            if (!$this->canManageTransfer($authUser, (int)$destinationBranch->id)) {
+                return back()->with('error', translate('you_are_not_authorized_to_manage_this_stock_transfer'));
+            }
+
+            if (!in_array($product->status, self::ACTIONABLE_TRANSFER_STATUSES, true)) {
+                return back()->with('error', translate('stock_transfer_has_already_been_processed'));
+            }
+
+            $quantity = (int)$product->quantity;
+            if ($quantity <= 0) {
+                return back()->with('error', translate('stock_transfer_quantity_must_be_greater_than_zero'));
+            }
+
+            $product->status = $decision;
+            $product->approved_at = now();
+            $product->save();
+
+            StockReceived::create([
+                'branch_id' => (int)$destinationBranch->id,
+                'product_id' => (int)$product->product_id,
+                'quantity_received' => $quantity,
+                'received_date' => now()->toDateString(),
+                'status' => $decision,
+                'approved_by' => (string)$authUser->name,
+            ]);
+
+            $successMessage = $decision === 'approved'
+                ? translate('stock_approved_and_received_successfully')
+                : translate('stock_rejected_and_recorded_successfully');
+
+            return back()->with('success', $successMessage);
+        });
+    }
+
+    private function canManageTransfer($authUser, int $destinationBranchId): bool
+    {
+        if ($authUser?->isSuperAdmin()) {
+            return true;
+        }
+
+        return (int)($authUser?->branch_id ?? 0) === $destinationBranchId;
     }
 
     public function saveStockRequest(StockRequestAddProduct $request, stockRequestService $service): JsonResponse|RedirectResponse
