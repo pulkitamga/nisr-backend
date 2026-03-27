@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Utils\CartManager;
 use App\Models\Cart;
+use App\Models\Order;
 use App\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Tests\TestCase;
@@ -259,6 +261,82 @@ class CartSecurityRegressionTest extends TestCase
             ->assertJsonPath('0.tax', 0);
     }
 
+    public function test_area_wise_shipping_cost_is_saved_on_order_and_returned_in_order_details(): void
+    {
+        $this->setBusinessSetting('delivery_zip_code_area_restriction', 0);
+        $this->setBusinessSetting('delivery_country_restriction', 0);
+        $this->setAreaWiseShippingType();
+        Cache::flush();
+
+        $user = $this->createCustomer();
+        $productId = $this->createProduct(currentStock: 10, unitPrice: 250, freeShipping: 0);
+        $stateId = $this->createState();
+        $cityId = $this->createCity($stateId);
+        $area = 'Area-' . uniqid();
+        $shippingCost = 85.0;
+
+        $this->createShippingMethodArea(
+            stateId: $stateId,
+            cityId: $cityId,
+            area: $area,
+            cost: $shippingCost
+        );
+
+        $addressId = $this->createShippingAddress(
+            customerId: (string) $user->id,
+            isGuest: 0,
+            state: 'Cairo',
+            city: 'Cairo City',
+            area: $area
+        );
+
+        $this->createCart([
+            'customer_id' => $user->id,
+            'is_guest' => 0,
+            'product_id' => $productId,
+            'cart_group_id' => CartManager::generateOpaqueCartGroupId(),
+            'shipping_type' => 'area_wise',
+            'shipping_cost' => 0,
+        ]);
+
+        $shippingResponse = $this->actingAs($user, 'customer')
+            ->postJson('/api/v1/cart/update-shipping-cost', [
+                'country' => 'Egypt',
+                'state_id' => $stateId,
+                'city_id' => $cityId,
+                'area_name' => $area,
+                'delivery_type' => 'delivery',
+            ]);
+
+        $shippingResponse->assertOk()
+            ->assertJsonPath('status', 1)
+            ->assertJsonPath('is_area_wise_shipping_resolved', true);
+        $this->assertSame($shippingCost, (float) $shippingResponse->json('shipping_cost'));
+
+        $placeOrderResponse = $this->actingAs($user, 'customer')
+            ->getJson('/api/v1/customer/order/place?' . http_build_query([
+                'address_id' => $addressId,
+                'billing_address_id' => $addressId,
+                'delivery_type' => 'delivery',
+            ]));
+
+        $placeOrderResponse->assertOk();
+
+        $orderId = $placeOrderResponse->json('order_ids.0');
+        $this->assertNotNull($orderId);
+
+        $order = Order::query()->findOrFail($orderId);
+        $this->assertSame($shippingCost, (float) $order->shipping_cost);
+
+        $detailsResponse = $this->actingAs($user, 'customer')
+            ->getJson('/api/v1/customer/order/details?' . http_build_query([
+                'order_id' => $orderId,
+            ]));
+
+        $detailsResponse->assertOk();
+        $this->assertSame($shippingCost, (float) $detailsResponse->json('0.order.shipping_cost'));
+    }
+
     public function test_generated_cart_group_ids_are_opaque(): void
     {
         $cartGroupId = CartManager::generateOpaqueCartGroupId();
@@ -297,7 +375,12 @@ class CartSecurityRegressionTest extends TestCase
         ]);
     }
 
-    private function createProduct(?int $id = null, int $currentStock = 5, int $unitPrice = 100): int
+    private function createProduct(
+        ?int $id = null,
+        int $currentStock = 5,
+        int $unitPrice = 100,
+        int $freeShipping = 1
+    ): int
     {
         $now = now();
         $data = [
@@ -317,7 +400,7 @@ class CartSecurityRegressionTest extends TestCase
             'variation' => '[]',
             'category_ids' => '[]',
             'product_type' => 'physical',
-            'free_shipping' => 1,
+            'free_shipping' => $freeShipping,
             'shipping_cost' => 0,
             'status' => 1,
             'request_status' => 1,
@@ -378,5 +461,103 @@ class CartSecurityRegressionTest extends TestCase
         }
 
         return (int)DB::table('carts')->insertGetId($data);
+    }
+
+    private function setBusinessSetting(string $type, mixed $value): void
+    {
+        DB::table('business_settings')->updateOrInsert(
+            ['type' => $type],
+            [
+                'value' => is_scalar($value) ? (string) $value : json_encode($value),
+                'is_active' => 1,
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+    }
+
+    private function setAreaWiseShippingType(): void
+    {
+        DB::table('shipping_types')->updateOrInsert(
+            ['seller_id' => 0],
+            [
+                'shipping_type' => 'area_wise',
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+    }
+
+    private function createState(?string $name = null, string $country = 'EG'): int
+    {
+        $name ??= 'State-' . uniqid();
+
+        return (int) DB::table('states')->insertGetId([
+            'name' => $name,
+            'country' => $country,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createCity(int $stateId, ?string $name = null): int
+    {
+        $name ??= 'City-' . uniqid();
+
+        return (int) DB::table('cities')->insertGetId([
+            'name' => $name,
+            'state_id' => $stateId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createShippingMethodArea(
+        int $stateId,
+        int $cityId,
+        string $area,
+        float $cost,
+        string $country = 'EG'
+    ): int {
+        return (int) DB::table('shipping_method_areas')->insertGetId([
+            'creator_id' => 1,
+            'creator_type' => 'admin',
+            'country' => $country,
+            'state_id' => $stateId,
+            'city_id' => $cityId,
+            'area' => $area,
+            'cost' => $cost,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createShippingAddress(
+        string $customerId,
+        int $isGuest,
+        string $state,
+        string $city,
+        string $area
+    ): int {
+        return (int) DB::table('shipping_addresses')->insertGetId([
+            'customer_id' => $customerId,
+            'contact_person_name' => 'Guest Cart Tester',
+            'address_type' => 'home',
+            'address' => '123 Test Street',
+            'city' => $city,
+            'zip' => '11311',
+            'phone' => '2011' . random_int(1000000, 9999999),
+            'email' => 'guest-' . uniqid() . '@example.com',
+            'country' => 'Egypt',
+            'state' => $state,
+            'area' => $area,
+            'latitude' => '30.0444',
+            'longitude' => '31.2357',
+            'is_billing' => 1,
+            'is_guest' => $isGuest,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

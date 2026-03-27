@@ -480,6 +480,16 @@ class ServiceRequestController extends Controller
         }
 
         $service = $product->service;
+        $localizedProductDescription = getTranslatedValue(
+            $product,
+            'description',
+            $product->details ?? ''
+        );
+        $localizedServiceTitle = getTranslatedValue(
+            $service,
+            'title',
+            $service->getRawOriginal('title') ?? $service->title ?? ''
+        );
 
         // Format service translations
         $serviceTranslations = [];
@@ -501,7 +511,7 @@ class ServiceRequestController extends Controller
             'product_id' => (int) $product->id,
             'slug' => $product->slug,
             'name' => getTranslatedValue($product, 'name', $product->name ?? ''),
-            'description' => Str::of(strip_tags((string) $product->details))
+            'description' => Str::of(strip_tags((string) $localizedProductDescription))
                 ->squish()
                 ->limit(160)
                 ->value(),
@@ -509,8 +519,8 @@ class ServiceRequestController extends Controller
             'service' => [
                 'id' => (int) $service->id,
                 'service_id' => $service->service_id,
-                'title' => $service->title,  // This will be translated by accessor
-                'translations' => $serviceTranslations,  // ← Add this line
+                'title' => $localizedServiceTitle,
+                'translations' => $serviceTranslations,
                 'base_price_inshop' => $service->base_price_inshop,
                 'base_price_mobile' => $service->base_price_mobile,
                 'parts_cost' => $service->parts_cost,
