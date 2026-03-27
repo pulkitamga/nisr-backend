@@ -195,12 +195,6 @@ class EscalationService
                 departmentId: (int)($escalatable->department_id ?? 0),
             );
 
-            if (in_array($targetStatus, self::TERMINAL_ESCALATION_STATUSES, true)) {
-                $escalatable->forceFill([
-                    'escalated_at' => now(),
-                    'escalated_by' => $actorId,
-                ])->save();
-            }
         }
 
         return $escalation->fresh();
@@ -231,10 +225,7 @@ class EscalationService
         $hasActiveEscalation = Escalation::query()
             ->where('escalatable_id', $entityId)
             ->where('escalatable_type', $entityType)
-            ->where(function ($query) {
-                $query->whereNull('status')
-                    ->orWhereIn('status', self::ACTIVE_ESCALATION_STATUSES);
-            })
+            ->whereIn('status', self::ACTIVE_ESCALATION_STATUSES)
             ->exists();
 
         if ($hasActiveEscalation) {

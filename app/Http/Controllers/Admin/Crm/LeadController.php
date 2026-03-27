@@ -29,6 +29,7 @@ use App\Models\Order;
 use App\Services\LeadConvertService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Exports\LeadsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Crm\EscalationService;
@@ -66,43 +67,45 @@ class LeadController extends BaseController
 
        if ($request->filled('searchValue')) {
         $search = trim($request->searchValue);
+        $searchPattern = $this->likePattern($search);
+        $phoneSearch = $this->normalizedPhoneSearch($search);
 
-        $query->where(function ($q) use ($search) {
+        $query->where(function ($q) use ($searchPattern, $phoneSearch) {
 
             // 1. Contact (User) se search – naam, email, phone
-            $q->orWhereHas('user', function ($sub) use ($search) {
-                $sub->where('f_name', 'LIKE', "%{$search}%")
-                    ->orWhere('l_name', 'LIKE', "%{$search}%")
-                    ->orWhere('email', 'LIKE', "%{$search}%")
-                    ->orWhere('phone', 'LIKE', "%{$search}%")
-                    ->orWhereRaw("CONCAT(f_name, ' ', l_name) LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("REPLACE(phone, '+', '') LIKE REPLACE(?, '+', '')", [$search]);
+            $q->orWhereHas('user', function ($sub) use ($searchPattern, $phoneSearch) {
+                $sub->where('f_name', 'LIKE', $searchPattern)
+                    ->orWhere('l_name', 'LIKE', $searchPattern)
+                    ->orWhere('email', 'LIKE', $searchPattern)
+                    ->orWhere('phone', 'LIKE', $searchPattern)
+                    ->orWhereRaw("CONCAT(f_name, ' ', l_name) LIKE ?", [$searchPattern])
+                    ->orWhereRaw("REPLACE(phone, '+', '') LIKE ?", [$phoneSearch]);
             });
 
             // 2. Inbox Messages se search – sender ka naam, email, phone, subject
-            $q->orWhereHas('inboxMessages', function ($sub) use ($search) {
-                $sub->where('sender_name', 'LIKE', "%{$search}%")
-                    ->orWhere('sender_email', 'LIKE', "%{$search}%")
-                    ->orWhere('sender_phone', 'LIKE', "%{$search}%")
-                    ->orWhere('subject', 'LIKE', "%{$search}%")
-                    ->orWhere('body', 'LIKE', "%{$search}%");
+            $q->orWhereHas('inboxMessages', function ($sub) use ($searchPattern) {
+                $sub->where('sender_name', 'LIKE', $searchPattern)
+                    ->orWhere('sender_email', 'LIKE', $searchPattern)
+                    ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                    ->orWhere('subject', 'LIKE', $searchPattern)
+                    ->orWhere('body', 'LIKE', $searchPattern);
             });
 
             // 3. Agar contact_id null hai lekin inbox message se match kar raha hai
-            $q->orWhereExists(function ($exists) use ($search) {
+            $q->orWhereExists(function ($exists) use ($searchPattern) {
                 $exists->select(DB::raw(1))
                        ->from('inbox_messages')
                        ->whereColumn('inbox_messages.related_lead_id', 'leads.id')
-                       ->where(function ($w) use ($search) {
-                           $w->where('sender_name', 'LIKE', "%{$search}%")
-                             ->orWhere('sender_email', 'LIKE', "%{$search}%")
-                             ->orWhere('sender_phone', 'LIKE', "%{$search}%")
-                             ->orWhere('subject', 'LIKE', "%{$search}%");
+                       ->where(function ($w) use ($searchPattern) {
+                           $w->where('sender_name', 'LIKE', $searchPattern)
+                             ->orWhere('sender_email', 'LIKE', $searchPattern)
+                             ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                             ->orWhere('subject', 'LIKE', $searchPattern);
                        });
             });
         });
     }
-        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        $filterDate = $request->input('filter_date');
         if (!empty($filterDate)) {
             $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
@@ -153,39 +156,42 @@ class LeadController extends BaseController
 
         if ($request->filled('searchValue')) {
             $search = trim($request->searchValue);
-            $query->where(function ($q) use ($search) {
-                $q->orWhereHas('user', function ($sub) use ($search) {
-                    $sub->where('f_name', 'LIKE', "%{$search}%")
-                        ->orWhere('l_name', 'LIKE', "%{$search}%")
-                        ->orWhere('email', 'LIKE', "%{$search}%")
-                        ->orWhere('phone', 'LIKE', "%{$search}%")
-                        ->orWhereRaw("CONCAT(f_name, ' ', l_name) LIKE ?", ["%{$search}%"])
-                        ->orWhereRaw("REPLACE(phone, '+', '') LIKE REPLACE(?, '+', '')", [$search]);
+            $searchPattern = $this->likePattern($search);
+            $phoneSearch = $this->normalizedPhoneSearch($search);
+
+            $query->where(function ($q) use ($searchPattern, $phoneSearch) {
+                $q->orWhereHas('user', function ($sub) use ($searchPattern, $phoneSearch) {
+                    $sub->where('f_name', 'LIKE', $searchPattern)
+                        ->orWhere('l_name', 'LIKE', $searchPattern)
+                        ->orWhere('email', 'LIKE', $searchPattern)
+                        ->orWhere('phone', 'LIKE', $searchPattern)
+                        ->orWhereRaw("CONCAT(f_name, ' ', l_name) LIKE ?", [$searchPattern])
+                        ->orWhereRaw("REPLACE(phone, '+', '') LIKE ?", [$phoneSearch]);
                 });
 
-                $q->orWhereHas('inboxMessages', function ($subQ) use ($search) {
-                    $subQ->where('sender_name', 'like', "%{$search}%")
-                        ->orWhere('sender_email', 'like', "%{$search}%")
-                        ->orWhere('sender_phone', 'like', "%{$search}%")
-                        ->orWhere('subject', 'like', "%{$search}%")
-                        ->orWhere('body', 'like', "%{$search}%");
+                $q->orWhereHas('inboxMessages', function ($subQ) use ($searchPattern) {
+                    $subQ->where('sender_name', 'like', $searchPattern)
+                        ->orWhere('sender_email', 'like', $searchPattern)
+                        ->orWhere('sender_phone', 'like', $searchPattern)
+                        ->orWhere('subject', 'like', $searchPattern)
+                        ->orWhere('body', 'like', $searchPattern);
                 });
 
-                $q->orWhereExists(function ($exists) use ($search) {
+                $q->orWhereExists(function ($exists) use ($searchPattern) {
                     $exists->select(DB::raw(1))
                         ->from('inbox_messages')
                         ->whereColumn('inbox_messages.related_lead_id', 'leads.id')
-                        ->where(function ($w) use ($search) {
-                            $w->where('sender_name', 'LIKE', "%{$search}%")
-                                ->orWhere('sender_email', 'LIKE', "%{$search}%")
-                                ->orWhere('sender_phone', 'LIKE', "%{$search}%")
-                                ->orWhere('subject', 'LIKE', "%{$search}%");
+                        ->where(function ($w) use ($searchPattern) {
+                            $w->where('sender_name', 'LIKE', $searchPattern)
+                                ->orWhere('sender_email', 'LIKE', $searchPattern)
+                                ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                                ->orWhere('subject', 'LIKE', $searchPattern);
                         });
                 });
             });
         }
 
-        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        $filterDate = $request->input('filter_date');
         if (!empty($filterDate)) {
             $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
@@ -282,16 +288,16 @@ public function getUserOrders(Request $request)
             return redirect()->back()->withInput();
         }
 
+        if (empty($lead->department_id) || empty($lead->employee_id) || empty($lead->owner_id)) {
+            Toastr::error(translate('Assign department, owner and employee before converting this lead'));
+            return redirect()->back()->withInput();
+        }
+
         $authUser = auth('admin')->user();
         $owner = Admin::find($lead->owner_id);
 
         if (!$owner || !(bool)($owner->is_supervisor ?? false)) {
             Toastr::error(translate('Owner must be marked as supervisor in employee profile'));
-            return redirect()->back()->withInput();
-        }
-
-        if (empty($lead->department_id) || empty($lead->employee_id) || empty($lead->owner_id)) {
-            Toastr::error(translate('Assign department, owner and employee before converting this lead'));
             return redirect()->back()->withInput();
         }
 
@@ -311,11 +317,7 @@ public function getUserOrders(Request $request)
             return redirect()->back()->withInput();
         }
 
-        if (
-            !$this->isSuperAdmin($authUser) &&
-            $lead->employee?->id !== $authUser->id &&
-            $lead->department?->head_id !== $authUser->id
-        ) {
+        if (!$this->canManageLead($authUser, $lead)) {
             Toastr::error(translate('You are not authorized to convert this lead'));
             return redirect()->back();
         }
@@ -362,11 +364,7 @@ public function getUserOrders(Request $request)
         $authUser = auth('admin')->user();
         $lead = Lead::findOrFail($request->message_id);
 
-        if (
-            !$this->isSuperAdmin($authUser) &&
-            $lead->employee?->id !== $authUser->id &&
-            $lead->department?->head_id !== $authUser->id
-        ) {
+        if (!$this->canManageLead($authUser, $lead)) {
             return response()->json([
                 'status'  => false,
                 'message' => 'You are not authorized to disqualify this lead.',
@@ -635,14 +633,22 @@ public function getUserOrders(Request $request)
     public function storeFile(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf,doc,docx,jpg,png|max:2048',
+            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
         $lead = Lead::findOrFail($id);
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            if (!$this->isAllowedUploadMime($file->getMimeType())) {
+                return response()->json([
+                    'status' => false,
+                    'message' => translate('Invalid file type.'),
+                ], 422);
+            }
+
+            $extension = $file->extension() ?: $file->getClientOriginalExtension();
+            $fileName = now()->timestamp . '_' . Str::random(16) . ($extension ? '.' . strtolower($extension) : '');
             $filePath = $file->storeAs('uploads/lead_files', $fileName, 'public');
 
             $fileModel = new LeadFile();
@@ -1076,6 +1082,50 @@ public function getUserOrders(Request $request)
     private function isSuperAdmin(?Admin $admin): bool
     {
         return $admin?->isSuperAdmin() === true;
+    }
+
+    private function canManageLead(?Admin $authUser, Lead $lead): bool
+    {
+        if (!$authUser) {
+            return false;
+        }
+
+        if ($this->isSuperAdmin($authUser)) {
+            return true;
+        }
+
+        $departmentHeadId = (int)($lead->department?->head_id ?? 0);
+        if (!empty($lead->employee_id)) {
+            return (int)$lead->employee_id === (int)$authUser->id
+                || ($departmentHeadId > 0 && $departmentHeadId === (int)$authUser->id);
+        }
+
+        if (!empty($lead->department_id) && $departmentHeadId > 0) {
+            return $departmentHeadId === (int)$authUser->id;
+        }
+
+        return false;
+    }
+
+    private function likePattern(string $value): string
+    {
+        return '%' . addcslashes($value, '\\%_') . '%';
+    }
+
+    private function normalizedPhoneSearch(string $value): string
+    {
+        return '%' . str_replace('+', '', addcslashes($value, '\\%_')) . '%';
+    }
+
+    private function isAllowedUploadMime(?string $mimeType): bool
+    {
+        return in_array((string)$mimeType, [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/png',
+        ], true);
     }
 
     private function supervisorRoleId(): int

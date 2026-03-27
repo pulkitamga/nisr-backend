@@ -36,6 +36,7 @@ use App\Models\DealFile;
 use App\Models\DealNote;
 use App\Models\DealTask;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface;
 use Illuminate\Validation\ValidationException;
@@ -66,28 +67,29 @@ class DealController extends BaseController
 
        if ($request->filled('searchValue')) {
     $search = trim($request->searchValue);
+    $searchPattern = $this->likePattern($search);
 
-    $query->where(function ($q) use ($search) {
+    $query->where(function ($q) use ($searchPattern) {
 
         // User (contact) se search
-        $q->orWhereHas('user', function ($sub) use ($search) {
-            $sub->where('f_name', 'LIKE', "%{$search}%")
-                ->orWhere('l_name', 'LIKE', "%{$search}%")
-                ->orWhere('email', 'LIKE', "%{$search}%")
-                ->orWhere('phone', 'LIKE', "%{$search}%");
+        $q->orWhereHas('user', function ($sub) use ($searchPattern) {
+            $sub->where('f_name', 'LIKE', $searchPattern)
+                ->orWhere('l_name', 'LIKE', $searchPattern)
+                ->orWhere('email', 'LIKE', $searchPattern)
+                ->orWhere('phone', 'LIKE', $searchPattern);
         });
 
         // Company name se search (wholesaler_businesses)
-        $q->orWhereExists(function ($exists) use ($search) {
+        $q->orWhereExists(function ($exists) use ($searchPattern) {
             $exists->select(DB::raw(1))
                    ->from('wholesaler_businesses')
                    ->whereColumn('wholesaler_businesses.id', 'deals.related_party_id')
                    ->where('deals.related_party_type', 'company')
-                   ->where('wholesaler_businesses.company_name', 'LIKE', "%{$search}%");
+                   ->where('wholesaler_businesses.company_name', 'LIKE', $searchPattern);
         });
     });
 }
-        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        $filterDate = $request->input('filter_date');
         if (!empty($filterDate)) {
             $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
@@ -133,25 +135,25 @@ class DealController extends BaseController
         $dataLimit = getWebConfig(name: WebConfigKey::PAGINATION_LIMIT);
 
         if ($request->filled('searchValue')) {
-            $search = $request->searchValue;
+            $searchPattern = $this->likePattern(trim((string)$request->searchValue));
 
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('user', function ($sub) use ($search) {
-                    $sub->where('f_name', 'LIKE', "%{$search}%")
-                        ->orWhere('l_name', 'LIKE', "%{$search}%")
-                        ->orWhere('email', 'LIKE', "%{$search}%")
-                        ->orWhere('phone', 'LIKE', "%{$search}%");
-                })->orWhereHas('lead.inboxMessages', function ($subQ) use ($search) {
-                    $subQ->where('sender_name', 'like', "%{$search}%")
-                        ->orWhere('sender_email', 'like', "%{$search}%")
-                        ->orWhere('sender_phone', 'like', "%{$search}%")
-                        ->orWhere('subject', 'like', "%{$search}%")
-                        ->orWhere('body', 'like', "%{$search}%");
+            $query->where(function ($q) use ($searchPattern) {
+                $q->whereHas('user', function ($sub) use ($searchPattern) {
+                    $sub->where('f_name', 'LIKE', $searchPattern)
+                        ->orWhere('l_name', 'LIKE', $searchPattern)
+                        ->orWhere('email', 'LIKE', $searchPattern)
+                        ->orWhere('phone', 'LIKE', $searchPattern);
+                })->orWhereHas('lead.inboxMessages', function ($subQ) use ($searchPattern) {
+                    $subQ->where('sender_name', 'like', $searchPattern)
+                        ->orWhere('sender_email', 'like', $searchPattern)
+                        ->orWhere('sender_phone', 'like', $searchPattern)
+                        ->orWhere('subject', 'like', $searchPattern)
+                        ->orWhere('body', 'like', $searchPattern);
                 });
             });
         }
 
-        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        $filterDate = $request->input('filter_date');
         if (!empty($filterDate)) {
             $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
@@ -248,35 +250,36 @@ class DealController extends BaseController
 
         if ($request->filled('searchValue')) {
             $search = trim($request->searchValue);
-            $query->where(function ($q) use ($search, $isRetail) {
-                $q->orWhereHas('user', function ($sub) use ($search) {
-                    $sub->where('f_name', 'LIKE', "%{$search}%")
-                        ->orWhere('l_name', 'LIKE', "%{$search}%")
-                        ->orWhere('email', 'LIKE', "%{$search}%")
-                        ->orWhere('phone', 'LIKE', "%{$search}%");
+            $searchPattern = $this->likePattern($search);
+            $query->where(function ($q) use ($searchPattern, $isRetail) {
+                $q->orWhereHas('user', function ($sub) use ($searchPattern) {
+                    $sub->where('f_name', 'LIKE', $searchPattern)
+                        ->orWhere('l_name', 'LIKE', $searchPattern)
+                        ->orWhere('email', 'LIKE', $searchPattern)
+                        ->orWhere('phone', 'LIKE', $searchPattern);
                 });
 
                 if (!$isRetail) {
-                    $q->orWhereExists(function ($exists) use ($search) {
+                    $q->orWhereExists(function ($exists) use ($searchPattern) {
                         $exists->select(DB::raw(1))
                             ->from('wholesaler_businesses')
                             ->whereColumn('wholesaler_businesses.id', 'deals.related_party_id')
                             ->where('deals.related_party_type', 'company')
-                            ->where('wholesaler_businesses.company_name', 'LIKE', "%{$search}%");
+                            ->where('wholesaler_businesses.company_name', 'LIKE', $searchPattern);
                     });
                 } else {
-                    $q->orWhereHas('lead.inboxMessages', function ($subQ) use ($search) {
-                        $subQ->where('sender_name', 'LIKE', "%{$search}%")
-                            ->orWhere('sender_email', 'LIKE', "%{$search}%")
-                            ->orWhere('sender_phone', 'LIKE', "%{$search}%")
-                            ->orWhere('subject', 'LIKE', "%{$search}%")
-                            ->orWhere('body', 'LIKE', "%{$search}%");
+                    $q->orWhereHas('lead.inboxMessages', function ($subQ) use ($searchPattern) {
+                        $subQ->where('sender_name', 'LIKE', $searchPattern)
+                            ->orWhere('sender_email', 'LIKE', $searchPattern)
+                            ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                            ->orWhere('subject', 'LIKE', $searchPattern)
+                            ->orWhere('body', 'LIKE', $searchPattern);
                     });
                 }
             });
         }
 
-        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        $filterDate = $request->input('filter_date');
         if (!empty($filterDate)) {
             $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
@@ -690,14 +693,22 @@ class DealController extends BaseController
     public function storeFile(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf,doc,docx,jpg,png|max:2048',
+            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
         $deal = Deal::findOrFail($id);
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            if (!$this->isAllowedUploadMime($file->getMimeType())) {
+                return response()->json([
+                    'status' => false,
+                    'message' => translate('Invalid file type.'),
+                ], 422);
+            }
+
+            $extension = $file->extension() ?: $file->getClientOriginalExtension();
+            $fileName = now()->timestamp . '_' . Str::random(16) . ($extension ? '.' . strtolower($extension) : '');
             $filePath = $file->storeAs('uploads/deal_files', $fileName, 'public');
 
             $fileModel = new DealFile();
@@ -806,7 +817,7 @@ class DealController extends BaseController
         if ($task->deal_id !== $deal->id) {
             return response()->json([
                 'status' => false,
-                'message' => translate('Task does not belong to this massage!'),
+                'message' => translate('Task does not belong to this deal!'),
             ], 403);
         }
 
@@ -860,8 +871,23 @@ class DealController extends BaseController
         if (!$deal) {
             return response()->json(['status' => false, 'message' => 'Deal not found'], 404);
         }
+        $authUser = auth('admin')->user();
+        if (!$this->canManageDealStatus($authUser, $deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You are not authorized to modify this deal.',
+            ], 403);
+        }
+
+        $previousDepartmentId = (int)$deal->department_id;
+        $newDepartmentId = (int)$request->department_id;
+        $departmentChanged = $previousDepartmentId !== $newDepartmentId;
+
         $deal->department_id = $request->department_id;
         $deal->priority      = $request->priority;
+        if ($departmentChanged) {
+            $deal->employee_id = null;
+        }
         $deal->save();
         $departmentName = $deal->department?->name ?? 'N/A';
         $activity = new DealActivity();
@@ -876,6 +902,7 @@ class DealController extends BaseController
             'department_id' => $request->department_id,
             'department_name' => $departmentName,
             'priority'      => $deal->priority,
+            'employee_cleared' => $departmentChanged,
             'reply'         => $request->reply,
         ];
         $activity->save();
@@ -894,6 +921,13 @@ class DealController extends BaseController
         $deal = Deal::find($request->ticket_id);
         if (!$deal) {
             return response()->json(['status' => false, 'message' => 'Deal not found'], 404);
+        }
+        $authUser = auth('admin')->user();
+        if (!$this->canManageDealStatus($authUser, $deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You are not authorized to modify this deal.',
+            ], 403);
         }
 
         if (empty($deal->department_id)) {
@@ -945,6 +979,13 @@ class DealController extends BaseController
         $deal = Deal::find($request->ticket_id);
         if (!$deal) {
             return response()->json(['status' => false, 'message' => 'Deal not found'], 404);
+        }
+        $authUser = auth('admin')->user();
+        if (!$this->canManageDealStatus($authUser, $deal)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You are not authorized to modify this deal.',
+            ], 403);
         }
 
         $owner = Admin::find($ownerId);
@@ -1177,9 +1218,37 @@ class DealController extends BaseController
             return false;
         }
 
-        return $this->isSuperAdmin($authUser)
-            || $deal->employee?->id === $authUser->id
-            || $deal->department?->head_id === $authUser->id;
+        if ($this->isSuperAdmin($authUser)) {
+            return true;
+        }
+
+        $departmentHeadId = (int)($deal->department?->head_id ?? 0);
+        if (!empty($deal->employee_id)) {
+            return (int)$deal->employee_id === (int)$authUser->id
+                || ($departmentHeadId > 0 && $departmentHeadId === (int)$authUser->id);
+        }
+
+        if (!empty($deal->department_id) && $departmentHeadId > 0) {
+            return $departmentHeadId === (int)$authUser->id;
+        }
+
+        return false;
+    }
+
+    private function likePattern(string $value): string
+    {
+        return '%' . addcslashes($value, '\\%_') . '%';
+    }
+
+    private function isAllowedUploadMime(?string $mimeType): bool
+    {
+        return in_array((string)$mimeType, [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/png',
+        ], true);
     }
 
     private function resolveDealFromRequest(Request $request): Deal

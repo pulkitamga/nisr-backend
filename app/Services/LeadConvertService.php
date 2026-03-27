@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Lead;
 use App\Models\Deal;
 use App\Models\Activity;
+use App\Models\WholeSalerBusiness;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Brian2694\Toastr\Facades\Toastr;
@@ -27,6 +29,12 @@ class LeadConvertService
 
         try {
             return DB::transaction(function () use ($lead, $data, $logContext, $admin) {
+                $lockedLead = Lead::query()
+                    ->whereKey($lead->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $this->lockRelatedPartyRecord((string)$data['party_type'], (int)$data['party_id']);
 
                 Log::info('Checking for existing open deal', [
                     'party_type' => $data['party_type'],
@@ -36,6 +44,7 @@ class LeadConvertService
                 $existingDeal = Deal::where('related_party_type', $data['party_type'])
                     ->where('related_party_id', $data['party_id'])
                     ->where('status', 'open')
+                    ->lockForUpdate()
                     ->first();
 
                 if ($existingDeal) {
@@ -55,7 +64,7 @@ class LeadConvertService
                 ] + $logContext);
 
                 $deal = Deal::create([
-                    'lead_id'            => $lead->id,
+                    'lead_id'            => $lockedLead->id,
                     'related_party_type' => $data['party_type'],
                     'related_party_id'   => $data['party_id'],
                     'stage'              => $stage,
@@ -75,21 +84,21 @@ class LeadConvertService
 
                 // Update Lead
                 if ($data['party_type'] === 'company') {
-                    $lead->company_id = $data['party_id'];
-                    $lead->contact_id = null;
+                    $lockedLead->company_id = $data['party_id'];
+                    $lockedLead->contact_id = null;
                 } elseif ($data['party_type'] === 'contact') {
-                    $lead->contact_id = $data['party_id'];
-                    $lead->company_id = null;
+                    $lockedLead->contact_id = $data['party_id'];
+                    $lockedLead->company_id = null;
                 }
 
-                $lead->status = 'converted';
-                $lead->converted_at = now();
-                $lead->save();
+                $lockedLead->status = 'converted';
+                $lockedLead->converted_at = now();
+                $lockedLead->save();
 
                 Log::info('Lead updated to converted', [
-                    'lead_id' => $lead->id,
-                    'contact_id' => $lead->contact_id,
-                    'company_id' => $lead->company_id,
+                    'lead_id' => $lockedLead->id,
+                    'contact_id' => $lockedLead->contact_id,
+                    'company_id' => $lockedLead->company_id,
                 ] + $logContext);
 
                 // Create Follow-up Activity
@@ -110,14 +119,15 @@ class LeadConvertService
                     ->causedBy($admin)
                     ->withProperties([
                         'lead_id' => $lead->id,
+                        'locked_lead_id' => $lockedLead->id,
                         'from' => 'lead',
                         'to' => 'deal',
                     ])
-                    ->log("Lead #{$lead->id} converted to Deal #{$deal->id} by {$admin?->name}");
+                    ->log("Lead #{$lockedLead->id} converted to Deal #{$deal->id} by {$admin?->name}");
 
                 Log::info('Lead successfully converted to Deal', [
                     'deal_id' => $deal->id,
-                    'lead_id' => $lead->id,
+                    'lead_id' => $lockedLead->id,
                 ] + $logContext);
 
                 Toastr::success('Lead converted to deal successfully!');
@@ -136,6 +146,23 @@ class LeadConvertService
             Toastr::error($e->getMessage() ?: 'Failed to convert lead.');
 
             throw $e;
+        }
+    }
+
+    private function lockRelatedPartyRecord(string $partyType, int $partyId): void
+    {
+        if ($partyId <= 0) {
+            throw new Exception('A valid party is required before conversion.');
+        }
+
+        $partyExists = match ($partyType) {
+            'company' => WholeSalerBusiness::query()->whereKey($partyId)->lockForUpdate()->exists(),
+            'contact' => User::query()->whereKey($partyId)->lockForUpdate()->exists(),
+            default => false,
+        };
+
+        if (!$partyExists) {
+            throw new Exception('The selected party could not be found for conversion.');
         }
     }
 }

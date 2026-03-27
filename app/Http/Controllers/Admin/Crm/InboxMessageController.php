@@ -65,29 +65,31 @@ class InboxMessageController extends BaseController
 
         if ($request->filled('searchValue')) {
             $search = trim($request->searchValue);
+            $searchPattern = $this->likePattern($search);
+            $phoneSearch = $this->normalizedPhoneSearch($search);
 
-            $query->where(function ($q) use ($search) {
-                $q->where('sender_name', 'LIKE', "%{$search}%")
-                    ->orWhere('sender_email', 'LIKE', "%{$search}%")
-                    ->orWhere('sender_phone', 'LIKE', "%{$search}%")
-                    ->orWhere('subject', 'LIKE', "%{$search}%")
-                    ->orWhere('body', 'LIKE', "%{$search}%")
+            $query->where(function ($q) use ($searchPattern, $phoneSearch) {
+                $q->where('sender_name', 'LIKE', $searchPattern)
+                    ->orWhere('sender_email', 'LIKE', $searchPattern)
+                    ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                    ->orWhere('subject', 'LIKE', $searchPattern)
+                    ->orWhere('body', 'LIKE', $searchPattern)
 
-                    ->orWhereExists(function ($exists) use ($search) {
+                    ->orWhereExists(function ($exists) use ($searchPattern, $phoneSearch) {
                         $exists->select(DB::raw(1))
                             ->from('users')
                             ->where(function ($w) {
                                 $w->whereColumn('users.id', 'inbox_messages.contact_id')
                                     ->orWhereColumn('users.email', 'inbox_messages.sender_email')
-                                    ->orWhereRaw("REPLACE(users.phone, '+', '') = REPLACE(inbox_messages.sender_phone, '+', '')")
-                                    ->orWhereRaw("REPLACE(users.phone, ' ', '') = REPLACE(inbox_messages.sender_phone, ' ', '')");
+                                    ->orWhereRaw("REPLACE(REPLACE(users.phone, '+', ''), ' ', '') = REPLACE(REPLACE(inbox_messages.sender_phone, '+', ''), ' ', '')");
                             })
-                            ->where(function ($w) use ($search) {
-                                $w->where('users.f_name', 'LIKE', "%{$search}%")
-                                    ->orWhere('users.l_name', 'LIKE', "%{$search}%")
-                                    ->orWhere('users.email', 'LIKE', "%{$search}%")
-                                    ->orWhere('users.phone', 'LIKE', "%{$search}%")
-                                    ->orWhereRaw("CONCAT(TRIM(users.f_name), ' ', TRIM(users.l_name)) LIKE ?", ["%{$search}%"]);
+                            ->where(function ($w) use ($searchPattern, $phoneSearch) {
+                                $w->where('users.f_name', 'LIKE', $searchPattern)
+                                    ->orWhere('users.l_name', 'LIKE', $searchPattern)
+                                    ->orWhere('users.email', 'LIKE', $searchPattern)
+                                    ->orWhere('users.phone', 'LIKE', $searchPattern)
+                                    ->orWhereRaw("CONCAT(TRIM(users.f_name), ' ', TRIM(users.l_name)) LIKE ?", [$searchPattern])
+                                    ->orWhereRaw("REPLACE(users.phone, '+', '') LIKE ?", [$phoneSearch]);
                             });
                     });
             });
@@ -105,7 +107,7 @@ class InboxMessageController extends BaseController
 
 
         // 📅 Date filter
-        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        $filterDate = $request->input('filter_date');
         if (!empty($filterDate)) {
             $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
@@ -166,33 +168,35 @@ class InboxMessageController extends BaseController
 
         if ($request->filled('searchValue')) {
             $search = trim($request->searchValue);
-            $query->where(function ($q) use ($search) {
-                $q->where('sender_name', 'like', "%{$search}%")
-                    ->orWhere('sender_email', 'like', "%{$search}%")
-                    ->orWhere('sender_phone', 'like', "%{$search}%")
-                    ->orWhere('subject', 'like', "%{$search}%")
-                    ->orWhere('body', 'like', "%{$search}%")
-                    ->orWhereExists(function ($exists) use ($search) {
+            $searchPattern = $this->likePattern($search);
+            $phoneSearch = $this->normalizedPhoneSearch($search);
+            $query->where(function ($q) use ($searchPattern, $phoneSearch) {
+                $q->where('sender_name', 'like', $searchPattern)
+                    ->orWhere('sender_email', 'like', $searchPattern)
+                    ->orWhere('sender_phone', 'like', $searchPattern)
+                    ->orWhere('subject', 'like', $searchPattern)
+                    ->orWhere('body', 'like', $searchPattern)
+                    ->orWhereExists(function ($exists) use ($searchPattern, $phoneSearch) {
                         $exists->select(DB::raw(1))
                             ->from('users')
                             ->where(function ($w) {
                                 $w->whereColumn('users.id', 'inbox_messages.contact_id')
                                     ->orWhereColumn('users.email', 'inbox_messages.sender_email')
-                                    ->orWhereRaw("REPLACE(users.phone, '+', '') = REPLACE(inbox_messages.sender_phone, '+', '')")
-                                    ->orWhereRaw("REPLACE(users.phone, ' ', '') = REPLACE(inbox_messages.sender_phone, ' ', '')");
+                                    ->orWhereRaw("REPLACE(REPLACE(users.phone, '+', ''), ' ', '') = REPLACE(REPLACE(inbox_messages.sender_phone, '+', ''), ' ', '')");
                             })
-                            ->where(function ($w) use ($search) {
-                                $w->where('users.f_name', 'LIKE', "%{$search}%")
-                                    ->orWhere('users.l_name', 'LIKE', "%{$search}%")
-                                    ->orWhere('users.email', 'LIKE', "%{$search}%")
-                                    ->orWhere('users.phone', 'LIKE', "%{$search}%")
-                                    ->orWhereRaw("CONCAT(TRIM(users.f_name), ' ', TRIM(users.l_name)) LIKE ?", ["%{$search}%"]);
+                            ->where(function ($w) use ($searchPattern, $phoneSearch) {
+                                $w->where('users.f_name', 'LIKE', $searchPattern)
+                                    ->orWhere('users.l_name', 'LIKE', $searchPattern)
+                                    ->orWhere('users.email', 'LIKE', $searchPattern)
+                                    ->orWhere('users.phone', 'LIKE', $searchPattern)
+                                    ->orWhereRaw("CONCAT(TRIM(users.f_name), ' ', TRIM(users.l_name)) LIKE ?", [$searchPattern])
+                                    ->orWhereRaw("REPLACE(users.phone, '+', '') LIKE ?", [$phoneSearch]);
                             });
                     });
             });
         }
 
-        $filterDate = $request->input('filter_date', $request->input('fhilter_date'));
+        $filterDate = $request->input('filter_date');
         if (!empty($filterDate)) {
             $dateRange = explode(' - ', $filterDate);
             if (count($dateRange) === 2) {
@@ -263,16 +267,11 @@ class InboxMessageController extends BaseController
                 'message' => 'Assign a supervisor as owner first.',
             ], 400);
         }
-        if (!$this->isSuperAdmin($authUser)) {
-            if (
-                $message->employee_id !== $authUser->id &&
-                $message->department?->head_id !== $authUser->id
-            ) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'You are not authorized to convert this inquiry.',
-                ], 403);
-            }
+        if (!$this->canManageInboxMessage($authUser, $message)) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'You are not authorized to convert this inquiry.',
+            ], 403);
         }
 
         if (!in_array((string)$message->status, ['new', 'processing'], true)) {
@@ -377,14 +376,9 @@ class InboxMessageController extends BaseController
             }
 
             // 🔒 Permission check
-            if (!$this->isSuperAdmin($authUser)) {
-                if (
-                    $message->employee_id !== $authUser->id &&
-                    $message->department?->head_id !== $authUser->id
-                ) {
-                    $skipped[] = $id;
-                    continue;
-                }
+            if (!$this->canManageInboxMessage($authUser, $message)) {
+                $skipped[] = $id;
+                continue;
             }
 
             if (!in_array((string)$message->status, ['new', 'processing'], true)) {
@@ -1231,6 +1225,39 @@ class InboxMessageController extends BaseController
     private function isSuperAdmin(?Admin $admin): bool
     {
         return $admin?->isSuperAdmin() === true;
+    }
+
+    private function canManageInboxMessage(?Admin $authUser, InboxMessage $message): bool
+    {
+        if (!$authUser) {
+            return false;
+        }
+
+        if ($this->isSuperAdmin($authUser)) {
+            return true;
+        }
+
+        $departmentHeadId = (int)($message->department?->head_id ?? 0);
+        if (!empty($message->employee_id)) {
+            return (int)$message->employee_id === (int)$authUser->id
+                || ($departmentHeadId > 0 && $departmentHeadId === (int)$authUser->id);
+        }
+
+        if (!empty($message->department_id) && $departmentHeadId > 0) {
+            return $departmentHeadId === (int)$authUser->id;
+        }
+
+        return false;
+    }
+
+    private function likePattern(string $value): string
+    {
+        return '%' . addcslashes($value, '\\%_') . '%';
+    }
+
+    private function normalizedPhoneSearch(string $value): string
+    {
+        return '%' . str_replace('+', '', addcslashes($value, '\\%_')) . '%';
     }
 
     private function supervisorRoleId(): int
