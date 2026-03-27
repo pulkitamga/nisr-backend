@@ -32,6 +32,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
 use App\Exports\WholesalerReqExport;
 use App\Services\LeadConvertService;
+use App\Services\WholeSaleProductsService;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -276,24 +277,22 @@ class WholeSalerController extends BaseController
     }
     public function wholesalerUpdate(Request $request, $id)
     {
-
+        $validated = $request->validate([
+            'tier' => [
+                'required',
+                'string',
+                Rule::exists('wholesale_tiers', 'name')->where(function ($query) {
+                    $query->where('is_active', 1)->whereNull('deleted_at');
+                }),
+            ],
+            'wholesaler_discount' => 'required|numeric|min:0|max:100',
+            'wholesaler_status' => 'required|in:0,1',
+        ]);
 
         $wholesaler = User::findOrFail($id);
-
-
-        // ✅ Update values if present
-        if ($request->has('tier')) {
-            $wholesaler->tier = $request->tier;
-        }
-
-
-        if ($request->has('wholesaler_discount')) {
-            $wholesaler->wholesaler_discount = $request->wholesaler_discount;
-        }
-
-        if ($request->has('wholesaler_status')) {
-            $wholesaler->wholesaler_status = $request->wholesaler_status;
-        }
+        $wholesaler->tier = $validated['tier'];
+        $wholesaler->wholesaler_discount = $validated['wholesaler_discount'];
+        $wholesaler->wholesaler_status = (int) $validated['wholesaler_status'];
 
         $wholesaler->save();
 
@@ -354,30 +353,14 @@ class WholeSalerController extends BaseController
         $data = [];
         $total_price_range_rows = 0;
         foreach ($wholesale_products_with_prices as $price) {
-            $primary_id = $price->id;
-            $product_id = $price->product_id;
-            $category_id = $price->category_id;
-            $sub_category_id = $price->sub_category_id;
-            $attribute_id  = $price->attribute_id;
-
-            if ($category_id) {
-                $get_category = $this->categoryRepo->getFirstWhere(params: ['id' => $category_id]);
-            }
-            if ($sub_category_id) {
-                $get_sub_category = $this->categoryRepo->getFirstWhere(params: ['id' => $sub_category_id]);
-            }
-            if ($product_id) {
-                $get_product = $this->productRepo->getFirstWhere(params: ['id' => $product_id]);
-            }
             $price_range = WholesaleProductPriceRange::where('wholesale_id', $price->id)->get();
             $total_price_range_rows += $price_range->count();
 
-            // product details with price range 
             $data[] = [
                 'primary_id'        => $price->id,
-                'product_name'      => $get_product->name,
-                'category_name'     => $get_category->name,
-                'sub_category_name' => $get_sub_category->name,
+                'product_name'      => $price->product?->name,
+                'category_name'     => $price->category?->name,
+                'sub_category_name' => $price->subcategory?->name,
                 'attribute_id'      => $price->attribute_id,
                 'price_ranges'      => $price_range->toArray(),
             ];
@@ -548,14 +531,31 @@ class WholeSalerController extends BaseController
     public function assignNumber(Request $request)
     {
         $request->validate([
-            'purchase_order_no' => 'required|unique:wholesale_purchase_orders,purchase_order_no',
+            'purchase_order_no' => 'required|string|max:255',
             'order_id' => 'required|exists:wholesale_purchase_orders,id'
         ]);
 
-        $order = WholesalePurchaseOrder::find($request->order_id);
-        $order->purchase_order_no = $request->purchase_order_no;
-        $order->status = 'processed';
-        $order->save();
+        DB::transaction(function () use ($request) {
+            $order = WholesalePurchaseOrder::query()
+                ->lockForUpdate()
+                ->findOrFail($request->order_id);
+
+            $duplicateExists = WholesalePurchaseOrder::query()
+                ->where('purchase_order_no', $request->purchase_order_no)
+                ->where('id', '!=', $order->id)
+                ->lockForUpdate()
+                ->exists();
+
+            if ($duplicateExists) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'purchase_order_no' => translate('purchase_order_number_is_already_assigned'),
+                ]);
+            }
+
+            $order->purchase_order_no = $request->purchase_order_no;
+            $order->status = 'processed';
+            $order->save();
+        });
 
         Toastr::success(translate('Purchase Order number assigned successfully.'));
 
@@ -665,8 +665,11 @@ class WholeSalerController extends BaseController
 
         $quotation = WholesaleQuotation::where('purchase_order_no', $order_no)->firstOrFail();
 
-
-        $priceRanges = WholesaleProductPriceRange::where('wholesale_id', $order->items->first()->product->wholesale_id)->get();
+        $priceRanges = collect();
+        $firstItem = $order->items->first();
+        if ($firstItem?->product?->wholesale_id) {
+            $priceRanges = WholesaleProductPriceRange::where('wholesale_id', $firstItem->product->wholesale_id)->get();
+        }
 
         $wholesaleProducts = WholeSaleProducts::with(['product'])->get();
 
@@ -694,15 +697,14 @@ class WholeSalerController extends BaseController
 
     public function storeQuotation(Request $request)
     {
-        //dd($request->all());
         Log::info("request create quotation", ['request' => $request->all()]);
 
         $validator = Validator::make($request->all(), [
             'quotation_no' => 'required|unique:wholesale_quotations,quotation_no',
-            'wholesaler_id' => 'required|string|max:255',
+            'wholesaler_id' => 'required|integer|exists:users,id',
             'wholesale_tier' => 'required|string|max:100',
             'wholesaler_discount' => 'nullable|string',
-            'wholesaler_discount_amount' => 'nullable|numeric',
+            'wholesaler_discount_amount' => 'nullable|numeric|min:0',
             'final_price' => 'required|numeric|min:0',
         ]);
 
@@ -710,92 +712,83 @@ class WholeSalerController extends BaseController
             return back()->withErrors($validator)->withInput();
         }
 
-        $quotation = WholesaleQuotation::create([
-            'quotation_no' => $request->quotation_no,
-            'wholeseller_id' => $request->wholesaler_id,
-            'wholeseller_tier' => $request->wholesale_tier,
-            'final_price' => $request->final_price,
-            'wholesaler_discount_amount' => $request->wholesaler_discount_amount ?? 0,
-            'terms_and_conditions' => $request->terms_and_conditions[array_search('en', $request->lang)] ?? null,
-            'note' => $request->note[array_search('en', $request->lang)] ?? null,
-            'status' => 'sent',
-        ]);
+        $enIndex = array_search('en', (array) $request->input('lang', []), true);
 
-        // Deal update
-        $dealId = $request->input('deal_id') ?? $request->query('deal_id');
-        if ($dealId) {
-            Deal::where('id', $dealId)->update([
-                'quotation_id' => $quotation->id,
-                'quotation_status' => 'sent',
+        $quotation = DB::transaction(function () use ($request, $enIndex) {
+            $quotation = WholesaleQuotation::create([
+                'quotation_no' => $request->quotation_no,
+                'wholeseller_id' => $request->wholesaler_id,
+                'wholeseller_tier' => $request->wholesale_tier,
+                'final_price' => $request->final_price,
+                'wholesaler_discount_amount' => $request->wholesaler_discount_amount ?? 0,
+                'terms_and_conditions' => $enIndex !== false ? ($request->terms_and_conditions[$enIndex] ?? null) : null,
+                'note' => $enIndex !== false ? ($request->note[$enIndex] ?? null) : null,
+                'status' => 'sent',
             ]);
-        }
 
-        // === NEW CLEAN LOGIC — EXACTLY MATCHING CURRENT REQUEST ===
-        if ($request->has('products') && is_array($request->products)) {
-            foreach ($request->products as $item) {
-                // Skip if not array or missing required fields
-                if (!is_array($item) || empty($item['approved_quantity'])) {
-                    continue;
+            $dealId = $request->input('deal_id') ?? $request->query('deal_id');
+            if ($dealId) {
+                Deal::where('id', $dealId)->update([
+                    'quotation_id' => $quotation->id,
+                    'quotation_status' => 'sent',
+                ]);
+            }
+
+            if ($request->has('products') && is_array($request->products)) {
+                foreach ($request->products as $item) {
+                    if (!is_array($item) || empty($item['approved_quantity'])) {
+                        continue;
+                    }
+
+                    $variationType = $item['variation_type'] ?? null;
+                    if (empty($variationType) || $variationType === 'null') {
+                        $variationType = null;
+                    }
+
+                    $tax = $item['tax'] ?? '0';
+                    $tax = is_string($tax) ? str_replace('%', '', $tax) : $tax;
+
+                    $quotation->items()->create([
+                        'wholesale_quotation_id' => $quotation->id,
+                        'product_id'             => $item['product_id'] ?? null,
+                        'product_variation_type' => $variationType,
+                        'product_quantity'       => (int) $item['approved_quantity'],
+                        'base_price'             => (float) ($item['price'] ?? 0),
+                        'final_price'            => (float) ($item['final_price'] ?? 0),
+                        'tax'                    => $tax,
+                        'price_range_id'         => null,
+                    ]);
                 }
+            }
 
-                $productId = $item['product_id'] ?? null;
-                $variationType = $item['variation_type'] ?? null;
-
-                // Convert null or empty string to actual null
-                if (empty($variationType) || $variationType === 'null' || $variationType === '') {
-                    $variationType = null;
+            foreach ($request->input('charges', []) as $charge) {
+                if (!empty($charge['name']) || !empty($charge['value'])) {
+                    $quotation->metas()->create([
+                        'type' => 'charge',
+                        'key' => $charge['name'] ?? 'Untitled Charge',
+                        'value' => $charge['value'] ?? 0,
+                    ]);
                 }
-
-                $quantity = (int)$item['approved_quantity'];
-                $basePrice = (float)($item['price'] ?? 0);
-                $finalPrice = (float)($item['final_price'] ?? 0);
-                $tax = $item['tax'] ?? '0';
-
-                // Clean tax (remove % if exists)
-                $tax = is_string($tax) ? str_replace('%', '', $tax) : $tax;
-
-                $quotation->items()->create([
-                    'wholesale_quotation_id' => $quotation->id,
-                    'product_id'             => $productId,
-                    'product_variation_type' => $variationType,
-                    'product_quantity'       => $quantity,
-                    'base_price'             => $basePrice,
-                    'final_price'            => $finalPrice,
-                    'tax'                    => $tax,
-                    'price_range_id'         => null,
-                ]);
             }
-        }
 
-        // Charges & Discounts
-        $quotation->metas()->delete();
-
-        foreach ($request->input('charges', []) as $charge) {
-            if (!empty($charge['name']) || !empty($charge['value'])) {
-                $quotation->metas()->create([
-                    'type' => 'charge',
-                    'key' => $charge['name'] ?? 'Untitled Charge',
-                    'value' => $charge['value'] ?? 0,
-                ]);
+            foreach ($request->input('discounts', []) as $discount) {
+                if (!empty($discount['name']) || !empty($discount['value'])) {
+                    $quotation->metas()->create([
+                        'type' => 'discount',
+                        'key' => $discount['name'] ?? 'Untitled Discount',
+                        'value' => $discount['value'] ?? 0,
+                    ]);
+                }
             }
-        }
 
-        foreach ($request->input('discounts', []) as $discount) {
-            if (!empty($discount['name']) || !empty($discount['value'])) {
-                $quotation->metas()->create([
-                    'type' => 'discount',
-                    'key' => $discount['name'] ?? 'Untitled Discount',
-                    'value' => $discount['value'] ?? 0,
-                ]);
-            }
-        }
+            $this->translationRepo->add(
+                request: $request,
+                model: WholesaleQuotation::class,
+                id: $quotation->id
+            );
 
-        // Translations
-        $this->translationRepo->add(
-            request: $request,
-            model: WholesaleQuotation::class,
-            id: $quotation->id
-        );
+            return $quotation;
+        });
 
 
         $title   = "Quotation Send";

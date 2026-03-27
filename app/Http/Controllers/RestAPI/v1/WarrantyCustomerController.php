@@ -4,15 +4,15 @@ namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
 use App\Http\Controllers\Controller;
-use App\Models\Blacklist;
 use App\Models\Currency;
 use App\Models\Order;
 use App\Models\OrderDetail;
-use App\Models\Policy;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimPayment;
 use App\Models\WarrantyTimelineEvent;
+use App\Services\WarrantyOrderActivationService;
+use App\Services\WarrantyPolicyVersionResolver;
 use App\Support\WarrantyOrderSupport;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -297,73 +297,22 @@ class WarrantyCustomerController extends Controller
             ], 422);
         }
 
-        $defaultDuration = (int)($this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? 12);
-        $purchaseDate = WarrantyOrderSupport::resolvePurchaseDate($detail->order, $detail);
-        $start = $purchaseDate->copy();
-        $end = $purchaseDate->copy()->addMonths($defaultDuration);
-
-        $activatedSerials = [];
-        $failedSerials = [];
-        $activatedWarrantyIds = [];
-
-        foreach ($serialNumbers as $serialNumber) {
-            $warranty = Warranty::query()
-                ->eligibleForOrderActivation($serialNumber, (int)$detail->product_id)
-                ->first();
-
-            if (!$warranty) {
-                $failedSerials[] = $serialNumber;
-                continue;
-            }
-
-            if (
-                Warranty::query()
-                    ->where('serial_number', $serialNumber)
-                    ->where('status', 'active')
-                    ->where('end_date', '>', now())
-                    ->exists()
-            ) {
-                $failedSerials[] = $serialNumber;
-                continue;
-            }
-
-            if (Blacklist::query()->where('serial_number', $serialNumber)->exists()) {
-                $failedSerials[] = $serialNumber;
-                continue;
-            }
-
-            $warranty->update([
-                'product_id' => $warranty->product_id ?? $detail->product_id,
-                'status' => 'active',
-                'activation_date' => $purchaseDate,
-                'start_date' => $start,
-                'end_date' => $end,
-                'purchase_date' => $purchaseDate,
-                'invoice_number' => $detail->order_id,
-                'final_user_id' => $customer->id,
-                'activation_method' => 'order_activation',
-                'consent_checked' => true,
-                'consent_timestamp' => now(),
-                'consent_ip' => $request->ip(),
+        $activationResult = (new WarrantyOrderActivationService($this->businessSettingRepo))->activate(
+            $detail,
+            $serialNumbers,
+            (int) $customer->id,
+            (string) $request->ip(),
+            [
+                'activated_count' => $activatedCount,
+                'timeline_description' => 'Activated via mobile order support',
                 'policy_version' => $this->resolvePublishedPolicyVersion(),
-            ]);
-
-            WarrantyTimelineEvent::create([
-                'warranty_id' => $warranty->id,
-                'event_type' => 'activated',
-                'description' => 'Activated via mobile order support',
-                'timestamp' => now(),
                 'user_id' => null,
-            ]);
+            ]
+        );
 
-            $activatedSerials[] = $serialNumber;
-            $activatedWarrantyIds[] = $warranty->id;
-        }
-
-        if (!empty($activatedSerials)) {
-            $detail->warranty_status = ($activatedCount + count($activatedSerials)) >= (int)$detail->qty ? 1 : 0;
-            $detail->save();
-        }
+        $activatedSerials = $activationResult['activated_serials'];
+        $failedSerials = $activationResult['failed_serials'];
+        $activatedWarrantyIds = $activationResult['activated_warranty_ids'];
 
         $supportPayload = $this->orderWarrantySupport($request, (int)$detail->order_id)->getData(true);
         $latestWarranty = Warranty::query()
@@ -468,7 +417,8 @@ class WarrantyCustomerController extends Controller
             'warranty_public_id' => $warranty->warranty_public_id,
             'serial_number' => $warranty->serial_number,
             'status_key' => $warrantyStatusKey,
-            'status' => $this->translateWarrantyStatus($warrantyStatusKey),
+            'status' => $warrantyStatusKey,
+            'status_label' => $this->translateWarrantyStatus($warrantyStatusKey),
             'activation_status' => $warranty->status,
             'activation_date' => optional($warranty->activation_date)?->toIso8601String(),
             'start_date' => optional($warranty->start_date)?->toIso8601String(),
@@ -1046,11 +996,7 @@ class WarrantyCustomerController extends Controller
 
     private function resolvePublishedPolicyVersion(): ?string
     {
-        return Policy::query()
-            ->published()
-            ->orderByDesc('effective_date')
-            ->orderByDesc('published_at')
-            ->value('version');
+        return (new WarrantyPolicyVersionResolver())->resolvePublishedVersion();
     }
 
     private function maskEmail(string $email): string

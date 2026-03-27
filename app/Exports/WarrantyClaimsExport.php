@@ -40,8 +40,9 @@ class WarrantyClaimsExport implements FromQuery, WithHeadings, WithMapping, Shou
             });
         }
 
-        if ($this->request->filled('status') && $this->request->status != 'all') {
-            $query->where('status', $this->request->status);
+        $status = (string)$this->request->input('status', '');
+        if ($status !== '' && $status !== 'all' && in_array($status, $this->allowedStatuses(), true)) {
+            $query->where('status', $status);
         }
 
         if ($this->request->filled('search')) {
@@ -75,8 +76,8 @@ class WarrantyClaimsExport implements FromQuery, WithHeadings, WithMapping, Shou
                 $end = now()->endOfDay();
                 break;
             case 'custom_date':
-                $start = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
-                $end = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                $start = $this->parseOptionalDate($from, now()->subDays(29)->startOfDay(), true);
+                $end = $this->parseOptionalDate($to, now()->endOfDay(), false);
                 break;
             case 'this_year':
             default:
@@ -90,6 +91,42 @@ class WarrantyClaimsExport implements FromQuery, WithHeadings, WithMapping, Shou
         }
 
         return [$start, $end];
+    }
+
+    private function allowedStatuses(): array
+    {
+        return [
+            'new',
+            'approved',
+            'rma_issued',
+            'received',
+            'repair_pending',
+            'replacement_pending',
+            'qc_pending',
+            'shipped_ready',
+            'dispatched',
+            'waiting_customer',
+            'waiting_parts',
+            'waiting_payment',
+            'resolved',
+            'rejected',
+            'closed',
+        ];
+    }
+
+    private function parseOptionalDate(mixed $value, Carbon $fallback, bool $startOfDay): Carbon
+    {
+        if (blank($value)) {
+            return $fallback->copy();
+        }
+
+        try {
+            $date = Carbon::parse((string)$value);
+        } catch (\Throwable) {
+            return $fallback->copy();
+        }
+
+        return $startOfDay ? $date->startOfDay() : $date->endOfDay();
     }
 
     public function headings(): array

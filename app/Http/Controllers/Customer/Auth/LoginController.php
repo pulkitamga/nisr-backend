@@ -157,9 +157,12 @@ class LoginController extends Controller
         }
 
         if (auth('customer')->attempt(['email' => $user['email'], 'password' => $request['password']], $remember)) {
+            $request->session()->regenerate();
 
             if (!$user->is_active) {
                 auth()->guard('customer')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
                 return $request->ajax()
                     ? response()->json(['status' => 'error', 'message' => translate('your_account_is_suspended')])
                     : back()->withInput()->with(Toastr::error(translate('your_account_is_suspended')));
@@ -251,6 +254,8 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         auth()->guard('customer')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         session()->forget('wish_list');
         session()->forget('customer_fcm_topic');
         Toastr::success(translate('come_back_soon') . '!');

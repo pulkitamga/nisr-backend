@@ -313,8 +313,10 @@ class CartSecurityRegressionTest extends TestCase
             ->assertJsonPath('is_area_wise_shipping_resolved', true);
         $this->assertSame($shippingCost, (float) $shippingResponse->json('shipping_cost'));
 
-        $placeOrderResponse = $this->actingAs($user, 'customer')
-            ->getJson('/api/v1/customer/order/place?' . http_build_query([
+        $placeOrderResponse = $this->getJson('/api/v1/customer/order/place?' . http_build_query([
+                'payment_request_from' => 'app',
+                'is_guest' => 0,
+                'customer_id' => $user->id,
                 'address_id' => $addressId,
                 'billing_address_id' => $addressId,
                 'delivery_type' => 'delivery',
@@ -328,8 +330,10 @@ class CartSecurityRegressionTest extends TestCase
         $order = Order::query()->findOrFail($orderId);
         $this->assertSame($shippingCost, (float) $order->shipping_cost);
 
-        $detailsResponse = $this->actingAs($user, 'customer')
-            ->getJson('/api/v1/customer/order/details?' . http_build_query([
+        $detailsResponse = $this->getJson('/api/v1/customer/order/details?' . http_build_query([
+                'payment_request_from' => 'app',
+                'is_guest' => 0,
+                'customer_id' => $user->id,
                 'order_id' => $orderId,
             ]));
 

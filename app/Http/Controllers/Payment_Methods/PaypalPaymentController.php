@@ -6,9 +6,11 @@ use App\Models\PaymentRequest;
 use App\Traits\Processor;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Throwable;
 
 class PaypalPaymentController extends Controller
 {
@@ -89,6 +91,7 @@ class PaypalPaymentController extends Controller
             $payment_data['purchase_units'] = [
                 [
                     'reference_id' => $data->id,
+                    'custom_id' => $data->id,
                     'name' => $business_name,
                     'desc'  => 'payment ID :' . $data->id,
                     'amount' => [
@@ -151,7 +154,6 @@ class PaypalPaymentController extends Controller
      */
     public function success(Request $request)
     {
-
         $accessToken = json_decode($this->token(),true);
         $accessToken = $accessToken['access_token'];
 
@@ -173,27 +175,73 @@ class PaypalPaymentController extends Controller
         }
         curl_close($ch);
 
-        $response = json_decode($result);
-
-        if($response->status === 'COMPLETED'){
-            $this->payment::where(['id' => $request['payment_id']])->update([
-                'payment_method' => 'paypal',
-                'is_paid' => 1,
-                'transaction_id' => $response->id,
+        try {
+            $response = json_decode($result, true, 512, JSON_THROW_ON_ERROR);
+        } catch (Throwable $exception) {
+            Log::warning('PayPal callback rejected because the capture payload was invalid JSON.', [
+                'payment_id' => $request->get('payment_id'),
+                'paypal_token' => $request->get('token'),
             ]);
 
-            $data = $this->payment::where(['id' => $request['payment_id']])->first();
+            abort(404);
+        }
 
-            if (isset($data) && function_exists($data->success_hook)) {
-                call_user_func($data->success_hook, $data);
-            }
+        $resolvedPaymentId = (string)(
+            data_get($response, 'purchase_units.0.reference_id')
+            ?? data_get($response, 'purchase_units.0.custom_id')
+            ?? ''
+        );
+        $paymentRequest = $this->payment::where('id', $resolvedPaymentId)->first();
+
+        if (!$paymentRequest) {
+            Log::warning('PayPal callback rejected because the payment request could not be resolved.', [
+                'request_payment_id' => $request->get('payment_id'),
+                'resolved_payment_id' => $resolvedPaymentId,
+                'paypal_token' => $request->get('token'),
+            ]);
+
+            abort(404);
+        }
+
+        if ($request->filled('payment_id') && (string)$request->get('payment_id') !== $resolvedPaymentId) {
+            Log::warning('PayPal callback rejected because the callback payment id did not match the captured order.', [
+                'request_payment_id' => (string)$request->get('payment_id'),
+                'resolved_payment_id' => $resolvedPaymentId,
+            ]);
+
+            abort(403);
+        }
+
+        $capturedAmount = (float)(data_get($response, 'purchase_units.0.payments.captures.0.amount.value') ?? -1);
+        $capturedCurrency = strtoupper((string)(data_get($response, 'purchase_units.0.payments.captures.0.amount.currency_code') ?? ''));
+        if ($capturedAmount !== round((float)$paymentRequest->payment_amount, 2) || $capturedCurrency !== strtoupper((string)$paymentRequest->currency_code)) {
+            Log::warning('PayPal callback rejected because the capture payload did not match the payment request.', [
+                'payment_request_id' => $paymentRequest->getKey(),
+                'captured_amount' => $capturedAmount,
+                'expected_amount' => round((float)$paymentRequest->payment_amount, 2),
+                'captured_currency' => $capturedCurrency,
+                'expected_currency' => strtoupper((string)$paymentRequest->currency_code),
+            ]);
+
+            abort(403);
+        }
+
+        if (($response['status'] ?? null) === 'COMPLETED') {
+            $paymentRequest->update([
+                'payment_method' => 'paypal',
+                'is_paid' => 1,
+                'transaction_id' => $response['id'] ?? $request->get('token'),
+            ]);
+
+            $data = $paymentRequest->fresh();
+            $this->executePaymentHook($data?->success_hook, $data);
 
             return $this->payment_response($data,'success');
         }
-        $payment_data = $this->payment::where(['id' => $request['payment_id']])->first();
-        if (isset($payment_data) && function_exists($payment_data->failure_hook)) {
-            call_user_func($payment_data->failure_hook, $payment_data);
-        }
+
+        $payment_data = $paymentRequest->fresh();
+        $this->executePaymentHook($payment_data?->failure_hook, $payment_data);
+
         return $this->payment_response($payment_data,'fail');
     }
 }

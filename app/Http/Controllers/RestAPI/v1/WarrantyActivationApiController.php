@@ -7,18 +7,17 @@ use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
 use App\Events\DigitalProductOtpVerificationEvent;
 use App\Models\Warranty;
 use App\Models\Blacklist;
-use App\Models\ActivationReview;
-use App\Models\Policy;
 use App\Models\ViewToken;
-use App\Models\WarrantyTimelineEvent;
 use App\Services\FirebaseService;
+use App\Services\WarrantyActivationCommitService;
+use App\Services\WarrantyPolicyVersionResolver;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Carbon\Carbon;
 use App\Models\Branch;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class WarrantyActivationApiController extends Controller
 {
@@ -191,13 +190,21 @@ class WarrantyActivationApiController extends Controller
 
             $isGuest = true;
 
-            $this->commitActivation(
-                $warranty,
-                new Request($data),
-                $isGuest,
-                $flagged,
-                $flaggedReason
-            );
+            try {
+                $this->commitActivation(
+                    $warranty,
+                    new Request($data),
+                    $isGuest,
+                    $flagged,
+                    $flaggedReason
+                );
+            } catch (ValidationException $exception) {
+                return response()->json([
+                    'status' => false,
+                    'message' => collect($exception->errors())->flatten()->first(),
+                    'errors' => $exception->errors(),
+                ], 422);
+            }
 
             Cache::forget($cacheKey);
 
@@ -316,7 +323,15 @@ class WarrantyActivationApiController extends Controller
         $sessionData = new Request($data);
 
         // SAME BUSINESS LOGIC
-        $this->commitActivation($warranty, $sessionData, $isGuest, $flagged, $flaggedReason);
+        try {
+            $this->commitActivation($warranty, $sessionData, $isGuest, $flagged, $flaggedReason);
+        } catch (ValidationException $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => collect($exception->errors())->flatten()->first(),
+                'errors' => $exception->errors(),
+            ], 422);
+        }
 
         // Clear cache
         Cache::forget("activation_data:{$request->serial_number}:{$request->email}");
@@ -392,74 +407,21 @@ class WarrantyActivationApiController extends Controller
         ]);
     }
 
-    private function commitActivation($warranty, $request, $isGuest, $flagged, $flaggedReason)
+    private function commitActivation($warranty, $request, $isGuest, $flagged, $flaggedReason): Warranty
     {
-        $defaultDuration = $this->businessSettingRepo
-            ->getFirstWhere(['type' => 'warranty_months'])['value'] ?? '12';
-
-        $duration = $warranty->product->warranty_duration ?? $defaultDuration;
-
-        $purchaseDate = Carbon::parse($request->purchase_date);
-        $start = $purchaseDate->copy();
-        $end = $purchaseDate->copy()->addMonths($duration);
-
-        $autoApprove = $this->businessSettingRepo
-            ->getFirstWhere(['type' => 'warranty_auto_approve_off_platform'])['value'] ?? '0';
-
-        $status = ($flagged && $autoApprove != '1') ? 'pending_review' : 'active';
-
-        $warranty->update([
-            'status' => $status,
-            'activation_date' => $purchaseDate,
-            'start_date' => $start,
-            'end_date' => $end,
-            'purchase_date' => $purchaseDate,
-            'retailer_branch_id' => $request->retailer_branch_id ?? null,
-            'retailer_name' => $request->retailer_name ?? null,
-            'invoice_number' => $request->invoice_number,
-            'activated_ip' => request()->ip(),
+        return (new WarrantyActivationCommitService($this->businessSettingRepo))->commit($warranty, $request, [
+            'flagged' => $flagged,
+            'flagged_reason' => $flaggedReason,
             'activation_method' => 'mobile_app',
+            'timeline_description' => 'Activated via mobile app',
+            'review_notes' => 'Auto-created from mobile activation; awaiting admin review.',
             'policy_version' => $this->resolvePublishedPolicyVersion(),
-            'consent_checked' => true,
-            'consent_timestamp' => now(),
-            'consent_ip' => request()->ip(),
-            'activated_by_name' => $request->name,
-            'activated_by_phone' => $request->phone ?? null,
-            'activated_by_email' => $request->email,
-        ]);
-
-        // Receipt handling (API version)
-        if (!empty($request->receipt_path)) {
-            $warranty->update(['receipt_path' => $request->receipt_path]);
-        }
-
-        WarrantyTimelineEvent::create([
-            'warranty_id' => $warranty->id,
-            'event_type' => 'activated',
-            'description' => 'Activated via mobile app',
-            'timestamp' => now(),
+            'activation_ip' => (string) request()->ip(),
             'user_id' => null,
+            'receipt_path' => $request->input('receipt_path'),
+            'active_conflict_message' => 'Warranty already activated.',
+            'ineligible_message' => 'Serial not eligible for activation.',
         ]);
-
-        if ($flagged && $autoApprove != '1') {
-
-            $reasons = is_array($flaggedReason)
-                ? array_filter($flaggedReason)
-                : ($flaggedReason ? array_filter(explode(', ', $flaggedReason)) : []);
-            $submittedAt = now();
-
-            ActivationReview::create([
-                'warranty_id' => $warranty->id,
-                'status' => 'pending',
-                'review_notes' => 'Auto-created from mobile activation; awaiting admin review.',
-                'flagged_reason' => !empty($reasons)
-                    ? implode(', ', $reasons)
-                    : 'No reason specified',
-                'submitted_at' => $submittedAt,
-                'first_response_due' => $submittedAt->copy()->addHours(24),
-                'decision_due' => $submittedAt->copy()->addDays(3),
-            ]);
-        }
     }
 
     private function buildActivationResponse(
@@ -521,11 +483,7 @@ class WarrantyActivationApiController extends Controller
 
     private function resolvePublishedPolicyVersion(): ?string
     {
-        return Policy::query()
-            ->published()
-            ->orderByDesc('effective_date')
-            ->orderByDesc('published_at')
-            ->value('version');
+        return (new WarrantyPolicyVersionResolver())->resolvePublishedVersion();
     }
 
     private function maskContact(string $contact): string

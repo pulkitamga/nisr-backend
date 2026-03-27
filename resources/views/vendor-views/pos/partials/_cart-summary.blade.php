@@ -39,7 +39,7 @@
     <div class="dropdown flex-grow-1" id="dropdown-order-select">
         <button class="form-control text-start dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
                 aria-expanded="false" id="cart_id_primary">
-            {{ session('current_user') }}
+            {{ session(\App\Enums\SessionKey::POS_CART_ID) }}
         </button>
         <div class="dropdown-menu px-2">
             @foreach ($cartNames as $cartName)

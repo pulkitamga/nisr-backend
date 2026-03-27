@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Warranty\ClaimStoreRequest;
 use App\Jobs\TriageClaimJob;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimAttachment;
 use App\Models\WarrantyTimelineEvent;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Brian2694\Toastr\Facades\Toastr;
 
@@ -33,21 +31,8 @@ class WarrantyClaimController extends Controller
         return view(VIEW_FILE_NAMES['claim_form'], compact('warranty'));
     }
 
-    public function store(Request $request)
+    public function store(ClaimStoreRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'warranty_public_id' => 'required|exists:warranties,warranty_public_id',
-            'subject' => 'required|string|max:255',
-            'details' => 'required|string',
-            'issue' => 'required|string',
-            'product_images' => 'required|array|min:1',
-            'product_images.*' => 'file|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
         $warranty = Warranty::where('warranty_public_id', $request->warranty_public_id)->firstOrFail();
 
         if (!$warranty->isActive()) {
@@ -70,7 +55,7 @@ class WarrantyClaimController extends Controller
             'warranty_id' => $warranty->id,
             'serial_number' => $warranty->serial_number,
             'branch_id' => $warranty->branch_id,
-            'claim_number' => 'CLM-' . strtoupper(Str::random(8)),
+            'claim_number' => WarrantyClaim::generateClaimNumber('CLM-'),
             'status' => 'new',
             'description' => $description,
             'submitted_at' => $submittedAt,

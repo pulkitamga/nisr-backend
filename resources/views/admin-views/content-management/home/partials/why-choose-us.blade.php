@@ -1,6 +1,11 @@
 @php
-$languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0]['code'] ?? 'en';
+$languages = getWebConfig(name: 'pnc_language') ?? [];
+$baseLanguage = config('app.locale', 'en');
+if (!in_array($baseLanguage, $languages, true)) {
+    $baseLanguage = $languages[0] ?? 'en';
+}
+$activeLanguage = getDefaultLanguage();
+$activeLanguage = in_array($activeLanguage, $languages, true) ? $activeLanguage : $baseLanguage;
 
 @endphp
 
@@ -11,7 +16,7 @@ $content = $jsonData['section'] ?? [];
 <ul class="nav nav-tabs mb-4">
     @foreach($languages as $lang)
     <li class="nav-item">
-        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
             href="javascript:" id="{{ $lang }}-link">
             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
         </a>
@@ -31,22 +36,22 @@ $content = $jsonData['section'] ?? [];
         $translatedSubtitle = $subtitleTranslations ?? '';
         @endphp
 
-        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+        <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
             id="{{ $lang }}-form">
             <div class="row">
                 <input type="hidden" name="lang[]" value="{{ $lang }}">
                 <div class="col-lg-6">
                     <label class="title-color">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $content['title'] : (is_array($translatedTitle) ? ($translatedTitle[$lang] ?? '') : $translatedTitle) }}"
-                        {{ $lang == $defaultLanguage ? 'required' : '' }}
+                        value="{{ $lang == $baseLanguage ? ($content['title'] ?? '') : (is_array($translatedTitle) ? ($translatedTitle[$lang] ?? '') : $translatedTitle) }}"
+                        {{ $lang == $baseLanguage ? 'required' : '' }}
                         placeholder="{{ translate('enter_title') }}">
                 </div>
                 <div class="col-lg-6">
                     <label class="title-color">{{ translate('subtitle') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="subtitle[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $content['subtitle'] : (is_array($translatedSubtitle) ? ($translatedSubtitle[$lang] ?? '') : $translatedSubtitle) }}"
-                        {{ $lang == $defaultLanguage ? 'required' : '' }}
+                        value="{{ $lang == $baseLanguage ? ($content['subtitle'] ?? '') : (is_array($translatedSubtitle) ? ($translatedSubtitle[$lang] ?? '') : $translatedSubtitle) }}"
+                        {{ $lang == $baseLanguage ? 'required' : '' }}
                         placeholder="{{ translate('enter_subtitle') }}">
                 </div>
 
@@ -86,13 +91,15 @@ $content = $jsonData['section'] ?? [];
         }
 
         // Default language fallback from card JSON
-        $titleLangMap[$defaultLanguage] = $card['title'] ?? '';
-        $descLangMap[$defaultLanguage] = $card['description'] ?? '';
+        $titleLangMap[$baseLanguage] = $card['title'] ?? '';
+        $descLangMap[$baseLanguage] = $card['description'] ?? '';
+        $displayTitle = $titleLangMap[$activeLanguage] ?: ($titleLangMap[$baseLanguage] ?? '');
+        $displayDescription = $descLangMap[$activeLanguage] ?: ($descLangMap[$baseLanguage] ?? '');
     @endphp
 
     <tr>
-        <td>{{ $card['title'] }}</td>
-        <td>{{ $card['description'] }}</td>
+        <td>{{ $displayTitle }}</td>
+        <td>{{ $displayDescription }}</td>
         <td>{{ $card['icon_name'] ?? ($card['icon']['name'] ?? '') }}</td>
         <td>{{ $card['icon_color'] ?? ($card['icon']['color'] ?? '') }}</td>
         <td>{{ $card['icon_animation'] ?? ($card['icon']['animation'] ?? '') }}</td>
@@ -132,7 +139,7 @@ $content = $jsonData['section'] ?? [];
                 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link edit-modal-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link edit-modal-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="edit-{{ $lang }}-link"
                             data-target="#edit-{{ $lang }}-form">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
@@ -143,7 +150,7 @@ $content = $jsonData['section'] ?? [];
                 <div class="modal-body">
                     @foreach($languages as $lang)
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
-                    <div class="form-group edit-modal-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}"
+                    <div class="form-group edit-modal-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                         id="edit-{{ $lang }}-form">
                         <div class="form-group">
                             <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
@@ -151,14 +158,14 @@ $content = $jsonData['section'] ?? [];
                                 name="title[]"
                                 class="form-control lang-title"
                                 data-lang="{{ $lang }}"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                {{ $lang == $baseLanguage ? 'required' : '' }}>
 
                             <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                             <textarea name="description[]"
                                 class="form-control lang-description"
                                 data-lang="{{ $lang }}"
                                 rows="3"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                                {{ $lang == $baseLanguage ? 'required' : '' }}></textarea>
                         </div>
                     </div>
                     @endforeach
@@ -192,6 +199,7 @@ $content = $jsonData['section'] ?? [];
     document.addEventListener('DOMContentLoaded', function() {
         const editCardModal = new bootstrap.Modal(document.getElementById('editCardModal'));
         const editButtons = document.querySelectorAll('.btn-edit-card');
+        const defaultEditLanguage = @json($activeLanguage);
 
         function resetEditModalLanguageState() {
             const $modal = $('#editCardModal');
@@ -201,7 +209,10 @@ $content = $jsonData['section'] ?? [];
             $tabs.removeClass('active');
             $forms.addClass('d-none');
 
-            const $defaultTab = $tabs.first();
+            let $defaultTab = $modal.find('#edit-' + defaultEditLanguage + '-link');
+            if (!$defaultTab.length) {
+                $defaultTab = $tabs.first();
+            }
             if ($defaultTab.length) {
                 $defaultTab.addClass('active');
                 const targetForm = $defaultTab.data('target');

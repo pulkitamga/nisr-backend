@@ -299,7 +299,7 @@ class CartController extends BaseController
                     'view' => view(Cart::CART[VIEW], compact('cartId', 'cartItems'))->render()
                 ]);
             }
-            $cartItem = $this->cartService->addCartDataOnSession(
+            $cartItem = $this->cartService->addCartLineItem(
                 product: $product,
                 quantity: $quantityForUpdate,
                 price: $price,
@@ -381,7 +381,7 @@ class CartController extends BaseController
                 'view' => view(Cart::CART[VIEW], compact('cartId', 'cartItems'))->render()
             ]);
         }
-        $sessionData = $this->cartService->addCartDataOnSession(
+        $sessionData = $this->cartService->addCartLineItem(
             product: $product,
             quantity: $request['quantity'],
             price: $price,

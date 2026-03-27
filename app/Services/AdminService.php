@@ -21,6 +21,7 @@ class AdminService implements AdminServiceInterface
     {
         auth('admin')->logout();
         session()->invalidate();
+        session()->regenerateToken();
     }
 
     public function getIdentityImages(object $request, object $oldImages = null): bool|string

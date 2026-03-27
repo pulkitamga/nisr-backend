@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Traits\FileManagerTrait;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Models\Product;
 use App\Models\WholeSaleProducts;
+use InvalidArgumentException;
 
 
 class WholeSaleProductsService
@@ -61,6 +63,87 @@ class WholeSaleProductsService
             ];
         }
         return $processPrices;
+    }
+
+    public function buildValidatedPriceRanges(
+        Product $product,
+        ?string $variationType,
+        ?string $variationKey,
+        array $payload
+    ): array {
+        $minQtys = array_values($payload['min_qty'] ?? []);
+
+        if ($minQtys === []) {
+            return [];
+        }
+
+        $tiers = array_values($payload['tier'] ?? []);
+        $maxQtys = array_values($payload['max_qty'] ?? []);
+        $discounts = array_values($payload['discount'] ?? []);
+        $expectedCount = count($minQtys);
+
+        if (
+            count($tiers) !== $expectedCount
+            || count($maxQtys) !== $expectedCount
+            || count($discounts) !== $expectedCount
+        ) {
+            throw new InvalidArgumentException(translate('wholesale_price_rows_are_incomplete'));
+        }
+
+        $unitPrice = round((float) $product->getVariationPrice($variationType, $variationKey), 2);
+        $priceRanges = [];
+
+        foreach ($minQtys as $index => $minQtyRaw) {
+            $tier = trim((string) ($tiers[$index] ?? ''));
+            $discount = (float) ($discounts[$index] ?? 0);
+            $minQty = filter_var($minQtyRaw, FILTER_VALIDATE_INT);
+            $maxQtyRaw = $maxQtys[$index] ?? null;
+            $maxQty = null;
+
+            if ($tier === '') {
+                throw new InvalidArgumentException(translate('wholesale_price_rows_are_incomplete'));
+            }
+
+            if ($minQty === false || $minQty < 1) {
+                throw new InvalidArgumentException(translate('minimum_quantity_must_be_at_least_1'));
+            }
+
+            if ($maxQtyRaw !== null && $maxQtyRaw !== '') {
+                $maxQty = filter_var($maxQtyRaw, FILTER_VALIDATE_INT);
+
+                if ($maxQty === false || $maxQty <= $minQty) {
+                    throw new InvalidArgumentException(translate('maximum_quantity_must_be_greater_than_minimum_quantity'));
+                }
+            }
+
+            if ($discount < 0 || $discount > 100) {
+                throw new InvalidArgumentException(translate('discount_must_be_between_0_and_100'));
+            }
+
+            $priceRanges[] = [
+                'tier' => $tier,
+                'min_qty' => $minQty,
+                'max_qty' => $maxQty,
+                'price_per_piece' => round($unitPrice - (($unitPrice * $discount) / 100), 2),
+                'discount' => $discount,
+                'status' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        usort($priceRanges, fn(array $left, array $right) => $left['min_qty'] <=> $right['min_qty']);
+
+        for ($index = 0; $index < count($priceRanges) - 1; $index++) {
+            $currentMax = $priceRanges[$index]['max_qty'] ?? PHP_INT_MAX;
+            $nextMin = $priceRanges[$index + 1]['min_qty'];
+
+            if ($nextMin <= $currentMax) {
+                throw new InvalidArgumentException(translate('wholesale_price_ranges_cannot_overlap'));
+            }
+        }
+
+        return $priceRanges;
     }
 
 

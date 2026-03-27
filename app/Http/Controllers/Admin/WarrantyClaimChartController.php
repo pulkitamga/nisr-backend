@@ -146,8 +146,8 @@ class WarrantyClaimChartController extends Controller
                 $end = now()->endOfDay();
                 break;
             case 'custom_date':
-                $start = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
-                $end = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                $start = $this->parseOptionalDate($from, now()->subDays(29)->startOfDay(), true);
+                $end = $this->parseOptionalDate($to, now()->endOfDay(), false);
                 break;
             case 'this_year':
             default:
@@ -173,8 +173,9 @@ class WarrantyClaimChartController extends Controller
             if ($request->filled('branch_id')) {
                 $query->where('branch_id', $request->branch_id);
             }
-            if ($request->filled('status') && $request->status != 'all') {
-                $query->where('status', $request->status);
+            $status = (string)$request->input('status', '');
+            if ($status !== '' && $status !== 'all' && in_array($status, $this->allowedStatuses(), true)) {
+                $query->where('status', $status);
             }
             if ($request->filled('product_id')) {
                 $query->whereHas('warranty', function ($q) use ($request) {
@@ -232,7 +233,7 @@ class WarrantyClaimChartController extends Controller
     {
         $dateType = $request->input('date_type', 'this_year');
 
-        // ✅ Decide grouping
+        // Determine grouping based on date range granularity.
         if ($dateType === 'this_year') {
             $groupFormat = '%Y-%m';   // monthly
             $labelFormat = 'M Y';
@@ -260,7 +261,7 @@ class WarrantyClaimChartController extends Controller
             }
         }
 
-        // ✅ Generate labels dynamically
+        // Generate labels from the requested period so empty groups still render.
         $period = \Carbon\CarbonPeriod::create($start, "1 {$step}", $end);
 
         $labels = [];
@@ -279,7 +280,7 @@ class WarrantyClaimChartController extends Controller
             }
         }
 
-        // ✅ Query with dynamic grouping
+        // Query the grouped totals for each status bucket.
         $query = WarrantyClaim::select(
             DB::raw("DATE_FORMAT(submitted_at, '{$groupFormat}') as grp"),
             'status',
@@ -354,6 +355,42 @@ class WarrantyClaimChartController extends Controller
             'closed'            => '#7f8c8d',
         ];
         return $colors[$status] ?? '#95a5a6';
+    }
+
+    private function allowedStatuses(): array
+    {
+        return [
+            'new',
+            'approved',
+            'rma_issued',
+            'received',
+            'repair_pending',
+            'replacement_pending',
+            'qc_pending',
+            'shipped_ready',
+            'dispatched',
+            'waiting_customer',
+            'waiting_parts',
+            'waiting_payment',
+            'resolved',
+            'rejected',
+            'closed',
+        ];
+    }
+
+    private function parseOptionalDate(mixed $value, Carbon $fallback, bool $startOfDay): Carbon
+    {
+        if (blank($value)) {
+            return $fallback->copy();
+        }
+
+        try {
+            $date = Carbon::parse((string)$value);
+        } catch (\Throwable) {
+            return $fallback->copy();
+        }
+
+        return $startOfDay ? $date->startOfDay() : $date->endOfDay();
     }
 
     public function exportExcel(Request $request)

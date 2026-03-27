@@ -14,6 +14,7 @@ use App\Enums\SessionKey;
 use App\Enums\ViewPaths\Vendor\POS;
 use App\Http\Controllers\BaseController;
 use App\Services\CartService;
+use App\Services\PosCartStateService;
 use App\Services\POSService;
 use App\Traits\CalculatorTrait;
 use App\Traits\CommonTrait;
@@ -26,6 +27,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class POSController extends BaseController
 {
@@ -52,6 +54,7 @@ class POSController extends BaseController
         private readonly CouponRepositoryInterface          $couponRepo,
         private readonly OrderRepositoryInterface           $orderRepo,
         private readonly CartService                        $cartService,
+        private readonly PosCartStateService                $posCartStateService,
         private readonly POSService                         $POSService,
         private readonly DeliveryZipCodeRepositoryInterface $deliveryZipCodeRepo,
     )
@@ -82,7 +85,10 @@ class POSController extends BaseController
         }
 
         $shop = $this->shopRepo->getFirstWhere(params: ['id' => $vendorId]);
-        $categoryId = $request['category_id'];
+        $categoryId = max(0, (int)($request['category_id'] ?? 0));
+        if ($categoryId > 0 && !$this->categoryRepo->getFirstWhere(params: ['id' => $categoryId])) {
+            $categoryId = 0;
+        }
         $categories = $this->categoryRepo->getListWhere(orderBy: ['id' => 'desc'], filters: ['position' => 0]);
         $searchValue = $request['searchValue'] ?? null;
         $products = $this->productRepo->getListWhere(
@@ -100,12 +106,16 @@ class POSController extends BaseController
             }],
             dataLimit: getWebConfig('pagination_limit'),
         );
-        $cartId = 'walking-customer-' . rand(10, 1000);
-        $this->cartService->getNewCartSession(cartId: $cartId);
+        $cartId = $this->cartService->generateWalkingCustomerCartId();
+        $this->cartService->ensureCartExists(cartId: $cartId);
+        session()->put(SessionKey::POS_CART_ID, $cartId);
         $customers = $this->customerRepo->getListWhereNotIn(ids: [0]);
         $getCurrentCustomerData = $this->getCustomerDataFromSessionForPOS();
-        $summaryData = array_merge($this->POSService->getSummaryData(), $getCurrentCustomerData);
-        $cartItems = $this->getCartData(cartName: session(SessionKey::CURRENT_USER));
+        $summaryData = array_merge($this->POSService->getSummaryData(
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        ), $getCurrentCustomerData);
+        $cartItems = $this->getCartData(cartName: session(SessionKey::POS_CART_ID));
         $order = $this->orderRepo->getFirstWhere(params: ['id' => session(SessionKey::LAST_ORDER)]);
         $totalHoldOrder = $summaryData['totalHoldOrders'];
         $countries = getWebConfig(name: 'delivery_country_restriction') ? $this->get_delivery_country_array() : COUNTRIES;
@@ -133,10 +143,23 @@ class POSController extends BaseController
      */
     public function changeCustomer(Request $request): JsonResponse
     {
-        $cartId = ($request['user_id'] != 0 ? 'saved-customer-' . $request['user_id'] : 'walking-customer-' . rand(10, 1000));
-        $this->POSService->UpdateSessionWhenCustomerChange(cartId: $cartId);
+        $cartId = (int)$request['user_id'] !== 0
+            ? $this->cartService->makeSavedCustomerCartId((int)$request['user_id'])
+            : $this->cartService->generateWalkingCustomerCartId();
+        $currentCartId = trim((string)session(SessionKey::POS_CART_ID));
+        $this->POSService->syncCartForCustomerChange(
+            cartId: $cartId,
+            branchId: $this->resolveBranchIdFromCartId($cartId),
+            currentCartId: $currentCartId,
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        );
+        session()->put(SessionKey::POS_CART_ID, $cartId);
         $getCurrentCustomerData = $this->getCustomerDataFromSessionForPOS();
-        $summaryData = array_merge($this->POSService->getSummaryData(), $getCurrentCustomerData);
+        $summaryData = array_merge($this->POSService->getSummaryData(
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        ), $getCurrentCustomerData);
         $cartItems = $this->getCartData(cartName: $cartId);
 
         return response()->json([
@@ -150,10 +173,18 @@ class POSController extends BaseController
      */
     public function updateDiscount(Request $request): JsonResponse
     {
-        $cartId = session(SessionKey::CURRENT_USER);
-        if ($request['type'] == 'percent' && ($request['discount'] < 0 || $request['discount'] > 100)) {
+        $cartId = session(SessionKey::POS_CART_ID);
+        $branchId = $this->resolveBranchIdFromCartId($cartId);
+        $discountType = (string)$request->input('type', '');
+        $discountValue = (float)$request->input('discount', 0);
+        if (!in_array($discountType, ['amount', 'percent'], true)) {
+            throw ValidationException::withMessages([
+                'type' => [translate('invalid_request')],
+            ]);
+        }
+        if ($discountValue < 0 || ($discountType == 'percent' && $discountValue > 100)) {
             $cartItems = $this->getCartData(cartName: $cartId);
-            $text = $request['discount'] > 0 ? 'Extra_discount_can_not_be_less_than_0_percent' :
+            $text = $discountValue < 0 ? 'Extra_discount_can_not_be_less_than_0_percent' :
                 'Extra_discount_can_not_be_more_than_100_percent';
             Toastr::error(translate($text));
             return response()->json([
@@ -161,7 +192,12 @@ class POSController extends BaseController
                 'view' => view(POS::CART[VIEW], compact('cartId', 'cartItems'))->render()
             ]);
         }
-        $cart = session($cartId, collect());
+        $cart = $this->posCartStateService->getPayload(
+            cartId: $cartId,
+            branchId: $branchId,
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        );
         if ($cart) {
             $totalProductPrice = 0;
             $productDiscount = 0;
@@ -182,10 +218,10 @@ class POSController extends BaseController
                     }
                 }
             }
-            if ($request['type'] == 'percent') {
-                $extraDiscount = (($totalProductPrice - $includeTax) / 100) * $request['discount'];
+            if ($discountType == 'percent') {
+                $extraDiscount = (($totalProductPrice - $includeTax) / 100) * $discountValue;
             } else {
-                $extraDiscount = $request['discount'];
+                $extraDiscount = $discountValue;
             }
             $total = $totalProductPrice - $productDiscount + $productTax - $couponDiscount - $extraDiscount - $includeTax;
             if ($total < 0) {
@@ -195,9 +231,15 @@ class POSController extends BaseController
                     'view' => view(POS::CART[VIEW], compact('cartId', 'cartItems'))->render()
                 ]);
             } else {
-                $cart['ext_discount'] = $request['type'] == 'percent' ? $request['discount'] : currencyConverter(amount: $request['discount']);
-                $cart['ext_discount_type'] = $request['type'];
-                session()->put($cartId, $cart);
+                $cart['ext_discount'] = $discountType == 'percent' ? $discountValue : currencyConverter(amount: $discountValue);
+                $cart['ext_discount_type'] = $discountType;
+                $this->posCartStateService->putPayload(
+                    cartId: $cartId,
+                    branchId: $branchId,
+                    payload: $cart,
+                    actorType: 'seller',
+                    actorId: (int)auth('seller')->id()
+                );
                 $cartItems = $this->getCartData(cartName: $cartId);
                 return response()->json([
                     'extraDiscount' => "success",
@@ -219,7 +261,8 @@ class POSController extends BaseController
      */
     public function getCouponDiscount(Request $request): JsonResponse
     {
-        $cartId = session(SessionKey::CURRENT_USER);
+        $cartId = session(SessionKey::POS_CART_ID);
+        $branchId = $this->resolveBranchIdFromCartId($cartId);
         $userId = $this->cartService->getUserId();
         if ($userId != 0) {
             $usedCoupon = $this->orderRepo->getListWhere(filters: ['customer_type' => 'customer', 'coupon_code' => $request['coupon_code']])->count();
@@ -253,7 +296,12 @@ class POSController extends BaseController
             ]);
         }
 
-        $carts = session($cartId);
+        $carts = $this->posCartStateService->getPayload(
+            cartId: $cartId,
+            branchId: $branchId,
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        );
         $totalProductPrice = 0;
         $productDiscount = 0;
         $productTax = 0;
@@ -282,12 +330,15 @@ class POSController extends BaseController
                         ]);
                     }
 
-                    $this->POSService->putCouponDataOnSession(
+                    $this->POSService->putCouponDataOnCart(
                         cartId: $cartId,
                         discount: $discount,
                         couponTitle: $coupon['title'],
                         couponBearer: $coupon['coupon_bearer'],
-                        couponCode: $request['coupon_code']
+                        couponCode: $request['coupon_code'],
+                        branchId: $branchId,
+                        actorType: 'seller',
+                        actorId: (int)auth('seller')->id()
                     );
                     $cartItems = $this->getCartData(cartName: $cartId);
                     return response()->json([
@@ -330,11 +381,11 @@ class POSController extends BaseController
      */
     protected function getCustomerDataFromSessionForPOS(): array
     {
-        if (Str::contains(session(SessionKey::CURRENT_USER), 'walking-customer')) {
-            $currentCustomerInfo = ['customerName' => 'Walking Customer'];
+        if (Str::contains(session(SessionKey::POS_CART_ID), 'walking-customer')) {
+            $currentCustomerInfo = ['customerName' => translate('walking_customer')];
             $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => '0']);
         } else {
-            $userId = explode('-', session(SessionKey::CURRENT_USER))[2];
+            $userId = explode('-', session(SessionKey::POS_CART_ID))[2];
             $currentCustomerData = $this->customerRepo->getFirstWhere(params: ['id' => $userId]);
             $currentCustomerInfo = $this->cartService->getCustomerInfo(currentCustomerData: $currentCustomerData, customerId: $userId);
 
@@ -354,7 +405,7 @@ class POSController extends BaseController
         $customerCartData = [];
         if (Str::contains($cartName, 'walking-customer')) {
             $currentCustomerInfo = [
-                'customerName' => 'Walking Customer',
+                'customerName' => translate('walking_customer'),
                 'customerPhone' => "",
             ];
             $customerId = 0;
@@ -386,8 +437,14 @@ class POSController extends BaseController
             'discountOnProduct' => 0,
             'productSubtotal' => 0,
         ];
-        if (session()->get($cartName)) {
-            foreach (session()->get($cartName) as $cartItem) {
+        $cartPayload = $this->posCartStateService->getPayload(
+            cartId: $cartName,
+            branchId: $this->resolveBranchIdFromCartId($cartName),
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        );
+        if (!empty($cartPayload)) {
+            foreach ($cartPayload as $cartItem) {
                 if (is_array($cartItem)) {
                     $product = $this->productRepo->getFirstWhere(params: ['id' => $cartItem['id']], relations: ['clearanceSale' => function ($query) {
                         return $query->active();
@@ -471,5 +528,15 @@ class POSController extends BaseController
         }
 
         return response()->json($data);
+    }
+
+    private function resolveBranchIdFromCartId(?string $cartId): int
+    {
+        $cartId = trim((string)$cartId);
+        if (preg_match('/-b(\d+)$/', $cartId, $matches)) {
+            return max(1, (int)($matches[1] ?? 1));
+        }
+
+        return 1;
     }
 }

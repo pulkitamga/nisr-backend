@@ -78,15 +78,11 @@ class MercadoPagoController extends Controller
                 'transaction_id' => $payment->id,
             ]);
             $data = $this->paymentRequest::where(['id' => $request['payment_id']])->first();
-            if (isset($data) && function_exists($data->success_hook)) {
-                call_user_func($data->success_hook, $data);
-            }
+            $this->executePaymentHook($data?->success_hook, $data);
             return $this->payment_response($data,'success');
         }
         $payment_data = $this->paymentRequest::where(['id' => $request['payment_id']])->first();
-        if (isset($payment_data) && function_exists($payment_data->failure_hook)) {
-            call_user_func($payment_data->failure_hook, $payment_data);
-        }
+        $this->executePaymentHook($payment_data?->failure_hook, $payment_data);
         return $this->payment_response($payment_data,'fail');
     }
 

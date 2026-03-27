@@ -233,16 +233,14 @@ class PaymobController extends Controller
                     'transaction_id' => (string)($callbackData['transaction_id'] ?? $paymentData->transaction_id ?? $paymentData->id),
                 ]);
                 $paymentData->refresh();
-                if (isset($paymentData) && function_exists($paymentData->success_hook)) {
-                    call_user_func($paymentData->success_hook, $paymentData);
-                }
+                $this->executePaymentHook($paymentData?->success_hook, $paymentData);
             }
 
             return $this->buildCallbackResponse($request, $paymentData, 'success', 200);
         }
 
-        if ($paymentData && $isValidHmac && !$isPending && function_exists($paymentData->failure_hook)) {
-            call_user_func($paymentData->failure_hook, $paymentData);
+        if ($paymentData && $isValidHmac && !$isPending) {
+            $this->executePaymentHook($paymentData->failure_hook, $paymentData);
         }
 
         return $this->buildCallbackResponse($request, $paymentData, 'fail', $isValidHmac ? 200 : 400);

@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\PaymentRequest;
+use App\Support\Payments\PaymentHookRegistry;
 use InvalidArgumentException;
 
 trait Payment
@@ -23,6 +24,14 @@ trait Payment
 
         if (!is_array($payment_info->getAdditionalData())) {
             throw new InvalidArgumentException('Additional data should be in a valid array');
+        }
+
+        if (!PaymentHookRegistry::isAllowed($payment_info->getSuccessHook())) {
+            throw new InvalidArgumentException('Unsupported payment success hook');
+        }
+
+        if (!PaymentHookRegistry::isAllowed($payment_info->getFailureHook())) {
+            throw new InvalidArgumentException('Unsupported payment failure hook');
         }
 
         $payment = new PaymentRequest();

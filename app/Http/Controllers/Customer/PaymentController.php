@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Warranty\PaymentRequest as WarrantyClaimPaymentRequest;
 use App\Library\Payer;
 use App\Library\Payment as PaymentInfo;
 use App\Library\Receiver;
@@ -15,6 +16,7 @@ use App\Models\ServiceInvoice;
 use App\Models\ShippingAddress;
 use App\Models\ShippingType;
 use App\Models\User;
+use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimPayment;
 use App\Services\ServiceInvoicePaymentService;
 use App\Traits\Payment;
@@ -789,26 +791,12 @@ class PaymentController extends Controller
         return view('web-views.pages.warranty-claim-payment', compact('payment', 'claim', 'payment_gateways_list', 'digital_payment'));
     }
 
-    public function warranty_claim_payment_request(Request $request)
+    public function warranty_claim_payment_request(WarrantyClaimPaymentRequest $request)
     {
         if (! auth('customer')->check()) {
             Toastr::error(translate('please_login_first'));
 
             return redirect()->route('customer.auth.login');
-        }
-
-        $validator = Validator::make($request->all(), [
-            'payment_id' => 'required|exists:warranty_claim_payments,id',
-            'payment_method' => 'required',
-            'payment_platform' => 'required|in:web,app',
-        ]);
-
-        if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                Toastr::error($error);
-            }
-
-            return back();
         }
 
         $payment = WarrantyClaimPayment::with(['claim.warranty', 'claim.charges'])->find($request->payment_id);
@@ -1010,17 +998,25 @@ class PaymentController extends Controller
     private function afterWarrantyClaimPaymentSuccess(WarrantyClaimPayment $payment, ?PaymentRequest $paymentRequest = null): void
     {
         DB::transaction(function () use ($payment, $paymentRequest) {
-            $payment->refresh();
-            if ($payment->payment_status === 'paid') {
+            $lockedPayment = WarrantyClaimPayment::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $lockedPayment || $lockedPayment->payment_status === 'paid') {
                 return;
             }
 
-            $claim = $payment->claim()->with('charges')->first();
+            $claim = WarrantyClaim::query()
+                ->whereKey($lockedPayment->warranty_claim_id)
+                ->lockForUpdate()
+                ->first();
+
             if (! $claim) {
                 return;
             }
 
-            $chargeIds = is_array($payment->charge_ids) ? $payment->charge_ids : [];
+            $chargeIds = is_array($lockedPayment->charge_ids) ? $lockedPayment->charge_ids : [];
             if (empty($chargeIds)) {
                 $chargeIds = $claim->charges()->where('is_paid', false)->pluck('id')->all();
             }
@@ -1028,6 +1024,7 @@ class PaymentController extends Controller
             $chargesToPay = $claim->charges()
                 ->whereIn('id', $chargeIds)
                 ->where('is_paid', false)
+                ->lockForUpdate()
                 ->get();
 
             if ($chargesToPay->isNotEmpty()) {
@@ -1040,7 +1037,7 @@ class PaymentController extends Controller
                 'gateway_payment_method' => $paymentRequest?->payment_method,
                 'gateway_transaction_id' => $paymentRequest?->transaction_id,
             ];
-            $payment->update($paymentUpdate);
+            $lockedPayment->update($paymentUpdate);
 
             if (! $claim->charges()->where('is_paid', false)->exists() && $claim->status === 'waiting_payment') {
                 $nextStatus = $claim->repair_or_replace === 'repair' ? 'repair_pending' : 'replacement_pending';
@@ -1048,8 +1045,8 @@ class PaymentController extends Controller
             }
 
             $description = 'Online payment received'
-                ." | Amount: {$payment->amount}"
-                ." | Payment ID: {$payment->id}";
+                ." | Amount: {$lockedPayment->amount}"
+                ." | Payment ID: {$lockedPayment->id}";
             if ($paymentRequest?->transaction_id) {
                 $description .= " | Gateway TX: {$paymentRequest->transaction_id}";
             }

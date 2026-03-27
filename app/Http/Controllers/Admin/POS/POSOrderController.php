@@ -17,6 +17,7 @@ use App\Services\InventoryMutationService;
 use App\Services\OrderDetailsService;
 use App\Services\OrderService;
 use App\Services\POSService;
+use App\Services\ProductExtraChargeResolverService;
 use App\Services\PosCartStateService;
 use App\Services\PosIdempotencyService;
 use App\Traits\CalculatorTrait;
@@ -66,6 +67,7 @@ class POSOrderController extends BaseController
         private readonly InventoryMutationService                   $inventoryMutationService,
         private readonly OrderDetailsService                        $orderDetailsService,
         private readonly OrderService                               $orderService,
+        private readonly ProductExtraChargeResolverService          $productExtraChargeResolverService,
     ) {}
 
     /**
@@ -124,7 +126,10 @@ class POSOrderController extends BaseController
                     actorType: 'admin',
                     actorId: (int)auth('admin')->id()
                 );
-                $cartLineItems = $this->getSessionCartLineItems(cart: $cart);
+                $cartLineItems = $this->getValidatedCartLineItems(
+                    cartLineItems: $this->getSessionCartLineItems(cart: $cart),
+                    branchId: $branchId
+                );
                 $orderAmountData = $this->getOrderAmountData(
                     cartId: $cartId,
                     cartLineItems: $cartLineItems,
@@ -149,7 +154,7 @@ class POSOrderController extends BaseController
                 $resolvedBranchId = $lineBranchIds->count() === 1
                     ? (int)$lineBranchIds->first()
                     : $branchId;
-                $paymentType = (string)($request['type'] ?? 'cash');
+                $paymentType = $this->validatePaymentType($request->input('type', 'cash'));
                 $paidAmount = $paymentType === 'cash' ? (float)($request['paid_amount'] ?? 0) : null;
                 $condition = $this->POSService->checkConditions(
                     amount: $amount,
@@ -363,6 +368,91 @@ class POSOrderController extends BaseController
             })
             ->values()
             ->all();
+    }
+
+    private function validatePaymentType(mixed $paymentType): string
+    {
+        $normalizedPaymentType = trim((string)$paymentType);
+        if (!in_array($normalizedPaymentType, ['cash', 'card', 'wallet'], true)) {
+            throw ValidationException::withMessages([
+                'type' => [translate('invalid_request')],
+            ]);
+        }
+
+        return $normalizedPaymentType;
+    }
+
+    private function getValidatedCartLineItems(array $cartLineItems, int $branchId): array
+    {
+        $validatedItems = [];
+
+        foreach ($cartLineItems as $lineItem) {
+            $productId = (int)($lineItem['id'] ?? 0);
+            $quantity = max(0, (int)($lineItem['quantity'] ?? 0));
+            if ($productId <= 0 || $quantity <= 0) {
+                continue;
+            }
+
+            $product = $this->productRepo->getFirstWhere(params: ['id' => $productId], relations: ['clearanceSale' => function ($query) {
+                return $query->active();
+            }]);
+            if (!$product) {
+                throw new \RuntimeException(translate('Product_not_found_in_cart'));
+            }
+
+            $validatedItems[] = $this->buildValidatedCartLineItem(
+                product: $product,
+                lineItem: $lineItem,
+                branchId: $branchId
+            );
+        }
+
+        if (count($validatedItems) === 0) {
+            throw new \RuntimeException(translate('cart_empty_warning'));
+        }
+
+        return $validatedItems;
+    }
+
+    private function buildValidatedCartLineItem(object $product, array $lineItem, int $branchId): array
+    {
+        $variant = (string)($lineItem['variant'] ?? '');
+        $unitPrice = (float)($product['unit_price'] ?? 0);
+
+        if ($variant !== '') {
+            $variantPrice = (float)$this->cartService->getVariationPrice(
+                variation: json_decode($product['variation'] ?? '[]'),
+                variant: $variant
+            );
+            if ($variantPrice > 0) {
+                $unitPrice = $variantPrice;
+            }
+        }
+
+        $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(
+            params: ['product_id' => $product['id'], 'variant_key' => $variant]
+        );
+        if ($product['product_type'] == 'digital' && $digitalProductVariation) {
+            $unitPrice = (float)($digitalProductVariation['price'] ?? $unitPrice);
+        }
+
+        $discount = max(0, (float)getProductPriceByType(
+            product: $product,
+            type: 'discounted_amount',
+            result: 'value',
+            price: $unitPrice,
+            from: 'panel'
+        ));
+        $extraCharges = $this->productExtraChargeResolverService->resolveForProduct($product);
+
+        return array_merge($lineItem, [
+            'price' => $unitPrice,
+            'discount' => $discount,
+            'tax_model' => (string)($product['tax_model'] ?? 'exclude'),
+            'installation_charge' => (float)($extraCharges['installation'] ?? 0),
+            'exchange_charge' => (float)($extraCharges['exchange'] ?? 0),
+            'branch_id' => max(1, (int)($lineItem['branch_id'] ?? $branchId)),
+        ]);
     }
 
     private function getOrderAmountData(string $cartId, array $cartLineItems, int $branchId): array

@@ -3,28 +3,18 @@
 namespace App\Http\Controllers\restapi\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Warranty\ClaimStoreRequest;
 use App\Jobs\TriageClaimJob;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimAttachment;
 use App\Models\WarrantyTimelineEvent;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 class WarrantyClaimController extends Controller
 {
-     public function store(Request $request)
+     public function store(ClaimStoreRequest $request)
     {
-        $request->validate([
-            'warranty_public_id' => 'required|exists:warranties,warranty_public_id',
-            'subject' => 'required|string|max:255',
-            'details' => 'required|string',
-            'issue' => 'required|string',
-            'product_images' => 'required|array|min:1',
-            'product_images.*' => 'file|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
         try {
 
             $warranty = Warranty::where('warranty_public_id', $request->warranty_public_id)
@@ -53,7 +43,7 @@ class WarrantyClaimController extends Controller
                 'warranty_id' => $warranty->id,
                 'serial_number' => $warranty->serial_number,
                 'branch_id' => $warranty->branch_id,
-                'claim_number' => 'CLM-' . strtoupper(Str::random(8)),
+                'claim_number' => WarrantyClaim::generateClaimNumber('CLM-'),
                 'status' => 'new',
                 'description' => $description,
                 'submitted_at' => $submittedAt,

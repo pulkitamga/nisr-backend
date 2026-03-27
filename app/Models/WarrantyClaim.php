@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class WarrantyClaim extends Model
 {
@@ -135,7 +136,27 @@ class WarrantyClaim extends Model
     {
         return $query->whereNotIn('status', ['closed', 'rejected']);
     }
-     public function product()
+
+    public static function generateClaimNumber(string $prefix = 'CLAIM-'): string
+    {
+        return static::generateUniqueIdentifier('claim_number', $prefix);
+    }
+
+    public static function generateRmaNumber(string $prefix = 'RMA-'): string
+    {
+        return static::generateUniqueIdentifier('rma_number', $prefix);
+    }
+
+    private static function generateUniqueIdentifier(string $column, string $prefix): string
+    {
+        do {
+            $candidate = $prefix . Str::upper(Str::random(8));
+        } while (static::query()->where($column, $candidate)->exists());
+
+        return $candidate;
+    }
+
+    public function product()
     {
         return $this->hasOneThrough(
             Product::class,

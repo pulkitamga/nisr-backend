@@ -190,7 +190,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
     });
 
     Route::get('/warranty/claim/{warranty_public_id}', [WarrantyClaimController::class, 'create'])->name('warranty.claim.create');
-    Route::post('/warranty/claim', [WarrantyClaimController::class, 'store'])->name('warranty.claim.store');
+    Route::post('/warranty/claim', [WarrantyClaimController::class, 'store'])->name('warranty.claim.store')->middleware('throttle:warranty-claim-create');
     Route::get('/warranty/claim/success/{claim_number}', [WarrantyClaimController::class, 'success'])->name('warranty.claim.success');
     Route::get('/warranty-policy', [WarrantyPolicyController::class, 'show'])->name('warranty-policy');
     Route::get('/warranty-policy/{version}', [WarrantyPolicyController::class, 'showVersion'])->name('warranty-policy.version');
@@ -198,10 +198,10 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
     Route::get('/lookup', [WarrantyViewController::class, 'lookupStart'])->name('warranty.lookup.start');
     Route::get('/warranty', [WarrantyViewController::class, 'warrantyTrack'])->name('warranty.track.page');
 
-    Route::post('/lookup/submit', [WarrantyViewController::class, 'lookupSubmit'])->name('warranty.lookup.submit');
+    Route::post('/lookup/submit', [WarrantyViewController::class, 'lookupSubmit'])->name('warranty.lookup.submit')->middleware('throttle:warranty-lookup');
 
     Route::get('/lookup/verify', [WarrantyViewController::class, 'lookupVerifyForm'])->name('warranty.lookup.verify.form');
-    Route::post('/lookup/verify', [WarrantyViewController::class, 'lookupVerify'])->name('warranty.lookup.verify');
+    Route::post('/lookup/verify', [WarrantyViewController::class, 'lookupVerify'])->name('warranty.lookup.verify')->middleware('throttle:warranty-lookup');
 
     Route::get('/view/{warranty_public_id}', [WarrantyViewController::class, 'view'])->name('warranty.view');
     Route::post('/{warranty}/share', [WarrantyViewController::class, 'share'])->name('warranty.share');
@@ -499,11 +499,11 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
     Route::group(['namespace' => 'Customer', 'prefix' => 'customer', 'as' => 'customer.'], function () {
         Route::controller(PaymentController::class)->group(function () {
             Route::post('/service-payment-request', 'service_payment_request')->name('service-payment-request')->middleware('customer');
-            Route::post('/warranty-claim-payment-request', 'warranty_claim_payment_request')->name('warranty-claim-payment-request')->middleware('customer');
+            Route::post('/warranty-claim-payment-request', 'warranty_claim_payment_request')->name('warranty-claim-payment-request')->middleware(['customer', 'throttle:warranty-claim-payment']);
         });
     });
     Route::get('/pay-service-invoice/{id}', [PaymentController::class, 'servicePayment'])->name('pay-service-invoice')->middleware('customer');
-    Route::get('/pay-warranty-claim/{token}', [PaymentController::class, 'warrantyClaimPayment'])->name('pay-warranty-claim')->middleware('customer');
+    Route::get('/pay-warranty-claim/{token}', [PaymentController::class, 'warrantyClaimPayment'])->name('pay-warranty-claim')->middleware(['customer', 'throttle:warranty-claim-payment']);
     Route::controller(PaymentController::class)->group(function () {
         Route::get('web-payment', 'web_payment_success')->name('web-payment-success');
         Route::get('payment-success', 'success')->name('payment-success');
@@ -524,6 +524,7 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
             Route::group(['prefix' => 'paymob', 'as' => 'paymob.'], function () {
                 Route::any('pay', [PaymobController::class, 'credit'])->name('pay');
                 Route::any('callback', [PaymobController::class, 'callback'])->name('callback')
+                    ->middleware('throttle:payment-callback')
                     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
             });
 

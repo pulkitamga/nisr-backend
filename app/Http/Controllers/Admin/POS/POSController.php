@@ -72,7 +72,10 @@ class POSController extends BaseController
 
     public function getPOSView(object $request): View
     {
-        $categoryId = $request['category_id'];
+        $categoryId = max(0, (int)($request['category_id'] ?? 0));
+        if ($categoryId > 0 && !$this->categoryRepo->getFirstWhere(params: ['id' => $categoryId])) {
+            $categoryId = 0;
+        }
         $branchId = (int)($request['branch_id'] ?? 1);
         if ($branchId <= 0) {
             $branchId = 1;
@@ -200,7 +203,7 @@ class POSController extends BaseController
             actorId: (int)auth('admin')->id()
         );
 
-        $this->POSService->UpdateSessionWhenCustomerChange(
+        $this->POSService->syncCartForCustomerChange(
             cartId: $cartId,
             branchId: $branchId,
             currentCartId: $currentCartId,
@@ -233,9 +236,16 @@ class POSController extends BaseController
         $context = $this->getValidatedWriteContext($request);
         $branchId = $context['branch_id'];
         $cartId = $context['cart_id'];
-        if ($request['type'] == 'percent' && ($request['discount'] < 0 || $request['discount'] > 100)) {
+        $discountType = (string)$request->input('type', '');
+        $discountValue = (float)$request->input('discount', 0);
+        if (!in_array($discountType, ['amount', 'percent'], true)) {
+            throw ValidationException::withMessages([
+                'type' => [translate('invalid_request')],
+            ]);
+        }
+        if ($discountValue < 0 || ($discountType === 'percent' && $discountValue > 100)) {
             $cartItems = $this->getCartData(cartName: $cartId, branchId: $branchId);
-            $text = $request['discount'] < 0
+            $text = $discountValue < 0
                 ? 'Extra_discount_can_not_be_less_than_0_percent'
                 : 'Extra_discount_can_not_be_more_than_100_percent';
             Toastr::error(translate($text));
@@ -270,10 +280,10 @@ class POSController extends BaseController
                     }
                 }
             }
-            if ($request['type'] == 'percent') {
-                $extraDiscount = (($totalProductPrice - $includeTax) / 100) * $request['discount'];
+            if ($discountType == 'percent') {
+                $extraDiscount = (($totalProductPrice - $includeTax) / 100) * $discountValue;
             } else {
-                $extraDiscount = $request['discount'];
+                $extraDiscount = $discountValue;
             }
             $total = $totalProductPrice - $productDiscount + $productTax - $couponDiscount - $extraDiscount - $includeTax;
             if ($total < 0) {
@@ -283,8 +293,8 @@ class POSController extends BaseController
                     'view' => view(POS::CART[VIEW], compact('cartId', 'cartItems'))->render()
                 ]);
             } else {
-                $cart['ext_discount'] = $request['type'] == 'percent' ? $request['discount'] : currencyConverter(amount: $request['discount']);
-                $cart['ext_discount_type'] = $request['type'];
+                $cart['ext_discount'] = $discountType == 'percent' ? $discountValue : currencyConverter(amount: $discountValue);
+                $cart['ext_discount_type'] = $discountType;
                 $this->posCartStateService->putPayload(
                     cartId: $cartId,
                     branchId: $branchId,
@@ -382,7 +392,7 @@ class POSController extends BaseController
                         ]);
                     }
 
-                    $this->POSService->putCouponDataOnSession(
+                    $this->POSService->putCouponDataOnCart(
                         cartId: $cartId,
                         discount: $discount,
                         couponTitle: $coupon['title'],
@@ -421,10 +431,11 @@ class POSController extends BaseController
     public function getQuickView(Request $request): JsonResponse
     {
         $branchId = (int)($request->branch_id ?? 0);
-        Log::info('QuickView Request', ['product_id' => $request->product_id, 'branch_id' => $branchId]);
+        $productId = (int)($request->product_id ?? 0);
+        Log::info('POS QuickView', ['product_id' => $productId, 'branch_id' => $branchId, 'admin_id' => (int)auth('admin')->id()]);
 
         $product = $this->productRepo->getFirstWhereWithCount(
-            params: ['id' => $request['product_id']],
+            params: ['id' => $productId],
             withCount: ['reviews'],
             relations: ['brand', 'category', 'rating', 'tags', 'digitalVariation', 'clearanceSale' => fn($q) => $q->active()]
         );

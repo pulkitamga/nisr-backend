@@ -472,7 +472,7 @@ class WholesaleDashboardController extends BaseController
             ->where('user_type', 1)
             ->where('wholesaler_status', 1)
             ->selectRaw("COALESCE(NULLIF(tier, ''), 'Unassigned') as tier_name, COUNT(*) as wholesaler_count")
-            ->groupBy(DB::raw("COALESCE(NULLIF(tier, ''), 'Unassigned')"))
+            ->groupBy('tier_name')
             ->orderByDesc('wholesaler_count')
             ->get();
 
@@ -484,7 +484,7 @@ class WholesaleDashboardController extends BaseController
             ->selectRaw("COALESCE(NULLIF(users.tier, ''), 'Unassigned') as tier_name")
             ->selectRaw('COUNT(*) as orders_count')
             ->selectRaw('SUM(COALESCE(wholesale_confirm_orders.final_price, 0)) as total_revenue')
-            ->groupBy(DB::raw("COALESCE(NULLIF(users.tier, ''), 'Unassigned')"))
+            ->groupBy('tier_name')
             ->orderByDesc('total_revenue')
             ->get();
 

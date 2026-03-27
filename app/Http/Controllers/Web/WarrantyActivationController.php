@@ -4,25 +4,25 @@ namespace App\Http\Controllers\Web;
 
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
 use App\Events\DigitalProductOtpVerificationEvent;
-use App\Models\ActivationReview;
 use App\Models\Blacklist;
 use App\Models\OrderDetail;
 use App\Models\Branch;
 use App\Models\Warranty;
-use App\Models\WarrantyTimelineEvent;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\Controller;
+use App\Services\WarrantyOrderActivationService;
+use App\Services\WarrantyPolicyVersionResolver;
 use App\Support\WarrantyOrderSupport;
 use Illuminate\Support\Facades\Log;
 use App\Services\FirebaseService;
+use App\Services\WarrantyActivationCommitService;
 use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Validation\ValidationException;
 
 class WarrantyActivationController extends Controller
 {
@@ -214,7 +214,11 @@ class WarrantyActivationController extends Controller
             return redirect()->route('warranty.verify-otp');
         }
 
-        $this->commitActivation($warranty, $request, !$request->user(), $flagged, $flaggedReason);
+        try {
+            $this->commitActivation($warranty, $request, !$request->user(), $flagged, $flaggedReason);
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors())->withInput();
+        }
         RateLimiter::clear($key);
 
         return redirect()->route('warranty.success', ['serial' => $request->serial_number]);
@@ -282,7 +286,11 @@ class WarrantyActivationController extends Controller
             'activation_ip' => Session::get('activation_ip'),
         ]);
 
-        $this->commitActivation($warranty, $sessionData, $isGuest, $flagged, $flaggedReason);
+        try {
+            $this->commitActivation($warranty, $sessionData, $isGuest, $flagged, $flaggedReason);
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors());
+        }
 
         Session::forget([
             'pending_warranty_id',
@@ -309,69 +317,28 @@ class WarrantyActivationController extends Controller
     /* --------------------------------------------------------------
        COMMIT ACTIVATION
     -------------------------------------------------------------- */
-    private function commitActivation($warranty, $request, $isGuest, $flagged, $flaggedReason)
+    private function commitActivation($warranty, $request, $isGuest, $flagged, $flaggedReason): Warranty
     {
-        $defaultDuration = $this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? '12';
-        $duration = $warranty->product->warranty_duration ?? $defaultDuration;
-        $purchaseDate = Carbon::parse($request->purchase_date);
-        $start = $purchaseDate->copy();
-        $end = $purchaseDate->copy()->addMonths($duration);
-        $autoApprove = $this->businessSettingRepo->getFirstWhere(['type' => 'warranty_auto_approve_off_platform'])['value'] ?? '0';
+        $receiptPath = null;
+        if ($request->hasFile('receipt')) {
+            $receiptPath = $request->file('receipt')->store('warranty/receipts', 'public');
+        } elseif (Session::has('receipt_path')) {
+            $receiptPath = Session::get('receipt_path');
+        }
 
-        $status = ($flagged && $autoApprove != '1') ? 'pending_review' : 'active';
-
-        $activationIp = $request->input('activation_ip') ?: request()->ip();
-
-        $warranty->update([
-            'status' => $status,
-            'activation_date' => $purchaseDate,
-            'start_date' => $start,
-            'end_date' => $end,
-            'purchase_date' => $purchaseDate,
-            'retailer_branch_id' => $request->retailer_branch_id ?? null,
-            'retailer_name' => $request->retailer_name ?? null,
-            'invoice_number' => $request->invoice_number,
-            'activated_ip' => $activationIp,
+        return (new WarrantyActivationCommitService($this->businessSettingRepo))->commit($warranty, $request, [
+            'flagged' => $flagged,
+            'flagged_reason' => $flaggedReason,
             'activation_method' => 'user_public_form',
+            'timeline_description' => 'Activated via public form' . ($isGuest ? ' (guest)' : ''),
+            'review_notes' => 'Auto-created from public activation; awaiting admin review.',
             'policy_version' => $this->resolvePublishedPolicyVersion(),
-            'consent_checked' => true,
-            'consent_timestamp' => now(),
-            'consent_ip' => $activationIp,
-            'activated_by_name' => $request->name,
-            'activated_by_phone' => $request->phone ?? null,
-            'activated_by_email' => $request->email,
-        ]);
-
-        if ($request->hasFile('receipt') || Session::has('receipt_path')) {
-            $path = $request->hasFile('receipt')
-                ? $request->file('receipt')->store('warranty/receipts', 'public')
-                : Session::get('receipt_path');
-            $warranty->update(['receipt_path' => $path]);
-        }
-
-        WarrantyTimelineEvent::create([
-            'warranty_id' => $warranty->id,
-            'event_type' => 'activated',
-            'description' => 'Activated via public form' . ($isGuest ? ' (guest)' : ''),
-            'timestamp' => now(),
+            'activation_ip' => (string) ($request->input('activation_ip') ?: request()->ip()),
             'user_id' => auth('admin')->check() ? auth('admin')->id() : null,
+            'receipt_path' => $receiptPath,
+            'active_conflict_message' => translate('An active warranty already exists for this serial.'),
+            'ineligible_message' => translate('Invalid serial number or status not eligible for activation.'),
         ]);
-
-        if ($flagged && $autoApprove != '1') {
-            $reasons = is_array($flaggedReason)
-                ? array_filter($flaggedReason) // remove empty values
-                : ($flaggedReason ? array_filter(explode(', ', $flaggedReason)) : []);
-            $submittedAt = now();
-            ActivationReview::create([
-                'warranty_id' => $warranty->id,
-                'status' => 'pending',
-                'review_notes' => 'Auto-created from public activation; awaiting admin review.',
-                'flagged_reason' => !empty($reasons) ? implode(', ', $reasons) : 'No reason specified',
-                'submitted_at' => $submittedAt,
-                'first_response_due' => $submittedAt->copy()->addHours(24),
-                'decision_due' => $submittedAt->copy()->addDays(3),
-            ]);
-        }
     }
 
     public function resendOtp(Request $request)
@@ -495,69 +462,21 @@ class WarrantyActivationController extends Controller
             return back()->withInput();
         }
 
-        $defaultDuration = (int)($this->businessSettingRepo->getFirstWhere(['type' => 'warranty_months'])['value'] ?? 12);
-        $purchaseDate = WarrantyOrderSupport::resolvePurchaseDate($detail->order, $detail);
-        $start = $purchaseDate->copy();
-        $end = $purchaseDate->copy()->addMonths($defaultDuration);
-
-        $activatedSerials = [];
-        $failedSerials = [];
-
-        foreach ($serialNumbers as $serialNumber) {
-            $warranty = Warranty::query()
-                ->eligibleForOrderActivation($serialNumber, (int)$detail->product_id)
-                ->first();
-
-            if (!$warranty) {
-                $failedSerials[] = $serialNumber;
-                continue;
-            }
-
-            if (Warranty::where('serial_number', $serialNumber)
-                ->where('status', 'active')
-                ->where('end_date', '>', now())
-                ->exists()
-            ) {
-                $failedSerials[] = $serialNumber;
-                continue;
-            }
-
-            if (Blacklist::where('serial_number', $serialNumber)->exists()) {
-                $failedSerials[] = $serialNumber;
-                continue;
-            }
-
-            $warranty->update([
-                'product_id' => $warranty->product_id ?? $detail->product_id,
-                'status' => 'active',
-                'activation_date' => $purchaseDate,
-                'start_date' => $start,
-                'end_date' => $end,
-                'purchase_date' => $purchaseDate,
-                'invoice_number' => $detail->order_id,
-                'final_user_id' => auth('customer')->id(),
-                'activation_method' => 'order_activation',
-                'consent_checked' => true,
-                'consent_timestamp' => now(),
-                'consent_ip' => $request->ip(),
+        $activationResult = (new WarrantyOrderActivationService($this->businessSettingRepo))->activate(
+            $detail,
+            $serialNumbers,
+            (int) auth('customer')->id(),
+            (string) $request->ip(),
+            [
+                'activated_count' => $activatedCount,
+                'timeline_description' => 'Activated via order details',
                 'policy_version' => $this->resolvePublishedPolicyVersion(),
-            ]);
-
-            WarrantyTimelineEvent::create([
-                'warranty_id' => $warranty->id,
-                'event_type' => 'activated',
-                'description' => 'Activated via order details',
-                'timestamp' => now(),
                 'user_id' => auth('admin')->check() ? auth('admin')->id() : null,
-            ]);
+            ]
+        );
 
-            $activatedSerials[] = $serialNumber;
-        }
-
-        if (!empty($activatedSerials)) {
-            $detail->warranty_status = ($activatedCount + count($activatedSerials)) >= (int)$detail->qty ? 1 : 0;
-            $detail->save();
-        }
+        $activatedSerials = $activationResult['activated_serials'];
+        $failedSerials = $activationResult['failed_serials'];
 
         if (!empty($activatedSerials) && !empty($failedSerials)) {
             $failedPreview = implode(', ', array_slice($failedSerials, 0, 5));
@@ -582,13 +501,6 @@ class WarrantyActivationController extends Controller
 
     private function resolvePublishedPolicyVersion(): ?string
     {
-        if (Schema::hasTable('warranty_policies')) {
-            return DB::table('warranty_policies')
-                ->whereNotNull('published_at')
-                ->orderByDesc('published_at')
-                ->value('version');
-        }
-
-        return null;
+        return (new WarrantyPolicyVersionResolver())->resolvePublishedVersion();
     }
 }

@@ -122,7 +122,7 @@
                     </li>
                     @php( $walletStatus = getWebConfig('wallet_status') ?? 0)
                     @if ($walletStatus)
-                        <li class="{{ (str_contains(session('current_user'), 'walking-customer')) ? 'd-none':'' }}">
+                        <li class="{{ (str_contains(session(\App\Enums\SessionKey::POS_CART_ID), 'walking-customer')) ? 'd-none':'' }}">
                             <input type="radio" value="wallet" id="wallet" name="type" hidden>
                             <label for="wallet" class="btn btn--bordered btn--bordered-black px-4 mb-0">{{ translate('wallet') }}</label>
                         </li>

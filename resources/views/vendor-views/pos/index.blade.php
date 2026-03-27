@@ -86,8 +86,8 @@
 
                             <?php
                             $userId = 0;
-                            if (Illuminate\Support\Str::contains(session('current_user'), 'saved-customer')) {
-                                $userId = explode('-', session('current_user'))[2];
+                            if (Illuminate\Support\Str::contains(session(\App\Enums\SessionKey::POS_CART_ID), 'saved-customer')) {
+                                $userId = explode('-', session(\App\Enums\SessionKey::POS_CART_ID))[2];
                             }
                             ?>
                             <select id='customer' name="customer_id" data-placeholder="Walking Customer"

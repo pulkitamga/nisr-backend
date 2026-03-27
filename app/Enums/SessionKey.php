@@ -7,7 +7,7 @@ enum SessionKey
     const ADMIN_RECAPTCHA_KEY = 'adminRecaptchaSessionKey';
     const VENDOR_RECAPTCHA_KEY = 'vendorRecaptchaSessionKey';
     const WHOLESALER_RECAPTCHA_KEY = 'vendorRecaptchaSessionKey';
-    const CURRENT_USER = 'current_user';
+    const POS_CART_ID = 'pos_cart_id';
     const CART_NAME = 'cart_name';
     const LAST_ORDER = 'last_order';
     const POS_BRANCH_ID = 'pos_branch_id';

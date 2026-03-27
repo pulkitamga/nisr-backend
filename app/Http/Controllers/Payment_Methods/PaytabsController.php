@@ -168,9 +168,7 @@ class PaytabsController extends Controller
                 'transaction_id' => $transRef,
             ]);
             $payment_data = $this->payment::where(['id' => $request['payment_id']])->first();
-            if (isset($payment_data) && function_exists($payment_data->success_hook)) {
-                call_user_func($payment_data->success_hook, $payment_data);
-            }
+            $this->executePaymentHook($payment_data?->success_hook, $payment_data);
 
             $order = \App\Models\Order::where('transaction_ref', $transRef)->first();
             if ($order && $order->order_status === 'confirmed' && $order->payment_status === 'paid') {
@@ -179,9 +177,7 @@ class PaytabsController extends Controller
             return $this->payment_response($payment_data, 'success');
         }
         $payment_data = $this->payment::where(['id' => $request['payment_id']])->first();
-        if (isset($payment_data) && function_exists($payment_data->failure_hook)) {
-            call_user_func($payment_data->failure_hook, $payment_data);
-        }
+        $this->executePaymentHook($payment_data?->failure_hook, $payment_data);
 
         $order = \App\Models\Order::where('transaction_ref', $transRef)->first();
         if ($order) {

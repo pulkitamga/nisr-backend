@@ -66,7 +66,7 @@ class POSService
         );
     }
 
-    public function UpdateSessionWhenCustomerChange(
+    public function syncCartForCustomerChange(
         string $cartId,
         ?int $branchId = null,
         ?string $currentCartId = null,
@@ -134,7 +134,7 @@ class POSService
     ): bool
     {
         $condition = false;
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::POS_CART_ID) ?? ''));
         $resolvedBranchId = $this->normalizeBranchId($branchId ?? $this->getActivePosBranchId());
 
         if ($resolvedCartId === '') {
@@ -187,7 +187,7 @@ class POSService
             $discount = $coupon['discount'];
         }
 
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::POS_CART_ID) ?? ''));
         $resolvedBranchId = $this->normalizeBranchId($branchId ?? $this->getActivePosBranchId());
         $cartData = [];
         if ($resolvedCartId !== '') {
@@ -234,7 +234,7 @@ class POSService
         return isset($segments[2]) ? (string)$segments[2] : '0';
     }
 
-    public function putCouponDataOnSession(
+    public function putCouponDataOnCart(
         $cartId,
         $discount,
         $couponTitle,

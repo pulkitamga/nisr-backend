@@ -191,7 +191,7 @@ class CartService
     public function getUserId(?string $cartId = null): int
     {
         $userId = 0;
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::POS_CART_ID) ?? ''));
         if (Str::contains($resolvedCartId, 'saved-customer')) {
             $segments = explode('-', $resolvedCartId);
             $userId = (int)($segments[2] ?? 0);
@@ -202,14 +202,14 @@ class CartService
     public function getUserType(?string $cartId = null): string
     {
         $userType = 'walking-customer';
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::POS_CART_ID) ?? ''));
         if (Str::contains($resolvedCartId, 'saved-customer')) {
             $userType = 'saved-customer';
         }
         return $userType;
     }
 
-    public function getNewCartSession(string|int $cartId): void
+    public function ensureCartExists(string|int $cartId): void
     {
         $activeCartId = trim((string)$cartId);
         if ($activeCartId === '') {
@@ -226,7 +226,7 @@ class CartService
 
     public function getCartKeeper(?string $cartId = null, ?int $branchId = null): void
     {
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::POS_CART_ID) ?? ''));
         if ($resolvedCartId === '') {
             return;
         }
@@ -279,7 +279,7 @@ class CartService
         return $productQuantity - $quantity;
     }
 
-    public function addCartDataOnSession(
+    public function addCartLineItem(
         object $product,
         int $quantity,
         float $price,
@@ -309,7 +309,7 @@ class CartService
             installationCharge: (float)($extra['installation_charge'] ?? 0),
             exchangeCharge: (float)($extra['exchange_charge'] ?? 0),
         );
-        $sessionData = [
+        $cartLineItem = [
             'id' => $product['id'],
             'line_key' => $lineKey,
             'customerId' => $this->getUserId($resolvedCartId),
@@ -325,7 +325,7 @@ class CartService
             'variations' => $variations,
         ];
         if (!empty($extra)) {
-            $sessionData = array_merge($sessionData, $extra);
+            $cartLineItem = array_merge($cartLineItem, $extra);
         }
 
         $keeper = [];
@@ -334,13 +334,13 @@ class CartService
                 $keeper[] = $item;
             }
         }
-        $keeper[] = $sessionData;
+        $keeper[] = $cartLineItem;
         if (!isset($keeper['add_to_cart_time'])) {
             $keeper['add_to_cart_time'] = Carbon::now();
         }
         $this->putCartPayloadById($resolvedCartId, $resolvedBranchId, $keeper);
 
-        return $sessionData;
+        return $cartLineItem;
     }
 
     public function getQuantityAndUpdateTime(
@@ -438,8 +438,7 @@ class CartService
             cartId: $cartId,
             branchId: $this->resolveBranchIdFromCartId($cartId, null)
         );
-        // Backward-compatible read fallback for modules not migrated yet.
-        session()->put(SessionKey::CURRENT_USER, $cartId);
+        session()->put(SessionKey::POS_CART_ID, $cartId);
     }
 
     public function generateWalkingCustomerCartId(?int $branchId = null): string
@@ -554,12 +553,12 @@ class CartService
 
         $itemPrice = (float)$subTotalCalculation['subtotal'] + (float)$subTotalCalculation['discountOnProduct'];
         $itemDiscount = (float)$subTotalCalculation['discountOnProduct'];
-        $legacyExtraDiscount = abs((float)($payload['ext_discount'] ?? 0));
-        $legacyExtraDiscountType = (string)($payload['ext_discount_type'] ?? 'amount');
-        if ($legacyExtraDiscountType === 'percent' && $legacyExtraDiscount > 0) {
-            $legacyExtraDiscount = (($subTotalCalculation['subtotal'] + $subTotalCalculation['discountOnProduct'] - $subTotalCalculation['totalIncludeTax']) * $legacyExtraDiscount) / 100;
+        $extraDiscountValue = abs((float)($payload['ext_discount'] ?? 0));
+        $extraDiscountType = (string)($payload['ext_discount_type'] ?? 'amount');
+        if ($extraDiscountType === 'percent' && $extraDiscountValue > 0) {
+            $extraDiscountValue = (($subTotalCalculation['subtotal'] + $subTotalCalculation['discountOnProduct'] - $subTotalCalculation['totalIncludeTax']) * $extraDiscountValue) / 100;
         }
-        $legacyTotal = (float)$subTotalCalculation['subtotal'] - $legacyExtraDiscount;
+        $baseTotal = (float)$subTotalCalculation['subtotal'] - $extraDiscountValue;
 
         $hasIncludeTaxModel = false;
         $hasExcludeTaxModel = false;
@@ -588,10 +587,10 @@ class CartService
         );
 
         $couponDiscount = abs((float)($payload['coupon_discount'] ?? 0));
-        $extraDiscount = (float)$legacyExtraDiscount;
+        $extraDiscount = (float)$extraDiscountValue;
 
         return [
-            'total' => $legacyTotal,
+            'total' => $baseTotal,
             'couponDiscount' => $couponDiscount,
             'extraDiscount' => $extraDiscount,
             'taxableBase' => (float)$summary['taxableBase'],
@@ -603,7 +602,7 @@ class CartService
 
     public function customerOnHoldStatus($status, ?string $cartId = null, ?int $branchId = null): void
     {
-        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::CURRENT_USER) ?? ''));
+        $resolvedCartId = trim((string)($cartId ?? session(SessionKey::POS_CART_ID) ?? ''));
         if ($resolvedCartId === '') {
             return;
         }

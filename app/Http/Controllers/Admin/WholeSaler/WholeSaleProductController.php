@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProductListWithPriceRangeExport;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class WholeSaleProductController extends BaseController
 {
@@ -74,6 +75,7 @@ class WholeSaleProductController extends BaseController
         Log::info('the request is ', ['request' => $request->all()]);
 
         $dataArray = $service->getAddData(request: $request);
+        $product = Product::query()->findOrFail($dataArray['product_id']);
         $existsQuery = WholeSaleProducts::where([
             'product_id' => $dataArray['product_id'],
             'status'     => 0
@@ -114,31 +116,28 @@ class WholeSaleProductController extends BaseController
             ], 422);
         }
 
+        try {
+            $priceRanges = $service->buildValidatedPriceRanges(
+                product: $product,
+                variationType: $dataArray['variation_type'] ?? null,
+                variationKey: $dataArray['variation_key'] ?? null,
+                payload: $request->only(['tier', 'min_qty', 'max_qty', 'discount'])
+            );
+        } catch (InvalidArgumentException $exception) {
+            return response()->json([
+                'error' => $exception->getMessage(),
+            ], 422);
+        }
+
         $savedRequest = $this->wholesaleproductrepo->add(data: $dataArray);
 
-        if ($request->has('min_qty') && is_array($request->min_qty)) {
-            $priceRanges = [];
+        if ($priceRanges !== []) {
+            $priceRanges = array_map(function (array $row) use ($savedRequest) {
+                $row['wholesale_id'] = $savedRequest->id;
 
-            foreach ($request->min_qty as $index => $minQty) {
-                $unitPrice = $request->unit_price[$index] ?? 0;
-                $discountPercent = $request->discount[$index] ?? 0;
-                $finalPrice = $unitPrice - (($unitPrice * $discountPercent) / 100);
+                return $row;
+            }, $priceRanges);
 
-                $priceRanges[] = [
-                    'wholesale_id'     => $savedRequest->id,
-                    'tier'             => $request->tier[$index] ?? null,
-                    'min_qty'          => $minQty,
-                    'max_qty'          => $request->max_qty[$index] ?? null,
-                    'price_per_piece'  => round($finalPrice, 2),
-                    'discount'         => $discountPercent,
-                    'status'           => 0,
-                    'created_at'       => now(),
-                    'updated_at'       => now(),
-                ];
-            }
-            usort($priceRanges, function ($a, $b) {
-                return $a['min_qty'] <=> $b['min_qty'];
-            });
             WholesaleProductPriceRange::insert($priceRanges);
         }
 
@@ -207,27 +206,33 @@ class WholeSaleProductController extends BaseController
 
     public function update(Request $request, $id)
     {
+        $wholesaleProduct = WholeSaleProducts::with('product')->findOrFail($request->primary_id);
+
+        try {
+            $priceRanges = app(WholeSaleProductsService::class)->buildValidatedPriceRanges(
+                product: $wholesaleProduct->product,
+                variationType: $wholesaleProduct->variation_type,
+                variationKey: $wholesaleProduct->variation_key,
+                payload: $request->only(['tier', 'min_qty', 'max_qty', 'discount'])
+            );
+        } catch (InvalidArgumentException $exception) {
+            Toastr::error($exception->getMessage());
+
+            return back()->withInput();
+        }
 
         $price_range = WholesaleProductPriceRange::where('wholesale_id', $request->primary_id);
 
         if ($price_range->exists()) {
             $price_range->delete();
         }
-        if ($request->has('min_qty') && is_array($request->min_qty)) {
-            $priceRanges = [];
-            foreach ($request->min_qty as $index => $minQty) {
-                $priceRanges[] = [
-                    'wholesale_id'     => $request->primary_id,
-                    'tier'             => $request->tier[$index] ?? null,
-                    'min_qty'          => $minQty,
-                    'max_qty'          => $request->max_qty[$index] ?? 0,
-                    'price_per_piece'  => $request->final_price[$index] ?? 0,
-                    'discount'         => $request->discount[$index] ?? 0,
-                    'status'           => 0,
-                    'created_at'       => now(),
-                    'updated_at'       => now(),
-                ];
-            }
+        if ($priceRanges !== []) {
+            $priceRanges = array_map(function (array $row) use ($request) {
+                $row['wholesale_id'] = $request->primary_id;
+
+                return $row;
+            }, $priceRanges);
+
             WholesaleProductPriceRange::insert($priceRanges);
         }
 
@@ -247,30 +252,14 @@ class WholeSaleProductController extends BaseController
         $data = [];
         $total_price_range_rows = 0;
         foreach ($wholesale_products_with_prices as $price) {
-            $primary_id = $price->id;
-            $product_id = $price->product_id;
-            $category_id = $price->category_id;
-            $sub_category_id = $price->sub_category_id;
-            $attribute_id  = $price->attribute_id;
-
-            if ($category_id) {
-                $get_category = $this->categoryRepo->getFirstWhere(params: ['id' => $category_id]);
-            }
-            if ($sub_category_id) {
-                $get_sub_category = $this->categoryRepo->getFirstWhere(params: ['id' => $sub_category_id]);
-            }
-            if ($product_id) {
-                $get_product = $this->productRepo->getFirstWhere(params: ['id' => $product_id]);
-            }
             $price_range = WholesaleProductPriceRange::where('wholesale_id', $price->id)->get();
             $total_price_range_rows += $price_range->count();
 
-            // product details with price range 
             $data[] = [
                 'primary_id'        => $price->id,
-                'product_name'      => $get_product->name,
-                'category_name'     => $get_category->name,
-                'sub_category_name' => $get_sub_category->name,
+                'product_name'      => $price->product?->name,
+                'category_name'     => $price->category?->name,
+                'sub_category_name' => $price->subcategory?->name,
                 'attribute_id'      => $price->attribute_id,
                 'price_ranges'      => $price_range->toArray(),
             ];

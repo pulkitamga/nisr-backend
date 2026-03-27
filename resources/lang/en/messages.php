@@ -61,5 +61,10 @@ return [
 	"Add_Content" => "Add Content",
 	"Add_Default_Content" => "Add Default Content",
 	"Add_Domain_(For_ex:_demo.dynamiclogic.com)" => "Add Domain (For ex: demo.dynamiclogic.com)",
+	"discount_must_be_between_0_and_100" => "Discount must be between 0 and 100.",
+	"maximum_quantity_must_be_greater_than_minimum_quantity" => "Maximum quantity must be greater than minimum quantity.",
+	"minimum_quantity_must_be_at_least_1" => "Minimum quantity must be at least 1.",
+	"purchase_order_number_is_already_assigned" => "This purchase order number is already assigned.",
+	"wholesale_price_ranges_cannot_overlap" => "Wholesale price ranges cannot overlap.",
+	"wholesale_price_rows_are_incomplete" => "Wholesale price rows are incomplete.",
 ];
-

@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class CrmCaseController extends Controller
@@ -25,6 +26,7 @@ class CrmCaseController extends Controller
             ->latest()
             ->get()
             ->map(fn (InboxMessage $message): array => $this->transformCase($message))
+            ->sortByDesc('updated_at')
             ->values();
 
         return response()->json([
@@ -69,7 +71,8 @@ class CrmCaseController extends Controller
             ], 422);
         }
 
-        if (in_array($ticket->status, ['close', 'closed'], true)) {
+        $status = $this->resolveStatusData($case, $ticket);
+        if ($status['status'] === 'closed') {
             return response()->json([
                 'message' => translate('crm_ticket_already_closed'),
             ], 422);
@@ -116,7 +119,7 @@ class CrmCaseController extends Controller
     protected function transformCase(InboxMessage $message, bool $withTimeline = false): array
     {
         $ticket = $message->ticket;
-        $status = $this->normalizeStatus($message, $ticket);
+        $status = $this->resolveStatusData($message, $ticket);
         $category = data_get($message->details, 'category')
             ?? $this->normalizeCategory($message->message_type);
 
@@ -132,14 +135,16 @@ class CrmCaseController extends Controller
             'reference' => 'CASE-' . $message->id,
             'category' => (string)$category,
             'subject' => (string)(data_get($message->details, 'subject') ?: $message->subject),
-            'status' => $status,
+            'status' => $status['status'],
+            'status_key' => $status['status_key'],
+            'status_label' => $status['status_label'],
             'priority' => (string)($ticket?->priority ?: $message->priority ?: 'medium'),
             'created_at' => optional($message->created_at)?->toIso8601String(),
             'updated_at' => optional($lastUpdateAt)?->toIso8601String(),
             'is_converted' => (bool)$message->related_ticket_id,
             'ticket_id' => $message->related_ticket_id ? (string)$message->related_ticket_id : null,
             'last_update' => $lastUpdateAt ? Carbon::parse($lastUpdateAt)->toDateTimeString() : null,
-            'next_step' => $this->resolveNextStep($message, $ticket),
+            'next_step' => $this->resolveNextStep($message, $ticket, $status['status']),
         ];
 
         if ($withTimeline) {
@@ -251,31 +256,89 @@ class CrmCaseController extends Controller
         ];
     }
 
-    protected function normalizeStatus(InboxMessage $message, ?SupportTicket $ticket): string
+    protected function resolveStatusData(InboxMessage $message, ?SupportTicket $ticket): array
     {
         if ($ticket) {
-            $ticketStatus = strtolower(trim((string) (
+            $statusLabel = trim((string) (
                 $ticket->status_details?->name
                 ?? $ticket->status_details?->status
-                ?? $ticket->status
-            )));
+                ?? ''
+            ));
+            $statusKey = $this->normalizeStatusKey($statusLabel !== '' ? $statusLabel : $ticket->status);
 
-            return match ($ticketStatus) {
-                'close', 'closed', 'resolved', 'done', 'completed' => 'closed',
-                'waiting', 'pending', 'hold', 'on_hold', 'on hold' => 'waiting',
-                'new', 'open', 'opened', 'processing', 'in_progress', 'in progress',
-                'assigned', 'working', 'active' => 'processing',
-                default => 'processing',
-            };
+            return [
+                'status' => $this->mapStatusGroup($statusKey),
+                'status_key' => $statusKey,
+                'status_label' => $statusLabel !== '' ? $statusLabel : $this->formatStatusLabel($statusKey),
+            ];
         }
 
-        return match ($message->status) {
-            'new' => 'new',
-            'pending', 'open', 'processing', 'in_progress' => 'processing',
-            'waiting' => 'waiting',
-            'closed', 'close' => 'closed',
-            default => 'processing',
+        $statusKey = $this->normalizeStatusKey($message->status);
+
+        return [
+            'status' => $this->mapStatusGroup($statusKey),
+            'status_key' => $statusKey,
+            'status_label' => $this->formatStatusLabel($statusKey),
+        ];
+    }
+
+    protected function normalizeStatusKey(mixed $rawStatus): string
+    {
+        $normalized = Str::of((string)$rawStatus)
+            ->trim()
+            ->lower()
+            ->replace(['-', ' '], '_')
+            ->replaceMatches('/_+/', '_')
+            ->trim('_')
+            ->value();
+
+        return match ($normalized) {
+            '', 'null' => 'new',
+            'close' => 'closed',
+            'opened' => 'open',
+            'inprogress' => 'in_progress',
+            'onhold' => 'on_hold',
+            default => $normalized,
         };
+    }
+
+    protected function mapStatusGroup(string $statusKey): string
+    {
+        if ($statusKey === 'new') {
+            return 'new';
+        }
+
+        if ($statusKey === 'converted') {
+            return 'converted';
+        }
+
+        if (
+            in_array($statusKey, ['closed', 'resolved', 'done', 'completed', 'complete', 'cancelled', 'canceled'], true)
+            || str_contains($statusKey, 'clos')
+            || str_contains($statusKey, 'resolv')
+            || str_contains($statusKey, 'cancel')
+            || str_contains($statusKey, 'complet')
+        ) {
+            return 'closed';
+        }
+
+        if (
+            in_array($statusKey, ['pending', 'hold', 'on_hold'], true)
+            || str_contains($statusKey, 'wait')
+            || str_contains($statusKey, 'hold')
+        ) {
+            return 'waiting';
+        }
+
+        return 'processing';
+    }
+
+    protected function formatStatusLabel(string $statusKey): string
+    {
+        return Str::of($statusKey)
+            ->replace('_', ' ')
+            ->headline()
+            ->value();
     }
 
     protected function normalizeCategory(?string $messageType): string
@@ -289,21 +352,21 @@ class CrmCaseController extends Controller
         };
     }
 
-    protected function resolveNextStep(InboxMessage $message, ?SupportTicket $ticket): ?string
+    protected function resolveNextStep(InboxMessage $message, ?SupportTicket $ticket, string $normalizedStatus): ?string
     {
         if ($ticket) {
-            if (in_array($ticket->status, ['close', 'closed'], true)) {
+            if ($normalizedStatus === 'closed') {
                 return translate('crm_case_closed_by_support');
             }
 
             return translate('crm_case_reply_on_ticket_thread');
         }
 
-        if ($message->status === 'new') {
+        if (in_array($normalizedStatus, ['new', 'waiting'], true)) {
             return translate('crm_case_waiting_for_triage');
         }
 
-        if ($message->status === 'converted') {
+        if ($normalizedStatus === 'converted') {
             return translate('crm_case_converted_to_ticket');
         }
 

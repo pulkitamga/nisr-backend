@@ -477,12 +477,12 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
         Route::get('branches',  'getBranches');
     });
 
-    Route::post('warranty/claim', [WarrantyClaimController::class, 'store']);
+    Route::post('warranty/claim', [WarrantyClaimController::class, 'store'])->middleware('throttle:warranty-claim-create');
     Route::get('warranty/policy', [WarrantyPolicyApiController::class, 'show']);
     Route::prefix('warranty')->controller(WarrantyViewController::class)->group(function () {
         Route::get('start',  'lookupStart');
-        Route::post('lookup',  'lookupSubmit');
-        Route::post('lookup/verify', 'lookupVerify');
+        Route::post('lookup',  'lookupSubmit')->middleware('throttle:warranty-lookup');
+        Route::post('lookup/verify', 'lookupVerify')->middleware('throttle:warranty-lookup');
         Route::get('view/{warranty_public_id}', 'view')->name('api.warranty.view');
     });
 
@@ -495,7 +495,7 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
         Route::prefix('warranty-claims')->controller(WarrantyCustomerController::class)->group(function () {
             Route::get('/', 'claims');
             Route::get('{claim_number}', 'claimDetail');
-            Route::post('{claim_number}/payment-request', 'claimPaymentRequest');
+            Route::post('{claim_number}/payment-request', 'claimPaymentRequest')->middleware('throttle:warranty-claim-payment');
         });
 
         Route::prefix('orders')->controller(WarrantyCustomerController::class)->group(function () {

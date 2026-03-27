@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Warranty\LookupSubmitRequest;
+use App\Http\Requests\Warranty\LookupVerifyRequest;
 use App\Models\Warranty;
 use App\Models\ViewToken;
 use App\Events\DigitalProductOtpVerificationEvent;
@@ -35,7 +37,7 @@ class WarrantyViewController extends Controller
         return view(VIEW_FILE_NAMES['warranty_track_page']);
     }
 
-    public function lookupSubmit(Request $request)
+    public function lookupSubmit(LookupSubmitRequest $request)
     {
         $recaptcha = getWebConfig(name: 'recaptcha');
         if (isset($recaptcha) && $recaptcha['status'] == 1) {
@@ -64,11 +66,6 @@ class WarrantyViewController extends Controller
                 return back()->withInput($request->input());
             }
         }
-
-        $request->validate([
-            'serial_number' => 'required|string|exists:warranties,serial_number',
-            'contact' => 'required|string',
-        ]);
 
         $warranty = Warranty::where('serial_number', $request->serial_number)->firstOrFail();
         $normalizedContact = WarrantyLookupContactNormalizer::normalize((string)$request->contact);
@@ -143,13 +140,8 @@ class WarrantyViewController extends Controller
         return view(VIEW_FILE_NAMES['warranty_lookup_verify'], compact('warranty_id', 'contact'));
     }
 
-    public function lookupVerify(Request $request)
+    public function lookupVerify(LookupVerifyRequest $request)
     {
-        $request->validate([
-            'otp' => 'required|digits:4',
-            'warranty_id' => 'required|exists:warranties,id',
-            'contact' => 'required|string',
-        ]);
         $normalizedContact = WarrantyLookupContactNormalizer::normalize((string)$request->contact);
 
         $otpMethod = Session::get('otp_method', 'email');

@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Models\Setting;
+use App\Models\PaymentRequest;
+use App\Support\Payments\PaymentHookRegistry;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Redirector;
@@ -76,5 +78,14 @@ trait  Processor
             return redirect($payment_info['external_redirect_link'] . '?flag=' . $payment_flag . '&&token=' . base64_encode($token_string) . '&&new_user=' . $getNewUser);
         }
         return redirect()->route('payment-' . $payment_flag, ['token' => base64_encode($token_string), 'new_user' => $getNewUser]);
+    }
+
+    protected function executePaymentHook(?string $hook, ?PaymentRequest $paymentRequest): bool
+    {
+        if (!$paymentRequest) {
+            return false;
+        }
+
+        return PaymentHookRegistry::dispatch($hook, $paymentRequest);
     }
 }

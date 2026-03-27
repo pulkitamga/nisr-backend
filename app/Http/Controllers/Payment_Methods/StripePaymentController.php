@@ -10,9 +10,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
+use Throwable;
 
 class StripePaymentController extends Controller
 {
@@ -86,7 +88,12 @@ class StripePaymentController extends Controller
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => url('/') . '/payment/stripe/success?session_id={CHECKOUT_SESSION_ID}&payment_id=' . $data->id,
+            'client_reference_id' => (string)$data->id,
+            'metadata' => [
+                'payment_id' => (string)$data->id,
+                'currency_code' => (string)$currency_code,
+            ],
+            'success_url' => url('/') . '/payment/stripe/success?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => url()->previous(),
         ]);
 
@@ -96,28 +103,69 @@ class StripePaymentController extends Controller
     public function success(Request $request)
     {
         Stripe::setApiKey($this->config_values->api_key);
-        $session = Session::retrieve($request->get('session_id'));
+        try {
+            $session = Session::retrieve($request->get('session_id'));
+        } catch (Throwable $exception) {
+            Log::warning('Stripe callback rejected because the checkout session could not be retrieved.', [
+                'session_id' => $request->get('session_id'),
+                'payment_id' => $request->get('payment_id'),
+            ]);
+
+            abort(404);
+        }
+
+        $paymentId = (string)(data_get($session, 'metadata.payment_id') ?? $session->client_reference_id ?? '');
+        $paymentRequest = $this->payment::where('id', $paymentId)->first();
+
+        if (!$paymentRequest) {
+            Log::warning('Stripe callback rejected because the payment request was not found.', [
+                'session_id' => $request->get('session_id'),
+                'resolved_payment_id' => $paymentId,
+            ]);
+
+            abort(404);
+        }
+
+        if ($request->filled('payment_id') && (string)$request->get('payment_id') !== $paymentId) {
+            Log::warning('Stripe callback rejected because the callback payment id did not match the Stripe session metadata.', [
+                'request_payment_id' => (string)$request->get('payment_id'),
+                'resolved_payment_id' => $paymentId,
+            ]);
+
+            abort(403);
+        }
+
+        $amountMatches = (int)($session->amount_total ?? -1) === (int)round(((float)$paymentRequest->payment_amount) * 100);
+        $currencyMatches = strtoupper((string)($session->currency ?? '')) === strtoupper((string)$paymentRequest->currency_code);
+
+        if (!$amountMatches || !$currencyMatches) {
+            Log::warning('Stripe callback rejected because the session payload did not match the payment request.', [
+                'payment_request_id' => $paymentRequest->getKey(),
+                'session_amount_total' => $session->amount_total ?? null,
+                'expected_amount_total' => (int)round(((float)$paymentRequest->payment_amount) * 100),
+                'session_currency' => $session->currency ?? null,
+                'expected_currency' => $paymentRequest->currency_code,
+            ]);
+
+            abort(403);
+        }
 
         if ($session->payment_status == 'paid' && $session->status == 'complete') {
-
-            $this->payment::where(['id' => $request['payment_id']])->update([
+            $paymentRequest->update([
                 'payment_method' => 'stripe',
                 'is_paid' => 1,
                 'transaction_id' => $session->payment_intent,
             ]);
 
-            $data = $this->payment::where(['id' => $request['payment_id']])->first();
-
-            if (isset($data) && function_exists($data->success_hook)) {
-                call_user_func($data->success_hook, $data);
-            }
+            $data = $paymentRequest->fresh();
+            $this->executePaymentHook($data?->success_hook, $data);
 
             return $this->payment_response($data,'success');
         }
-        $payment_data = $this->payment::where(['id' => $request['payment_id']])->first();
-        if (isset($payment_data) && function_exists($payment_data->failure_hook)) {
-            call_user_func($payment_data->failure_hook, $payment_data);
-        }
+
+        $payment_data = $paymentRequest->fresh();
+        $this->executePaymentHook($payment_data?->failure_hook, $payment_data);
+
         return $this->payment_response($payment_data,'fail');
     }
 }

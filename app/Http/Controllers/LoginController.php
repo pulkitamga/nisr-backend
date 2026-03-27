@@ -116,6 +116,7 @@ class LoginController extends Controller
     {
         if ($role == 'admin' || $role == 'employee') {
             if (auth('admin')->attempt(['email' => $email, 'password' => $password], $remember)) {
+                request()->session()->regenerate();
                 return $role;
             }
         }

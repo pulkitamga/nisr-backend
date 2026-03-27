@@ -300,6 +300,7 @@ Route::match(['GET', 'POST'], '/admin/crm/insights-report', [DashboardChartContr
 
 //Webhook
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])
+    ->middleware('throttle:carrier-webhook')
     ->withoutMiddleware(['auth', 'verified']) // Remove web auth
     ->name('bosta.webhook');
 Route::get('/admin/get-vehicle-models/{make_id}', function ($make_id) {

@@ -1517,8 +1517,8 @@ class WarrantyController extends Controller
                 $toDate = now()->endOfDay();
                 break;
             case 'custom_date':
-                $fromDate = $from ? Carbon::parse($from)->startOfDay() : now()->subDays(29)->startOfDay();
-                $toDate = $to ? Carbon::parse($to)->endOfDay() : now()->endOfDay();
+                $fromDate = $this->parseOptionalAnalyticsDate($from, now()->subDays(29)->startOfDay(), true);
+                $toDate = $this->parseOptionalAnalyticsDate($to, now()->endOfDay(), false);
                 break;
             case 'this_year':
             default:
@@ -1532,6 +1532,21 @@ class WarrantyController extends Controller
         }
 
         return [$fromDate, $toDate];
+    }
+
+    private function parseOptionalAnalyticsDate(mixed $value, Carbon $fallback, bool $startOfDay): Carbon
+    {
+        if (blank($value)) {
+            return $fallback->copy();
+        }
+
+        try {
+            $date = Carbon::parse((string)$value);
+        } catch (\Throwable) {
+            return $fallback->copy();
+        }
+
+        return $startOfDay ? $date->startOfDay() : $date->endOfDay();
     }
 
     private function resolveAnalyticsTrendGrouping(Carbon $fromDate, Carbon $toDate): array

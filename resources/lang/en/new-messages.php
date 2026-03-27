@@ -12360,6 +12360,7 @@ return [
 	"RMA not issued for this claim." => "RMA not issued for this claim.",
 	"Serial number does not match the RMA issued item." => "Serial number does not match the RMA issued item.",
 	"Invalid branch. Item must be returned to: " => "Invalid branch. Item must be returned to: ",
+	"This claim cannot be received. Please update the branch assignment first." => "This claim cannot be received. Please update the branch assignment first.",
 	"This claim is assigned to the internal System branch. Update the RMA branch before receiving the item." => "This claim is assigned to the internal System branch. Update the RMA branch before receiving the item.",
 	"System branch cannot be used for customer RMA returns." => "System branch cannot be used for customer RMA returns.",
 	"RMA deadline expired on " => "RMA deadline expired on ",

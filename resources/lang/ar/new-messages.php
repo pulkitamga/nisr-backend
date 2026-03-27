@@ -11856,6 +11856,7 @@ return [
 	"RMA not issued for this claim." => "لم يتم إصدار RMA لهذه المطالبة.",
 	"Serial number does not match the RMA issued item." => "الرقم التسلسلي لا يطابق العنصر الذي تم إصدار RMA له.",
 	"Invalid branch. Item must be returned to: " => "فرع غير صحيح. يجب إرجاع العنصر إلى: ",
+	"This claim cannot be received. Please update the branch assignment first." => "لا يمكن استلام هذه المطالبة الآن. يرجى تحديث تعيين الفرع أولاً.",
 	"This claim is assigned to the internal System branch. Update the RMA branch before receiving the item." => "هذه المطالبة مرتبطة بفرع النظام الداخلي. حدّث فرع الإرجاع قبل استلام العنصر.",
 	"System branch cannot be used for customer RMA returns." => "لا يمكن استخدام فرع النظام كفرع إرجاع للعملاء في طلبات RMA.",
 	"RMA deadline expired on " => "انتهت مهلة RMA في ",

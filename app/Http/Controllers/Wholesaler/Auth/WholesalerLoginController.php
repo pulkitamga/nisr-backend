@@ -281,8 +281,12 @@ class WholesalerLoginController extends Controller
 
         $loginMedia = $user['phone'] ? 'phone' : 'email';
         if (auth('customer')->attempt([$loginMedia => $user[$loginMedia], 'password' => $request['password']], $remember)) {
+            $request->session()->regenerate();
+
             if (!$user['is_active']) {
                 auth()->guard('customer')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
                 if ($request->ajax()) {
                     return response()->json([
                         'status' => 'error',

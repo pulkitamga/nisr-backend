@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\Http\Requests\Request;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
@@ -145,6 +145,38 @@ class RouteServiceProvider extends ServiceProvider
     {
         RateLimiter::for('global', function (Request $request) {
             return Limit::perMinute(3000);
+        });
+
+        RateLimiter::for('warranty-claim-create', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by($request->ip()),
+                Limit::perHour(20)->by($request->ip()),
+            ];
+        });
+
+        RateLimiter::for('warranty-lookup', function (Request $request) {
+            return [
+                Limit::perMinute(10)->by($request->ip()),
+                Limit::perHour(30)->by($request->ip()),
+            ];
+        });
+
+        RateLimiter::for('warranty-claim-payment', function (Request $request) {
+            $customerId = auth('customer')->id() ?? $request->user()?->getAuthIdentifier();
+            $signature = $customerId ? 'customer:'.$customerId : 'ip:'.$request->ip();
+
+            return [
+                Limit::perMinute(15)->by($signature),
+                Limit::perHour(60)->by($signature),
+            ];
+        });
+
+        RateLimiter::for('payment-callback', function (Request $request) {
+            return Limit::perMinute(120)->by($request->ip());
+        });
+
+        RateLimiter::for('carrier-webhook', function (Request $request) {
+            return Limit::perMinute(240)->by($request->ip());
         });
     }
 }

@@ -18,6 +18,7 @@ use App\Services\InventoryMutationService;
 use App\Services\OrderDetailsService;
 use App\Services\OrderService;
 use App\Services\POSService;
+use App\Services\PosCartStateService;
 use App\Traits\CalculatorTrait;
 use App\Traits\CustomerTrait;
 use App\Utils\OrderManager;
@@ -29,6 +30,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class POSOrderController extends BaseController
 {
@@ -59,6 +61,7 @@ class POSOrderController extends BaseController
         private readonly StorageRepositoryInterface                 $storageRepo,
         private readonly POSService                                 $POSService,
         private readonly CartService                                $cartService,
+        private readonly PosCartStateService                        $posCartStateService,
         private readonly InventoryMutationService                   $inventoryMutationService,
         private readonly OrderDetailsService                        $orderDetailsService,
         private readonly OrderService                               $orderService,
@@ -99,18 +102,18 @@ class POSOrderController extends BaseController
      */
     public function placeOrder(Request $request): JsonResponse
     {
-        $amount = $request['amount'];
-        $paidAmount = $request['type'] == 'cash' ? ($request['paid_amount'] ?? 0) : null;
-        $cartId = session(SessionKey::CURRENT_USER);
+        $cartId = session(SessionKey::POS_CART_ID);
+        $cart = $this->getCartPayload($cartId);
+        $cartLineItems = $this->getValidatedCartLineItems(is_array($cart) ? $cart : []);
+        $amount = $this->getOrderAmount($cartId, $cartLineItems);
+        $paymentType = $this->validatePaymentType($request->input('type', 'cash'));
+        $paidAmount = $paymentType === 'cash' ? (float)($request['paid_amount'] ?? 0) : null;
         $condition = $this->POSService->checkConditions(amount: $amount, paidAmount: $paidAmount);
-        if ($condition == 'true') {
-            return response()->json();
-        }
-        if ($condition == 'true') {
+        if ($condition) {
             return response()->json();
         }
         $userId = $this->cartService->getUserId();
-        if ($request['type'] == 'wallet' && $userId != 0) {
+        if ($paymentType == 'wallet' && $userId != 0) {
             $customerBalance = $this->customerRepo->getFirstWhere(params: ['id' => $userId]) ?? 0;
             if ($customerBalance['wallet_balance'] >= $amount) {
                 $this->createWalletTransaction(user_id: $userId, amount: floatval($amount), transaction_type: 'order_place', reference: 'order_place_in_pos');
@@ -124,11 +127,10 @@ class POSOrderController extends BaseController
             return response()->json(['checkProductTypeForWalkingCustomer' => true, 'message' => translate('To_order_digital_product') . ',' . translate('_kindly_fill_up_the_“Add_New_Customer”_form') . '.']);
         }
 
-        $cart = session($cartId);
         $requestedBranchId = (int)($request['branch_id'] ?? 0);
         $resolvedBranchId = $requestedBranchId > 0 ? $requestedBranchId : null;
         $orderId = OrderManager::getNextOrderId();
-        foreach ($cart as $item) {
+        foreach ($cartLineItems as $item) {
             if (is_array($item)) {
                 $product = $this->productRepo->getFirstWhere(params: ['id' => $item['id']], relations: ['clearanceSale' => function ($query) {
                     return $query->active();
@@ -153,6 +155,8 @@ class POSOrderController extends BaseController
                     }
 
                     $lineDiscount = max(0, (float)($item['discount'] ?? 0));
+                    $lineInstallationCharge = (float)($item['installation_charge'] ?? 0);
+                    $lineExchangeCharge = (float)($item['exchange_charge'] ?? 0);
                     $lineTaxRate = max(0, (float)($product['tax'] ?? 0));
                     $taxableUnitAmount = max(0, $lineUnitPrice - $lineDiscount);
                     if ((string)($product['tax_model'] ?? 'exclude') === 'include') {
@@ -166,7 +170,11 @@ class POSOrderController extends BaseController
 
                     $orderDetail = $this->orderDetailsService->getPOSOrderDetailsData(
                         orderId: $orderId, item: $item,
-                        product: $product, price: $price, tax: $tax
+                        product: $product,
+                        price: $price,
+                        tax: $tax,
+                        exchangeCharge: $lineExchangeCharge,
+                        installationCharge: $lineInstallationCharge,
                     );
                     if ($product['product_type'] == 'physical') {
                         $stockMutation = $this->inventoryMutationService->decreaseForPosLine(
@@ -197,8 +205,8 @@ class POSOrderController extends BaseController
             orderId: $orderId,
             cart: $cart,
             amount: $amount,
-            paidAmount: $request['type'] == 'cash' ? $paidAmount : $amount,
-            paymentType: $request['type'],
+            paidAmount: $paymentType == 'cash' ? $paidAmount : $amount,
+            paymentType: $paymentType,
             addedBy: 'seller',
             userId: $userId,
             branchId: (float)($resolvedBranchId ?? 1),
@@ -218,21 +226,148 @@ class POSOrderController extends BaseController
             ];
             event(new DigitalProductDownloadEvent(email: $order->customer['email'], data: $data));
         }
-        session()->forget($cartId);
+        $this->putCartPayload($cartId, []);
         session(['last_order' => $orderId]);
         $this->cartService->getNewCartId();
         Toastr::success(translate('order_placed_successfully'));
         return response()->json();
     }
 
+    private function validatePaymentType(mixed $paymentType): string
+    {
+        $normalizedPaymentType = trim((string)$paymentType);
+        if (!in_array($normalizedPaymentType, ['cash', 'card', 'wallet'], true)) {
+            throw ValidationException::withMessages([
+                'type' => [translate('invalid_request')],
+            ]);
+        }
+
+        return $normalizedPaymentType;
+    }
+
+    private function getValidatedCartLineItems(array $cart): array
+    {
+        $validatedItems = [];
+
+        foreach ($cart as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $productId = (int)($item['id'] ?? 0);
+            $quantity = max(0, (int)($item['quantity'] ?? 0));
+            if ($productId <= 0 || $quantity <= 0) {
+                continue;
+            }
+
+            $product = $this->productRepo->getFirstWhere(params: ['id' => $productId], relations: ['clearanceSale' => function ($query) {
+                return $query->active();
+            }]);
+            if (!$product) {
+                throw new \RuntimeException(translate('Product_not_found_in_cart'));
+            }
+
+            $variant = (string)($item['variant'] ?? '');
+            $unitPrice = (float)($product['unit_price'] ?? 0);
+            if ($variant !== '') {
+                $variantPrice = (float)$this->cartService->getVariationPrice(
+                    variation: json_decode($product['variation'] ?? '[]'),
+                    variant: $variant
+                );
+                if ($variantPrice > 0) {
+                    $unitPrice = $variantPrice;
+                }
+            }
+
+            $digitalProductVariation = $this->digitalProductVariationRepo->getFirstWhere(
+                params: ['product_id' => $product['id'], 'variant_key' => $variant]
+            );
+            if ($product['product_type'] == 'digital' && $digitalProductVariation) {
+                $unitPrice = (float)($digitalProductVariation['price'] ?? $unitPrice);
+            }
+
+            $validatedItems[] = array_merge($item, [
+                'price' => $unitPrice,
+                'discount' => max(0, (float)getProductPriceByType(
+                    product: $product,
+                    type: 'discounted_amount',
+                    result: 'value',
+                    price: $unitPrice,
+                    from: 'panel'
+                )),
+                'tax_model' => (string)($product['tax_model'] ?? 'exclude'),
+            ]);
+        }
+
+        if (count($validatedItems) === 0) {
+            throw new \RuntimeException(translate('cart_empty_warning'));
+        }
+
+        return $validatedItems;
+    }
+
+    private function getOrderAmount(string $cartId, array $cartLineItems): float
+    {
+        $subTotalCalculation = [
+            'countItem' => 0,
+            'totalQuantity' => 0,
+            'taxCalculate' => 0,
+            'totalTaxShow' => 0,
+            'totalTax' => 0,
+            'totalIncludeTax' => 0,
+            'subtotal' => 0,
+            'discountOnProduct' => 0,
+            'productSubtotal' => 0,
+        ];
+
+        foreach ($cartLineItems as $lineItem) {
+            $product = $this->productRepo->getFirstWhere(params: ['id' => $lineItem['id']], relations: ['clearanceSale' => function ($query) {
+                return $query->active();
+            }]);
+            if (!$product) {
+                continue;
+            }
+
+            $cartSubTotalCalculation = $this->cartService->getCartSubtotalCalculation(
+                product: $product,
+                cartItem: $lineItem,
+                calculation: $subTotalCalculation
+            );
+            $subTotalCalculation['countItem'] += $cartSubTotalCalculation['countItem'];
+            $subTotalCalculation['totalQuantity'] += $cartSubTotalCalculation['totalQuantity'];
+            $subTotalCalculation['taxCalculate'] += $cartSubTotalCalculation['taxCalculate'];
+            $subTotalCalculation['totalTaxShow'] += $cartSubTotalCalculation['totalTaxShow'];
+            $subTotalCalculation['totalTax'] += $cartSubTotalCalculation['totalTax'];
+            $subTotalCalculation['totalIncludeTax'] += $cartSubTotalCalculation['totalIncludeTax'];
+            $subTotalCalculation['productSubtotal'] += $cartSubTotalCalculation['productSubtotal'];
+            $subTotalCalculation['subtotal'] += $cartSubTotalCalculation['subtotal'];
+            $subTotalCalculation['discountOnProduct'] += $cartSubTotalCalculation['discountOnProduct'];
+        }
+
+        $totalCalculation = $this->cartService->getTotalCalculation(
+            subTotalCalculation: $subTotalCalculation,
+            cartName: $cartId
+        );
+
+        return (float)($totalCalculation['totalAmount'] ?? 0);
+    }
+
     public function cancelOrder(Request $request): JsonResponse
     {
-        session()->remove($request['cart_id']);
-        $totalHoldOrders = $this->POSService->getTotalHoldOrders();
-        $cartNames = $this->POSService->getCartNames();
+        $cartId = trim((string)$request->input('cart_id', ''));
+        if ($cartId !== '') {
+            $this->posCartStateService->deleteCart(
+                cartId: $cartId,
+                branchId: $this->resolveBranchIdFromCartId($cartId),
+                actorType: 'seller',
+                actorId: (int)auth('seller')->id()
+            );
+        }
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders(actorType: 'seller', actorId: (int)auth('seller')->id());
+        $cartNames = $this->POSService->getCartNames(actorType: 'seller', actorId: (int)auth('seller')->id());
         $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames);
         return response()->json([
-            'message' => $request['cart_id'] . ' ' . translate('order_is_cancel'),
+            'message' => $cartId . ' ' . translate('order_is_cancel'),
             'status' => 'success',
             'view' => view(POSOrder::CANCEL_ORDER[VIEW], compact('cartItems', 'totalHoldOrders'))->render(),
         ]);
@@ -244,9 +379,9 @@ class POSOrderController extends BaseController
      */
     public function getAllHoldOrdersView(Request $request): JsonResponse
     {
-        $cartNames = $this->POSService->getCartNames();
+        $cartNames = $this->POSService->getCartNames(actorType: 'seller', actorId: (int)auth('seller')->id());
         $cartItems = $this->getHoldOrderCalculationData(cartNames: $cartNames);
-        $totalHoldOrders = $this->POSService->getTotalHoldOrders();
+        $totalHoldOrders = $this->POSService->getTotalHoldOrders(actorType: 'seller', actorId: (int)auth('seller')->id());
         if (!empty($request['customer'])) {
             $searchValue = strtolower($request['customer']);
             $filteredItems = collect($cartItems)->filter(function ($item) use ($searchValue) {
@@ -285,7 +420,7 @@ class POSOrderController extends BaseController
         $customerCartData = [];
         if (Str::contains($cartName, 'walking-customer')) {
             $currentCustomerInfo = [
-                'customerName' => 'Walking Customer',
+                'customerName' => translate('walking_customer'),
                 'customerPhone' => "",
             ];
             $customerId = 0;
@@ -316,8 +451,9 @@ class POSOrderController extends BaseController
             'discountOnProduct' => 0,
             'productSubtotal' => 0,
         ];
-        if (session()->get($cartName)) {
-            foreach (session()->get($cartName) as $cartItem) {
+        $cartPayload = $this->getCartPayload($cartName);
+        if (!empty($cartPayload)) {
+            foreach ($cartPayload as $cartItem) {
                 if (is_array($cartItem)) {
                     $product = $this->productRepo->getFirstWhere(params: ['id' => $cartItem['id']], relations: ['clearanceSale' => function ($query) {
                         return $query->active();
@@ -365,6 +501,47 @@ class POSOrderController extends BaseController
             'customerOnHold' => $subTotalCalculation['customerOnHold'] ?? false,
             'legacyTotalBeforeVat' => $totalCalculation['total'],
         ];
+    }
+
+    private function resolveBranchIdFromCartId(?string $cartId): int
+    {
+        $cartId = trim((string)$cartId);
+        if (preg_match('/-b(\d+)$/', $cartId, $matches)) {
+            return max(1, (int)($matches[1] ?? 1));
+        }
+
+        return 1;
+    }
+
+    private function getCartPayload(?string $cartId): array
+    {
+        $resolvedCartId = trim((string)$cartId);
+        if ($resolvedCartId === '') {
+            return [];
+        }
+
+        return $this->posCartStateService->getPayload(
+            cartId: $resolvedCartId,
+            branchId: $this->resolveBranchIdFromCartId($resolvedCartId),
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        );
+    }
+
+    private function putCartPayload(?string $cartId, array $payload): void
+    {
+        $resolvedCartId = trim((string)$cartId);
+        if ($resolvedCartId === '') {
+            return;
+        }
+
+        $this->posCartStateService->putPayload(
+            cartId: $resolvedCartId,
+            branchId: $this->resolveBranchIdFromCartId($resolvedCartId),
+            payload: $payload,
+            actorType: 'seller',
+            actorId: (int)auth('seller')->id()
+        );
     }
 
 }

@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
 use App\Http\Controllers\Admin\WarrantyController as AdminWarrantyController;
 use App\Http\Controllers\RestAPI\v1\WarrantyCustomerController;
+use App\Http\Controllers\RestAPI\v1\WarrantyViewController as ApiWarrantyViewController;
 use App\Models\ActivationReview;
 use App\Models\BusinessSetting;
+use App\Services\FirebaseService;
 use App\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
@@ -67,6 +69,7 @@ class WarrantyOrderActivationTest extends TestCase
             'final_user_id' => $customer->id,
             'invoice_number' => (string)$orderId,
             'activation_method' => 'order_activation',
+            'policy_version' => '2.0',
         ]);
 
         $this->assertDatabaseHas('order_details', [
@@ -284,6 +287,60 @@ class WarrantyOrderActivationTest extends TestCase
         $this->assertSame('warranty-list-001', $payload['warranties'][0]['warranty_public_id']);
         $this->assertSame('SERIAL-LIST-001', $payload['warranties'][0]['serial_number']);
         $this->assertSame('active', $payload['warranties'][0]['status']);
+        $this->assertSame('Active', $payload['warranties'][0]['status_label']);
+    }
+
+    public function test_api_view_returns_raw_status_and_status_label_for_token_lookup(): void
+    {
+        $customer = User::query()->create([
+            'f_name' => 'Token',
+            'l_name' => 'Owner',
+            'email' => 'token-owner@example.com',
+            'phone' => '201234567892',
+            'password' => bcrypt('password'),
+            'is_active' => 1,
+        ]);
+        $productId = $this->createProduct(isTraceable: true);
+
+        DB::table('warranties')->insert([
+            'serial_number' => 'SERIAL-VIEW-TOKEN-001',
+            'product_id' => $productId,
+            'status' => 'active',
+            'activation_date' => now()->subDay(),
+            'start_date' => now()->subDay(),
+            'end_date' => now()->addYear(),
+            'final_user_id' => $customer->id,
+            'warranty_public_id' => 'warranty-view-token-001',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('view_tokens')->insert([
+            'jti' => 'token-lookup-001',
+            'warranty_public_id' => 'warranty-view-token-001',
+            'recipient_hash' => 'hash',
+            'scope' => 'warranty:view',
+            'issued_at' => now(),
+            'expires_at' => now()->addMinutes(5),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controller = new ApiWarrantyViewController(
+            Mockery::mock(FirebaseService::class),
+            Mockery::mock(BusinessSettingRepositoryInterface::class)
+        );
+        $request = Request::create('/api/v1/warranty/view/warranty-view-token-001', 'GET', [
+            'vt' => 'token-lookup-001',
+        ]);
+
+        $response = $controller->view($request, 'warranty-view-token-001');
+        $payload = $response->getData(true);
+
+        $this->assertTrue($payload['success']);
+        $this->assertSame('active', $payload['warranty']['status_key']);
+        $this->assertSame('active', $payload['warranty']['status']);
+        $this->assertSame('Active', $payload['warranty']['status_label']);
     }
 
     public function test_api_order_activation_rejects_traceable_product_without_warranty_flag(): void
@@ -603,6 +660,22 @@ class WarrantyOrderActivationTest extends TestCase
             });
         }
 
+        if (!Schema::hasTable('view_tokens')) {
+            Schema::create('view_tokens', function (Blueprint $table) {
+                $table->id();
+                $table->string('jti')->nullable();
+                $table->string('warranty_public_id');
+                $table->string('recipient_hash')->nullable();
+                $table->string('scope')->nullable();
+                $table->timestamp('issued_at')->nullable();
+                $table->timestamp('expires_at')->nullable();
+                $table->timestamp('used_at')->nullable();
+                $table->string('ip')->nullable();
+                $table->text('user_agent')->nullable();
+                $table->timestamps();
+            });
+        }
+
         if (!Schema::hasTable('activation_reviews')) {
             Schema::create('activation_reviews', function (Blueprint $table) {
                 $table->id();
@@ -621,6 +694,16 @@ class WarrantyOrderActivationTest extends TestCase
         DB::table('business_settings')->updateOrInsert(
             ['type' => 'warranty_activation_days'],
             ['value' => '7', 'created_at' => now(), 'updated_at' => now()]
+        );
+
+        DB::table('policies')->updateOrInsert(
+            ['version' => '2.0'],
+            [
+                'effective_date' => now(),
+                'published_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         );
     }
 

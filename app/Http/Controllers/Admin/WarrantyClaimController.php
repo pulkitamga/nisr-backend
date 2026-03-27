@@ -4,15 +4,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Warranty\Admin\DecideRequest;
+use App\Http\Requests\Warranty\Admin\DiagnoseRequest;
+use App\Http\Requests\Warranty\Admin\DispatchRequest;
+use App\Http\Requests\Warranty\Admin\IssueRmaRequest;
+use App\Http\Requests\Warranty\Admin\PaymentHandleRequest;
+use App\Http\Requests\Warranty\Admin\ReceiveRequest;
+use App\Http\Requests\Warranty\Admin\RepairCompleteRequest;
+use App\Http\Requests\Warranty\Admin\ReplacementCommitRequest;
+use App\Http\Requests\Warranty\Admin\ResolutionRequest;
+use App\Http\Requests\Warranty\Admin\ResumeRequest;
+use App\Http\Requests\Warranty\Admin\SubmitRequest;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimPayment;
 use App\Models\Warranty;
 use App\Models\WarrantyReplacement;
-use App\Models\WorkOrder;
-use App\Services\RMAService;
-use App\Services\RepairService;
-use App\Services\ReplacementService;
-use App\Services\ClaimResolutionService;
 use App\Services\WarrantyPaymentLinkNotificationService;
 use App\Jobs\TriageClaimJob;
 use Illuminate\Http\Request;
@@ -23,13 +29,17 @@ use App\Utils\Helpers;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class WarrantyClaimController extends Controller
 {
+    private const MAX_CLAIM_RESULTS_LIMIT = 500;
+    private const MAX_SEARCH_TERM_LENGTH = 100;
+
     private function buildClaimsQuery(Request $request, ?string $status = null)
     {
         $query = WarrantyClaim::with('warranty.user', 'branch');
+        $this->scopeClaimsToAccessibleBranch($query);
 
         if ($status !== null) {
             $query->where('status', $status);
@@ -38,22 +48,19 @@ class WarrantyClaimController extends Controller
         }
 
         if ($request->filled('searchValue')) {
-            $search = $request->searchValue;
+            $search = $this->sanitizeSearchTerm($request->input('searchValue'));
             $query->where(function ($q) use ($search) {
-                $q->where('claim_number', 'like', "%{$search}%")
-                    ->orWhere('serial_number', 'like', "%{$search}%");
+                $pattern = $this->likePattern($search);
+                $q->where('claim_number', 'like', $pattern)
+                    ->orWhere('serial_number', 'like', $pattern);
             });
         }
 
-        if ($request->filled('fhilter_date')) {
-            $dates = explode(' - ', $request->fhilter_date);
-            if (count($dates) === 2) {
-                $query->whereBetween('submitted_at', [$dates[0], $dates[1]]);
-            }
-        }
+        $this->applySubmittedAtDateFilter($query, $request->input('fhilter_date'));
 
-        if ($request->filled('choose_first')) {
-            $query->limit((int)$request->choose_first);
+        $limit = $this->sanitizeResultsLimit($request->input('choose_first'));
+        if ($limit !== null) {
+            $query->limit($limit);
         }
 
         return $query;
@@ -87,25 +94,26 @@ class WarrantyClaimController extends Controller
             'warranty',
             'technician'
         ]);
+        $this->scopeClaimsToAccessibleBranch($query);
 
-        if ($request->filled('fhilter_date')) {
-            $dates = explode(' - ', $request->fhilter_date);
-            $query->whereBetween('submitted_at', [$dates[0], $dates[1]]);
-        }
+        $this->applySubmittedAtDateFilter($query, $request->input('fhilter_date'));
 
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
         if ($request->filled('searchValue')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('claim_number', 'like', "%{$request->searchValue}%")
-                    ->orWhere('serial_number', 'like', "%{$request->searchValue}%");
+            $search = $this->sanitizeSearchTerm($request->input('searchValue'));
+            $query->where(function ($q) use ($search) {
+                $pattern = $this->likePattern($search);
+                $q->where('claim_number', 'like', $pattern)
+                    ->orWhere('serial_number', 'like', $pattern);
             });
         }
 
-        if ($request->filled('choose_first')) {
-            $query->limit($request->choose_first);
+        $limit = $this->sanitizeResultsLimit($request->input('choose_first'));
+        if ($limit !== null) {
+            $query->limit($limit);
         }
 
         $claims = $query->get();
@@ -254,6 +262,7 @@ class WarrantyClaimController extends Controller
     // View Claim
     public function view(WarrantyClaim $claim)
     {
+        $this->authorizeClaimAccess($claim);
         $claim->load(['warranty.user', 'workOrder', 'attachments', 'charges']);
 
         if ($this->hasWarrantyClaimPaymentsTable($claim->getConnectionName())) {
@@ -274,18 +283,8 @@ class WarrantyClaimController extends Controller
         return view('admin-views.warranty.claim-view', compact('claim', 'timeline'));
     }
 
-    public function submit(Request $request)
+    public function submit(SubmitRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'serial_number' => 'required|exists:warranties,serial_number',
-            'description' => 'required|string',
-            'attachments' => 'nullable|array',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator);
-        }
-
         $warranty = Warranty::where('serial_number', $request->serial_number)->firstOrFail();
 
         if (!$warranty->isActive()) {
@@ -298,7 +297,7 @@ class WarrantyClaimController extends Controller
             return back()->withInput();
         }
 
-        $claimNumber = 'CLAIM-' . Str::upper(Str::random(8));
+        $claimNumber = WarrantyClaim::generateClaimNumber();
         $submittedAt = now();
         $firstResponseDue = $submittedAt->copy()->addHours(24);
         $resolutionDue = $submittedAt->copy()->addDays(3);
@@ -336,8 +335,9 @@ class WarrantyClaimController extends Controller
     }
 
     // Receive
-    public function receive(Request $request, WarrantyClaim $claim)
+    public function receive(ReceiveRequest $request, WarrantyClaim $claim)
     {
+        $this->authorizeClaimAccess($claim);
         $isAjax = $request->ajax() || $request->wantsJson();
 
         if ($claim->status !== 'rma_issued') {
@@ -348,12 +348,6 @@ class WarrantyClaimController extends Controller
             Toastr::error($msg);
             return back();
         }
-
-        $request->validate([
-            'serial_number' => 'required|string',
-            'branch_id'     => 'required|exists:branches,id',
-            'received_notes' => 'nullable|string|max:1000',
-        ]);
 
         // Serial Match
         if ($claim->serial_number !== $request->serial_number) {
@@ -366,7 +360,7 @@ class WarrantyClaimController extends Controller
         }
 
         if ((int) $claim->branch_id === 1) {
-            $msg = translate('This claim is assigned to the internal System branch. Update the RMA branch before receiving the item.');
+            $msg = translate('This claim cannot be received. Please update the branch assignment first.');
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => $msg], 400);
             }
@@ -375,7 +369,7 @@ class WarrantyClaimController extends Controller
         }
 
         // Branch Match
-        if ($claim->branch_id != $request->branch_id) {
+        if ((int) $claim->branch_id !== (int) $request->branch_id) {
             $correctBranch = $claim->branch?->branch_name ?? 'Original Branch';
             $msg = translate('Invalid branch. Item must be returned to: ') . $correctBranch;
             if ($isAjax) {
@@ -426,14 +420,9 @@ class WarrantyClaimController extends Controller
         return redirect()->route('admin.warranty.claim.view', $claim);
     }
 
-    public function decide(Request $request, WarrantyClaim $claim)
+    public function decide(DecideRequest $request, WarrantyClaim $claim)
     {
-        $request->validate([
-            'decision'       => ['required', 'in:approve,reject,waiting_customer'],
-            'reason_code'    => ['required', 'string', 'max:50'],
-            'reason_message' => ['required', 'string'],
-        ]);
-
+        $this->authorizeClaimAccess($claim);
         $update = [];
 
         $description = "Decision: {$request->decision} | Code: {$request->reason_code} | Message: {$request->reason_message}";
@@ -464,11 +453,12 @@ class WarrantyClaimController extends Controller
 
     // WarrantyClaimController.php
     public function paymentHandle(
-        Request $request,
+        PaymentHandleRequest $request,
         WarrantyClaim $claim,
         WarrantyPaymentLinkNotificationService $paymentLinkNotificationService
     )
     {
+        $this->authorizeClaimAccess($claim);
         if (!$this->hasWarrantyClaimPaymentsTable($claim->getConnectionName())) {
             $message = translate('Warranty claim payment table is missing. Please run migrations.');
             if ($request->ajax() || $request->wantsJson()) {
@@ -476,15 +466,6 @@ class WarrantyClaimController extends Controller
             }
             return back()->withErrors(['action' => $message]);
         }
-
-        $request->validate([
-            'action'       => 'required|in:remind,pos,cod,online_link,cod_collect,waive,client_reject_payment',
-            'charge_ids'   => 'required_if:action,pos,cod,online_link,cod_collect|array',
-            'charge_ids.*' => 'exists:warranty_claim_charges,id,warranty_claim_id,' . $claim->id,
-            'payment_reference' => 'nullable|required_if:action,pos,cod_collect|string|max:100',
-            'link_expire_hours' => 'nullable|required_if:action,online_link|integer|min:1|max:168',
-            'notes'        => 'nullable|string',
-        ]);
 
         $action = $request->action;
         $adminId = auth('admin')->id();
@@ -532,11 +513,17 @@ class WarrantyClaimController extends Controller
             }
 
             $pendingCharges = $claim->charges()->where('is_paid', false)->get();
-            $pendingAmount = (float)$pendingCharges->sum('amount');
-            $pendingIds = $pendingCharges->pluck('id')->map(fn($id) => (int)$id)->values()->all();
             $existingNotes = trim((string)$claim->diagnosis_notes);
 
-            DB::transaction(function () use ($claim, $pendingCharges, $pendingAmount, $pendingIds, $notes, $existingNotes) {
+            DB::transaction(function () use ($claim, $notes, $existingNotes) {
+                $lockedClaim = $this->lockClaim($claim);
+                $pendingCharges = $lockedClaim->charges()
+                    ->where('is_paid', false)
+                    ->lockForUpdate()
+                    ->get();
+                $pendingAmount = (float)$pendingCharges->sum('amount');
+                $pendingIds = $pendingCharges->pluck('id')->map(fn($id) => (int)$id)->values()->all();
+
                 if ($pendingCharges->isNotEmpty()) {
                     $pendingCharges->each->update(['is_paid' => true]);
                 }
@@ -547,7 +534,7 @@ class WarrantyClaimController extends Controller
                 }
 
                 $this->createClaimPaymentRecord(
-                    claim: $claim,
+                    claim: $lockedClaim,
                     channel: 'client_reject_payment',
                     status: 'rejected',
                     amount: 0,
@@ -563,9 +550,9 @@ class WarrantyClaimController extends Controller
                     $closeNote .= " Notes: {$notes}";
                 }
 
-                $claim->update([
+                $lockedClaim->update([
                     'status' => 'closed',
-                    'resolved_at' => $claim->resolved_at ?? now(),
+                    'resolved_at' => $lockedClaim->resolved_at ?? now(),
                     'is_fee_waived' => true,
                     'diagnosis_notes' => $existingNotes ? "{$existingNotes}\n{$closeNote}" : $closeNote,
                 ]);
@@ -584,11 +571,23 @@ class WarrantyClaimController extends Controller
                 return back()->withErrors(['action' => $message]);
             }
 
-            DB::transaction(function () use ($claim, $waived, $notes, $adminId, $wasWaitingPayment) {
+            DB::transaction(function () use ($claim, $notes, $adminId, $wasWaitingPayment) {
+                $lockedClaim = $this->lockClaim($claim);
+                $waived = $lockedClaim->charges()
+                    ->where('is_paid', false)
+                    ->lockForUpdate()
+                    ->get();
+
+                if ($waived->isEmpty()) {
+                    throw ValidationException::withMessages([
+                        'action' => [translate('No pending charges to waive.')],
+                    ]);
+                }
+
                 $waived->each->update(['is_paid' => true]);
 
                 $this->createClaimPaymentRecord(
-                    claim: $claim,
+                    claim: $lockedClaim,
                     channel: 'waive',
                     status: 'waived',
                     amount: (float)$waived->sum('amount'),
@@ -606,10 +605,10 @@ class WarrantyClaimController extends Controller
                 ];
 
                 if ($wasWaitingPayment) {
-                    $update['status'] = $this->nextStatusAfterPayment($claim);
+                    $update['status'] = $this->nextStatusAfterPayment($lockedClaim);
                 }
 
-                $claim->update($update);
+                $lockedClaim->update($update);
             });
 
             $description .= ' | All unpaid charges waived';
@@ -637,11 +636,15 @@ class WarrantyClaimController extends Controller
             $selectedList = $selectedCharges->map(fn($c) => "{$c->charge_type}: {$c->amount}")->implode(', ');
 
             if ($action === 'pos') {
-                DB::transaction(function () use ($selectedCharges, $claim, $selectedIds, $selectedAmount, $request, $notes, $adminId) {
+                DB::transaction(function () use ($claim, $selectedIds, $request, $notes, $adminId) {
+                    $lockedClaim = $this->lockClaim($claim);
+                    $selectedCharges = $this->lockSelectedUnpaidCharges($lockedClaim, $selectedIds);
+                    $selectedAmount = (float)$selectedCharges->sum('amount');
+
                     $selectedCharges->each->update(['is_paid' => true]);
 
                     $this->createClaimPaymentRecord(
-                        claim: $claim,
+                        claim: $lockedClaim,
                         channel: 'pos',
                         status: 'paid',
                         amount: $selectedAmount,
@@ -652,8 +655,8 @@ class WarrantyClaimController extends Controller
                         paymentReference: $request->payment_reference
                     );
 
-                    if ($claim->status === 'waiting_payment' && !$this->claimHasUnpaidCharges($claim)) {
-                        $claim->update(['status' => $this->nextStatusAfterPayment($claim)]);
+                    if ($lockedClaim->status === 'waiting_payment' && !$this->claimHasUnpaidCharges($lockedClaim)) {
+                        $lockedClaim->update(['status' => $this->nextStatusAfterPayment($lockedClaim)]);
                     }
                 });
 
@@ -667,25 +670,34 @@ class WarrantyClaimController extends Controller
                     return back()->withErrors(['action' => $message]);
                 }
 
-                $this->createClaimPaymentRecord(
-                    claim: $claim,
-                    channel: 'cod',
-                    status: 'pending_cod',
-                    amount: $selectedAmount,
-                    chargeIds: $selectedIds,
-                    notes: $notes
-                );
+                DB::transaction(function () use ($claim, $selectedIds, $notes) {
+                    $lockedClaim = $this->lockClaim($claim);
+                    $lockedCharges = $this->lockSelectedUnpaidCharges($lockedClaim, $selectedIds);
 
-                $nextStatus = $this->nextStatusAfterPayment($claim);
-                $claim->update(['status' => $nextStatus]);
+                    $this->createClaimPaymentRecord(
+                        claim: $lockedClaim,
+                        channel: 'cod',
+                        status: 'pending_cod',
+                        amount: (float)$lockedCharges->sum('amount'),
+                        chargeIds: $selectedIds,
+                        notes: $notes
+                    );
 
-                $description .= " | COD approved: {$selectedList} | Resumed to {$nextStatus}";
+                    $nextStatus = $this->nextStatusAfterPayment($lockedClaim);
+                    $lockedClaim->update(['status' => $nextStatus]);
+                });
+
+                $description .= " | COD approved: {$selectedList} | Resumed to " . $this->nextStatusAfterPayment($claim);
             } elseif ($action === 'cod_collect') {
-                DB::transaction(function () use ($selectedCharges, $claim, $selectedIds, $selectedAmount, $request, $notes, $adminId) {
+                DB::transaction(function () use ($claim, $selectedIds, $request, $notes, $adminId) {
+                    $lockedClaim = $this->lockClaim($claim);
+                    $selectedCharges = $this->lockSelectedUnpaidCharges($lockedClaim, $selectedIds);
+                    $selectedAmount = (float)$selectedCharges->sum('amount');
+
                     $selectedCharges->each->update(['is_paid' => true]);
 
                     $this->createClaimPaymentRecord(
-                        claim: $claim,
+                        claim: $lockedClaim,
                         channel: 'cod',
                         status: 'paid',
                         amount: $selectedAmount,
@@ -696,8 +708,8 @@ class WarrantyClaimController extends Controller
                         paymentReference: $request->payment_reference
                     );
 
-                    if ($claim->status === 'waiting_payment' && !$this->claimHasUnpaidCharges($claim)) {
-                        $claim->update(['status' => $this->nextStatusAfterPayment($claim)]);
+                    if ($lockedClaim->status === 'waiting_payment' && !$this->claimHasUnpaidCharges($lockedClaim)) {
+                        $lockedClaim->update(['status' => $this->nextStatusAfterPayment($lockedClaim)]);
                     }
                 });
 
@@ -716,20 +728,33 @@ class WarrantyClaimController extends Controller
                 $token = (string)Str::uuid();
                 $generatedLink = route('pay-warranty-claim', ['token' => $token]);
 
-                $paymentRecord = $this->createClaimPaymentRecord(
-                    claim: $claim,
-                    channel: 'online_link',
-                    status: 'pending',
-                    amount: $selectedAmount,
-                    chargeIds: $selectedIds,
-                    notes: $notes,
-                    paymentLink: $generatedLink,
-                    paymentLinkToken: $token,
-                    paymentLinkExpiresAt: now()->addHours($expireHours),
-                    metadata: [
-                        'expires_in_hours' => $expireHours,
-                    ]
-                );
+                $paymentRecord = DB::transaction(function () use ($claim, $selectedIds, $notes, $generatedLink, $token, $expireHours) {
+                    $lockedClaim = $this->lockClaim($claim);
+                    $selectedCharges = $this->lockSelectedUnpaidCharges($lockedClaim, $selectedIds);
+
+                    $lockedClaim->payments()
+                        ->where('payment_channel', 'online_link')
+                        ->where('payment_status', 'pending')
+                        ->lockForUpdate()
+                        ->get()
+                        ->each
+                        ->update(['payment_status' => 'expired']);
+
+                    return $this->createClaimPaymentRecord(
+                        claim: $lockedClaim,
+                        channel: 'online_link',
+                        status: 'pending',
+                        amount: (float)$selectedCharges->sum('amount'),
+                        chargeIds: $selectedIds,
+                        notes: $notes,
+                        paymentLink: $generatedLink,
+                        paymentLinkToken: $token,
+                        paymentLinkExpiresAt: now()->addHours($expireHours),
+                        metadata: [
+                            'expires_in_hours' => $expireHours,
+                        ]
+                    );
+                });
 
                 $dispatchStatus = $paymentLinkNotificationService->dispatchCustomerOnlineLink(
                     payment: $paymentRecord,
@@ -846,19 +871,9 @@ class WarrantyClaimController extends Controller
         return "sms={$sms}, email={$email}";
     }
 
-    public function diagnose(Request $request, WarrantyClaim $claim)
+    public function diagnose(DiagnoseRequest $request, WarrantyClaim $claim)
     {
-        $request->validate([
-            'diagnosis_notes'        => 'required|string',
-            'repair_or_replace'      => 'required|in:repair,replace,reject',
-            'tamper_detected'        => 'boolean',
-            'inspection_fee'         => 'nullable|numeric|min:0',
-            'repair_fee'             => 'nullable|numeric|min:0',
-            'replacement_mode'       => 'required_if:repair_or_replace,replace|in:remaining,full',
-            'replacement_fee'        => 'nullable|numeric|min:0',
-            'replacement_fee_option' => 'required_if:repair_or_replace,replace|in:free,fee_required',
-        ]);
-
+        $this->authorizeClaimAccess($claim);
         $update = [
             'diagnosis_notes'   => $request->diagnosis_notes,
             'repair_or_replace' => $request->repair_or_replace,
@@ -867,13 +882,17 @@ class WarrantyClaimController extends Controller
 
         // Reject only when the selected action is reject.
         if ($request->repair_or_replace === 'reject') {
-            $claim->update(array_merge($update, ['status' => 'rejected']));
-            $description = "Diagnosis: {$request->diagnosis_notes} | REJECTED | Tamper: " . ($request->boolean('tamper_detected') ? 'Yes' : 'No');
-            $claim->timelineEvents()->create([
-                'event_type'  => 'diagnosis_complete',
-                'description' => $description,
-                'user_id'     => auth('admin')->id(),
-            ]);
+            DB::transaction(function () use ($claim, $update, $request) {
+                $lockedClaim = $this->lockClaim($claim);
+                $lockedClaim->charges()->where('is_paid', false)->delete();
+                $lockedClaim->update(array_merge($update, ['status' => 'rejected']));
+                $description = "Diagnosis: {$request->diagnosis_notes} | REJECTED | Tamper: " . ($request->boolean('tamper_detected') ? 'Yes' : 'No');
+                $lockedClaim->timelineEvents()->create([
+                    'event_type'  => 'diagnosis_complete',
+                    'description' => $description,
+                    'user_id'     => auth('admin')->id(),
+                ]);
+            });
             Toastr::success(translate('Claim rejected.'));
             return redirect()->route('admin.warranty.claim.view', $claim);
         }
@@ -920,16 +939,6 @@ class WarrantyClaimController extends Controller
             $request->repair_or_replace === 'repair' ? 'repair_pending' : 'replacement_pending'
         );
 
-        $claim->update($update);
-
-        // ——— CREATE CHARGES ———
-        if ($hasCharges) {
-            foreach ($charges as $charge) {
-                $claim->charges()->create($charge);
-            }
-        }
-
-        // ——— TIMELINE ———
         $actionText = $request->repair_or_replace;
         if ($request->repair_or_replace === 'replace') {
             $actionText .= " ({$request->replacement_fee_option}, {$request->replacement_mode})";
@@ -942,22 +951,30 @@ class WarrantyClaimController extends Controller
             $description .= " | Charges: {$feeTexts}";
         }
 
-        $claim->timelineEvents()->create([
-            'event_type'  => 'diagnosis_complete',
-            'description' => $description,
-            'user_id'     => auth('admin')->id(),
-        ]);
+        DB::transaction(function () use ($claim, $update, $charges, $hasCharges, $description) {
+            $lockedClaim = $this->lockClaim($claim);
+            $lockedClaim->charges()->where('is_paid', false)->delete();
+            $lockedClaim->update($update);
+
+            if ($hasCharges) {
+                foreach ($charges as $charge) {
+                    $lockedClaim->charges()->create($charge);
+                }
+            }
+
+            $lockedClaim->timelineEvents()->create([
+                'event_type'  => 'diagnosis_complete',
+                'description' => $description,
+                'user_id'     => auth('admin')->id(),
+            ]);
+        });
 
         Toastr::success(translate('Diagnosis submitted.'));
         return redirect()->route('admin.warranty.claim.view', $claim);
     }
-    public function repairComplete(Request $request, WarrantyClaim $claim)
+    public function repairComplete(RepairCompleteRequest $request, WarrantyClaim $claim)
     {
-        $request->validate([
-            'labor_notes' => 'nullable|string',
-            'parts_used'  => 'nullable|string',
-        ]);
-
+        $this->authorizeClaimAccess($claim);
         $claim->update(['status' => 'qc_pending']);
 
         $partsArr = $request->parts_used
@@ -980,6 +997,7 @@ class WarrantyClaimController extends Controller
 
     public function qcPass(Request $request, WarrantyClaim $claim)
     {
+        $this->authorizeClaimAccess($claim);
         $claim->update([
             'qc_passed_at' => now(),
             'status' => 'shipped_ready',
@@ -995,13 +1013,9 @@ class WarrantyClaimController extends Controller
         return redirect()->route('admin.warranty.claim.view', $claim);
     }
 
-    public function markDispatch(Request $request, WarrantyClaim $claim)
+    public function markDispatch(DispatchRequest $request, WarrantyClaim $claim)
     {
-        $request->validate([
-            'dispatch_mode'   => 'required|in:pickup,ship',
-            'tracking_number' => $request->dispatch_mode == 'ship' ? 'required|string' : 'nullable|string',
-        ]);
-
+        $this->authorizeClaimAccess($claim);
         $claim->update([
             'tracking_number' => $request->tracking_number ?? '',
             'dispatched_at'   => now(),
@@ -1023,18 +1037,12 @@ class WarrantyClaimController extends Controller
         return response()->json(['message' => translate('Claim marked as dispatched.')]);
     }
 
-    public function issueRma(Request $request, WarrantyClaim $claim)
+    public function issueRma(IssueRmaRequest $request, WarrantyClaim $claim)
     {
-        $request->validate([
-            'rma_number'    => 'nullable|string|max:50',
-            'return_days'   => 'required|integer|min:1',
-            'instructions'  => 'required|string',
-            'branch_id'     => 'required|exists:branches,id|not_in:1',
-        ], [
-            'branch_id.not_in' => translate('System branch cannot be used for customer RMA returns.'),
-        ]);
-
-        $rma = $request->rma_number ?: 'RMA-' . strtoupper(Str::random(6));
+        $this->authorizeClaimAccess($claim);
+        $rma = $request->filled('rma_number')
+            ? $request->rma_number
+            : WarrantyClaim::generateRmaNumber();
         $deadline = now()->addDays($request->return_days);
 
         $claim->update([
@@ -1056,13 +1064,9 @@ class WarrantyClaimController extends Controller
     }
 
 
-    public function resume(Request $request, WarrantyClaim $claim)
+    public function resume(ResumeRequest $request, WarrantyClaim $claim)
     {
-        $request->validate([
-            'target_status' => 'required|string',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
+        $this->authorizeClaimAccess($claim);
         $allowed = [
             'waiting_customer' => 'received',
             'waiting_parts'    => 'repair_pending',
@@ -1089,37 +1093,15 @@ class WarrantyClaimController extends Controller
     }
 
 
-    public function replacementCommit(Request $request, WarrantyClaim $claim)
+    public function replacementCommit(ReplacementCommitRequest $request, WarrantyClaim $claim)
     {
+        $this->authorizeClaimAccess($claim);
         // Fetch old warranty first for compatibility validation
         $oldWarranty = $claim->warranty;
         if (!$oldWarranty) {
             Toastr::error(translate('Original warranty not found.'));
             return back();
         }
-
-        $request->validate([
-            'new_serial_number' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) use ($oldWarranty) {
-                    $newWarranty = Warranty::where('serial_number', $value)
-                        ->where('status', 'preactivated')
-                        ->whereNull('final_user_id')
-                        ->first();
-
-                    if (!$newWarranty) {
-                        $fail(translate('Serial number is invalid, already activated, or not preactivated.'));
-                        return;
-                    }
-
-                    if ((int)$newWarranty->product_id !== (int)$oldWarranty->product_id) {
-                        $fail(translate('Serial number belongs to a different product and cannot be used for this replacement.'));
-                    }
-                },
-            ],
-            'notes' => 'nullable|string',
-        ]);
 
         // Fetch new warranty (validated above)
         $newWarranty = Warranty::where('serial_number', $request->new_serial_number)
@@ -1185,8 +1167,9 @@ class WarrantyClaimController extends Controller
         Toastr::success(translate('Replacement committed and new serial activated.'));
         return redirect()->route('admin.warranty.claim.view', $claim);
     }
-    public function close(Request $request, WarrantyClaim $claim)
+    public function close(ResolutionRequest $request, WarrantyClaim $claim)
     {
+        $this->authorizeClaimAccess($claim);
         $isAjax = $request->ajax() || $request->wantsJson();
         if ($this->claimHasUnpaidCharges($claim)) {
             $message = translate('Pending warranty charges must be paid, COD-collected, or waived before closing the claim.');
@@ -1196,8 +1179,6 @@ class WarrantyClaimController extends Controller
             Toastr::error($message);
             return back();
         }
-
-        $request->validate(['resolution_notes' => 'nullable|string']);
 
         $forcedClose = $claim->status !== 'resolved';
         $claim->update([
@@ -1221,8 +1202,9 @@ class WarrantyClaimController extends Controller
         return redirect()->route('admin.warranty.claim.view', $claim);
     }
 
-    public function resolve(Request $request, WarrantyClaim $claim)
+    public function resolve(ResolutionRequest $request, WarrantyClaim $claim)
     {
+        $this->authorizeClaimAccess($claim);
         $isAjax = $request->ajax() || $request->wantsJson();
         if ($this->claimHasUnpaidCharges($claim)) {
             $message = translate('Pending warranty charges must be paid, COD-collected, or waived before resolving the claim.');
@@ -1232,8 +1214,6 @@ class WarrantyClaimController extends Controller
             Toastr::error($message);
             return back();
         }
-
-        $request->validate(['resolution_notes' => 'nullable|string']);
 
         $claim->update([
             'status' => 'resolved',
@@ -1248,5 +1228,117 @@ class WarrantyClaimController extends Controller
 
         Toastr::success(translate('Claim resolved.'));
         return redirect()->route('admin.warranty.claim.view', $claim);
+    }
+
+    private function scopeClaimsToAccessibleBranch($query): void
+    {
+        $admin = auth('admin')->user();
+
+        if ($admin && !$this->isSuperAdmin($admin) && (int)($admin->branch_id ?? 0) > 0) {
+            $query->where('branch_id', (int)$admin->branch_id);
+        }
+    }
+
+    private function authorizeClaimAccess(WarrantyClaim $claim): void
+    {
+        $admin = auth('admin')->user();
+
+        if (!$admin) {
+            abort(403);
+        }
+
+        if ($this->isSuperAdmin($admin)) {
+            return;
+        }
+
+        $adminBranchId = (int)($admin->branch_id ?? 0);
+        $claimBranchId = (int)($claim->branch_id ?? 0);
+
+        if ($adminBranchId > 0 && $claimBranchId > 0 && $adminBranchId !== $claimBranchId) {
+            abort(403, translate('you_are_not_authorized_to_access_this_warranty_claim'));
+        }
+    }
+
+    private function applySubmittedAtDateFilter($query, ?string $rawDateRange): void
+    {
+        if (!$rawDateRange) {
+            return;
+        }
+
+        $dates = explode(' - ', $rawDateRange);
+        if (count($dates) !== 2) {
+            return;
+        }
+
+        try {
+            $start = Carbon::parse(trim($dates[0]))->startOfDay();
+            $end = Carbon::parse(trim($dates[1]))->endOfDay();
+        } catch (\Throwable) {
+            return;
+        }
+
+        if ($start->gt($end)) {
+            [$start, $end] = [$end, $start];
+        }
+
+        $query->whereBetween('submitted_at', [$start, $end]);
+    }
+
+    private function sanitizeResultsLimit(mixed $value): ?int
+    {
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        $limit = (int)$value;
+        if ($limit <= 0) {
+            return null;
+        }
+
+        return min($limit, self::MAX_CLAIM_RESULTS_LIMIT);
+    }
+
+    private function isSuperAdmin($admin): bool
+    {
+        if (!$admin || !$admin->exists) {
+            return false;
+        }
+
+        return $admin->isSuperAdmin();
+    }
+
+    private function sanitizeSearchTerm(?string $value): string
+    {
+        return mb_substr(trim((string)$value), 0, self::MAX_SEARCH_TERM_LENGTH);
+    }
+
+    private function likePattern(string $value): string
+    {
+        return '%' . addcslashes($value, '\\%_') . '%';
+    }
+
+    private function lockClaim(WarrantyClaim $claim): WarrantyClaim
+    {
+        return WarrantyClaim::query()
+            ->whereKey($claim->getKey())
+            ->lockForUpdate()
+            ->firstOrFail();
+    }
+
+    private function lockSelectedUnpaidCharges(WarrantyClaim $claim, array $chargeIds)
+    {
+        $selectedCharges = $claim->charges()
+            ->whereIn('id', $chargeIds)
+            ->where('is_paid', false)
+            ->lockForUpdate()
+            ->get();
+
+        if ($selectedCharges->count() !== count($chargeIds)) {
+            throw ValidationException::withMessages([
+                'charge_ids' => [translate('No valid unpaid charges selected.')],
+            ]);
+        }
+
+        return $selectedCharges;
     }
 }
