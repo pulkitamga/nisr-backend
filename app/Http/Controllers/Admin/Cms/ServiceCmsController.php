@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Support\CmsContentSanitizer;
+use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -18,12 +19,16 @@ class ServiceCmsController extends Controller
 
     use PaginatorTrait;
     use CommonTrait;
+    use AuthorizesCmsSection;
 
     public function __construct(
         private readonly ProductRepositoryInterface     $productRepo,
         private readonly TranslationRepositoryInterface     $translationRepo,
 
-    ) {}
+    ) {
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.read'))->only(['index', 'edit']);
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.update'))->only(['update', 'toggleStatus']);
+    }
 
 
     public function index(Request $request)

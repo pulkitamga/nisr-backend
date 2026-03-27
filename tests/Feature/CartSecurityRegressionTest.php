@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Utils\CartManager;
+use App\Models\Cart;
 use App\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -179,6 +181,95 @@ class CartSecurityRegressionTest extends TestCase
         ]);
     }
 
+    public function test_cart_price_refresh_recalculates_stale_stored_values(): void
+    {
+        $user = $this->createCustomer();
+        $productId = $this->createProduct(currentStock: 10, unitPrice: 220);
+        $cartId = $this->createCart([
+            'customer_id' => $user->id,
+            'is_guest' => 0,
+            'product_id' => $productId,
+            'cart_group_id' => 'stale-price-group',
+            'price' => 5,
+            'discount' => 4,
+            'tax' => 7,
+        ]);
+
+        $cart = Cart::query()->findOrFail($cartId);
+        CartManager::refreshCartItemPricing($cart);
+
+        $this->assertSame(220.0, (float) $cart->fresh()->price);
+        $this->assertSame(0.0, (float) $cart->fresh()->discount);
+        $this->assertDatabaseHas('carts', [
+            'id' => $cartId,
+            'price' => 220.0,
+            'discount' => 0.0,
+            'tax' => 0.0,
+        ]);
+    }
+
+    public function test_area_wise_shipping_cost_is_preserved_during_cart_price_refresh(): void
+    {
+        DB::table('shipping_types')->insert([
+            'seller_id' => 0,
+            'shipping_type' => 'area_wise',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $productId = $this->createProduct(currentStock: 10, unitPrice: 220);
+        $cartId = $this->createCart([
+            'customer_id' => 700001,
+            'is_guest' => 1,
+            'product_id' => $productId,
+            'cart_group_id' => 'area-wise-preserve-group',
+            'shipping_type' => 'area_wise',
+            'shipping_cost' => 85,
+            'price' => 10,
+        ]);
+
+        $cart = Cart::query()->findOrFail($cartId);
+        CartManager::refreshCartItemPricing($cart);
+
+        $freshCart = $cart->fresh();
+        $this->assertSame(220.0, (float) $freshCart->price);
+        $this->assertSame(85.0, (float) $freshCart->shipping_cost);
+    }
+
+    public function test_rest_api_cart_list_refreshes_stale_pricing_for_mobile_clients(): void
+    {
+        $guestId = $this->createGuestUser();
+        $productId = $this->createProduct(currentStock: 10, unitPrice: 220);
+
+        $this->createCart([
+            'customer_id' => $guestId,
+            'is_guest' => 1,
+            'product_id' => $productId,
+            'cart_group_id' => 'mobile-refresh-group',
+            'price' => 5,
+            'discount' => 4,
+            'tax' => 7,
+        ]);
+
+        $response = $this->getJson("/api/v1/cart?guest_id={$guestId}");
+
+        $response->assertOk()
+            ->assertJsonPath('0.price', 220)
+            ->assertJsonPath('0.discount', 0)
+            ->assertJsonPath('0.tax', 0);
+    }
+
+    public function test_generated_cart_group_ids_are_opaque(): void
+    {
+        $cartGroupId = CartManager::generateOpaqueCartGroupId();
+
+        $this->assertMatchesRegularExpression(
+            '/^[0-9a-f-]{36}$/',
+            $cartGroupId
+        );
+        $this->assertDoesNotMatchRegularExpression('/^(guest|\d+)-/i', $cartGroupId);
+    }
+
     private function createCustomer(): User
     {
         $now = now();
@@ -197,7 +288,16 @@ class CartSecurityRegressionTest extends TestCase
         return User::query()->findOrFail($id);
     }
 
-    private function createProduct(?int $id = null, int $currentStock = 5): int
+    private function createGuestUser(): int
+    {
+        return (int) DB::table('guest_users')->insertGetId([
+            'ip_address' => '127.0.0.1',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createProduct(?int $id = null, int $currentStock = 5, int $unitPrice = 100): int
     {
         $now = now();
         $data = [
@@ -209,7 +309,7 @@ class CartSecurityRegressionTest extends TestCase
             'thumbnail' => 'test.png',
             'tax' => '0.00',
             'tax_model' => 'exclude',
-            'unit_price' => 100,
+            'unit_price' => $unitPrice,
             'purchase_price' => 80,
             'current_stock' => $currentStock,
             'minimum_order_qty' => 1,
@@ -220,6 +320,7 @@ class CartSecurityRegressionTest extends TestCase
             'free_shipping' => 1,
             'shipping_cost' => 0,
             'status' => 1,
+            'request_status' => 1,
             'featured_status' => 1,
             'created_at' => $now,
             'updated_at' => $now,

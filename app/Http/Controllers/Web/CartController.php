@@ -673,7 +673,7 @@ class CartController extends Controller
                     'seller_id' => ($product->added_by == 'admin') ? 1 : $product->user_id,
                     'seller_is' => $product['added_by'],
                 ])->value('cart_group_id');
-                $cart['cart_group_id'] = $existingCartGroup ?: (($user == 'offline' ? 'guest' : $user->id) . '-' . \Illuminate\Support\Str::random(5) . '-' . time());
+                $cart['cart_group_id'] = $existingCartGroup ?: CartManager::generateOpaqueCartGroupId();
             }
             $cart->save();
 

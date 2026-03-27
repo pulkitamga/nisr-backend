@@ -17,7 +17,6 @@ class Blog extends Model
         'image',
         'blog_type',
         'category',
-        'status'
     ];
 
     public function translations(): MorphMany

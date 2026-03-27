@@ -46,7 +46,7 @@ class BranchStockActionSecurityTest extends TestCase
         $categoryId = $this->createCategory();
         $productId = $this->createProduct($sourceBranchId);
         $transferId = $this->createTransfer($sourceBranchId, $destinationBranchId);
-        $transferProductId = $this->createTransferProduct($transferId, $productId, $categoryId, 'Transferred', 5);
+        $transferProductId = $this->createTransferProduct($transferId, $productId, $categoryId, 'transferred', 5);
 
         $response = $this->withoutMiddleware()
             ->actingAs($admin, 'admin')
@@ -91,6 +91,27 @@ class BranchStockActionSecurityTest extends TestCase
 
         $this->assertSame('Transferred', DB::table('stock_transfer_products')->where('id', $transferProductId)->value('status'));
         $this->assertSame(0, DB::table('stock_received')->where('branch_id', $destinationBranchId)->where('product_id', $productId)->count());
+    }
+
+    public function test_branch_manager_can_approve_legacy_transferred_status_rows(): void
+    {
+        $sourceBranchId = $this->createBranch('Legacy-From');
+        $destinationBranchId = $this->createBranch('Legacy-To');
+        $admin = $this->createAdmin($destinationBranchId, 'legacy-manager');
+        $categoryId = $this->createCategory();
+        $productId = $this->createProduct($sourceBranchId);
+        $transferId = $this->createTransfer($sourceBranchId, $destinationBranchId);
+        $transferProductId = $this->createTransferProduct($transferId, $productId, $categoryId, 'Transferred', 2);
+
+        $response = $this->withoutMiddleware()
+            ->actingAs($admin, 'admin')
+            ->from(route('admin.branch.stock.approvelist'))
+            ->post(route('admin.branch.stock.approve', ['id' => $transferProductId]));
+
+        $response->assertRedirect(route('admin.branch.stock.approvelist'));
+        $response->assertSessionHas('success', translate('stock_approved_and_received_successfully'));
+
+        $this->assertSame('approved', DB::table('stock_transfer_products')->where('id', $transferProductId)->value('status'));
     }
 
     public function test_branch_history_export_is_limited_to_the_users_branch(): void

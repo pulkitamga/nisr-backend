@@ -63,6 +63,39 @@ class BranchAreaPivotSyncTest extends TestCase
         $this->assertSame(2, DB::table('branch_delivery_restrictions')->count());
     }
 
+    public function test_branch_service_detaches_missing_area_relations_on_update(): void
+    {
+        DB::table('shipping_method_areas')->insert([
+            ['id' => 3, 'area' => 'Giza'],
+            ['id' => 4, 'area' => 'Mansoura'],
+        ]);
+
+        DB::table('delivery_areas')->insert([
+            ['id' => 11, 'area' => 'East'],
+            ['id' => 12, 'area' => 'West'],
+        ]);
+
+        $branch = Branch::query()->create([
+            'branch_name' => 'Detach Branch',
+        ]);
+
+        $service = new BranchService();
+        $service->syncAreaRelations($branch, (object) [
+            'shipping_methods_area' => ['3', '4'],
+            'delivery_restriction' => ['11', '12'],
+        ]);
+
+        $service->syncAreaRelations($branch, (object) [
+            'shipping_methods_area' => ['4'],
+            'delivery_restriction' => ['12'],
+        ]);
+
+        $branch->load('shippingAreas', 'deliveryRestrictions');
+
+        $this->assertSame(['Mansoura'], $branch->shippingAreas->pluck('area')->all());
+        $this->assertSame(['West'], $branch->deliveryRestrictions->pluck('area')->all());
+    }
+
     private function createTestSchema(): void
     {
         Schema::create('branches', function (Blueprint $table): void {

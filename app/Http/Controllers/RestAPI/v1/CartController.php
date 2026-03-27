@@ -60,7 +60,10 @@ class CartController extends Controller
                     $cart_data->delete();
 
                     unset($cart[$key]);
+                    continue;
                 }
+
+                CartManager::refreshCartItemPricing($value, $value->product);
             }
 
             $variantMatcher = new VariantMatcher();

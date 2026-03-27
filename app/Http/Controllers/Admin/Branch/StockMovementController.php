@@ -55,7 +55,7 @@ use App\Models\StockRequestProduct;
 
 class StockMovementController extends Controller
 {
-    private const ACTIONABLE_TRANSFER_STATUSES = ['pending', 'Transferred'];
+    private const ACTIONABLE_TRANSFER_STATUSES = ['pending', 'transferred', 'Transferred'];
 
 
     public function __construct(
@@ -204,7 +204,7 @@ class StockMovementController extends Controller
                 return back()->with('error', translate('you_are_not_authorized_to_manage_this_stock_transfer'));
             }
 
-            if (!in_array($product->status, self::ACTIONABLE_TRANSFER_STATUSES, true)) {
+            if (!in_array($this->normalizeTransferStatus($product->status), ['pending', 'transferred'], true)) {
                 return back()->with('error', translate('stock_transfer_has_already_been_processed'));
             }
 
@@ -241,6 +241,11 @@ class StockMovementController extends Controller
         }
 
         return (int)($authUser?->branch_id ?? 0) === $destinationBranchId;
+    }
+
+    private function normalizeTransferStatus(?string $status): string
+    {
+        return strtolower(trim((string)$status));
     }
 
     public function saveStockRequest(StockRequestAddProduct $request, stockRequestService $service): JsonResponse|RedirectResponse

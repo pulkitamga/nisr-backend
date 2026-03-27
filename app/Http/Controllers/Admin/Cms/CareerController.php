@@ -11,6 +11,7 @@ use App\Models\CareerBenefits;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Support\CmsContentSanitizer;
+use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -21,12 +22,18 @@ class CareerController extends Controller
 
     use PaginatorTrait;
     use CommonTrait;
+    use AuthorizesCmsSection;
 
     public function __construct(
         private readonly ProductRepositoryInterface     $productRepo,
         private readonly TranslationRepositoryInterface     $translationRepo,
 
-    ) {}
+    ) {
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.read'))->only(['index', 'pages', 'create', 'edit']);
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.create'))->only(['store']);
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.update'))->only(['update', 'toggleStatus']);
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.delete'))->only(['destroy']);
+    }
 
     protected $modelMap = [
         'current_openings' => CareerJob::class,

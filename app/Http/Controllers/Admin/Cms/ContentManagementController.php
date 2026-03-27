@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\Admin\Cms;
 
 use App\Http\Controllers\Controller;
+use App\Traits\AuthorizesCmsSection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 
 class ContentManagementController extends Controller
 {
+    use AuthorizesCmsSection;
+
     protected $baseViewPath = 'admin-views.content-management';
     private string $contentBasePath;
 
     public function __construct()
     {
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.read'))->only(['edit', 'showHomeEdit']);
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.update'))->only(['update']);
         $this->contentBasePath = resource_path('views/admin-views/content-management');
     }
 

@@ -16,7 +16,6 @@ class CmsService extends Model
         'heading',
         'description',
         'image',
-        'is_active',
     ];
 
     public function translations(): MorphMany

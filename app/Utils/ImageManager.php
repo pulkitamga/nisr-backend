@@ -10,10 +10,52 @@ use RuntimeException;
 
 class ImageManager
 {
+    private const ALLOWED_UPLOAD_MIME_TYPES = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/gif' => 'gif',
+        'image/svg+xml' => 'svg',
+    ];
+
     private static function getStorageDisk(): string
     {
         $storage = config('filesystems.disks.default') ?? 'public';
         return $storage === 'local' ? 'public' : $storage;
+    }
+
+    private static function detectMimeType(UploadedFile $file): ?string
+    {
+        $path = $file->getRealPath();
+        if (!$path) {
+            return null;
+        }
+
+        $mimeType = null;
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo !== false) {
+                $mimeType = finfo_file($finfo, $path) ?: null;
+                finfo_close($finfo);
+            }
+        }
+
+        return is_string($mimeType) ? strtolower($mimeType) : null;
+    }
+
+    private static function resolveTrustedExtension(?string $mimeType, UploadedFile $file): ?string
+    {
+        if ($mimeType && array_key_exists($mimeType, self::ALLOWED_UPLOAD_MIME_TYPES)) {
+            return self::ALLOWED_UPLOAD_MIME_TYPES[$mimeType];
+        }
+
+        $originalExtension = strtolower($file->getClientOriginalExtension() ?: '');
+
+        if (!in_array($originalExtension, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'], true)) {
+            return null;
+        }
+
+        return $originalExtension === 'jpeg' ? 'jpg' : $originalExtension;
     }
 
     public static function upload(string $dir, string $format, $image, $file_type = 'image'): string
@@ -23,12 +65,17 @@ class ImageManager
             return 'def.webp';
         }
 
+        $mimeType = self::detectMimeType($image);
+        if (!$mimeType || !array_key_exists($mimeType, self::ALLOWED_UPLOAD_MIME_TYPES)) {
+            return 'def.webp';
+        }
+
         if (!Storage::disk($storage)->exists($dir)) {
             Storage::disk($storage)->makeDirectory($dir);
         }
 
-        $originalExtension = strtolower($image->getClientOriginalExtension() ?: 'png');
-        if (in_array($originalExtension, ['gif', 'svg'], true)) {
+        $originalExtension = self::resolveTrustedExtension($mimeType, $image) ?? 'png';
+        if (in_array($mimeType, ['image/gif', 'image/svg+xml'], true)) {
             $imageName = Carbon::now()->toDateString() . "-" . uniqid() . "." . $originalExtension;
             $stored = Storage::disk($storage)->put($dir . $imageName, file_get_contents($image));
             if (!$stored) {
@@ -50,6 +97,10 @@ class ImageManager
                 throw new RuntimeException('Unable to store processed image');
             }
         } catch (\Throwable $exception) {
+            if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+                return 'def.webp';
+            }
+
             $imageName = Carbon::now()->toDateString() . "-" . uniqid() . "." . $originalExtension;
             $stored = Storage::disk($storage)->put($dir . $imageName, file_get_contents($image));
             if (!$stored) {

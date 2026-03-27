@@ -13,7 +13,7 @@ class AboutProductSection extends Model
 
     protected $table = 'about_product_sections';
 
-    protected $fillable = ['title', 'description', 'image', 'is_active'];
+    protected $fillable = ['title', 'description', 'image'];
 
     public function getImageUrlAttribute()
     {

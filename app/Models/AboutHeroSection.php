@@ -13,7 +13,7 @@ class AboutHeroSection extends Model
     protected $table = 'about_hero_sections'; // Make sure your table name matches the one you created in migration
 
     // Define the fillable fields for mass assignment
-    protected $fillable = ['image', 'heading', 'subheading', 'is_active'];
+    protected $fillable = ['image', 'heading', 'subheading'];
 
     // Optionally, if you need to manipulate the image (e.g., to handle storage or get the full URL)
     public function getImageUrlAttribute()

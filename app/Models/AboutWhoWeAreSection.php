@@ -13,7 +13,7 @@ class AboutWhoWeAreSection extends Model
 
     protected $table = 'about_who_we_are_sections';
 
-    protected $fillable = ['title', 'content', 'is_active'];
+    protected $fillable = ['title', 'content'];
 
 
     public function getImageUrlAttribute()

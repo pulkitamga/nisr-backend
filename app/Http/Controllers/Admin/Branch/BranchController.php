@@ -391,18 +391,7 @@ class BranchController extends BaseController
             DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation')")
         )
         ->paginate(10);
-
-   
-
-    // Transform each stock row to attach unified transfer logs
-    $branches->getCollection()->transform(function ($stock) {
-      
-
-        // Attach combined stock request + transfer logs
-        $stock->transfer_logs = $this->getUnifiedStockHistory($stock);
-
-        return $stock;
-    });
+    $this->attachUnifiedTransferLogs($branches->getCollection());
 
     // Collect branch and product lists **outside** the transform closure
     $branchList = BranchModel::pluck('branch_name', 'id');
@@ -412,7 +401,7 @@ class BranchController extends BaseController
         Branch::BRANCH_STOCK_LIST[VIEW],
         compact('branches', 'branchList', 'productList')
     );
-}
+    }
     public function deleteBranch($id)
     {
         $branch = $this->branchRepo->getFirstWhere(params: ['id' => $id]);
@@ -431,11 +420,82 @@ class BranchController extends BaseController
         return back();
     }
 
-        private function getUnifiedStockHistory($stock)
+    private function attachUnifiedTransferLogs(Collection $stocks): void
     {
-        /* -----------------------------
-     * 1️⃣ PRODUCT STOCK TRANSACTION HISTORY
-     * ----------------------------- */
+        if ($stocks->isEmpty()) {
+            return;
+        }
+
+        $variantMatcher = app(VariantMatcher::class);
+        $productIds = $stocks->pluck('product_id')->filter()->unique()->values();
+        $branchIds = $stocks->pluck('branch_id')->filter()->unique()->values();
+        $productStocksByProduct = \App\Models\ProductStock::query()
+            ->whereIn('product_id', $productIds)
+            ->get()
+            ->groupBy('product_id');
+
+        $transactionIds = $productStocksByProduct
+            ->flatten(1)
+            ->pluck('id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($transactionIds->isEmpty()) {
+            $stocks->transform(function ($stock) {
+                $stock->transfer_logs = collect();
+
+                return $stock;
+            });
+
+            return;
+        }
+
+        $transactionsByStockId = ProductStockTransaction::with(['fromBranch', 'toBranch'])
+            ->whereIn('product_stock_id', $transactionIds)
+            ->where(function ($query) use ($branchIds) {
+                $query->whereIn('to_branch_id', $branchIds)
+                    ->orWhereIn('from_branch_id', $branchIds)
+                    ->orWhere(function ($innerQuery) {
+                        $innerQuery->whereNull('to_branch_id')->whereNull('from_branch_id');
+                    });
+            })
+            ->get()
+            ->groupBy('product_stock_id');
+
+        $stocks->transform(function ($stock) use ($productStocksByProduct, $transactionsByStockId, $variantMatcher) {
+            $productStocks = $productStocksByProduct->get($stock->product_id, collect());
+
+            $matchingStockIds = $productStocks
+                ->filter(function ($productStock) use ($stock, $variantMatcher) {
+                    if ($variantMatcher->isDefault($stock->variation_key) || $variantMatcher->isDefault($stock->variation_type)) {
+                        return $variantMatcher->isDefault($productStock->variant);
+                    }
+
+                    return $variantMatcher->matches($productStock->variant, $stock->variation_key)
+                        || $variantMatcher->matches($productStock->variant, $stock->variation_type);
+                })
+                ->pluck('id');
+
+            $stock->transfer_logs = $matchingStockIds
+                ->flatMap(fn($stockId) => $transactionsByStockId->get($stockId, collect()))
+                ->filter(function ($item) use ($stock) {
+                    return (int)$item->to_branch_id === (int)$stock->branch_id
+                        || (int)$item->from_branch_id === (int)$stock->branch_id
+                        || (is_null($item->to_branch_id) && is_null($item->from_branch_id));
+                })
+                ->unique('id')
+                ->sortByDesc('created_at')
+                ->values()
+                ->map(fn($item) => $this->mapUnifiedStockTransaction($item))
+                ->values();
+
+            return $stock;
+        });
+    }
+
+    private function getUnifiedStockHistory($stock)
+    {
         $transactionLogs = ProductStockTransaction::with(['fromBranch', 'toBranch'])
             ->whereIn('product_stock_id', function ($q) use ($stock) {
                 $variantMatcher = app(VariantMatcher::class);
@@ -457,7 +517,6 @@ class BranchController extends BaseController
                     ->from('product_stocks')
                     ->whereIn('id', $matchingStockIds);
             })
-            /* Filter to show only logs for the specific branch being viewed */
             ->where(function ($q) use ($stock) {
                 $q->where('to_branch_id', $stock->branch_id)
                     ->orWhere('from_branch_id', $stock->branch_id)
@@ -466,60 +525,57 @@ class BranchController extends BaseController
                     });
             })
             ->get()
-            ->map(function ($item) {
-                $reasonClean = str_replace('_', ' ', $item->reason ?? 'MANUAL');
-                $reference = $reasonClean;
- 
-                // Default names from relations (if they exist)
-                $fromName = $item->fromBranch?->branch_name;
-                $toName   = $item->toBranch?->branch_name;
- 
-                if ($item->reason === 'BRANCH_TRANSFER') {
-                    if ($item->type === 'IN') {
-                        /* * Logic for RECEIVED (IN): from_branch_id is NULL.
-             * Extract "1" from "Received from branch 1"
-             */
-                        if (!$fromName && !empty($item->remarks)) {
-                            preg_match('/\d+/', $item->remarks, $matches);
-                            $extractedId = $matches[0] ?? null;
-                            if ($extractedId) {
-                                $fromName = \App\Models\Branch::withTrashed()->find($extractedId)?->branch_name
-                                    ?? "Branch #" . $extractedId;
-                            }
-                        }
-                        $reference .= " (From: " . ($fromName ?? 'Unknown') . ")";
-                    } else {
-                        /* * Logic for TRANSFERRED (OUT): to_branch_id is NULL.
-             * Extract "11" from "Transferred to branch 11"
-             */
-                        if (!$toName && !empty($item->remarks)) {
-                            preg_match('/\d+/', $item->remarks, $matches);
-                            $extractedId = $matches[0] ?? null;
-                            if ($extractedId) {
-                                $toName = \App\Models\Branch::withTrashed()->find($extractedId)?->branch_name
-                                    ?? "Branch #" . $extractedId;
-                            }
-                        }
-                        $reference .= " (To: " . ($toName ?? 'Unknown') . ")";
-                    }
-                }
- 
-                return [
-                    'source'         => 'transaction',
-                    'type'           => $item->type,
-                    'reference'      => $reference,
-                    'quantity'       => $item->quantity,
-                    'status'         => 'completed',
-                    'created_at'     => $item->created_at,
-                    'remarks'        => $item->remarks,
-                    'from_branch'    => $fromName ?? 'N/A',
-                    'to_branch'      => $toName ?? 'N/A',
-                ];
-            });
+            ->map(fn($item) => $this->mapUnifiedStockTransaction($item));
+
         return collect()
             ->merge($transactionLogs)
             ->sortByDesc('created_at')
             ->values();
+    }
+
+    private function mapUnifiedStockTransaction(ProductStockTransaction $item): array
+    {
+        $reasonClean = str_replace('_', ' ', $item->reason ?? 'MANUAL');
+        $reference = $reasonClean;
+
+        $fromName = $item->fromBranch?->branch_name;
+        $toName = $item->toBranch?->branch_name;
+
+        if ($item->reason === 'BRANCH_TRANSFER') {
+            if ($item->type === 'IN') {
+                if (!$fromName && !empty($item->remarks)) {
+                    preg_match('/\d+/', $item->remarks, $matches);
+                    $extractedId = $matches[0] ?? null;
+                    if ($extractedId) {
+                        $fromName = \App\Models\Branch::withTrashed()->find($extractedId)?->branch_name
+                            ?? 'Branch #' . $extractedId;
+                    }
+                }
+                $reference .= ' (From: ' . ($fromName ?? 'Unknown') . ')';
+            } else {
+                if (!$toName && !empty($item->remarks)) {
+                    preg_match('/\d+/', $item->remarks, $matches);
+                    $extractedId = $matches[0] ?? null;
+                    if ($extractedId) {
+                        $toName = \App\Models\Branch::withTrashed()->find($extractedId)?->branch_name
+                            ?? 'Branch #' . $extractedId;
+                    }
+                }
+                $reference .= ' (To: ' . ($toName ?? 'Unknown') . ')';
+            }
+        }
+
+        return [
+            'source' => 'transaction',
+            'type' => $item->type,
+            'reference' => $reference,
+            'quantity' => $item->quantity,
+            'status' => 'completed',
+            'created_at' => $item->created_at,
+            'remarks' => $item->remarks,
+            'from_branch' => $fromName ?? 'N/A',
+            'to_branch' => $toName ?? 'N/A',
+        ];
     }
 
     private function canAccessBranchData(?Admin $authUser, int $branchId): bool

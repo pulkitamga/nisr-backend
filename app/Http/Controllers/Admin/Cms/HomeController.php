@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HomePageSection;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Support\CmsContentSanitizer;
+use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -22,11 +23,15 @@ class HomeController extends Controller
 
     use PaginatorTrait;
     use CommonTrait;
+    use AuthorizesCmsSection;
 
     public function __construct(
         private readonly TranslationRepositoryInterface     $translationRepo,
 
-    ) {}
+    ) {
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.read'))->only(['index']);
+        $this->middleware($this->cmsPermissionMiddleware('cms_section.update'))->except(['index']);
+    }
 
     private function storeOptimizedImage(UploadedFile $image, string $directory): string
     {

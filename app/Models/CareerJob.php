@@ -28,7 +28,6 @@ class CareerJob extends Model
         'experience',
         'skills',
         'job_description',
-        'is_active',
     ];
 
     protected $casts = [

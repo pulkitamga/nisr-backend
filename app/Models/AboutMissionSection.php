@@ -12,7 +12,7 @@ class AboutMissionSection extends Model
 
     protected $table = 'about_mission_sections';
 
-    protected $fillable = ['title', 'content', 'is_active'];
+    protected $fillable = ['title', 'content'];
 
     public function getImageUrlAttribute()
     {

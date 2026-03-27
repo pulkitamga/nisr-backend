@@ -683,7 +683,7 @@ class StockRequestController extends BaseController
                 'attributes'         => $attributes,
                 'quantity'           => $requiredQty,
                 'serial_csv_path'    => $csvPath,
-                'status'             => 'Transferred'
+                'status'             => 'transferred'
             ]);
 
             Log::info('=== STOCK TRANSFER COMPLETED SUCCESSFULLY ===', [

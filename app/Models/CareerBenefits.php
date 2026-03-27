@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class CareerBenefits extends Model
 {
     use HasFactory;
-    protected $fillable = ['icon', 'title', 'description', 'is_active'];
+    protected $fillable = ['icon', 'title', 'description'];
 
 
     public function translations(): MorphMany
