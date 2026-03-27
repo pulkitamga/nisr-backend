@@ -65,13 +65,13 @@ class CrmCaseController extends Controller
 
         if (!$ticket) {
             return response()->json([
-                'message' => 'This case cannot accept replies until it is converted to a ticket.',
+                'message' => translate('crm_case_reply_requires_ticket'),
             ], 422);
         }
 
         if (in_array($ticket->status, ['close', 'closed'], true)) {
             return response()->json([
-                'message' => 'This ticket is already closed.',
+                'message' => translate('crm_ticket_already_closed'),
             ], 422);
         }
 
@@ -82,7 +82,7 @@ class CrmCaseController extends Controller
         $reply->save();
 
         return response()->json([
-            'message' => 'Reply sent successfully.',
+            'message' => translate('crm_reply_sent_successfully'),
         ], 200);
     }
 
@@ -92,7 +92,7 @@ class CrmCaseController extends Controller
             ->with(['employee', 'owner', 'ticket'])
             ->find($id);
 
-        abort_if(!$case, 404, 'Case not found.');
+        abort_if(!$case, 404, translate('crm_case_not_found'));
 
         return $case;
     }
@@ -155,11 +155,11 @@ class CrmCaseController extends Controller
 
         $timeline->push([
             'event_type' => 'inquiry_submitted',
-            'title' => 'Inquiry submitted',
+            'title' => translate('crm_timeline_inquiry_submitted'),
             'description' => (string)(data_get($message->details, 'message') ?: $message->message ?: $message->subject),
             'actor_type' => 'customer',
             'actor_id' => (string)($message->contact_id ?? ''),
-            'actor_name' => $message->sender_name ?: 'Customer',
+            'actor_name' => $message->sender_name ?: translate('crm_actor_customer'),
             'case_id' => (string)$message->id,
             'ticket_id' => $message->related_ticket_id ? (string)$message->related_ticket_id : null,
             'created_at' => optional($message->created_at)?->toIso8601String(),
@@ -202,7 +202,7 @@ class CrmCaseController extends Controller
             'description' => (string)($activity->subject ?: data_get($activity->details, 'description', '')),
             'actor_type' => 'admin',
             'actor_id' => (string)($activity->employee_id ?? ''),
-            'actor_name' => $activity->employee?->name ?: 'CRM',
+            'actor_name' => $activity->employee?->name ?: translate('crm_actor_crm'),
             'case_id' => (string)$message->id,
             'ticket_id' => $message->related_ticket_id ? (string)$message->related_ticket_id : null,
             'created_at' => optional($activity->created_at ?: $activity->note_date)?->toIso8601String(),
@@ -223,7 +223,7 @@ class CrmCaseController extends Controller
             'description' => $description,
             'actor_type' => 'admin',
             'actor_id' => (string)($activity->employee_id ?? ''),
-            'actor_name' => $activity->employee?->name ?: 'Support',
+            'actor_name' => $activity->employee?->name ?: translate('crm_actor_support'),
             'case_id' => (string)$message->id,
             'ticket_id' => (string)$activity->support_ticket_id,
             'created_at' => optional($activity->noted_at ?: $activity->created_at)?->toIso8601String(),
@@ -236,13 +236,15 @@ class CrmCaseController extends Controller
 
         return [
             'event_type' => $isCustomerReply ? 'customer_replied' : 'agent_replied',
-            'title' => $isCustomerReply ? 'Customer replied' : 'Agent replied',
+            'title' => $isCustomerReply
+                ? translate('crm_timeline_customer_replied')
+                : translate('crm_timeline_agent_replied'),
             'description' => (string)($conversation->customer_message ?: $conversation->admin_message ?: ''),
             'actor_type' => $isCustomerReply ? 'customer' : 'admin',
             'actor_id' => (string)($isCustomerReply ? ($message->contact_id ?? '') : ($conversation->admin_id ?? '')),
             'actor_name' => $isCustomerReply
-                ? ($message->sender_name ?: 'Customer')
-                : ($conversation->adminInfo?->name ?: 'Support'),
+                ? ($message->sender_name ?: translate('crm_actor_customer'))
+                : ($conversation->adminInfo?->name ?: translate('crm_actor_support')),
             'case_id' => (string)$message->id,
             'ticket_id' => (string)$conversation->support_ticket_id,
             'created_at' => optional($conversation->created_at)?->toIso8601String(),
@@ -279,20 +281,20 @@ class CrmCaseController extends Controller
     {
         if ($ticket) {
             if (in_array($ticket->status, ['close', 'closed'], true)) {
-                return 'This case has been closed by support.';
+                return translate('crm_case_closed_by_support');
             }
 
-            return 'Reply on the ticket thread for updates from support.';
+            return translate('crm_case_reply_on_ticket_thread');
         }
 
         if ($message->status === 'new') {
-            return 'Your case is waiting for CRM triage.';
+            return translate('crm_case_waiting_for_triage');
         }
 
         if ($message->status === 'converted') {
-            return 'Your case has been converted to a support ticket.';
+            return translate('crm_case_converted_to_ticket');
         }
 
-        return 'Your case is currently under review.';
+        return translate('crm_case_under_review');
     }
 }

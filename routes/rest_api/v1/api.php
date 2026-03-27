@@ -217,6 +217,7 @@ Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('dec
                 Route::get('new-arrival', 'getNewArrivalProducts');
                 Route::get('featured', 'getFeaturedProductsList');
                 Route::get('top-rated', 'getTopRatedProducts');
+                Route::get('vehicle-reference', 'getVehicleReference');
                 Route::any('search', 'get_searched_products');
                 Route::post('filter', 'getProductsFilter');
                 Route::any('suggestion-product', 'get_suggestion_product');

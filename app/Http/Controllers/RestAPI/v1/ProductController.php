@@ -18,6 +18,8 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\PublishingHouse;
 use App\Models\Review;
+use App\Models\VehicleMake;
+use App\Models\VehicleYear;
 use App\Models\ShippingMethod;
 use App\Models\Shop;
 use App\Models\StockClearanceProduct;
@@ -88,6 +90,49 @@ class ProductController extends Controller
             'offset' => (int)$request['offset'],
             'products' => $productsList
         ]);
+    }
+
+    public function getVehicleReference(): JsonResponse
+    {
+        $makes = VehicleMake::query()
+            ->with(['models' => function ($query) {
+                $query->select('id', 'make_id', 'name')->orderBy('name');
+            }])
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->map(function (VehicleMake $make) {
+                return [
+                    'id' => (int) $make->id,
+                    'name' => (string) $make->getRawOriginal('name'),
+                    'display_name' => (string) $make->name,
+                    'models' => $make->models->map(function ($model) {
+                        return [
+                            'id' => (int) $model->id,
+                            'make_id' => (int) $model->make_id,
+                            'name' => (string) $model->getRawOriginal('name'),
+                            'display_name' => (string) $model->name,
+                        ];
+                    })->values(),
+                ];
+            })->values();
+
+        $years = VehicleYear::query()
+            ->select('id', 'year')
+            ->orderBy('year', 'desc')
+            ->get()
+            ->map(function (VehicleYear $year) {
+                return [
+                    'id' => (int) $year->id,
+                    'year' => (int) $year->getRawOriginal('year'),
+                    'display_year' => (string) $year->year,
+                ];
+            })->values();
+
+        return response()->json([
+            'makes' => $makes,
+            'years' => $years,
+        ], 200);
     }
 
     public function get_searched_products(Request $request): JsonResponse

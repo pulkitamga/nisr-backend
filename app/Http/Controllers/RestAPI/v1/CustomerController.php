@@ -4,7 +4,6 @@ namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Area;
-use App\Models\BillingAddress;
 use App\Models\BusinessSetting;
 use App\Models\City;
 use App\Models\DeliveryCountryCode;
@@ -20,24 +19,22 @@ use App\Models\SupportTicketConv;
 use App\Models\User;
 use App\Models\Warranty;
 use App\Models\Wishlist;
-use Carbon\Carbon;
+use App\Support\WarrantyOrderSupport;
 use App\Traits\CommonTrait;
 use App\Traits\FileManagerTrait;
 use App\Traits\PdfGenerator;
-use App\Support\WarrantyOrderSupport;
-use App\Utils\CustomerManager;
 use App\Utils\Helpers;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
-    use CommonTrait, PdfGenerator, FileManagerTrait;
+    use CommonTrait, FileManagerTrait, PdfGenerator;
 
     public function info(Request $request)
     {
@@ -49,6 +46,7 @@ class CustomerController extends Controller
         $user->is_phone_verified = $getUser->is_phone_verified;
         $user->email_verification_token = $getUser->email_verification_token;
         $user->email_verified_at = $getUser->email_verified_at;
+
         return response()->json($user, 200);
     }
 
@@ -70,9 +68,10 @@ class CustomerController extends Controller
                 return response()->json(['message' => 'You can`t delete account due ongoing_order!!'], 403);
             }
 
-            $this->delete('/profile/' . $user['image']);
+            $this->delete('/profile/'.$user['image']);
 
             $user->delete();
+
             return response()->json(['message' => 'Your account deleted successfully'], 200);
         } else {
             return response()->json(['message' => 'access_denied!!'], 403);
@@ -99,7 +98,7 @@ class CustomerController extends Controller
         $conversations = $conversations->toArray();
 
         if ($support_ticket) {
-            $description = array(
+            $description = [
                 'support_ticket_id' => $ticket_id,
                 'admin_id' => null,
                 'customer_message' => $support_ticket->description,
@@ -109,9 +108,10 @@ class CustomerController extends Controller
                 'position' => 0,
                 'created_at' => $support_ticket->created_at,
                 'updated_at' => $support_ticket->updated_at,
-            );
+            ];
             array_unshift($conversations, $description);
         }
+
         return response()->json($conversations, 200);
     }
 
@@ -139,6 +139,7 @@ class CustomerController extends Controller
             $wishlist->customer_id = $request->user()->id;
             $wishlist->product_id = $request->product_id;
             $wishlist->save();
+
             return response()->json(['message' => 'successfully added!'], 200);
         }
 
@@ -157,10 +158,12 @@ class CustomerController extends Controller
 
         $wishlist = Wishlist::where('customer_id', $request->user()->id)->where('product_id', $request->product_id)->first();
 
-        if (!empty($wishlist)) {
+        if (! empty($wishlist)) {
             Wishlist::where(['customer_id' => $request->user()->id, 'product_id' => $request->product_id])->delete();
+
             return response()->json(['message' => translate('successfully removed!')], 200);
         }
+
         return response()->json(['message' => translate('No such data found!')], 404);
     }
 
@@ -177,6 +180,7 @@ class CustomerController extends Controller
 
         $wishlist->map(function ($data) {
             $data['productFullInfo'] = Helpers::product_data_formatting(json_decode($data['productFullInfo'], true));
+
             return $data;
         });
 
@@ -191,10 +195,9 @@ class CustomerController extends Controller
         } else {
             $data = ShippingAddress::where(['customer_id' => $user->id, 'is_guest' => '0'])->get();
         }
+
         return response()->json($data, 200);
     }
-
-
 
     // public function add_new_address(Request $request)
     // {
@@ -332,18 +335,17 @@ class CustomerController extends Controller
             'state' => 'required',
             'city' => 'required',
             'area' => 'required',
-            'zip'  => $zipRule,
+            'zip' => $zipRule,
             'country' => 'required',
             'phone' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
-            'is_billing' => 'required'
+            'is_billing' => 'required',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
-
 
         // $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
 
@@ -360,25 +362,24 @@ class CustomerController extends Controller
 
             if (
                 $country_restrict_status
-                && !self::delivery_country_exist_check($request->country)
+                && ! self::delivery_country_exist_check($request->country)
             ) {
 
                 return response()->json([
-                    'message' => translate('Delivery_unavailable_for_this_country')
+                    'message' => translate('Delivery_unavailable_for_this_country'),
                 ], 403);
             }
 
             if (
                 $zip_restrict_status
-                && !self::delivery_zipcode_exist_check($request->zip)
+                && ! self::delivery_zipcode_exist_check($request->zip)
             ) {
 
                 return response()->json([
-                    'message' => translate('Delivery_unavailable_for_this_zip_code_area')
+                    'message' => translate('Delivery_unavailable_for_this_zip_code_area'),
                 ], 403);
             }
         }
-
 
         // if ($country_restrict_status && self::delivery_country_exist_check($request->input('country'))) {
         //     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
@@ -407,28 +408,7 @@ class CustomerController extends Controller
             'updated_at' => now(),
         ];
 
-
-        // 4. ALSO insert into BillingAddress IF is_billing is 1
-        if ($request->is_billing == 1) {
-            $billing_data = [
-                'customer_id'         => $customer_id,
-                'contact_person_name' => $request->contact_person_name,
-                'address_type'        => $request->address_type,
-                'address'             => $request->address,
-                'city'                => $request->city,
-                'zip'                 => $request->zip,
-                'phone'               => $request->phone,
-                'state'               => $request->state,
-                'country'             => $request->country,
-                'latitude'            => $request->latitude,
-                'longitude'           => $request->longitude,
-                'created_at'          => now(),
-                'updated_at'          => now(),
-            ];
-            BillingAddress::insert($billing_data);
-        } else {
-            ShippingAddress::insert($address);
-        }
+        ShippingAddress::insert($address);
 
         return response()->json(['message' => translate('successfully added!')], 200);
     }
@@ -505,16 +485,25 @@ class CustomerController extends Controller
 
         $shippingAddress = $query->first();
 
-        if (!$shippingAddress) {
+        if (! $shippingAddress) {
             return response()->json(['message' => translate('not_found')], 404);
         }
 
         $zipRestrictStatus = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $countryRestrictStatus = getWebConfig(name: 'delivery_country_restriction');
+        $isBilling = (int) $request->input('is_billing', 0) === 1;
 
-        if ($zipRestrictStatus && !self::delivery_zipcode_exist_check($request->zip)) {
+        if (! $isBilling && $countryRestrictStatus && ! self::delivery_country_exist_check($request->country)) {
+            return response()->json([
+                'error_type' => 'address',
+                'message' => translate('Delivery_unavailable_for_this_country'),
+            ], 403);
+        }
+
+        if (! $isBilling && $zipRestrictStatus && ! self::delivery_zipcode_exist_check($request->zip)) {
             return response()->json([
                 'error_type' => 'zip_code',
-                'message' => translate('Delivery_unavailable_for_this_zip_code_area')
+                'message' => translate('Delivery_unavailable_for_this_zip_code_area'),
             ], 403);
         }
 
@@ -535,7 +524,6 @@ class CustomerController extends Controller
 
         return response()->json(['message' => translate('update_successful')], 200);
     }
-
 
     public function delete_address(Request $request)
     {
@@ -560,23 +548,24 @@ class CustomerController extends Controller
         if ($shipping_address && $shipping_address->delete()) {
             return response()->json(['message' => 'successfully removed!'], 200);
         }
+
         return response()->json(['message' => translate('No such data found!')], 404);
     }
 
     public function get_order_list(Request $request)
     {
-        $status = array(
+        $status = [
             'ongoing' => ['out_for_delivery', 'processing', 'confirmed', 'pending'],
             'canceled' => ['canceled', 'failed', 'returned'],
             'delivered' => ['delivered'],
-        );
+        ];
 
         $orders = Order::with('details.product', 'deliveryMan', 'seller.shop')
             ->withSum('details as order_details_count', 'qty')
             ->where(['customer_id' => $request->user()->id, 'is_guest' => '0'])
             ->when($request->status && $request->status != 'all', function ($query) use ($request, $status) {
                 $query->whereIn('order_status', $status[$request->status])
-                    ->when($request->type == 'reorder', function ($query) use ($request) {
+                    ->when($request->type == 'reorder', function ($query) {
                         $query->where('order_type', 'default_type');
                     });
             })
@@ -586,10 +575,11 @@ class CustomerController extends Controller
         $orders->map(function ($data) {
             $data->details->map(function ($query) {
                 $query['product'] = Helpers::product_data_formatting(json_decode($query['product'], true));
+
                 return $query;
             });
 
-            //Seller image
+            // Seller image
             if ($data->seller_is == 'admin') {
                 // For admin orders, use the favicon
                 $data->shop_image = getWebConfig(name: 'company_fav_icon');
@@ -597,6 +587,7 @@ class CustomerController extends Controller
                 // For seller orders, get from seller's shop
                 $data->shop_image = $data->seller?->shop?->image_full_url;
             }
+
             return $data;
         });
 
@@ -604,8 +595,9 @@ class CustomerController extends Controller
             'total_size' => $orders->total(),
             'limit' => $request['limit'],
             'offset' => $request['offset'],
-            'orders' => $orders->items()
+            'orders' => $orders->items(),
         ];
+
         return response()->json($orders, 200);
     }
 
@@ -625,7 +617,7 @@ class CustomerController extends Controller
             ->whereHas('order', function ($query) use ($request, $user) {
                 $query->where([
                     'customer_id' => $user == 'offline' ? $request->guest_id : $user->id,
-                    'is_guest' => $user == 'offline' ? 1 : '0'
+                    'is_guest' => $user == 'offline' ? 1 : '0',
                 ]);
             })
             ->where(['order_id' => $request['order_id']])
@@ -636,7 +628,7 @@ class CustomerController extends Controller
         $deliveredDays = $order ? Carbon::parse($order->updated_at)->diffInDays(now()) : null;
         $productIds = $detailsList->pluck('product_id')->filter()->unique()->values()->toArray();
         $warrantiesByProduct = [];
-        if ($customerId && !empty($productIds)) {
+        if ($customerId && ! empty($productIds)) {
             $warrantiesByProduct = Warranty::query()
                 ->where('final_user_id', $customerId)
                 ->where('invoice_number', $request['order_id'])
@@ -651,8 +643,8 @@ class CustomerController extends Controller
         $consumedWarrantyCountByProduct = [];
         $orderDetailWarrantyMap = [];
         foreach ($detailsList as $detail) {
-            $productId = (int)$detail->product_id;
-            $detailQty = max(0, (int)$detail->qty);
+            $productId = (int) $detail->product_id;
+            $detailQty = max(0, (int) $detail->qty);
             $productWarranties = collect($warrantiesByProduct[$productId] ?? [])->values();
             $offset = $consumedWarrantyCountByProduct[$productId] ?? 0;
             $detailWarranties = $productWarranties->slice($offset, $detailQty)->values();
@@ -698,7 +690,7 @@ class CustomerController extends Controller
                 'item_total' => $item->price * $item->qty,
                 'tax' => $item->tax,
                 'tax_model' => $item->tax_model,
-                'tax_included_in_price' => $item->tax_model == 'include'
+                'tax_included_in_price' => $item->tax_model == 'include',
             ];
         })->toArray();
 
@@ -710,8 +702,8 @@ class CustomerController extends Controller
             $totalExcludedTax,
             $taxBreakdown,
             $order,
-            $orderDetailWarrantyMap,
-            $deliveredDays
+            $orderDetailWarrantyMap
+
         ) {
             $query['variation'] = json_decode($query['variation'], true);
             $product = json_decode($query['product_details'], true);
@@ -752,20 +744,20 @@ class CustomerController extends Controller
             $warrantyData = $orderDetailWarrantyMap[$query->id] ?? [
                 'first' => null,
                 'activated_count' => 0,
-                'remaining_count' => (int)$query->qty,
+                'remaining_count' => (int) $query->qty,
             ];
             $firstWarranty = $warrantyData['first'];
             $isDeliveredItem = $order
                 ? WarrantyOrderSupport::isDeliveredItem($order, $query)
                 : false;
-            $isWarrantyEnabled = (bool)($query?->productAllStatus?->is_warranty ?? $query?->product?->is_warranty ?? false);
-            $remainingCount = (int)($warrantyData['remaining_count'] ?? 0);
+            $isWarrantyEnabled = (bool) ($query?->productAllStatus?->is_warranty ?? $query?->product?->is_warranty ?? false);
+            $remainingCount = (int) ($warrantyData['remaining_count'] ?? 0);
 
             $query['is_warranty'] = $isWarrantyEnabled;
             $query['warranty_status'] = $firstWarranty?->statusLabel() ?? 'not_activated';
             $query['warranty_public_id'] = $firstWarranty?->warranty_public_id;
             $query['serial_number'] = $firstWarranty?->serial_number;
-            $query['activated_count'] = (int)($warrantyData['activated_count'] ?? 0);
+            $query['activated_count'] = (int) ($warrantyData['activated_count'] ?? 0);
             $query['remaining_count'] = $remainingCount;
             $query['warranty_activation_window_open'] = $isDeliveredItem;
             $query['warranty_support_message'] = WarrantyOrderSupport::supportMessage(
@@ -830,8 +822,8 @@ class CustomerController extends Controller
     public function getOrderInvoice(Request $request)
     {
         $order = Order::with('seller')->with('shipping')->where('id', $request['order_id'])->first();
-        $data["email"] = $order->customer["email"];
-        $data["order"] = $order;
+        $data['email'] = $order->customer['email'];
+        $data['order'] = $order;
         $invoiceSettings = json_decode(BusinessSetting::where(['type' => 'invoice_settings'])->first()?->value, true);
         $mpdf_view = \View::make(VIEW_FILE_NAMES['order_invoice'], compact('order', 'invoiceSettings'));
         $mpdf = new \Mpdf\Mpdf(['default_font' => 'FreeSerif', 'mode' => 'utf-8', 'format' => [190, 250], 'autoLangToFont' => true]);
@@ -846,6 +838,7 @@ class CustomerController extends Controller
         $pdfContentStr = $mpdf->Output('', 'S');
         $pdfContentBytes = $pdfContentStr;
         $byteArray = array_values(unpack('C*', $pdfContentBytes));
+
         return response()->json($byteArray);
     }
 
@@ -863,6 +856,7 @@ class CustomerController extends Controller
         if (isset($order['offlinePayments'])) {
             $order['offlinePayments']->payment_info = $order->offlinePayments->payment_info;
         }
+
         return response()->json($order, 200);
     }
 
@@ -922,6 +916,7 @@ class CustomerController extends Controller
         ];
 
         User::where(['id' => $request->user()->id])->update($userDetails);
+
         return response()->json(['message' => translate('successfully updated!')], 200);
     }
 
@@ -984,7 +979,7 @@ class CustomerController extends Controller
         return response()->json(['message' => translate('successfully updated!')], 200);
     }
 
-    // only restrict get from this code 
+    // only restrict get from this code
     // public function get_restricted_country_list(Request $request)
     // {
     //     $stored_countries = DeliveryCountryCode::orderBy('country_code', 'ASC')->pluck('country_code')->toArray();
@@ -1006,7 +1001,7 @@ class CustomerController extends Controller
     // }
 
     // changesh by gannu
-    // get only allowed country from this 
+    // get only allowed country from this
     // public function get_restricted_country_list(Request $request)
     // {
     //     $blockedCodes = DeliveryCountryCode::pluck('country_code')->toArray();
@@ -1018,7 +1013,7 @@ class CustomerController extends Controller
     //     return response()->json(['countries' => $countries]);
     // }
 
-    // now only limited country 
+    // now only limited country
     // public function get_restricted_country_list(Request $request)
     // {
     //     // All country codes which have states
@@ -1038,9 +1033,7 @@ class CustomerController extends Controller
     //     ], 200);
     // }
 
-
-
-    // only restricted country with code and name 
+    // only restricted country with code and name
 
     public function get_restricted_country_list(Request $request)
     {
@@ -1052,9 +1045,8 @@ class CustomerController extends Controller
             return in_array($country['code'], $restrictedCountryCodes);
         }));
 
-        return response()->json(["countries" => $shippingCountries], 200);
+        return response()->json(['countries' => $shippingCountries], 200);
     }
-
 
     // STATES
 
@@ -1079,16 +1071,16 @@ class CustomerController extends Controller
     //     return response()->json(['states' => $states]);
     // }
 
-    // only restricted states 
+    // only restricted states
     public function get_restricted_state_list(Request $request)
     {
         $request->validate(['country' => 'required|string|size:2']);
         $countryCode = strtoupper($request->country);
 
         // Dynamic key: delivery_blocked_states_IN, delivery_blocked_states_US, etc.
-        $cacheKey = 'delivery_blocked_states_' . $countryCode;
+        $cacheKey = 'delivery_blocked_states_'.$countryCode;
 
-        $blockedStates = cache()->remember($cacheKey, 01, function () use ($countryCode) {
+        $blockedStates = cache()->remember($cacheKey, 01, function () {
             return DB::table('delivery_states')
                 // It's better to filter by country here too!
                 ->pluck('state_id')
@@ -1105,7 +1097,7 @@ class CustomerController extends Controller
     }
 
     // CITIES
-    // Non restricted city if state is block then city will also not availabel 
+    // Non restricted city if state is block then city will also not availabel
     // public function get_restricted_city_list(Request $request)
     // {
     //     $state_id = $request->query('state_id');
@@ -1127,7 +1119,7 @@ class CustomerController extends Controller
     //     return response()->json(['cities' => $cities], 200);
     // }
 
-    // only restrected cityes 
+    // only restrected cityes
     public function get_restricted_city_list(Request $request)
     {
         $request->validate(['state_id' => 'required|integer']);
@@ -1136,7 +1128,7 @@ class CustomerController extends Controller
         $blockedCities = cache()->remember(
             'delivery_blocked_cities',
             01, // 5 minutes cache
-            fn() => DB::table('delivery_cities')->pluck('city_id')->toArray()
+            fn () => DB::table('delivery_cities')->pluck('city_id')->toArray()
         );
 
         // 2. Fetch ONLY the cities that exist in that blocked list
@@ -1148,7 +1140,6 @@ class CustomerController extends Controller
 
         return response()->json(['cities' => $cities]);
     }
-
 
     // AREAS
     // Only non restricted area if state and city is blocked area is not available to show
@@ -1181,7 +1172,7 @@ class CustomerController extends Controller
         $blockedAreas = cache()->remember(
             'delivery_blocked_areas',
             01,
-            fn() => DB::table('delivery_areas')->pluck('area_id')->toArray()
+            fn () => DB::table('delivery_areas')->pluck('area_id')->toArray()
         );
 
         // 2. Query only the areas that match those restricted IDs
@@ -1208,14 +1199,14 @@ class CustomerController extends Controller
         }));
 
         return response()->json([
-            'countries' => $billingCountries
+            'countries' => $billingCountries,
         ], 200);
     }
 
     public function billing_state_list(Request $request)
     {
         $request->validate([
-            'country' => 'required|string|size:2'
+            'country' => 'required|string|size:2',
         ]);
 
         $states = State::where('country', strtoupper($request->country))
@@ -1229,7 +1220,7 @@ class CustomerController extends Controller
     public function billing_city_list(Request $request)
     {
         $request->validate([
-            'state_id' => 'required|integer'
+            'state_id' => 'required|integer',
         ]);
 
         $cities = City::where('state_id', $request->state_id)
@@ -1243,7 +1234,7 @@ class CustomerController extends Controller
     public function billing_area_list(Request $request)
     {
         $request->validate([
-            'city_id' => 'required|integer'
+            'city_id' => 'required|integer',
         ]);
 
         $areas = Area::where('city_id', $request->city_id)
@@ -1253,9 +1244,6 @@ class CustomerController extends Controller
 
         return response()->json(['areas' => $areas], 200);
     }
-
-
-
 
     public function get_restricted_zip_list(Request $request)
     {

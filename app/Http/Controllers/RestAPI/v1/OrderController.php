@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\RestAPI\v1;
 
-use App\Models\Branch;
 use App\Events\DigitalProductOtpVerificationEvent;
 use App\Events\RefundEvent;
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\Cart;
 use App\Models\DigitalProductOtpVerification;
 use App\Models\OfflinePaymentMethod;
@@ -15,16 +15,14 @@ use App\Models\OrderStatusHistory;
 use App\Models\RefundRequest;
 use App\Models\Setting;
 use App\Models\ShippingAddress;
-use App\Traits\CommonTrait;
-use App\Traits\FileManagerTrait;
-use App\Traits\SmsGateway;
 use App\Models\User;
 use App\Support\OtpManager;
+use App\Traits\CommonTrait;
+use App\Traits\FileManagerTrait;
 use App\Utils\CartManager;
 use App\Utils\Convert;
 use App\Utils\CustomerManager;
 use App\Utils\Helpers;
-use App\Utils\ImageManager;
 use App\Utils\OrderManager;
 use App\Utils\SMSModule;
 use Carbon\Carbon;
@@ -39,10 +37,61 @@ class OrderController extends Controller
 {
     use CommonTrait, FileManagerTrait;
 
+    private function getGuestCheckoutAddress(Request $request, string $field): ?ShippingAddress
+    {
+        $guestId = (int) $request->input('guest_id');
+        $addressId = (int) $request->input($field);
+
+        if ($guestId <= 0 || $addressId <= 0) {
+            return null;
+        }
+
+        return ShippingAddress::where([
+            'customer_id' => $guestId,
+            'is_guest' => 1,
+            'id' => $addressId,
+        ])->first();
+    }
+
+    private function resolveGuestRegistrationAddress(Request $request): ?ShippingAddress
+    {
+        foreach (['address_id', 'billing_address_id'] as $field) {
+            $address = $this->getGuestCheckoutAddress($request, $field);
+            if ($address) {
+                return $address;
+            }
+        }
+
+        return null;
+    }
+
+    private function guestCustomerAlreadyExists(ShippingAddress $address): bool
+    {
+        $email = trim((string) ($address->email ?? ''));
+        $phone = trim((string) ($address->phone ?? ''));
+
+        if ($email === '' && $phone === '') {
+            return false;
+        }
+
+        return User::query()
+            ->when($email !== '', function ($query) use ($email) {
+                $query->where('email', $email);
+            })
+            ->when($phone !== '', function ($query) use ($phone, $email) {
+                if ($email !== '') {
+                    $query->orWhere('phone', $phone);
+                } else {
+                    $query->where('phone', $phone);
+                }
+            })
+            ->exists();
+    }
+
     public function track_by_order_id(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'order_id' => 'required'
+            'order_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -55,7 +104,7 @@ class OrderController extends Controller
     public function order_cancel(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'order_id' => 'required'
+            'order_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -65,11 +114,11 @@ class OrderController extends Controller
 
         if ($order['payment_method'] == 'cash_on_delivery' && $order['order_status'] == 'pending') {
             $stockUpdated = OrderManager::stock_update_on_order_status_change($order, 'canceled');
-            if (!$stockUpdated) {
+            if (! $stockUpdated) {
                 return response()->json(['message' => translate('Stock_not_available_in_selected_branch')], 403);
             }
             Order::where(['id' => $request->order_id])->update([
-                'order_status' => 'canceled'
+                'order_status' => 'canceled',
             ]);
 
             return response()->json(translate('order_canceled_successfully'), 200);
@@ -78,25 +127,25 @@ class OrderController extends Controller
         return response()->json(['message' => translate('status_not_changeable_now')], 403);
     }
 
-      public function place_order(Request $request): JsonResponse
+    public function place_order(Request $request): JsonResponse
     {
         $user = Helpers::getCustomerInformation($request);
         $deliveryType = $request->input('delivery_type', 'delivery');
         $pickupBranchId = null;
         if ($deliveryType === 'pickup') {
-            if (!$request->filled('pickup_branch_id')) {
+            if (! $request->filled('pickup_branch_id')) {
                 return response()->json([
-                    'message' => 'Pickup branch is required'
+                    'message' => 'Pickup branch is required',
                 ], 403);
             }
 
-            $pickupBranchId = (int)$request->input('pickup_branch_id');
+            $pickupBranchId = (int) $request->input('pickup_branch_id');
             $pickupBranchExists = Branch::where('id', $pickupBranchId)
                 ->where('status', 'active')
                 ->exists();
-            if (!$pickupBranchExists) {
+            if (! $pickupBranchExists) {
                 return response()->json([
-                    'message' => 'Pickup branch is invalid'
+                    'message' => 'Pickup branch is invalid',
                 ], 403);
             }
         }
@@ -117,23 +166,23 @@ class OrderController extends Controller
         $productStockCheck = $deliveryType === 'pickup'
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);
-        if (!$productStockCheck) {
+        if (! $productStockCheck) {
             return response()->json(['message' => 'The following items in your cart are currently out of stock'], 403);
         }
 
         $verifyStatus = OrderManager::verifyCartListMinimumOrderAmount($request);
         if ($verifyStatus['status'] == 0) {
             return response()->json(['message' => translate('Check_minimum_order_amount_requirement')], 403);
-        } 
+        }
 
-        if ($user == 'offline' && $request->has('address_id') && $request['address_id']) {
-            $shippingAddress = ShippingAddress::where(['customer_id' => $request['guest_id'], 'is_guest' => 1, 'id' => $request->input('address_id')])->first();
-            if ($request['is_check_create_account'] && $shippingAddress) {
-                if (User::where(['email' => $shippingAddress['email']])->orWhere(['phone' => $shippingAddress['phone']])->first()) {
+        if ($user == 'offline' && $request->boolean('is_check_create_account')) {
+            $registrationAddress = $this->resolveGuestRegistrationAddress($request);
+            if ($registrationAddress) {
+                if ($this->guestCustomerAlreadyExists($registrationAddress)) {
                     return response()->json(['message' => translate('Already_registered ')], 403);
-                } else {
-                    $newCustomerRegister = self::addNewCustomer(request: $request, address: $shippingAddress);
                 }
+
+                $newCustomerRegister = self::addNewCustomer(request: $request, address: $registrationAddress);
             }
         }
 
@@ -144,29 +193,22 @@ class OrderController extends Controller
             }
         }
 
-        if ($physicalProduct && $deliveryType !== 'pickup')  {
+        if ($physicalProduct && $deliveryType !== 'pickup') {
             $zipRestrictStatus = getWebConfig(name: 'delivery_zip_code_area_restriction');
             $countryRestrictStatus = getWebConfig(name: 'delivery_country_restriction');
 
             if ($request->has('billing_address_id') && $request['billing_address_id']) {
                 if ($user == 'offline') {
-                    $billingAddress = ShippingAddress::where(['customer_id' => $request['guest_id'], 'is_guest' => 1, 'id' => $request->input('billing_address_id')])->first();
-                    if ($request['is_check_create_account'] && $billingAddress && $request['address_id'] == null) {
-                        if (User::where(['email' => $billingAddress['email']])->orWhere(['phone' => $billingAddress['phone']])->first()) {
-                            return response()->json(['message' => translate('Already_registered ')], 403);
-                        } else {
-                            $newCustomerRegister = self::addNewCustomer(request: $request, address: $billingAddress);
-                        }
-                    }
+                    $billingAddress = $this->getGuestCheckoutAddress($request, 'billing_address_id');
                 } else {
                     $billingAddress = ShippingAddress::where(['customer_id' => $user->id, 'is_guest' => '0', 'id' => $request->input('billing_address_id')])->first();
                 }
 
-                if (!$billingAddress) {
+                if (! $billingAddress) {
                     return response()->json(['message' => translate('address_not_found')], 403);
-                } elseif ($countryRestrictStatus && !self::delivery_country_exist_check($billingAddress->country)) {
+                } elseif ($countryRestrictStatus && ! self::delivery_country_exist_check($billingAddress->country)) {
                     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
-                } elseif ($zipRestrictStatus && !self::delivery_zipcode_exist_check($billingAddress->zip)) {
+                } elseif ($zipRestrictStatus && ! self::delivery_zipcode_exist_check($billingAddress->zip)) {
                     return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
                 }
             }
@@ -206,16 +248,16 @@ class OrderController extends Controller
                 $order->shipping_type = 'delivery';
             }
 
-           // $order->billing_address = ($request['billing_address_id'] != null) ? $request['billing_address_id'] : $order['billing_address'];
-           // $order->billing_address_data = ($request['billing_address_id'] != null) ? ShippingAddress::find($request['billing_address_id']) : $order['billing_address_data'];
-            
-           if ($deliveryType !== 'pickup') {
-    $order->billing_address = $request['billing_address_id'] ?? $order->billing_address;
-    $order->billing_address_data = $request['billing_address_id']
-        ? ShippingAddress::find($request['billing_address_id'])
-        : $order->billing_address_data;
-}
-$order->order_note = ($request['order_note'] != null) ? $request['order_note'] : $order['order_note'];
+            // $order->billing_address = ($request['billing_address_id'] != null) ? $request['billing_address_id'] : $order['billing_address'];
+            // $order->billing_address_data = ($request['billing_address_id'] != null) ? ShippingAddress::find($request['billing_address_id']) : $order['billing_address_data'];
+
+            if ($deliveryType !== 'pickup') {
+                $order->billing_address = $request['billing_address_id'] ?? $order->billing_address;
+                $order->billing_address_data = $request['billing_address_id']
+                    ? ShippingAddress::find($request['billing_address_id'])
+                    : $order->billing_address_data;
+            }
+            $order->order_note = ($request['order_note'] != null) ? $request['order_note'] : $order['order_note'];
             $order->save();
 
             $orderIds[] = $orderId;
@@ -232,12 +274,11 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
         return response()->json([
             'order_ids' => $orderIds,
-            'new_user' => (bool)$newCustomerRegister
+            'new_user' => (bool) $newCustomerRegister,
         ], 200);
     }
 
-
-    function addNewCustomer($request, $address)
+    public function addNewCustomer($request, $address)
     {
         return User::create([
             'name' => $address['contact_person_name'],
@@ -257,19 +298,19 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         $deliveryType = $request->input('delivery_type', 'delivery');
         $pickupBranchId = null;
         if ($deliveryType === 'pickup') {
-            if (!$request->filled('pickup_branch_id')) {
+            if (! $request->filled('pickup_branch_id')) {
                 return response()->json([
-                    'message' => 'Pickup branch is required'
+                    'message' => 'Pickup branch is required',
                 ], 403);
             }
 
-            $pickupBranchId = (int)$request->input('pickup_branch_id');
+            $pickupBranchId = (int) $request->input('pickup_branch_id');
             $pickupBranchExists = Branch::where('id', $pickupBranchId)
                 ->where('status', 'active')
                 ->exists();
-            if (!$pickupBranchExists) {
+            if (! $pickupBranchExists) {
                 return response()->json([
-                    'message' => 'Pickup branch is invalid'
+                    'message' => 'Pickup branch is invalid',
                 ], 403);
             }
         }
@@ -290,7 +331,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         $productStockCheck = $deliveryType === 'pickup'
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);
-        if (!$productStockCheck) {
+        if (! $productStockCheck) {
             return response()->json(['message' => 'The following items in your cart are currently out of stock'], 403);
         }
 
@@ -299,14 +340,14 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             return response()->json(['message' => 'Check minimum order amount requirement'], 403);
         }
 
-        if ($user == 'offline' && $request->has('address_id') && $request['address_id']) {
-            $shippingAddress = ShippingAddress::where(['customer_id' => $request['guest_id'], 'is_guest' => 1, 'id' => $request->input('address_id')])->first();
-            if ($request['is_check_create_account'] && $shippingAddress) {
-                if (User::where(['email' => $shippingAddress['email']])->orWhere(['phone' => $shippingAddress['phone']])->first()) {
+        if ($user == 'offline' && $request->boolean('is_check_create_account')) {
+            $registrationAddress = $this->resolveGuestRegistrationAddress($request);
+            if ($registrationAddress) {
+                if ($this->guestCustomerAlreadyExists($registrationAddress)) {
                     return response()->json(['message' => translate('Already_registered ')], 403);
-                } else {
-                    $newCustomerRegister = self::addNewCustomer(request: $request, address: $shippingAddress);
                 }
+
+                $newCustomerRegister = self::addNewCustomer(request: $request, address: $registrationAddress);
             }
         }
 
@@ -323,24 +364,17 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
             if ($request->has('billing_address_id') && $request['billing_address_id']) {
                 if ($user == 'offline') {
-                    $billingAddress = ShippingAddress::where(['customer_id' => $request['guest_id'], 'is_guest' => 1, 'id' => $request->input('billing_address_id')])->first();
-                    if ($request['is_check_create_account'] && $billingAddress && $request['address_id'] == null) {
-                        if (User::where(['email' => $billingAddress['email']])->orWhere(['phone' => $billingAddress['phone']])->first()) {
-                            return response()->json(['message' => translate('Already_registered ')], 403);
-                        } else {
-                            $newCustomerRegister = self::addNewCustomer(request: $request, address: $billingAddress);
-                        }
-                    }
+                    $billingAddress = $this->getGuestCheckoutAddress($request, 'billing_address_id');
                 } else {
                     $billingAddress = ShippingAddress::where(['customer_id' => $user->id, 'is_guest' => '0', 'id' => $request->input('billing_address_id')])->first();
                 }
 
-                if (!$billingAddress) {
+                if (! $billingAddress) {
                     return response()->json(['message' => translate('address_not_found')], 200);
-                } elseif ($countryRestrictStatus && !self::delivery_country_exist_check($billingAddress->country)) {
+                } elseif ($countryRestrictStatus && ! self::delivery_country_exist_check($billingAddress->country)) {
                     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
 
-                } elseif ($zipRestrictStatus && !self::delivery_zipcode_exist_check($billingAddress->zip)) {
+                } elseif ($zipRestrictStatus && ! self::delivery_zipcode_exist_check($billingAddress->zip)) {
                     return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
                 }
             }
@@ -351,12 +385,12 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
         if (isset($method)) {
             $fields = array_column($method->method_informations, 'customer_input');
-            $values = (array)json_decode(base64_decode($request['method_informations']));
+            $values = (array) json_decode(base64_decode($request['method_informations']));
 
             $offline_payment_info['method_id'] = $request['method_id'];
             $offline_payment_info['method_name'] = $method->method_name;
             foreach ($fields as $field) {
-                if (key_exists($field, $values)) {
+                if (array_key_exists($field, $values)) {
                     $offline_payment_info[$field] = $values[$field];
                 }
             }
@@ -411,7 +445,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
         return response()->json([
             'messages' => translate('order_placed_successfully'),
-            'new_user' => (bool)$newCustomerRegister,
+            'new_user' => (bool) $newCustomerRegister,
         ], 200);
     }
 
@@ -420,19 +454,19 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         $deliveryType = $request->input('delivery_type', 'delivery');
         $pickupBranchId = null;
         if ($deliveryType === 'pickup') {
-            if (!$request->filled('pickup_branch_id')) {
+            if (! $request->filled('pickup_branch_id')) {
                 return response()->json([
-                    'message' => 'Pickup branch is required'
+                    'message' => 'Pickup branch is required',
                 ], 403);
             }
 
-            $pickupBranchId = (int)$request->input('pickup_branch_id');
+            $pickupBranchId = (int) $request->input('pickup_branch_id');
             $pickupBranchExists = Branch::where('id', $pickupBranchId)
                 ->where('status', 'active')
                 ->exists();
-            if (!$pickupBranchExists) {
+            if (! $pickupBranchExists) {
                 return response()->json([
-                    'message' => 'Pickup branch is invalid'
+                    'message' => 'Pickup branch is invalid',
                 ], 403);
             }
         }
@@ -452,7 +486,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         $product_stock = $deliveryType === 'pickup'
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);
-        if (!$product_stock) {
+        if (! $product_stock) {
             return response()->json(['message' => 'The following items in your cart are currently out of stock'], 403);
         }
 
@@ -478,11 +512,11 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             if ($request->has('billing_address_id') && $request['billing_address_id']) {
                 $shipping_address = ShippingAddress::where(['customer_id' => $request->user()->id, 'id' => $request->input('billing_address_id')])->first();
 
-                if (!$shipping_address) {
+                if (! $shipping_address) {
                     return response()->json(['message' => translate('address_not_found')], 403);
-                } elseif ($country_restrict_status && !self::delivery_country_exist_check($shipping_address->country)) {
+                } elseif ($country_restrict_status && ! self::delivery_country_exist_check($shipping_address->country)) {
                     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
-                } elseif ($zip_restrict_status && !self::delivery_zipcode_exist_check($shipping_address->zip)) {
+                } elseif ($zip_restrict_status && ! self::delivery_zipcode_exist_check($shipping_address->zip)) {
                     return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
                 }
             }
@@ -496,7 +530,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                 throw new \Exception(translate('Inefficient_balance'));
             }
 
-            $unique_id = $request->user()->id . '-' . rand(000001, 999999) . '-' . time();
+            $unique_id = $request->user()->id.'-'.rand(000001, 999999).'-'.time();
             $order_ids = [];
             foreach ($cart_group_ids as $group_id) {
                 $data = [
@@ -539,6 +573,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         });
 
         CartManager::cart_clean($request);
+
         return response()->json(translate('order_placed_successfully'), 200);
     }
 
@@ -551,15 +586,15 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
-        $order_details = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int)$request->order_details_id);
-        if (!$order_details) {
+        $order_details = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int) $request->order_details_id);
+        if (! $order_details) {
             return response()->json(['message' => translate('order_not_found')], 404);
         }
 
         $user = $request->user();
         $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
         if ($loyaltyPointStatus == 1) {
-            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int)$order_details->id);
+            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int) $order_details->id);
             if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
                 return response()->json(['message' => translate('you_have_not_sufficient_loyalty_point_to_refund_this_order')], 409);
             }
@@ -575,6 +610,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             if ($this->isRefundWindowExpired(orderDetails: $order_details)) {
                 $expired = true;
             }
+
             return response()->json(['already_requested' => $already_requested, 'expired' => $expired, 'refund' => $data], 200);
         } else {
             return response()->json(['message' => translate('you_can_refund_request_after_the_product_is_delivered')], 409);
@@ -593,15 +629,15 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
-        $orderDetails = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int)$request->order_details_id);
-        if (!$orderDetails) {
+        $orderDetails = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int) $request->order_details_id);
+        if (! $orderDetails) {
             return response()->json(['message' => translate('order_not_found')], 404);
         }
 
         $user = $request->user();
         $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
         if ($loyaltyPointStatus == 1) {
-            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int)$orderDetails->id);
+            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int) $orderDetails->id);
             if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
                 return response()->json(['message' => translate('you have not sufficient loyalty point to refund this order!!')], 409);
             }
@@ -621,15 +657,15 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
         $refundRequest = DB::transaction(function () use ($orderDetails, $request) {
             $lockedOrderDetails = OrderDetail::query()->lockForUpdate()->find($orderDetails->id);
-            if (!$lockedOrderDetails || $this->hasRefundRequest(orderDetails: $lockedOrderDetails)) {
+            if (! $lockedOrderDetails || $this->hasRefundRequest(orderDetails: $lockedOrderDetails)) {
                 return null;
             }
 
-            $refundRequest = new RefundRequest();
+            $refundRequest = new RefundRequest;
             $refundRequest->order_details_id = $lockedOrderDetails->id;
-            $refundRequest->customer_id = (int)$request->user()->id;
+            $refundRequest->customer_id = (int) $request->user()->id;
             $refundRequest->status = 'pending';
-            $refundRequest->amount = (float)$this->getRefundBreakdown(orderDetails: $lockedOrderDetails)['refund_amount'];
+            $refundRequest->amount = (float) $this->getRefundBreakdown(orderDetails: $lockedOrderDetails)['refund_amount'];
             $refundRequest->product_id = $lockedOrderDetails->product_id;
             $refundRequest->order_id = $lockedOrderDetails->order_id;
             $refundRequest->refund_reason = $request->refund_reason;
@@ -652,7 +688,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             return ['refund' => $refundRequest, 'orderDetails' => $lockedOrderDetails];
         });
 
-        if (!$refundRequest) {
+        if (! $refundRequest) {
             return response()->json(['message' => translate('already_applied_for_refund_request!!')], 409);
         }
 
@@ -664,8 +700,8 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
     public function refund_details(Request $request)
     {
-        $orderDetails = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int)$request->id);
-        if (!$orderDetails) {
+        $orderDetails = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int) $request->id);
+        if (! $orderDetails) {
             return response()->json(['message' => translate('order_not_found')], 404);
         }
 
@@ -690,7 +726,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
     private function hasRefundRequest(OrderDetail $orderDetails): bool
     {
-        if ((int)$orderDetails->refund_request !== 0) {
+        if ((int) $orderDetails->refund_request !== 0) {
             return true;
         }
 
@@ -699,12 +735,13 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
     private function isRefundWindowExpired(OrderDetail $orderDetails): bool
     {
-        $refundDayLimit = (int)(getWebConfig(name: 'refund_day_limit') ?? 0);
+        $refundDayLimit = (int) (getWebConfig(name: 'refund_day_limit') ?? 0);
         if ($refundDayLimit <= 0) {
             return false;
         }
 
         $refundWindowStartAt = $this->getRefundWindowStartAt(orderDetails: $orderDetails);
+
         return $refundWindowStartAt->diffInDays(Carbon::now()) > $refundDayLimit;
     }
 
@@ -720,7 +757,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
         $subtotal = ($orderDetails->price * $orderDetails->qty) - $orderDetails->discount + $orderDetails->tax;
         $couponDiscount = $totalProductPrice > 0 ? (($order->discount_amount ?? 0) * $subtotal) / $totalProductPrice : 0;
-        $refundAmount = max(0, (float)($subtotal - $couponDiscount));
+        $refundAmount = max(0, (float) ($subtotal - $couponDiscount));
 
         return [
             'product_price' => $orderDetails->price,
@@ -754,12 +791,12 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         $order_details_data = OrderDetail::with('order.customer')->find($id);
 
         if ($order_details_data) {
-            if ($order_details_data->order->payment_status !== "paid") {
+            if ($order_details_data->order->payment_status !== 'paid') {
                 return response()->json([
                     'status' => 0,
-                    'message' => translate('Payment_must_be_confirmed_first') . ' !!',
+                    'message' => translate('Payment_must_be_confirmed_first').' !!',
                 ]);
-            };
+            }
 
             if ($order_details_data->order->is_guest) {
                 $customer_email = $order_details_data->order->shipping_address_data ? $order_details_data->order->shipping_address_data->email : ($order_details_data->order->billing_address_data ? $order_details_data->order->billing_address_data->email : '');
@@ -767,19 +804,20 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                 $customer_phone = $order_details_data->order->shipping_address_data ? $order_details_data->order->shipping_address_data->phone : ($order_details_data->order->billing_address_data ? $order_details_data->order->billing_address_data->phone : '');
 
                 $customer_data = ['email' => $customer_email, 'phone' => $customer_phone];
+
                 return self::digital_product_download_process($order_details_data, $customer_data);
             } else {
                 if ($user != 'offline' && $user->id == $order_details_data->order->customer->id) {
                     $file_name = '';
                     if ($order_details_data->product->digital_product_type == 'ready_product' && $order_details_data->product->digital_file_ready) {
-                        $file_path = asset('storage/app/public/product/digital-product/' . $order_details_data->product->digital_file_ready);
+                        $file_path = asset('storage/app/public/product/digital-product/'.$order_details_data->product->digital_file_ready);
                         $file_name = $order_details_data->product->digital_file_ready;
                     } else {
-                        $file_path = asset('storage/app/public/product/digital-product/' . $order_details_data->digital_file_after_sell);
+                        $file_path = asset('storage/app/public/product/digital-product/'.$order_details_data->digital_file_after_sell);
                         $file_name = $order_details_data->digital_file_after_sell;
                     }
 
-                    if (File::exists(base_path('storage/app/public/product/digital-product/' . $file_name))) {
+                    if (File::exists(base_path('storage/app/public/product/digital-product/'.$file_name))) {
                         return \response()->download($file_path);
                     } else {
                         return response()->json([
@@ -789,6 +827,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                     }
                 } else {
                     $customer_data = ['email' => $order_details_data->order->customer->email ?? '', 'phone' => $order_details_data->order->customer->phone ?? ''];
+
                     return self::digital_product_download_process($order_details_data, $customer_data);
                 }
             }
@@ -824,10 +863,11 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
             }
 
             $verification_data = DigitalProductOtpVerification::where('identity', $customer['email'])->orWhere('identity', $customer['phone'])->where('order_details_id', $order_details_data->id)->latest()->first();
-            $otp_interval_time = getWebConfig(name: 'otp_resend_time') ?? 1; //second
+            $otp_interval_time = getWebConfig(name: 'otp_resend_time') ?? 1; // second
 
             if (isset($verification_data) && Carbon::parse($verification_data->created_at)->diffInSeconds() < $otp_interval_time) {
                 $time_count_in_second = $otp_interval_time - Carbon::parse($verification_data->created_at)->diffInSeconds();
+
                 return response()->json([
                     'status' => 0,
                     'email_config_status' => $emailServices_smtp['status'],
@@ -859,7 +899,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                             'userType' => 'customer',
                             'templateName' => 'digital-product-otp',
                             'subject' => translate('verification_Code'),
-                            'title' => translate('verification_Code') . '!',
+                            'title' => translate('verification_Code').'!',
                             'verificationCode' => $token,
                         ];
                         event(new DigitalProductOtpVerificationEvent(email: $customer['email'], data: $data));
@@ -870,7 +910,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
                 $response = SMSModule::sendCentralizedSMS($customer['phone'], $token);
 
-                $sms_status = ($response == "not_found" || $smsConfigStatus == 0) ? 0 : 1;
+                $sms_status = ($response == 'not_found' || $smsConfigStatus == 0) ? 0 : 1;
                 if ($mail_status || $sms_status) {
                     return response()->json([
                         'status' => 1,
@@ -911,19 +951,19 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         if ($verification) {
             if ($order_details_data) {
                 if ($order_details_data->product->digital_product_type == 'ready_product' && $order_details_data->product->digital_file_ready) {
-                    $file_path = storage_path('app/public/product/digital-product/' . $order_details_data->product->digital_file_ready);
+                    $file_path = storage_path('app/public/product/digital-product/'.$order_details_data->product->digital_file_ready);
                     $file_name = $order_details_data->product->digital_file_ready;
-                } else if ($order_details_data->digital_file_after_sell) {
-                    $file_path = storage_path('app/public/product/digital-product/' . $order_details_data->digital_file_after_sell);
+                } elseif ($order_details_data->digital_file_after_sell) {
+                    $file_path = storage_path('app/public/product/digital-product/'.$order_details_data->digital_file_after_sell);
                     $file_name = $order_details_data->digital_file_after_sell;
                 }
             }
 
-            if ($request->has('action') && $request->action == "download") {
+            if ($request->has('action') && $request->action == 'download') {
                 DigitalProductOtpVerification::where(['token' => $request->otp, 'order_details_id' => $request->order_details_id])->delete();
             }
 
-            if (isset($file_name) && File::exists(base_path('storage/app/public/product/digital-product/' . $file_name))) {
+            if (isset($file_name) && File::exists(base_path('storage/app/public/product/digital-product/'.$file_name))) {
                 return \response()->download($file_path);
             } else {
                 return response()->json([
@@ -942,14 +982,14 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
     public function digital_product_download_otp_resend(Request $request)
     {
         $token_info = DigitalProductOtpVerification::where(['order_details_id' => $request->order_details_id])->first();
-        $otp_interval_time = getWebConfig(name: 'otp_resend_time') ?? 1; //minute
+        $otp_interval_time = getWebConfig(name: 'otp_resend_time') ?? 1; // minute
         if (isset($token_info) && Carbon::parse($token_info->created_at)->diffInSeconds() < $otp_interval_time) {
             $time_count_in_second = $otp_interval_time - Carbon::parse($token_info->created_at)->diffInSeconds();
 
             return response()->json([
                 'status' => 0,
                 'time_count_in_second' => $time_count_in_second,
-                'message' => 'Please try again after ' . CarbonInterval::seconds($time_count_in_second)->cascade()->forHumans()
+                'message' => 'Please try again after '.CarbonInterval::seconds($time_count_in_second)->cascade()->forHumans(),
             ]);
         } else {
             $guest_email = '';
@@ -983,7 +1023,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                         'userType' => 'customer',
                         'templateName' => 'digital-product-otp',
                         'subject' => translate('verification_Code'),
-                        'title' => translate('verification_Code') . '!',
+                        'title' => translate('verification_Code').'!',
                         'verificationCode' => $token,
                     ];
                     event(new DigitalProductOtpVerificationEvent(email: $guest_email, data: $data));
@@ -997,7 +1037,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
             $response = SMSModule::sendCentralizedSMS($guest_phone, $token);
 
-            $sms_status = $response == "not_found" ? 0 : 1;
+            $sms_status = $response == 'not_found' ? 0 : 1;
             if ($mail_status || $sms_status) {
                 $verify_data = [
                     'order_details_id' => $order_details_data->id,
@@ -1030,17 +1070,18 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
         if ($order_product_count == $add_to_cart_count) {
             return response()->json(['message' => 'Added to cart successfully'], 200);
         } elseif ($add_to_cart_count > 0) {
-            return response()->json(['message' => $add_to_cart_count . ' item added to cart successfully!'], 200);
+            return response()->json(['message' => $add_to_cart_count.' item added to cart successfully!'], 200);
 
         }
-        {
-            return response()->json(['message' => 'All items were not added to cart as they are currently unavailable for purchase'], 403);
-        }
+
+        return response()->json(['message' => 'All items were not added to cart as they are currently unavailable for purchase'], 403);
+
     }
 
     public function offline_payment_method_list(Request $request): JsonResponse
     {
         $data = OfflinePaymentMethod::where('status', 1)->get();
+
         return response()->json(['offline_methods' => $data], 200);
     }
 
@@ -1055,7 +1096,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                     $query->where('phone', $request['phone_number']);
                 })->first();
 
-                if (!$orderDetails) {
+                if (! $orderDetails) {
                     $orderDetails = Order::where(['id' => $request['order_id'], 'order_type' => 'default_type'])->whereHas('billingAddress', function ($query) use ($request) {
                         $query->where('phone', $request['phone_number']);
                     })->first();
@@ -1082,7 +1123,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                     $query->where('phone', $request['phone_number']);
                 })->first();
 
-                if (!$orderDetails) {
+                if (! $orderDetails) {
                     $orderDetails = Order::where(['id' => $request['order_id'], 'order_type' => 'default_type'])->whereHas('billingAddress', function ($query) use ($request) {
                         $query->where('phone', $request['phone_number']);
                     })->first();
@@ -1109,6 +1150,7 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
                     $product['digital_file_ready_full_url'] = $checkFilePath;
                 }
                 $query['product_details'] = Helpers::product_data_formatting($product);
+
                 return $query;
             });
 
@@ -1117,89 +1159,91 @@ $order->order_note = ($request['order_note'] != null) ? $request['order_note'] :
 
         return response()->json(['message' => 'Invalid Order Id or Phone Number'], 403);
     }
-     
+
     public function getPickupBranches(Request $request): JsonResponse
-{
-    try {
-        // Check if Branch model exists
-        if (!class_exists('App\Models\Branch')) {
-            \Log::error('Branch model class not found');
-            return response()->json([
-                'success' => false,
-                'message' => 'Branch model not found',
-                'class_exists' => false
-            ], 500);
-        }
-        
-        // Try raw query first to check connection
-        $rawQuery = \DB::table('branches')->where('status', 'active')->count();
-        \Log::info('Raw query count:', ['count' => $rawQuery]);
-        
-        // Use model with CORRECT column names
-        $branches = Branch::where('status', 'active')
-            ->when($request->has('exclude_main'), function ($query) {
-                $query->where('id', '!=', 1);
-            })
-            // FIXED: Use correct column names from your model
-            ->select([
-                'id', 
-                'branch_name', 
-                'branch_address', 
-                'phone', 
-                'email', 
-                'branch_latitude',  // Changed from 'latitude'
-                'branch_longitude'  // Changed from 'longitude'
-            ])
-            ->get();
-            
-        // Transform the data to match expected frontend format
-        $formattedBranches = $branches->map(function ($branch) {
-            return [
-                'id' => $branch->id,
-                'branch_name' => $branch->branch_name,
-                'branch_address' => $branch->branch_address,
-                'phone' => $branch->phone,
-                'email' => $branch->email,
-                'latitude' => $branch->branch_latitude,    // Map to frontend expected key
-                'longitude' => $branch->branch_longitude,  // Map to frontend expected key
-            ];
-        });
-            
-        // Check if collection is empty
-        if ($formattedBranches->isEmpty()) {
-            \Log::warning('No active branches found in database');
+    {
+        try {
+            // Check if Branch model exists
+            if (! class_exists('App\Models\Branch')) {
+                \Log::error('Branch model class not found');
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Branch model not found',
+                    'class_exists' => false,
+                ], 500);
+            }
+
+            // Try raw query first to check connection
+            $rawQuery = \DB::table('branches')->where('status', 'active')->count();
+            \Log::info('Raw query count:', ['count' => $rawQuery]);
+
+            // Use model with CORRECT column names
+            $branches = Branch::where('status', 'active')
+                ->when($request->has('exclude_main'), function ($query) {
+                    $query->where('id', '!=', 1);
+                })
+                // FIXED: Use correct column names from your model
+                ->select([
+                    'id',
+                    'branch_name',
+                    'branch_address',
+                    'phone',
+                    'email',
+                    'branch_latitude',  // Changed from 'latitude'
+                    'branch_longitude',  // Changed from 'longitude'
+                ])
+                ->get();
+
+            // Transform the data to match expected frontend format
+            $formattedBranches = $branches->map(function ($branch) {
+                return [
+                    'id' => $branch->id,
+                    'branch_name' => $branch->branch_name,
+                    'branch_address' => $branch->branch_address,
+                    'phone' => $branch->phone,
+                    'email' => $branch->email,
+                    'latitude' => $branch->branch_latitude,    // Map to frontend expected key
+                    'longitude' => $branch->branch_longitude,  // Map to frontend expected key
+                ];
+            });
+
+            // Check if collection is empty
+            if ($formattedBranches->isEmpty()) {
+                \Log::warning('No active branches found in database');
+
+                return response()->json([
+                    'success' => true,
+                    'branches' => [],
+                    'count' => 0,
+                    'message' => 'No active branches available',
+                ], 200);
+            }
+
+            \Log::info('Branches retrieved successfully', [
+                'count' => $formattedBranches->count(),
+                'first_branch' => $formattedBranches->first(),
+            ]);
+
             return response()->json([
                 'success' => true,
-                'branches' => [],
-                'count' => 0,
-                'message' => 'No active branches available'
+                'branches' => $formattedBranches,
+                'count' => $formattedBranches->count(),
+                'table_exists' => \Schema::hasTable('branches'),
             ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to fetch branches: '.$e->getMessage());
+            \Log::error('File: '.$e->getFile());
+            \Log::error('Line: '.$e->getLine());
+            \Log::error('Full trace: '.$e->getTraceAsString());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch branches',
+                'error' => $e->getMessage(),
+                'error_type' => get_class($e),
+            ], 500);
         }
-        
-        \Log::info('Branches retrieved successfully', [
-            'count' => $formattedBranches->count(),
-            'first_branch' => $formattedBranches->first()
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'branches' => $formattedBranches,
-            'count' => $formattedBranches->count(),
-            'table_exists' => \Schema::hasTable('branches')
-        ], 200);
-        
-    } catch (\Exception $e) {
-        \Log::error('Failed to fetch branches: ' . $e->getMessage());
-        \Log::error('File: ' . $e->getFile());
-        \Log::error('Line: ' . $e->getLine());
-        \Log::error('Full trace: ' . $e->getTraceAsString());
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to fetch branches',
-            'error' => $e->getMessage(),
-            'error_type' => get_class($e)
-        ], 500);
     }
-}
 }

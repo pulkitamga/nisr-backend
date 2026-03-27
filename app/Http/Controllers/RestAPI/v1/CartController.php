@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\State;
 use App\Models\City;
 use App\Models\Cart;
+use App\Models\CartShipping;
 use App\Models\Color;
 use App\Models\Order;
 use App\Models\Product;
@@ -568,11 +569,50 @@ class CartController extends Controller
 
     public function updateCheckedCartItems(Request $request): JsonResponse
     {
-        if ($request['action'] == 'unchecked') {
-            Cart::whereIn('id', $request['ids'])->update(['is_checked' => 0]);
-        } elseif ($request['action'] == 'checked') {
-            Cart::whereIn('id', $request['ids'])->update(['is_checked' => 1]);
+        $user = Helpers::getCustomerInformation($request);
+        $customerId = $user == 'offline' ? ($request->guest_id ?? session('guest_id')) : $user->id;
+        $isGuest = $user == 'offline' ? 1 : 0;
+        $ids = collect($request->input('ids', []))
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int)$id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($customerId) || empty($ids)) {
+            return response()->json(translate('Successfully_Update'), 200);
         }
+
+        $cartQuery = Cart::where([
+            'customer_id' => $customerId,
+            'is_guest' => $isGuest,
+        ])->whereIn('id', $ids);
+
+        if ($request['action'] == 'unchecked') {
+            $cartQuery->update(['is_checked' => 0]);
+        } elseif ($request['action'] == 'checked') {
+            $cartQuery->update(['is_checked' => 1]);
+        }
+
+        $allCartGroupIds = Cart::where([
+            'customer_id' => $customerId,
+            'is_guest' => $isGuest,
+        ])->pluck('cart_group_id')->unique()->values();
+
+        $checkedCartGroupIds = Cart::where([
+            'customer_id' => $customerId,
+            'is_guest' => $isGuest,
+            'is_checked' => 1,
+        ])->pluck('cart_group_id')->unique()->values();
+
+        if ($allCartGroupIds->count() > 0) {
+            $deleteShippingQuery = CartShipping::whereIn('cart_group_id', $allCartGroupIds->toArray());
+            if ($checkedCartGroupIds->count() > 0) {
+                $deleteShippingQuery->whereNotIn('cart_group_id', $checkedCartGroupIds->toArray());
+            }
+            $deleteShippingQuery->delete();
+        }
+
         return response()->json(translate('Successfully_Update'), 200);
     }
 
