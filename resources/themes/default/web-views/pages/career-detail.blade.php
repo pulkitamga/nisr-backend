@@ -58,11 +58,11 @@
                 <div class="card-body">
                     <p><strong>{{ translate('Location') }}:</strong> {{ getTranslatedValue($job, 'location', $job->location ?? '') }}</p>
                     <p><strong>{{ translate('Experience') }}:</strong> {{ getTranslatedValue($job, 'experience', $job->experience ?? '') }}</p>
-                    <p><strong>{{ translate('Skills') }}:</strong> {!! getTranslatedValue($job, 'skills', $job->skills ?? '') !!}</p>
+                    <p><strong>{{ translate('Skills') }}:</strong> {{ \App\Support\CmsContentSanitizer::sanitizePlainText(getTranslatedValue($job, 'skills', $job->skills ?? '')) }}</p>
                 </div>
                 <div class="card-footer">
                     <h5 class="mb-2">{{ translate('Job_Description') }}</h5>
-                    {!! getTranslatedValue($job, 'job_description', $job->job_description ?? '') !!}
+                    {!! \App\Support\CmsContentSanitizer::sanitizeRichText(getTranslatedValue($job, 'job_description', $job->job_description ?? '')) !!}
                     <button class="btn btn--primary" data-toggle="modal" data-target="#exampleModal">{{ __('Apply Now') }}</button>
                 </div>
             </div>

@@ -386,7 +386,7 @@ Route::group(['middleware' => ['maintenance_mode']], function () {
             Route::post('add', 'addToCart')->name('add');
             Route::post('update-variation', 'update_variation')->name('update-variation'); //theme fashion
             Route::post('remove', 'removeFromCart')->name('remove');
-            Route::get('remove-all', 'remove_all_cart')->name('remove-all'); //theme fashion
+            Route::post('remove-all', 'remove_all_cart')->name('remove-all'); //theme fashion
             Route::post('nav-cart-items', 'updateNavCart')->name('nav-cart');
             Route::post('floating-nav-cart-items', 'update_floating_nav')->name('floating-nav-cart-items'); // theme fashion floating nav
             Route::post('updateQuantity', 'updateQuantity')->name('updateQuantity');

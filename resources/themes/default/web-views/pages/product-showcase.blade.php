@@ -198,7 +198,7 @@ if ($total > 0 && $total < $minSlidesNeeded) {
                                 </div>
                                 <p class="sec-text">{{ getTranslatedValue($productSlide, 'description', $productSlide->description) }}</p>
                                 <div class="feature-action text-start mt-4">
-                                    <a href="{{ $productSlide->button_link ?? '' }}"
+                                    <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($productSlide->button_link ?? '') ?: '#' }}"
                                         class="th-btn text-decoration-none"> {{translate('Request_Service') }}</a>
                                 </div>
                             </div>
@@ -223,7 +223,7 @@ if ($total > 0 && $total < $minSlidesNeeded) {
                                 </div>
                                 <p class="sec-text  mt-lg-2">{{ getTranslatedValue($productSlide, 'description', $productSlide->description) }}</p>
                                 <div class="feature-action text-start mt-4">
-                                    <a href="{{ $productSlide->button_link ?? '' }}"
+                                    <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($productSlide->button_link ?? '') ?: '#' }}"
                                         class="th-btn text-decoration-none"> {{translate('Request_Service') }}
                                     </a>
                                 </div>
@@ -261,7 +261,7 @@ if ($total > 0 && $total < $minSlidesNeeded) {
                                 </div>
                                 <p class="sec-text  mt-lg-2">{{ getTranslatedValue($productSlide, 'description', $productSlide->description) }}</p>
                                 <div class="feature-action text-start mt-4">
-                                    <a href="{{ $productSlide->button_link ?? '' }}"
+                                    <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($productSlide->button_link ?? '') ?: '#' }}"
                                         class="th-btn text-decoration-none"> {{translate('Request_Service') }}</a>
                                 </div>
                             </div>

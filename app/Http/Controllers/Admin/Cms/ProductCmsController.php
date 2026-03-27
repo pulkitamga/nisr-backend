@@ -7,6 +7,7 @@ use App\Models\CmsProduct;
 use Illuminate\Http\Request;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Support\CmsContentSanitizer;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -58,12 +59,28 @@ class ProductCmsController extends Controller
             'description.*' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
             'lang' => 'required|array',
-            'button_link' => 'required',
+            'button_link' => [
+                'required',
+                'string',
+                'max:500',
+                static function ($attribute, $value, $fail) {
+                    if (CmsContentSanitizer::sanitizeLink($value) === '') {
+                        $fail(translate('invalid_URL'));
+                    }
+                },
+            ],
 
 
         ]);
 
         $cmsProduct = CmsProduct::findOrFail($id);
+        $sanitizedDescriptions = CmsContentSanitizer::sanitizeRichTextArray($request->input('description', []));
+        $sanitizedButtonLink = CmsContentSanitizer::sanitizeLink($request->button_link);
+
+        $request->merge([
+            'description' => $sanitizedDescriptions,
+            'button_link' => $sanitizedButtonLink,
+        ]);
 
         $defaultLangIndex = array_search('en', $request->lang);
         if ($defaultLangIndex !== false) {
@@ -110,7 +127,7 @@ class ProductCmsController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Product Section status updated successfully!',
-            'new_status' => $product->status
+            'new_status' => $product->is_active
         ]);
     }
 }

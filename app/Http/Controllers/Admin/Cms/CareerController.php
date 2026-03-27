@@ -10,6 +10,7 @@ use App\Models\CareerSection;
 use App\Models\CareerBenefits;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Support\CmsContentSanitizer;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -72,7 +73,26 @@ class CareerController extends Controller
 
     public function store(Request $request, $section)
     {
+        $sanitizedInput = [];
 
+        foreach ([
+            'title' => 'sanitizePlainTextArray',
+            'location' => 'sanitizePlainTextArray',
+            'skills' => 'sanitizePlainTextArray',
+            'description' => 'sanitizeRichTextArray',
+            'job_description' => 'sanitizeRichTextArray',
+            'buttonText' => 'sanitizePlainTextArray',
+        ] as $field => $method) {
+            if ($request->has($field)) {
+                $sanitizedInput[$field] = CmsContentSanitizer::$method($request->input($field, []));
+            }
+        }
+
+        if ($request->has('button_link')) {
+            $sanitizedInput['button_link'] = CmsContentSanitizer::sanitizeLink($request->input('button_link'));
+        }
+
+        $request->merge($sanitizedInput);
 
         $modelMap = [
             'current_openings' => CareerJob::class,
@@ -173,7 +193,27 @@ class CareerController extends Controller
 
     public function update(Request $request, $section, $id)
     {
+        $sanitizedInput = [];
 
+        foreach ([
+            'name' => 'sanitizePlainTextArray',
+            'title' => 'sanitizePlainTextArray',
+            'location' => 'sanitizePlainTextArray',
+            'skills' => 'sanitizePlainTextArray',
+            'description' => 'sanitizeRichTextArray',
+            'job_description' => 'sanitizeRichTextArray',
+            'buttonText' => 'sanitizePlainTextArray',
+        ] as $field => $method) {
+            if ($request->has($field)) {
+                $sanitizedInput[$field] = CmsContentSanitizer::$method($request->input($field, []));
+            }
+        }
+
+        if ($request->has('button_link')) {
+            $sanitizedInput['button_link'] = CmsContentSanitizer::sanitizeLink($request->input('button_link'));
+        }
+
+        $request->merge($sanitizedInput);
 
         $modelMap = [
             'current_openings' => CareerJob::class,

@@ -73,7 +73,7 @@
         </h2>
         <div class="col-lg-10 mx-auto">
             <p class="text-muted fs-5">
-                {!! getTranslatedValue($whoWeAre, 'content', $whoWeAre->content) !!}
+                {!! \App\Support\CmsContentSanitizer::sanitizeRichText(getTranslatedValue($whoWeAre, 'content', $whoWeAre->content)) !!}
             </p>
         </div>
     </div>
@@ -130,7 +130,7 @@
                     {{ getTranslatedValue($mission, 'title', $mission->title) }}
                 </h2>
                 <p class="fs-5 text-muted">
-                    {!! getTranslatedValue($mission, 'content', $mission->content) !!}
+                    {!! \App\Support\CmsContentSanitizer::sanitizeRichText(getTranslatedValue($mission, 'content', $mission->content)) !!}
                 </p>
             </div>
         </div>

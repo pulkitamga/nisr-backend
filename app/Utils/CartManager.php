@@ -18,11 +18,34 @@ use App\Models\ShippingType;
 use App\Models\Shop;
 use App\Models\ManageBranchProductStock;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CartManager
 {
+    public static function resolveCartOwnerContext($request = null): array
+    {
+        $user = Helpers::getCustomerInformation($request);
+        $guestId = session('guest_id') ?? ($request->guest_id ?? 0);
+
+        return [
+            'user' => $user,
+            'customer_id' => $user == 'offline' ? (int)$guestId : (int)$user->id,
+            'is_guest' => $user == 'offline' ? 1 : 0,
+        ];
+    }
+
+    public static function getOwnedCartQuery($request = null)
+    {
+        $context = self::resolveCartOwnerContext($request);
+
+        return Cart::query()->where([
+            'customer_id' => $context['customer_id'],
+            'is_guest' => $context['is_guest'],
+        ]);
+    }
+
     public static function cartListSessionToDatabase($request = null): void
     {
         $user = Helpers::getCustomerInformation($request);
@@ -1035,14 +1058,17 @@ class CartManager
 
     public static function update_cart_qty($request): array
     {
-        $user = Helpers::getCustomerInformation($request);
-        $guest_id = session('guest_id') ?? ($request->guest_id ?? 0);
-        $status = 1;
-        $qty = 0;
-        $requestedQuantity = (int)$request->quantity;
-        $cart = Cart::where(['id' => $request->key, 'customer_id' => ($user == 'offline' ? $guest_id : $user->id)])->first();
+        $requestedQuantity = filter_var($request->quantity, FILTER_VALIDATE_INT);
+        if ($requestedQuantity === false || $requestedQuantity < 1) {
+            return [
+                'status' => 0,
+                'qty' => $request['quantity'],
+                'message' => translate('product_quantity_can_not_be_zero_or_less_than_zero_in_cart'),
+            ];
+        }
 
-        if (!$cart) {
+        $context = self::resolveCartOwnerContext($request);
+        if ($context['customer_id'] < 1) {
             return [
                 'status' => 0,
                 'qty' => $request['quantity'],
@@ -1050,98 +1076,117 @@ class CartManager
             ];
         }
 
-        $product = Product::find($cart['product_id']);
-        $count = count(json_decode($product->variation));
-        /* if ($count) {
-            for ($i = 0; $i < $count; $i++) {
-                if (json_decode($product->variation)[$i]->type == $cart['variant']) {
-                    if (json_decode($product->variation)[$i]->qty < $request->quantity) {
-                        $status = 0;
-                        $qty = $cart['quantity'];
-                    }
-                }
+        return DB::transaction(function () use ($request, $context, $requestedQuantity) {
+            $cart = self::getOwnedCartQuery($request)
+                ->where('id', $request->key)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$cart) {
+                return [
+                    'status' => 0,
+                    'qty' => $request['quantity'],
+                    'message' => translate('Product_not_found_in_cart'),
+                ];
             }
-        } else if (($product['product_type'] == 'physical') && $product['current_stock'] < $request->quantity) {
-            $status = 0;
-            $qty = $cart['quantity'];
-        }*/
 
-        if ($requestedQuantity < 1) {
-            return [
-                'status' => 0,
-                'qty' => $cart['quantity'],
-                'message' => translate('product_quantity_can_not_be_zero_or_less_than_zero_in_cart'),
-            ];
-        }
+            $product = Product::query()->lockForUpdate()->find($cart['product_id']);
+            if (!$product) {
+                return [
+                    'status' => 0,
+                    'qty' => $cart['quantity'],
+                    'message' => translate('Product_not_found_in_cart'),
+                ];
+            }
 
-        // Prevent updating product qty below existing exchange qty.
-        if ((int)($cart['exchange_qty'] ?? 0) > $requestedQuantity) {
-            return [
-                'status' => 0,
-                'qty' => $cart['quantity'],
-                'message' => translate('Exchange qty cannot exceed product quantity.'),
-            ];
-        }
+            if ((int)($cart['exchange_qty'] ?? 0) > $requestedQuantity) {
+                return [
+                    'status' => 0,
+                    'qty' => $cart['quantity'],
+                    'message' => translate('Exchange qty cannot exceed product quantity.'),
+                ];
+            }
 
-        if ($status) {
-            $qty = $requestedQuantity;
+            if (
+                $product->product_type === 'physical'
+                && (int)getWebConfig(name: 'stock_check') === 1
+                && self::getAvailableCartStock($product, (string)($cart['variant'] ?? '')) < $requestedQuantity
+            ) {
+                return [
+                    'status' => 0,
+                    'qty' => $cart['quantity'],
+                    'message' => translate('sorry_stock_is_limited'),
+                ];
+            }
+
             $cart['quantity'] = $requestedQuantity;
-            $cart['shipping_cost'] = $product->product_type == 'physical' ? CartManager::get_shipping_cost_for_product_category_wise($product, $requestedQuantity) : 0;
-        }
+            $cart['shipping_cost'] = $product->product_type == 'physical'
+                ? CartManager::get_shipping_cost_for_product_category_wise($product, $requestedQuantity)
+                : 0;
+            $cart->save();
 
-        $cart->save();
+            if ((int)($request['buy_now'] ?? 0) === 1) {
+                self::getOwnedCartQuery($request)->update(['is_checked' => 0]);
+                self::getOwnedCartQuery($request)
+                    ->where('id', $cart->id)
+                    ->update(['is_checked' => 1]);
+            }
 
-        if ($request['buy_now'] == 1) {
-            Cart::where(['customer_id' => ($user == 'offline' ? $guest_id : $user->id), 'is_guest' => ($user == 'offline' ? 1 : 0)])
-                ->update(['is_checked' => 0]);
-            Cart::where(['id' => $request->key, 'customer_id' => ($user == 'offline' ? $guest_id : $user->id)])->update(['is_checked' => 1]);
-        }
-
-        return [
-            'status' => $status,
-            'qty' => $qty,
-            'message' => $status == 1 ? translate('successfully_updated!') : translate('sorry_stock_is_limited')
-        ];
+            return [
+                'status' => 1,
+                'qty' => $requestedQuantity,
+                'message' => translate('successfully_updated!'),
+            ];
+        });
     }
 
     public static function update_installtion_charges($request): array
     {
+        $charges = is_numeric($request->charges ?? null) ? (float)$request->charges : null;
+        if ($charges === null || $charges < 0) {
+            return [
+                'status' => 0,
+                'charges' => $request['charges'],
+                'message' => translate('installtion_charges_not_updated'),
+            ];
+        }
 
-        $user = Helpers::getCustomerInformation($request);
-        $guest_id = session('guest_id') ?? ($request->guest_id ?? 0);
-        $status = 1;
-        $installtion_charge = 0;
-        $cart = Cart::where(['id' => $request->cart_id, 'customer_id' => ($user == 'offline' ? $guest_id : $user->id)])->first();
+        $cart = self::getOwnedCartQuery($request)
+            ->where('id', $request->cart_id)
+            ->first();
 
         if (!$cart) {
             return [
                 'status' => 0,
-                'installtion_charge' => $request['charges'],
+                'charges' => $request['charges'],
                 'message' => translate('Product_not_found_in_cart'),
             ];
         }
 
-        if ($status) {
-            $charges = $request->charges;
-            $cart['installtion_charges'] = $request->charges;
+        $maxAllowedCharges = max(0, ((float)$cart['price']) * ((int)$cart['quantity']));
+        if ($charges > $maxAllowedCharges) {
+            return [
+                'status' => 0,
+                'charges' => $cart['installtion_charges'],
+                'message' => translate('installation_charges_can_not_exceed_product_total'),
+            ];
         }
 
+        $cart['installtion_charges'] = $charges;
         $cart->save();
+
         return [
-            'status' => $status,
+            'status' => 1,
             'charges' => $charges,
-            'message' => $status == 1 ? translate('successfully_updated!') : translate('installtion_charges_not_updated')
+            'message' => translate('successfully_updated!'),
         ];
     }
 
     public static function update_exchange_charges($request): array
     {
-        $user = Helpers::getCustomerInformation($request);
-        $guest_id = session('guest_id') ?? ($request->guest_id ?? 0);
-        $status = 1;
-        $qty = 0;
-        $charges = 0;
-        $cart = Cart::where(['id' => $request->cart_id, 'customer_id' => ($user == 'offline' ? $guest_id : $user->id)])->first();
+        $cart = self::getOwnedCartQuery($request)
+            ->where('id', $request->cart_id)
+            ->first();
 
         if (!$cart) {
             return [
@@ -1155,6 +1200,7 @@ class CartManager
         $requestedQty = (int)$request->qty;
         $requestedCharges = max(0, (float)$request->charges);
         $productQty = max(0, (int)$cart['quantity']);
+        $maxAllowedCharges = max(0, ((float)$cart['price']) * $productQty);
 
         if ($requestedQty < 0) {
             return [
@@ -1183,6 +1229,15 @@ class CartManager
             ];
         }
 
+        if ($requestedCharges > $maxAllowedCharges) {
+            return [
+                'status' => 0,
+                'qty' => $cart['exchange_qty'],
+                'charges' => $cart['exchange_charges'],
+                'message' => translate('exchange_charges_can_not_exceed_product_total'),
+            ];
+        }
+
         $qty = max(0, $requestedQty);
         $charges = $qty > 0 ? $requestedCharges : 0;
         $cart['exchange_charges'] = $charges;
@@ -1195,6 +1250,25 @@ class CartManager
             'qty' => $qty,
             'message' => translate('successfully_updated!')
         ];
+    }
+
+    private static function getAvailableCartStock(Product $product, string $variant): int
+    {
+        $availableStock = max(0, (int)($product->current_stock ?? 0));
+        $variant = trim($variant);
+
+        if ($variant === '' || empty($product->variation)) {
+            return $availableStock;
+        }
+
+        $variantMatcher = new VariantMatcher();
+        foreach (json_decode($product->variation ?? '[]') as $variation) {
+            if ($variantMatcher->matches($variation->type ?? null, $variant)) {
+                return max(0, (int)($variation->qty ?? 0));
+            }
+        }
+
+        return $availableStock;
     }
 
     public static function get_shipping_cost_for_product_category_wise($product, $qty)

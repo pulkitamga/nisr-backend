@@ -7,6 +7,7 @@ use App\Models\CmsService;
 use Illuminate\Http\Request;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Support\CmsContentSanitizer;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -51,12 +52,28 @@ class ServiceCmsController extends Controller
             'heading.*' => 'nullable|string|max:255',
             'description' => 'required|array',
             'description.*' => 'nullable|string',
-            'button_link' => 'required',
+            'button_link' => [
+                'required',
+                'string',
+                'max:500',
+                static function ($attribute, $value, $fail) {
+                    if (CmsContentSanitizer::sanitizeLink($value) === '') {
+                        $fail(translate('invalid_URL'));
+                    }
+                },
+            ],
             'image' => 'nullable|image',
             'lang' => 'required|array'
         ]);
 
         $cmsProduct = CmsService::findOrFail($id);
+        $sanitizedDescriptions = CmsContentSanitizer::sanitizeRichTextArray($request->input('description', []));
+        $sanitizedButtonLink = CmsContentSanitizer::sanitizeLink($request->button_link);
+
+        $request->merge([
+            'description' => $sanitizedDescriptions,
+            'button_link' => $sanitizedButtonLink,
+        ]);
 
         $defaultLangIndex = array_search('en', $request->lang);
         if ($defaultLangIndex !== false) {
@@ -103,7 +120,7 @@ class ServiceCmsController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Service Section status updated successfully!',
-            'new_status' => $product->status
+            'new_status' => $product->is_active
         ]);
     }
 }

@@ -55,7 +55,7 @@ $direction = Session::get('direction');
                         <div class="col-lg-6">
                             <h1 class="h3 h1-md fw-bold mb-3 text-white banner-head">{{ $banner['heading'] }}</h1>
                             <p class="lead mb-4 banner-p">{{ $banner['paragraph'] }}</p>
-                            <a href="{{ $banner['buttonLink'] }}" class="btn btn-primary rounded-pill px-4 py-2">
+                            <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($banner['buttonLink'] ?? '') ?: '#' }}" class="btn btn-primary rounded-pill px-4 py-2">
                                 {{ $banner['buttonText'] }}
                             </a>
                         </div>
@@ -527,7 +527,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                             <p class="mb-4">
                                 {{ $data['description'] }}
                             </p>
-                            <a href="{{$data['button']['link']}}" class="btn btn-light px-4 rounded-pill fw-semibold">
+                            <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($data['button']['link'] ?? '') ?: '#' }}" class="btn btn-light px-4 rounded-pill fw-semibold">
                                 {{ $buttonText}}
                             </a>
                         </div>

@@ -100,7 +100,7 @@
                                  src="{{ getStorageImages(path: $blogData['thumbnail_full_url'] ?? null, type:'wide-banner') }}"
                                  alt="{{ $blogData['title'] ?? null }}">
                             <div>
-                                {!! $updatedDescription !!}
+                                {!! \App\Support\CmsContentSanitizer::sanitizeRichText($updatedDescription) !!}
                             </div>
                         </div>
                     </div>

@@ -12320,4 +12320,6 @@ return [
 	"stock_rejected_and_recorded_successfully" => "تم رفض المخزون وتسجيله بنجاح.",
 	"you_are_not_authorized_to_export_this_branch_data" => "غير مصرح لك بتصدير بيانات هذا الفرع.",
 	"you_are_not_authorized_to_view_this_vendor" => "غير مصرح لك بعرض هذا المورد.",
+	"installation_charges_can_not_exceed_product_total" => "لا يمكن أن تتجاوز رسوم التركيب إجمالي المنتج.",
+	"exchange_charges_can_not_exceed_product_total" => "لا يمكن أن يتجاوز خصم الاستبدال إجمالي المنتج.",
 ];

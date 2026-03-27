@@ -12817,4 +12817,6 @@ return [
 	"stock_rejected_and_recorded_successfully" => "Stock rejected and recorded successfully.",
 	"you_are_not_authorized_to_export_this_branch_data" => "You are not authorized to export this branch data.",
 	"you_are_not_authorized_to_view_this_vendor" => "You are not authorized to view this vendor.",
+	"installation_charges_can_not_exceed_product_total" => "Installation charges cannot exceed the product total.",
+	"exchange_charges_can_not_exceed_product_total" => "Replacement discount cannot exceed the product total.",
 ];

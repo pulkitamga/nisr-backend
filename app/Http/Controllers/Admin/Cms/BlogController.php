@@ -9,6 +9,7 @@ use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Support\CmsContentSanitizer;
 use App\Utils\ImageManager;
 
 class BlogController extends Controller
@@ -27,14 +28,20 @@ class BlogController extends Controller
 
     public function index(Request $request)
     {
+        $request->validate([
+            'search' => 'nullable|string|max:255',
+            'category' => 'nullable|string',
+        ]);
+
         // Fetching blog posts with search and filter functionality
         $query = Blog::query();
 
         // Apply search filter (by heading or description)
         if ($request->has('search') && $request->search != '') {
-            $query->where(function ($q) use ($request) {
-                $q->where('heading', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+            $searchTerm = addcslashes($request->search, '\\%_');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('heading', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
             });
         }
 
@@ -79,6 +86,10 @@ class BlogController extends Controller
             'lang.*' => 'required|string',
         ]);
 
+        $sanitizedDescriptions = CmsContentSanitizer::sanitizeRichTextArray($request->input('description', []));
+        $request->merge([
+            'description' => $sanitizedDescriptions,
+        ]);
 
         $imageName = ImageManager::upload('blog/', 'webp', $request->file('image'));
         $imagePath = 'blog/' . $imageName;
@@ -149,10 +160,15 @@ class BlogController extends Controller
             'lang' => 'required|array'
         ]);
 
+        $sanitizedDescriptions = CmsContentSanitizer::sanitizeRichTextArray($request->input('description', []));
+        $request->merge([
+            'description' => $sanitizedDescriptions,
+        ]);
+
         $blog = Blog::findOrFail($id);
 
         // Set default language fields to blog model
-        $defaultLangIndex = array_search('en', $request->lang); // 'en' is default
+        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
         if ($defaultLangIndex !== false) {
             $blog->heading = $request->heading[$defaultLangIndex];
             $blog->description = $request->description[$defaultLangIndex];

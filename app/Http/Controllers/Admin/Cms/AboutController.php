@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Support\CmsContentSanitizer;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -74,6 +75,24 @@ class AboutController extends Controller
 
     public function store(Request $request, $section)
     {
+        $sanitizedInput = [];
+
+        foreach ([
+            'heading' => 'sanitizePlainTextArray',
+            'subheading' => 'sanitizePlainTextArray',
+            'title' => 'sanitizePlainTextArray',
+            'content' => 'sanitizeRichTextArray',
+            'description' => 'sanitizeRichTextArray',
+            'dealer_name' => 'sanitizePlainTextArray',
+            'location' => 'sanitizePlainTextArray',
+        ] as $field => $method) {
+            if ($request->has($field)) {
+                $sanitizedInput[$field] = CmsContentSanitizer::$method($request->input($field, []));
+            }
+        }
+
+        $request->merge($sanitizedInput);
+
         $modelMap = [
             'hero' => AboutHeroSection::class,
             'who_we_are' => AboutWhoWeAreSection::class,
@@ -162,6 +181,23 @@ class AboutController extends Controller
 
     public function update(Request $request, $section, $id)
     {
+        $sanitizedInput = [];
+
+        foreach ([
+            'heading' => 'sanitizePlainTextArray',
+            'subheading' => 'sanitizePlainTextArray',
+            'title' => 'sanitizePlainTextArray',
+            'content' => 'sanitizeRichTextArray',
+            'description' => 'sanitizeRichTextArray',
+            'dealer_name' => 'sanitizePlainTextArray',
+            'location' => 'sanitizePlainTextArray',
+        ] as $field => $method) {
+            if ($request->has($field)) {
+                $sanitizedInput[$field] = CmsContentSanitizer::$method($request->input($field, []));
+            }
+        }
+
+        $request->merge($sanitizedInput);
 
         $modelMap = [
             'hero' => AboutHeroSection::class,

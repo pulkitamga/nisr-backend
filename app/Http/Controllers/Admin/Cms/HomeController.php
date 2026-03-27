@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Cms;
 use App\Http\Controllers\Controller;
 use App\Models\HomePageSection;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
+use App\Support\CmsContentSanitizer;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
@@ -47,7 +48,7 @@ class HomeController extends Controller
         }
 
         $candidatePath = ltrim((string)$candidatePath, '/');
-        if ($candidatePath === '') {
+        if ($candidatePath === '' || str_contains($candidatePath, '..')) {
             return;
         }
 
@@ -74,8 +75,16 @@ class HomeController extends Controller
 
         foreach (array_unique($publicCandidates) as $publicPath) {
             $absolutePath = public_path($publicPath);
-            if (file_exists($absolutePath)) {
-                @unlink($absolutePath);
+            $resolvedPath = realpath($absolutePath);
+            $publicRoot = realpath(public_path());
+
+            if (
+                $resolvedPath !== false
+                && $publicRoot !== false
+                && str_starts_with($resolvedPath, $publicRoot)
+                && file_exists($resolvedPath)
+            ) {
+                unlink($resolvedPath);
                 return;
             }
         }
@@ -473,7 +482,12 @@ class HomeController extends Controller
 
     public function updateWholesalerSection(Request $request)
     {
-
+        $request->merge([
+            'title' => CmsContentSanitizer::sanitizePlainTextArray($request->input('title', [])),
+            'description' => CmsContentSanitizer::sanitizeRichTextArray($request->input('description', [])),
+            'button_text' => CmsContentSanitizer::sanitizePlainTextArray($request->input('button_text', [])),
+            'button_link' => CmsContentSanitizer::sanitizeLink($request->input('button_link')),
+        ]);
 
         $section = HomePageSection::where('type', 'wholesaler_section')->first();
 
@@ -485,7 +499,16 @@ class HomeController extends Controller
             'title' => 'nullable|array|max:255',
             'description' => 'nullable|array',
             'button_text' => 'nullable|array|max:255',
-            'button_link' => 'nullable|string|max:500',
+            'button_link' => [
+                'nullable',
+                'string',
+                'max:500',
+                static function ($attribute, $value, $fail) {
+                    if ($value && CmsContentSanitizer::sanitizeLink($value) === '') {
+                        $fail(translate('invalid_URL'));
+                    }
+                },
+            ],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp',
         ]);
 
@@ -493,10 +516,9 @@ class HomeController extends Controller
         $data = $section->value ? json_decode($section->value, true) : [];
 
         $data['title'] = $validated['title'][$defaultLangIndex] ?? '';
-        $data['description'] = $validated['description'][$defaultLangIndex] ?? '';
-        $data['button']['text'] =   $validated['button_text'][$defaultLangIndex] ?? '';
-
-        $data['button']['link'] = $validated['button_link'] ?? '';
+        $data['description'] = CmsContentSanitizer::sanitizeRichText($validated['description'][$defaultLangIndex] ?? '');
+        $data['button']['text'] = CmsContentSanitizer::sanitizePlainText($validated['button_text'][$defaultLangIndex] ?? '');
+        $data['button']['link'] = CmsContentSanitizer::sanitizeLink($validated['button_link'] ?? '');
 
         if ($request->hasFile('image')) {
             $this->deleteImageIfExists($data['image'] ?? null);
@@ -593,8 +615,8 @@ class HomeController extends Controller
 
         $data = json_decode($section->value, true) ?? [];
         $data['faqs'][] = [
-            'question' => $request->question,
-            'answer' => $request->answer,
+            'question' => CmsContentSanitizer::sanitizePlainText($request->question),
+            'answer' => CmsContentSanitizer::sanitizeRichText($request->answer),
         ];
 
         $section->value = json_encode($data);
@@ -619,8 +641,8 @@ class HomeController extends Controller
             return response()->json(['error' => 'FAQ not found.'], 404);
         }
 
-        $data['faqs'][$request->index]['question'] = $request->question;
-        $data['faqs'][$request->index]['answer'] = $request->answer;
+        $data['faqs'][$request->index]['question'] = CmsContentSanitizer::sanitizePlainText($request->question);
+        $data['faqs'][$request->index]['answer'] = CmsContentSanitizer::sanitizeRichText($request->answer);
 
         $section->value = json_encode($data);
         $section->save();
@@ -893,11 +915,27 @@ class HomeController extends Controller
 
     public function storeBanner(Request $request)
     {
+        $request->merge([
+            'heading' => CmsContentSanitizer::sanitizePlainTextArray($request->input('heading', [])),
+            'paragraph' => CmsContentSanitizer::sanitizePlainTextArray($request->input('paragraph', [])),
+            'buttonText' => CmsContentSanitizer::sanitizePlainTextArray($request->input('buttonText', [])),
+            'buttonLink' => CmsContentSanitizer::sanitizeLink($request->input('buttonLink')),
+        ]);
+
         $request->validate([
             'heading' => 'required|array',
             'paragraph' => 'required|array',
             'buttonText' => 'required|array',
-            'buttonLink' => 'required|string',
+            'buttonLink' => [
+                'required',
+                'string',
+                'max:500',
+                static function ($attribute, $value, $fail) {
+                    if (CmsContentSanitizer::sanitizeLink($value) === '') {
+                        $fail(translate('invalid_URL'));
+                    }
+                },
+            ],
             'image' => 'required|image',
             'section' => 'required|string',
         ]);
@@ -914,10 +952,10 @@ class HomeController extends Controller
         $index = count($data); // This is the correct index for new entry
 
         $data[] = [
-            'heading' => $request->heading[$defaultLangIndex],
-            'paragraph' => $request->paragraph[$defaultLangIndex],
-            'buttonText' => $request->buttonText[$defaultLangIndex],
-            'buttonLink' => $request->buttonLink,
+            'heading' => CmsContentSanitizer::sanitizePlainText($request->heading[$defaultLangIndex] ?? ''),
+            'paragraph' => CmsContentSanitizer::sanitizeRichText($request->paragraph[$defaultLangIndex] ?? ''),
+            'buttonText' => CmsContentSanitizer::sanitizePlainText($request->buttonText[$defaultLangIndex] ?? ''),
+            'buttonLink' => CmsContentSanitizer::sanitizeLink($request->buttonLink),
             'image' => $imagePath,
             'is_active' => $request->has('is_active') ? true : false,
         ];
@@ -940,11 +978,27 @@ class HomeController extends Controller
 
     public function updateBanner(Request $request)
     {
+        $request->merge([
+            'heading' => CmsContentSanitizer::sanitizePlainTextArray($request->input('heading', [])),
+            'paragraph' => CmsContentSanitizer::sanitizePlainTextArray($request->input('paragraph', [])),
+            'buttonText' => CmsContentSanitizer::sanitizePlainTextArray($request->input('buttonText', [])),
+            'buttonLink' => CmsContentSanitizer::sanitizeLink($request->input('buttonLink')),
+        ]);
 
         $request->validate([
             'index' => 'required|integer',
             'section' => 'required|string',
             'remove_image' => 'nullable|in:0,1',
+            'buttonLink' => [
+                'required',
+                'string',
+                'max:500',
+                static function ($attribute, $value, $fail) {
+                    if (CmsContentSanitizer::sanitizeLink($value) === '') {
+                        $fail(translate('invalid_URL'));
+                    }
+                },
+            ],
         ]);
 
         $section = HomePageSection::where('type', $request->section)->firstOrFail();
@@ -955,10 +1009,10 @@ class HomeController extends Controller
         $item = &$data[$request->index];
         $removeImage = (int) $request->input('remove_image', 0) === 1;
         $existingImage = $item['image'] ?? null;
-        $item['heading'] = $request->heading[$defaultLangIndex];
-        $item['paragraph'] = $request->paragraph[$defaultLangIndex];
-        $item['buttonText'] = $request->buttonText[$defaultLangIndex];
-        $item['buttonLink'] = $request->buttonLink;
+        $item['heading'] = CmsContentSanitizer::sanitizePlainText($request->heading[$defaultLangIndex] ?? '');
+        $item['paragraph'] = CmsContentSanitizer::sanitizeRichText($request->paragraph[$defaultLangIndex] ?? '');
+        $item['buttonText'] = CmsContentSanitizer::sanitizePlainText($request->buttonText[$defaultLangIndex] ?? '');
+        $item['buttonLink'] = CmsContentSanitizer::sanitizeLink($request->buttonLink);
 
         if ($removeImage && !$request->hasFile('image')) {
             $this->deleteImageIfExists($existingImage);

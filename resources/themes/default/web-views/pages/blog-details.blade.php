@@ -20,7 +20,7 @@
             <div class="md:w-1/2">
                 <h1 class="text-4xl font-bold text-gray-800 mb-6">{{ $blog->heading }}</h1>
                 <div class="text-gray-700 text-lg leading-relaxed">
-                    {!! $blog->description !!}
+                    {!! \App\Support\CmsContentSanitizer::sanitizeRichText($blog->description) !!}
                 </div>
             </div>
         </div>

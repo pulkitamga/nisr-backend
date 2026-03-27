@@ -236,10 +236,12 @@
 
             <div class="pt-4">
                 <div class="d-flex mb-lg-3 justify-content-between ">
-                    <a href="{{route('cart.remove-all')}}" class="btn btn-outline-danger square-btn"> <i
-                            class="tio-delete"></i> {{
-                        translate('Clear_cart') }}
-                    </a>
+                    <form action="{{ route('cart.remove-all') }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger square-btn">
+                            <i class="tio-delete"></i> {{ translate('Clear_cart') }}
+                        </button>
+                    </form>
                     <a href="#" id="clear-selected-items" class="btn btn-outline-danger square-btn">
                         <i class="tio-delete"></i> {{ translate('Clear_selected_item') }}
                     </a>

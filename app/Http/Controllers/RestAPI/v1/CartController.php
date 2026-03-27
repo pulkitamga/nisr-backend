@@ -24,7 +24,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
@@ -396,8 +395,8 @@ class CartController extends Controller
     public function update_cart(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'key' => 'required',
-            'quantity' => 'required',
+            'key' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1',
         ], [
             'key.required' => translate('Cart key or ID is required!')
         ]);
@@ -415,7 +414,7 @@ class CartController extends Controller
     {
         $request->validate([
             'cart_id' => 'required|integer|exists:carts,id',
-            'charges' => 'required|numeric|min:0',
+            'charges' => 'required|numeric|min:0|max:999999.99',
         ]);
 
         $response = CartManager::update_installtion_charges($request);
@@ -465,16 +464,13 @@ class CartController extends Controller
 
     public function updateExchangeCharges(Request $request)
     {
-
-        Log::info('the request of api is', ['request' => $request->all()]);
         $request->validate([
             'cart_id' => 'required|integer|exists:carts,id',
-            'charges' => 'required|numeric|min:0',
+            'charges' => 'required|numeric|min:0|max:999999.99',
             'qty' => 'required|integer|min:0',
         ]);
 
         $response = CartManager::update_exchange_charges($request);
-        Log::info('the response of api is', ['response' => $response]);
 
         if ($response['status'] == 0) {
             return response()->json($response, 400);
@@ -539,31 +535,40 @@ class CartController extends Controller
         }
 
         $user = Helpers::getCustomerInformation($request);
-        Cart::where([
+        $cartItem = Cart::where([
             'id' => $request->key,
             'customer_id' => ($user == 'offline' ? (session('guest_id') ?? $request->guest_id) : $user->id),
             'is_guest' => ($user == 'offline' ? 1 : '0'),
-        ])->delete();
+        ])->first();
+
+        if (!$cartItem) {
+            return response()->json(translate('Product_not_found_in_cart'), 404);
+        }
+
+        $removedGroupId = $cartItem->cart_group_id;
+        $cartItem->delete();
+
+        if (!Cart::where('cart_group_id', $removedGroupId)->exists()) {
+            CartShipping::where('cart_group_id', $removedGroupId)->delete();
+        }
+
         return response()->json(translate('successfully_removed'));
     }
 
     public function remove_all_from_cart(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'key' => 'required'
-        ], [
-            'key.required' => translate('Cart key or ID is required!')
-        ]);
+        $cartGroupIds = CartManager::getOwnedCartQuery($request)
+            ->pluck('cart_group_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
-        if ($validator->errors()->count() > 0) {
-            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)]);
+        if (!empty($cartGroupIds)) {
+            CartShipping::whereIn('cart_group_id', $cartGroupIds)->delete();
         }
 
-        $user = Helpers::getCustomerInformation($request);
-        Cart::where([
-            'customer_id' => ($user == 'offline' ? $request->guest_id : $user->id),
-            'is_guest' => ($user == 'offline' ? 1 : '0'),
-        ])->delete();
+        CartManager::getOwnedCartQuery($request)->delete();
         return response()->json(translate('successfully_removed'));
     }
 

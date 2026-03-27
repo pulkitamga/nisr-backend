@@ -1,0 +1,281 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
+use Tests\TestCase;
+
+class CartSecurityRegressionTest extends TestCase
+{
+    use DatabaseTransactions;
+
+    protected function setUp(): void
+    {
+        $database = (string)($_SERVER['DB_DATABASE'] ?? getenv('DB_DATABASE') ?: '');
+        if ($database === '' || $database === ':memory:') {
+            $database = basename(getcwd());
+        }
+
+        putenv('DB_CONNECTION=mysql');
+        putenv("DB_DATABASE={$database}");
+        $_SERVER['DB_CONNECTION'] = 'mysql';
+        $_ENV['DB_CONNECTION'] = 'mysql';
+        $_SERVER['DB_DATABASE'] = $database;
+        $_ENV['DB_DATABASE'] = $database;
+
+        parent::setUp();
+
+        config([
+            'database.default' => 'mysql',
+            'database.connections.mysql.database' => $database,
+        ]);
+
+        if (!defined('VIEW_FILE_NAMES')) {
+            define('VIEW_FILE_NAMES', require base_path('resources/themes/default/file_names.php'));
+        }
+
+        View::addLocation(base_path('resources/themes/default'));
+    }
+
+    protected function connectionsToTransact(): array
+    {
+        return ['mysql'];
+    }
+
+    public function test_logged_in_customer_cannot_remove_guest_cart_with_same_numeric_customer_id(): void
+    {
+        $user = $this->createCustomer();
+        $productId = $this->createProduct();
+
+        $guestCartId = $this->createCart([
+            'customer_id' => $user->id,
+            'is_guest' => 1,
+            'product_id' => $productId,
+            'cart_group_id' => 'guest-test-group',
+        ]);
+
+        $response = $this->actingAs($user, 'customer')
+            ->post(route('cart.remove'), ['key' => $guestCartId]);
+
+        $response->assertStatus(404);
+        $this->assertDatabaseHas('carts', [
+            'id' => $guestCartId,
+            'is_guest' => 1,
+        ]);
+    }
+
+    public function test_logged_in_customer_cannot_update_guest_cart_with_same_numeric_customer_id(): void
+    {
+        $user = $this->createCustomer();
+        $productId = $this->createProduct(currentStock: 10);
+
+        $guestCartId = $this->createCart([
+            'customer_id' => $user->id,
+            'is_guest' => 1,
+            'product_id' => $productId,
+            'quantity' => 2,
+            'cart_group_id' => 'guest-update-group',
+        ]);
+
+        $response = $this->actingAs($user, 'customer')
+            ->post(route('cart.updateQuantity'), [
+                'key' => $guestCartId,
+                'quantity' => 5,
+            ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'status' => 0,
+            ]);
+
+        $this->assertDatabaseHas('carts', [
+            'id' => $guestCartId,
+            'quantity' => 2,
+            'is_guest' => 1,
+        ]);
+    }
+
+    public function test_update_variation_does_not_overwrite_unrelated_cart_row_with_matching_primary_key(): void
+    {
+        $user = $this->createCustomer();
+        $targetProductId = 400001;
+        $existingProductId = 400002;
+
+        $this->createProduct(id: $targetProductId, currentStock: 10);
+        $this->createProduct(id: $existingProductId, currentStock: 10);
+
+        $existingCartId = $this->createCart([
+            'id' => $targetProductId,
+            'customer_id' => $user->id,
+            'is_guest' => 0,
+            'product_id' => $existingProductId,
+            'name' => 'Existing cart row',
+            'slug' => 'existing-cart-row',
+            'cart_group_id' => 'customer-existing-group',
+        ]);
+
+        $response = $this->actingAs($user, 'customer')
+            ->post(route('cart.update-variation'), [
+                'id' => $targetProductId,
+                'product_id' => $targetProductId,
+                'quantity' => 1,
+            ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('carts', [
+            'id' => $existingCartId,
+            'product_id' => $existingProductId,
+            'name' => 'Existing cart row',
+        ]);
+
+        $this->assertDatabaseHas('carts', [
+            'customer_id' => $user->id,
+            'is_guest' => 0,
+            'product_id' => $targetProductId,
+        ]);
+    }
+
+    public function test_remove_all_requires_post_and_clears_cart_shipping_for_current_owner(): void
+    {
+        $user = $this->createCustomer();
+        $productId = $this->createProduct();
+        $cartGroupId = 'customer-clear-group';
+
+        $this->createCart([
+            'customer_id' => $user->id,
+            'is_guest' => 0,
+            'product_id' => $productId,
+            'cart_group_id' => $cartGroupId,
+        ]);
+
+        DB::table('cart_shippings')->insert([
+            'cart_group_id' => $cartGroupId,
+            'shipping_method_id' => 0,
+            'shipping_cost' => 25,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($user, 'customer')
+            ->get(route('cart.remove-all'))
+            ->assertStatus(405);
+
+        $this->actingAs($user, 'customer')
+            ->from('/cart-test')
+            ->post(route('cart.remove-all'))
+            ->assertRedirect('/cart-test');
+
+        $this->assertDatabaseMissing('carts', [
+            'customer_id' => $user->id,
+            'cart_group_id' => $cartGroupId,
+        ]);
+
+        $this->assertDatabaseMissing('cart_shippings', [
+            'cart_group_id' => $cartGroupId,
+        ]);
+    }
+
+    private function createCustomer(): User
+    {
+        $now = now();
+        $id = DB::table('users')->insertGetId([
+            'name' => 'Cart Test User',
+            'f_name' => 'Cart',
+            'l_name' => 'Tester',
+            'phone' => '2011' . random_int(1000000, 9999999),
+            'email' => 'cart-test-' . uniqid() . '@example.com',
+            'user_type' => 0,
+            'password' => bcrypt('password'),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return User::query()->findOrFail($id);
+    }
+
+    private function createProduct(?int $id = null, int $currentStock = 5): int
+    {
+        $now = now();
+        $data = [
+            'added_by' => 'admin',
+            'user_id' => 1,
+            'name' => 'Cart Product ' . uniqid(),
+            'slug' => 'cart-product-' . uniqid(),
+            'color_image' => '',
+            'thumbnail' => 'test.png',
+            'tax' => '0.00',
+            'tax_model' => 'exclude',
+            'unit_price' => 100,
+            'purchase_price' => 80,
+            'current_stock' => $currentStock,
+            'minimum_order_qty' => 1,
+            'choice_options' => '[]',
+            'variation' => '[]',
+            'category_ids' => '[]',
+            'product_type' => 'physical',
+            'free_shipping' => 1,
+            'shipping_cost' => 0,
+            'status' => 1,
+            'featured_status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+
+        if ($id !== null) {
+            $data['id'] = $id;
+            DB::table('products')->insert($data);
+
+            return $id;
+        }
+
+        return (int)DB::table('products')->insertGetId($data);
+    }
+
+    private function createCart(array $overrides = []): int
+    {
+        $now = now();
+        $data = array_merge([
+            'customer_id' => 1,
+            'cart_group_id' => 'cart-group-' . uniqid(),
+            'product_id' => 1,
+            'product_type' => 'physical',
+            'digital_product_type' => null,
+            'color' => null,
+            'choices' => '[]',
+            'variations' => '[]',
+            'variant' => '',
+            'quantity' => 1,
+            'price' => 100,
+            'tax' => 0,
+            'discount' => 0,
+            'installtion_charges' => 0,
+            'exchange_qty' => 0,
+            'exchange_charges' => 0,
+            'tax_model' => 'exclude',
+            'is_checked' => 1,
+            'slug' => 'cart-item-' . uniqid(),
+            'name' => 'Cart item',
+            'thumbnail' => 'test.png',
+            'seller_id' => 1,
+            'seller_is' => 'admin',
+            'shop_info' => 'In-house',
+            'shipping_cost' => 0,
+            'shipping_type' => 'order_wise',
+            'is_guest' => 0,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $overrides);
+
+        if (array_key_exists('id', $data)) {
+            DB::table('carts')->insert($data);
+
+            return (int)$data['id'];
+        }
+
+        return (int)DB::table('carts')->insertGetId($data);
+    }
+}

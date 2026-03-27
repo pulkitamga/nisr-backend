@@ -338,10 +338,27 @@ class CartController extends Controller
      */
     public function removeFromCart(Request $request): JsonResponse
     {
+        $request->validate([
+            'key' => 'required|integer|min:1',
+        ]);
 
-        $user = Helpers::getCustomerInformation();
+        $cartItem = CartManager::getOwnedCartQuery($request)
+            ->where('id', $request->key)
+            ->first();
 
-        Cart::where(['id' => $request->key, 'customer_id' => ($user == 'offline' ? session('guest_id') : auth('customer')->id())])->delete();
+        if (!$cartItem) {
+            return response()->json([
+                'status' => 0,
+                'message' => translate('Product_not_found_in_cart'),
+            ], 404);
+        }
+
+        $removedGroupId = $cartItem->cart_group_id;
+        $cartItem->delete();
+
+        if (!Cart::where('cart_group_id', $removedGroupId)->exists()) {
+            CartShipping::where('cart_group_id', $removedGroupId)->delete();
+        }
 
         $this->refreshCouponSessionAfterCartChange();
         session()->forget('shipping_method_id');
@@ -350,7 +367,9 @@ class CartController extends Controller
         session()->forget('area_wise_shipping_resolved');
 
 
-        $cart = Cart::where(['customer_id' => ($user == 'offline' ? session('guest_id') : auth('customer')->id())])->select(['id', 'variant'])->get();
+        $cart = CartManager::getOwnedCartQuery($request)
+            ->select(['id', 'variant'])
+            ->get();
 
 
         return response()->json([
@@ -363,6 +382,11 @@ class CartController extends Controller
     //updated the quantity for a cart item
     public function updateQuantity(Request $request)
     {
+        $request->validate([
+            'key' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
         $response = CartManager::update_cart_qty($request);
 
         $this->refreshCouponSessionAfterCartChange();
@@ -379,6 +403,11 @@ class CartController extends Controller
     //updated the quantity for a cart item
     public function updateInstalltionCharges(Request $request)
     {
+        $request->validate([
+            'cart_id' => 'required|integer|min:1',
+            'charges' => 'required|numeric|min:0',
+        ]);
+
         $response = CartManager::update_installtion_charges($request);
 
         $this->refreshCouponSessionAfterCartChange();
@@ -395,6 +424,12 @@ class CartController extends Controller
     //updated the quantity for a cart item
     public function updateExchangeCharges(Request $request)
     {
+        $request->validate([
+            'cart_id' => 'required|integer|min:1',
+            'charges' => 'required|numeric|min:0',
+            'qty' => 'required|integer|min:0',
+        ]);
+
         $response = CartManager::update_exchange_charges($request);
 
         $this->refreshCouponSessionAfterCartChange();
@@ -417,7 +452,9 @@ class CartController extends Controller
         session()->forget('cart_shipping_cost');
         session()->forget('area_wise_shipping_resolved');
 
-        $product = Cart::find($request['key']);
+        $product = CartManager::getOwnedCartQuery($request)
+            ->where('id', $request['key'])
+            ->first();
 
         if (!$product) {
             return response()->json([
@@ -526,6 +563,9 @@ class CartController extends Controller
     function addToCartPhysicalProduct($request, $product)
     {
         $user = Helpers::getCustomerInformation($request);
+        $guestId = session('guest_id') ?? ($request->guest_id ?? 0);
+        $customerId = $user == 'offline' ? $guestId : $user->id;
+        $isGuest = $user == 'offline' ? 1 : 0;
         $variantMatcher = new VariantMatcher();
         $str = '';
         $variations = [];
@@ -568,20 +608,19 @@ class CartController extends Controller
 
         $cart = Cart::where([
             'product_id' => $request['product_id'],
-            'customer_id' => $user == 'offline' ? session('guest_id') : $user->id,
-            'is_guest' => $user == 'offline' ? 1 : '0',
+            'customer_id' => $customerId,
+            'is_guest' => $isGuest,
             'variant' => $str
         ])->first();
 
         if (isset($cart) == false) {
-            $cart = Cart::find($request->id);
-            $cart['color'] = $request->has('color') ? $request['color'] : null;
-            $cart['choices'] = json_encode($choices);
+            $editableCart = null;
+            if ($request->filled('key')) {
+                $editableCart = CartManager::getOwnedCartQuery($request)
+                    ->where('id', $request->key)
+                    ->first();
+            }
 
-            $cart['variations'] = json_encode($variations);
-            $cart['variant'] = $str;
-
-            //Check the string and decreases quantity for the stock
             if ($str != null) {
                 $count = count(json_decode($product->variation));
                 for ($i = 0; $i < $count; $i++) {
@@ -600,10 +639,42 @@ class CartController extends Controller
                 $price = $product->unit_price;
             }
 
+            $cart = $editableCart ?? new Cart();
+            $cart['customer_id'] = $customerId;
+            $cart['product_id'] = $product['id'];
+            $cart['product_type'] = $product['product_type'];
+            $cart['digital_product_type'] = $product['digital_product_type'];
+            $cart['color'] = $request->has('color') ? $request['color'] : null;
+            $cart['choices'] = json_encode($choices);
+            $cart['variations'] = json_encode($variations);
+            $cart['variant'] = $str;
             $cart['price'] = $price;
             $cart['discount'] = $discount;
             $cart['tax'] = $tax;
             $cart['quantity'] = $request['quantity'];
+            $cart['tax_model'] = $product->tax_model;
+            $cart['is_checked'] = 1;
+            $cart['slug'] = $product['slug'];
+            $cart['name'] = $product['name'];
+            $cart['thumbnail'] = $product['thumbnail'];
+            $cart['seller_id'] = ($product->added_by == 'admin') ? 1 : $product->user_id;
+            $cart['seller_is'] = $product['added_by'];
+            $cart['shop_info'] = $product->added_by == 'admin'
+                ? getWebConfig(name: 'company_name')
+                : Shop::where(['seller_id' => $product->user_id])->first()->name;
+            $cart['shipping_cost'] = $product['product_type'] == 'physical'
+                ? CartManager::get_shipping_cost_for_product_category_wise($product, $request['quantity'])
+                : 0;
+            $cart['is_guest'] = $isGuest;
+            if (!$cart->exists) {
+                $existingCartGroup = Cart::where([
+                    'customer_id' => $customerId,
+                    'is_guest' => $isGuest,
+                    'seller_id' => ($product->added_by == 'admin') ? 1 : $product->user_id,
+                    'seller_is' => $product['added_by'],
+                ])->value('cart_group_id');
+                $cart['cart_group_id'] = $existingCartGroup ?: (($user == 'offline' ? 'guest' : $user->id) . '-' . \Illuminate\Support\Str::random(5) . '-' . time());
+            }
             $cart->save();
 
             return [
@@ -706,14 +777,26 @@ class CartController extends Controller
         }
     }
 
-    public function remove_all_cart()
+    public function remove_all_cart(Request $request)
     {
-        $user = Helpers::getCustomerInformation();
+        $cartGroupIds = CartManager::getOwnedCartQuery($request)
+            ->pluck('cart_group_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
-        Cart::where([
-            'customer_id' => ($user == 'offline' ? session('guest_id') : auth('customer')->id()),
-            'is_guest' => ($user == 'offline' ? 1 : '0'),
-        ])->delete();
+        if (!empty($cartGroupIds)) {
+            CartShipping::whereIn('cart_group_id', $cartGroupIds)->delete();
+        }
+
+        CartManager::getOwnedCartQuery($request)->delete();
+        $this->refreshCouponSessionAfterCartChange();
+        session()->forget('shipping_method_id');
+        session()->forget('order_note');
+        session()->forget('cart_shipping_cost');
+        session()->forget('area_wise_shipping_resolved');
+
         return redirect()->back();
     }
 
