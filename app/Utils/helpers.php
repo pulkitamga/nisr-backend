@@ -25,6 +25,7 @@ use App\Utils\OrderManager;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class helpers
@@ -1318,5 +1319,40 @@ if (!function_exists('currency_converter')) {
         }
 
         return Helpers::set_symbol(round($amount * $rate, 2));
+    }
+}
+
+if (!function_exists('support_ticket_message_html')) {
+    function support_ticket_message_html(?string $message): HtmlString
+    {
+        if ($message === null || $message === '') {
+            return new HtmlString('');
+        }
+
+        $segments = preg_split(
+            '/(https?:\/\/[^\s<>"\']+)/i',
+            $message,
+            -1,
+            PREG_SPLIT_DELIM_CAPTURE
+        );
+
+        $html = collect($segments)->map(function (string $segment, int $index): string {
+            if ($index % 2 === 0) {
+                return nl2br(e($segment), false);
+            }
+
+            $url = rtrim($segment, ".,!?;:)]}");
+            $trailingPunctuation = substr($segment, strlen($url));
+
+            if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+                return nl2br(e($segment), false);
+            }
+
+            $escapedUrl = e($url);
+
+            return '<a href="' . $escapedUrl . '" target="_blank" rel="noopener noreferrer">' . $escapedUrl . '</a>' . e($trailingPunctuation);
+        })->implode('');
+
+        return new HtmlString($html);
     }
 }

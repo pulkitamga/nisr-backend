@@ -51,7 +51,7 @@ class WarrantyCustomerController extends Controller
         if (!$warranty) {
             return response()->json([
                 'success' => false,
-                'message' => 'Warranty not found',
+                'message' => translate('warranty_not_found'),
             ], 404);
         }
 
@@ -83,7 +83,7 @@ class WarrantyCustomerController extends Controller
         if (!$claim) {
             return response()->json([
                 'success' => false,
-                'message' => 'Warranty claim not found',
+                'message' => translate('warranty_claim_not_found'),
             ], 404);
         }
 
@@ -103,7 +103,7 @@ class WarrantyCustomerController extends Controller
         if (!$claim) {
             return response()->json([
                 'success' => false,
-                'message' => 'Warranty claim not found',
+                'message' => translate('warranty_claim_not_found'),
             ], 404);
         }
 
@@ -111,7 +111,7 @@ class WarrantyCustomerController extends Controller
         if (!$payment || empty($payment->payment_link)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No active payment link is available for this claim',
+                'message' => translate('warranty_claim_payment_link_unavailable'),
             ], 422);
         }
 
@@ -462,11 +462,13 @@ class WarrantyCustomerController extends Controller
 
         $email = (string)($warranty->user?->email ?? $warranty->activated_by_email ?? '');
         $phone = (string)($warranty->user?->phone ?? $warranty->activated_by_phone ?? '');
+        $warrantyStatusKey = $warranty->statusLabel();
 
         return [
             'warranty_public_id' => $warranty->warranty_public_id,
             'serial_number' => $warranty->serial_number,
-            'status' => $warranty->statusLabel(),
+            'status_key' => $warrantyStatusKey,
+            'status' => $this->translateWarrantyStatus($warrantyStatusKey),
             'activation_status' => $warranty->status,
             'activation_date' => optional($warranty->activation_date)?->toIso8601String(),
             'start_date' => optional($warranty->start_date)?->toIso8601String(),
@@ -494,10 +496,13 @@ class WarrantyCustomerController extends Controller
     {
         $payment = $this->resolveActiveClaimPayment($claim);
         $warranty = $claim->warranty;
+        $groupedStatusKey = $this->groupClaimStatusKey($claim->status);
 
         return [
             'claim_number' => $claim->claim_number,
-            'status' => $claim->status,
+            'status_key' => $claim->status,
+            'status' => $this->claimStatusLabel($claim->status),
+            'grouped_status_key' => $groupedStatusKey,
             'grouped_status' => $this->groupClaimStatus($claim->status),
             'customer_meaning' => $this->claimStatusMeaning($claim->status),
             'submitted_at' => optional($claim->submitted_at)?->toIso8601String(),
@@ -505,7 +510,8 @@ class WarrantyCustomerController extends Controller
             'serial_number' => $claim->serial_number,
             'product_name' => $warranty?->product?->name,
             'warranty_public_id' => $warranty?->warranty_public_id,
-            'warranty_status' => $warranty?->statusLabel(),
+            'warranty_status_key' => $warranty?->statusLabel(),
+            'warranty_status' => $warranty ? $this->translateWarrantyStatus($warranty->statusLabel()) : null,
             'needs_action' => in_array($claim->status, ['waiting_customer', 'waiting_payment'], true),
             'payment' => $this->formatPaymentSummary($payment),
         ];
@@ -515,10 +521,13 @@ class WarrantyCustomerController extends Controller
     {
         $payment = $this->resolveActiveClaimPayment($claim);
         $parsedDescription = $this->parseClaimDescription((string)$claim->description);
+        $groupedStatusKey = $this->groupClaimStatusKey($claim->status);
 
         return [
             'claim_number' => $claim->claim_number,
-            'status' => $claim->status,
+            'status_key' => $claim->status,
+            'status' => $this->claimStatusLabel($claim->status),
+            'grouped_status_key' => $groupedStatusKey,
             'grouped_status' => $this->groupClaimStatus($claim->status),
             'customer_meaning' => $this->claimStatusMeaning($claim->status),
             'subject' => $parsedDescription['subject'],
@@ -545,10 +554,13 @@ class WarrantyCustomerController extends Controller
         $latestEventAt = $claim->timelineEvents->first()?->timestamp
             ?? $claim->updated_at
             ?? $claim->submitted_at;
+        $groupedStatusKey = $this->groupClaimStatusKey($claim->status);
 
         return [
             'claim_number' => $claim->claim_number,
-            'status' => $claim->status,
+            'status_key' => $claim->status,
+            'status' => $this->claimStatusLabel($claim->status),
+            'grouped_status_key' => $groupedStatusKey,
             'grouped_status' => $this->groupClaimStatus($claim->status),
             'latest_event_at' => optional($latestEventAt)?->toIso8601String(),
             'updated_at' => optional($claim->updated_at)?->toIso8601String(),
@@ -592,7 +604,8 @@ class WarrantyCustomerController extends Controller
             ->take(20)
             ->map(fn(WarrantyTimelineEvent $event) => [
                 'event_type' => $event->event_type,
-                'description' => $event->description,
+                'description' => $this->translateTimelineDescription($event),
+                'description_raw' => $event->description,
                 'timestamp' => optional($event->timestamp ?? $event->created_at)?->toIso8601String(),
                 'created_at' => optional($event->created_at)?->toIso8601String(),
             ])
@@ -637,40 +650,344 @@ class WarrantyCustomerController extends Controller
         return $parsed;
     }
 
-    private function groupClaimStatus(string $status): string
+    private function groupClaimStatusKey(string $status): string
     {
         return match ($status) {
-            'new', 'triage_pending', 'approved', 'rma_issued' => 'Submitted',
-            'received', 'diagnosis_pending', 'repair_pending', 'replacement_pending', 'qc_pending' => 'In Service',
-            'waiting_customer', 'waiting_parts', 'waiting_payment' => 'Waiting',
-            'shipped_ready', 'dispatched', 'resolved' => 'Ready/Delivered',
-            'closed', 'rejected' => 'Ended',
-            default => 'Submitted',
+            'new', 'triage_pending', 'approved', 'rma_issued' => 'submitted',
+            'received', 'diagnosis_pending', 'repair_pending', 'replacement_pending', 'qc_pending' => 'in_service',
+            'waiting_customer', 'waiting_parts', 'waiting_payment' => 'waiting',
+            'shipped_ready', 'dispatched', 'resolved' => 'ready_delivered',
+            'closed', 'rejected' => 'ended',
+            default => 'submitted',
+        };
+    }
+
+    private function groupClaimStatus(string $status): string
+    {
+        return translate('warranty_claim_group_' . $this->groupClaimStatusKey($status));
+    }
+
+    private function translateWarrantyStatus(string $status): string
+    {
+        return match ($status) {
+            'preactivated' => translate('warranty_status_preactivated'),
+            'active' => translate('warranty_status_active'),
+            'expired' => translate('warranty_status_expired'),
+            'replaced' => translate('warranty_status_replaced'),
+            'cancelled' => translate('warranty_status_cancelled'),
+            default => $this->humanizeStatus($status),
+        };
+    }
+
+    private function claimStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'new' => translate('warranty_claim_status_new'),
+            'triage_pending' => translate('warranty_claim_status_triage_pending'),
+            'approved' => translate('warranty_claim_status_approved'),
+            'rma_issued' => translate('warranty_claim_status_rma_issued'),
+            'received' => translate('warranty_claim_status_received'),
+            'diagnosis_pending' => translate('warranty_claim_status_diagnosis_pending'),
+            'repair_pending' => translate('warranty_claim_status_repair_pending'),
+            'replacement_pending' => translate('warranty_claim_status_replacement_pending'),
+            'qc_pending' => translate('warranty_claim_status_qc_pending'),
+            'waiting_customer' => translate('warranty_claim_status_waiting_customer'),
+            'waiting_parts' => translate('warranty_claim_status_waiting_parts'),
+            'waiting_payment' => translate('warranty_claim_status_waiting_payment'),
+            'shipped_ready' => translate('warranty_claim_status_shipped_ready'),
+            'dispatched' => translate('warranty_claim_status_dispatched'),
+            'resolved' => translate('warranty_claim_status_resolved'),
+            'closed' => translate('warranty_claim_status_closed'),
+            'rejected' => translate('warranty_claim_status_rejected'),
+            default => $this->humanizeStatus($status),
         };
     }
 
     private function claimStatusMeaning(string $status): string
     {
         return match ($status) {
-            'new' => 'Claim received',
-            'triage_pending' => 'Under first review',
-            'approved' => 'Approved for next action',
-            'rma_issued' => 'Return instructions issued',
-            'received' => 'Item received by service team',
-            'diagnosis_pending' => 'Diagnosis in progress',
-            'repair_pending' => 'Repair work pending',
-            'replacement_pending' => 'Replacement decision in progress',
-            'qc_pending' => 'Quality check pending',
-            'waiting_customer' => 'Waiting on customer response',
-            'waiting_parts' => 'Waiting on stock or parts',
-            'waiting_payment' => 'Customer payment required',
-            'shipped_ready' => 'Ready for dispatch',
-            'dispatched' => 'On the way back to customer',
-            'resolved' => 'Work completed',
-            'closed' => 'Claim finished',
-            'rejected' => 'Claim rejected',
-            default => 'Claim status updated',
+            'new' => translate('warranty_claim_meaning_new'),
+            'triage_pending' => translate('warranty_claim_meaning_triage_pending'),
+            'approved' => translate('warranty_claim_meaning_approved'),
+            'rma_issued' => translate('warranty_claim_meaning_rma_issued'),
+            'received' => translate('warranty_claim_meaning_received'),
+            'diagnosis_pending' => translate('warranty_claim_meaning_diagnosis_pending'),
+            'repair_pending' => translate('warranty_claim_meaning_repair_pending'),
+            'replacement_pending' => translate('warranty_claim_meaning_replacement_pending'),
+            'qc_pending' => translate('warranty_claim_meaning_qc_pending'),
+            'waiting_customer' => translate('warranty_claim_meaning_waiting_customer'),
+            'waiting_parts' => translate('warranty_claim_meaning_waiting_parts'),
+            'waiting_payment' => translate('warranty_claim_meaning_waiting_payment'),
+            'shipped_ready' => translate('warranty_claim_meaning_shipped_ready'),
+            'dispatched' => translate('warranty_claim_meaning_dispatched'),
+            'resolved' => translate('warranty_claim_meaning_resolved'),
+            'closed' => translate('warranty_claim_meaning_closed'),
+            'rejected' => translate('warranty_claim_meaning_rejected'),
+            default => translate('warranty_claim_meaning_updated'),
         };
+    }
+
+    private function translateTimelineDescription(WarrantyTimelineEvent $event): string
+    {
+        $description = trim((string) $event->description);
+
+        return match ($event->event_type) {
+            'claim_submitted' => $this->translateClaimSubmittedEvent($description),
+            'item_received' => $this->translateItemReceivedEvent($description),
+            'decision_made' => $this->translateDecisionEvent($description),
+            'payment_handled' => $this->translatePaymentHandledEvent($description),
+            'diagnosis_complete' => $this->translateDiagnosisEvent($description),
+            'repair_complete' => $this->translateRepairCompletedEvent($description),
+            'qc_passed' => translate('warranty_timeline_qc_passed'),
+            'dispatched' => $this->translateDispatchedEvent($description),
+            'rma_issued' => $this->translateRmaIssuedEvent($description),
+            'claim_resumed' => $this->translateClaimResumedEvent($description),
+            'replacement_committed' => $this->translateReplacementCommittedEvent($description),
+            'closed' => $this->translateClosedEvent($description),
+            'resolved' => $this->translateResolvedEvent($description),
+            default => $description,
+        };
+    }
+
+    private function translateClaimSubmittedEvent(string $description): string
+    {
+        if (preg_match('/Serial(?: Number)?:\s*(.+)$/i', $description, $matches)) {
+            return translate('warranty_timeline_claim_submitted') . ' | ' .
+                translate('serial_number') . ': ' . trim($matches[1]);
+        }
+
+        return translate('warranty_timeline_claim_submitted');
+    }
+
+    private function translateItemReceivedEvent(string $description): string
+    {
+        if (preg_match('/Item received \| Serial:\s*(.*?)\s*\| Branch:\s*(.*?)\s*\| Notes:\s*(.*)$/i', $description, $matches)) {
+            return translate('warranty_timeline_item_received') . ' | ' .
+                translate('serial_number') . ': ' . trim($matches[1]) . ' | ' .
+                translate('branch') . ': ' . trim($matches[2]) . ' | ' .
+                translate('notes') . ': ' . trim($matches[3]);
+        }
+
+        return translate('warranty_timeline_item_received');
+    }
+
+    private function translateDecisionEvent(string $description): string
+    {
+        if (preg_match('/Decision:\s*(.*?)\s*\| Code:\s*(.*?)\s*\| Message:\s*(.*)$/i', $description, $matches)) {
+            return translate('warranty_timeline_decision') . ': ' .
+                $this->translateDecisionValue(trim($matches[1])) . ' | ' .
+                translate('code') . ': ' . trim($matches[2]) . ' | ' .
+                translate('message') . ': ' . trim($matches[3]);
+        }
+
+        return $description;
+    }
+
+    private function translatePaymentHandledEvent(string $description): string
+    {
+        $segments = array_values(array_filter(array_map('trim', explode('|', $description))));
+
+        return implode(' | ', array_map(fn(string $segment) => $this->translatePaymentSegment($segment), $segments));
+    }
+
+    private function translatePaymentSegment(string $segment): string
+    {
+        if (str_starts_with($segment, 'Payment handling:')) {
+            return translate('warranty_timeline_payment_handling') . ': ' .
+                $this->translatePaymentAction(trim(substr($segment, strlen('Payment handling:'))));
+        }
+        if (str_starts_with($segment, 'Notes:')) {
+            return translate('notes') . ': ' . trim(substr($segment, strlen('Notes:')));
+        }
+        if (str_starts_with($segment, 'COD payment collected:')) {
+            return translate('warranty_timeline_cod_payment_collected') . ': ' .
+                $this->translateChargeList(trim(substr($segment, strlen('COD payment collected:'))));
+        }
+        if (str_starts_with($segment, 'COD approved:')) {
+            return translate('warranty_timeline_cod_approved') . ': ' .
+                $this->translateChargeList(trim(substr($segment, strlen('COD approved:'))));
+        }
+        if (str_starts_with($segment, 'Resumed to')) {
+            return translate('warranty_timeline_resumed_to') . ' ' .
+                $this->claimStatusLabel(trim(substr($segment, strlen('Resumed to'))));
+        }
+        if (str_starts_with($segment, 'Online payment received')) {
+            return translate('warranty_timeline_online_payment_received');
+        }
+        if (str_starts_with($segment, 'Amount:')) {
+            return translate('amount') . ': ' . trim(substr($segment, strlen('Amount:')));
+        }
+        if (str_starts_with($segment, 'Payment ID:')) {
+            return translate('payment_id') . ': ' . trim(substr($segment, strlen('Payment ID:')));
+        }
+        if (str_starts_with($segment, 'Gateway TX:')) {
+            return translate('warranty_gateway_transaction') . ': ' . trim(substr($segment, strlen('Gateway TX:')));
+        }
+
+        return $segment;
+    }
+
+    private function translateDiagnosisEvent(string $description): string
+    {
+        if (preg_match('/Diagnosis:\s*(.*?)\s*\| REJECTED \| Tamper:\s*(Yes|No)$/i', $description, $matches)) {
+            return translate('warranty_timeline_diagnosis') . ': ' . trim($matches[1]) . ' | ' .
+                translate('warranty_decision_rejected') . ' | ' .
+                translate('warranty_tamper') . ': ' . $this->translateYesNo(trim($matches[2]));
+        }
+
+        if (preg_match('/Diagnosis:\s*(.*?)\s*\| Action:\s*(.*?)\s*\| Tamper:\s*(Yes|No)(?:\s*\| Charges:\s*(.*))?$/i', $description, $matches)) {
+            $translated = translate('warranty_timeline_diagnosis') . ': ' . trim($matches[1]) . ' | ' .
+                translate('action') . ': ' . $this->translateClaimAction(trim($matches[2])) . ' | ' .
+                translate('warranty_tamper') . ': ' . $this->translateYesNo(trim($matches[3]));
+
+            if (!empty($matches[4])) {
+                $translated .= ' | ' . translate('charges') . ': ' . $this->translateChargeList(trim($matches[4]), '=');
+            }
+
+            return $translated;
+        }
+
+        return $description;
+    }
+
+    private function translateRepairCompletedEvent(string $description): string
+    {
+        if (preg_match('/Repair completed\. Parts:\s*(.*?)\s*\| Notes:\s*(.*)$/i', $description, $matches)) {
+            return translate('warranty_timeline_repair_completed') . ' | ' .
+                translate('warranty_parts_used') . ': ' . trim($matches[1]) . ' | ' .
+                translate('notes') . ': ' . trim($matches[2]);
+        }
+
+        return translate('warranty_timeline_repair_completed');
+    }
+
+    private function translateDispatchedEvent(string $description): string
+    {
+        if (preg_match('/Dispatched via\s*(.*?)(?:\s*\| Tracking:\s*(.*))?$/i', $description, $matches)) {
+            $translated = translate('warranty_timeline_dispatched_via') . ' ' . trim($matches[1]);
+            if (!empty($matches[2])) {
+                $translated .= ' | ' . translate('tracking_number') . ': ' . trim($matches[2]);
+            }
+            return $translated;
+        }
+
+        return translate('warranty_timeline_dispatched');
+    }
+
+    private function translateRmaIssuedEvent(string $description): string
+    {
+        if (preg_match('/RMA\s*(.*?)\s*issued\s*\| Branch:\s*(.*?)\s*\| Deadline:\s*(.*?)\s*\| Instructions:\s*(.*)$/i', $description, $matches)) {
+            return translate('warranty_timeline_rma_issued') . ': ' . trim($matches[1]) . ' | ' .
+                translate('branch') . ': ' . trim($matches[2]) . ' | ' .
+                translate('deadline') . ': ' . trim($matches[3]) . ' | ' .
+                translate('instructions') . ': ' . trim($matches[4]);
+        }
+
+        return translate('warranty_timeline_rma_issued');
+    }
+
+    private function translateClaimResumedEvent(string $description): string
+    {
+        if (preg_match('/Resumed from\s*(.*?)\s*→\s*(.*?)\.\s*Notes:\s*(.*)$/u', $description, $matches)) {
+            return translate('warranty_timeline_claim_resumed') . ' | ' .
+                translate('from') . ': ' . $this->claimStatusLabel(trim($matches[1])) . ' | ' .
+                translate('to') . ': ' . $this->claimStatusLabel(trim($matches[2])) . ' | ' .
+                translate('notes') . ': ' . trim($matches[3]);
+        }
+
+        return translate('warranty_timeline_claim_resumed');
+    }
+
+    private function translateReplacementCommittedEvent(string $description): string
+    {
+        if (preg_match('/Replacement committed:\s*(.*?)\s*\| Mode:\s*(.*?)\s*\| Warranty:\s*(.*?)\s*\| Notes:\s*(.*)$/i', $description, $matches)) {
+            return translate('warranty_timeline_replacement_committed') . ': ' . trim($matches[1]) . ' | ' .
+                translate('mode') . ': ' . trim($matches[2]) . ' | ' .
+                translate('warranty') . ': ' . trim($matches[3]) . ' | ' .
+                translate('notes') . ': ' . trim($matches[4]);
+        }
+
+        return translate('warranty_timeline_replacement_committed');
+    }
+
+    private function translateClosedEvent(string $description): string
+    {
+        return str_replace('Claim closed', translate('warranty_timeline_claim_closed'), $description);
+    }
+
+    private function translateResolvedEvent(string $description): string
+    {
+        return str_replace('Claim resolved on delivery/collection.', translate('warranty_timeline_claim_resolved'), $description);
+    }
+
+    private function translatePaymentAction(string $action): string
+    {
+        return match ($action) {
+            'remind' => translate('warranty_payment_action_remind'),
+            'pos' => translate('warranty_payment_action_pos'),
+            'cod' => translate('warranty_payment_action_cod'),
+            'online_link' => translate('warranty_payment_action_online_link'),
+            'cod_collect' => translate('warranty_payment_action_cod_collect'),
+            'waive' => translate('warranty_payment_action_waive'),
+            'client_reject_payment' => translate('warranty_payment_action_client_reject'),
+            default => $this->humanizeStatus($action),
+        };
+    }
+
+    private function translateDecisionValue(string $decision): string
+    {
+        return match ($decision) {
+            'approve' => translate('warranty_decision_approved'),
+            'reject' => translate('warranty_decision_rejected'),
+            'waiting_customer' => translate('warranty_claim_status_waiting_customer'),
+            default => $this->humanizeStatus($decision),
+        };
+    }
+
+    private function translateClaimAction(string $action): string
+    {
+        return match ($action) {
+            'repair' => translate('warranty_action_repair'),
+            'replace' => translate('warranty_action_replace'),
+            'reject' => translate('warranty_decision_rejected'),
+            default => str_contains($action, 'replace')
+                ? str_replace('replace', translate('warranty_action_replace'), $action)
+                : $this->humanizeStatus($action),
+        };
+    }
+
+    private function translateChargeList(string $value, string $separator = ':'): string
+    {
+        $items = array_values(array_filter(array_map('trim', explode(',', $value))));
+
+        return implode(', ', array_map(function (string $item) use ($separator) {
+            if (!str_contains($item, $separator)) {
+                return $item;
+            }
+
+            [$chargeType, $amount] = array_map('trim', explode($separator, $item, 2));
+            return $this->translateChargeType($chargeType) . ': ' . $amount;
+        }, $items));
+    }
+
+    private function translateChargeType(string $chargeType): string
+    {
+        return match ($chargeType) {
+            'repair_fee' => translate('warranty_charge_repair_fee'),
+            'replacement_fee' => translate('warranty_charge_replacement_fee'),
+            'inspection_fee' => translate('warranty_charge_inspection_fee'),
+            default => $this->humanizeStatus($chargeType),
+        };
+    }
+
+    private function translateYesNo(string $value): string
+    {
+        return strtolower($value) === 'yes' ? translate('yes') : translate('no');
+    }
+
+    private function humanizeStatus(string $value): string
+    {
+        return ucwords(str_replace(['_', '-'], ' ', $value));
     }
 
     private function buildOrderDetailWarrantyMap(Order $order, int $customerId): array

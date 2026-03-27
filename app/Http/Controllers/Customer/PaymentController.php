@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Models\Order;
-use App\Models\OrderDetail;
-use App\Models\PaymentRequest;
-use App\Models\User;
-use App\Utils\Helpers;
 use App\Http\Controllers\Controller;
 use App\Library\Payer;
 use App\Library\Payment as PaymentInfo;
 use App\Library\Receiver;
-use App\Models\ShippingAddress;
-use App\Models\ShippingType;
 use App\Models\BusinessSetting;
 use App\Models\Cart;
-use App\Models\ServiceInvoice;
-use App\Models\WarrantyClaimPayment;
 use App\Models\CartShipping;
 use App\Models\Currency;
+use App\Models\PaymentRequest;
+use App\Models\ServiceInvoice;
+use App\Models\ShippingAddress;
+use App\Models\ShippingType;
+use App\Models\User;
+use App\Models\WarrantyClaimPayment;
+use App\Services\ServiceInvoicePaymentService;
 use App\Traits\Payment;
 use App\Utils\CartManager;
 use App\Utils\Convert;
+use App\Utils\Helpers;
 use App\Utils\OrderManager;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\JsonResponse;
@@ -30,8 +29,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+
 use function App\Utils\payment_gateways;
-use App\Services\ServiceInvoicePaymentService;
 
 class PaymentController extends Controller
 {
@@ -53,7 +52,7 @@ class PaymentController extends Controller
             return in_array($input->payment_request_from, ['app']);
         });
 
-        if ($validator->fails()) { //api
+        if ($validator->fails()) { // api
             $errors = Helpers::validationErrorProcessor($validator);
             if (in_array($request['payment_request_from'], ['app'])) {
                 return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
@@ -61,6 +60,7 @@ class PaymentController extends Controller
                 foreach ($errors as $value) {
                     Toastr::error(translate($value['message']));
                 }
+
                 return back();
             }
         }
@@ -75,6 +75,7 @@ class PaymentController extends Controller
                 return response()->json(['errors' => ['code' => 'empty-cart', 'message' => 'No checked cart items found']], 403);
             }
             Toastr::error(translate('please_select_at_least_one_item_before_checkout'));
+
             return redirect()->route('shop-cart');
         }
 
@@ -84,10 +85,11 @@ class PaymentController extends Controller
             ? CartManager::product_stock_check_by_branch($carts, $branchId)
             : CartManager::product_stock_check($carts);
 
-        if (!$productStockCheck && in_array($request['payment_request_from'], ['app'])) {
+        if (! $productStockCheck && in_array($request['payment_request_from'], ['app'])) {
             return response()->json(['errors' => ['code' => 'product-stock', 'message' => 'The following items in your cart are currently out of stock']], 403);
-        } elseif (!$productStockCheck) {
+        } elseif (! $productStockCheck) {
             Toastr::error(translate('the_following_items_in_your_cart_are_currently_out_of_stock'));
+
             return redirect()->route('shop-cart');
         }
 
@@ -96,6 +98,7 @@ class PaymentController extends Controller
             return response()->json(['errors' => ['code' => 'Check the minimum order amount requirement']], 403);
         } elseif ($verifyStatus['status'] == 0) {
             Toastr::info('Check the minimum order amount requirement');
+
             return redirect()->route('shop-cart');
         }
 
@@ -123,7 +126,7 @@ class PaymentController extends Controller
 
                 if ($getShippingType == 'order_wise' && $deliveryType !== 'pickup') {
                     $cartShipping = CartShipping::where('cart_group_id', $cart->cart_group_id)->first();
-                    if (!isset($cartShipping) && $physicalProductExist) {
+                    if (! isset($cartShipping) && $physicalProductExist) {
                         return response()->json(['errors' => ['code' => 'shipping-method', 'message' => 'Data not found']], 403);
                     }
                 }
@@ -132,7 +135,9 @@ class PaymentController extends Controller
             if (($user == 'offline' && $request['is_check_create_account'])) {
                 $getAPIProcess = self::getRegisterNewCustomerAPIProcess($request);
                 if ($getAPIProcess['status'] == 0) {
-                    return response()->json(['message' => translate('Already_registered ')], 403);
+                    return response()->json([
+                        'message' => $getAPIProcess['message'] ?? translate('Already_registered '),
+                    ], 403);
                 }
                 $orderAdditionalData += [
                     'new_customer_info' => $getAPIProcess['data'],
@@ -152,48 +157,63 @@ class PaymentController extends Controller
         }
     }
 
-    function getRegisterNewCustomerAPIProcess($request)
+    public function getRegisterNewCustomerAPIProcess($request)
     {
-        $newCustomerRegister = [];
         $shippingAddress = ShippingAddress::where(['customer_id' => $request['guest_id'], 'is_guest' => 1, 'id' => $request->input('address_id')])->first();
-        if ($request->has('address_id') && $request['address_id'] && $shippingAddress) {
-            if (User::where(['email' => $shippingAddress['email']])->orWhere(['phone' => $shippingAddress['phone']])->first()) {
-                return ['status' => 0];
-            } else {
-                $newCustomerRegister = [
-                    'status' => 1,
-                    'data' => self::getRegisterNewCustomer(
-                        request: $request,
-                        address: $shippingAddress,
-                        shippingId: $request['address_id'],
-                        billingId: $request->has('billing_address_id') && $request['billing_address_id'] ? $request['billing_address_id'] : null
-                    )
-                ];
+        if ($request->filled('address_id') && $shippingAddress) {
+            $conflictMessage = $this->getGuestCustomerConflictMessage($shippingAddress);
+            if ($conflictMessage !== null) {
+                return ['status' => 0, 'message' => $conflictMessage];
             }
+
+            return [
+                'status' => 1,
+                'data' => self::getRegisterNewCustomer(
+                    request: $request,
+                    address: $shippingAddress,
+                    shippingId: $request->input('address_id'),
+                    billingId: $request->filled('billing_address_id') ? $request->input('billing_address_id') : null
+                ),
+            ];
         }
 
         $billingAddress = ShippingAddress::where(['customer_id' => $request['guest_id'], 'is_guest' => 1, 'id' => $request->input('billing_address_id')])->first();
-        if ($request['address_id'] == null && $request->has('billing_address_id') && $request['billing_address_id'] && $billingAddress) {
-            if (User::where(['email' => $billingAddress['email']])->orWhere(['phone' => $billingAddress['phone']])->first()) {
-                return ['status' => 0];
-            } else {
-                $newCustomerRegister = [
-                    'status' => 1,
-                    'data' => self::getRegisterNewCustomer(
-                        request: $request,
-                        address: $billingAddress,
-                        shippingId: null,
-                        billingId: $request['billing_address_id'],
-                    )
-                ];
+        if (! $request->filled('address_id') && $request->filled('billing_address_id') && $billingAddress) {
+            $conflictMessage = $this->getGuestCustomerConflictMessage($billingAddress);
+            if ($conflictMessage !== null) {
+                return ['status' => 0, 'message' => $conflictMessage];
             }
+
+            return [
+                'status' => 1,
+                'data' => self::getRegisterNewCustomer(
+                    request: $request,
+                    address: $billingAddress,
+                    shippingId: null,
+                    billingId: $request->input('billing_address_id'),
+                ),
+            ];
         }
 
-        return $newCustomerRegister;
+        return [];
     }
 
+    private function getGuestCustomerConflictMessage(ShippingAddress $address): ?string
+    {
+        $phone = trim((string) ($address->phone ?? ''));
+        if ($phone !== '' && User::where('phone', $phone)->exists()) {
+            return translate('Phone_already_exists');
+        }
 
-    function getRegisterNewCustomer($request, $address, $shippingId = null, $billingId = null): array
+        $email = trim((string) ($address->email ?? ''));
+        if ($email !== '' && User::where('email', $email)->exists()) {
+            return translate('Email_already_exists');
+        }
+
+        return null;
+    }
+
+    public function getRegisterNewCustomer($request, $address, $shippingId = null, $billingId = null): array
     {
         return [
             'name' => $address['contact_person_name'],
@@ -235,9 +255,10 @@ class PaymentController extends Controller
 
         if ($request->flag == 'success') {
             if ($isWarrantyClaimPayment) {
-                if (!$this->isValidWarrantyClaimPaymentSuccess($paymentRequest, $warrantyClaimPaymentId)) {
+                if (! $this->isValidWarrantyClaimPaymentSuccess($paymentRequest, $warrantyClaimPaymentId)) {
                     session()->forget(['payment_type', 'warranty_claim_payment_id']);
                     Toastr::error(translate('Payment verification failed'));
+
                     return redirect(url('/'));
                 }
 
@@ -245,9 +266,10 @@ class PaymentController extends Controller
                     ? WarrantyClaimPayment::with(['claim.charges'])->find($warrantyClaimPaymentId)
                     : null;
 
-                if (!$warrantyPayment) {
+                if (! $warrantyPayment) {
                     session()->forget(['payment_type', 'warranty_claim_payment_id']);
                     Toastr::error(translate('Warranty claim payment not found'));
+
                     return redirect(url('/'));
                 }
 
@@ -255,20 +277,23 @@ class PaymentController extends Controller
                 session()->forget(['payment_type', 'warranty_claim_payment_id']);
 
                 Toastr::success(translate('Payment_success'));
+
                 return view(VIEW_FILE_NAMES['service_payment_success']);
             }
 
             if ($isServiceInvoicePayment) {
-                if (!$this->isValidServicePaymentSuccess($paymentRequest, $serviceInvoiceId)) {
+                if (! $this->isValidServicePaymentSuccess($paymentRequest, $serviceInvoiceId)) {
                     session()->forget(['payment_type', 'invoice_id']);
                     Toastr::error(translate('Payment verification failed'));
+
                     return redirect(url('/'));
                 }
 
                 $invoice = $serviceInvoiceId ? ServiceInvoice::with('ticket')->find($serviceInvoiceId) : null;
-                if (!$invoice) {
+                if (! $invoice) {
                     session()->forget(['payment_type', 'invoice_id']);
                     Toastr::error(translate('Invoice not found or already paid'));
+
                     return redirect(url('/'));
                 }
 
@@ -285,6 +310,7 @@ class PaymentController extends Controller
                 session()->forget(['payment_type', 'invoice_id']);
 
                 Toastr::success(translate('Payment_success'));
+
                 return view(VIEW_FILE_NAMES['service_payment_success']);
             }
 
@@ -295,6 +321,7 @@ class PaymentController extends Controller
             Toastr::success(translate('Payment_success'));
             $isNewCustomerInSession = session('newCustomerRegister');
             session()->forget('newCustomerRegister');
+
             return view(VIEW_FILE_NAMES['order_complete'], compact('isNewCustomerInSession'));
         }
 
@@ -310,14 +337,16 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Payment failed'], 403);
         }
 
-        Toastr::error(translate('Payment_failed') . '!');
+        Toastr::error(translate('Payment_failed').'!');
+
         return redirect(url('/'));
     }
+
     public function getCustomerPaymentRequest(Request $request, $orderAdditionalData = []): mixed
     {
         $additionalData = [
             'business_name' => getWebConfig(name: 'company_name'),
-            'business_logo' => getStorageImages(path: getWebConfig('company_web_logo'), type:'shop'),
+            'business_logo' => getStorageImages(path: getWebConfig('company_web_logo'), type: 'shop'),
             'payment_mode' => $request->has('payment_platform') ? $request['payment_platform'] : 'web',
         ];
 
@@ -334,7 +363,7 @@ class PaymentController extends Controller
             $additionalData['billing_address_id'] = session('newCustomerRegister')['billing_address_id'] ?? null;
             $getCustomerID = $getGuestId;
             $isGuestUserInOrder = 0;
-        } elseif ($user == 'offline' && !session('newCustomerRegister') && isset($orderAdditionalData['new_customer_info'])) {
+        } elseif ($user == 'offline' && ! session('newCustomerRegister') && isset($orderAdditionalData['new_customer_info'])) {
             $additionalData['new_customer_info'] = $orderAdditionalData['new_customer_info'];
             $getCustomerID = $getGuestId;
             $isGuestUserInOrder = 0;
@@ -406,13 +435,14 @@ class PaymentController extends Controller
             }
         } else {
             $payer = new Payer(
-                $customer['f_name'] . ' ' . $customer['l_name'],
+                $customer['f_name'].' '.$customer['l_name'],
                 $customer['email'],
                 $customer['phone'],
                 ''
             );
             if (empty($customer['phone'])) {
                 Toastr::error(translate('please_update_your_phone_number'));
+
                 return route('checkout-payment');
             }
         }
@@ -429,10 +459,11 @@ class PaymentController extends Controller
             payment_amount: $paymentAmount,
             external_redirect_link: $request['payment_platform'] == 'web' ? $request['external_redirect_link'] : null,
             attribute: 'order',
-            attribute_id: idate("U")
+            attribute_id: idate('U')
         );
 
         $receiverInfo = new Receiver('receiver_name', 'example.png');
+
         return $this->generate_link($payer, $paymentInfo, $receiverInfo);
     }
 
@@ -443,6 +474,7 @@ class PaymentController extends Controller
                 return response()->json(['message' => 'Add funds to wallet is deactivated'], 403);
             }
             Toastr::error(translate('add_funds_to_wallet_is_deactivated'));
+
             return back();
         }
 
@@ -460,6 +492,7 @@ class PaymentController extends Controller
                 foreach ($errors as $value) {
                     Toastr::error(translate($value['message']));
                 }
+
                 return back();
             }
         }
@@ -475,11 +508,10 @@ class PaymentController extends Controller
             $currentCurrency = $currency_code;
         }
 
-
         $minimumAddFundAmount = getWebConfig(name: 'minimum_add_fund_amount') ?? 0;
         $maximumAddFundAmount = getWebConfig(name: 'maximum_add_fund_amount') ?? 0;
 
-        if (!(Convert::usdPaymentModule($request->amount, $currentCurrency) >= Convert::usdPaymentModule($minimumAddFundAmount, 'USD')) || !(Convert::usdPaymentModule($request->amount, $currentCurrency) <= Convert::usdPaymentModule($maximumAddFundAmount, 'USD'))) {
+        if (! (Convert::usdPaymentModule($request->amount, $currentCurrency) >= Convert::usdPaymentModule($minimumAddFundAmount, 'USD')) || ! (Convert::usdPaymentModule($request->amount, $currentCurrency) <= Convert::usdPaymentModule($maximumAddFundAmount, 'USD'))) {
             $errors = [
                 'minimum_amount' => $minimumAddFundAmount ?? 0,
                 'maximum_amount' => $maximumAddFundAmount ?? 1000,
@@ -487,7 +519,8 @@ class PaymentController extends Controller
             if (in_array($request->payment_request_from, ['app'])) {
                 return response()->json($errors, 202);
             } else {
-                Toastr::error(translate('the_amount_needs_to_be_between') . ' ' . webCurrencyConverter($minimumAddFundAmount) . ' - ' . webCurrencyConverter($maximumAddFundAmount));
+                Toastr::error(translate('the_amount_needs_to_be_between').' '.webCurrencyConverter($minimumAddFundAmount).' - '.webCurrencyConverter($maximumAddFundAmount));
+
                 return back();
             }
         }
@@ -506,7 +539,7 @@ class PaymentController extends Controller
         }
 
         $payer = new Payer(
-            $customer->f_name . ' ' . $customer->l_name,
+            $customer->f_name.' '.$customer->l_name,
             $customer['email'],
             $customer->phone,
             ''
@@ -524,7 +557,7 @@ class PaymentController extends Controller
             payment_amount: Convert::usdPaymentModule($request->amount, $currentCurrency),
             external_redirect_link: $request->payment_platform == 'web' ? $request->external_redirect_link : null,
             attribute: 'add_funds_to_wallet',
-            attribute_id: idate("U")
+            attribute_id: idate('U')
         );
 
         $receiver_info = new Receiver('receiver_name', 'example.png');
@@ -538,22 +571,24 @@ class PaymentController extends Controller
         }
     }
 
-
     public function servicePayment($id)
     {
-        if (!auth('customer')->check()) {
+        if (! auth('customer')->check()) {
             Toastr::error(translate('please_login_first'));
+
             return redirect()->route('customer.auth.login');
         }
 
         $invoice = ServiceInvoice::with('ticket')->find($id);
-        if (!$invoice || !$invoice->ticket) {
+        if (! $invoice || ! $invoice->ticket) {
             Toastr::error(translate('Invoice not found or already paid'));
+
             return redirect('/');
         }
 
-        if ((int)$invoice->ticket->customer_id !== (int)auth('customer')->id()) {
+        if ((int) $invoice->ticket->customer_id !== (int) auth('customer')->id()) {
             Toastr::error(translate('you_have_no_access_to_this_invoice'));
+
             return redirect('/');
         }
 
@@ -567,11 +602,13 @@ class PaymentController extends Controller
         ) {
             $invoice->update(['payment_status' => 'expired']);
             Toastr::error(translate('Payment link has expired'));
+
             return redirect('/');
         }
 
         if ($invoice->payment_status !== 'pending') {
             Toastr::error(translate('Invoice not found or already paid'));
+
             return redirect('/');
         }
 
@@ -583,8 +620,9 @@ class PaymentController extends Controller
 
     public function service_payment_request(Request $request)
     {
-        if (!auth('customer')->check()) {
+        if (! auth('customer')->check()) {
             Toastr::error(translate('please_login_first'));
+
             return redirect()->route('customer.auth.login');
         }
 
@@ -598,17 +636,20 @@ class PaymentController extends Controller
             foreach ($validator->errors()->all() as $error) {
                 Toastr::error($error);
             }
+
             return back();
         }
 
         $invoice = ServiceInvoice::with('ticket')->find($request->invoice_id);
-        if (!$invoice || !$invoice->ticket) {
+        if (! $invoice || ! $invoice->ticket) {
             Toastr::error(translate('Invoice not found or already paid'));
+
             return back();
         }
 
-        if ((int)$invoice->ticket->customer_id !== (int)auth('customer')->id()) {
+        if ((int) $invoice->ticket->customer_id !== (int) auth('customer')->id()) {
             Toastr::error(translate('you_have_no_access_to_this_invoice'));
+
             return back();
         }
 
@@ -622,11 +663,13 @@ class PaymentController extends Controller
         ) {
             $invoice->update(['payment_status' => 'expired']);
             Toastr::error(translate('Payment link has expired'));
+
             return back();
         }
 
         if ($invoice->payment_status !== 'pending') {
             Toastr::error(translate('Invoice not found or already paid'));
+
             return back();
         }
 
@@ -649,12 +692,12 @@ class PaymentController extends Controller
             'new_customer_id' => null,
             'address_id' => null,
             'billing_address_id' => null,
-            'order_note' => 'Service Invoice Payment - Ticket #' . $invoice->ticket_id,
+            'order_note' => 'Service Invoice Payment - Ticket #'.$invoice->ticket_id,
             'payment_request_from' => 'service',
         ];
 
         $payer = new Payer(
-            $customer->f_name . ' ' . $customer->l_name,
+            $customer->f_name.' '.$customer->l_name,
             $customer->email,
             $customer->phone,
             ''
@@ -695,41 +738,48 @@ class PaymentController extends Controller
 
     public function warrantyClaimPayment(string $token)
     {
-        if (!auth('customer')->check()) {
+        if (! auth('customer')->check()) {
             Toastr::error(translate('please_login_first'));
+
             return redirect()->route('customer.auth.login');
         }
 
         $payment = WarrantyClaimPayment::with(['claim.warranty'])->where('payment_link_token', $token)->latest('id')->first();
-        if (!$payment || $payment->payment_channel !== 'online_link') {
+        if (! $payment || $payment->payment_channel !== 'online_link') {
             Toastr::error(translate('Payment link not found'));
+
             return redirect('/');
         }
 
         if ($payment->payment_status !== 'pending') {
             Toastr::error(translate('Payment link is no longer active'));
+
             return redirect('/');
         }
 
         if ($payment->payment_link_expires_at && now()->gt($payment->payment_link_expires_at)) {
             $payment->update(['payment_status' => 'expired']);
             Toastr::error(translate('Payment link has expired'));
+
             return redirect('/');
         }
 
         $claim = $payment->claim;
-        if (!$claim || !$claim->warranty) {
+        if (! $claim || ! $claim->warranty) {
             Toastr::error(translate('Warranty claim not found'));
+
             return redirect('/');
         }
 
-        if ((int)$claim->warranty->final_user_id !== (int)auth('customer')->id()) {
+        if ((int) $claim->warranty->final_user_id !== (int) auth('customer')->id()) {
             Toastr::error(translate('you_have_no_access_to_this_payment'));
+
             return redirect('/');
         }
 
-        if ((float)$payment->amount <= 0) {
+        if ((float) $payment->amount <= 0) {
             Toastr::error(translate('No payable amount found for this payment link'));
+
             return redirect('/');
         }
 
@@ -741,8 +791,9 @@ class PaymentController extends Controller
 
     public function warranty_claim_payment_request(Request $request)
     {
-        if (!auth('customer')->check()) {
+        if (! auth('customer')->check()) {
             Toastr::error(translate('please_login_first'));
+
             return redirect()->route('customer.auth.login');
         }
 
@@ -756,33 +807,38 @@ class PaymentController extends Controller
             foreach ($validator->errors()->all() as $error) {
                 Toastr::error($error);
             }
+
             return back();
         }
 
         $payment = WarrantyClaimPayment::with(['claim.warranty', 'claim.charges'])->find($request->payment_id);
         if (
-            !$payment ||
+            ! $payment ||
             $payment->payment_channel !== 'online_link' ||
             $payment->payment_status !== 'pending'
         ) {
             Toastr::error(translate('Payment link is no longer active'));
+
             return back();
         }
 
         if ($payment->payment_link_expires_at && now()->gt($payment->payment_link_expires_at)) {
             $payment->update(['payment_status' => 'expired']);
             Toastr::error(translate('Payment link has expired'));
+
             return back();
         }
 
         $claim = $payment->claim;
-        if (!$claim || !$claim->warranty) {
+        if (! $claim || ! $claim->warranty) {
             Toastr::error(translate('Warranty claim not found'));
+
             return back();
         }
 
-        if ((int)$claim->warranty->final_user_id !== (int)auth('customer')->id()) {
+        if ((int) $claim->warranty->final_user_id !== (int) auth('customer')->id()) {
             Toastr::error(translate('you_have_no_access_to_this_payment'));
+
             return back();
         }
 
@@ -795,11 +851,13 @@ class PaymentController extends Controller
         if ($payableChargesCount <= 0) {
             $payment->update(['payment_status' => 'paid', 'paid_at' => now()]);
             Toastr::error(translate('All selected charges are already paid'));
+
             return back();
         }
 
-        if ((float)$payment->amount <= 0) {
+        if ((float) $payment->amount <= 0) {
             Toastr::error(translate('No payable amount found for this payment link'));
+
             return back();
         }
 
@@ -821,12 +879,12 @@ class PaymentController extends Controller
             'new_customer_id' => null,
             'address_id' => null,
             'billing_address_id' => null,
-            'order_note' => 'Warranty Claim Payment - Claim #' . $claim->claim_number,
+            'order_note' => 'Warranty Claim Payment - Claim #'.$claim->claim_number,
             'payment_request_from' => 'warranty_claim',
         ];
 
         $payer = new Payer(
-            $customer->f_name . ' ' . $customer->l_name,
+            $customer->f_name.' '.$customer->l_name,
             $customer->email,
             $customer->phone,
             ''
@@ -849,7 +907,7 @@ class PaymentController extends Controller
             payer_id: $customer->id,
             receiver_id: '100',
             additional_data: $additional_data,
-            payment_amount: (float)$payment->amount,
+            payment_amount: (float) $payment->amount,
             external_redirect_link: route('web-payment-success'),
             attribute: 'warranty_claim_payment',
             attribute_id: $payment->id
@@ -867,13 +925,13 @@ class PaymentController extends Controller
 
     private function getPaymentRequestFromToken(?string $token): ?PaymentRequest
     {
-        if (!$token) {
+        if (! $token) {
             return null;
         }
 
         $token = str_replace(' ', '+', $token);
         $decoded = base64_decode($token, true);
-        if (!$decoded) {
+        if (! $decoded) {
             return null;
         }
 
@@ -887,7 +945,7 @@ class PaymentController extends Controller
 
         $paymentMethod = $payload['payment_method'] ?? null;
         $transactionReference = $payload['transaction_reference'] ?? null;
-        if (!$paymentMethod || !$transactionReference) {
+        if (! $paymentMethod || ! $transactionReference) {
             return null;
         }
 
@@ -908,13 +966,14 @@ class PaymentController extends Controller
         }
 
         $sessionPaymentId = session('warranty_claim_payment_id');
-        return $sessionPaymentId ? (int)$sessionPaymentId : null;
+
+        return $sessionPaymentId ? (int) $sessionPaymentId : null;
     }
 
     private function resolveWarrantyClaimPaymentIdFromPaymentRequest(PaymentRequest $paymentRequest): ?int
     {
         if ($paymentRequest->attribute === 'warranty_claim_payment' && $paymentRequest->attribute_id) {
-            return (int)$paymentRequest->attribute_id;
+            return (int) $paymentRequest->attribute_id;
         }
 
         if ($paymentRequest->additional_data) {
@@ -922,7 +981,7 @@ class PaymentController extends Controller
             if (is_array($additionalData)) {
                 $paymentId = $additionalData['warranty_claim_payment_id'] ?? null;
                 if ($paymentId) {
-                    return (int)$paymentId;
+                    return (int) $paymentId;
                 }
             }
         }
@@ -932,7 +991,7 @@ class PaymentController extends Controller
 
     private function isValidWarrantyClaimPaymentSuccess(?PaymentRequest $paymentRequest, ?int $resolvedPaymentId): bool
     {
-        if (!$paymentRequest || (int)$paymentRequest->is_paid !== 1) {
+        if (! $paymentRequest || (int) $paymentRequest->is_paid !== 1) {
             return false;
         }
 
@@ -941,11 +1000,11 @@ class PaymentController extends Controller
         }
 
         $expectedPaymentId = $this->resolveWarrantyClaimPaymentIdFromPaymentRequest($paymentRequest);
-        if (!$expectedPaymentId || !$resolvedPaymentId) {
+        if (! $expectedPaymentId || ! $resolvedPaymentId) {
             return false;
         }
 
-        return $expectedPaymentId === (int)$resolvedPaymentId;
+        return $expectedPaymentId === (int) $resolvedPaymentId;
     }
 
     private function afterWarrantyClaimPaymentSuccess(WarrantyClaimPayment $payment, ?PaymentRequest $paymentRequest = null): void
@@ -957,7 +1016,7 @@ class PaymentController extends Controller
             }
 
             $claim = $payment->claim()->with('charges')->first();
-            if (!$claim) {
+            if (! $claim) {
                 return;
             }
 
@@ -983,14 +1042,14 @@ class PaymentController extends Controller
             ];
             $payment->update($paymentUpdate);
 
-            if (!$claim->charges()->where('is_paid', false)->exists() && $claim->status === 'waiting_payment') {
+            if (! $claim->charges()->where('is_paid', false)->exists() && $claim->status === 'waiting_payment') {
                 $nextStatus = $claim->repair_or_replace === 'repair' ? 'repair_pending' : 'replacement_pending';
                 $claim->update(['status' => $nextStatus]);
             }
 
             $description = 'Online payment received'
-                . " | Amount: {$payment->amount}"
-                . " | Payment ID: {$payment->id}";
+                ." | Amount: {$payment->amount}"
+                ." | Payment ID: {$payment->id}";
             if ($paymentRequest?->transaction_id) {
                 $description .= " | Gateway TX: {$paymentRequest->transaction_id}";
             }
@@ -1013,13 +1072,14 @@ class PaymentController extends Controller
         }
 
         $sessionInvoiceId = session('invoice_id');
-        return $sessionInvoiceId ? (int)$sessionInvoiceId : null;
+
+        return $sessionInvoiceId ? (int) $sessionInvoiceId : null;
     }
 
     private function resolveServiceInvoiceIdFromPaymentRequest(PaymentRequest $paymentRequest): ?int
     {
         if ($paymentRequest->attribute === 'service_invoice' && $paymentRequest->attribute_id) {
-            return (int)$paymentRequest->attribute_id;
+            return (int) $paymentRequest->attribute_id;
         }
 
         if ($paymentRequest->additional_data) {
@@ -1027,7 +1087,7 @@ class PaymentController extends Controller
             if (is_array($additionalData)) {
                 $invoiceId = $additionalData['service_invoice_id'] ?? $additionalData['invoice_id'] ?? null;
                 if ($invoiceId) {
-                    return (int)$invoiceId;
+                    return (int) $invoiceId;
                 }
             }
         }
@@ -1037,7 +1097,7 @@ class PaymentController extends Controller
 
     private function isValidServicePaymentSuccess(?PaymentRequest $paymentRequest, ?int $resolvedInvoiceId): bool
     {
-        if (!$paymentRequest || (int)$paymentRequest->is_paid !== 1) {
+        if (! $paymentRequest || (int) $paymentRequest->is_paid !== 1) {
             return false;
         }
 
@@ -1046,11 +1106,11 @@ class PaymentController extends Controller
         }
 
         $expectedInvoiceId = $this->resolveServiceInvoiceIdFromPaymentRequest($paymentRequest);
-        if (!$expectedInvoiceId || !$resolvedInvoiceId) {
+        if (! $expectedInvoiceId || ! $resolvedInvoiceId) {
             return false;
         }
 
-        return $expectedInvoiceId === (int)$resolvedInvoiceId;
+        return $expectedInvoiceId === (int) $resolvedInvoiceId;
     }
 
     private function afterServiceInvoicePaymentSuccess(ServiceInvoice $invoice): void

@@ -2,18 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\GuestUser;
 use Closure;
 use Illuminate\Http\Request;
 
 class APIGuestMiddleware
 {
-    /**
-     * @param Request $request
-     * @param Closure $next
-     * @return mixed
-     */
-
-    // old 
+    // old
     // public function handle(Request $request, Closure $next): mixed
     // {
     //     if ($request->header('Authorization') && app('auth')->guard('api')) {
@@ -26,11 +21,8 @@ class APIGuestMiddleware
     //     return response()->json(['Unauthorized', 401]);
     // }
 
-
-
     // public function handle(Request $request, Closure $next): mixed
     // {
-
 
     //     // Logged-in API customer
     //     if ($request->bearerToken() && auth('api')->check()) {
@@ -66,17 +58,28 @@ class APIGuestMiddleware
             return $next($request);
         }
 
-        // 2. Handle Guest Logic
-        if ($request->filled('guest_id')) {
-            // We force these keys so your Helper logic (payment_request_from) returns 'offline' 
-            // instead of falling through to the end
-            $request->merge([
-                'payment_request_from' => 'app',
-                'is_guest' => true
-            ]);
-            return $next($request);
+        if ($request->bearerToken() && ! $user) {
+            return response()->json(['message' => 'Please login first'], 401);
         }
 
-        return response()->json(['message' => 'Please login first'], 401);
+        // 2. Handle Guest Logic
+        $guestId = (int) $request->input('guest_id');
+        $guest = $guestId > 0 ? GuestUser::query()->find($guestId) : null;
+
+        if (! $guest) {
+            $guest = GuestUser::query()->create([
+                'ip_address' => $request->ip(),
+            ]);
+        }
+
+        // Force a normalized guest context so helper logic consistently resolves
+        // the request as an app guest checkout/cart request.
+        $request->merge([
+            'guest_id' => $guest->id,
+            'payment_request_from' => 'app',
+            'is_guest' => true,
+        ]);
+
+        return $next($request);
     }
 }

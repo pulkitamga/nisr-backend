@@ -1,3 +1,4 @@
+@php use function App\Utils\support_ticket_message_html; @endphp
 @extends('layouts.front-end.app')
 
 @section('title', translate('support_Ticket'))
@@ -82,7 +83,7 @@
 
                                 @if ($conversation['admin_message'])
                                 <div class="d-flex justify-content-start">
-                                    <p class="font-size-md mb-1 btn--primary message-text">{{$conversation['admin_message']}}</p>
+                                    <p class="font-size-md mb-1 btn--primary message-text">{{ support_ticket_message_html($conversation['admin_message']) }}</p>
                                 </div>
                                 @endif
 
@@ -112,7 +113,7 @@
                         <div class="media-body __outgoing-msg">
                             @if ($conversation['customer_message'])
                             <div class="d-flex justify-content-end">
-                                <p class="font-size-md mb-1 btn--primary message-text">{{$conversation['customer_message']}}</p>
+                                <p class="font-size-md mb-1 btn--primary message-text">{{ support_ticket_message_html($conversation['customer_message']) }}</p>
                             </div>
                             @endif
                             @if ($conversation['attachment'] !=null && count($conversation->attachment_full_url) > 0)
@@ -139,7 +140,7 @@
                         <div class="media-body __outgoing-msg">
                             @if ($ticket['description'])
                             <div class="d-flex justify-content-end">
-                                <p class="font-size-md mb-1 btn--primary message-text">{{$ticket['description']}}</p>
+                                <p class="font-size-md mb-1 btn--primary message-text">{{ support_ticket_message_html($ticket['description']) }}</p>
                             </div>
                             @endif
 

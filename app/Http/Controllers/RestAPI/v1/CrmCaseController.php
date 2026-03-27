@@ -21,7 +21,7 @@ class CrmCaseController extends Controller
     {
         $cases = $this->customerCaseQuery($request->user())
             ->whereNotIn('status', ['spam', 'ignored'])
-            ->with(['employee', 'owner', 'ticket'])
+            ->with(['employee', 'owner', 'ticket.status_details'])
             ->latest()
             ->get()
             ->map(fn (InboxMessage $message): array => $this->transformCase($message))
@@ -89,7 +89,7 @@ class CrmCaseController extends Controller
     protected function findCustomerCaseOrFail(Request $request, int $id): InboxMessage
     {
         $case = $this->customerCaseQuery($request->user())
-            ->with(['employee', 'owner', 'ticket'])
+            ->with(['employee', 'owner', 'ticket.status_details'])
             ->find($id);
 
         abort_if(!$case, 404, translate('crm_case_not_found'));
@@ -254,7 +254,19 @@ class CrmCaseController extends Controller
     protected function normalizeStatus(InboxMessage $message, ?SupportTicket $ticket): string
     {
         if ($ticket) {
-            return in_array($ticket->status, ['close', 'closed'], true) ? 'closed' : 'converted';
+            $ticketStatus = strtolower(trim((string) (
+                $ticket->status_details?->name
+                ?? $ticket->status_details?->status
+                ?? $ticket->status
+            )));
+
+            return match ($ticketStatus) {
+                'close', 'closed', 'resolved', 'done', 'completed' => 'closed',
+                'waiting', 'pending', 'hold', 'on_hold', 'on hold' => 'waiting',
+                'new', 'open', 'opened', 'processing', 'in_progress', 'in progress',
+                'assigned', 'working', 'active' => 'processing',
+                default => 'processing',
+            };
         }
 
         return match ($message->status) {

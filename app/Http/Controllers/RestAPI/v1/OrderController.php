@@ -65,27 +65,19 @@ class OrderController extends Controller
         return null;
     }
 
-    private function guestCustomerAlreadyExists(ShippingAddress $address): bool
+    private function getGuestCustomerConflictMessage(ShippingAddress $address): ?string
     {
-        $email = trim((string) ($address->email ?? ''));
         $phone = trim((string) ($address->phone ?? ''));
-
-        if ($email === '' && $phone === '') {
-            return false;
+        if ($phone !== '' && User::where('phone', $phone)->exists()) {
+            return translate('Phone_already_exists');
         }
 
-        return User::query()
-            ->when($email !== '', function ($query) use ($email) {
-                $query->where('email', $email);
-            })
-            ->when($phone !== '', function ($query) use ($phone, $email) {
-                if ($email !== '') {
-                    $query->orWhere('phone', $phone);
-                } else {
-                    $query->where('phone', $phone);
-                }
-            })
-            ->exists();
+        $email = trim((string) ($address->email ?? ''));
+        if ($email !== '' && User::where('email', $email)->exists()) {
+            return translate('Email_already_exists');
+        }
+
+        return null;
     }
 
     public function track_by_order_id(Request $request)
@@ -178,8 +170,9 @@ class OrderController extends Controller
         if ($user == 'offline' && $request->boolean('is_check_create_account')) {
             $registrationAddress = $this->resolveGuestRegistrationAddress($request);
             if ($registrationAddress) {
-                if ($this->guestCustomerAlreadyExists($registrationAddress)) {
-                    return response()->json(['message' => translate('Already_registered ')], 403);
+                $conflictMessage = $this->getGuestCustomerConflictMessage($registrationAddress);
+                if ($conflictMessage !== null) {
+                    return response()->json(['message' => $conflictMessage], 403);
                 }
 
                 $newCustomerRegister = self::addNewCustomer(request: $request, address: $registrationAddress);
@@ -343,8 +336,9 @@ class OrderController extends Controller
         if ($user == 'offline' && $request->boolean('is_check_create_account')) {
             $registrationAddress = $this->resolveGuestRegistrationAddress($request);
             if ($registrationAddress) {
-                if ($this->guestCustomerAlreadyExists($registrationAddress)) {
-                    return response()->json(['message' => translate('Already_registered ')], 403);
+                $conflictMessage = $this->getGuestCustomerConflictMessage($registrationAddress);
+                if ($conflictMessage !== null) {
+                    return response()->json(['message' => $conflictMessage], 403);
                 }
 
                 $newCustomerRegister = self::addNewCustomer(request: $request, address: $registrationAddress);

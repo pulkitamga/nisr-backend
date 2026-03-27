@@ -1,4 +1,7 @@
-@php use function App\Utils\customer_info; @endphp
+@php
+    use function App\Utils\customer_info;
+    use function App\Utils\support_ticket_message_html;
+@endphp
 @extends('theme-views.layouts.app')
 
 @section('title', translate('Support_Ticket').' | '.$web_config['company_name'].' '.translate('ecommerce'))
@@ -68,7 +71,7 @@
                         <div class="messaging">
                             <div class="inbox_msg custom-scrollbar p-3 msg-history __h-30rem">
                                 <div class="outgoing_msg">
-                                    <p class="message_text">{{ $ticket['description']}}</p>
+                                    <p class="message_text">{{ support_ticket_message_html($ticket['description']) }}</p>
                                     <span class="time_date d-flex justify-content-end"> {{ date('h:i:A | M d',strtotime($ticket['created_at'])) }}<i
                                             class="bi px-1"></i></span>
                                 </div>
@@ -76,7 +79,7 @@
                                     @if($conversation['admin_id'] == null)
                                         <div class="outgoing_msg">
                                             @if($conversation['customer_message'])
-                                                <p class="message_text">{{ $conversation['customer_message']}}</p>
+                                                <p class="message_text">{{ support_ticket_message_html($conversation['customer_message']) }}</p>
                                             @endif
                                             @if (count($conversation->attachment_full_url) > 0)
                                                 <div class="d-flex flex-wrap g-2 gap-2 justify-content-end custom-image-popup-init">
@@ -94,7 +97,7 @@
                                     @else
                                         <div class="received_msg">
                                             @if($conversation['admin_message'])
-                                                <p class="message_text">{{$conversation['admin_message']}}</p>
+                                                <p class="message_text">{{ support_ticket_message_html($conversation['admin_message']) }}</p>
                                             @endif
                                             @if (count($conversation->attachment_full_url ) > 0)
                                                 <div class="d-flex flex-wrap g-2 gap-2 justify-content-start custom-image-popup-init">
