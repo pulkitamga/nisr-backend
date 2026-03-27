@@ -1,6 +1,9 @@
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
-$defaultLanguage = $languages[0] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = $languages[0] ?? 'en';
+}
 
 @endphp
 <div class="d-flex justify-content-end my-3">
@@ -494,4 +497,5 @@ $defaultLanguage = $languages[0] ?? 'en';
         });
     });
 </script>
+
 

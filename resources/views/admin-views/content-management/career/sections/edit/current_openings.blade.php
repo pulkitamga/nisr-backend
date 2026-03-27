@@ -11,7 +11,12 @@
 
 @php
 $language = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0] ?? 'en';
+$baseLanguage = config('app.locale', 'en');
+if (!in_array($baseLanguage, $language ?? [], true)) {
+    $baseLanguage = $language[0] ?? 'en';
+}
+$activeLanguage = getDefaultLanguage();
+$activeLanguage = in_array($activeLanguage, $language ?? [], true) ? $activeLanguage : $baseLanguage;
 @endphp
 <div class="content container-fluid">
     <div class="card">
@@ -28,7 +33,7 @@ $defaultLanguage = $language[0] ?? 'en';
                 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -43,26 +48,26 @@ $defaultLanguage = $language[0] ?? 'en';
                 }
                 @endphp
                 @foreach($language as $lang)
-                <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                     id="{{ $lang }}-form">
 
                     <!-- Title -->
                     <label for="title">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $job->title : ($translations[$lang]['title'] ?? '') }}" {{
-                        $lang==$defaultLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $baseLanguage ? $job->title : ($translations[$lang]['title'] ?? '') }}" {{
+                        $lang==$baseLanguage ? 'required' : '' }}>
 
                     <label for="job_description" class="mt-3">{{ translate('Job Description') }} ({{ strtoupper($lang)
                         }})</label>
                     <textarea name="job_description[]" class="form-control summernote">
-                            {!! $lang == $defaultLanguage ? $job->job_description : ($translations[$lang]['job_description'] ?? '') !!}
+                            {!! $lang == $baseLanguage ? $job->job_description : ($translations[$lang]['job_description'] ?? '') !!}
                         </textarea>
 
                     <label>{{ translate('Location') }} ({{ strtoupper($lang) }})</label>
-                    <input type="text" name="location[]" class="form-control" value="{{ $lang == $defaultLanguage ? $job->location : ($translations[$lang]['location'] ?? '') }}">
+                    <input type="text" name="location[]" class="form-control" value="{{ $lang == $baseLanguage ? $job->location : ($translations[$lang]['location'] ?? '') }}">
 
                     <label>{{ translate('Skills') }} ({{ strtoupper($lang) }})</label>
-                    <textarea class="form-control summernote" name="skills[]"> {!! $lang == $defaultLanguage ? $job->skills : ($translations[$lang]['skills'] ?? '') !!}</textarea>
+                    <textarea class="form-control summernote" name="skills[]"> {!! $lang == $baseLanguage ? $job->skills : ($translations[$lang]['skills'] ?? '') !!}</textarea>
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
                 </div>
                 @endforeach
@@ -89,6 +94,16 @@ $defaultLanguage = $language[0] ?? 'en';
 
 <script>
     'use strict';
+    document.querySelectorAll('.form-system-language-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const lang = this.id.replace('-link', '');
+            document.querySelectorAll('.form-system-language-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.form-system-language-form').forEach(f => f.classList.add('d-none'));
+            document.getElementById(lang + '-form').classList.remove('d-none');
+        });
+    });
+
     $(document).on('ready', function() {
         $('.summernote').summernote({
             height: 150,

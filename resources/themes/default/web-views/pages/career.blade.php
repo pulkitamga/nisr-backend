@@ -76,7 +76,7 @@
                     </h5>
 
                     <p class=" small">
-                        {{ strip_tags(getTranslatedValue($card, 'description', $card->description)) }}
+                        {{ richTextToPlainText(getTranslatedValue($card, 'description', $card->description)) }}
                     </p>
                 </div>
             </div>
@@ -110,12 +110,12 @@
 
                     <p class="small text-dark mb-2">
                         <strong>{{ translate('Skills') }}:</strong><br>
-                        {!! \Illuminate\Support\Str::words(strip_tags(getTranslatedValue($job, 'skills', $job->skills)), 20, '...') !!}
+                        {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'skills', $job->skills)), 20, '...') }}
                     </p>
 
                     <p class="small text-dark mb-3">
                         <strong>{{ translate('Description') }}:</strong><br>
-                        {!! \Illuminate\Support\Str::words(strip_tags(getTranslatedValue($job, 'job_description', $job->job_description ?? '')), 30, '...') !!}
+                        {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'job_description', $job->job_description ?? '')), 30, '...') }}
                     </p>
 
                     <a href="{{ route('career.job.detail', ['slug' => $job->id]) }}"
@@ -150,7 +150,7 @@
                         {{ getTranslatedValue($benefit, 'title', $benefit->title) }}
                     </h5>
                     <p class="text-muted mt-2 small">
-                        {{ getTranslatedValue($benefit, 'description', $benefit->description) }}
+                        {{ richTextToPlainText(getTranslatedValue($benefit, 'description', $benefit->description)) }}
                     </p>
                 </div>
             </div>

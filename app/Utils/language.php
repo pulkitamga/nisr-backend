@@ -558,6 +558,18 @@ if (!function_exists('getTranslatedValue')) {
     }
 }
 
+if (!function_exists('richTextToPlainText')) {
+    function richTextToPlainText(?string $value): string
+    {
+        $decodedValue = html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $normalizedWhitespace = str_replace(["\u{00A0}", '&nbsp;'], ' ', $decodedValue);
+        $plainText = strip_tags($normalizedWhitespace);
+        $plainText = preg_replace('/\s+/u', ' ', $plainText) ?? $plainText;
+
+        return trim($plainText);
+    }
+}
+
 
 if (!function_exists('getBusinessSettingTranslation')) {
       function getBusinessSettingTranslation(string $type, string $key = 'value', string $fallback = null): string

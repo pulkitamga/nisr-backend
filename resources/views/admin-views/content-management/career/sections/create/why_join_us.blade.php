@@ -9,7 +9,10 @@
 @section('content')
 @php
 $language = getWebConfig(name: 'pnc_language') ?? [];
-$defaultLang = $language[0] ?? 'en';
+$baseLanguage = config('app.locale', 'en');
+if (!in_array($baseLanguage, $language, true)) {
+    $baseLanguage = $language[0] ?? 'en';
+}
 @endphp
 
 <div class="content container-fluid">
@@ -23,7 +26,7 @@ $defaultLang = $language[0] ?? 'en';
         <ul class="nav nav-tabs mb-4">
             @foreach($language as $lang)
             <li class="nav-item">
-                <a class="nav-link form-system-language-tab {{ $lang == $defaultLang ? 'active' : '' }}"
+                <a class="nav-link form-system-language-tab {{ $lang == $baseLanguage ? 'active' : '' }}"
                     href="javascript:" id="{{ $lang }}-link">
                     {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                 </a>
@@ -33,12 +36,12 @@ $defaultLang = $language[0] ?? 'en';
 
         <!-- Multilingual Fields -->
         @foreach($language as $lang)
-        <div class="form-system-language-form {{ $lang != $defaultLang ? 'd-none' : '' }}" id="{{ $lang }}-form">
+        <div class="form-system-language-form {{ $lang != $baseLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
 
             <!-- Title -->
             <div class="form-group">
                 <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
-                <input type="text" name="title[]" class="form-control" {{ $lang==$defaultLang ? 'required' : '' }}>
+                <input type="text" name="title[]" class="form-control" {{ $lang==$baseLanguage ? 'required' : '' }}>
             </div>
 
             <!-- Description -->

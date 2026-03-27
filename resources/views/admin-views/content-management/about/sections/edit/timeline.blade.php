@@ -4,7 +4,10 @@
 
 @php
 $language = getWebConfig(name: 'pnc_language') ?? ['en'];
-$defaultLanguage = $language[0] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $language ?? [], true)) {
+    $defaultLanguage = $language[0] ?? 'en';
+}
 
 $translations = [];
 foreach ($model->translations as $translation) {
@@ -138,3 +141,4 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 </script>
 
 @endpush
+

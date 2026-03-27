@@ -22,7 +22,10 @@ $getDownloadImage = function (?string $image): string {
 
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
-$defaultLanguage = $languages[0] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = $languages[0] ?? 'en';
+}
 @endphp
 
 <ul class="nav nav-tabs mb-4">
@@ -316,4 +319,5 @@ $defaultLanguage = $languages[0] ?? 'en';
     });
 
 </script>
+
 

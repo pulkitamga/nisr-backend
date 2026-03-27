@@ -9,7 +9,10 @@
 @endpush
 @php
 $language = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0] ?? 'en';
+$baseLanguage = config('app.locale', 'en');
+if (!in_array($baseLanguage, $language ?? [], true)) {
+    $baseLanguage = $language[0] ?? 'en';
+}
 @endphp
 
 @section('content')
@@ -24,7 +27,7 @@ $defaultLanguage = $language[0] ?? 'en';
         <ul class="nav nav-tabs mb-4">
             @foreach($language as $lang)
             <li class="nav-item">
-                <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                <a class="nav-link form-system-language-tab {{ $lang == $baseLanguage ? 'active' : '' }}"
                     href="javascript:" id="{{ $lang }}-link">
                     {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                 </a>
@@ -34,27 +37,27 @@ $defaultLanguage = $language[0] ?? 'en';
 
         <!-- Language Fields -->
         @foreach($language as $lang)
-        <div class="form-system-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
+        <div class="form-system-language-form {{ $lang != $baseLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
             <div class="form-group">
                 <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="title[]" class="form-control" placeholder="{{ translate('Enter title') }}" {{
-                    $lang==$defaultLanguage ? 'required' : '' }}>
+                    $lang==$baseLanguage ? 'required' : '' }}>
             </div>
 
             <div class="form-group">
                 <label>{{ translate('Job Description') }} ({{ strtoupper($lang) }})</label>
                 <textarea class="form-control summernote" name="job_description[]" {{
-                    $lang==$defaultLanguage ? 'required' : '' }}></textarea>
+                    $lang==$baseLanguage ? 'required' : '' }}></textarea>
             </div>
             <div class="form-group">
                 <label>{{ translate('Skills (comma separated)') }} ({{ strtoupper($lang) }})</label>
                 <textarea class="form-control summernote" name="skills[]" {{
-                    $lang==$defaultLanguage ? 'required' : '' }}></textarea>
+                    $lang==$baseLanguage ? 'required' : '' }}></textarea>
             </div>
             <div class="form-group">
                 <label>{{ translate('Location') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="location[]" class="form-control" {{
-                    $lang==$defaultLanguage ? 'required' : '' }}>
+                    $lang==$baseLanguage ? 'required' : '' }}>
             </div>
 
             <input type="hidden" name="lang[]" value="{{ $lang }}">

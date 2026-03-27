@@ -112,25 +112,25 @@
                         <td>{{ getTranslatedValue($item, 'title', $item->title ?? '') }}</td>
                         <td>{{ getTranslatedValue($item, 'location', $item->location ?? '') }}</td>
                         <td>{{ $item->experience }}</td>
-                        <td>{{ strip_tags(getTranslatedValue($item, 'skills', $item->skills ?? '')) }}</td>
-                        <td>{{ Str::limit(strip_tags(getTranslatedValue($item, 'job_description', $item->job_description ?? '')), 80) }}</td>
+                        <td>{{ richTextToPlainText(getTranslatedValue($item, 'skills', $item->skills ?? '')) }}</td>
+                        <td>{{ Str::limit(richTextToPlainText(getTranslatedValue($item, 'job_description', $item->job_description ?? '')), 80) }}</td>
                         @break
 
                         @case('why_join_us')
                         <td>{{ getTranslatedValue($item, 'title', $item->title ?? '') }}</td>
-                        <td>{{ Str::limit(strip_tags(getTranslatedValue($item, 'description', $item->description ?? '')), 80) }}</td>
+                        <td>{{ Str::limit(richTextToPlainText(getTranslatedValue($item, 'description', $item->description ?? '')), 80) }}</td>
                         <td>{{ $item->icon}}</td>
                         @break
 
                         @case('perks')
                         <td>{{ getTranslatedValue($item, 'title', $item->title ?? '') }}</td>
-                        <td>{{ Str::limit(strip_tags(getTranslatedValue($item, 'description', $item->description ?? '')), 80) }}</td>
+                        <td>{{ Str::limit(richTextToPlainText(getTranslatedValue($item, 'description', $item->description ?? '')), 80) }}</td>
                         <td>{{ $item->icon }}</td>
                         @break
 
                         @case('hero')
                         <td>{{ getTranslatedValue($item, 'title', $item->title ?? '') }}</td>
-                        <td>{{ Str::limit(strip_tags(getTranslatedValue($item, 'description', $item->description ?? '')), 80) }}</td>
+                        <td>{{ Str::limit(richTextToPlainText(getTranslatedValue($item, 'description', $item->description ?? '')), 80) }}</td>
                         <td>{{ getTranslatedValue($item, 'button_text', $item->button_text ?? '') }}</td>
                         <td>{{ $item->button_link }}</td>
                         <td>
