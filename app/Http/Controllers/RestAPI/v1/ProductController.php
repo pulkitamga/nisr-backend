@@ -161,6 +161,9 @@ class ProductController extends Controller
         $brand = json_decode($request->brand);
         $publishingHouses = $request->has('publishing_houses') ? json_decode($request['publishing_houses']) : [];
         $productAuthors = $request->has('product_authors') ? json_decode($request['product_authors']) : [];
+        $matchMakes = $this->normalizeVehicleFilterValues($request->input('match_makes'));
+        $matchModels = $this->normalizeVehicleFilterValues($request->input('match_models'));
+        $matchYears = $this->normalizeVehicleFilterValues($request->input('match_years'));
 
         $publishingHouseList = PublishingHouse::with(['publishingHouseProducts'])
             ->whereHas('publishingHouseProducts.product', function ($query) {
@@ -240,6 +243,37 @@ class ProductController extends Controller
                         return $query->whereIn('sub_sub_category_id', $subSubCategoryIds);
                     });
             })
+            ->when(!empty($matchMakes), function ($query) use ($matchMakes) {
+                return $query->where(function ($vehicleQuery) use ($matchMakes) {
+                    foreach ($matchMakes as $make) {
+                        $vehicleQuery->orWhereJsonContains('match_makes', $make);
+
+                        $lowerMake = mb_strtolower($make);
+                        if ($lowerMake !== $make) {
+                            $vehicleQuery->orWhereJsonContains('match_makes', $lowerMake);
+                        }
+                    }
+                });
+            })
+            ->when(!empty($matchModels), function ($query) use ($matchModels) {
+                return $query->where(function ($vehicleQuery) use ($matchModels) {
+                    foreach ($matchModels as $model) {
+                        $vehicleQuery->orWhereJsonContains('match_models', $model);
+
+                        $lowerModel = mb_strtolower($model);
+                        if ($lowerModel !== $model) {
+                            $vehicleQuery->orWhereJsonContains('match_models', $lowerModel);
+                        }
+                    }
+                });
+            })
+            ->when(!empty($matchYears), function ($query) use ($matchYears) {
+                return $query->where(function ($vehicleQuery) use ($matchYears) {
+                    foreach ($matchYears as $year) {
+                        $vehicleQuery->orWhereJsonContains('match_years', $year);
+                    }
+                });
+            })
             ->when($request->has('publishing_houses') && $publishingHouses, function ($query) use ($request, $publishingHouses, $productIdsForUnknownPublisher) {
                 $publishingHouseList = PublishingHouse::whereIn('id', $publishingHouses)->with(['publishingHouseProducts'])->withCount(['publishingHouseProducts' => function ($query) {
                     return $query->whereHas('product', function ($query) {
@@ -317,6 +351,37 @@ class ProductController extends Controller
             'max_price' => $products->max('unit_price'),
             'products' => count($products) > 0 ? Helpers::product_data_formatting($products->items(), true) : [],
         ]);
+    }
+
+    private function normalizeVehicleFilterValues(mixed $value): array
+    {
+        if (is_array($value)) {
+            return collect($value)
+                ->map(fn ($item) => is_scalar($item) ? trim((string)$item) : '')
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        if (!is_string($value)) {
+            return [];
+        }
+
+        $trimmedValue = trim($value);
+        if ($trimmedValue === '' || $trimmedValue === 'null') {
+            return [];
+        }
+
+        $decodedValue = json_decode($trimmedValue, true);
+        if (is_array($decodedValue)) {
+            return collect($decodedValue)
+                ->map(fn ($item) => is_scalar($item) ? trim((string)$item) : '')
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        return [$trimmedValue];
     }
 
     public function get_suggestion_product(Request $request): JsonResponse
@@ -434,7 +499,16 @@ class ProductController extends Controller
 
     public function get_home_categories(Request $request)
     {
-        $categories = Cache::remember(CACHE_HOME_CATEGORIES_API_LIST, CACHE_FOR_3_HOURS, function () use ($request) {
+        $locale = function_exists('getDefaultLanguage') ? getDefaultLanguage() : 'en';
+        $cacheKey = CACHE_HOME_CATEGORIES_API_LIST . '_' . ($locale ?: 'en');
+        $cacheKeys = Cache::get(CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS, []);
+
+        if (!in_array($cacheKey, $cacheKeys, true)) {
+            $cacheKeys[] = $cacheKey;
+            Cache::put(CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS, $cacheKeys, CACHE_FOR_3_HOURS);
+        }
+
+        $categories = Cache::remember($cacheKey, CACHE_FOR_3_HOURS, function () use ($request) {
             $getCategories = Category::whereHas('product', function ($query) {
                 return $query->active()->with(['clearanceSale' => function ($query) {
                     return $query->active();
