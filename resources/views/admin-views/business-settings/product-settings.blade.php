@@ -35,7 +35,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.product-settings.index') }}" method="post"
+                <form action="{{ route('admin.product-settings.index') }}" method="post" id="product-settings-form"
                       enctype="multipart/form-data">
                     @csrf
                     @php($configuredTaxCalculation = in_array($taxCalculation['value'] ?? null, ['include', 'exclude'], true) ? $taxCalculation['value'] : 'include')
@@ -133,6 +133,9 @@
                                         {{ translate('exclude_with_product') }}
                                     </option>
                                 </select>
+                                <div class="alert alert-warning mt-3 mb-0 d-none" id="product-tax-calculation-warning">
+                                    {{ translate('changing_the_tax_calculation_setup_will_update_all_existing_products_to_match_the_selected_option') }}
+                                </div>
                             </div>
                         </div>
                         <div class="col-12">
@@ -146,3 +149,42 @@
         </div>
     </div>
 @endsection
+
+@push('script')
+    <script>
+        'use strict';
+
+        (() => {
+            const form = document.getElementById('product-settings-form');
+            const select = document.getElementById('product_tax_calculation');
+            const warningBox = document.getElementById('product-tax-calculation-warning');
+
+            if (!form || !select || !warningBox) {
+                return;
+            }
+
+            const initialValue = select.value;
+            const warningMessage = @json(translate('changing_the_tax_calculation_setup_will_update_all_existing_products_to_match_the_selected_option'));
+            const confirmMessage = @json(translate('are_you_sure_you_want_to_update_the_tax_calculation_for_all_existing_products'));
+
+            const toggleWarning = () => {
+                const changed = select.value !== initialValue;
+                warningBox.classList.toggle('d-none', !changed);
+                warningBox.textContent = warningMessage;
+            };
+
+            select.addEventListener('change', toggleWarning);
+            toggleWarning();
+
+            form.addEventListener('submit', function (event) {
+                if (select.value === initialValue) {
+                    return;
+                }
+
+                if (!window.confirm(confirmMessage)) {
+                    event.preventDefault();
+                }
+            });
+        })();
+    </script>
+@endpush

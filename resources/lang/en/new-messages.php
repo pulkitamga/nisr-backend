@@ -7421,6 +7421,8 @@ return [
 	"tax_calculation" => "Tax calculation",
 	"tax_calculation_setup" => "Tax calculation setup",
 	"set_the_default_tax_calculation_method_for_product_add_and_edit_forms" => "Set the default tax calculation method for product add and edit forms.",
+	"changing_the_tax_calculation_setup_will_update_all_existing_products_to_match_the_selected_option" => "Warning: changing this tax calculation setup will update all existing products to match the selected option.",
+	"are_you_sure_you_want_to_update_the_tax_calculation_for_all_existing_products" => "Changing this tax calculation setup will update all existing products. Do you want to continue?",
 	"tax_fee" => "Tax fee",
 	"tax_incl." => "Tax incl.",
 	"tax_included" => "Tax included",

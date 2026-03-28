@@ -7422,6 +7422,8 @@ return [
 	"tax_calculation" => "حساب الضريبة",
 	"tax_calculation_setup" => "إعداد احتساب الضريبة",
 	"set_the_default_tax_calculation_method_for_product_add_and_edit_forms" => "حدد طريقة احتساب الضريبة الافتراضية في نماذج إضافة المنتج وتعديله.",
+	"changing_the_tax_calculation_setup_will_update_all_existing_products_to_match_the_selected_option" => "تحذير: سيؤدي تغيير إعداد احتساب الضريبة إلى تحديث جميع المنتجات الحالية لتتوافق مع الخيار المحدد.",
+	"are_you_sure_you_want_to_update_the_tax_calculation_for_all_existing_products" => "سيؤدي تغيير إعداد احتساب الضريبة إلى تحديث جميع المنتجات الحالية. هل تريد المتابعة؟",
 	"tax_fee" => "رسوم الضريبة",
 	"tax_incl." => "شامل الضريبة.",
 	"tax_included" => "شامل الضريبة",

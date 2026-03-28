@@ -21,6 +21,7 @@ use App\Enums\ViewPaths\Admin\BusinessSettings;
 use App\Http\Requests\Admin\BusinessSettingRequest;
 use App\Contracts\Repositories\CurrencyRepositoryInterface;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
+use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
 
@@ -460,10 +461,23 @@ class BusinessSettingsController extends BaseController
 
     public function updateProductSettings(Request $request): RedirectResponse
     {
+        $selectedTaxCalculation = in_array($request->get('product_tax_calculation'), ['include', 'exclude'], true)
+            ? $request->get('product_tax_calculation')
+            : 'include';
+        $currentTaxCalculation = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'product_tax_calculation']);
+        $currentTaxCalculationValue = in_array($currentTaxCalculation['value'] ?? null, ['include', 'exclude'], true)
+            ? $currentTaxCalculation['value']
+            : 'include';
+
         $this->businessSettingRepo->updateOrInsert(type: 'stock_limit', value: $request->get('stock_limit', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'product_brand', value: $request->get('product_brand', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'services', value: $request->get('services', 0));
-        $this->businessSettingRepo->updateOrInsert(type: 'product_tax_calculation', value: in_array($request->get('product_tax_calculation'), ['include', 'exclude'], true) ? $request->get('product_tax_calculation') : 'include');
+        $this->businessSettingRepo->updateOrInsert(type: 'product_tax_calculation', value: $selectedTaxCalculation);
+
+        if ($currentTaxCalculationValue !== $selectedTaxCalculation) {
+            Product::query()->update(['tax_model' => $selectedTaxCalculation]);
+        }
+
         clearWebConfigCacheKeys();
         Toastr::success(translate('updated_successfully'));
         return back();
