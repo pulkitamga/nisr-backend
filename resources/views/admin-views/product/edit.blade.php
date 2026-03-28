@@ -739,7 +739,12 @@
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3">
-                            @php($configuredTaxModel = in_array(getWebConfig(name: 'product_tax_calculation'), ['include', 'exclude'], true) ? getWebConfig(name: 'product_tax_calculation') : 'include')
+                            @php
+                                $productTaxCalculation = getWebConfig(name: 'product_tax_calculation');
+                                $configuredTaxModel = in_array($productTaxCalculation, ['include', 'exclude'], true)
+                                    ? $productTaxCalculation
+                                    : 'include';
+                            @endphp
                             <div class="form-group">
                                 <div class="d-flex gap-2">
                                     <label class="title-color" for="tax_model">
