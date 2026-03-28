@@ -72,16 +72,14 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 </div>
                 <div class="form-group">
                     <label>{{ translate('image') }}</label>
-                    <input type="file" name="image" class="form-control" id="image-input">
+                    <input type="file" name="image" class="form-control" id="image_input">
                     @if ($products->image)
-                    <div class="mt-2">
-                        <img id="image-preview" src="{{ Storage::url($products->image) }}" width="100"
-                            alt="Current Image">
-                    </div>
+                    <input type="hidden" name="remove_image" id="remove_image" value="0">
                     @endif
-                </div>
-
-                <div id="preview-container" class="mt-3">
+                    <div id="image-preview" class="mt-2 position-relative d-inline-block" style="{{ $products->image ? '' : 'display:none;' }}">
+                        <img id="preview_img" src="{{ $products->image ? Storage::url($products->image) : '' }}" style="width: 100px;">
+                        <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; right: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
+                    </div>
                 </div>
 
 
@@ -101,29 +99,26 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
 @push('script')
 <script>
-    document.getElementById('image-input').addEventListener('change', function (e) {
-        const previewContainer = document.getElementById('preview-container');
-        const files = e.target.files;
-
-        // Clear old previews
-        previewContainer.innerHTML = '';
-
-        if (files && files[0]) {
-            const file = files[0];
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.maxWidth = '200px';
-                    img.style.marginTop = '10px';
-                    previewContainer.appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                previewContainer.innerHTML = '<p style="color:red">{{ __('Invalid file type. Please select an image.') }}</p>';
-            }
+    document.getElementById('image_input').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('preview_img').src = e.target.result;
+                document.getElementById('image-preview').style.display = '';
+                var removeInput = document.getElementById('remove_image');
+                if (removeInput) removeInput.value = 0;
+            };
+            reader.readAsDataURL(file);
         }
+    });
+
+    document.getElementById('remove_btn').addEventListener('click', function () {
+        document.getElementById('image_input').value = '';
+        document.getElementById('preview_img').src = '';
+        document.getElementById('image-preview').style.display = 'none';
+        var removeInput = document.getElementById('remove_image');
+        if (removeInput) removeInput.value = 1;
     });
 </script>
 

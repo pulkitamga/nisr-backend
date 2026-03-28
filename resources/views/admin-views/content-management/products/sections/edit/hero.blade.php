@@ -64,10 +64,14 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 <!-- Image -->
                 <div class="form-group mt-3">
                     <label>{{ translate('Image') }}</label>
-                    <input type="file" name="image" class="form-control">
+                    <input type="file" name="image" id="image_input" class="form-control">
                     @if($model->image)
-                    <img src="{{ Storage::url($model->image) }}" style="width: 100px;">
+                    <input type="hidden" name="remove_image" id="remove_image" value="0">
                     @endif
+                    <div id="image-preview" class="mt-2 position-relative d-inline-block" style="{{ $model->image ? '' : 'display:none;' }}">
+                        <img id="preview_img" src="{{ $model->image ? Storage::url($model->image) : '' }}" style="width: 100px;">
+                        <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; right: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
+                    </div>
                 </div>
 
                 <!-- Submit -->
@@ -89,6 +93,29 @@ $translations[$translation->locale][$translation->key] = $translation->value;
             $('.form-system-language-form').addClass('d-none');
             $(this).addClass('active');
             $('#' + lang + '-form').removeClass('d-none');
+        });
+        // Image preview on file choose
+        $('#image_input').on('change', function () {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#preview_img').attr('src', e.target.result);
+                    $('#image-preview').show();
+                    var removeInput = document.getElementById('remove_image');
+                    if (removeInput) removeInput.value = 0;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove image button
+        $('#remove_btn').on('click', function () {
+            $('#image_input').val('');
+            $('#preview_img').attr('src', '');
+            $('#image-preview').hide();
+            var removeInput = document.getElementById('remove_image');
+            if (removeInput) removeInput.value = 1;
         });
     });
 </script>

@@ -56,16 +56,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 {{-- Image Upload --}}
                 <div class="form-group">
                     <label>{{ translate('image') }}</label>
-                    <input type="file" id="hero_image" name="image" class="form-control" accept="image/*"
-                        onchange="previewImage(event)">
+                    <input type="file" id="hero_image" name="image" class="form-control" accept="image/*">
                 </div>
 
                 {{-- Image Preview --}}
-                <div class="image-preview-box mt-4" style="width: 600px; height: 250px; background-color: #f0f0f0;
-             border: 2px dashed #139d91; overflow: hidden;
-             position: relative; display: flex; justify-content: center; align-items: center;">
-                    <img id="imagePreview" src="#" alt="Image Preview"
-                        style="width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0;">
+                <div id="image-preview" class="mt-2 position-relative d-inline-block" style="display: none;">
+                    <img id="imagePreview" src="#" alt="Image Preview" style="width: 100px;">
+                    <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; right: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
                 </div>
 
                 <div class="form-group mt-3">
@@ -90,24 +87,26 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     });
 
     // Image Preview and Validation
-    function previewImage(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
+    const heroImage = document.getElementById('hero_image');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('imagePreview');
 
-        reader.onload = function() {
-            const preview = document.getElementById('imagePreview');
-            preview.src = reader.result;
-            preview.style.display = 'block';
-
-            preview.onload = function() {
-                const width = preview.naturalWidth;
-                const height = preview.naturalHeight;
-
-
+    heroImage.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                imagePreview.style.display = '';
             };
-        };
+            reader.readAsDataURL(file);
+        }
+    });
 
-        reader.readAsDataURL(file);
-    }
+    document.getElementById('remove_btn').addEventListener('click', function () {
+        heroImage.value = '';
+        previewImg.src = '';
+        imagePreview.style.display = 'none';
+    });
 </script>
 @endsection

@@ -76,10 +76,14 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 
              <div class="form-group mt-3">
                     <label>{{ translate('Image') }}</label>
-                    <input type="file" name="image" class="form-control">
+                    <input type="file" name="image" id="image_input" class="form-control">
                     @if($job->image)
-                    <img src="{{ Storage::url($job->image) }}" style="width: 100px;">
+                    <input type="hidden" name="remove_image" id="remove_image" value="0">
                     @endif
+                    <div id="image-preview" class="mt-2 position-relative d-inline-block" style="{{ $job->image ? '' : 'display:none;' }}">
+                        <img id="preview_img" src="{{ $job->image ? Storage::url($job->image) : '' }}" style="width: 100px;">
+                        <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; right: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
+                    </div>
                 </div>
             <!-- Submit Button -->
             <div class="form-group mt-3">
@@ -104,6 +108,29 @@ $translations[$translation->locale][$translation->key] = $translation->value;
             document.querySelectorAll('.form-system-language-form').forEach(f => f.classList.add('d-none'));
             document.getElementById(lang + '-form').classList.remove('d-none');
         });
+    });
+
+    // Image preview
+    document.getElementById('image_input').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('preview_img').src = e.target.result;
+                document.getElementById('image-preview').style.display = '';
+                var removeInput = document.getElementById('remove_image');
+                if (removeInput) removeInput.value = 0;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('remove_btn').addEventListener('click', function () {
+        document.getElementById('image_input').value = '';
+        document.getElementById('preview_img').src = '';
+        document.getElementById('image-preview').style.display = 'none';
+        var removeInput = document.getElementById('remove_image');
+        if (removeInput) removeInput.value = 1;
     });
 
     $(document).on('ready', function() {
