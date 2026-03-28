@@ -118,8 +118,7 @@
                                                 </label>
                                                 <input class="form-control" type="text" name="company_name[]"
                                                        value="{{ $companyNameTranslations[$lang] ?? '' }}"
-                                                       placeholder="{{ translate('shop_name') }}"
-                                                    {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                                       placeholder="{{ translate('shop_name') }}">
                                             </div>
                                             <input type="hidden" name="basic_lang[]" value="{{ $lang }}">
                                         </div>

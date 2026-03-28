@@ -76,11 +76,14 @@ class InhouseShopController extends BaseController
     public function update(Request $request): RedirectResponse
     {
         $defaultLanguage = getWebConfig(name: 'pnc_language')[0] ?? 'en';
+        $englishNameKey = 'company_name.' . (getLanguageInputIndex(['lang' => $request->input('basic_lang', [])], 'en') ?? 0);
         $request->validate([
-            'company_name.0' => 'required|string|max:255',
+            $englishNameKey => 'required|string|max:255',
             'company_name.*' => 'nullable|string|max:255',
             'basic_lang' => 'nullable|array',
             'basic_lang.*' => 'nullable|string',
+        ], [
+            $englishNameKey . '.required' => translate('The_name_in_english_is_required'),
         ]);
 
         if ($request->has('company_name')) {

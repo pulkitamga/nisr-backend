@@ -9,9 +9,8 @@ class WholesalerRegistrationSettingService
     use FileManagerTrait;
     public function getHeaderAndSellWithUsUpdateData(object $request, $image): array
     {
-
-        $defaultLang = getDefaultLanguage() ?? 'en';
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
+        $defaultLang = getConfiguredDefaultLanguage();
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         return [
             'title' => $request->title[$defaultLangIndex][$defaultLang] ?? '',
             'sub_title' => $request->sub_title[$defaultLangIndex][$defaultLang] ?? '',
@@ -82,7 +81,7 @@ class WholesalerRegistrationSettingService
 
     public function getVendorRegistrationReasonData(object $request): array
     {
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         return [
             'title' => $request['title'][$defaultLangIndex],
             'description' => $request['description'][$defaultLangIndex],

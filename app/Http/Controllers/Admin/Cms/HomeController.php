@@ -163,8 +163,7 @@ class HomeController extends Controller
             return back()->withErrors(['msg' => 'Invalid index']);
         }
 
-        $defaultLang = config('app.locale');
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data[$index]['heading'] = $request->heading[$defaultLangIndex] ?? '';
         $data[$index]['paragraph'] = $request->paragraph[$defaultLangIndex] ?? '';
@@ -197,7 +196,7 @@ class HomeController extends Controller
         if (!isset($data[$index])) {
             return back()->withErrors(['msg' => 'Invalid index']);
         }
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data[$index]['section_title'] = $request->section_title[$defaultLangIndex];
         $data[$index]['section_paragraph'] = $request->section_paragraph[$defaultLangIndex];
@@ -225,7 +224,7 @@ class HomeController extends Controller
             'image' => 'required|image|max:2048',
         ]);
 
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $imageUrl = $this->storeOptimizedImage(
             image: $request->file('image'),
@@ -273,7 +272,7 @@ class HomeController extends Controller
 
         $section = HomePageSection::where('type', 'client_review')->first();
         $data = $section ? json_decode($section->value, true) : ['clients' => []];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         if (!isset($data['clients'][$validated['index']])) {
             return redirect()->back()->withErrors('Review not found.');
@@ -341,11 +340,7 @@ class HomeController extends Controller
         if (!isset($data['section']['cards'][$validated['index']])) {
             return redirect()->back()->withErrors('Card not found.');
         }
-        $defaultLang = config('app.locale');
-        $defaultIndex = array_search($defaultLang, $validated['lang']);
-        if ($defaultIndex === false) {
-            $defaultIndex = 0;
-        }
+        $defaultIndex = getDefaultLanguageIndex(['lang' => $validated['lang']]);
         $data['section']['cards'][$validated['index']]['title'] = $validated['title'][$defaultIndex] ?? '';
         $data['section']['cards'][$validated['index']]['description'] = $validated['description'][$defaultIndex] ?? '';
 
@@ -407,7 +402,7 @@ class HomeController extends Controller
             'lang.*' => 'nullable|string',
         ]);
 
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         $defaultLang = $request->lang[$defaultLangIndex];
         $existingValue = json_decode($section->value, true) ?? [];
         $data = [
@@ -517,7 +512,7 @@ class HomeController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp',
         ]);
 
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         $data = $section->value ? json_decode($section->value, true) : [];
 
         $data['title'] = $validated['title'][$defaultLangIndex] ?? '';
@@ -568,7 +563,7 @@ class HomeController extends Controller
             ]
         );
 
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang, true);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         if ($defaultLangIndex === false) {
             $defaultLangIndex = 0;
         }
@@ -746,7 +741,7 @@ class HomeController extends Controller
         }
 
         $data = json_decode($section->value, true) ?? [];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data['content']['heading'] = $headings[$defaultLangIndex];
 
@@ -784,7 +779,7 @@ class HomeController extends Controller
         }
 
         $data = json_decode($section->value, true) ?? [];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data['section']['title'] = $title[$defaultLangIndex];
         $data['section']['subtitle'] = $subtitle[$defaultLangIndex];
@@ -823,7 +818,7 @@ class HomeController extends Controller
         }
 
         $data = json_decode($section->value, true) ?? [];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data['heading'] = $heading[$defaultLangIndex];
         $data['paragraph'] = $paragraph[$defaultLangIndex];
@@ -859,7 +854,7 @@ class HomeController extends Controller
         }
 
         $data = json_decode($section->value, true) ?? [];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data['heading'] = $heading[$defaultLangIndex];
         $data['paragraph'] = $paragraph[$defaultLangIndex];
@@ -895,7 +890,7 @@ class HomeController extends Controller
         }
 
         $data = json_decode($section->value, true) ?? [];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data['section']['title'] = $title[$defaultLangIndex];
         $data['section']['subtitle'] = $subtitle[$defaultLangIndex];
@@ -947,7 +942,7 @@ class HomeController extends Controller
 
         $section = HomePageSection::where('type', $request->section)->firstOrFail();
         $data = json_decode($section->value, true) ?? [];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $imagePath = $this->storeOptimizedImage(
             image: $request->file('image'),
@@ -1008,7 +1003,7 @@ class HomeController extends Controller
 
         $section = HomePageSection::where('type', $request->section)->firstOrFail();
         $data = json_decode($section->value, true);
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
 
         $item = &$data[$request->index];

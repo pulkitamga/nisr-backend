@@ -10378,6 +10378,8 @@ return [
 	"The_publish_date_is_not_a_valid_date" => "The publish date is not a valid date",
 	"The_title_in_english_is_required" => "The title in english is required",
 	"The_description_in_english_is_required" => "The description in english is required",
+	"The_question_in_english_is_required" => "The question in english is required",
+	"The_answer_in_english_is_required" => "The answer in english is required",
 	"The_title_in_english_must_be_a_string" => "The title in english must be a string",
 	"The_title_in_english_may_not_be_greater_than_255_characters" => "The title in english may not be greater than 255 characters",
 	"The_description_in_english_must_be_a_string" => "The description in english must be a string",
@@ -12849,4 +12851,5 @@ return [
 	"you_are_not_authorized_to_view_this_vendor" => "You are not authorized to view this vendor.",
 	"installation_charges_can_not_exceed_product_total" => "Installation charges cannot exceed the product total.",
 	"exchange_charges_can_not_exceed_product_total" => "Replacement discount cannot exceed the product total.",
+	"The_branch_address_in_english_is_required" => "The branch address in english is required",
 ];

@@ -218,13 +218,13 @@ class ProductController extends BaseController
             'name.*' => 'nullable|string|max:255',
             'model' => 'required|array',
             'model.*' => 'nullable|string',
-        ])->after(function ($validator) use ($defaultName, $defaultModels, $request) {
+        ])->after(function ($validator) use ($defaultIndex, $defaultName, $defaultModels, $request) {
             if ($defaultName === '') {
-                $validator->errors()->add('name.0', translate('make_is_required'));
+                $validator->errors()->add("name.$defaultIndex", translate('make_is_required'));
             }
 
             if (empty($defaultModels)) {
-                $validator->errors()->add('model.0', translate('model_is_required'));
+                $validator->errors()->add("model.$defaultIndex", translate('model_is_required'));
             }
 
             $uniqueRule = Validator::make(
@@ -234,7 +234,7 @@ class ProductController extends BaseController
 
             if ($uniqueRule->fails()) {
                 foreach ($uniqueRule->errors()->all() as $message) {
-                    $validator->errors()->add('name.0', $message);
+                    $validator->errors()->add("name.$defaultIndex", $message);
                 }
             }
         })->validate();

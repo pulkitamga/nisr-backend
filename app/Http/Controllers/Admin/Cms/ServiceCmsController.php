@@ -80,7 +80,7 @@ class ServiceCmsController extends Controller
             'button_link' => $sanitizedButtonLink,
         ]);
 
-        $defaultLangIndex = array_search('en', $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         if ($defaultLangIndex !== false) {
             $cmsProduct->heading = $request->heading[$defaultLangIndex];
             $cmsProduct->description = $request->description[$defaultLangIndex];

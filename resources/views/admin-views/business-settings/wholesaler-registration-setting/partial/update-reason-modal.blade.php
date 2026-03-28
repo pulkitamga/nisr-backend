@@ -1,8 +1,8 @@
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = config('app.locale', 'en');
-if (!in_array($defaultLanguage, $language ?? [], true)) {
-    $defaultLanguage = $language[0]['code'] ?? 'en';
+$defaultLanguage = getConfiguredDefaultLanguage();
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = $languages[0] ?? 'en';
 }
 @endphp
 <div class="modal fade" id="update-vendor-registration-reason-modal" tabindex="-1" role="dialog" aria-labelledby="reasonEditModalLabel" aria-hidden="true">
@@ -16,7 +16,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
@@ -47,7 +47,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                             <label class="title-color">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="title[]" class="form-control"
                                 value="{{ $lang === $defaultLanguage ? $wholesalerRegistrationReason['title'] : $title }}"
-                                placeholder="{{ translate('enter_title') }}" required>
+                                placeholder="{{ translate('enter_title') }}">
 
                             <label class="title-color text-capitalize">{{ translate('short_description') }} ({{ strtoupper($lang) }})</label>
                             <textarea class="form-control" name="description[]" rows="4"

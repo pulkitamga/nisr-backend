@@ -4,9 +4,9 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = config('app.locale', 'en');
-if (!in_array($defaultLanguage, $language ?? [], true)) {
-    $defaultLanguage = $language[0]['code'] ?? 'en';
+$defaultLanguage = getConfiguredDefaultLanguage();
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = $languages[0] ?? 'en';
 }
 @endphp
 <div class="content container-fluid">
@@ -148,7 +148,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
@@ -165,7 +165,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         id="{{ $lang }}-form">
                         <div class="form-group">
                             <label class="title-color">{{translate('question')}} ({{ strtoupper($lang) }})</label>
-                            <input type="text" name="question[]" class="form-control" placeholder="{{translate('enter_question')}}" required="">
+                            <input type="text" name="question[]" class="form-control" placeholder="{{translate('enter_question')}}">
                         </div>
                         <div class="form-group">
                             <label class="title-color">{{translate('answer')}} ({{ strtoupper($lang) }})</label>
@@ -218,7 +218,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
@@ -238,15 +238,14 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <div class="form-group">
                             <label class="title-color">{{translate('question')}} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="question[]" id="edit-question" class="form-control lang-question"
-                                data-lang="{{ $lang }}" id="question-filed" placeholder="{{translate('enter_question')}}" required="">
+                                data-lang="{{ $lang }}" id="question-filed" placeholder="{{translate('enter_question')}}">
                         </div>
                         <div class="form-group">
 
                             <label class="title-color">{{translate('answer')}} ({{ strtoupper($lang) }})</label>
                             <textarea name="answer[]" class="form-control lang-answer" id="edit-answer"
                                 data-lang="{{ $lang }}"
-                                rows="3"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                                rows="3"></textarea>
                         </div>
 
 

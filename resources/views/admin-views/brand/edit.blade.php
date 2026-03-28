@@ -52,7 +52,7 @@
                                             <input type="text" name="name[]"
                                                    value="{{$lang == $defaultLanguage ? $brand['name']:($translate[$lang]['name']??'') }}"
                                                    class="form-control" id="name"
-                                                   placeholder="{{ translate('ex') }} : {{ translate('LUX') }}" {{$lang == $defaultLanguage? 'required':''}}>
+                                                   placeholder="{{ translate('ex') }} : {{ translate('LUX') }}">
                                         </div>
                                         <input type="hidden" name="lang[]" value="{{$lang}}">
                                     @endforeach

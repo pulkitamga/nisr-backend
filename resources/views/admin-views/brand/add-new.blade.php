@@ -42,7 +42,7 @@
                                                 ({{strtoupper($lang) }})
                                             </label>
                                             <input type="text" name="name[]" class="form-control" id="name" value=""
-                                                   placeholder="{{ translate('ex') }} : {{translate('LUX') }}" {{$lang == $defaultLanguage? 'required':''}}>
+                                                   placeholder="{{ translate('ex') }} : {{translate('LUX') }}">
                                         </div>
                                         <input type="hidden" name="lang[]" value="{{$lang}}">
                                     @endforeach

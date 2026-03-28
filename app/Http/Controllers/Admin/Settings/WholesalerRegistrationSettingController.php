@@ -112,8 +112,16 @@ class WholesalerRegistrationSettingController extends BaseController
     }
     public function updateHeaderSection(Request $request): RedirectResponse
     {
+        $englishIndex = getLanguageInputIndex($request, 'en');
+        $rules = [];
+        $messages = [];
 
-        $defaultLang = getDefaultLanguage() ?? 'en';
+        if ($englishIndex !== null) {
+            $rules['title.' . $englishIndex . '.en'] = ['required', 'string'];
+            $messages['title.' . $englishIndex . '.en.required'] = translate('The_title_in_english_is_required');
+        }
+
+        $request->validate($rules, $messages);
 
         $vendorRegistrationHeader = json_decode(
             $this->businessSettingRepo->getFirstWhere(params: ['type' => 'wholesaler_registration_header'])['value'] ?? '{}'
@@ -151,6 +159,17 @@ class WholesalerRegistrationSettingController extends BaseController
 
     public function updateSellWithUsSection(Request $request): RedirectResponse
     {
+        $englishIndex = getLanguageInputIndex($request, 'en');
+        $rules = [];
+        $messages = [];
+
+        if ($englishIndex !== null) {
+            $rules['title.' . $englishIndex . '.en'] = ['required', 'string'];
+            $messages['title.' . $englishIndex . '.en.required'] = translate('The_title_in_english_is_required');
+        }
+
+        $request->validate($rules, $messages);
+
         $sellWithUs = json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'wholesaler_registration_sell_with_us'])['value']);
         $this->businessSettingRepo->updateOrInsert(
             type: 'wholesaler_registration_sell_with_us',
@@ -181,8 +200,26 @@ class WholesalerRegistrationSettingController extends BaseController
     }
     public function updateBusinessProcess(Request $request): RedirectResponse
     {
+        $englishIndex = getLanguageInputIndex($request, 'en');
+        $rules = [
+            'section_1_title.en' => ['required', 'string'],
+            'section_2_title.en' => ['required', 'string'],
+            'section_3_title.en' => ['required', 'string'],
+        ];
+        $messages = [
+            'section_1_title.en.required' => translate('The_title_in_english_is_required'),
+            'section_2_title.en.required' => translate('The_title_in_english_is_required'),
+            'section_3_title.en.required' => translate('The_title_in_english_is_required'),
+        ];
 
-        $defaultLang = getDefaultLanguage() ?? 'en';
+        if ($englishIndex !== null) {
+            $rules['title.' . $englishIndex . '.en'] = ['required', 'string'];
+            $messages['title.' . $englishIndex . '.en.required'] = translate('The_title_in_english_is_required');
+        }
+
+        $request->validate($rules, $messages);
+
+        $defaultLang = getConfiguredDefaultLanguage();
         $mainData = [];
         foreach ($request->all() as $key => $value) {
             if (in_array($key, ['_token', 'lang'])) continue;

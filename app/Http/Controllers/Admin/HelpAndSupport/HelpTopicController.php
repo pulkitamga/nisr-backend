@@ -48,13 +48,7 @@ class HelpTopicController extends BaseController
 
     public function add(HelpTopicAddRequest $request): RedirectResponse
     {
-        $defaultLang = getDefaultLanguage() ?? 'en';
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
-
-        if ($defaultLangIndex === false) {
-            Toastr::error(translate('default_language_data_not_found'));
-            return back();
-        }
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         // 1. Insert Default Language Data
         $helpTopic = $this->helpTopicRepo->add(data: [
@@ -96,7 +90,7 @@ class HelpTopicController extends BaseController
 
     public function update(HelpTopicAddRequest $request, $id): RedirectResponse
     {
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         $this->helpTopicRepo->update(id: $id, data: [
             'question' => $request['question'][$defaultLangIndex],
             'answer' => $request['answer'][$defaultLangIndex],

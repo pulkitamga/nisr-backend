@@ -17,7 +17,9 @@ class TranslationRepository implements TranslationRepositoryInterface
             ->filter(fn ($locale) => is_string($locale) && $locale !== '')
             ->values();
 
-        $configuredLocale = (string) config('app.locale', 'en');
+        // Use pnc_language (the business setting) as the authoritative default,
+        // NOT config('app.locale') which can disagree with the form's $defaultLanguage.
+        $configuredLocale = getConfiguredDefaultLanguage();
 
         if ($requestLanguages->contains($configuredLocale)) {
             return $configuredLocale;

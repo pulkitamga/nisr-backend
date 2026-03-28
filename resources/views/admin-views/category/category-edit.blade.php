@@ -52,7 +52,7 @@
                                         <label class="title-color">
                                             {{ translate('category_Name') }} ({{strtoupper($lang) }})
                                         </label>
-                                        <input type="text" name="name[]" value="{{ $lang==$defaultLanguage?$category['name']:($translate[$lang]['name']??'') }}" class="form-control" placeholder="{{ translate('new_Category') }}" {{ $lang == $defaultLanguage? 'required':''}}>
+                                        <input type="text" name="name[]" value="{{ $lang==$defaultLanguage?$category['name']:($translate[$lang]['name']??'') }}" class="form-control" placeholder="{{ translate('new_Category') }}">
                                     </div>
                                     <input type="hidden" name="lang[]" value="{{ $lang}}">
                                     <input type="hidden" name="id" value="{{ $category['id']}}">

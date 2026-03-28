@@ -102,7 +102,7 @@ class BlogController extends Controller
         $imagePath = 'blog/' . $imageName;
 
         // ✅ Default language ka index nikaalo
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         // ✅ Jo fields multi-lang hain unka sirf default language ka value nikalo
         $input = $request->except('_token', 'lang');
@@ -175,7 +175,7 @@ class BlogController extends Controller
         $blog = Blog::findOrFail($id);
 
         // Set default language fields to blog model
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         if ($defaultLangIndex !== false) {
             $blog->heading = $request->heading[$defaultLangIndex];
             $blog->description = $request->description[$defaultLangIndex];

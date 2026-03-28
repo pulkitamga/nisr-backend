@@ -4,9 +4,9 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = config('app.locale', 'en');
-if (!in_array($defaultLanguage, $language ?? [], true)) {
-    $defaultLanguage = $language[0]['code'] ?? 'en';
+$defaultLanguage = getConfiguredDefaultLanguage();
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = $languages[0] ?? 'en';
 }
 @endphp
 <div class="content container-fluid">
@@ -30,7 +30,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 </div>
             </div>
             <div class="card-body">
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
 
@@ -77,7 +77,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                     <div class="form-group">
                                         <label class="form-label">{{translate('title')}} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="section_{{$index}}_title[{{ $lang }}]" class="form-control"
-                                            value="{{ $lang == $defaultLanguage ? ($businessProcessStep[$index - 1]->title ?? '') : ($translations[$lang]['section_'.$index.'_title'] ?? '') }}" {{ $lang == $defaultLanguage ? 'required' : '' }}
+                                            value="{{ $lang == $defaultLanguage ? ($businessProcessStep[$index - 1]->title ?? '') : ($translations[$lang]['section_'.$index.'_title'] ?? '') }}"
                                             placeholder="{{translate('enter_title')}}">
                                     </div>
 

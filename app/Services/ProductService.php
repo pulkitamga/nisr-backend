@@ -19,6 +19,26 @@ class ProductService
 
     public function __construct(private readonly Color $color) {}
 
+    private function resolveDefaultLanguage(object $request): string
+    {
+        $pncLanguages = getWebConfig('pnc_language');
+        $default = is_array($pncLanguages) && !empty($pncLanguages)
+            ? (string) $pncLanguages[0]
+            : 'en';
+
+        $requestLangs = $request['lang'] ?? [];
+        if (in_array($default, $requestLangs, true)) {
+            return $default;
+        }
+
+        return (string) ($requestLangs[0] ?? 'en');
+    }
+
+    private function getDefaultLangIndex(object $request): int
+    {
+        return getDefaultLanguageIndex($request);
+    }
+
     private function getConfiguredTaxModel(): string
     {
         $configuredTaxModel = getWebConfig(name: 'product_tax_calculation');
@@ -213,7 +233,7 @@ class ProductService
 
     public function getSlug(object $request): string
     {
-        return Str::slug($request['name'][array_search('en', $request['lang'])], '-') . '-' . Str::random(6);
+        return Str::slug($request['name'][$this->getDefaultLangIndex($request)], '-') . '-' . Str::random(6);
     }
 
     private function normalizeDelimitedOptionInput(mixed $value): string
@@ -278,7 +298,7 @@ class ProductService
     {
         $colorsActive = ($request->has('colors_active') && $request->has('colors') && count($request['colors']) > 0) ? 1 : 0;
         $unitPrice = $request['unit_price'];
-        $productName = $request['name'][array_search('en', $request['lang'])];
+        $productName = $request['name'][$this->getDefaultLangIndex($request)];
         $options = $this->getOptions(request: $request);
         $combinations = $this->getCombinations(arrays: $options);
         $combinations = $this->generatePhysicalVariationCombination(request: $request, options: $options, combinations: $combinations, product: $product);
@@ -418,10 +438,17 @@ class ProductService
 
         $digitalFileOptions = $this->getDigitalVariationOptions(request: $request);
         $digitalFileCombinations = $this->getDigitalVariationCombinations(arrays: $digitalFileOptions);
+
+        $defaultLang = $this->resolveDefaultLanguage($request);
+        $langIndex = array_search($defaultLang, $request['lang']);
+        if ($langIndex === false) {
+            $langIndex = 0;
+        }
+
         return [
             'added_by' => $addedBy,
             'user_id' => $addedBy == 'admin' ? auth('admin')->id() : auth('seller')->id(),
-            'name' => $request['name'][array_search('en', $request['lang'])],
+            'name' => $request['name'][$langIndex],
             'code' => $request['code'],
             'slug' => $this->getSlug($request),
             'category_ids' => json_encode($this->getCategoriesArray(request: $request)),
@@ -435,7 +462,7 @@ class ProductService
             'digital_file_ready' => $digitalFile,
             'digital_file_ready_storage_type' => $digitalFile ? $storage : null,
             'product_type' => $request['product_type'],
-            'details' => $request['description'][array_search('en', $request['lang'])],
+            'details' => $request['description'][$langIndex],
             'colors' => $this->getColorsObject(request: $request),
             'choice_options' => $request['product_type'] == 'physical' ? json_encode($this->getChoiceOptions(request: $request)) : json_encode([]),
             'variation' => $request['product_type'] == 'physical' ? json_encode($variations) : json_encode([]),
@@ -522,10 +549,17 @@ class ProductService
 
         $digitalFileOptions = $this->getDigitalVariationOptions(request: $request);
         $digitalFileCombinations = $this->getDigitalVariationCombinations(arrays: $digitalFileOptions);
-        /* 
+
+        $defaultLang = $this->resolveDefaultLanguage($request);
+        $langIndex = array_search($defaultLang, $request['lang']);
+        if ($langIndex === false) {
+            $langIndex = 0;
+        }
+
+        /*
             Reason : for product branch */
         $dataArray = [
-            'name' => $request['name'][array_search('en', $request['lang'])],
+            'name' => $request['name'][$langIndex],
             'code' => $request['code'],
             'product_type' => $request['product_type'],
             'category_ids' => json_encode($this->getCategoriesArray(request: $request)),
@@ -536,7 +570,7 @@ class ProductService
             'brand_id' => $request['product_type'] == 'physical' ? $request['brand_id'] : null,
             'unit' => $request['product_type'] == 'physical' ? $request['unit'] : null,
             'digital_product_type' => $request['product_type'] == 'digital' ? $request['digital_product_type'] : null,
-            'details' => $request['description'][array_search('en', $request['lang'])],
+            'details' => $request['description'][$langIndex],
             'colors' => $lockPhysicalInventoryShape ? $existingColors : $this->getColorsObject(request: $request),
             'choice_options' => $request['product_type'] == 'physical'
                 ? ($lockPhysicalInventoryShape ? $existingChoiceOptions : json_encode($this->getChoiceOptions(request: $request)))
@@ -818,7 +852,7 @@ class ProductService
 
     public function getDigitalVariationCombinationView(object $request, object $product = null): string
     {
-        $productName = $request['name'][array_search('en', $request['lang'])];
+        $productName = $request['name'][$this->getDefaultLangIndex($request)];
         $unitPrice = $request['unit_price'];
         $options = $this->getDigitalVariationOptions(request: $request);
         $combinations = $this->getDigitalVariationCombinations(arrays: $options);
@@ -829,7 +863,8 @@ class ProductService
 
     public function generatePhysicalVariationCombination(object|array $request, object|array $options, object|array $combinations, object|array|null $product): array
     {
-        $productName = $request['name'][array_search('en', $request['lang'])];
+        $langIndex = $this->getDefaultLangIndex($request);
+        $productName = $request['name'][$langIndex];
         $unitPrice = $request['unit_price'];
 
         $generateCombination = [];
@@ -893,7 +928,8 @@ class ProductService
 
     public function generateDigitalVariationCombination(object|array $request, object|array $combinations, object|array|null $product): array
     {
-        $productName = $request['name'][array_search('en', $request['lang'])];
+        $langIndex = $this->getDefaultLangIndex($request);
+        $productName = $request['name'][$langIndex];
         $unitPrice = $request['unit_price'];
 
         $generateCombination = [];

@@ -628,3 +628,60 @@ if (!function_exists('getBusinessSettingTranslation')) {
 }
 
 }
+
+if (!function_exists('getLanguageInputIndex')) {
+    function getLanguageInputIndex(object|array $request, string $locale): ?int
+    {
+        $locale = strtolower(trim($locale));
+        $langArray = is_array($request) ? ($request['lang'] ?? []) : ($request['lang'] ?? []);
+        $normalizedLanguages = array_map(
+            static fn ($language) => is_string($language) ? strtolower($language) : '',
+            is_array($langArray) ? $langArray : []
+        );
+
+        $index = array_search($locale, $normalizedLanguages, true);
+
+        return $index === false ? null : (int) $index;
+    }
+}
+
+if (!function_exists('getConfiguredDefaultLanguage')) {
+    function getConfiguredDefaultLanguage(): string
+    {
+        $pncLanguages = [];
+
+        try {
+            if (
+                function_exists('getWebConfig')
+                && class_exists(Schema::class)
+                && Schema::hasTable('business_settings')
+            ) {
+                $pncLanguages = getWebConfig('pnc_language');
+            }
+        } catch (\Throwable) {
+            $pncLanguages = [];
+        }
+
+        $configuredLanguage = is_array($pncLanguages) && !empty($pncLanguages)
+            ? normalizeTranslationLocaleCandidate((string) $pncLanguages[0])
+            : normalizeTranslationLocaleCandidate((string) config('app.locale', 'en'));
+
+        return $configuredLanguage !== '' ? $configuredLanguage : 'en';
+    }
+}
+
+if (!function_exists('getDefaultLanguageIndex')) {
+    /**
+     * Resolve the array index for the default language in a multi-lang form submission.
+     * Uses pnc_language (business setting) as the authoritative default.
+     *
+     * @param  object|array  $request  The form request (or array with 'lang' key)
+     * @return int  The array index corresponding to the default language
+     */
+    function getDefaultLanguageIndex(object|array $request): int
+    {
+        $index = getLanguageInputIndex($request, getConfiguredDefaultLanguage());
+
+        return $index ?? 0;
+    }
+}

@@ -12,13 +12,13 @@ class FlashDealService
     public function getAddData(object $request): array
     {
         return [
-            'title' => $request['title'][array_search('en', $request['lang'])],
+            'title' => $request['title'][getDefaultLanguageIndex($request)],
             'start_date' => $request['start_date'],
             'end_date' => $request['end_date'],
             'background_color' => $request['background_color'],
             'text_color' => $request['text_color'],
             'banner' => $request->has('image') ? $this->upload(dir:'deal/', format: 'webp', image: $request->file('image')) : 'def.webp',
-            'slug' => Str::slug($request['title'][array_search('en', $request['lang'])]),
+            'slug' => Str::slug($request['title'][getDefaultLanguageIndex($request)]),
             'featured' => $request['featured'] == 1 ? 1 : 0,
             'deal_type' => $request['deal_type'] == 'flash_deal' ? 'flash_deal' : 'feature_deal',
             'status' => 0,
@@ -30,13 +30,13 @@ class FlashDealService
     public function getUpdateData(object $request, object $data): array
     {
         return [
-            'title' => $request['title'][array_search('en', $request['lang'])],
+            'title' => $request['title'][getDefaultLanguageIndex($request)],
             'start_date' => $request['start_date'],
             'end_date' => $request['end_date'],
             'background_color' => $request['background_color'],
             'text_color' => $request['text_color'],
             'banner' => $request->file('image') ? $this->update('deal/', $data['banner'],'webp', $request->file('image')) : $data['banner'],
-            'slug' => Str::slug($request['title'][array_search('en', $request->lang)]),
+            'slug' => Str::slug($request['title'][getDefaultLanguageIndex($request)]),
             'featured' => $request['featured'] == 'on' ? 1 : 0,
             'deal_type' => $request['deal_type'] == 'flash_deal' ? 'flash_deal' : 'feature_deal',
             'updated_at' => now(),

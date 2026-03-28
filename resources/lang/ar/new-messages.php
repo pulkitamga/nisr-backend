@@ -10014,6 +10014,8 @@ return [
 	"The_publish_date_is_not_a_valid_date" => "تاريخ النشر غير صالح",
 	"The_title_in_english_is_required" => "العنوان باللغة الإنجليزية مطلوب",
 	"The_description_in_english_is_required" => "الوصف باللغة الإنجليزية مطلوب",
+	"The_question_in_english_is_required" => "السؤال باللغة الإنجليزية مطلوب",
+	"The_answer_in_english_is_required" => "الإجابة باللغة الإنجليزية مطلوبة",
 	"The_title_in_english_must_be_a_string" => "يجب أن يكون العنوان باللغة الإنجليزية نصًا",
 	"The_title_in_english_may_not_be_greater_than_255_characters" => "لا يجوز أن يتجاوز العنوان باللغة الإنجليزية 255 حرفًا",
 	"The_description_in_english_must_be_a_string" => "يجب أن يكون الوصف باللغة الإنجليزية نصًا",
@@ -12352,4 +12354,5 @@ return [
 	"you_are_not_authorized_to_view_this_vendor" => "غير مصرح لك بعرض هذا المورد.",
 	"installation_charges_can_not_exceed_product_total" => "لا يمكن أن تتجاوز رسوم التركيب إجمالي المنتج.",
 	"exchange_charges_can_not_exceed_product_total" => "لا يمكن أن يتجاوز خصم الاستبدال إجمالي المنتج.",
+	"The_branch_address_in_english_is_required" => "عنوان الفرع باللغة الإنجليزية مطلوب",
 ];

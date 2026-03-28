@@ -115,7 +115,7 @@ class AboutController extends Controller
 
         $modelClass = $modelMap[$section];
 
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $input = $request->except('_token', 'lang');
 
@@ -223,7 +223,7 @@ class AboutController extends Controller
         $model = $modelClass::findOrFail($id);
 
 
-        $defaultLangIndex = array_search('en', $request->input('lang', []));
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data = $request->except('_token', '_method', 'lang', 'heading', 'subheading', 'title', 'content', 'description', 'section');
 

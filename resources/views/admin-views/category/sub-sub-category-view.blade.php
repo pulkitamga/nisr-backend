@@ -16,7 +16,11 @@
                 <div class="card-body text-start">
                     <form action="{{ route('admin.sub-sub-category.store') }}" method="POST">
                         @csrf
-                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                        @php
+                            $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true)
+                                ? getDefaultLanguage()
+                                : $defaultLanguage;
+                        @endphp
                         <ul class="nav nav-tabs w-fit-content mb-4">
                             @foreach($languages as $lang)
                             <li class="nav-item text-capitalize">
@@ -30,7 +34,7 @@
                                 <label class="title-color" for="exampleFormControlInput1">{{ translate('sub_sub_category_name') }}
                                     <span class="text-danger">*</span>
                                     ({{strtoupper($lang) }})</label>
-                                <input type="text" name="name[]" class="form-control" placeholder="{{ translate('new_Sub_Sub_Category') }}" {{ $lang == $defaultLanguage? 'required':''}}>
+                                <input type="text" name="name[]" class="form-control" placeholder="{{ translate('new_Sub_Sub_Category') }}">
                             </div>
                             <input type="hidden" name="lang[]" value="{{ $lang}}">
                             @endforeach

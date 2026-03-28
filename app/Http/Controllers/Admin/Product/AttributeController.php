@@ -62,7 +62,7 @@ class AttributeController extends BaseController
     public function add(AttributeRequest $request): JsonResponse|RedirectResponse
     {
         $dataArray = [
-            'name' => $request['name'][array_search('en', $request['lang'])],
+            'name' => $request['name'][getDefaultLanguageIndex($request)],
         ];
 
         $savedAttributes = $this->attributeRepo->add(data:$dataArray);
@@ -75,7 +75,7 @@ class AttributeController extends BaseController
     public function update(AttributeRequest $request): RedirectResponse
     {
         $dataArray = [
-            'name' => $request['name'][array_search('en', $request['lang'])],
+            'name' => $request['name'][getDefaultLanguageIndex($request)],
         ];
 
         $this->attributeRepo->update(id:$request['id'], data:$dataArray);

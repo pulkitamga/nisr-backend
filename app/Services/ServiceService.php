@@ -20,7 +20,7 @@ class ServiceService
     public function getServiceData(Request $request, int $productId): array
     {
 
-        $enIndex = array_search('en', $request['lang']);
+        $enIndex = getDefaultLanguageIndex($request);
 
         return [
             'product_id' => $productId,
@@ -38,7 +38,7 @@ class ServiceService
     }
     public function getUpdateServiceData(object $request): array
     {
-        $enIndex = array_search('en', $request['lang']);
+        $enIndex = getDefaultLanguageIndex($request);
 
         $dataArray = [
             'service_id' => $request->input('service_id'),

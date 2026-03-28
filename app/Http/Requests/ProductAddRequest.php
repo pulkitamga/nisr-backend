@@ -4,12 +4,13 @@ namespace App\Http\Requests;
 
 use App\Traits\CalculatorTrait;
 use App\Traits\ResponseHandler;
+use App\Traits\ValidatesEnglishMultilingualInput;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Validator;
 
 class ProductAddRequest extends Request
 {
-    use CalculatorTrait, ResponseHandler;
+    use CalculatorTrait, ResponseHandler, ValidatesEnglishMultilingualInput;
 
     protected $stopOnFirstFailure = true;
 
@@ -104,18 +105,13 @@ class ProductAddRequest extends Request
                         translate('discount_can_not_be_more_or_equal_to_the_price') . '!'
                     );
                 }
-                if (
-                    $this['product_type'] === 'physical' &&
-                    (
-                        empty($this->name) ||
-                        is_null($this['name'][array_search('EN', $this->lang) ?? null])
-                    )
-                ) {
-                    $validator->errors()->add(
-                        'name',
-                        translate('name_field_is_required') . '!'
-                    );
-                }
+                $this->validateEnglishMultilingualFields($validator, [
+                    'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
+                    'description' => [
+                        'message' => translate('The_description_in_english_is_required') . '!',
+                        'rich_text' => true,
+                    ],
+                ]);
 
 
                 $productImagesCount = 0;

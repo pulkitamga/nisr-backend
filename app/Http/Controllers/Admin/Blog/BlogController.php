@@ -387,6 +387,6 @@ class BlogController extends Controller
 
     public function getSlug(object $request): string
     {
-        return Str::slug($request['title'][array_search('en', $request['lang'])], '-') . '-' . Str::random(6);
+        return Str::slug($request['title'][getDefaultLanguageIndex($request)], '-') . '-' . Str::random(6);
     }
 }

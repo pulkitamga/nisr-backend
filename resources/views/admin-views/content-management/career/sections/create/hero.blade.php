@@ -8,7 +8,7 @@
 @section('content')
 @php
 $language = getWebConfig(name: 'pnc_language') ?? null;
-$baseLanguage = config('app.locale', 'en');
+$baseLanguage = getConfiguredDefaultLanguage();
 if (!in_array($baseLanguage, $language ?? [], true)) {
     $baseLanguage = $language[0] ?? 'en';
 }

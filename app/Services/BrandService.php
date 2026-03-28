@@ -12,7 +12,7 @@ class BrandService
     {
         $storage = config('filesystems.disks.default') ?? 'public';
         return [
-            'name' => $request['name'][array_search('en', $request['lang'])],
+            'name' => $request['name'][getDefaultLanguageIndex($request)],
             'image' => $this->upload('brand/', 'webp', $request->file('image')),
             'image_storage_type' => $request->has('image') ? $storage : null,
             'image_alt_text' => $request['image_alt_text'] ?? null,
@@ -25,7 +25,7 @@ class BrandService
         $storage = config('filesystems.disks.default') ?? 'public';
         $image = $request->file('image') ? $this->update('brand/', $data['image'],'webp', $request->file('image')) : $data['image'];
         return [
-            'name' => $request->name[array_search('en', $request['lang'])],
+            'name' => $request->name[getDefaultLanguageIndex($request)],
             'image' => $image,
             'image_storage_type' => $request->file('image') ? $storage : $data['image_storage_type'],
             'image_alt_text' => $request['image_alt_text']??null,

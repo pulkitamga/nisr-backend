@@ -7,7 +7,7 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$baseLanguage = in_array(config('app.locale'), $languages ?? [], true) ? config('app.locale') : (($languages[0] ?? 'en'));
+$baseLanguage = in_array(getConfiguredDefaultLanguage(), $languages ?? [], true) ? getConfiguredDefaultLanguage() : (($languages[0] ?? 'en'));
 $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $baseLanguage;
 $selectedCountry = old('branch_country', getWebConfig(name: 'country_code'));
 $selectedState = old('branch_state');
@@ -58,7 +58,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                             </div>
                             <div class="col-sm-6 col-lg-6">
                                 <label class="title-color d-flex">{{ translate('Branch_address') }} ({{ strtoupper($lang) }})</label>
-                                <input type="text" value="" name="branch_address[]" class="form-control" placeholder="{{ translate('your_branch_address') }}" required>
+                                <input type="text" value="" name="branch_address[]" class="form-control" placeholder="{{ translate('your_branch_address') }}">
                             </div>
                         </div>
                     </div>

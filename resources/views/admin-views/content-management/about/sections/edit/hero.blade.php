@@ -4,12 +4,9 @@
 
 @php
 $language = getWebConfig(name: 'pnc_language') ?? ['en'];
-$defaultLanguage = config('app.locale', 'en');
-if (!in_array($defaultLanguage, $language ?? [], true)) {
-    $defaultLanguage = config('app.locale', 'en');
+$defaultLanguage = getConfiguredDefaultLanguage();
 if (!in_array($defaultLanguage, $language ?? [], true)) {
     $defaultLanguage = $language[0] ?? 'en';
-}
 }
 
 $translations = [];

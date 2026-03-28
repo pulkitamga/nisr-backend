@@ -67,7 +67,7 @@
                             <span class="input-required-icon">*</span>
                             @endif
                         </label>
-                        <input type="text" {{ $lang == $defaultLanguage ? '' : '' }} name="name[]" id="{{ $lang }}_name" class="form-control {{ $lang == $defaultLanguage ? 'product-title-default-language' : '' }}" placeholder="{{ translate('new_Product') }}">
+                        <input type="text" name="name[]" id="{{ $lang }}_name" class="form-control {{ $lang == $defaultLanguage ? 'product-title-default-language' : '' }}" placeholder="{{ translate('new_Product') }}">
                     </div>
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
                     <div class="form-group pt-2">
@@ -988,6 +988,8 @@
 <span id="message-want-to-add-or-update-this-product" data-text="{{ translate('want_to_add_this_product') }}"></span>
 <span id="message-please-only-input-png-or-jpg" data-text="{{ translate('please_only_input_png_or_jpg_type_file') }}"></span>
 <span id="message-product-added-successfully" data-text="{{ translate('product_added_successfully') }}"></span>
+<span id="message-product-name-in-english-required" data-text="{{ translate('The_name_in_english_is_required') }}"></span>
+<span id="message-product-description-in-english-required" data-text="{{ translate('The_description_in_english_is_required') }}"></span>
 <span id="message-discount-will-not-larger-then-variant-price" data-text="{{ translate('the_discount_price_will_not_larger_then_Variant_Price') }}"></span>
 <span id="system-currency-code" data-value="{{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}"></span>
 <span id="system-session-direction" data-value="{{ Session::get('direction') }}"></span>

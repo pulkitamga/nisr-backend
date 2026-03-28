@@ -28,7 +28,7 @@
                         id="{{ $lang }}-form">
                         <div class="form-group">
                             <label class="title-color">{{translate('title')}} ({{ strtoupper($lang) }})</label>
-                            <input type="text" name="title[]" class="form-control" {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                            <input type="text" name="title[]" class="form-control">
                         </div>
                         <div class="form-group">
                             <label class="title-color text-capitalize">{{translate('short_description')}} ({{ strtoupper($lang) }})</label>

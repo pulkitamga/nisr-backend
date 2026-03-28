@@ -20,7 +20,122 @@ let messageNoWord = $("#message-no-word").data("text");
 let messageWantAddOrUpdateThisProduct = $(
     "#message-want-to-add-or-update-this-product"
 ).data("text");
+let messageProductNameInEnglishRequired = $(
+    "#message-product-name-in-english-required"
+).data("text");
+let messageProductDescriptionInEnglishRequired = $(
+    "#message-product-description-in-english-required"
+).data("text");
 let getSystemCurrencyCode = $("#system-currency-code").data("value");
+
+function getProductLanguageForms() {
+    return Array.from(document.querySelectorAll(".form-system-language-form"));
+}
+
+function getProductLanguageLocales() {
+    return getProductLanguageForms().map((form) =>
+        form.id.replace(/-form$/, "")
+    );
+}
+
+function showValidationToast(message) {
+    toastr.error(message, {
+        CloseButton: true,
+        ProgressBar: true,
+    });
+}
+
+function openProductLanguageTab(locale) {
+    if (!locale) {
+        return;
+    }
+
+    const languageTab = document.getElementById(`${locale}-link`);
+    const languageForm = document.getElementById(`${locale}-form`);
+
+    if (!languageTab || !languageForm) {
+        return;
+    }
+
+    document
+        .querySelectorAll(".form-system-language-tab")
+        .forEach((tab) => tab.classList.remove("active"));
+    getProductLanguageForms().forEach((form) => form.classList.add("d-none"));
+
+    languageTab.classList.add("active");
+    languageForm.classList.remove("d-none");
+
+    const firstFocusableField = languageForm.querySelector(
+        "input[name='name[]'], textarea[name='description[]']"
+    );
+
+    if (firstFocusableField) {
+        firstFocusableField.focus();
+    }
+}
+
+function plainTextFromRichText(value) {
+    return $("<div>")
+        .html(value || "")
+        .text()
+        .replace(/\u00a0/g, " ")
+        .trim();
+}
+
+function validateEnglishProductContent() {
+    const locales = getProductLanguageLocales();
+    const englishIndex = locales.indexOf("en");
+
+    if (englishIndex === -1) {
+        return true;
+    }
+
+    const nameInputs = document.querySelectorAll(
+        ".form-system-language-form input[name='name[]']"
+    );
+    const descriptionInputs = document.querySelectorAll(
+        ".form-system-language-form textarea[name='description[]']"
+    );
+
+    const englishName = (nameInputs[englishIndex]?.value || "").trim();
+    const englishDescription = plainTextFromRichText(
+        descriptionInputs[englishIndex]?.value || ""
+    );
+
+    if (englishName === "") {
+        openProductLanguageTab("en");
+        showValidationToast(messageProductNameInEnglishRequired);
+        return false;
+    }
+
+    if (englishDescription === "") {
+        openProductLanguageTab("en");
+        showValidationToast(messageProductDescriptionInEnglishRequired);
+        return false;
+    }
+
+    return true;
+}
+
+function openProductLanguageTabFromErrors(errors) {
+    if (!Array.isArray(errors)) {
+        return;
+    }
+
+    const locales = getProductLanguageLocales();
+
+    for (const error of errors) {
+        const errorCode = String(error.error_code || "");
+        const match = errorCode.match(/^(name|description)\.(\d+)$/);
+
+        if (!match) {
+            continue;
+        }
+
+        openProductLanguageTab(locales[Number(match[2])] || "en");
+        break;
+    }
+}
 
 $(document).on("ready", function () {
     $(".summernote").summernote({
@@ -511,6 +626,11 @@ function getProductAddRequirementsCheck() {
         if (result.value) {
             let discountValue = parseFloat($("#discount").val());
             let submitStatus = 1;
+
+            if (!validateEnglishProductContent()) {
+                return;
+            }
+
             $(".variation-price-input").each(function () {
                 let variationPrice = parseFloat($(this).val());
                 if (variationPrice < discountValue) {
@@ -545,11 +665,9 @@ function getProductAddRequirementsCheck() {
                     },
                     success: function (data) {
                         if (data.errors) {
+                            openProductLanguageTabFromErrors(data.errors);
                             for (let i = 0; i < data.errors.length; i++) {
-                                toastr.error(data.errors[i].message, {
-                                    CloseButton: true,
-                                    ProgressBar: true,
-                                });
+                                showValidationToast(data.errors[i].message);
                             }
                         } else {
                             toastr.success(

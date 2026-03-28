@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Traits\CalculatorTrait;
 use App\Traits\ResponseHandler;
+use App\Traits\ValidatesEnglishMultilingualInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Validator;
 
 class ProductUpdateRequest extends FormRequest
 {
-    use CalculatorTrait, ResponseHandler;
+    use CalculatorTrait, ResponseHandler, ValidatesEnglishMultilingualInput;
 
     protected $stopOnFirstFailure = true;
 
@@ -107,18 +108,13 @@ class ProductUpdateRequest extends FormRequest
                     );
                 }
 
-                if (
-                    $this['product_type'] === 'physical' &&
-                    (
-                        empty($this->name) ||
-                        is_null($this['name'][array_search('EN', $this->lang) ?? null])
-                    )
-                ) {
-                    $validator->errors()->add(
-                        'name',
-                        translate('name_field_is_required') . '!'
-                    );
-                }
+                $this->validateEnglishMultilingualFields($validator, [
+                    'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
+                    'description' => [
+                        'message' => translate('The_description_in_english_is_required') . '!',
+                        'rich_text' => true,
+                    ],
+                ]);
 
                 if ($this->has('colors_active') && $this->has('colors') && count($this['colors']) > 0) {
                     $databaseColorImages = $product['color_image'] ? json_decode($product['color_image'], true) : [];

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Traits\ResponseHandler;
+use App\Traits\ValidatesEnglishMultilingualInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Validator;
@@ -19,7 +20,7 @@ use Illuminate\Validation\Validator;
  */
 class AttributeRequest extends FormRequest
 {
-    use ResponseHandler;
+    use ResponseHandler, ValidatesEnglishMultilingualInput;
 
     protected $stopOnFirstFailure = true;
 
@@ -30,17 +31,21 @@ class AttributeRequest extends FormRequest
 
     public function rules(): array
     {
+        $englishFieldKey = $this->getEnglishFieldKey('name');
+
         return [
             'name' => 'required|array',
-            'name.0' => 'required'
+            $englishFieldKey => 'required'
         ];
     }
 
     public function messages(): array
     {
+        $englishFieldKey = $this->getEnglishFieldKey('name');
+
         return [
             'name.required' => translate('the_name_field_is_required!'),
-            'name.0.required' => translate('the_name_field_is_required!'),
+            $englishFieldKey . '.required' => translate('The_name_in_english_is_required') . '!',
         ];
     }
 
@@ -48,11 +53,9 @@ class AttributeRequest extends FormRequest
     {
         return [
             function (Validator $validator) {
-                if (is_null($this['name'][array_search('en', $this['lang'])])) {
-                    $validator->errors()->add(
-                        'name', translate('name_field_is_required') . '!'
-                    );
-                }
+                $this->validateEnglishMultilingualFields($validator, [
+                    'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
+                ]);
             }
         ];
     }

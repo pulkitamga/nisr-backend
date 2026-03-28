@@ -6,6 +6,7 @@ use App\Models\Translation;
 use App\Repositories\TranslationRepository;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -15,7 +16,17 @@ class TranslationRepositoryLocaleOrderTest extends TestCase
     {
         parent::setUp();
 
+        Schema::dropIfExists('business_settings');
         Schema::dropIfExists('translations');
+
+        Schema::create('business_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->string('type');
+            $table->text('value')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+
         Schema::create('translations', function (Blueprint $table): void {
             $table->id();
             $table->string('translationable_type');
@@ -26,19 +37,26 @@ class TranslationRepositoryLocaleOrderTest extends TestCase
             $table->integer('item_index')->nullable();
             $table->timestamps();
         });
+
+        DB::table('business_settings')->insert([
+            'type' => 'pnc_language',
+            'value' => json_encode(['en', 'ar']),
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('business_settings');
         Schema::dropIfExists('translations');
 
         parent::tearDown();
     }
 
-    public function test_repository_uses_app_locale_as_base_even_when_arabic_is_first_in_request(): void
+    public function test_repository_uses_pnc_default_language_as_base_even_when_arabic_is_first_in_request(): void
     {
-        config()->set('app.locale', 'en');
-
         $request = new Request([
             'lang' => ['ar', 'en'],
             'title' => ['العنوان', 'Title'],
@@ -63,5 +81,12 @@ class TranslationRepositoryLocaleOrderTest extends TestCase
             ['locale' => 'ar', 'key' => 'description', 'value' => 'الوصف'],
             ['locale' => 'ar', 'key' => 'title', 'value' => 'العنوان'],
         ], $storedTranslations);
+    }
+
+    public function test_configured_default_language_uses_pnc_language_instead_of_app_locale(): void
+    {
+        config(['app.locale' => 'ar']);
+
+        $this->assertSame('en', getConfiguredDefaultLanguage());
     }
 }

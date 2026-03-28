@@ -11,7 +11,7 @@ class DealOfTheDayService
     public function getAddData(object $request, object $product): array
     {
         return [
-            'title' => $request['title'][array_search('en', $request->lang)],
+            'title' => $request['title'][getDefaultLanguageIndex($request)],
             'discount' => $product['discount_type'] == 'amount' ? usdToDefaultCurrency(amount:$product['discount']) : $product['discount'],
             'discount_type' => $product['discount_type'],
             'product_id' => $request['product_id'],
@@ -24,7 +24,7 @@ class DealOfTheDayService
     public function getUpdateData(object $request, object $product): array
     {
         return [
-            'title' => $request['title'][array_search('en', $request->lang)],
+            'title' => $request['title'][getDefaultLanguageIndex($request)],
             'discount' => $product['discount_type'] == 'amount' ? usdToDefaultCurrency(amount:$product['discount']) : $product['discount'],
             'discount_type' => $product['discount_type'],
             'product_id' => $request['product_id'],

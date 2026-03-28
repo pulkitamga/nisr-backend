@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Traits\ValidatesEnglishMultilingualInput;
 use Illuminate\Foundation\Http\FormRequest;
 
 
@@ -13,6 +14,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class BrandAddRequest extends FormRequest
 {
+    use ValidatesEnglishMultilingualInput;
+
     protected $stopOnFirstFailure = true;
 
     public function authorize(): bool
@@ -22,19 +25,23 @@ class BrandAddRequest extends FormRequest
 
     public function rules(): array
     {
+        $englishFieldKey = $this->getEnglishFieldKey('name');
+
         return [
             'name' => 'required|array',
             'image' => 'required|image',
-            'name.0' => 'required|unique:brands,name'
+            $englishFieldKey => 'required|unique:brands,name'
         ];
     }
 
     public function messages(): array
     {
+        $englishFieldKey = $this->getEnglishFieldKey('name');
+
         return [
             'name.required' => translate('the_name_field_is_required'),
-            'name.0.required' => translate('the_name_field_is_required'),
-            'name.0.unique' => translate('The_brand_has_already_been_taken'),
+            $englishFieldKey . '.required' => translate('The_name_in_english_is_required'),
+            $englishFieldKey . '.unique' => translate('The_brand_has_already_been_taken'),
             'image.required' => translate('the_image_is_required'),
         ];
     }

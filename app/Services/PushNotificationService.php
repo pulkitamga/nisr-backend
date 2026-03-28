@@ -73,8 +73,14 @@ class PushNotificationService
     }
     public function getUpdateData(object $request,string $message,string $status,string $lang):array
     {
+        $langArray = $request->$lang;
+        $pncLanguages = getWebConfig('pnc_language');
+        $default = is_array($pncLanguages) && !empty($pncLanguages) ? (string) $pncLanguages[0] : 'en';
+        $langIndex = array_search($default, $langArray, true);
+        if ($langIndex === false) $langIndex = 0;
+
         return [
-            'message'=>$request->$message[array_search('en', $request->$lang)],
+            'message'=>$request->$message[$langIndex],
             'status'=>$request->$status ?? false,
             'updated_at'=>now(),
         ];

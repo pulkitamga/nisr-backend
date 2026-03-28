@@ -3,13 +3,14 @@
 namespace App\Http\Requests\Admin;
 
 use App\Traits\ResponseHandler;
+use App\Traits\ValidatesEnglishMultilingualInput;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class BranchAddRequest extends FormRequest
 {
-    use ResponseHandler;
+    use ResponseHandler, ValidatesEnglishMultilingualInput;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -26,13 +27,18 @@ class BranchAddRequest extends FormRequest
      */
     public function rules(): array
     {
+        $englishBranchNameKey = $this->getEnglishFieldKey('branch_name');
+        $englishBranchAddressKey = $this->getEnglishFieldKey('branch_address');
+
         return [
-            'branch_name'   => 'required',
+            'branch_name'   => 'required|array',
             'phone'         => 'required|unique:branches|max:20|min:4',
             'email'         => 'unique:branches',
             'branch_country' => 'required',
             'branch_state' => 'required',
-            'branch_address' => 'required',
+            'branch_address' => 'required|array',
+            $englishBranchNameKey => 'required|string|max:255',
+            $englishBranchAddressKey => 'required|string|max:255',
             /* 
             'image'             => 'required|mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff',
             'logo'              => 'required|mimes: jpg,jpeg,png,webp,gif,bmp,tif,tiff',
@@ -44,8 +50,12 @@ class BranchAddRequest extends FormRequest
 
     public function messages(): array
     {
+        $englishBranchNameKey = $this->getEnglishFieldKey('branch_name');
+        $englishBranchAddressKey = $this->getEnglishFieldKey('branch_address');
+
         return [
             'branch_name.required' => translate('The_branch_name_field_is_required'),
+            $englishBranchNameKey . '.required' => translate('The_name_in_english_is_required'),
             'phone.required' => translate('The_phone_field_is_required'),
             'phone.unique' => translate('The_phone_has_already_been_taken'),
             'phone.max' => translate('please_ensure_your_phone_number_is_valid_and_does_not_exceed_20_characters'),
@@ -55,6 +65,7 @@ class BranchAddRequest extends FormRequest
             'branch_country.required' => translate('The_branch_country_field_is_required'),
             'branch_state.required' => translate('The_branch_state_field_is_required'),
             'branch_address.required' => translate('The_branch_address_field_is_required'),
+            $englishBranchAddressKey . '.required' => translate('The_branch_address_in_english_is_required'),
             
         ];
     }

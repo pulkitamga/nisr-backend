@@ -7,7 +7,7 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$baseLanguage = in_array(config('app.locale'), $languages ?? [], true) ? config('app.locale') : (($languages[0] ?? 'en'));
+$baseLanguage = in_array(getConfiguredDefaultLanguage(), $languages ?? [], true) ? getConfiguredDefaultLanguage() : (($languages[0] ?? 'en'));
 $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $baseLanguage;
 $translations = [];
 $selectedCountry = old('branch_country', $aBranchDetails['branch_country']);
@@ -64,7 +64,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             <div class="col-sm-6 col-lg-6">
                                 <div class="form-group">
                                     <label class="title-color d-flex">{{translate('Branch_address')}}  ({{ strtoupper($lang) }})</label>
-                                    <input type="text" value="{{ $lang == $baseLanguage ? $aBranchDetails['branch_address'] : ($translations[$lang]['branch_address'] ?? '')}}" name="branch_address[]" class="form-control" id="branch_address" placeholder="{{translate('your_branch_address')}}" required>
+                                    <input type="text" value="{{ $lang == $baseLanguage ? $aBranchDetails['branch_address'] : ($translations[$lang]['branch_address'] ?? '')}}" name="branch_address[]" class="form-control" id="branch_address" placeholder="{{translate('your_branch_address')}}">
                                 </div>
                             </div>
                         </div>

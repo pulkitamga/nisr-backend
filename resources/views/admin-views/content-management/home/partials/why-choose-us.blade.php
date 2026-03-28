@@ -1,6 +1,6 @@
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? [];
-$baseLanguage = config('app.locale', 'en');
+$baseLanguage = getConfiguredDefaultLanguage();
 if (!in_array($baseLanguage, $languages, true)) {
     $baseLanguage = $languages[0] ?? 'en';
 }

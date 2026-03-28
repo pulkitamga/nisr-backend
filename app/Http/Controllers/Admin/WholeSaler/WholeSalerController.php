@@ -712,7 +712,7 @@ class WholeSalerController extends BaseController
             return back()->withErrors($validator)->withInput();
         }
 
-        $enIndex = array_search('en', (array) $request->input('lang', []), true);
+        $enIndex = getDefaultLanguageIndex($request);
 
         $quotation = DB::transaction(function () use ($request, $enIndex) {
             $quotation = WholesaleQuotation::create([
@@ -721,7 +721,7 @@ class WholeSalerController extends BaseController
                 'wholeseller_tier' => $request->wholesale_tier,
                 'final_price' => $request->final_price,
                 'wholesaler_discount_amount' => $request->wholesaler_discount_amount ?? 0,
-                'terms_and_conditions' => $enIndex !== false ? ($request->terms_and_conditions[$enIndex] ?? null) : null,
+                'terms_and_conditions' => $request->terms_and_conditions[$enIndex] ?? null,
                 'note' => $enIndex !== false ? ($request->note[$enIndex] ?? null) : null,
                 'status' => 'sent',
             ]);
@@ -1086,8 +1086,8 @@ class WholeSalerController extends BaseController
             'status' => 'sent',
             'final_price' => $request->input('final_price'),
             'wholesaler_discount_amount' => $request->input('wholesaler_discount_amount'),
-            'terms_and_conditions' => $request->input('terms_and_conditions')[array_search('en', $request['lang'])] ?? null,
-            'note' => $request->input('note')[array_search('en', $request['lang'])] ?? null,
+            'terms_and_conditions' => $request->input('terms_and_conditions')[getDefaultLanguageIndex($request)] ?? null,
+            'note' => $request->input('note')[getDefaultLanguageIndex($request)] ?? null,
         ]);
 
         $lead = Lead::where('po_id', $order->id)->first();
@@ -1230,8 +1230,8 @@ class WholeSalerController extends BaseController
         $quotation->update([
             'final_price' => $request->final_price,
             'wholesaler_discount_amount' => $request->wholesaler_discount_amount ?? 0,
-            'terms_and_conditions' => $request->terms_and_conditions[array_search('en', $request->lang)] ?? null,
-            'note' => $request->note[array_search('en', $request->lang)] ?? null,
+            'terms_and_conditions' => $request->terms_and_conditions[getDefaultLanguageIndex($request)] ?? null,
+            'note' => $request->note[getDefaultLanguageIndex($request)] ?? null,
         ]);
         $quotation->items()->delete();
         if ($request->has('products') && is_array($request->products)) {

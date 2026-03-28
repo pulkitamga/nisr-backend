@@ -89,14 +89,7 @@ class BranchService
 
     public function getAddData(object $request): array
     {
-        $requestLanguages = collect(data_get($request, 'lang', []))
-            ->filter(fn ($locale) => is_string($locale) && $locale !== '')
-            ->values();
-        $defaultLocale = $requestLanguages->contains(config('app.locale'))
-            ? config('app.locale')
-            : ($requestLanguages->first() ?? 'en');
-        $defaultLangIndex = $requestLanguages->search($defaultLocale);
-        $defaultLangIndex = $defaultLangIndex === false ? 0 : $defaultLangIndex;
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         return [
             'branch_name'       => $request['branch_name'][$defaultLangIndex],

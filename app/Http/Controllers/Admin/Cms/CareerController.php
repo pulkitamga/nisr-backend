@@ -113,7 +113,7 @@ class CareerController extends Controller
         }
 
         $modelClass = $modelMap[$section];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         $data = $request->except('_token', 'lang',);
 
@@ -236,7 +236,7 @@ class CareerController extends Controller
         $modelClass = $modelMap[$section];
         $model = $modelClass::findOrFail($id);
 
-        $defaultLangIndex = array_search(config('app.locale'), $request->input('lang', []));
+        $defaultLangIndex = getDefaultLanguageIndex(['lang' => $request->input('lang', [])]);
 
         $data = $request->except('_token', 'lang', 'name', 'title', 'description', 'job_description', 'section');
 

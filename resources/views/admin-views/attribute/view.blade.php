@@ -38,7 +38,7 @@
                                             class="text-danger">*</span>
                                         ({{ strtoupper($lang) }})</label>
                                     <input type="text" name="name[]" class="form-control" id="name"
-                                           placeholder="{{ translate('enter_Attribute_Name') }}" {{$lang == $defaultLanguage? 'required':''}}>
+                                           placeholder="{{ translate('enter_Attribute_Name') }}">
                                 </div>
                                 <input type="hidden" name="lang[]" value="{{$lang}}" id="lang">
                             @endforeach

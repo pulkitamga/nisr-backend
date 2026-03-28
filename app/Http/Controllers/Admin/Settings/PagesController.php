@@ -71,8 +71,7 @@ class PagesController extends BaseController
     {
         $terms_condition = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'terms_condition']);
         $dataArray = $request->value ?? []; // safe fallback
-        $defaultLang = getDefaultLanguage() ?? 'en';
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         if ($defaultLangIndex !== false && $terms_condition && isset($dataArray[$defaultLangIndex])) {
             $this->businessSettingRepo->updateWhere(
@@ -104,8 +103,7 @@ class PagesController extends BaseController
         $service_policy = $this->getOrCreateServicePolicySetting();
 
         $dataArray = $request->value ?? []; // safe fallback
-        $defaultLang = getDefaultLanguage() ?? 'en';
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         if ($defaultLangIndex !== false && $service_policy && isset($dataArray[$defaultLangIndex])) {
             $this->businessSettingRepo->updateWhere(
@@ -132,13 +130,9 @@ class PagesController extends BaseController
     }
     public function updateWarrantyPolicy(WarrantyPolicyRequest $request): RedirectResponse
     {
-        $defaultLang = getDefaultLanguage() ?? 'en';
         $data = $request->validated();
         $version = $data['version'] ?? '1.0';
-        $defaultLangIndex = array_search($defaultLang, $data['lang'], true);
-        if ($defaultLangIndex === false) {
-            $defaultLangIndex = 0;
-        }
+        $defaultLangIndex = getDefaultLanguageIndex(['lang' => $data['lang']]);
         $value = $data['value'][$defaultLangIndex] ?? ($data['value'][0] ?? '');
         $publishedAt = isset($data['published_at']) ? \Carbon\Carbon::parse($data['published_at']) : now();
 
@@ -208,8 +202,7 @@ class PagesController extends BaseController
         $privacy_policy = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'privacy_policy']);
 
         $dataArray = $request->value ?? [];
-        $defaultLang = getDefaultLanguage() ?? 'en';
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         if ($defaultLangIndex !== false && $privacy_policy && isset($dataArray[$defaultLangIndex])) {
             $this->businessSettingRepo->updateWhere(
@@ -258,8 +251,7 @@ class PagesController extends BaseController
             return back();
         }
 
-        $defaultLang = getDefaultLanguage() ?? 'en';
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         if ($defaultLangIndex === false) {
             Toastr::error(translate('default_language_data_not_found'));
@@ -319,8 +311,7 @@ class PagesController extends BaseController
     {
         $aboutUs = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'about_us']);
 
-        $defaultLang = getDefaultLanguage() ?? 'en';
-        $defaultLangIndex = array_search($defaultLang, $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
 
         if ($defaultLangIndex !== false && $aboutUs) {
             $this->businessSettingRepo->updateWhere(
@@ -364,7 +355,7 @@ class PagesController extends BaseController
 
     public function updateCookieSetting(Request $request): RedirectResponse
     {
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = getDefaultLanguageIndex($request);
         $cookie = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'cookie_setting']);
         $this->businessSettingRepo->updateOrInsert(type: 'cookie_setting', value: json_encode([
             'status' => $request->get('status', 0),
@@ -433,7 +424,7 @@ class PagesController extends BaseController
         $page->save();
 
         foreach (($request->lang ?? []) as $index => $lang) {
-            if ($lang === getDefaultLanguage()) {
+            if ($lang === getConfiguredDefaultLanguage()) {
                 continue;
             }
 
