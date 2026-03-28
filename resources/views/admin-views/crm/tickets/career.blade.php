@@ -6,7 +6,10 @@
 
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $languages[0]['code'] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = $languages[0]['code'] ?? 'en';
+}
 @endphp
 <div class="content container-fluid">
     <div class="mb-3">
@@ -592,4 +595,5 @@ $defaultLanguage = $languages[0]['code'] ?? 'en';
     });
 </script>
 @endpush
+
 

@@ -18,7 +18,8 @@
                             @csrf
                             @php($language = getWebConfig(name:'pnc_language'))
                             @php($defaultLanguage = 'en')
-                            @php($defaultLanguage = $language[0])
+                            @php($defaultLanguage = config('app.locale', 'en'))
+                            @if(!in_array($defaultLanguage, $language ?? [], true)) @php($defaultLanguage = $language[0]) @endif
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize">
@@ -97,4 +98,5 @@
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/search-product.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deal.js')}}"></script>
 @endpush
+
 

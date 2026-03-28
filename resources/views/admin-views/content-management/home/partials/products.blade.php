@@ -2,7 +2,10 @@
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = config('app.locale', 'en');
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
+}
 }
 
 @endphp
@@ -65,3 +68,4 @@ $translatedParagraph = $paragraphTranslations ?? '';
     </div>
 </form>
 @endforeach
+

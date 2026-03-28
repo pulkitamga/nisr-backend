@@ -1,6 +1,9 @@
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0]['code'] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $language ?? [], true)) {
+    $defaultLanguage = $language[0]['code'] ?? 'en';
+}
 @endphp
 <div class="modal fade" id="update-vendor-registration-reason-modal" tabindex="-1" role="dialog" aria-labelledby="reasonEditModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -126,3 +129,4 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
         });
     }
 </script>
+

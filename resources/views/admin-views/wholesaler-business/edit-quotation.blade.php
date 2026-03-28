@@ -9,7 +9,10 @@
 @section('content')
 @php
 $language = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $language ?? [], true)) {
+    $defaultLanguage = $language[0] ?? 'en';
+}
 @endphp
 
 <div class="content container-fluid">
@@ -545,3 +548,4 @@ const button = document.getElementById('submit_btn');
 
 
 @endpush
+

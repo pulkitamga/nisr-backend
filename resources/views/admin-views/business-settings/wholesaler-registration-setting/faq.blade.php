@@ -4,7 +4,10 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0]['code'] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $language ?? [], true)) {
+    $defaultLanguage = $language[0]['code'] ?? 'en';
+}
 @endphp
 <div class="content container-fluid">
     @include('admin-views.business-settings.wholesaler-registration-setting.partial.inline-menu')
@@ -328,3 +331,4 @@ $defaultLanguage = $language[0]['code'] ?? 'en';
     });
 </script>
 @endpush
+

@@ -2,7 +2,10 @@
 $languages = getWebConfig(name: 'pnc_language') ?? null;
 $defaultLanguage = config('app.locale', 'en');
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
+}
 }
 
 @endphp
@@ -118,3 +121,4 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     </div>
 
 </form>
+

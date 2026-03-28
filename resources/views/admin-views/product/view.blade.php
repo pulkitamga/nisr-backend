@@ -68,7 +68,8 @@ $includedParts = is_array($product->service->parts_included ?? null)
                     <div class="d-block flex-grow-1 w-max-md-100">
                         @php($languages = getWebConfig(name:'pnc_language'))
                         @php($defaultLanguage = 'en')
-                        @php($defaultLanguage = $languages[0])
+                        @php($defaultLanguage = config('app.locale', 'en'))
+                        @if(!in_array($defaultLanguage, $languages ?? [], true)) @php($defaultLanguage = $languages[0]) @endif
                         <div class="d-flex flex-wrap justify-content-between align-items-center">
                             <ul class="nav nav-tabs w-fit-content mb-2">
                                 @foreach($languages as $language)
@@ -1150,6 +1151,7 @@ $includedParts = is_array($product->service->parts_included ?? null)
 @push('script')
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-view.js') }}"></script>
 @endpush
+
 
 
 

@@ -2,7 +2,10 @@
 $languages = getWebConfig(name: 'pnc_language') ?? null;
 $defaultLanguage = config('app.locale', 'en');
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
+}
 }
 $cards = $jsonData['section']['cards'] ?? [];
 @endphp
@@ -201,3 +204,4 @@ $content = $jsonData['section'] ?? [];
         });
     });
 </script>
+

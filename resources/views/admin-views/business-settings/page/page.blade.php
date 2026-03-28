@@ -9,7 +9,10 @@
 @section('content')
 @php
 $language = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = $language[0] ?? 'en';
+$defaultLanguage = config('app.locale', 'en');
+if (!in_array($defaultLanguage, $language ?? [], true)) {
+    $defaultLanguage = $language[0] ?? 'en';
+}
 
 $translations = [];
 foreach ($data->translations as $translation) {
