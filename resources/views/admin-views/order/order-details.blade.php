@@ -13,6 +13,7 @@
 
         $shippingAddress = $shippingAddress ?? ($order['shipping_address_data'] ?? null);
         $shippingAddressDisplay = AddressDisplayResolver::resolve($shippingAddress);
+        $isRtl = Session::get('direction') === 'rtl';
         $confirmedStageDate = $confirmedStageDate ?? ($order->created_at ?? now());
         $processingStageDate = $processingStageDate ?? $confirmedStageDate;
         $outForDeliveryStageDate = $outForDeliveryStageDate ?? $processingStageDate;
@@ -37,13 +38,13 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex flex-wrap flex-md-nowrap gap-10 justify-content-between mb-4">
-                            <div class="d-flex flex-column gap-10">
+                            <div class="{{ $isRtl ? 'text-sm-right align-items-end' : 'text-sm-left align-items-start' }} d-flex flex-column gap-10">
                                 <h4 class="text-capitalize">{{ translate('Order_ID') }} #{{ $order['id'] }}</h4>
-                                <div class="">
-                                    {{ date('d M, Y , h:i A', strtotime($order['created_at'])) }}
+                                <div class="{{ $isRtl ? 'text-sm-right' : 'text-sm-left' }}">
+                                    <span dir="ltr">{{ \Carbon\Carbon::parse($order['created_at'])->format('d M Y h:i A') }}</span>
                                 </div>
                                 @if ($linkedOrders->count() > 0)
-                                    <div class="d-flex flex-wrap gap-10">
+                                    <div class="d-flex flex-wrap gap-10 {{ $isRtl ? 'justify-content-end' : 'justify-content-start' }}">
                                         <div
                                             class="color-caribbean-green-soft font-weight-bold d-flex align-items-center rounded py-1 px-2">
                                             {{ translate('linked_orders') }}
@@ -55,36 +56,8 @@
                                         @endforeach
                                     </div>
                                 @endif
-                            </div>
-                            <div class="text-sm-right flex-grow-1">
-                                <div class="d-flex flex-wrap gap-10 justify-content-end">
-                                    @if ($order->verificationImages && count($order->verificationImages) > 0 && $order->verification_status == 1)
-                                        <div>
-                                            <button class="btn btn--primary px-4" data-toggle="modal"
-                                                data-target="#order_verification_modal"><i class="tio-verified"></i>
-                                                {{ translate('order_verification') }}
-                                            </button>
-                                        </div>
-                                    @endif
-
-                                    @if (getWebConfig('map_api_status') == 1 && isset(($shippingAddress ?? null)->latitude) && isset(($shippingAddress ?? null)->longitude))
-                                        <div class="">
-                                            <button class="btn btn--primary px-4" data-toggle="modal"
-                                                data-target="#locationModal"><i class="tio-map"></i>
-                                                {{ translate('show_locations_on_map') }}
-                                            </button>
-                                        </div>
-                                    @endif
-
-                                    <a class="btn btn--primary px-4" target="_blank"
-                                        href={{ route('admin.orders.generate-invoice', [$order['id']]) }}>
-                                        <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
-                                            alt="" class="me-1">
-                                        {{ translate('print_Invoice') }}
-                                    </a>
-                                </div>
-                                <div class="d-flex flex-column gap-2 mt-3">
-                                    <div class="order-status d-flex justify-content-sm-end gap-10 text-capitalize">
+                                <div class="d-flex flex-column gap-2 {{ $isRtl ? 'align-items-end text-sm-right' : 'align-items-start text-sm-left' }}">
+                                    <div class="order-status d-flex {{ $isRtl ? 'justify-content-sm-end text-sm-right' : 'justify-content-sm-start text-sm-left' }} gap-10 text-capitalize">
                                         <span class="title-color">{{ translate('status') }}: </span>
                                         @if ($order['order_status'] == 'pending')
                                             <span
@@ -111,7 +84,7 @@
                                         @endif
                                     </div>
 
-                                    <div class="payment-method d-flex justify-content-sm-end gap-10 text-capitalize">
+                                    <div class="payment-method d-flex {{ $isRtl ? 'justify-content-sm-end text-sm-right' : 'justify-content-sm-start text-sm-left' }} gap-10 text-capitalize">
                                         <span class="title-color">{{ translate('payment_Method') }} :</span>
                                         <strong>{{ translate($order['payment_method']) }}</strong>
                                     </div>
@@ -120,14 +93,14 @@
                                         $order->payment_method != 'cash_on_delivery' &&
                                             $order->payment_method != 'pay_by_wallet' &&
                                             !isset($order->offlinePayments))
-                                        <div class="reference-code d-flex justify-content-sm-end gap-10 text-capitalize">
+                                        <div class="reference-code d-flex {{ $isRtl ? 'justify-content-sm-end text-sm-right' : 'justify-content-sm-start text-sm-left' }} gap-10 text-capitalize">
                                             <span class="title-color">{{ translate('reference_Code') }} :</span>
                                             <strong>{{ str_replace('_', ' ', $order['transaction_ref']) }}
                                                 {{ $order->payment_method == 'offline_payment' ? '(' . $order->payment_by . ')' : '' }}</strong>
                                         </div>
                                     @endif
 
-                                    <div class="payment-status d-flex justify-content-sm-end gap-10">
+                                    <div class="payment-status d-flex {{ $isRtl ? 'justify-content-sm-end text-sm-right' : 'justify-content-sm-start text-sm-left' }} gap-10">
                                         <span class="title-color">{{ translate('payment_Status') }}:</span>
                                         @if ($order['payment_status'] == 'paid')
                                             <span class="text-success payment-status-span font-weight-bold">
@@ -141,20 +114,47 @@
                                     </div>
 
                                     @if (getWebConfig('order_verification'))
-                                        <span class="">
+                                        <div class="{{ $isRtl ? 'text-sm-right' : 'text-sm-left' }}">
                                             <b>
                                                 {{ translate('order_verification_code') }} :
                                                 {{ $order['verification_code'] }}
                                             </b>
-                                        </span>
+                                        </div>
                                     @endif
-                                    <span class="ms-3">
+                                    <div class="{{ $isRtl ? 'text-sm-right' : 'text-sm-left' }}">
                                         <b>
                                             {{ translate('selected_pickup_branch') }} :
                                             {{ $pickupBranchName ?? 'N/A' }}
                                         </b>
-                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="{{ $isRtl ? 'text-sm-left' : 'text-sm-right' }}">
+                                <div class="d-flex flex-wrap gap-10 {{ $isRtl ? 'justify-content-start' : 'justify-content-end' }}">
+                                    @if ($order->verificationImages && count($order->verificationImages) > 0 && $order->verification_status == 1)
+                                        <div>
+                                            <button class="btn btn--primary px-4" data-toggle="modal"
+                                                data-target="#order_verification_modal"><i class="tio-verified"></i>
+                                                {{ translate('order_verification') }}
+                                            </button>
+                                        </div>
+                                    @endif
 
+                                    @if (getWebConfig('map_api_status') == 1 && isset(($shippingAddress ?? null)->latitude) && isset(($shippingAddress ?? null)->longitude))
+                                        <div class="">
+                                            <button class="btn btn--primary px-4" data-toggle="modal"
+                                                data-target="#locationModal"><i class="tio-map"></i>
+                                                {{ translate('show_locations_on_map') }}
+                                            </button>
+                                        </div>
+                                    @endif
+
+                                    <a class="btn btn--primary px-4" target="_blank"
+                                        href={{ route('admin.orders.generate-invoice', [$order['id']]) }}>
+                                        <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
+                                            alt="" class="me-1">
+                                        {{ translate('print_Invoice') }}
+                                    </a>
                                 </div>
                             </div>
                         </div>

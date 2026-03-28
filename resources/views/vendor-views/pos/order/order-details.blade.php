@@ -20,7 +20,7 @@
                             <div class="d-flex flex-column gap-10">
                                 <h4 class="text-capitalize">{{ translate('order_ID') }} #{{$order['id']}}</h4>
                                 <div class="">
-                                    <i class="tio-date-range"></i> {{date('d M Y H:i:s',strtotime($order['created_at'])) }}
+                                    <i class="tio-date-range"></i> <span dir="ltr">{{ \Carbon\Carbon::parse($order['created_at'])->format('d M Y h:i A') }}</span>
                                 </div>
                             </div>
                             <div class="text-sm-right flex-grow-1">

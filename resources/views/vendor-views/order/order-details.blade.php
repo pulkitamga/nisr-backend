@@ -24,7 +24,7 @@
                             <div class="d-flex flex-column gap-10">
                                 <h4 class="text-capitalize">{{translate('Order_ID')}} #{{$order['id']}}</h4>
                                 <div class="">
-                                    {{date('d M, Y , h:i A',strtotime($order['created_at']))}}
+                                    <span dir="ltr">{{ \Carbon\Carbon::parse($order['created_at'])->format('d M Y h:i A') }}</span>
                                 </div>
                             </div>
                             <div class="text-sm-right flex-grow-1">
