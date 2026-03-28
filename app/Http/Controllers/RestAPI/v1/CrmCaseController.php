@@ -204,7 +204,9 @@ class CrmCaseController extends Controller
         return [
             'event_type' => $eventType,
             'title' => (string)($activity->title ?: ucfirst(str_replace('_', ' ', $eventType))),
-            'description' => (string)($activity->subject ?: data_get($activity->details, 'description', '')),
+            'description' => $this->localizeTimelineDescription(
+                (string)($activity->subject ?: data_get($activity->details, 'description', ''))
+            ),
             'actor_type' => 'admin',
             'actor_id' => (string)($activity->employee_id ?? ''),
             'actor_name' => $activity->employee?->name ?: translate('crm_actor_crm'),
@@ -225,7 +227,7 @@ class CrmCaseController extends Controller
         return [
             'event_type' => $eventType,
             'title' => (string)($activity->title ?: ucfirst(str_replace('_', ' ', $eventType))),
-            'description' => $description,
+            'description' => $this->localizeTimelineDescription($description),
             'actor_type' => 'admin',
             'actor_id' => (string)($activity->employee_id ?? ''),
             'actor_name' => $activity->employee?->name ?: translate('crm_actor_support'),
@@ -339,6 +341,115 @@ class CrmCaseController extends Controller
             ->replace('_', ' ')
             ->headline()
             ->value();
+    }
+
+    protected function localizeTimelineDescription(string $description): string
+    {
+        $description = trim($description);
+        if ($description === '') {
+            return '';
+        }
+
+        if (strcasecmp($description, 'Submitted from mobile contact form') === 0) {
+            return translate('crm_submitted_from_mobile_contact_form');
+        }
+
+        $segments = preg_split('/\.\s*/', trim($description, ". \t\n\r\0\x0B"));
+        if (!$segments || count($segments) === 0) {
+            return $description;
+        }
+
+        $translatedSegments = [];
+        foreach ($segments as $segment) {
+            $segment = trim($segment);
+            if ($segment === '') {
+                continue;
+            }
+
+            $translatedSegments[] = $this->localizeTimelineSegment($segment);
+        }
+
+        if (empty($translatedSegments)) {
+            return $description;
+        }
+
+        return implode('. ', $translatedSegments) . '.';
+    }
+
+    protected function localizeTimelineSegment(string $segment): string
+    {
+        if (preg_match('/^Status changed from (.+?) to (.+?)$/i', $segment, $matches) === 1) {
+            return strtr(translate('crm_status_changed_from_to'), [
+                ':from' => $this->translateStatusName($matches[1]),
+                ':to' => $this->translateStatusName($matches[2]),
+            ]);
+        }
+
+        if (preg_match('/^Status changed from (.+)$/i', $segment, $matches) === 1) {
+            return strtr(translate('status_changed_from_only'), [
+                ':from' => $this->translateStatusName($matches[1]),
+            ]);
+        }
+
+        if (preg_match('/^Reopened:\s*(Yes|No)$/i', $segment, $matches) === 1) {
+            return strtr(translate('crm_reopened_label'), [
+                ':value' => translate(strtolower($matches[1])),
+            ]);
+        }
+
+        if (preg_match('/^Department assigned:\s*ID\s*(\d+)$/i', $segment, $matches) === 1) {
+            return strtr(translate('crm_department_assigned_with_id'), [
+                ':id' => $matches[1],
+            ]);
+        }
+
+        if (preg_match('/^Changed from department ID\s*(\d+)$/i', $segment, $matches) === 1) {
+            return strtr(translate('crm_changed_from_department_id'), [
+                ':id' => $matches[1],
+            ]);
+        }
+
+        if (preg_match('/^Employee assigned:\s*ID\s*(\d+)$/i', $segment, $matches) === 1) {
+            return strtr(translate('crm_employee_assigned_with_id'), [
+                ':id' => $matches[1],
+            ]);
+        }
+
+        if (preg_match('/^Changed from employee ID\s*(\d+)$/i', $segment, $matches) === 1) {
+            return strtr(translate('crm_changed_from_employee_id'), [
+                ':id' => $matches[1],
+            ]);
+        }
+
+        if (preg_match('/^Department name:\s*(.+)$/i', $segment, $matches) === 1) {
+            return strtr(translate('crm_department_name_label'), [
+                ':name' => trim($matches[1]),
+            ]);
+        }
+
+        return $segment;
+    }
+
+    protected function translateStatusName(string $statusName): string
+    {
+        $statusKey = $this->normalizeStatusKey($statusName);
+
+        return match ($statusKey) {
+            'new' => translate('new'),
+            'open', 'opened' => translate('open'),
+            'processing' => translate('processing'),
+            'in_progress' => translate('in_progress'),
+            'assigned' => translate('assigned'),
+            'waiting', 'pending' => translate('pending'),
+            'hold', 'on_hold' => translate('hold'),
+            'closed', 'close' => translate('closed'),
+            'resolved' => translate('resolved'),
+            'completed', 'complete' => translate('completed'),
+            default => Str::of($statusName)
+                ->replace('_', ' ')
+                ->headline()
+                ->value(),
+        };
     }
 
     protected function normalizeCategory(?string $messageType): string

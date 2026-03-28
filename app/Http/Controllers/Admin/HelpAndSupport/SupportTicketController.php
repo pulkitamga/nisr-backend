@@ -269,7 +269,7 @@ class SupportTicketController extends BaseController
             }
             $this->supportTicketConvRepo->add([
                 'support_ticket_id' => $ticket->id,
-                'admin_message'     => 'Your ticket has been reopened. Please wait while we review.',
+                'admin_message'     => translate('crm_ticket_reopened_wait_review'),
                 'admin_id'          => auth('admin')->id() ?? 0,
                 'created_at'        => now(),
                 'updated_at'        => now(),
@@ -282,7 +282,11 @@ class SupportTicketController extends BaseController
         $this->logSupportActivity(
             $ticket->id,
             'Status Updated',
-            "Status changed from {$oldStatusName} to {$newStatusName}. Reopened: " . ($isReopened ? 'Yes' : 'No'),
+            strtr(translate('status_changed_from_to_reopened'), [
+                ':from' => translate(strtolower(trim((string)$oldStatusName))),
+                ':to' => translate(strtolower(trim((string)$newStatusName))),
+                ':reopened' => translate($isReopened ? 'yes' : 'no'),
+            ]),
         );
 
         return response()->json([

@@ -199,8 +199,8 @@ class GeneralController extends Controller
             InboxActivities::create([
                 'message_id' => $inboxMessage->id,
                 'activity_type' => 'submission',
-                'title' => 'Inquiry submitted',
-                'subject' => 'Submitted from mobile contact form',
+                'title' => translate('crm_timeline_inquiry_submitted'),
+                'subject' => translate('crm_submitted_from_mobile_contact_form'),
                 'note_date' => now(),
                 'employee_id' => null,
                 'details' => [
@@ -254,7 +254,7 @@ class GeneralController extends Controller
                 'is_converted' => true,
                 'ticket_id' => (string)$ticket->id,
                 'last_update' => optional($inboxMessage->updated_at)?->toDateTimeString(),
-                'next_step' => 'Your case has been converted to a support ticket.',
+                'next_step' => translate('crm_case_converted_to_ticket'),
                 'attachments' => $attachmentUrls, // Array of attachment URLs
                 'has_attachments' => !empty($attachmentUrls),
             ],

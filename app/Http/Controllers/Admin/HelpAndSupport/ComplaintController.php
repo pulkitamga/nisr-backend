@@ -351,14 +351,22 @@ class ComplaintController extends BaseController
         ]);
 
         // 🔹 Log activity
-        $description = "Department assigned: ID {$departmentId}";
+        $description = strtr(translate('crm_department_assigned_with_id'), [
+            ':id' => $departmentId,
+        ]);
         if ($oldDepartmentId != $departmentId) {
-            $description .= ". Changed from department ID {$oldDepartmentId}";
+            $description .= '. ' . strtr(translate('crm_changed_from_department_id'), [
+                ':id' => $oldDepartmentId,
+            ]);
         }
         if ($deptEmployeeId != 0) {
-            $description .= ". Employee assigned: ID {$deptEmployeeId}";
+            $description .= '. ' . strtr(translate('crm_employee_assigned_with_id'), [
+                ':id' => $deptEmployeeId,
+            ]);
             if ($oldEmployeeId != $deptEmployeeId) {
-                $description .= ". Changed from employee ID {$oldEmployeeId}";
+                $description .= '. ' . strtr(translate('crm_changed_from_employee_id'), [
+                    ':id' => $oldEmployeeId,
+                ]);
             }
             if ($assignedStatusId > 0) {
                 $this->supportTicketRepo->update(id: $ticketId, data: ['status' => $assignedStatusId]);
@@ -374,10 +382,14 @@ class ComplaintController extends BaseController
             ]);
         } else {
             $aDepartmentData = $this->departmentRepo->getFirstWhere(params: ['id' => $departmentId]);
-            $description .= ". Department name: " . ($aDepartmentData['name'] ?? 'Unknown');
+            $description .= '. ' . strtr(translate('crm_department_name_label'), [
+                ':name' => $aDepartmentData['name'] ?? translate('Unknown'),
+            ]);
             $aReplyJourney = [
                 'support_ticket_id' => $ticketId,
-                'admin_message' => 'Your ticket has been assigned to ' . $aDepartmentData['name'] . ' department.',
+                'admin_message' => strtr(translate('crm_ticket_assigned_to_department'), [
+                    ':department' => $aDepartmentData['name'] ?? translate('Unknown'),
+                ]),
                 'admin_id' => auth('admin')->check() ? auth('admin')->id() : 0,
                 'created_at' => now(),
                 'updated_at' => now()
