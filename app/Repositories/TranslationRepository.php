@@ -75,17 +75,20 @@ class TranslationRepository implements TranslationRepositoryInterface
 
             foreach ($translatableFields as $field) {
                 if (isset($request[$field][$index])) {
-                    $this->translation->updateOrInsert(
-                        [
-                            'translationable_type' => $model,
-                            'translationable_id' => $id,
-                            'locale' => $key,
-                            'key' => $field,
-                        ],
-                        [
-                            'value' => $request[$field][$index],
-                        ]
-                    );
+                    $this->translation
+                        ->where('translationable_type', $model)
+                        ->where('translationable_id', $id)
+                        ->where('locale', $key)
+                        ->where('key', $field)
+                        ->delete();
+
+                    $this->translation->insert([
+                        'translationable_type' => $model,
+                        'translationable_id' => $id,
+                        'locale' => $key,
+                        'key' => $field,
+                        'value' => $request[$field][$index],
+                    ]);
                 }
             }
         }
