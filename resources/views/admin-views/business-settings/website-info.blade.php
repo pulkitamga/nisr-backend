@@ -143,10 +143,11 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="mb-3">
+                                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                                 <ul class="nav nav-tabs lang_tab" id="basic-info-language-tab" role="tablist">
                                     @foreach ($languages as $lang)
                                         <li class="nav-item">
-                                            <a class="nav-link {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                            <a class="nav-link {{ $lang == $activeLanguage ? 'active' : '' }}"
                                                id="{{ $lang }}-basic-info-link"
                                                data-toggle="tab"
                                                href="#{{ $lang }}-basic-info-form"
@@ -159,7 +160,7 @@
                             </div>
                             <div class="tab-content" id="basic-info-language-tab-content">
                                 @foreach ($languages as $lang)
-                                    <div class="tab-pane fade {{ $lang == $defaultLanguage ? 'show active' : '' }}"
+                                    <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}"
                                          id="{{ $lang }}-basic-info-form"
                                          role="tabpanel">
                                         <div class="row">
@@ -398,10 +399,11 @@
                         </div>
                         <div class="col-12">
                             <div class="mb-3">
+                                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                                 <ul class="nav nav-tabs lang_tab" id="copyright-language-tab" role="tablist">
                                     @foreach ($languages as $lang)
                                         <li class="nav-item">
-                                            <a class="nav-link {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                            <a class="nav-link {{ $lang == $activeLanguage ? 'active' : '' }}"
                                                id="{{ $lang }}-copyright-link"
                                                data-toggle="tab"
                                                href="#{{ $lang }}-copyright-form"
@@ -414,7 +416,7 @@
                             </div>
                             <div class="tab-content" id="copyright-language-tab-content">
                                 @foreach ($languages as $lang)
-                                    <div class="tab-pane fade {{ $lang == $defaultLanguage ? 'show active' : '' }}"
+                                    <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}"
                                          id="{{ $lang }}-copyright-form"
                                          role="tabpanel">
                                         <div class="row">

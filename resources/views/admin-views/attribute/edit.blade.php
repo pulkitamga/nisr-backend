@@ -19,10 +19,11 @@
                         <form action="{{route('admin.attribute.update', [$attribute['id']])}}" method="post">
                             @csrf
 
+                            @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize">
-                                        <span class="nav-link form-system-language-tab cursor-pointer {{$lang == $defaultLanguage? 'active':''}}" id="{{$lang}}-link">
+                                        <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link">
                                             {{ getLanguageName($lang).' ('.strtoupper($lang).')' }}
                                         </span>
                                     </li>
@@ -40,7 +41,7 @@
                                     }
                                     ?>
                                 <div
-                                    class="form-group {{$lang != $defaultLanguage ? 'd-none':''}} form-system-language-form"
+                                    class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                                     id="{{$lang}}-form">
                                     <input type="hidden" id="id">
                                     <label class="title-color" for="name">{{ translate('attribute_Name') }}

@@ -256,7 +256,7 @@ class OrderController extends BaseController
         $zipCodes = $zipRestrictStatus ? $this->deliveryZipCodeRepo->getList(dataLimit: 'all') : 0;
         $companyName = getWebConfig(name: 'company_name');
         $companyWebLogo = getWebConfig(name: 'company_web_logo');
-        $order = $this->orderRepo->getFirstWhere(params: ['id' => $id], relations: ['details.productAllStatus', 'verificationImages', 'shipping', 'seller.shop', 'offlinePayments', 'deliveryMan']);
+        $order = $this->orderRepo->getFirstWhere(params: ['id' => $id], relations: ['details.productAllStatus', 'verificationImages', 'shipping', 'seller.shop', 'offlinePayments', 'deliveryMan', 'transferBranch', 'pickupBranch']);
 
         if ($order) {
             $physicalProduct = false;
@@ -347,9 +347,9 @@ class OrderController extends BaseController
             }
 
             $isOrderOnlyDigital = $orderService->getCheckIsOrderOnlyDigital(order: $order);
-            $pickupBranchName = optional(
-                    \App\Models\Branch::find($order->pickup_from_branch)
-                )->branch_name;
+            $pickupBranchName = $order->pickupBranch?->branch_name;
+            $sourceBranchName = $order->transferBranch?->branch_name
+                ?? $order->pickupBranch?->branch_name;
             if ($order['order_type'] == 'default_type') {
                 $orderCount = $this->orderRepo->getListWhereCount(filters: ['customer_id' => $order['customer_id']]);
                 return view(Order::VIEW[VIEW], compact(
@@ -372,7 +372,7 @@ class OrderController extends BaseController
                 ));
             } else {
                 $orderCount = $this->orderRepo->getListWhereCount(filters: ['customer_id' => $order['customer_id'], 'order_type' => 'POS']);
-                return view(Order::VIEW_POS[VIEW], compact('order', 'companyName', 'companyWebLogo', 'orderCount','pickupBranchName'));
+                return view(Order::VIEW_POS[VIEW], compact('order', 'companyName', 'companyWebLogo', 'orderCount', 'pickupBranchName', 'sourceBranchName'));
             }
         } else {
             Toastr::error(translate('Order_not_found'));

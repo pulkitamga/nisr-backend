@@ -9,6 +9,12 @@
 @endpush
 
 @section('content')
+@php
+    $productTaxCalculation = getWebConfig(name: 'product_tax_calculation');
+    $configuredTaxModel = in_array($productTaxCalculation, ['include', 'exclude'], true)
+        ? $productTaxCalculation
+        : 'include';
+@endphp
 
 
 <div class="content container-fluid">
@@ -23,10 +29,11 @@
         @csrf
         <div class="card physical_product_show">
             <div class="px-4 pt-3 d-flex justify-content-between">
+                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                 <ul class="nav nav-tabs w-fit-content mb-4">
                     @foreach ($languages as $lang)
                     <li class="nav-item">
-                        <span class="nav-link text-capitalize form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }} cursor-pointer" id="{{ $lang }}-link">{{ getLanguageName($lang) . '(' . strtoupper($lang) . ')' }}</span>
+                        <span class="nav-link text-capitalize form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }} cursor-pointer" id="{{ $lang }}-link">{{ getLanguageName($lang) . '(' . strtoupper($lang) . ')' }}</span>
                     </li>
                     @endforeach
                 </ul>
@@ -37,7 +44,7 @@
 
             <div class="card-body">
                 @foreach ($languages as $lang)
-                <div class="{{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang }}-form">
+                <div class="{{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang }}-form">
                     @if($lang == $defaultLanguage)
                     <div class="form-group">
                         <label class="title-color">
@@ -351,7 +358,7 @@
                 <ul class="nav nav-tabs mb-4" id="language-switcher">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:void(0);" data-lang="{{ $lang }}">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -360,7 +367,7 @@
                 </ul>
 
                 @foreach ($languages as $lang)
-                <div class="language-tab-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}" data-lang="{{ $lang }}">
+                <div class="language-tab-form {{ $lang != $activeLanguage ? 'd-none' : '' }}" data-lang="{{ $lang }}">
                     <div class="row">
                         <div class="col-md-6 col-lg-6 col-xl-6">
 
@@ -575,12 +582,6 @@
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-4 col-xl-3">
-                        @php
-                            $productTaxCalculation = getWebConfig(name: 'product_tax_calculation');
-                            $configuredTaxModel = in_array($productTaxCalculation, ['include', 'exclude'], true)
-                                ? $productTaxCalculation
-                                : 'include';
-                        @endphp
                         <div class="form-group">
                             <div class="d-flex gap-2">
                                 <label class="title-color" for="tax_model">

@@ -7,8 +7,8 @@
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
 $defaultLanguage = config('app.locale', 'en');
-if (!in_array($defaultLanguage, $language ?? [], true)) {
-    $defaultLanguage = $language[0]['code'] ?? 'en';
+if (!in_array($defaultLanguage, $languages ?? [], true)) {
+    $defaultLanguage = $languages[0] ?? 'en';
 }
 $serviceWorkflow = \App\Support\ServiceTicketWorkflow::class;
 $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
@@ -398,10 +398,11 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                         <input type="number" id="extra_charge" name="extra_charge" class="form-control" step="0.01">
                     </div>
 
+                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
-                            <a class="nav-link estimate-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            <a class="nav-link estimate-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                                 href="javascript:" id="esti-{{ $lang }}-link">
                                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                             </a>
@@ -412,7 +413,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     <div class="tab-content">
                         @foreach($languages as $lang)
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
-                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} estimate-language-form"
+                        <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} estimate-language-form"
                             id="esti-{{ $lang }}-form">
                             <div class="form-group"> <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <textarea name="description[]" class="form-control" rows="3" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
@@ -509,10 +510,11 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                         <input type="file" name="images[]" class="form-control" multiple>
                     </div>
 
+                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
-                            <a class="nav-link job-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            <a class="nav-link job-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                                 href="javascript:" id="job-{{ $lang }}-link">
                                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                             </a>
@@ -523,7 +525,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     <div class="tab-content">
                         @foreach($languages as $lang)
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
-                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} job-language-form"
+                        <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} job-language-form"
                             id="job-{{ $lang }}-form">
                             <div class="form-group"> <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <textarea name="description[]" class="form-control" rows="3" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
@@ -631,10 +633,11 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                         <label>{{ translate('Upload Image') }}</label>
                         <input type="file" name="image" class="form-control" multiple>
                     </div>
+                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
-                            <a class="nav-link order-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            <a class="nav-link order-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                                 href="javascript:" id="order-{{ $lang }}-link">
                                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                             </a>
@@ -645,7 +648,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     <div class="tab-content">
                         @foreach($languages as $lang)
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
-                        <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} order-language-form"
+                        <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} order-language-form"
                             id="order-{{ $lang }}-form">
                             <div class="form-group"> <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <textarea name="description[]" class="form-control" rows="3" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>

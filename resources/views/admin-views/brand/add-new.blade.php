@@ -19,10 +19,11 @@
                         <form action="{{ route('admin.brand.add-new') }}" method="post" enctype="multipart/form-data" class="brand-setup-form">
                             @csrf
 
+                            @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item">
-                                        <span class="nav-link form-system-language-tab cursor-pointer {{$lang == $defaultLanguage ? 'active':''}}"
+                                        <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}"
                                            id="{{$lang}}-link">
                                             {{ ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')' }}
                                         </span>
@@ -33,7 +34,7 @@
                                 <div class="col-md-6">
                                     @foreach($language as $lang)
                                         <div
-                                            class="form-group {{$lang != $defaultLanguage ? 'd-none':''}} form-system-language-form"
+                                            class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                                             id="{{$lang}}-form">
                                             <label for="name" class="title-color">
                                                 {{ translate('brand_Name') }}

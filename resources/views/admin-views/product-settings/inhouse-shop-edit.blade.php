@@ -91,10 +91,11 @@
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
+                                    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                                     <ul class="nav nav-tabs lang_tab" id="shop-name-language-tab" role="tablist">
                                         @foreach ($languages as $lang)
                                             <li class="nav-item">
-                                                <a class="nav-link {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                                <a class="nav-link {{ $lang == $activeLanguage ? 'active' : '' }}"
                                                    id="{{ $lang }}-shop-name-link"
                                                    data-toggle="tab"
                                                    href="#{{ $lang }}-shop-name-form"
@@ -107,7 +108,7 @@
                                 </div>
                                 <div class="tab-content" id="shop-name-language-tab-content">
                                     @foreach ($languages as $lang)
-                                        <div class="tab-pane fade {{ $lang == $defaultLanguage ? 'show active' : '' }}"
+                                        <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}"
                                              id="{{ $lang }}-shop-name-form"
                                              role="tabpanel">
                                             <div class="form-group mb-0">

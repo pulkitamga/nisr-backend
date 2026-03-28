@@ -20,10 +20,11 @@
                               enctype="multipart/form-data" class="brand-setup-form">
                             @csrf
 
+                            @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize">
-                                        <span class="nav-link form-system-language-tab cursor-pointer {{$lang == $defaultLanguage? 'active':''}}"
+                                        <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}"
                                            id="{{$lang}}-link">
                                             {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
                                         </span>
@@ -44,7 +45,7 @@
                                                 }
                                             }
                                             ?>
-                                        <div class="form-group {{$lang != $defaultLanguage ? 'd-none':''}} form-system-language-form"
+                                        <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                                              id="{{$lang}}-form">
                                             <label class="title-color" for="name">{{ translate('brand_Name') }}
                                                 ({{ strtoupper($lang) }})</label>

@@ -3,6 +3,7 @@
 @section('title', translate('order_Details'))
 
 @section('content')
+@php($isRtl = Session::get('direction') === 'rtl')
 <div class="content container-fluid">
 
     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
@@ -16,15 +17,15 @@
         <div class="col-lg-8 col-xl-9">
             <div class="card h-100">
                 <div class="card-body">
-                    <div class="d-flex flex-wrap gap-10 flex-md-nowrawp justify-content-between mb-4">
+                    <div class="d-flex flex-wrap gap-10 flex-md-nowrawp flex-md-row-reverse justify-content-between mb-4">
                         <div class="d-flex flex-column gap-10">
                             <h4 class="text-capitalize">{{ translate('order_ID') }} #{{$order['id']}}</h4>
                             <div class="">
                                 <i class="tio-date-range"></i> {{date('d M Y H:i:s',strtotime($order['created_at'])) }}
                             </div>
                         </div>
-                        <div class="text-sm-right flex-grow-1">
-                            <div class="d-flex flex-wrap gap-10 justify-content-sm-end">
+                        <div class="{{ $isRtl ? 'text-sm-right' : 'text-sm-left' }}">
+                            <div class="d-flex flex-wrap gap-10 {{ $isRtl ? 'justify-content-sm-end' : 'justify-content-sm-start' }}">
                                 <a class="btn btn--primary px-4" target="_blank"
                                     href="{{ route('admin.orders.generate-invoice',[$order['id']]) }}">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
@@ -33,7 +34,7 @@
                                 </a>
                             </div>
                             <div class="d-flex flex-column gap-2 mt-3">
-                                <div class="order-status d-flex justify-content-sm-end gap-10 text-capitalize">
+                                <div class="order-status d-flex {{ $isRtl ? 'justify-content-sm-end' : 'justify-content-sm-start' }} gap-10 text-capitalize">
                                     <span class="title-color">{{ translate('status') }}: </span>
                                     @if($order['order_status']=='pending')
                                     <span
@@ -63,18 +64,18 @@
                                     @endif
                                 </div>
 
-                                <div class="payment-method d-flex justify-content-sm-end gap-10 text-capitalize">
+                                <div class="payment-method d-flex {{ $isRtl ? 'justify-content-sm-end' : 'justify-content-sm-start' }} gap-10 text-capitalize">
                                     <span class="title-color">{{ translate('payment_Method') }} :</span>
                                     <strong> {{ translate(str_replace('_',' ',$order['payment_method'])) }}</strong>
                                 </div>
                                 @if(isset($order['transaction_ref']) && $order->payment_method != 'cash_on_delivery' && $order->payment_method != 'pay_by_wallet' && !isset($order->offline_payments))
                                 <div
-                                    class="reference-code d-flex justify-content-sm-end gap-10 text-capitalize">
+                                    class="reference-code d-flex {{ $isRtl ? 'justify-content-sm-end' : 'justify-content-sm-start' }} gap-10 text-capitalize">
                                     <span class="title-color">{{ translate('reference_Code') }} :</span>
                                     <strong>{{ translate(str_replace('_',' ',$order['transaction_ref'])) }} {{ $order->payment_method == 'offline_payment' ? '('.$order->payment_by.')':'' }}</strong>
                                 </div>
                                 @endif
-                                <div class="payment-status d-flex justify-content-sm-end gap-10">
+                                <div class="payment-status d-flex {{ $isRtl ? 'justify-content-sm-end' : 'justify-content-sm-start' }} gap-10">
                                     <span class="title-color">{{ translate('payment_Status') }}:</span>
                                     @if($order['payment_status']=='paid')
                                     <span class="text-success font-weight-bold">
@@ -85,6 +86,14 @@
                                         {{ translate('unpaid') }}
                                     </span>
                                     @endif
+                                </div>
+                                <div class="d-flex {{ $isRtl ? 'justify-content-sm-end' : 'justify-content-sm-start' }} gap-10">
+                                    <span class="title-color">{{ translate('sale_type') }}:</span>
+                                    <strong>{{ translate('POS') }}</strong>
+                                </div>
+                                <div class="d-flex {{ $isRtl ? 'justify-content-sm-end' : 'justify-content-sm-start' }} gap-10">
+                                    <span class="title-color">{{ translate('Branch') }}:</span>
+                                    <strong>{{ $sourceBranchName ?? translate('N/A') }}</strong>
                                 </div>
                                 @if(getWebConfig('order_verification') && $order->order_type == "default_type")
                                 <span class="ml-2 ml-sm-3">

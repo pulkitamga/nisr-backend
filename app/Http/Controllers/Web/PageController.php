@@ -243,13 +243,13 @@ class PageController extends Controller
         }
         $themeName = theme_root_path();
 
-        $careerSection = CareerSection::where('is_active', 1)->get();
+        $careerSection = CareerSection::with('translations')->where('is_active', 1)->get();
 
-        $careerBenefits = CareerBenefits::where('is_active', 1)->get();
+        $careerBenefits = CareerBenefits::with('translations')->where('is_active', 1)->get();
 
-        $careerJobs = CareerJob::where('is_active', 1)->get();
+        $careerJobs = CareerJob::with('translations')->where('is_active', 1)->get();
 
-        $careerCards = CareerCard::where('is_active', 1)->get();
+        $careerCards = CareerCard::with('translations')->where('is_active', 1)->get();
 
         return match ($themeName) {
             'default' => view('default.web-views.pages.career', compact('careerSection', 'careerJobs', 'careerCards', 'careerBenefits', 'robotsMetaContentData')),

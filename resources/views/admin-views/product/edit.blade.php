@@ -28,6 +28,24 @@
         $includedParts = is_array($product->service->parts_included ?? null)
             ? $product->service->parts_included
             : json_decode($product->service->parts_included ?? '[]', true);
+        $productTaxCalculation = getWebConfig(name: 'product_tax_calculation');
+        $configuredTaxModel = in_array($productTaxCalculation, ['include', 'exclude'], true)
+            ? $productTaxCalculation
+            : 'include';
+        $decodedAttributes = json_decode($product['attributes'] ?? '[]', true);
+        if (is_string($decodedAttributes)) {
+            $decodedAttributes = array_filter(array_map('trim', explode(',', $decodedAttributes)));
+        }
+        $selectedAttributeIds = is_array($decodedAttributes) ? $decodedAttributes : [];
+        $selectedColors = $product['colors'] ?? $product->colors ?? [];
+        if (is_string($selectedColors)) {
+            $selectedColors = json_decode($selectedColors, true) ?: array_filter(array_map('trim', explode(',', $selectedColors)));
+        }
+        $selectedColors = is_array($selectedColors) ? array_values($selectedColors) : [];
+        $selectedColorCount = count($selectedColors);
+        $decodedImages = json_decode($product->images ?? '[]', true);
+        $decodedImages = is_array($decodedImages) ? $decodedImages : [];
+        $productImageCount = count($decodedImages);
     @endphp
     <div class="content container-fluid">
         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
@@ -44,10 +62,11 @@
 
             <div class="card physical_product_show">
                 <div class="px-4 pt-3">
+                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                     <ul class="nav nav-tabs w-fit-content mb-4">
                         @foreach ($languages as $language)
                             <li class="nav-item text-capitalize">
-                                <a class="nav-link form-system-language-tab  {{ $language == $defaultLanguage ? 'active' : '' }}"
+                                <a class="nav-link form-system-language-tab  {{ $language == $activeLanguage ? 'active' : '' }}"
                                     href="#"
                                     id="{{ $language }}-link">{{ getLanguageName($language) . '(' . strtoupper($language) . ')' }}</a>
                             </li>
@@ -72,20 +91,20 @@
                             }
                         }
                         ?>
-                        <div class="{{ $language != 'en' ? 'd-none' : '' }} form-system-language-form"
+                        <div class="{{ $language != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                             id="{{ $language }}-form">
                             <div class="form-group">
                                 <label class="title-color" for="{{ $language }}_name">
                                     {{ translate('product_name') }}
                                     ({{ strtoupper($language) }})
-                                    @if ($language == 'en')
+                                    @if ($language == $defaultLanguage)
                                         <span class="input-required-icon">*</span>
                                     @endif
                                 </label>
-                                <input type="text" {{ $language == 'en' ? 'required' : '' }} name="name[]"
+                                <input type="text" {{ $language == $defaultLanguage ? 'required' : '' }} name="name[]"
                                     id="{{ $language }}_name"
-                                    value="{{ $translate[$language]['name'] ?? $product['name'] }}"
-                                    class="form-control {{ $language == 'en' ? 'product-title-default-language' : '' }}"
+                                    value="{{ $language == $defaultLanguage ? $product['name'] : ($translate[$language]['name'] ?? '') }}"
+                                    class="form-control {{ $language == $defaultLanguage ? 'product-title-default-language' : '' }}"
                                     placeholder="{{ translate('new_Product') }}" required>
                             </div>
                             <input type="hidden" name="lang[]" value="{{ $language }}">
@@ -93,7 +112,7 @@
                                 <label class="title-color">{{ translate('description') }}
                                     ({{ strtoupper($language) }})</label>
                                 <textarea name="description[]"
-                                    class="summernote {{ $language == 'en' ? 'product-description-default-language' : '' }}">{!! $translate[$language]['description'] ?? $product['details'] !!}</textarea>
+                                    class="summernote {{ $language == $defaultLanguage ? 'product-description-default-language' : '' }}">{!! $language == $defaultLanguage ? $product['details'] : ($translate[$language]['description'] ?? '') !!}</textarea>
                             </div>
                         </div>
                     @endforeach
@@ -422,7 +441,7 @@
                     <ul class="nav nav-tabs mb-4" id="language-switcher">
                         @foreach ($languages as $lang)
                             <li class="nav-item">
-                                <a class="nav-link language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                <a class="nav-link language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                                     href="javascript:void(0);" data-lang="{{ $lang }}">
                                     {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                                 </a>
@@ -443,7 +462,7 @@
                             }
                         }
                         ?>
-                        <div class="language-tab-form {{ $language != $defaultLanguage ? 'd-none' : '' }}"
+                        <div class="language-tab-form {{ $language != $activeLanguage ? 'd-none' : '' }}"
                             data-lang="{{ $language }}">
                             <div class="row">
                                 <div class="col-md-12 col-lg-6 col-xl-6">
@@ -739,12 +758,6 @@
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3">
-                            @php
-                                $productTaxCalculation = getWebConfig(name: 'product_tax_calculation');
-                                $configuredTaxModel = in_array($productTaxCalculation, ['include', 'exclude'], true)
-                                    ? $productTaxCalculation
-                                    : 'include';
-                            @endphp
                             <div class="form-group">
                                 <div class="d-flex gap-2">
                                     <label class="title-color" for="tax_model">
@@ -899,7 +912,7 @@
                                     </label>
                                     <label class="switcher">
                                         <input type="checkbox" class="switcher_input" id="product-color-switcher"
-                                            name="colors_active" {{ count($product['colors']) > 0 ? 'checked' : '' }}>
+                                            name="colors_active" {{ $selectedColorCount > 0 ? 'checked' : '' }}>
                                         <span class="switcher_control"></span>
                                     </label>
                                 </div>
@@ -907,10 +920,10 @@
                                 <select
                                     class="js-example-basic-multiple js-states js-example-responsive form-control color-var-select"
                                     name="colors[]" multiple="multiple" id="colors-selector"
-                                    {{ count($product['colors']) > 0 ? '' : 'disabled' }}>
+                                    {{ $selectedColorCount > 0 ? '' : 'disabled' }}>
                                     @foreach ($colors as $key => $color)
                                         <option value={{ $color->code }}
-                                            {{ in_array($color->code, $product['colors']) ? 'selected' : '' }}>
+                                            {{ in_array($color->code, $selectedColors) ? 'selected' : '' }}>
                                             {{ $color['name'] }}
                                         </option>
                                     @endforeach
@@ -925,13 +938,6 @@
                                 </label>
                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control"
                                     name="choice_attributes[]" id="choice_attributes" multiple="multiple">
-                                    @php
-                                        $decodedAttributes = json_decode($product['attributes'] ?? '[]', true);
-                                        if (is_string($decodedAttributes)) {
-                                            $decodedAttributes = array_filter(array_map('trim', explode(',', $decodedAttributes)));
-                                        }
-                                        $selectedAttributeIds = is_array($decodedAttributes) ? $decodedAttributes : [];
-                                    @endphp
                                     @foreach ($attributes as $key => $attribute)
                                         @if ($product['attributes'] != 'null')
                                             <option value="{{ $attribute['id'] }}"
@@ -1082,7 +1088,7 @@
 
                                     <div class="row g-2" id="additional_Image_Section">
 
-                                        @if (count($product->colors) == 0)
+                                        @if ($selectedColorCount == 0)
                                             @foreach ($product->images_full_url as $key => $photo)
                                                 @php($unique_id = rand(1111, 9999))
                                                 <div class="col-sm-12 col-md-4"
@@ -1517,8 +1523,8 @@
     <script>
         "use strict";
 
-        let colors = {{ count($product->colors) }};
-        let imageCount = {{ 15 - count(json_decode($product->images)) }};
+        let colors = {{ $selectedColorCount }};
+        let imageCount = {{ 15 - $productImageCount }};
         let thumbnail =
             '{{ productImagePath('thumbnail') . '/' . $product->thumbnail ?? dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg') }}';
         $(function() {

@@ -93,6 +93,67 @@ class BranchTranslationLocalePersistenceTest extends TestCase
         ], $translations);
     }
 
+    public function test_branch_translation_repository_uses_configured_english_locale_even_when_arabic_is_first_in_request(): void
+    {
+        config(['app.locale' => 'en']);
+
+        $request = request()->replace([
+            'lang' => ['ar', 'en'],
+            'branch_name' => ['اكتوبر', 'October'],
+            'branch_address' => ['ميدان الحصري', 'El Hosary Square'],
+            'branch_country' => 'EG',
+            'branch_state' => 'Cairo',
+            'zipcode' => '12345',
+            'sun_branch_hours_from' => '09:00',
+            'sun_branch_hours_to' => '17:00',
+            'mon_branch_hours_from' => '09:00',
+            'mon_branch_hours_to' => '17:00',
+            'tue_branch_hours_from' => '09:00',
+            'tue_branch_hours_to' => '17:00',
+            'wed_branch_hours_from' => '09:00',
+            'wed_branch_hours_to' => '17:00',
+            'thu_branch_hours_from' => '09:00',
+            'thu_branch_hours_to' => '17:00',
+            'fri_branch_hours_from' => '09:00',
+            'fri_branch_hours_to' => '17:00',
+            'sat_branch_hours_from' => '09:00',
+            'sat_branch_hours_to' => '17:00',
+            'branch_latitude' => '30.0444',
+            'branch_longitude' => '31.2357',
+            'phone' => '01000000000',
+            'email' => 'october@example.com',
+            'status' => 'active',
+            'shipping_method_city' => 1,
+            'manager_id' => 22,
+        ]);
+
+        $branchPayload = (new BranchService())->getAddData($request);
+
+        $branch = Branch::query()->create($branchPayload);
+
+        $repository = new TranslationRepository(new Translation());
+        $repository->add($request, Branch::class, $branch->id);
+
+        $translations = Translation::query()
+            ->where('translationable_type', Branch::class)
+            ->where('translationable_id', $branch->id)
+            ->orderBy('key')
+            ->get(['locale', 'key', 'value'])
+            ->map(fn (Translation $translation) => [
+                'locale' => $translation->locale,
+                'key' => $translation->key,
+                'value' => $translation->value,
+            ])
+            ->all();
+
+        $this->assertSame('October', $branch->branch_name);
+        $this->assertSame('El Hosary Square', $branch->branch_address);
+        $this->assertSame([
+            ['locale' => 'ar', 'key' => 'branch_address', 'value' => 'ميدان الحصري'],
+            ['locale' => 'ar', 'key' => 'branch_name', 'value' => 'اكتوبر'],
+        ], $translations);
+    }
+
     private function createTestSchema(): void
     {
         Schema::create('branches', function (Blueprint $table): void {

@@ -3,6 +3,11 @@
 @section('title', translate('product_Preview'))
 
 @section('content')
+    @php
+        $decodedColorImagePayload = json_decode($product->color_image ?? '[]', true);
+        $decodedColorImagePayload = is_array($decodedColorImagePayload) ? $decodedColorImagePayload : [];
+        $colorImageGalleryCount = count($decodedColorImagePayload);
+    @endphp
     <div class="content container-fluid text-start">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-10 mb-3">
             <div class="">
@@ -56,10 +61,11 @@
                                 @php($languages = getWebConfig(name:'pnc_language'))
                                 @php($defaultLanguage = 'en')
                                 @php($defaultLanguage = $languages[0])
+                                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                                 <ul class="nav nav-tabs w-fit-content mb-2">
                                     @foreach($languages as $language)
                                         <li class="nav-item text-capitalize">
-                                            <a class="nav-link lang-link {{$language == $defaultLanguage? 'active':''}}"
+                                            <a class="nav-link lang-link {{$language == $activeLanguage ? 'active' : ''}}"
                                             href="javascript:"
                                             id="{{$language}}-link">{{ getLanguageName($language).'('.strtoupper($language).')' }}
                                             </a>
@@ -72,7 +78,7 @@
                             </div>
                             <div class="d-flex flex-wrap align-items-center flex-sm-nowrap justify-content-between gap-3 min-h-50">
                                 <div class="d-flex flex-wrap gap-2 align-items-center">
-                                    @if ($product->product_type == 'physical' && !empty($product->color_image) && count(json_decode($product->color_image))>0)
+                                    @if ($product->product_type == 'physical' && !empty($product->color_image) && $colorImageGalleryCount > 0)
                                         @foreach ($product->color_images_full_url as $colorImageKey => $photo)
                                             <div class="{{$colorImageKey > 4 ? 'd-none' : ''}}">
                                                 <a class="aspect-1 float-left overflow-hidden d-block border rounded-lg position-relative"

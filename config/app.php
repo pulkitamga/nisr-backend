@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', '6valy'),
+    'name' => env('APP_NAME', 'Nisrecommerce'),
 
     /*
     |--------------------------------------------------------------------------
@@ -70,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'Asia/Dhaka',
+    'timezone' => 'Africa/Cairo',
 
     /*
     |--------------------------------------------------------------------------
@@ -241,11 +241,10 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        //'Image' => Intervention\Image\Facades\Image::class,
+        'Image' => Intervention\Image\Facades\Image::class,
         'Helper' => \App\Utils\Helpers::class,
         'Madzipper' => Madnest\Madzipper\Madzipper::class,
-        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
-        'LaravelCrm' => VentureDrake\LaravelCrm\Facades\LaravelCrm::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class
     ],
 
 ];

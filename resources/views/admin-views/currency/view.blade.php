@@ -52,10 +52,11 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="table-responsive w-auto overflow-y-hidden mb-3">
+                                    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                                     <ul class="nav nav-tabs lang_tab" id="currency-language-tab" role="tablist">
                                         @foreach ($languages as $lang)
                                             <li class="nav-item">
-                                                <a class="nav-link {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                                <a class="nav-link {{ $lang == $activeLanguage ? 'active' : '' }}"
                                                    id="{{ $lang }}-currency-link"
                                                    data-toggle="tab"
                                                    href="#{{ $lang }}-add-form-currency"
@@ -70,7 +71,7 @@
                             <div class="col-12">
                                 <div class="tab-content" id="currency-language-tab-content">
                                     @foreach ($languages as $lang)
-                                        <div class="tab-pane fade {{ $lang == $defaultLanguage ? 'show active' : '' }}"
+                                        <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}"
                                              id="{{ $lang }}-add-form-currency"
                                              role="tabpanel">
                                             <div class="row">

@@ -9,10 +9,11 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
+                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -23,7 +24,7 @@
                     @foreach($languages as $lang)
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
 
-                    <div class="form-group form-system-language-form {{ $lang }}-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}"
+                    <div class="form-group form-system-language-form {{ $lang }}-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                         id="{{ $lang }}-form">
                         <div class="form-group">
                             <label class="title-color">{{translate('title')}} ({{ strtoupper($lang) }})</label>

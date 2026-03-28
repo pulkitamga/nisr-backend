@@ -92,10 +92,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         @method('PUT')
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <ul class="nav nav-tabs w-fit-content mb-4">
+                                                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs w-fit-content mb-4">
                                                     @foreach($language as $lang)
                                                     <li class="nav-item text-capitalize">
-                                                        <a class="nav-link form-lang-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                                        <a class="nav-link form-lang-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                                                             id="tab-{{ $lang }}" type="button" role="tab">
                                                             {{ getLanguageName($lang) . ' (' . strtoupper($lang) . ')' }}
                                                         </a>
@@ -115,7 +116,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                                 </div>
 
                                                 @foreach($language as $lang)
-                                                <div class="form-lang-content {{ $lang != $defaultLanguage ? 'd-none' : '' }}"
+                                                <div class="form-lang-content {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                                                     id="content-{{ $lang }}" role="tabpanel">
                                                     <div class="form-group">
                                                         <label>{{ translate('Tier Name') }} ({{ strtoupper($lang) }})</label>
@@ -173,10 +174,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                 <div class="modal-header">
 
-                    <ul class="nav nav-tabs w-fit-content mb-4">
+                    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs w-fit-content mb-4">
                         @foreach($language as $lang)
                         <li class="nav-item text-capitalize">
-                            <a class="nav-link form-system-language-tab cursor-pointer {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                            <a class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}"
                                 id="{{ $lang }}-link">
                                 {{ getLanguageName($lang) . ' (' . strtoupper($lang) . ')' }}
                             </a>
@@ -196,7 +198,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     </div>
 
                     @foreach($language as $lang)
-                    <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                         id="{{ $lang }}-form">
                         <label>{{ translate('Tier Name') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="name[]" class="form-control"

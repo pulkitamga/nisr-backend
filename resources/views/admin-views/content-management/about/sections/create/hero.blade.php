@@ -24,10 +24,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 @csrf
 
                 {{-- Language Tabs --}}
-                <ul class="nav nav-tabs mb-4">
+                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -37,7 +38,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                 {{-- Language Fields --}}
                 @foreach($language as $lang)
-                <div class="form-system-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}"
+                <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <div class="form-group">
                         <label>{{ translate('heading') }} ({{ strtoupper($lang) }})</label>

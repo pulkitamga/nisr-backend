@@ -226,10 +226,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
         </div>
         <div class="card mt-lg-5">
                     <div class="card-header">
-                        <ul class="nav nav-tabs mb-4">
+                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
                             @foreach($language as $lang)
                             <li class="nav-item">
-                                <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                                     href="javascript:" id="{{ $lang }}-link">
                                     {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                                 </a>
@@ -240,7 +241,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     
                     <div class="card-body">
                          @foreach($language as $lang)
-                <div class="form-system-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}"
+                <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <input type="hidden" name="lang[]" value="{{ $lang }}"> <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700 ">
                         {{ translate('Terms and Conditions') }}({{ strtoupper($lang) }})

@@ -13,10 +13,11 @@ $cards = $jsonData['section']['cards'] ?? [];
 @php
 $content = $jsonData['section'] ?? [];
 @endphp
+@php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
 <ul class="nav nav-tabs mb-4" id="language-switcher">
     @foreach($languages as $lang)
     <li class="nav-item">
-        <a class="nav-link language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+        <a class="nav-link language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
             href="javascript:void(0);" data-lang="{{ $lang }}">
             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
         </a>
@@ -39,7 +40,7 @@ $content = $jsonData['section'] ?? [];
         $translatedSubtitle = $subtitleTranslations ?? '';
         @endphp
 
-        <div class="language-tab-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}" data-lang="{{ $lang }}">
+        <div class="language-tab-form {{ $lang != $activeLanguage ? 'd-none' : '' }}" data-lang="{{ $lang }}">
             <div class="row">
                 <input type="hidden" name="lang[]" value="{{ $lang }}">
 
@@ -74,10 +75,11 @@ $content = $jsonData['section'] ?? [];
 <form action="{{ route('admin.content-management.why_join_us.update') }}" method="post"
     enctype="multipart/form-data">
     @csrf
-    <ul class="nav nav-tabs mb-4">
+    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
         @foreach($languages as $lang)
         <li class="nav-item">
-            <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+            <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                 href="javascript:" id="{{ $lang }}-link">
                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
             </a>
@@ -87,7 +89,7 @@ $content = $jsonData['section'] ?? [];
 
 
     @foreach($languages as $lang)
-    <div class="form-system-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
+    <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
         @foreach($cards as $index => $card)
         @php
         $titleTranslations = isset($translations[$lang]['cards'][0]['title']) ? explode('|||', $translations[$lang]['cards'][0]['title']) : [];

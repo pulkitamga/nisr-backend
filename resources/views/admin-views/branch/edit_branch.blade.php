@@ -7,7 +7,8 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = in_array(config('app.locale'), $languages ?? [], true) ? config('app.locale') : (($languages[0] ?? 'en'));
+$baseLanguage = in_array(config('app.locale'), $languages ?? [], true) ? config('app.locale') : (($languages[0] ?? 'en'));
+$activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $baseLanguage;
 $translations = [];
 $selectedCountry = old('branch_country', $aBranchDetails['branch_country']);
 $selectedState = old('branch_state', $aBranchDetails['branch_state']);
@@ -41,7 +42,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -50,20 +51,20 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 </ul>
                 <div class="row">
                     @foreach($languages as $lang)
-                    <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form col-lg-8"
+                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form col-lg-8"
                         id="{{ $lang }}-form">
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
                         <div class="row"> 
                             <div class="col-sm-6 col-lg-6">
                                 <div class="form-group">
                                     <label class="title-color d-flex">{{translate('Branch_Name')}}  ({{ strtoupper($lang) }})</label>
-                                    <input class="form-control" type="text" name="branch_name[]" value="{{ $lang == $defaultLanguage ? $aBranchDetails['branch_name'] : ($translations[$lang]['branch_name'] ?? '') }}" placeholder="{{translate('enter_branch_name')}}">
+                                    <input class="form-control" type="text" name="branch_name[]" value="{{ $lang == $baseLanguage ? $aBranchDetails['branch_name'] : ($translations[$lang]['branch_name'] ?? '') }}" placeholder="{{translate('enter_branch_name')}}">
                                 </div>
                             </div>
                             <div class="col-sm-6 col-lg-6">
                                 <div class="form-group">
                                     <label class="title-color d-flex">{{translate('Branch_address')}}  ({{ strtoupper($lang) }})</label>
-                                    <input type="text" value="{{ $lang == $defaultLanguage ? $aBranchDetails['branch_address'] : ($translations[$lang]['branch_address'] ?? '')}}" name="branch_address[]" class="form-control" id="branch_address" placeholder="{{translate('your_branch_address')}}" required>
+                                    <input type="text" value="{{ $lang == $baseLanguage ? $aBranchDetails['branch_address'] : ($translations[$lang]['branch_address'] ?? '')}}" name="branch_address[]" class="form-control" id="branch_address" placeholder="{{translate('your_branch_address')}}" required>
                                 </div>
                             </div>
                         </div>

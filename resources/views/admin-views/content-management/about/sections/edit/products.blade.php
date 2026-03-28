@@ -32,10 +32,11 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @method('PUT')
 
                 <!-- Language Tabs -->
-                <ul class="nav nav-tabs mb-4">
+                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -45,7 +46,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 
                 <!-- Language Fields -->
                 @foreach($language as $lang)
-                <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                     id="{{ $lang }}-form">
                     <!-- Title -->
                     <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>

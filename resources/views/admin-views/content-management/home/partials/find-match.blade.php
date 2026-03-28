@@ -30,10 +30,11 @@ $fallback = [
     @csrf
     @method('PUT')
 
-    <ul class="nav nav-tabs mb-4">
+    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
         @foreach($languages as $lang)
             <li class="nav-item">
-                <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                    href="javascript:" id="{{ $lang }}-link">
                     {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                 </a>
@@ -46,7 +47,7 @@ $fallback = [
             @foreach($languages as $lang)
                 <input type="hidden" name="lang[]" value="{{ $lang }}">
 
-                <div class="form-system-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
+                <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
                     <div class="row">
                         <div class="col-lg-6">
                             <label class="form-label">{{ translate('Section Heading') }} ({{ strtoupper($lang) }})</label>

@@ -6,12 +6,14 @@
     <div class="d-flex justify-content-between gap-3 flex-wrap mb-5">
         <div class="table-responsive w-auto ovy-hidden max-width-700px">
             @php($language = $language->value ?? null)
-            @php($defaultLang = 'en')
-            @php($defaultLang = getDefaultLanguage())
+            @php($availableLanguages = json_decode($language, true) ?? [])
+            @php($defaultLang = config('app.locale', 'en'))
+            @php($defaultLang = in_array($defaultLang, $availableLanguages, true) ? $defaultLang : ($availableLanguages[0] ?? 'en'))
+            @php($activeLang = in_array(getDefaultLanguage(), $availableLanguages, true) ? getDefaultLanguage() : $defaultLang)
             <ul class="nav nav-tabs w-fit-content flex-nowrap  border-0">
-                @foreach (json_decode($language) as $lang)
+                @foreach ($availableLanguages as $lang)
                     <li class="nav-item text-capitalize">
-                        <a class="nav-link form-system-language-tab  {{ $lang == $defaultLang ? 'active' : '' }}" href="javascript:" id="{{ $lang }}-link">
+                        <a class="nav-link form-system-language-tab  {{ $lang == $activeLang ? 'active' : '' }}" href="javascript:" id="{{ $lang }}-link">
                             {{ Helpers::get_language_name($lang) . '(' . strtoupper($lang) . ')' }}
                         </a>
                     </li>
@@ -58,7 +60,7 @@
         <h5 class="mb-0">{{translate('header_content')}}</h5>
     </div>
     <div class="bg-light p-3 rounded mb-3">
-        @foreach (json_decode($language) as $lang)
+        @foreach ($availableLanguages as $lang)
                 <?php
                 $translate = [];
                 if (count($template['translations'])) {
@@ -74,19 +76,19 @@
                 }
                 ?>
 
-            <div class="{{ $lang != $defaultLang? 'd-none':''}} form-system-language-form" id="{{ $lang}}-form">
+            <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form" id="{{ $lang}}-form">
                 <div class="form-group">
                     <label class="title-color text-capitalize" for="{{ $lang}}-main-title">{{ translate('title') }}
                         ({{strtoupper($lang) }})</label>
                     <input type="text" name="title[{{$lang}}]" data-id="mail-title"
                            id="{{ $lang}}-main-title"
-                           value="{{ $translate[$lang]['title'] ??  ($lang == 'en' ? $template['title'] : '')}}"
+                           value="{{ $translate[$lang]['title'] ??  ($lang == $defaultLang ? $template['title'] : '')}}"
                            class="form-control" placeholder="{{translate('ex').' : '.translate('title')}}">
                 </div>
                 <input type="hidden" name="lang[]" value="{{$lang}}">
                 <div class="form-group">
                     <label class="title-color">{{ translate('mail_body') }} ({{strtoupper($lang) }})</label>
-                    <textarea name="body[{{$lang}}]" data-id="mail-body" class="summernote">{!! $translate[$lang]['body'] ?? ($lang == 'en' ? $template['body'] : '') !!}</textarea>
+                    <textarea name="body[{{$lang}}]" data-id="mail-body" class="summernote">{!! $translate[$lang]['body'] ?? ($lang == $defaultLang ? $template['body'] : '') !!}</textarea>
                 </div>
             </div>
         @endforeach
@@ -139,7 +141,7 @@
         <div class="row g-2">
             <div class="col-lg-6">
                 <div class="form-group">
-                    @foreach (json_decode($language) as $lang)
+                    @foreach ($availableLanguages as $lang)
                             <?php
                             if (count($template['translations'])) {
                                 $translate = [];
@@ -150,7 +152,7 @@
                                 }
                             }
                             ?>
-                    <div class="{{ $lang != 'en'? 'd-none':''}} form-system-language-form {{ $lang}}-form">
+                    <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form {{ $lang}}-form">
 
                         <div class="d-flex align-items-center gap-2 mb-2">
                             <label for="button_name" class="title-color mb-0 text-capitalize" for="{{ $lang}}-button-name">{{translate('button_name')}} ({{strtoupper($lang)}})</label>
@@ -161,7 +163,7 @@
                             </span>
                         </div>
                         <input type="text"  id="{{ $lang}}-button-name" name="button_name[{{ $lang}}]"  data-id="button-content"
-                               value="{{ $translate[$lang]['button_name'] ?? ($lang == 'en' ? $template['button_name'] : '')}}"
+                               value="{{ $translate[$lang]['button_name'] ?? ($lang == $defaultLang ? $template['button_name'] : '')}}"
                                placeholder="{{translate('ex').' : '.translate('submit')}}" class="form-control">
                     </div>
                     @endforeach
@@ -214,7 +216,7 @@
     </div>
 
     <div class="bg-light p-3 rounded mb-3">
-        @foreach (json_decode($language) as $lang)
+        @foreach ($availableLanguages as $lang)
                 <?php
                 $translate = [];
                 if (count($template['translations'])) {
@@ -225,13 +227,13 @@
                     }
                 }
                 ?>
-            <div class="{{ $lang != 'en'? 'd-none':''}} form-system-language-form {{ $lang}}-form">
+            <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form {{ $lang}}-form">
                 <div class="form-group">
                     <label class="title-color font-weight-bold text-capitalize" for="{{ $lang}}-footer-text">{{ translate('section_text') }}
                         ({{strtoupper($lang) }})</label>
                     <input type="text" name="footer_text[{{ $lang}}]" data-id="footer-text"
                            id="{{ $lang}}-footer-text"
-                           value="{{ $translate[$lang]['footer_text'] ?? ($lang == 'en' ? $template['footer_text'] : '')}}"
+                           value="{{ $translate[$lang]['footer_text'] ?? ($lang == $defaultLang ? $template['footer_text'] : '')}}"
                            class="form-control" placeholder="{{translate('ex').' : '.translate('please_contact_us_for_any_queries').','.translate('we_are_always_happy_to_help').'.'}}">
                 </div>
             </div>
@@ -269,7 +271,7 @@
                 @endforeach
             </div>
         </div>
-        @foreach (json_decode($language) as $lang)
+        @foreach ($availableLanguages as $lang)
                 <?php
                 if (count($template['translations'])) {
                     $translate = [];
@@ -280,12 +282,12 @@
                     }
                 }
                 ?>
-            <div class="{{ $lang != 'en'? 'd-none':''}} form-system-language-form {{ $lang}}-form">
+            <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form {{ $lang}}-form">
                 <div class="form-group">
                     <label class="title-color font-weight-bold text-capitalize" for="{{ $lang}}-copyright-text">{{ translate('copyright_content') }} ({{strtoupper($lang) }})</label>
                     <input type="text" name="copyright_text[{{ $lang}}]" data-id="copyright-text"
                            id="{{ $lang}}-copyright-text"
-                           value="{{ $translate[$lang]['copyright_text'] ?? ($lang == 'en' ? $template['copyright_text'] : '')}}"
+                           value="{{ $translate[$lang]['copyright_text'] ?? ($lang == $defaultLang ? $template['copyright_text'] : '')}}"
                            class="form-control" placeholder="{{translate('ex').' : '.translate('copyright').' @ '.translate('all_right_reserved')}}">
                 </div>
             </div>

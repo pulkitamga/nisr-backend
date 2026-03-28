@@ -117,6 +117,16 @@ if (!function_exists('getTranslationCatalogForLocale')) {
     }
 }
 
+if (!function_exists('translationKeyExistsInCatalog')) {
+    function translationKeyExistsInCatalog(string $local, string $key): bool
+    {
+        $translationCatalog = getTranslationCatalogForLocale($local);
+
+        return array_key_exists($key, $translationCatalog['messages'])
+            || array_key_exists($key, $translationCatalog['new-messages']);
+    }
+}
+
 if (!function_exists('loadTranslationGroupCatalog')) {
     function loadTranslationGroupCatalog(string $local, string $group): array
     {
@@ -527,6 +537,8 @@ if (!function_exists('getTranslatedValue')) {
     function getTranslatedValue($model, string $key, string $fallback = ''): string
     {
         $locale = getDefaultLanguage();
+        $resolvedLocale = resolveAppLocale($locale);
+        $defaultLocale = resolveAppLocale(config('app.locale', 'en'));
 
         // CASE 1: Eloquent Model with translations relation
         if (is_object($model) && method_exists($model, 'translations')) {
@@ -534,10 +546,14 @@ if (!function_exists('getTranslatedValue')) {
                 $model->load('translations');
             }
 
-            return $model->translations
+            $translatedValue = $model->translations
                 ->where('locale', $locale)
                 ->where('key', $key)
-                ->first()?->value ?? $fallback;
+                ->first()?->value;
+
+            if ($translatedValue !== null && $translatedValue !== '') {
+                return $translatedValue;
+            }
         }
 
         // CASE 2: Array with embedded translations
@@ -551,6 +567,14 @@ if (!function_exists('getTranslatedValue')) {
                     return $translation['value'];
                 }
             }
+        }
+
+        if (
+            $fallback !== ''
+            && $resolvedLocale !== $defaultLocale
+            && translationKeyExistsInCatalog($resolvedLocale, $fallback)
+        ) {
+            return getTranslateMessageValueByKey($resolvedLocale, $fallback);
         }
 
         // Fallback

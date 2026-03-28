@@ -24,10 +24,11 @@
                     <form action="{{ route('admin.category.update', [$category['id']]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                         <ul class="nav nav-tabs w-fit-content mb-4">
                             @foreach($languages as $lang)
                             <li class="nav-item text-capitalize">
-                                <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $defaultLanguage? 'active':''}}" id="{{ $lang}}-link">
+                                <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{ $lang}}-link">
                                     {{ getLanguageName($lang).'('.strtoupper($lang).')'}}
                                 </span>
                             </li>
@@ -47,7 +48,7 @@
                                         }
                                     }
                                     ?>
-                                    <div class="form-group {{ $lang != $defaultLanguage ? 'd-none':''}} form-system-language-form" id="{{ $lang}}-form">
+                                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang}}-form">
                                         <label class="title-color">
                                             {{ translate('category_Name') }} ({{strtoupper($lang) }})
                                         </label>

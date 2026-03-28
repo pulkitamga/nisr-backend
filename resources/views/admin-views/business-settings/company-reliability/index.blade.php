@@ -52,10 +52,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                     </label>
                                 </div>
                                 <div class="card-body">
+                                    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                                     <ul class="nav nav-tabs" role="tablist">
                                         @foreach($language as $lang)
                                         <li class="nav-item" role="presentation">
-                                            <a class="nav-link {{ $lang == $defaultLanguage ? 'active' : '' }}" id="tab-{{ $value->item }}-{{ $lang }}" data-toggle="tab" href="#content-{{ $value->item }}-{{ $lang }}" role="tab" aria-controls="content-{{ $value->item }}-{{ $lang }}" aria-selected="{{ $lang == $defaultLanguage ? 'true' : 'false' }}">
+                                            <a class="nav-link {{ $lang == $activeLanguage ? 'active' : '' }}" id="tab-{{ $value->item }}-{{ $lang }}" data-toggle="tab" href="#content-{{ $value->item }}-{{ $lang }}" role="tab" aria-controls="content-{{ $value->item }}-{{ $lang }}" aria-selected="{{ $lang == $activeLanguage ? 'true' : 'false' }}">
                                                 {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                                             </a>
                                         </li>
@@ -73,7 +74,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         ? ($value->title ?? '')
                                         : ($translation ? $translation->value : '');
                                         @endphp
-                                        <div class="tab-pane fade {{ $lang == $defaultLanguage ? 'show active' : '' }}" id="content-{{ $value->item }}-{{ $lang }}" role="tabpanel" aria-labelledby="tab-{{ $value->item }}-{{ $lang }}">
+                                        <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}" id="content-{{ $value->item }}-{{ $lang }}" role="tabpanel" aria-labelledby="tab-{{ $value->item }}-{{ $lang }}">
                                             <div class="mb-3">
                                                 <label for="title_{{ $value->item }}_{{ $lang }}">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
                                                 <input type="text"

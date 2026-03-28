@@ -32,10 +32,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 </div>
             </div>
             <div class="card-body">
-                <ul class="nav nav-tabs mb-4">
+                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -43,7 +44,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     @endforeach
                 </ul>
                 @foreach($languages as $lang)
-                <div class="form-system-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
+                <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
                     <div class="card border shadow-none mb-3">
                         <div class="card-body">
                             <div class="row">

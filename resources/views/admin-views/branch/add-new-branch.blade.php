@@ -7,7 +7,8 @@
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = in_array(config('app.locale'), $languages ?? [], true) ? config('app.locale') : (($languages[0] ?? 'en'));
+$baseLanguage = in_array(config('app.locale'), $languages ?? [], true) ? config('app.locale') : (($languages[0] ?? 'en'));
+$activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $baseLanguage;
 $selectedCountry = old('branch_country', getWebConfig(name: 'country_code'));
 $selectedState = old('branch_state');
 $selectedManagerId = (string)old('manager_id', '');
@@ -38,7 +39,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -47,7 +48,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                 </ul>
                 <div class="row">
                     @foreach($languages as $lang)
-                    <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form col-lg-8"
+                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form col-lg-8"
                         id="{{ $lang }}-form">
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
                         <div class="row"> <!-- This row wraps columns -->

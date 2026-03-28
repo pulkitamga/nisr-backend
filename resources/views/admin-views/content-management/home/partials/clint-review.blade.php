@@ -82,10 +82,11 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <ul class="nav nav-tabs mb-4">
+                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -95,7 +96,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                 <div class="modal-body">
                     @foreach($languages as $lang)
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
-                    <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                         id="{{ $lang }}-form">
                         <div class="form-group">
 
@@ -148,10 +149,11 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     </button>
                 </div>
 
-                <ul class="nav nav-tabs mb-4">
+                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
-                        <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                        <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                             href="javascript:" id="{{ $lang }}-link">
                             {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                         </a>
@@ -163,7 +165,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
 
-                    <div class="form-group {{ $lang != $defaultLanguage ? 'd-none' : '' }} form-system-language-form"
+                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                         id="{{ $lang }}-form">
 
                         <div class="form-group">

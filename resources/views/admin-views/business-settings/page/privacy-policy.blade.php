@@ -38,10 +38,11 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     @csrf
 
                     <div class="card-body">
-                        <ul class="nav nav-tabs mb-4">
+                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+<ul class="nav nav-tabs mb-4">
                             @foreach($language as $lang)
                             <li class="nav-item">
-                                <a class="nav-link form-system-language-tab {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                <a class="nav-link form-system-language-tab {{ $lang == $activeLanguage ? 'active' : '' }}"
                                     href="javascript:" id="{{ $lang }}-link">
                                     {{ getLanguageName($lang) }} ({{ strtoupper($lang) }})
                                 </a>
@@ -52,7 +53,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 
 
                             @foreach($language as $lang)
-                            <div class="form-system-language-form {{ $lang != $defaultLanguage ? 'd-none' : '' }}"
+                            <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                                 id="{{ $lang }}-form">
 
                                 @php

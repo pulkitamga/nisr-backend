@@ -16,16 +16,17 @@
                 <div class="card-body text-start">
                     <form action="{{ route('admin.sub-sub-category.store') }}" method="POST">
                         @csrf
+                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                         <ul class="nav nav-tabs w-fit-content mb-4">
                             @foreach($languages as $lang)
                             <li class="nav-item text-capitalize">
-                                <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $defaultLanguage? 'active':''}}" id="{{ $lang}}-link">{{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}</span>
+                                <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{ $lang}}-link">{{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}</span>
                             </li>
                             @endforeach
                         </ul>
                         <div class="row">
                             @foreach($languages as $lang)
-                            <div class="col-12 form-group {{ $lang != $defaultLanguage ? 'd-none':''}} form-system-language-form" id="{{ $lang}}-form">
+                            <div class="col-12 form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang}}-form">
                                 <label class="title-color" for="exampleFormControlInput1">{{ translate('sub_sub_category_name') }}
                                     <span class="text-danger">*</span>
                                     ({{strtoupper($lang) }})</label>

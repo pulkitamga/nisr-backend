@@ -27,10 +27,11 @@
                                 <div class="row">
                                     <div class="col-12 mb-3">
                                         <div class="table-responsive w-auto overflow-y-hidden">
+                                            @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
                                             <ul class="nav nav-tabs lang_tab" id="currency-edit-language-tab" role="tablist">
                                                 @foreach ($languages as $lang)
                                                     <li class="nav-item">
-                                                        <a class="nav-link {{ $lang == $defaultLanguage ? 'active' : '' }}"
+                                                        <a class="nav-link {{ $lang == $activeLanguage ? 'active' : '' }}"
                                                            id="{{ $lang }}-currency-edit-link"
                                                            data-toggle="tab"
                                                            href="#{{ $lang }}-edit-form-currency"
@@ -47,7 +48,7 @@
                                             @foreach ($languages as $lang)
                                                 @php($nameValue = $lang === $defaultLanguage ? $currency->getRawOriginal('name') : ($currency['translations']->first(fn($translation) => $translation->locale === $lang && $translation->key === 'name')?->value ?? ''))
                                                 @php($symbolValue = $lang === $defaultLanguage ? $currency->getRawOriginal('symbol') : ($currency['translations']->first(fn($translation) => $translation->locale === $lang && $translation->key === 'symbol')?->value ?? ''))
-                                                <div class="tab-pane fade {{ $lang == $defaultLanguage ? 'show active' : '' }}"
+                                                <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}"
                                                      id="{{ $lang }}-edit-form-currency"
                                                      role="tabpanel">
                                                     <div class="row">
