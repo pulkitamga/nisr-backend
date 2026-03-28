@@ -22,7 +22,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 @csrf
 
                 {{-- Language Tabs --}}
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach ($language as $lang)
                     <li class="nav-item">
@@ -111,4 +111,3 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     }
 </script>
 @endsection
-

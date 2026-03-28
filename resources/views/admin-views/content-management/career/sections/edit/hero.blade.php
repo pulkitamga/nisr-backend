@@ -15,7 +15,7 @@ $baseLanguage = getConfiguredDefaultLanguage();
 if (!in_array($baseLanguage, $language, true)) {
     $baseLanguage = $language[0] ?? 'en';
 }
-$activeLanguage = getDefaultLanguage();
+$activeLanguage = $errors->any() ? $baseLanguage : getDefaultLanguage();
 $activeLanguage = in_array($activeLanguage, $language, true) ? $activeLanguage : $baseLanguage;
 $translations = [];
 foreach ($job->translations as $translation) {
@@ -47,8 +47,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 <div class="form-group">
                     <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
-                        value="{{ $lang == $baseLanguage ? $job->title : ($translations[$lang]['title'] ?? '') }}" {{
-                    $lang==$baseLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $baseLanguage ? $job->title : ($translations[$lang]['title'] ?? '') }}">
                 </div>
 
                 <!-- Description -->

@@ -13,7 +13,7 @@ $cards = $jsonData['section']['cards'] ?? [];
 @php
 $content = $jsonData['section'] ?? [];
 @endphp
-@php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+@php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4" id="language-switcher">
     @foreach($languages as $lang)
     <li class="nav-item">
@@ -48,7 +48,6 @@ $content = $jsonData['section'] ?? [];
                     <label class="title-color">{{ translate('main_title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
                         value="{{ $lang == $defaultLanguage ? ($content['title'] ?? '') : (is_array($translatedTitle) ? ($translatedTitle[$lang] ?? '') : $translatedTitle) }}"
-                        {{ $lang == $defaultLanguage ? 'required' : '' }}
                         placeholder="{{ translate('enter_title') }}">
                 </div>
 
@@ -56,7 +55,6 @@ $content = $jsonData['section'] ?? [];
                     <label class="title-color">{{ translate('main_subtitle') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="subtitle[]" class="form-control"
                         value="{{ $lang == $defaultLanguage ? ($content['subtitle'] ?? '') : (is_array($translatedSubtitle) ? ($translatedSubtitle[$lang] ?? '') : $translatedSubtitle) }}"
-                        {{ $lang == $defaultLanguage ? 'required' : '' }}
                         placeholder="{{ translate('enter_subtitle') }}">
                 </div>
             </div>
@@ -75,7 +73,7 @@ $content = $jsonData['section'] ?? [];
 <form action="{{ route('admin.content-management.why_join_us.update') }}" method="post"
     enctype="multipart/form-data">
     @csrf
-    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+    @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
         @foreach($languages as $lang)
         <li class="nav-item">
@@ -112,8 +110,7 @@ $content = $jsonData['section'] ?? [];
                         <input type="text"
                             name="cards[{{ $index }}][title][{{ $lang }}]"
                             class="form-control"
-                            value="{{ $lang == $defaultLanguage ? ($card['title']) : $translatedTitle }}"
-                            {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                            value="{{ $lang == $defaultLanguage ? ($card['title']) : $translatedTitle }}">
                     </div>
 
                     {{-- Image Alt --}}
@@ -206,4 +203,3 @@ $content = $jsonData['section'] ?? [];
         });
     });
 </script>
-

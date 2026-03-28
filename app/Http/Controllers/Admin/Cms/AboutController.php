@@ -18,6 +18,7 @@ use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
 use App\Utils\ImageManager;
+use Illuminate\Validation\ValidationException;
 
 class AboutController extends Controller
 {
@@ -44,6 +45,95 @@ class AboutController extends Controller
         'timeline' => AboutTimelineSection::class,
         'dealers' => AboutDealerSection::class,
     ];
+
+    private function getSectionValidationMap(bool $isUpdate): array
+    {
+        if ($isUpdate) {
+            return [
+                'hero' => [
+                    'heading' => ['message' => 'The_heading_in_english_is_required'],
+                    'subheading' => ['message' => 'The_subheading_in_english_is_required'],
+                ],
+                'who_we_are' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                ],
+                'mission' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                ],
+                'products' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                ],
+                'timeline' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                    'year' => ['message' => 'The_year_is_required', 'multilingual' => false],
+                ],
+                'dealers' => [
+                    'dealer_name' => ['message' => 'The_dealer_name_in_english_is_required'],
+                ],
+            ];
+        }
+
+        return [
+            'hero' => [
+                'heading' => ['message' => 'The_heading_in_english_is_required'],
+            ],
+            'who_we_are' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+                'content' => ['message' => 'The_content_in_english_is_required', 'rich_text' => true],
+            ],
+            'mission' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+                'content' => ['message' => 'The_content_in_english_is_required', 'rich_text' => true],
+            ],
+            'products' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+            ],
+            'timeline' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+                'description' => ['message' => 'The_description_in_english_is_required', 'rich_text' => true],
+                'year' => ['message' => 'The_year_is_required', 'multilingual' => false],
+            ],
+            'dealers' => [
+                'dealer_name' => ['message' => 'The_dealer_name_in_english_is_required'],
+                'location' => ['message' => 'The_location_in_english_is_required'],
+                'description' => ['message' => 'The_description_in_english_is_required', 'rich_text' => true],
+            ],
+        ];
+    }
+
+    private function validateSectionRequest(Request $request, string $section, bool $isUpdate = false): void
+    {
+        $validationMap = $this->getSectionValidationMap($isUpdate)[$section] ?? [];
+        if ($validationMap === []) {
+            return;
+        }
+
+        $englishIndex = getLanguageInputIndex($request, 'en');
+        $errors = [];
+
+        foreach ($validationMap as $field => $options) {
+            $isMultilingual = $options['multilingual'] ?? true;
+            $value = $isMultilingual
+                ? $request->input($field . '.' . ($englishIndex ?? 0))
+                : $request->input($field);
+
+            $isBlank = ($options['rich_text'] ?? false)
+                ? richTextToPlainText($value) === ''
+                : trim((string)($value ?? '')) === '';
+
+            if (!$isBlank) {
+                continue;
+            }
+
+            $errors[$isMultilingual ? $field . '.' . ($englishIndex ?? 0) : $field] = [
+                translate($options['message']),
+            ];
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
 
     public function index($section = 'hero')
     {
@@ -99,6 +189,7 @@ class AboutController extends Controller
         }
 
         $request->merge($sanitizedInput);
+        $this->validateSectionRequest($request, $section);
 
         $modelMap = [
             'hero' => AboutHeroSection::class,
@@ -205,6 +296,7 @@ class AboutController extends Controller
         }
 
         $request->merge($sanitizedInput);
+        $this->validateSectionRequest($request, $section, true);
 
         $modelMap = [
             'hero' => AboutHeroSection::class,

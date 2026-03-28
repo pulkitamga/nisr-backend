@@ -29,7 +29,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @method('PUT')
 
                 <!-- Language Tabs -->
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
@@ -82,4 +82,3 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     });
 </script>
 @endpush
-

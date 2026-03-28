@@ -38,7 +38,7 @@ if (!in_array($baseLanguage, $language ?? [], true)) {
                 <!-- Title -->
                 <div class="form-group">
                     <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
-                    <input type="text" name="title[]" class="form-control" {{ $lang==$baseLanguage ? 'required' : '' }}>
+                    <input type="text" name="title[]" class="form-control">
                 </div>
 
                 <!-- Description -->

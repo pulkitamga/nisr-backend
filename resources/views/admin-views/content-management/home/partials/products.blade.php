@@ -10,7 +10,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
 @endphp
 
-@php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+@php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
     @foreach($languages as $lang)
     <li class="nav-item">
@@ -69,4 +69,3 @@ $translatedParagraph = $paragraphTranslations ?? '';
     </div>
 </form>
 @endforeach
-

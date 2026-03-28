@@ -27,7 +27,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
             @method('PUT')
 
             {{-- Language Tabs --}}
-            @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+            @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                 @foreach($language as $lang)
                 <li class="nav-item">
@@ -46,15 +46,13 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     <label>{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="heading[]" class="form-control"
                         placeholder="{{ translate('Enter Heading') }}"
-                        value="{{ $lang == $defaultLanguage ? $blog->heading : ($translations[$lang]['heading'] ?? '') }}"
-                        {{ $lang==$defaultLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $defaultLanguage ? $blog->heading : ($translations[$lang]['heading'] ?? '') }}">
                 </div>
 
                 <div class="form-group">
                     <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
                     <textarea name="description[]" class="form-control" rows="5"
-                        placeholder="{{ translate('Enter Description') }}" {{ $lang==$defaultLanguage ? 'required' : ''
-                        }}>
+                        placeholder="{{ translate('Enter Description') }}">
                {!! $lang == $defaultLanguage ? $blog->description : ($translations[$lang]['description'] ?? '') !!}                </textarea>
                 </div>
 
@@ -113,4 +111,3 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 </script>
 
 @endsection
-

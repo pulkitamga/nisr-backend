@@ -118,7 +118,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
@@ -141,21 +141,18 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                             <label>{{ translate('Heading') }}({{ strtoupper($lang) }})</label>
                             <input name="heading[]" id="edit-heading"
                                 placeholder="{{ translate('Heading') }}" class="form-control lang-heading"
-                                data-lang="{{ $lang }}"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                data-lang="{{ $lang }}">
 
                             <label>{{ translate('Paragraph') }}({{ strtoupper($lang) }})</label>
                             <textarea name="paragraph[]" id="edit-paragraph"
                                 placeholder="{{ translate('Paragraph') }}" class="form-control lang-paragraph"
                                 data-lang="{{ $lang }}"
-                                rows="3"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                                rows="3"></textarea>
 
                             <label>{{ translate('Button Text') }}({{ strtoupper($lang) }})</label>
                             <input name="buttonText[]" id="edit-buttonText"
                                 placeholder="{{ translate('Button Text') }}" class="form-control lang-button"
-                                data-lang="{{ $lang }}"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                data-lang="{{ $lang }}">
                         </div>
                     </div>
                     @endforeach
@@ -210,7 +207,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
@@ -233,17 +230,17 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
                             <div class="form-group">
                                 <label>{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
-                                <input type="text" name="heading[]" class="form-control" {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                <input type="text" name="heading[]" class="form-control">
                             </div>
 
                             <div class="form-group">
                                 <label>{{ translate('Paragraph') }} ({{ strtoupper($lang) }})</label>
-                                <textarea name="paragraph[]" class="form-control" rows="3" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                                <textarea name="paragraph[]" class="form-control" rows="3"></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label>{{ translate('Button Text') }} ({{ strtoupper($lang) }})</label>
-                                <input type="text" name="buttonText[]" class="form-control" {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                <input type="text" name="buttonText[]" class="form-control">
                             </div>
                         </div>
                         @endforeach
@@ -502,6 +499,5 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
         });
     });
 </script>
-
 
 

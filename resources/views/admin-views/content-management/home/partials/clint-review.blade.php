@@ -82,7 +82,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
@@ -102,14 +102,12 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
                             <label class="form-label">{{ translate('Name') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="name[]" class="form-control lang-name"
-                                data-lang="{{ $lang }}"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                data-lang="{{ $lang }}">
 
                             <label class="form-label">{{ translate('Review') }} ({{ strtoupper($lang) }})</label>
                             <textarea name="review[]" class="form-control lang-review"
                                 data-lang="{{ $lang }}"
-                                rows="3"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                                rows="3"></textarea>
                         </div>
                     </div>
 
@@ -149,7 +147,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     </button>
                 </div>
 
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
                     <li class="nav-item">
@@ -171,15 +169,13 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <div class="form-group">
                             <label>{{ translate('name') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="name[]" id="edit-name" class="form-control lang-name"
-                                data-lang="{{ $lang }}"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                data-lang="{{ $lang }}">
 
 
                             <label>{{ translate('review') }} ({{ strtoupper($lang) }})</label>
                             <textarea name="review[]" class="form-control lang-review"
                                 data-lang="{{ $lang }}"
-                                rows="3"
-                                {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                                rows="3"></textarea>
                         </div>
                     </div>
                     @endforeach
@@ -308,6 +304,5 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
         });
     });
 </script>
-
 
 

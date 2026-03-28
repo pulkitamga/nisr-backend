@@ -28,7 +28,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @csrf
                 @method('PUT')
 
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
@@ -52,8 +52,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     <label class="mt-3">{{ translate('Dealer Name') }} ({{ strtoupper($lang)
                         }})</label>
                     <input type="text" name="dealer_name[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $model->dealer_name : ($translations[$lang]['dealer_name'] ?? '') }}"
-                        required>
+                        value="{{ $lang == $defaultLanguage ? $model->dealer_name : ($translations[$lang]['dealer_name'] ?? '') }}">
                     <label>{{ translate('Location') }} ({{ strtoupper($lang)
                         }})</label>
                     <input type="text" name="location[]" class="form-control"
@@ -93,4 +92,3 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     });
 </script>
 @endpush
-

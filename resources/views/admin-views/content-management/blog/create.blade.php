@@ -18,7 +18,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
         @csrf
 
         {{-- Language Tabs --}}
-        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+        @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
             @foreach($language as $lang)
                 <li class="nav-item">
@@ -36,13 +36,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
             <div class="form-group">
                 <label>{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="heading[]" class="form-control"
-                       placeholder="{{ translate('Enter Heading') }}" {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                       placeholder="{{ translate('Enter Heading') }}">
             </div>
 
             <div class="form-group">
                 <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
                 <textarea name="description[]" class="form-control" rows="5"
-                          placeholder="{{ translate('Enter Description') }}" {{ $lang == $defaultLanguage ? 'required' : '' }}></textarea>
+                          placeholder="{{ translate('Enter Description') }}"></textarea>
             </div>
 
             <input type="hidden" name="lang[]" value="{{ $lang }}">
@@ -125,5 +125,4 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 </script>
 
 @endsection
-
 

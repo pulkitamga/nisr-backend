@@ -4,7 +4,7 @@ $baseLanguage = getConfiguredDefaultLanguage();
 if (!in_array($baseLanguage, $languages, true)) {
     $baseLanguage = $languages[0] ?? 'en';
 }
-$activeLanguage = getDefaultLanguage();
+$activeLanguage = $errors->any() ? $baseLanguage : getDefaultLanguage();
 $activeLanguage = in_array($activeLanguage, $languages, true) ? $activeLanguage : $baseLanguage;
 
 @endphp
@@ -44,14 +44,12 @@ $content = $jsonData['section'] ?? [];
                     <label class="title-color">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
                         value="{{ $lang == $baseLanguage ? ($content['title'] ?? '') : (is_array($translatedTitle) ? ($translatedTitle[$lang] ?? '') : $translatedTitle) }}"
-                        {{ $lang == $baseLanguage ? 'required' : '' }}
                         placeholder="{{ translate('enter_title') }}">
                 </div>
                 <div class="col-lg-6">
                     <label class="title-color">{{ translate('subtitle') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="subtitle[]" class="form-control"
                         value="{{ $lang == $baseLanguage ? ($content['subtitle'] ?? '') : (is_array($translatedSubtitle) ? ($translatedSubtitle[$lang] ?? '') : $translatedSubtitle) }}"
-                        {{ $lang == $baseLanguage ? 'required' : '' }}
                         placeholder="{{ translate('enter_subtitle') }}">
                 </div>
 
@@ -157,15 +155,13 @@ $content = $jsonData['section'] ?? [];
                             <input type="text"
                                 name="title[]"
                                 class="form-control lang-title"
-                                data-lang="{{ $lang }}"
-                                {{ $lang == $baseLanguage ? 'required' : '' }}>
+                                data-lang="{{ $lang }}">
 
                             <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                             <textarea name="description[]"
                                 class="form-control lang-description"
                                 data-lang="{{ $lang }}"
-                                rows="3"
-                                {{ $lang == $baseLanguage ? 'required' : '' }}></textarea>
+                                rows="3"></textarea>
                         </div>
                     </div>
                     @endforeach
@@ -267,4 +263,3 @@ $content = $jsonData['section'] ?? [];
         });
     });
 </script>
-

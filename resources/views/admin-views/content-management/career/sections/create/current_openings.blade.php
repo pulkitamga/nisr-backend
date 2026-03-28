@@ -40,24 +40,20 @@ if (!in_array($baseLanguage, $language ?? [], true)) {
         <div class="form-system-language-form {{ $lang != $baseLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
             <div class="form-group">
                 <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
-                <input type="text" name="title[]" class="form-control" placeholder="{{ translate('Enter title') }}" {{
-                    $lang==$baseLanguage ? 'required' : '' }}>
+                <input type="text" name="title[]" class="form-control" placeholder="{{ translate('Enter title') }}">
             </div>
 
             <div class="form-group">
                 <label>{{ translate('Job Description') }} ({{ strtoupper($lang) }})</label>
-                <textarea class="form-control summernote" name="job_description[]" {{
-                    $lang==$baseLanguage ? 'required' : '' }}></textarea>
+                <textarea class="form-control summernote" name="job_description[]"></textarea>
             </div>
             <div class="form-group">
                 <label>{{ translate('Skills (comma separated)') }} ({{ strtoupper($lang) }})</label>
-                <textarea class="form-control summernote" name="skills[]" {{
-                    $lang==$baseLanguage ? 'required' : '' }}></textarea>
+                <textarea class="form-control summernote" name="skills[]"></textarea>
             </div>
             <div class="form-group">
                 <label>{{ translate('Location') }} ({{ strtoupper($lang) }})</label>
-                <input type="text" name="location[]" class="form-control" {{
-                    $lang==$baseLanguage ? 'required' : '' }}>
+                <input type="text" name="location[]" class="form-control">
             </div>
 
             <input type="hidden" name="lang[]" value="{{ $lang }}">

@@ -22,7 +22,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 @csrf
 
                 {{-- Language Tabs --}}
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
@@ -40,22 +40,19 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     <div class="form-group">
                         <label>{{ translate('dealer_name') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="dealer_name[]" class="form-control"
-                            placeholder="{{ translate('Enter Dealer Name') }}" {{ $lang==$defaultLanguage ? 'required'
-                            : '' }}>
+                            placeholder="{{ translate('Enter Dealer Name') }}">
                     </div>
 
                     <div class="form-group">
                         <label>{{ translate('location') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="location[]" class="form-control"
-                            placeholder="{{ translate('Enter Location') }}" {{ $lang==$defaultLanguage ? 'required' : ''
-                            }}>
+                            placeholder="{{ translate('Enter Location') }}">
                     </div>
 
                     <div class="form-group">
                         <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
                         <textarea name="description[]" class="form-control" rows="4"
-                            placeholder="{{ translate('Enter Description') }}" {{ $lang==$defaultLanguage ? 'required'
-                            : '' }}></textarea>
+                            placeholder="{{ translate('Enter Description') }}"></textarea>
                     </div>
 
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
@@ -121,4 +118,3 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     }
 </script>
 @endsection
-

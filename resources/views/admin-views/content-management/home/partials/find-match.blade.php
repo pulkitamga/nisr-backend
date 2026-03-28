@@ -30,7 +30,7 @@ $fallback = [
     @csrf
     @method('PUT')
 
-    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+    @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
         @foreach($languages as $lang)
             <li class="nav-item">
@@ -52,71 +52,61 @@ $fallback = [
                         <div class="col-lg-6">
                             <label class="form-label">{{ translate('Section Heading') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="section_heading[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['section_heading'] ?? $fallback['section_heading']) : ($translations[$lang]['section_heading'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['section_heading'] ?? $fallback['section_heading']) : ($translations[$lang]['section_heading'] ?? '') }}">
                         </div>
                         <div class="col-lg-6">
                             <label class="form-label">{{ translate('Hero Heading') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="hero_heading[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['hero_heading'] ?? $fallback['hero_heading']) : ($translations[$lang]['hero_heading'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['hero_heading'] ?? $fallback['hero_heading']) : ($translations[$lang]['hero_heading'] ?? '') }}">
                         </div>
 
                         <div class="col-lg-12 mt-3">
                             <label class="form-label">{{ translate('Hero Description') }} ({{ strtoupper($lang) }})</label>
                             <textarea name="hero_description[]" class="form-control" rows="3"
-                                      {{ $lang == $defaultLanguage ? 'required' : '' }}>{{ $lang == $defaultLanguage ? ($data['hero_description'] ?? $fallback['hero_description']) : ($translations[$lang]['hero_description'] ?? '') }}</textarea>
+                                      >{{ $lang == $defaultLanguage ? ($data['hero_description'] ?? $fallback['hero_description']) : ($translations[$lang]['hero_description'] ?? '') }}</textarea>
                         </div>
 
                         <div class="col-lg-6 mt-3">
                             <label class="form-label">{{ translate('Filter Title') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="filter_title[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['filter_title'] ?? $fallback['filter_title']) : ($translations[$lang]['filter_title'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['filter_title'] ?? $fallback['filter_title']) : ($translations[$lang]['filter_title'] ?? '') }}">
                         </div>
                         <div class="col-lg-6 mt-3">
                             <label class="form-label">{{ translate('Apply Button Text') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="apply_button_text[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['apply_button_text'] ?? $fallback['apply_button_text']) : ($translations[$lang]['apply_button_text'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['apply_button_text'] ?? $fallback['apply_button_text']) : ($translations[$lang]['apply_button_text'] ?? '') }}">
                         </div>
 
                         <div class="col-lg-4 mt-3">
                             <label class="form-label">{{ translate('Make Label') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="make_label[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['make_label'] ?? $fallback['make_label']) : ($translations[$lang]['make_label'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['make_label'] ?? $fallback['make_label']) : ($translations[$lang]['make_label'] ?? '') }}">
                         </div>
                         <div class="col-lg-4 mt-3">
                             <label class="form-label">{{ translate('Model Label') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="model_label[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['model_label'] ?? $fallback['model_label']) : ($translations[$lang]['model_label'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['model_label'] ?? $fallback['model_label']) : ($translations[$lang]['model_label'] ?? '') }}">
                         </div>
                         <div class="col-lg-4 mt-3">
                             <label class="form-label">{{ translate('Model Year Label') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="year_label[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['year_label'] ?? $fallback['year_label']) : ($translations[$lang]['year_label'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['year_label'] ?? $fallback['year_label']) : ($translations[$lang]['year_label'] ?? '') }}">
                         </div>
 
                         <div class="col-lg-4 mt-3">
                             <label class="form-label">{{ translate('Make Placeholder') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="make_placeholder[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['make_placeholder'] ?? $fallback['make_placeholder']) : ($translations[$lang]['make_placeholder'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['make_placeholder'] ?? $fallback['make_placeholder']) : ($translations[$lang]['make_placeholder'] ?? '') }}">
                         </div>
                         <div class="col-lg-4 mt-3">
                             <label class="form-label">{{ translate('Model Placeholder') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="model_placeholder[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['model_placeholder'] ?? $fallback['model_placeholder']) : ($translations[$lang]['model_placeholder'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['model_placeholder'] ?? $fallback['model_placeholder']) : ($translations[$lang]['model_placeholder'] ?? '') }}">
                         </div>
                         <div class="col-lg-4 mt-3">
                             <label class="form-label">{{ translate('Model Year Placeholder') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="year_placeholder[]" class="form-control"
-                                   value="{{ $lang == $defaultLanguage ? ($data['year_placeholder'] ?? $fallback['year_placeholder']) : ($translations[$lang]['year_placeholder'] ?? '') }}"
-                                   {{ $lang == $defaultLanguage ? 'required' : '' }}>
+                                   value="{{ $lang == $defaultLanguage ? ($data['year_placeholder'] ?? $fallback['year_placeholder']) : ($translations[$lang]['year_placeholder'] ?? '') }}">
                         </div>
                     </div>
                 </div>
@@ -129,5 +119,4 @@ $fallback = [
         <button type="submit" class="btn btn--primary px-5">{{ translate('Update') }}</button>
     </div>
 </form>
-
 

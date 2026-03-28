@@ -10,6 +10,7 @@ use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Traits\ValidatesCmsEnglishMultilingualInput;
 use App\Support\CmsContentSanitizer;
 use App\Utils\ImageManager;
 
@@ -20,6 +21,7 @@ class BlogController extends Controller
     use PaginatorTrait;
     use CommonTrait;
     use AuthorizesCmsSection;
+    use ValidatesCmsEnglishMultilingualInput;
 
     public function __construct(
         private readonly ProductRepositoryInterface     $productRepo,
@@ -78,10 +80,10 @@ class BlogController extends Controller
     {
         $request->validate([
             'heading' => 'required|array',
-            'heading.*' => 'required|string|max:255',
+            'heading.*' => 'nullable|string|max:255',
 
             'description' => 'required|array',
-            'description.*' => 'required|string',
+            'description.*' => 'nullable|string',
 
             'image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
 
@@ -96,6 +98,10 @@ class BlogController extends Controller
         $sanitizedDescriptions = CmsContentSanitizer::sanitizeRichTextArray($request->input('description', []));
         $request->merge([
             'description' => $sanitizedDescriptions,
+        ]);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'heading' => ['message' => 'The_heading_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required', 'rich_text' => true],
         ]);
 
         $imageName = ImageManager::upload('blog/', 'webp', $request->file('image'));
@@ -158,9 +164,9 @@ class BlogController extends Controller
     {
         $request->validate([
             'heading' => 'required|array',
-            'heading.*' => 'string|max:255',
+            'heading.*' => 'nullable|string|max:255',
             'description' => 'required|array',
-            'description.*' => 'string',
+            'description.*' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'blog_type' => 'required|in:Featured Posts,Latest Blog,Trending Blog',
             'category' => 'required|in:Technology,Food,Travel,Health,Social Media,Business',
@@ -170,6 +176,10 @@ class BlogController extends Controller
         $sanitizedDescriptions = CmsContentSanitizer::sanitizeRichTextArray($request->input('description', []));
         $request->merge([
             'description' => $sanitizedDescriptions,
+        ]);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'heading' => ['message' => 'The_heading_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required', 'rich_text' => true],
         ]);
 
         $blog = Blog::findOrFail($id);

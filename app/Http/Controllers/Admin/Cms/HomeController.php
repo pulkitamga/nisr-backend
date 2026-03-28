@@ -9,6 +9,7 @@ use App\Support\CmsContentSanitizer;
 use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Traits\ValidatesCmsEnglishMultilingualInput;
 use App\Utils\ImageManager;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class HomeController extends Controller
     use PaginatorTrait;
     use CommonTrait;
     use AuthorizesCmsSection;
+    use ValidatesCmsEnglishMultilingualInput;
 
     public function __construct(
         private readonly TranslationRepositoryInterface     $translationRepo,
@@ -95,6 +97,24 @@ class HomeController extends Controller
         }
     }
 
+    private function validateRequiredWhyJoinUsCardTitles(Request $request): void
+    {
+        $defaultLanguage = getConfiguredDefaultLanguage();
+        $cards = $request->input('cards', []);
+        $errors = [];
+
+        foreach ($cards as $index => $card) {
+            $title = trim((string) data_get($card, 'title.' . $defaultLanguage, ''));
+            if ($title === '') {
+                $errors["cards.$index.title.$defaultLanguage"] = [translate('The_title_in_english_is_required')];
+            }
+        }
+
+        if ($errors !== []) {
+            throw \Illuminate\Validation\ValidationException::withMessages($errors);
+        }
+    }
+
     public function index(Request $request)
     {
 
@@ -151,6 +171,11 @@ class HomeController extends Controller
 
     public function updateTrustedBy(Request $request, $index)
     {
+        $this->validateRequiredCmsEnglishFields($request, [
+            'heading' => ['message' => 'The_heading_in_english_is_required'],
+            'paragraph' => ['message' => 'The_description_in_english_is_required'],
+        ]);
+
         $section = HomePageSection::where('type', 'trusted_by')->first();
 
         if (!$section) {
@@ -225,6 +250,10 @@ class HomeController extends Controller
         ]);
 
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'name' => ['message' => 'The_name_in_english_is_required'],
+            'review' => ['message' => 'The_description_in_english_is_required'],
+        ]);
 
         $imageUrl = $this->storeOptimizedImage(
             image: $request->file('image'),
@@ -273,6 +302,10 @@ class HomeController extends Controller
         $section = HomePageSection::where('type', 'client_review')->first();
         $data = $section ? json_decode($section->value, true) : ['clients' => []];
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'name' => ['message' => 'The_name_in_english_is_required'],
+            'review' => ['message' => 'The_description_in_english_is_required'],
+        ]);
 
         if (!isset($data['clients'][$validated['index']])) {
             return redirect()->back()->withErrors('Review not found.');
@@ -336,6 +369,10 @@ class HomeController extends Controller
 
         $section = HomePageSection::where('type', 'why_choose_us')->first();
         $data = $section ? json_decode($section->value, true) : ['section' => ['cards' => []]];
+        $this->validateRequiredCmsEnglishFields($request, [
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required'],
+        ]);
 
         if (!isset($data['section']['cards'][$validated['index']])) {
             return redirect()->back()->withErrors('Card not found.');
@@ -401,6 +438,7 @@ class HomeController extends Controller
             'lang' => 'nullable|array',
             'lang.*' => 'nullable|string',
         ]);
+        $this->validateRequiredWhyJoinUsCardTitles($request);
 
         $defaultLangIndex = getDefaultLanguageIndex($request);
         $defaultLang = $request->lang[$defaultLangIndex];
@@ -564,6 +602,19 @@ class HomeController extends Controller
         );
 
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'section_heading' => ['message' => 'The_heading_in_english_is_required'],
+            'hero_heading' => ['message' => 'The_heading_in_english_is_required'],
+            'hero_description' => ['message' => 'The_description_in_english_is_required'],
+            'filter_title' => ['message' => 'The_title_in_english_is_required'],
+            'make_label' => ['message' => 'The_title_in_english_is_required'],
+            'model_label' => ['message' => 'The_title_in_english_is_required'],
+            'year_label' => ['message' => 'The_title_in_english_is_required'],
+            'make_placeholder' => ['message' => 'The_title_in_english_is_required'],
+            'model_placeholder' => ['message' => 'The_title_in_english_is_required'],
+            'year_placeholder' => ['message' => 'The_title_in_english_is_required'],
+            'apply_button_text' => ['message' => 'The_title_in_english_is_required'],
+        ]);
         if ($defaultLangIndex === false) {
             $defaultLangIndex = 0;
         }
@@ -733,6 +784,9 @@ class HomeController extends Controller
         ]);
 
         $headings = $request->input('heading');
+        $this->validateRequiredCmsEnglishFields($request, [
+            'heading' => ['message' => 'The_heading_in_english_is_required'],
+        ]);
 
         $section = HomePageSection::where('type', 'download_app')->first();
 
@@ -771,6 +825,10 @@ class HomeController extends Controller
 
         $title = $request->input('title');
         $subtitle = $request->input('subtitle');
+        $this->validateRequiredCmsEnglishFields($request, [
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'subtitle' => ['message' => 'The_subheading_in_english_is_required'],
+        ]);
 
         $section = HomePageSection::where('type', 'why_choose_us')->first();
 
@@ -882,6 +940,10 @@ class HomeController extends Controller
 
         $title = $request->input('title');
         $subtitle = $request->input('subtitle');
+        $this->validateRequiredCmsEnglishFields($request, [
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'subtitle' => ['message' => 'The_subheading_in_english_is_required'],
+        ]);
 
         $section = HomePageSection::where('type', 'why_join_us')->first();
 
@@ -943,6 +1005,11 @@ class HomeController extends Controller
         $section = HomePageSection::where('type', $request->section)->firstOrFail();
         $data = json_decode($section->value, true) ?? [];
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'heading' => ['message' => 'The_heading_in_english_is_required'],
+            'paragraph' => ['message' => 'The_description_in_english_is_required'],
+            'buttonText' => ['message' => 'The_title_in_english_is_required'],
+        ]);
 
         $imagePath = $this->storeOptimizedImage(
             image: $request->file('image'),
@@ -1004,6 +1071,11 @@ class HomeController extends Controller
         $section = HomePageSection::where('type', $request->section)->firstOrFail();
         $data = json_decode($section->value, true);
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'heading' => ['message' => 'The_heading_in_english_is_required'],
+            'paragraph' => ['message' => 'The_description_in_english_is_required'],
+            'buttonText' => ['message' => 'The_title_in_english_is_required'],
+        ]);
 
 
         $item = &$data[$request->index];

@@ -31,7 +31,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 }
 @endphp
 
-@php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+@php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
     @foreach($languages as $lang)
     <li class="nav-item">
@@ -61,7 +61,6 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                 <label class="title-color">{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="heading[]" class="form-control"
                     value="{{ $lang == $defaultLanguage ? $content['heading'] : (is_array($translatedHeading) ? ($translatedHeading[$lang] ?? '') : $translatedHeading) }}"
-                    {{ $lang == $defaultLanguage ? 'required' : '' }}
                     placeholder="{{ translate('enter_heading') }}">
             </div>
 
@@ -323,6 +322,5 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     });
 
 </script>
-
 
 

@@ -29,7 +29,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @method('PUT')
 
                 <!-- Language Tabs -->
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
@@ -48,14 +48,12 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     <!-- Heading -->
                     <label>{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="heading[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $model->heading : ($translations[$lang]['heading'] ?? '') }}"
-                        {{ $lang==$defaultLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $defaultLanguage ? $model->heading : ($translations[$lang]['heading'] ?? '') }}">
 
                     <!-- Subheading -->
                     <label class="mt-3">{{ translate('Subheading') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="subheading[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $model->subheading : ($translations[$lang]['subheading'] ?? '') }}"
-                        {{ $lang==$defaultLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $defaultLanguage ? $model->subheading : ($translations[$lang]['subheading'] ?? '') }}">
 
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
                 </div>
@@ -93,4 +91,3 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     });
 </script>
 @endpush
-

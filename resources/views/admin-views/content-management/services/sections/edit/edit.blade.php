@@ -26,7 +26,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 @csrf
                 @method('PUT')
 
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
@@ -51,8 +51,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     <!-- Title -->
                     <label for="heading">{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="heading[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $products->heading : ($translations[$lang]['heading'] ?? '') }}"
-                        {{ $lang==$defaultLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $defaultLanguage ? $products->heading : ($translations[$lang]['heading'] ?? '') }}">
 
                     <!-- Job Description -->
                     <label for="description" class="mt-3">{{ translate('Description') }} ({{ strtoupper($lang)
@@ -130,5 +129,4 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
 
 @endpush
-
 

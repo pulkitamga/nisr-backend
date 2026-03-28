@@ -14,6 +14,7 @@ use App\Support\CmsContentSanitizer;
 use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Traits\ValidatesCmsEnglishMultilingualInput;
 use App\Utils\ImageManager;
 
 class CareerController extends Controller
@@ -23,6 +24,7 @@ class CareerController extends Controller
     use PaginatorTrait;
     use CommonTrait;
     use AuthorizesCmsSection;
+    use ValidatesCmsEnglishMultilingualInput;
 
     public function __construct(
         private readonly ProductRepositoryInterface     $productRepo,
@@ -41,6 +43,44 @@ class CareerController extends Controller
         'perks' => CareerBenefits::class,
         'hero' => CareerSection::class,
     ];
+
+    private function getCareerSectionValidationMap(bool $isUpdate): array
+    {
+        if ($isUpdate) {
+            return [
+                'current_openings' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                ],
+                'why_join_us' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                ],
+                'perks' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                ],
+                'hero' => [
+                    'title' => ['message' => 'The_title_in_english_is_required'],
+                ],
+            ];
+        }
+
+        return [
+            'current_openings' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+                'job_description' => ['message' => 'The_description_in_english_is_required', 'rich_text' => true],
+                'skills' => ['message' => 'The_description_in_english_is_required', 'rich_text' => true],
+                'location' => ['message' => 'The_location_in_english_is_required'],
+            ],
+            'why_join_us' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+            ],
+            'perks' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+            ],
+            'hero' => [
+                'title' => ['message' => 'The_title_in_english_is_required'],
+            ],
+        ];
+    }
 
 
     public function index($section = 'current_openings')
@@ -100,6 +140,7 @@ class CareerController extends Controller
         }
 
         $request->merge($sanitizedInput);
+        $this->validateRequiredCmsEnglishFields($request, $this->getCareerSectionValidationMap(false)[$section] ?? []);
 
         $modelMap = [
             'current_openings' => CareerJob::class,
@@ -221,6 +262,7 @@ class CareerController extends Controller
         }
 
         $request->merge($sanitizedInput);
+        $this->validateRequiredCmsEnglishFields($request, $this->getCareerSectionValidationMap(true)[$section] ?? []);
 
         $modelMap = [
             'current_openings' => CareerJob::class,

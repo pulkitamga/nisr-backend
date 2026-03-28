@@ -15,7 +15,7 @@ $baseLanguage = getConfiguredDefaultLanguage();
 if (!in_array($baseLanguage, $language ?? [], true)) {
     $baseLanguage = $language[0] ?? 'en';
 }
-$activeLanguage = getDefaultLanguage();
+$activeLanguage = $errors->any() ? $baseLanguage : getDefaultLanguage();
 $activeLanguage = in_array($activeLanguage, $language ?? [], true) ? $activeLanguage : $baseLanguage;
 @endphp
 <div class="content container-fluid">
@@ -54,8 +54,7 @@ $activeLanguage = in_array($activeLanguage, $language ?? [], true) ? $activeLang
                     <!-- Title -->
                     <label for="title">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
-                        value="{{ $lang == $baseLanguage ? $job->title : ($translations[$lang]['title'] ?? '') }}" {{
-                        $lang==$baseLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $baseLanguage ? $job->title : ($translations[$lang]['title'] ?? '') }}">
 
                     <label for="job_description" class="mt-3">{{ translate('Job Description') }} ({{ strtoupper($lang)
                         }})</label>

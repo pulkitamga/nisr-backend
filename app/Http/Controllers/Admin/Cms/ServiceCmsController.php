@@ -11,6 +11,7 @@ use App\Support\CmsContentSanitizer;
 use App\Traits\AuthorizesCmsSection;
 use App\Traits\CommonTrait;
 use App\Traits\PaginatorTrait;
+use App\Traits\ValidatesCmsEnglishMultilingualInput;
 use App\Utils\ImageManager;
 
 class ServiceCmsController extends Controller
@@ -20,6 +21,7 @@ class ServiceCmsController extends Controller
     use PaginatorTrait;
     use CommonTrait;
     use AuthorizesCmsSection;
+    use ValidatesCmsEnglishMultilingualInput;
 
     public function __construct(
         private readonly ProductRepositoryInterface     $productRepo,
@@ -78,6 +80,9 @@ class ServiceCmsController extends Controller
         $request->merge([
             'description' => $sanitizedDescriptions,
             'button_link' => $sanitizedButtonLink,
+        ]);
+        $this->validateRequiredCmsEnglishFields($request, [
+            'heading' => ['message' => 'The_heading_in_english_is_required'],
         ]);
 
         $defaultLangIndex = getDefaultLanguageIndex($request);

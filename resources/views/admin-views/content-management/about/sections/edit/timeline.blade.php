@@ -31,7 +31,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 <!-- Non-translatable field: Year -->
 
                 <!-- Language Tabs -->
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">
@@ -50,8 +50,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     <!-- Title -->
                     <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
-                        value="{{ $lang == $defaultLanguage ? $model->title : ($translations[$lang]['title'] ?? '') }}"
-                        {{ $lang==$defaultLanguage ? 'required' : '' }}>
+                        value="{{ $lang == $defaultLanguage ? $model->title : ($translations[$lang]['title'] ?? '') }}">
 
                     <!-- Description -->
                     <label class="mt-3">{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
@@ -142,5 +141,4 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 </script>
 
 @endpush
-
 
