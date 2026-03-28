@@ -504,7 +504,7 @@
 
                          <div class="d-flex flex-column gap-1">
                                 <div class="d-flex">
-                                    <input type="checkbox" class="" id="installtion_charges_for_{{ $cartItem['id'] }}" data-cart-id="{{ $cartItem['id'] }}" {{ $cartItem['installtion_charges'] > 0 ? "checked" : ""}} data-installation-charges="{{$cartItem['installation_charge']}}"> &nbsp; Add installation service for just {{ webCurrencyConverter(amount: $cartItem['installation_charge']) }} .
+                                    <input type="checkbox" class="" id="installtion_charges_for_{{ $cartItem['id'] }}" data-cart-id="{{ $cartItem['id'] }}" {{ $cartItem['installtion_charges'] > 0 ? "checked" : ""}} data-installation-charges="{{$cartItem['installation_charge']}}"> &nbsp; {{ translate('add_installation_service_for_amount', ['amount' => webCurrencyConverter(amount: $cartItem['installation_charge'])]) }}
                                 </div>
                             </div>
                     </div>
@@ -519,7 +519,7 @@
                             data-exchange-charges="{{ $cartItem['exchange_charge'] }}"
                             data-cart-id="{{ $cartItem['id'] }}" {{ $cartItem['exchange_charges']> 0 ? "checked" :
                             "" }}>
-                        &nbsp; Exchange your old product and save {{ webCurrencyConverter(amount: abs($cartItem['exchange_charge'])) }}!
+                        &nbsp; {{ translate('exchange_old_product_and_save_amount', ['amount' => webCurrencyConverter(amount: abs($cartItem['exchange_charge']))]) }}
                         <div class="{{ $cartItem['exchange_charges'] == 0 &&  $cartItem['exchange_qty'] == 0 ? 'd-none_exchange_qty' : '' }} exchange_qty d-flex justify-content-center align-items-center gap-3"
                             id="exchangeQTYDetails_{{ $cartItem['id'] }}">
                             <span class="exchange_qty_minus action-update-exchange-quantity-list"

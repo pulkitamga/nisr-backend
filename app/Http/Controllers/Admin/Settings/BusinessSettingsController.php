@@ -454,7 +454,8 @@ class BusinessSettingsController extends BaseController
         $servicesProduct = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'services']);
         $brand = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'product_brand']);
         $stockLimit = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'stock_limit']);
-        return view(BusinessSettings::PRODUCT_SETTINGS[VIEW], compact('brand', 'stockLimit', 'servicesProduct'));
+        $taxCalculation = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'product_tax_calculation']);
+        return view(BusinessSettings::PRODUCT_SETTINGS[VIEW], compact('brand', 'stockLimit', 'servicesProduct', 'taxCalculation'));
     }
 
     public function updateProductSettings(Request $request): RedirectResponse
@@ -462,6 +463,7 @@ class BusinessSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'stock_limit', value: $request->get('stock_limit', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'product_brand', value: $request->get('product_brand', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'services', value: $request->get('services', 0));
+        $this->businessSettingRepo->updateOrInsert(type: 'product_tax_calculation', value: in_array($request->get('product_tax_calculation'), ['include', 'exclude'], true) ? $request->get('product_tax_calculation') : 'include');
         clearWebConfigCacheKeys();
         Toastr::success(translate('updated_successfully'));
         return back();

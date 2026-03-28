@@ -19,6 +19,13 @@ class ProductService
 
     public function __construct(private readonly Color $color) {}
 
+    private function getConfiguredTaxModel(): string
+    {
+        $configuredTaxModel = getWebConfig(name: 'product_tax_calculation');
+
+        return in_array($configuredTaxModel, ['include', 'exclude'], true) ? $configuredTaxModel : 'include';
+    }
+
     public function getProcessedImages(object $request): array
     {
         $colorImageSerial = [];
@@ -389,6 +396,7 @@ class ProductService
 
     public function getAddProductData(object $request, string $addedBy): array
     {
+        $taxModel = $this->getConfiguredTaxModel();
         $storage = config('filesystems.disks.default') ?? 'public';
         if ($storage === 'local') {
             $storage = 'public';
@@ -437,7 +445,7 @@ class ProductService
             'purchase_price' => 0,
             'tax' => $request['tax_type'] == 'flat' ? currencyConverter(amount: $request['tax']) : $request['tax'],
             'tax_type' => $request->get('tax_type', 'percent'),
-            'tax_model' => $request['tax_model'],
+            'tax_model' => $taxModel,
             'discount' => $request['discount_type'] == 'flat' ? currencyConverter(amount: $request['discount']) : $request['discount'],
             'discount_type' => $request['discount_type'],
             'attributes' => $request['product_type'] == 'physical' ? json_encode($request['choice_attributes']) : json_encode([]),
@@ -467,6 +475,7 @@ class ProductService
     }
     public function getUpdateProductData(object $request, object $product, string $updateBy): array
     {
+        $taxModel = $this->getConfiguredTaxModel();
         $storage = config('filesystems.disks.default') ?? 'public';
         if ($storage === 'local') {
             $storage = 'public';
@@ -541,7 +550,7 @@ class ProductService
             'purchase_price' => 0,
             'tax' => $request['tax_type'] == 'flat' ? currencyConverter(amount: $request['tax']) : $request['tax'],
             'tax_type' => $request['tax_type'],
-            'tax_model' => $request['tax_model'],
+            'tax_model' => $taxModel,
             'discount' => $request['discount_type'] == 'flat' ? currencyConverter(amount: $request['discount']) : $request['discount'],
             'discount_type' => $request['discount_type'],
             'attributes' => $request['product_type'] == 'physical'

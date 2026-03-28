@@ -685,7 +685,7 @@ class CartManager
             'totalSavedAmount' => $totalSavedAmount,
             'isPickupDelivery' => $isPickupDelivery,
             'isAreaWiseShippingPending' => $isAreaWiseShippingPending,
-            'shippingNotice' => $isAreaWiseShippingPending ? 'Cost will be determined later based on location.' : null,
+            'shippingNotice' => $isAreaWiseShippingPending ? translate('shipping_cost_determined_later_by_location') : null,
         ];
     }
 

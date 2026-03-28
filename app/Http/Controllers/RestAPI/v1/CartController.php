@@ -290,7 +290,7 @@ class CartController extends Controller
                 'shipping_cost' => 0,
                 'is_area_wise_shipping_pending' => true,
                 'is_area_wise_shipping_resolved' => false,
-                'shipping_notice' => 'Cost will be determined later based on location.',
+                'shipping_notice' => translate('shipping_cost_determined_later_by_location'),
                 'message' => 'Country, state, city and area are required for area-wise delivery'
             ], 200);
         }
@@ -383,7 +383,7 @@ class CartController extends Controller
                 'shipping_cost' => 0,
                 'is_area_wise_shipping_pending' => true,
                 'is_area_wise_shipping_resolved' => false,
-                'shipping_notice' => 'Cost will be determined later based on location.',
+                'shipping_notice' => translate('shipping_cost_determined_later_by_location'),
             ], 200);
         }
 

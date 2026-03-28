@@ -333,8 +333,8 @@
                     <tbody>
                         @forelse($timeline as $e)
                         <tr>
-                            <td>{{ translate($e->event_type) }}</td>
-                            <td>{{ $e->description }}</td>
+                            <td>{{ $e->translated_event_type ?? translate($e->event_type) }}</td>
+                            <td>{{ $e->translated_description ?? $e->description }}</td>
                             <td><span class="bidi-ltr">{{ $e->timestamp->format('Y-m-d H:i A') }}</span></td>
                             <td>{{ $e->user?->name ?? translate('Admin') }}</td>
                         </tr>

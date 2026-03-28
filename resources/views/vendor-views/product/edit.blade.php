@@ -409,6 +409,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3">
+                            @php($configuredTaxModel = in_array(getWebConfig(name: 'product_tax_calculation'), ['include', 'exclude'], true) ? getWebConfig(name: 'product_tax_calculation') : 'include')
                             <div class="form-group">
                                 <div class="d-flex gap-2">
                                     <label class="title-color" for="tax_model">
@@ -421,11 +422,9 @@
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </div>
-                                <select name="tax_model" id="tax_model" class="form-control" required>
-                                    <option
-                                        value="include" {{ $product->tax_model == 'include' ? 'selected':'' }}>{{ translate("include_with_product") }}</option>
-                                    <option
-                                        value="exclude" {{ $product->tax_model == 'exclude' ? 'selected':'' }}>{{ translate("exclude_with_product") }}</option>
+                                <input type="hidden" name="tax_model" value="{{ $configuredTaxModel }}">
+                                <select id="tax_model" class="form-control" disabled>
+                                    <option value="{{ $configuredTaxModel }}" selected>{{ translate($configuredTaxModel === 'include' ? 'include_with_product' : 'exclude_with_product') }}</option>
                                 </select>
                             </div>
                         </div>

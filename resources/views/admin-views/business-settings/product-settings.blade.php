@@ -38,6 +38,7 @@
                 <form action="{{ route('admin.product-settings.index') }}" method="post"
                       enctype="multipart/form-data">
                     @csrf
+                    @php($configuredTaxCalculation = in_array($taxCalculation['value'] ?? null, ['include', 'exclude'], true) ? $taxCalculation['value'] : 'include')
                     <div class="row align-items-end">
                         <div class="col-md-6 col-lg-4">
                             <div class="form-group">
@@ -111,6 +112,27 @@
                                         <span class="switcher_control"></span>
                                     </label>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <div class="d-flex gap-2">
+                                    <label class="title-color" for="product_tax_calculation">{{ translate('tax_calculation_setup') }}</label>
+                                    <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
+                                          data-placement="right"
+                                          title="{{ translate('set_the_default_tax_calculation_method_for_product_add_and_edit_forms') }}">
+                                        <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
+                                             alt="">
+                                    </span>
+                                </div>
+                                <select class="form-control" name="product_tax_calculation" id="product_tax_calculation" required>
+                                    <option value="include" {{ $configuredTaxCalculation === 'include' ? 'selected' : '' }}>
+                                        {{ translate('include_with_product') }}
+                                    </option>
+                                    <option value="exclude" {{ $configuredTaxCalculation === 'exclude' ? 'selected' : '' }}>
+                                        {{ translate('exclude_with_product') }}
+                                    </option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-12">

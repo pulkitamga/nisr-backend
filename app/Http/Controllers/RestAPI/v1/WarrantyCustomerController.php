@@ -757,12 +757,45 @@ class WarrantyCustomerController extends Controller
             return translate('warranty_timeline_cod_approved') . ': ' .
                 $this->translateChargeList(trim(substr($segment, strlen('COD approved:'))));
         }
+        if (str_starts_with($segment, 'POS payment recorded:')) {
+            return translate('warranty_timeline_pos_payment_recorded') . ': ' .
+                $this->translateChargeList(trim(substr($segment, strlen('POS payment recorded:'))));
+        }
+        if (str_starts_with($segment, 'Reminder dispatched to customer')) {
+            return translate('warranty_timeline_reminder_dispatched_to_customer');
+        }
+        if (str_starts_with($segment, 'Dispatch:')) {
+            return $this->translateTimelineLabel('dispatch') . ': ' .
+                $this->translatePaymentDispatchSummary(trim(substr($segment, strlen('Dispatch:'))));
+        }
+        if (str_starts_with($segment, 'Active link:')) {
+            return $this->translateTimelineLabel('active_link') . ': ' . trim(substr($segment, strlen('Active link:')));
+        }
+        if (str_starts_with($segment, 'Online payment link generated:')) {
+            return translate('warranty_timeline_online_payment_link_generated') . ': ' .
+                trim(substr($segment, strlen('Online payment link generated:')));
+        }
         if (str_starts_with($segment, 'Resumed to')) {
             return translate('warranty_timeline_resumed_to') . ' ' .
                 $this->claimStatusLabel(trim(substr($segment, strlen('Resumed to'))));
         }
+        if (str_starts_with($segment, 'Resumed from waiting payment')) {
+            return translate('warranty_timeline_resumed_from_waiting_payment');
+        }
         if (str_starts_with($segment, 'Online payment received')) {
             return translate('warranty_timeline_online_payment_received');
+        }
+        if (str_starts_with($segment, 'All unpaid charges waived')) {
+            return translate('warranty_timeline_all_unpaid_charges_waived');
+        }
+        if (str_starts_with($segment, 'Charges waived without status transition')) {
+            return translate('warranty_timeline_charges_waived_without_status_transition');
+        }
+        if (str_starts_with($segment, 'Client rejected payment')) {
+            return translate('warranty_timeline_client_rejected_payment');
+        }
+        if (str_starts_with($segment, 'Battery returned without repair')) {
+            return translate('warranty_timeline_battery_returned_without_repair');
         }
         if (str_starts_with($segment, 'Amount:')) {
             return translate('amount') . ': ' . trim(substr($segment, strlen('Amount:')));
@@ -862,11 +895,26 @@ class WarrantyCustomerController extends Controller
 
     private function translateClosedEvent(string $description): string
     {
+        if (preg_match('/Claim closed(?:\s*\((forced by admin)\))?\.\s*Notes:\s*(.*)$/i', $description, $matches)) {
+            $translated = translate('warranty_timeline_claim_closed');
+
+            if (!empty($matches[1])) {
+                $translated .= ' (' . translate('warranty_timeline_forced_by_admin') . ')';
+            }
+
+            return $translated . ' | ' . translate('notes') . ': ' . trim($matches[2]);
+        }
+
         return str_replace('Claim closed', translate('warranty_timeline_claim_closed'), $description);
     }
 
     private function translateResolvedEvent(string $description): string
     {
+        if (preg_match('/Claim resolved on delivery\/collection\.\s*Notes:\s*(.*)$/i', $description, $matches)) {
+            return translate('warranty_timeline_claim_resolved') . ' | ' .
+                translate('notes') . ': ' . trim($matches[1]);
+        }
+
         return str_replace('Claim resolved on delivery/collection.', translate('warranty_timeline_claim_resolved'), $description);
     }
 
@@ -933,6 +981,27 @@ class WarrantyCustomerController extends Controller
     private function translateYesNo(string $value): string
     {
         return strtolower($value) === 'yes' ? translate('yes') : translate('no');
+    }
+
+    private function translatePaymentDispatchSummary(string $summary): string
+    {
+        $parts = array_values(array_filter(array_map('trim', explode(',', $summary))));
+
+        return implode(', ', array_map(function (string $part) {
+            if (!str_contains($part, '=')) {
+                return $part;
+            }
+
+            [$channel, $status] = array_map('trim', explode('=', $part, 2));
+            return $this->humanizeStatus($channel) . '=' . $this->translateTimelineLabel($status);
+        }, $parts));
+    }
+
+    private function translateTimelineLabel(string $key): string
+    {
+        $translated = translate($key);
+
+        return $translated === $key ? $this->humanizeStatus($key) : $translated;
     }
 
     private function humanizeStatus(string $value): string

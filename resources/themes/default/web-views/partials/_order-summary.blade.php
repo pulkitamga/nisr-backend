@@ -48,7 +48,7 @@
             </div>
             @endif
             <div class="d-flex justify-content-between">
-                <span class="cart_title">{{ __('Net (before VAT)') }}</span>
+                <span class="cart_title">{{ translate('net_before_vat') }}</span>
                 <span class="cart_value">
                     {{ webCurrencyConverter(amount: $netBeforeVat) }}
                 </span>

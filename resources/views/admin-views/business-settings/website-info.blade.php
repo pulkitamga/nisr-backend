@@ -382,24 +382,6 @@
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-4">
-                            <label class="title-color d-flex">{{translate('business_model')}}</label>
-                            <div class="form-control form-group d-flex gap-2">
-                                <div class="custom-control custom-radio flex-grow-1">
-                                    <input type="radio" class="custom-control-input" value="single" name="business_mode"
-                                           id="single_vendor" {{ $businessSetting['business_mode'] == 'single' ? 'checked':'' }}>
-                                    <label class="custom-control-label"
-                                           for="single_vendor">{{translate('single_vendor')}}</label>
-                                </div>
-                                <!--COMMENTED BY RAM001-->
-                                <div class="custom-control custom-radio flex-grow-1">
-                                    <input type="radio" class="custom-control-input" value="multi" name="business_mode"
-                                           id="multi_vendor" {{ $businessSetting['business_mode'] == 'multi' ? 'checked':'' }}>
-                                    <label class="custom-control-label"
-                                           for="multi_vendor">{{translate('multi_vendor')}}</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
                                 <label class="title-color d-flex">
                                     {{translate('pagination')}}
