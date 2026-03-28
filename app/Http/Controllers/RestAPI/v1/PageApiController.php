@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\RestAPI\V1;
+namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
 use App\Contracts\Repositories\BusinessSettingRepositoryInterface;

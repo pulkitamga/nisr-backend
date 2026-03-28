@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\restapi\v1;
+namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Warranty\ClaimStoreRequest;
