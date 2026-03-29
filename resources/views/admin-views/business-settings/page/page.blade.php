@@ -57,7 +57,9 @@ $page_data= json_decode($data?->value, true)
                     </div>
                     <div class="card-body">
                         @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                    $activeLanguage = $defaultLanguage;
+                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
+                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
                 @endphp
 <ul class="nav nav-tabs mb-4">
                             @foreach($language as $lang)

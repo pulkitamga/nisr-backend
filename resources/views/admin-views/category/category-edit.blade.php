@@ -25,7 +25,9 @@
                         @csrf
                         @method('PUT')
                         @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                    $activeLanguage = $defaultLanguage;
+                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
+                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
                 @endphp
                         <ul class="nav nav-tabs w-fit-content mb-4">
                             @foreach($languages as $lang)

@@ -144,7 +144,9 @@
                         <div class="col-12">
                             <div class="mb-3">
                                 @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                    $activeLanguage = $defaultLanguage;
+                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
+                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
                 @endphp
                                 <ul class="nav nav-tabs lang_tab" id="basic-info-language-tab" role="tablist">
                                     @foreach ($languages as $lang)
@@ -402,7 +404,9 @@
                         <div class="col-12">
                             <div class="mb-3">
                                 @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                    $activeLanguage = $defaultLanguage;
+                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
+                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
                 @endphp
                                 <ul class="nav nav-tabs lang_tab" id="copyright-language-tab" role="tablist">
                                     @foreach ($languages as $lang)

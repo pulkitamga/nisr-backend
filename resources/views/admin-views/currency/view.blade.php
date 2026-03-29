@@ -53,7 +53,9 @@
                             <div class="col-12">
                                 <div class="table-responsive w-auto overflow-y-hidden mb-3">
                                     @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                    $activeLanguage = $defaultLanguage;
+                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
+                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
                 @endphp
                                     <ul class="nav nav-tabs lang_tab" id="currency-language-tab" role="tablist">
                                         @foreach ($languages as $lang)
