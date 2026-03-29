@@ -1154,7 +1154,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:crm_section.create,admin')->group(function () {
             Route::controller(DepartmentController::class)->group(function () {
                 Route::get(Department::ADD[URI], 'getAddView')->name('add');
-                Route::post(Department::ADD[URI], 'add')->name('add');
+                Route::post(Department::ADD[URI], 'add');
                 Route::get(Department::USER_ADD[URI] . '/{dept_id}', 'fAddBranchUsers')->name('add-users');
                 Route::post(Department::USER_ADD[URI] . '/{dept_id}', 'addDepartmentUsers')->name('add-users');
             });
