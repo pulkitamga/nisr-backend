@@ -234,9 +234,9 @@
     </div>
 </div>
 
-{{-- Ajax status update --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@endsection
 
+@push('script')
 <script>
     $(document).on('change', '.status-toggle', function() {
         let id = $(this).data('id');
@@ -258,9 +258,7 @@
             }
         });
     });
-</script>
 
-<script>
     function confirmDelete(id) {
         Swal.fire({
             title: @json(__('Are you sure?')),
@@ -278,6 +276,5 @@
         });
     }
 </script>
-
-@endsection
+@endpush
 

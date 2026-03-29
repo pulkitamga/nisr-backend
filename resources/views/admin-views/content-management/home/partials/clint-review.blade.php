@@ -206,107 +206,81 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 </div>
 
 
+@push('script')
 <script>
-    $(document).on('click', '.delete-review-btn', function(e) {
-        e.preventDefault();
-        let form = $(this).closest('form');
+    $(document).ready(function() {
+        // Delete confirmation
+        $(document).on('click', '.delete-review-btn', function(e) {
+            e.preventDefault();
+            let form = $(this).closest('form');
 
-        Swal.fire({
-            title: @json(__('Confirm Deletion')),
-            text: @json(__('Are you sure you want to delete this review?')),
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: @json(__('Yes, delete it!')),
-            cancelButtonText: @json(__('Cancel'))
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit(); 
-            }
-        });
-    });
-
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var editButtons = document.querySelectorAll('.btn-edit');
-        var editModal = new bootstrap.Modal(document.getElementById('editReviewModal'));
-
-        editButtons.forEach(function(button) {
-            button.addEventListener('click', function() {
-                document.getElementById('edit-index').value = this.dataset.index;
-                document.getElementById('edit-rating').value = this.dataset.rating;
-                document.getElementById('edit-image-preview').src = this.dataset.image;
-                document.getElementById('edit-image-url').value = this.dataset.image;
-                const name = JSON.parse(this.dataset.name || '{}');
-                const review = JSON.parse(this.dataset.review || '{}');
-
-                document.querySelectorAll('.lang-name').forEach(function(input) {
-                    const lang = input.dataset.lang;
-                    input.value = name[lang] || '';
-                });
-
-                document.querySelectorAll('.lang-review').forEach(function(textarea) {
-                    const lang = textarea.dataset.lang;
-                    textarea.value = review[lang] || '';
-                });
-                editModal.show();
+            Swal.fire({
+                title: @json(__('Confirm Deletion')),
+                text: @json(__('Are you sure you want to delete this review?')),
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: @json(__('Yes, delete it!')),
+                cancelButtonText: @json(__('Cancel'))
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
             });
         });
 
+        // Edit button - populate modal
+        var editModal = new bootstrap.Modal(document.getElementById('editReviewModal'));
+
+        $(document).on('click', '.btn-edit', function() {
+            document.getElementById('edit-index').value = this.dataset.index;
+            document.getElementById('edit-rating').value = this.dataset.rating;
+            document.getElementById('edit-image-preview').src = this.dataset.image;
+            document.getElementById('edit-image-url').value = this.dataset.image;
+            const name = JSON.parse(this.dataset.name || '{}');
+            const review = JSON.parse(this.dataset.review || '{}');
+
+            document.querySelectorAll('#editReviewModal .lang-name').forEach(function(input) {
+                const lang = input.dataset.lang;
+                input.value = name[lang] || '';
+            });
+
+            document.querySelectorAll('#editReviewModal .lang-review').forEach(function(textarea) {
+                const lang = textarea.dataset.lang;
+                textarea.value = review[lang] || '';
+            });
+            editModal.show();
+        });
+
+        // Image preview click to select file
         document.getElementById('edit-image-preview').addEventListener('click', function() {
             document.getElementById('edit-image-file').click();
         });
 
-        // Optional: live preview of selected image
+        // Live preview of selected image
         document.getElementById('edit-image-file').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('edit-image-preview').src = e.target.result;
+                    document.getElementById('edit-image-url').value = '';
                 };
                 reader.readAsDataURL(file);
             }
         });
-    });
 
-    $(document).on('click', '.form-system-language-tab', function() {
-        const lang = $(this).attr('id').replace('-link', '');
-
-        // Deactivate all tabs and content
-        $(this).closest('.nav-tabs').find('.form-system-language-tab').removeClass('active');
-        $(this).closest('.modal-content').find('.form-system-language-form').addClass('d-none');
-
-        // Activate clicked tab and corresponding content
-        $(this).addClass('active');
-        $(this).closest('.modal-content').find(`#${lang}-form`).removeClass('d-none');
-    });
-
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const imagePreview = document.getElementById('edit-image-preview');
-        const imageFileInput = document.getElementById('edit-image-file');
-        const imageUrlInput = document.getElementById('edit-image-url');
-
-        // Click on image preview to open file selector
-        imagePreview.addEventListener('click', function() {
-            imageFileInput.click();
-        });
-
-        // When a file is selected, show preview
-        imageFileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imageUrlInput.value = ''; // clear image URL when uploading new one
-                };
-                reader.readAsDataURL(file);
-            }
+        // Language tab switching inside modals
+        $(document).on('click', '.form-system-language-tab', function() {
+            const lang = $(this).attr('id').replace('-link', '');
+            $(this).closest('.nav-tabs').find('.form-system-language-tab').removeClass('active');
+            $(this).closest('.modal-content').find('.form-system-language-form').addClass('d-none');
+            $(this).addClass('active');
+            $(this).closest('.modal-content').find('#' + lang + '-form').removeClass('d-none');
         });
     });
 </script>
+@endpush
 
 

@@ -193,8 +193,9 @@
     </div>
 </div>
 </div>
-    <script src="{{dynamicAsset(path: 'public/assets/back-end/js/jquery.js')}}"></script>
+@endsection
 
+@push('script')
 <script>
     $(document).on('change', '.status-toggle', function () {
         let $switch = $(this);
@@ -227,6 +228,5 @@
         });
     });
 </script>
-
-@endsection
+@endpush
 

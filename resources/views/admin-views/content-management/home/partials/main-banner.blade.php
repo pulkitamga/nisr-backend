@@ -300,6 +300,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
 
 
+@push('script')
 <script>
     function confirmAndDelete(button) {
         const url = button.dataset.url;
@@ -329,9 +330,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
         });
     }
 
-
-
-    document.addEventListener('DOMContentLoaded', function() {
+    $(document).ready(function() {
         const editButtons = document.querySelectorAll('.edit-banner-btn');
         const editModalElement = document.getElementById('editModal');
         const addModalElement = document.getElementById('addBannerModal');
@@ -482,11 +481,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
             clearFileInput(addImageInput);
             updateAddPreview('');
         });
-
-
     });
-
-
 
     $(document).on('change', '.banner-toggle', function() {
         let index = $(this).data('index');
@@ -503,5 +498,6 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
         });
     });
 </script>
+@endpush
 
 

@@ -103,6 +103,7 @@
     </div>
 </div>
 
+@push('script')
 <script>
     function openEditModal(button) {
         const index = button.getAttribute('data-index');
@@ -116,4 +117,5 @@
         modal.show();
     }
 </script>
+@endpush
 

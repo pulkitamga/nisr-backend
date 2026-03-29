@@ -189,6 +189,9 @@
         </div>
     </div>
 </div>
+@endsection
+
+@push('script')
 <script>
     $(document).on('change', '.status-toggle', function () {
         let blogId = $(this).data('id');
@@ -208,6 +211,4 @@
         });
     });
 </script>
-
-
-@endsection
+@endpush
