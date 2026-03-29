@@ -3479,6 +3479,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::put('home/trusted-by/update/{index}', [HomeController::class, 'updateTrustedBy'])->name('trusted_by.update');
                 Route::put('home/products/update/{index}', [HomeController::class, 'updateProducts'])->name('Products.update');
                 Route::put('home/client-review/update', [HomeController::class, 'updateClientReview'])->name('client_review.update');
+                Route::get('why-choose/card/{index}/edit', [HomeController::class, 'editWhyChooseCard'])->name('why-choose.card.edit');
                 Route::put('/admin/cards/update', [HomeController::class, 'updateWhyChoose'])->name('why-choose.update');
                 Route::post('why-join-us/update', [HomeController::class, 'updateWhyJoinUs'])->name('why_join_us.update');
                 Route::put('wholesaler-section/update', [HomeController::class, 'updateWholesalerSection'])->name('wholesaler_section.update');

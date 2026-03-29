@@ -126,7 +126,23 @@
 @endsection
 
 @push('script')
-<script src="https://fitandfix.guptatechweb.com/assets/back-end/js/sweet_alert.js"></script>
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/sweet_alert.js') }}"></script>
+
+<script>
+    // Global language tab switcher for all CMS home page partials
+    $(document).on('click', '.form-system-language-tab', function (e) {
+        e.preventDefault();
+        var $this = $(this);
+        var lang = $this.attr('id').replace('-link', '');
+
+        $this.closest('.nav-tabs').find('.form-system-language-tab').removeClass('active');
+        $this.closest('.card-body, .card, .content, form').first()
+            .find('.form-system-language-form').addClass('d-none');
+
+        $this.addClass('active');
+        $('#' + lang + '-form').removeClass('d-none');
+    });
+</script>
 
 
 

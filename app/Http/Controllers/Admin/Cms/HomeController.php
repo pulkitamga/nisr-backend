@@ -355,6 +355,34 @@ class HomeController extends Controller
 
         return redirect()->back()->with('success', 'Review deleted successfully.');
     }
+
+    public function editWhyChooseCard($index)
+    {
+        $section = HomePageSection::where('type', 'why_choose_us')->first();
+        $data = $section ? json_decode($section->value, true) : ['section' => ['cards' => []]];
+        $cards = $data['section']['cards'] ?? [];
+
+        if (!isset($cards[$index])) {
+            Toastr::error('Card not found.');
+            return redirect()->route('admin.content-management.home', ['section' => 'why_choose_us']);
+        }
+
+        $card = $cards[$index];
+        $languages = getWebConfig('pnc_language') ?? [];
+        $baseLanguage = getConfiguredDefaultLanguage();
+
+        $translations = [];
+        if ($section) {
+            foreach ($section->translations as $trans) {
+                if ($trans->item_index == $index) {
+                    $translations[$trans->locale][$trans->key] = $trans->value;
+                }
+            }
+        }
+
+        return view('admin-views.content-management.home.partials.why-choose-us-edit-card', compact('card', 'index', 'languages', 'baseLanguage', 'translations'));
+    }
+
     public function updateWhyChoose(Request $request)
     {
         $validated = $request->validate([
@@ -394,7 +422,7 @@ class HomeController extends Controller
 
         $this->translationRepo->updateArrayBasedSectionTranslations($request, HomePageSection::class, $section->id);
         Toastr::success('Card updated successfully.');
-        return redirect()->back();
+        return redirect()->route('admin.content-management.home', ['section' => 'why_choose_us']);
     }
 
 
