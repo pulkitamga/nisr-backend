@@ -398,7 +398,9 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                         <input type="number" id="extra_charge" name="extra_charge" class="form-control" step="0.01">
                     </div>
 
-                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                    @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
@@ -510,7 +512,9 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                         <input type="file" name="images[]" class="form-control" multiple>
                     </div>
 
-                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                    @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">
@@ -633,7 +637,9 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                         <label>{{ translate('Upload Image') }}</label>
                         <input type="file" name="image" class="form-control" multiple>
                     </div>
-                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                    @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                     <ul class="nav nav-tabs mb-4">
                         @foreach($languages as $lang)
                         <li class="nav-item">

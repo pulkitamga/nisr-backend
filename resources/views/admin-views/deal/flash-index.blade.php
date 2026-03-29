@@ -30,7 +30,9 @@
                             @php($defaultLanguage = 'en')
                             @php($defaultLanguage = config('app.locale', 'en'))
                             @if(!in_array($defaultLanguage, $language ?? [], true)) @php($defaultLanguage = $language[0]) @endif
-                            @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                            @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize font-weight-medium">

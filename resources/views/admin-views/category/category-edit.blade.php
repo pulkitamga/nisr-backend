@@ -24,7 +24,9 @@
                     <form action="{{ route('admin.category.update', [$category['id']]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
-                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                        @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                         <ul class="nav nav-tabs w-fit-content mb-4">
                             @foreach($languages as $lang)
                             <li class="nav-item text-capitalize">

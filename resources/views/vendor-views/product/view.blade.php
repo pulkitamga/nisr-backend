@@ -61,7 +61,9 @@
                                 @php($languages = getWebConfig(name:'pnc_language'))
                                 @php($defaultLanguage = 'en')
                                 @php($defaultLanguage = $languages[0])
-                                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                                @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                                 <ul class="nav nav-tabs w-fit-content mb-2">
                                     @foreach($languages as $language)
                                         <li class="nav-item text-capitalize">

@@ -29,7 +29,9 @@
         @csrf
         <div class="card physical_product_show">
             <div class="px-4 pt-3 d-flex justify-content-between">
-                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                 <ul class="nav nav-tabs w-fit-content mb-4">
                     @foreach ($languages as $lang)
                     <li class="nav-item">

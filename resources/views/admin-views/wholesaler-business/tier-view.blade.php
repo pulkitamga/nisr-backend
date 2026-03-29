@@ -92,7 +92,9 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         @method('PUT')
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                                                @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
 <ul class="nav nav-tabs w-fit-content mb-4">
                                                     @foreach($language as $lang)
                                                     <li class="nav-item text-capitalize">
@@ -174,7 +176,9 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                 <div class="modal-header">
 
-                    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                    @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
 <ul class="nav nav-tabs w-fit-content mb-4">
                         @foreach($language as $lang)
                         <li class="nav-item text-capitalize">

@@ -226,7 +226,9 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
         </div>
         <div class="card mt-lg-5">
                     <div class="card-header">
-                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                        @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
 <ul class="nav nav-tabs mb-4">
                             @foreach($language as $lang)
                             <li class="nav-item">

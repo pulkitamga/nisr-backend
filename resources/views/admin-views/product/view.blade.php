@@ -74,7 +74,9 @@ $brandSetting = getWebConfig(name: 'product_brand');
                         @php($defaultLanguage = config('app.locale', 'en'))
                         @if(!in_array($defaultLanguage, $languages ?? [], true)) @php($defaultLanguage = $languages[0]) @endif
                         <div class="d-flex flex-wrap justify-content-between align-items-center">
-                            @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                            @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                             <ul class="nav nav-tabs w-fit-content mb-2">
                                 @foreach($languages as $language)
                                 <li class="nav-item text-capitalize">

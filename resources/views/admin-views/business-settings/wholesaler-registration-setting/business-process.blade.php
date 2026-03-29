@@ -30,7 +30,9 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                 </div>
             </div>
             <div class="card-body">
-                @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $lang)
 

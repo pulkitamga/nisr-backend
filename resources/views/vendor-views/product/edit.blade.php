@@ -43,7 +43,9 @@
 
             <div class="card">
                 <div class="px-4 pt-3">
-                    @php($activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                    @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                     <ul class="nav nav-tabs w-fit-content mb-4">
                         @foreach($languages as $language)
                             <li class="nav-item text-capitalize">

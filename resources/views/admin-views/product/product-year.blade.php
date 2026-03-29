@@ -29,7 +29,9 @@
                         <input type="number" class="form-control" id="year_value" name="year" min="1900" max="{{ date('Y') + 1 }}" required>
                     </div>
                     <div class="col-lg-8">
-                        @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                        @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                         <ul class="nav nav-tabs mb-3">
                             @foreach($languages as $index => $language)
                             <li class="nav-item">

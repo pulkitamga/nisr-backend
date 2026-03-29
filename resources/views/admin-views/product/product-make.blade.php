@@ -25,7 +25,9 @@
                 @csrf
                 <input type="hidden" name="make_id" id="make_id">
 
-                @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                 <ul class="nav nav-tabs mb-4">
                     @foreach($languages as $index => $language)
                     <li class="nav-item">

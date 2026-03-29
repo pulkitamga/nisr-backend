@@ -91,7 +91,9 @@
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
-                                    @php($activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage)
+                                    @php
+                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                @endphp
                                     <ul class="nav nav-tabs lang_tab" id="shop-name-language-tab" role="tablist">
                                         @foreach ($languages as $lang)
                                             <li class="nav-item">
