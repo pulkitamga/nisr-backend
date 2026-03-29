@@ -48,7 +48,7 @@
 
         </div>
         <div class="card-body">
-            <form action="{{route('admin.warranty.import')}}" method="post" enctype="multipart/form-data">
+            <form action="{{route('admin.warranty.import.store')}}" method="post" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group">
                     <label>{{translate('csv_file')}}</label>

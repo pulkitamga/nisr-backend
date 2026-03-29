@@ -12,10 +12,7 @@ use Illuminate\Support\Facades\Session;
 @section('content')
 @php
 $languages = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = config('app.locale', 'en');
-if (!in_array($defaultLanguage, $languages ?? [], true)) {
-    $defaultLanguage = $languages[0] ?? 'en';
-}
+$defaultLanguage = $languages[0] ?? 'en';
 @endphp
 <div class="content container-fluid">
     <div class="mb-3">

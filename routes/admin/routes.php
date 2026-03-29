@@ -545,7 +545,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
         Route::controller(WarrantyController::class)->group(function () {
             Route::get('/import', 'importView')->name('import')->middleware('permission:warranty_section.warranty_import,admin');
-            Route::post('/import', 'import')->name('import')->middleware('permission:warranty_section.warranty_import,admin');
+            Route::post('/import', 'import')->name('import.store')->middleware('permission:warranty_section.warranty_import,admin');
             Route::get('/import-history', 'importHistory')->name('import-history')->middleware('permission:warranty_section.warranty_import_history,admin');
             Route::get('/import-history/export', 'exportImportHistory')->name('import-history.export')->middleware('permission:warranty_section.warranty_import_history,admin');
             Route::get('/import/{date}', 'historyDetails')->name('history-details')->middleware('permission:warranty_section.warranty_import_history,admin');
