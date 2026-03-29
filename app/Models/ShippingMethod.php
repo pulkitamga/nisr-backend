@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Seller;
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
  */
 class ShippingMethod extends Model
 {
+    use HasTranslations;
     /**
      * The attributes that are mass assignable.
      *

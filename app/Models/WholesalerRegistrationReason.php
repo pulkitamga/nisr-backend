@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 
 class WholesalerRegistrationReason extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
 
     protected $fillable = [
@@ -29,8 +29,4 @@ class WholesalerRegistrationReason extends Model
         'status' => 'integer',
     ];
 
-       public function translations()
-    {
-        return $this->morphMany(\App\Models\Translation::class, 'translationable');
-    }
 }

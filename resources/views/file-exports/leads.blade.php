@@ -29,7 +29,7 @@
             <td>{{ $inbox?->sender_email ?? 'N/A' }}</td>
             <td>{{ $inbox?->sender_phone ?? 'N/A' }}</td>
             <td>{{ $lead->owner?->name ?? 'Not Assigned' }}</td>
-            <td>{{ $lead->department?->name ?? 'No Department' }}</td>
+            <td>{{ $lead->department?->getTranslatedField('name') ?? 'No Department' }}</td>
             <td>{{ $lead->employee?->name ?? 'Not Assigned' }}</td>
             <td>{{ $lead->priority ?? 'N/A' }}</td>
             <td>{{ ucfirst($lead->status) }}</td>

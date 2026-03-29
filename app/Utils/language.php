@@ -670,17 +670,33 @@ if (!function_exists('getConfiguredDefaultLanguage')) {
     }
 }
 
+if (!function_exists('getSaveLanguage')) {
+    /**
+     * Returns the original config('app.locale') value — the language whose
+     * value is stored in the model's main DB column. This is NOT the display
+     * language (which comes from session / pnc_language[0]) and is NOT affected
+     * by App::setLocale() in the Localization middleware.
+     *
+     * The value is captured in AppServiceProvider::boot() before any middleware
+     * runs, and stored via app()->instance('save_locale', ...).
+     */
+    function getSaveLanguage(): string
+    {
+        return (string) (app()->bound('save_locale') ? app('save_locale') : 'en');
+    }
+}
+
 if (!function_exists('getDefaultLanguageIndex')) {
     /**
      * Resolve the array index for the default language in a multi-lang form submission.
-     * Uses pnc_language (business setting) as the authoritative default.
+     * Uses the original config('app.locale') as the save-to-main-column language.
      *
      * @param  object|array  $request  The form request (or array with 'lang' key)
      * @return int  The array index corresponding to the default language
      */
     function getDefaultLanguageIndex(object|array $request): int
     {
-        $index = getLanguageInputIndex($request, getConfiguredDefaultLanguage());
+        $index = getLanguageInputIndex($request, getSaveLanguage());
 
         return $index ?? 0;
     }

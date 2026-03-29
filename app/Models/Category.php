@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use App\Traits\CacheManagerTrait;
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 
@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Cache;
 class Category extends Model
 {
     use StorageTrait, CacheManagerTrait;
+    use HasTranslations;
 
     protected $fillable = [
         'name',
@@ -49,11 +50,6 @@ class Category extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 
     public function parent(): BelongsTo
     {
@@ -98,12 +94,6 @@ class Category extends Model
 
         return $this->translations[0]->value ?? $name;
     }
-
-    public function getDefaultNameAttribute(): string|null
-    {
-        return $this->translations[0]->value ?? $this->name;
-    }
-
 
     public function scopePriority($query): mixed
     {

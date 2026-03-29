@@ -38,7 +38,7 @@
                                     @foreach (json_decode($language) as $lang)
                                         <li class="nav-item text-capitalize">
                                             <a class="nav-link lang-link {{ $lang == $default_lang ? 'active' : '' }}" href="javascript:" id="{{ $lang }}-link">
-                                                {{ Helpers::get_language_name($lang) . '(' . strtoupper($lang) . ')' }}
+                                                {{ getLanguageName($lang) . '(' . strtoupper($lang) . ')' }}
                                             </a>
                                         </li>
                                     @endforeach
@@ -83,20 +83,11 @@
                                                     </label>
                                                 </div>
                                                 @foreach (json_decode($language) as $lang)
-                                                        <?php
-                                                        if (count($value['translations'])) {
-                                                            $translate = [];
-                                                            foreach ($value['translations'] as $t) {
-                                                                if ($t->locale == $lang && $t->key == $value['key']) {
-                                                                    $translate[$lang][$value['key']] = $t->value;
-                                                                }
-                                                            }
-                                                        }
-                                                        ?>
+
                                                     <input type="hidden" name="lang{{$value['id']}}[]"
                                                            value="{{ $lang }}">
                                                     <textarea name="message{{$value['id']}}[]"
-                                                              class="form-control text-area-max-min {{ $lang != $default_lang ? 'd-none' : '' }} lang-form {{ $lang }}-form">{{$translate[$lang][$value['key']]??$value['message']}}</textarea>
+                                                              class="form-control text-area-max-min {{ $lang != $default_lang ? 'd-none' : '' }} lang-form {{ $lang }}-form">{{$value->getTranslatedField($value['key'], $lang, $value['message'])}}</textarea>
                                                 @endforeach
                                             </div>
                                         </div>
@@ -141,20 +132,11 @@
                                                     </label>
                                                 </div>
                                                 @foreach (json_decode($language) as $lang)
-                                                        <?php
-                                                        if (count($value['translations'])) {
-                                                            $translate = [];
-                                                            foreach ($value['translations'] as $t) {
-                                                                if ($t->locale == $lang && $t->key == $value['key']) {
-                                                                    $translate[$lang][$value['key']] = $t->value;
-                                                                }
-                                                            }
-                                                        }
-                                                        ?>
+
                                                     <input type="hidden" name="lang{{$value['id']}}[]"
                                                            value="{{ $lang }}">
                                                     <textarea name="message{{$value['id']}}[]"
-                                                              class="form-control text-area-max-min {{ $lang != $default_lang ? 'd-none' : '' }} lang-form {{ $lang }}-form">{{$translate[$lang][$value['key']]??$value['message']}}</textarea>
+                                                              class="form-control text-area-max-min {{ $lang != $default_lang ? 'd-none' : '' }} lang-form {{ $lang }}-form">{{$value->getTranslatedField($value['key'], $lang, $value['message'])}}</textarea>
                                                 @endforeach
                                             </div>
                                         </div>
@@ -199,20 +181,11 @@
                                                     </label>
                                                 </div>
                                                 @foreach (json_decode($language) as $lang)
-                                                        <?php
-                                                        if (count($value['translations'])) {
-                                                            $translate = [];
-                                                            foreach ($value['translations'] as $t) {
-                                                                if ($t->locale == $lang && $t->key == $value['key']) {
-                                                                    $translate[$lang][$value['key']] = $t->value;
-                                                                }
-                                                            }
-                                                        }
-                                                        ?>
+
                                                     <input type="hidden" name="lang{{$value['id']}}[]"
                                                            value="{{ $lang }}">
                                                     <textarea name="message{{$value['id']}}[]"
-                                                              class="form-control text-area-max-min {{ $lang != $default_lang ? 'd-none' : '' }} lang-form {{ $lang }}-form">{{$translate[$lang][$value['key']]??$value['message']}}</textarea>
+                                                              class="form-control text-area-max-min {{ $lang != $default_lang ? 'd-none' : '' }} lang-form {{ $lang }}-form">{{$value->getTranslatedField($value['key'], $lang, $value['message'])}}</textarea>
                                                 @endforeach
                                             </div>
                                         </div>

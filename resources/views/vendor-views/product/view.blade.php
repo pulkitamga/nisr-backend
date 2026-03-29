@@ -232,27 +232,14 @@
                             </div>
                             <div class="d-block mt-2">
                                 @foreach($languages as $language)
-                                        <?php
-                                        if (count($product['translations'])) {
-                                            $translate = [];
-                                            foreach ($product['translations'] as $translation) {
-                                                if ($translation->locale == $language && $translation->key == "name") {
-                                                    $translate[$language]['name'] = $translation->value;
-                                                }
-                                                if ($translation->locale == $language && $translation->key == "description") {
-                                                    $translate[$language]['description'] = $translation->value;
-                                                }
-                                            }
-                                        }
-                                        ?>
                                     <div class="{{ $language != 'en'? 'd-none':''}} lang-form" id="{{ $language}}-form">
                                         <div class="d-flex">
-                                            <h2 class="mb-2 pb-1 text-gulf-blue">{{ $translate[$language]['name']??$product['name']}}</h2>
+                                            <h2 class="mb-2 pb-1 text-gulf-blue">{{ $product->getTranslatedField('name', $language) }}</h2>
                                         </div>
                                         <div class="">
                                             <label class="text-gulf-blue font-weight-bold">{{ translate('description').' : ' }}</label>
                                             <div class="rich-editor-html-content">
-                                                {!! $translate[$language]['description']??$product['details'] !!}
+                                                {!! $product->getTranslatedField('description', $language, $product['details']) !!}
                                             </div>
                                         </div>
                                     </div>
@@ -287,7 +274,7 @@
                                     <span class="key text-nowrap">{{ translate('brand') }}</span>
                                     <span>:</span>
                                     <span class="value">
-                                        {{isset($product->brand) ? $product->brand->default_name : translate('brand_not_found') }}
+                                        {{isset($product->brand) ? $product->brand->getTranslatedField('name') : translate('brand_not_found') }}
                                     </span>
                                 </div>
                                 @endif
@@ -296,7 +283,7 @@
                                     <span class="key text-nowrap">{{ translate('category') }}</span>
                                     <span>:</span>
                                     <span class="value">
-                                        {{isset($product->category) ? $product->category->default_name : translate('category_not_found') }}
+                                        {{isset($product->category) ? $product->category->getTranslatedField('name') : translate('category_not_found') }}
                                     </span>
                                 </div>
 
@@ -719,7 +706,7 @@
                                                         {{ translate('Order_ID') }} # {{ $review['order_id'] }}
                                                     </div>
                                                 @endif
-                                                <h4>{{ $translate[$language]['name'] ?? $product['name'] }}</h4>
+                                                <h4>{{ $product->getTranslatedField('name', $activeLanguage) }}</h4>
                                             </div>
                                         </div>
                                         <label class="input-label text--title font-weight-bold">

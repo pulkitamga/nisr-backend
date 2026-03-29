@@ -17,9 +17,11 @@ class TranslationRepository implements TranslationRepositoryInterface
             ->filter(fn ($locale) => is_string($locale) && $locale !== '')
             ->values();
 
-        // Use pnc_language (the business setting) as the authoritative default,
-        // NOT config('app.locale') which can disagree with the form's $defaultLanguage.
-        $configuredLocale = getConfiguredDefaultLanguage();
+        // Use getSaveLanguage() instead of config('app.locale') because the
+        // Localization middleware mutates config('app.locale') at runtime
+        // via App::setLocale(). getSaveLanguage() reads the original config
+        // file value, immune to middleware mutation.
+        $configuredLocale = getSaveLanguage();
 
         if ($requestLanguages->contains($configuredLocale)) {
             return $configuredLocale;

@@ -187,7 +187,7 @@
                                     @foreach ($branches as $branch)
                                         <option value="{{ $branch->id }}"
                                             {{ $branch->id == $order->pickup_from_branch ? 'selected' : '' }}>
-                                            {{ $branch->branch_name }}
+                                            {{ $branch->getTranslatedField('branch_name') }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -520,7 +520,7 @@
                                 @foreach ($branches as $branch)
                                     <option value="{{ $branch->id }}"
                                         {{ (int) ($order->transfer_from_branch ?? 0) === (int) $branch->id ? 'selected' : '' }}>
-                                        {{ translate($branch->branch_name) }}
+                                        {{ $branch->getTranslatedField('branch_name') }}
                                     </option>
                                 @endforeach
                             </select>

@@ -55,8 +55,8 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ translate($product->type) }}</td>
-                            <td>{{ $product->heading }}</td>
-                            <td>{{ $product->description }}</td>
+                            <td>{{ $product->getTranslatedField('heading') }}</td>
+                            <td>{!! $product->getTranslatedField('description') !!}</td>
                             <td>{{ $product->button_link }}</td>
                             <td>
                                 @if ($product->image)

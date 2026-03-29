@@ -138,12 +138,12 @@
                         <tr>
                             <td>{{ $key + 1 }}</td>
                             <td>
-                                <img src="{{ Storage::url($blog->image) }}" alt="{{ translate($blog->heading) }}"
+                                <img src="{{ Storage::url($blog->image) }}" alt="{{ $blog->getTranslatedField('heading') }}"
                                     style="width: 100px; height: auto;">
                             </td>
-                            <td>{{ translate($blog->heading) }}</td>
-                            <td>{{ translate($blog->description) }}</td>
-                            <td>{{ translate($blog->category) }}</td>
+                            <td>{{ $blog->getTranslatedField('heading') }}</td>
+                            <td>{{ $blog->getTranslatedField('description') }}</td>
+                            <td>{{ $blog->getTranslatedField('category') }}</td>
                             <td>
                                 <label class="switcher mx-auto">
                                     <input type="checkbox" class="switcher_input status-toggle"

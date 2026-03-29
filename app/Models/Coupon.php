@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Coupon extends Model
 {
+    use HasTranslations;
     protected $fillable = [
         'added_by',
         'coupon_type',

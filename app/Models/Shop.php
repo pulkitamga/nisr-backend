@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\CacheManagerTrait;
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,7 +36,7 @@ use Illuminate\Support\Facades\DB;
  */
 class Shop extends Model
 {
-    use StorageTrait, CacheManagerTrait;
+    use StorageTrait, CacheManagerTrait, HasTranslations;
 
     /**
      * The attributes that are mass assignable.

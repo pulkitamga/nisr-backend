@@ -34,16 +34,7 @@
                                 @endforeach
                             </ul>
                             @foreach($language as $lang)
-                                    <?php
-                                    if (count($attribute['translations'])) {
-                                        $translate = [];
-                                        foreach ($attribute['translations'] as $translations) {
-                                            if ($translations->locale == $lang && $translations->key == "name") {
-                                                $translate[$lang]['name'] = $translations->value;
-                                            }
-                                        }
-                                    }
-                                    ?>
+
                                 <div
                                     class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                                     id="{{$lang}}-form">
@@ -51,7 +42,7 @@
                                     <label class="title-color" for="name">{{ translate('attribute_Name') }}
                                         ({{strtoupper($lang)}})</label>
                                     <input type="text" name="name[]"
-                                           value="{{$lang==$defaultLanguage?$attribute['name']:($translate[$lang]['name']??'') }}"
+                                           value="{{$lang==$defaultLanguage ? $attribute->getRawOriginal('name') : $attribute->getTranslatedField('name', $lang, '') }}"
                                            class="form-control" id="name"
                                            placeholder="{{ translate('enter_Attribute_Name') }}">
                                 </div>

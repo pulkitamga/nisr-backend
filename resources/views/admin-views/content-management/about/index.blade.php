@@ -124,8 +124,8 @@
 
                             @switch($current)
                             @case('hero')
-                            <td>{{ translate($item->heading ?? 'N/A') }}</td>
-                            <td>{{ translate(Str::limit($item->subheading ?? 'N/A', 80)) }}</td>
+                            <td>{{ $item->getTranslatedField('heading') ?? 'N/A' }}</td>
+                            <td>{{ Str::limit($item->getTranslatedField('subheading') ?? 'N/A', 80) }}</td>
                             <td>
                                 @if($item->image)
                                 <img src="{{ Storage::url($item->image) }}" style="width: 100px;">
@@ -136,13 +136,13 @@
                             @break
 
                             @case('who_we_are')
-                            <td>{{ translate($item->title ?? 'N/A') }}</td>
-                            <td>{{ translate(Str::limit(strip_tags($item->content ?? 'N/A'), 80)) }}</td>
+                            <td>{{ $item->getTranslatedField('title') ?? 'N/A' }}</td>
+                            <td>{{ Str::limit(strip_tags($item->getTranslatedField('content') ?? 'N/A'), 80) }}</td>
                             @break
 
                             @case('products')
-                            <td>{{ translate($item->title ?? 'N/A') }}</td>
-                            <td>{{ translate(Str::limit(strip_tags($item->description ?? 'N/A'), 80)) }}</td>
+                            <td>{{ $item->getTranslatedField('title') ?? 'N/A' }}</td>
+                            <td>{{ Str::limit(strip_tags($item->getTranslatedField('description') ?? 'N/A'), 80) }}</td>
                             <td>
                                 @if($item->image)
                                 <img src="{{ Storage::url($item->image) }}" style="width: 100px;">
@@ -153,14 +153,14 @@
                             @break
 
                             @case('mission')
-                            <td>{{ translate($item->title ?? 'N/A') }}</td>
-                            <td>{{ translate(Str::limit(strip_tags($item->content ?? 'N/A'), 80)) }}</td>
+                            <td>{{ $item->getTranslatedField('title') ?? 'N/A' }}</td>
+                            <td>{{ Str::limit(strip_tags($item->getTranslatedField('content') ?? 'N/A'), 80) }}</td>
                             @break
 
                             @case('timeline')
-                            <td>{{ translate($item->year ?? 'N/A') }}</td>
-                            <td>{{ translate($item->title ?? 'N/A') }}</td>
-                            <td>{{ translate(Str::limit(strip_tags($item->description ?? 'N/A'), 80)) }}</td>
+                            <td>{{ $item->getTranslatedField('year') ?? 'N/A' }}</td>
+                            <td>{{ $item->getTranslatedField('title') ?? 'N/A' }}</td>
+                            <td>{{ Str::limit(strip_tags($item->getTranslatedField('description') ?? 'N/A'), 80) }}</td>
                             <td> @if($item->image)
                                 <img src="{{ Storage::url($item->image) }}" style="width: 60px;">
                                 @else
@@ -171,8 +171,8 @@
 
                             @case('dealers')
                             <td>{{ $item->dealer_name ?? 'N/A' }}</td>
-                            <td>{{ translate($item->location ?? 'N/A') }}</td>
-                            <td>{{ translate(Str::limit(strip_tags($item->description ?? 'N/A'), 80)) }}</td>
+                            <td>{{ $item->getTranslatedField('location') ?? 'N/A' }}</td>
+                            <td>{{ Str::limit(strip_tags($item->getTranslatedField('description') ?? 'N/A'), 80) }}</td>
                             <td>
                                 @if($item->image)
                                 <img src="{{ Storage::url($item->image) }}" style="width: 100px; height: auto;"

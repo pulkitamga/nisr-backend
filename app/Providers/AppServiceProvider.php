@@ -68,7 +68,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-
+        // Store the original config('app.locale') before the Localization
+        // middleware mutates it via App::setLocale(). This is the authoritative
+        // save-to-main-column language — the one whose value goes into the
+        // model's main DB column (e.g., `name`). The display language comes
+        // from session / pnc_language[0].
+        app()->instance('save_locale', config('app.locale'));
 
         Relation::morphMap([
             'company' => WholeSalerBusiness::class,

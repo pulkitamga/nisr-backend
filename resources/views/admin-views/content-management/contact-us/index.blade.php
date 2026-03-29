@@ -37,8 +37,8 @@
             <h3>{{ __('Banner Data') }}</h3>
             @foreach($data as $banner)
                 <div class="banner-card">
-                    <h4>{{ $banner->heading }}</h4>
-                    <p>{{ $banner->subheading }}</p>
+                    <h4>{{ $banner->getTranslatedField('heading') }}</h4>
+                    <p>{{ $banner->getTranslatedField('subheading') }}</p>
                     @if($banner->image)
                         <img src="{{ Storage::url($banner->image) }}" alt="{{ __('Banner Image') }}">
                     @else

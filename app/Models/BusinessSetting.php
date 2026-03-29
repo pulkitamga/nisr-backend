@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Traits\CacheManagerTrait;
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 
 class BusinessSetting extends Model
 {
     use CacheManagerTrait;
+    use HasTranslations;
 
     protected $fillable = ['type', 'value', 'is_active', 'created_at', 'updated_at'];
 
@@ -32,8 +33,4 @@ class BusinessSetting extends Model
         });
     }
 
-    public function translations()
-    {
-        return $this->morphMany(\App\Models\Translation::class, 'translationable');
-    }
 }

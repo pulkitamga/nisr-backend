@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use App\Utils\Helpers;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 
 
 class WholesaleQuotation extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes, HasTranslations;
 
     protected $fillable = [
         'order_id',
@@ -83,8 +83,4 @@ class WholesaleQuotation extends Model
 
     }
 
-      public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 }

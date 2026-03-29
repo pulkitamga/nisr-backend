@@ -8,7 +8,7 @@ $companyPhone = getWebConfig(name: 'company_phone');
 $companyEmail = getWebConfig(name: 'company_email');
 $companyName = getWebConfig(name: 'company_name');
 $companyLogo = getWebConfig(name: 'company_web_logo');
-$lang = Helpers::default_lang();
+$lang = getDefaultLanguage();
 $direction = Session::get('direction');
 ?>
 
@@ -18,7 +18,7 @@ $direction = Session::get('direction');
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ translate($data['subject']) }}</title>
+    <title>{{ $data['subject'] }}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap');
 

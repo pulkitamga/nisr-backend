@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use App\Enums\ViewPaths\Admin\ClearanceSale;
+use App\Traits\HasTranslations;
 use App\Utils\Helpers;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 
 /**
@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\App;
  */
 class DealOfTheDay extends Model
 {
+    use HasTranslations;
     protected $casts = [
         'id' => 'integer',
         'product_id' => 'integer',
@@ -49,11 +50,6 @@ class DealOfTheDay extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function translations(): MorphMany
-    {
-        return $this->morphMany(Translation::class, 'translationable');
-    }
-
     public function getTitleAttribute($title): string|null
     {
         if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
@@ -71,7 +67,7 @@ class DealOfTheDay extends Model
                 if (strpos(url()->current(), '/api')){
                     return $query->where('locale', App::getLocale());
                 }else{
-                    return $query->where('locale', Helpers::default_lang());
+                    return $query->where('locale', getDefaultLanguage());
                 }
             }]);
         });

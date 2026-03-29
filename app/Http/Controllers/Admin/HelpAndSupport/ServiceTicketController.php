@@ -347,6 +347,12 @@ class ServiceTicketController extends BaseController
             'description' => 'required|array',
         ]);
 
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []));
+        if ($defaultLangIndex === false) $defaultLangIndex = 0;
+        $request->validate([
+            "description.$defaultLangIndex" => 'required|string',
+        ]);
+
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
         $service = $this->resolveCanonicalService($ticket, (int) $request->service_id);
 
@@ -364,8 +370,6 @@ class ServiceTicketController extends BaseController
             'updated_at' => now(),
         ]);
 
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
-        $defaultLangIndex = $defaultLangIndex === false ? 0 : $defaultLangIndex;
         $estimate->description = $request->description[$defaultLangIndex];
         $estimate->save();
 
@@ -583,6 +587,12 @@ class ServiceTicketController extends BaseController
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
         ]);
 
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []));
+        if ($defaultLangIndex === false) $defaultLangIndex = 0;
+        $request->validate([
+            "description.$defaultLangIndex" => 'required|string',
+        ]);
+
         $ticketId = $request->input('ticket_id');
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $ticketId]);
         if (!$ticket) {
@@ -604,9 +614,6 @@ class ServiceTicketController extends BaseController
         if (!$this->ensureJobStatus($job, ['scheduled', 'in_progress'], 'start this job')) {
             return redirect()->back();
         }
-
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
-        $defaultLangIndex = $defaultLangIndex === false ? 0 : $defaultLangIndex;
 
         $hasEstimate = ServiceEstimate::where('ticket_id', $ticketId)->exists();
         if (!$hasEstimate) {
@@ -670,11 +677,15 @@ class ServiceTicketController extends BaseController
             'image' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []));
+        if ($defaultLangIndex === false) $defaultLangIndex = 0;
+        $request->validate([
+            "description.$defaultLangIndex" => 'required|string',
+        ]);
+
         $ticketId = $request->input('ticket_id');
         $jobId = $request->input('job_id');
         $additionalCharges = $request->input('additional_charges');
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
-        $defaultLangIndex = $defaultLangIndex === false ? 0 : $defaultLangIndex;
         $description = $request->description[$defaultLangIndex];
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
         $job = ServiceJob::find($jobId);

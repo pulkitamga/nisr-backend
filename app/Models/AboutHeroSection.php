@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class AboutHeroSection extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $table = 'about_hero_sections'; // Make sure your table name matches the one you created in migration
 
@@ -21,8 +21,4 @@ class AboutHeroSection extends Model
         return asset('storage/' . $this->image); // Assuming images are stored in the 'storage' folder
     }
 
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 }

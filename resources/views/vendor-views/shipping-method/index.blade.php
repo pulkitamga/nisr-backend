@@ -244,7 +244,7 @@ use Illuminate\Support\Facades\Session;
                                                 {{++$serial}}
                                             </td>
                                             <td>
-                                                {{$item->category->name}}
+                                                {{$item->category->getTranslatedField('name')}}
                                             </td>
                                             <td>
                                                 <input type="hidden" class="form-control w-auto" name="ids[]" value="{{$item->id}}">

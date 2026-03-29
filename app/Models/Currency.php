@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Models\Scopes\RememberScope;
+use App\Traits\HasTranslations;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Watson\Rememberable\Rememberable;
 
 /**
@@ -24,6 +24,7 @@ use Watson\Rememberable\Rememberable;
  */
 class Currency extends Model
 {
+    use HasTranslations;
 //    use Rememberable;
 
     protected $casts = [
@@ -42,11 +43,6 @@ class Currency extends Model
     ];
 
     protected $table = 'currencies';
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany(Translation::class, 'translationable');
-    }
 
     public function getNameAttribute($name): string|null
     {

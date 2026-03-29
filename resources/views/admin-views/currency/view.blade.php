@@ -26,7 +26,7 @@
                         <select class="form-control js-select2-custom" name="currency_id">
                             @foreach ($currencies->where('status', 1) as $key => $currency)
                                 <option value="{{ $currency->id }}" {{$default['value'] == $currency->id?'selected':''}} >
-                                    {{ $currency->name }}
+                                    {{ $currency->getTranslatedField('name') }}
                                 </option>
                             @endforeach
                         </select>
@@ -178,7 +178,7 @@
                             @foreach($currencies as $key =>$currency)
                                 <tr>
                                     <td>{{$currencies->firstitem()+ $key }}</td>
-                                    <td>{{$currency->name}}</td>
+                                    <td>{{$currency->getTranslatedField('name')}}</td>
                                     <td>{{$currency->symbol}}</td>
                                     <td>{{$currency->code}}</td>
                                     @if($currencyModel['value']=='multi_currency')

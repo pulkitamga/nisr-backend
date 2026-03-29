@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -54,7 +54,7 @@ use Illuminate\Support\Carbon;
  */
 class Branch extends Model
 {
-    use StorageTrait, SoftDeletes;
+    use StorageTrait, SoftDeletes, HasTranslations;
 
     protected $fillable = [
         'branch_name',
@@ -164,11 +164,6 @@ class Branch extends Model
             ? $this->deliveryRestrictions->pluck('area')->toArray()
             : $this->deliveryRestrictions()->pluck('area')->toArray();
         return implode(', ', $areas);
-    }
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany(Translation::class, 'translationable');
     }
 
     /**

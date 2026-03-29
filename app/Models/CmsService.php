@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 
 class CmsService extends Model
 {
     use HasFactory;
+    use HasTranslations;
 
     protected $fillable = [
         'type',
@@ -18,8 +19,4 @@ class CmsService extends Model
         'image',
     ];
 
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 }

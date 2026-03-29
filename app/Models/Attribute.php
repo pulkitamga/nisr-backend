@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 
 /**
@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\App;
  */
 class Attribute extends Model
 {
+    use HasTranslations;
     protected $fillable = [
         'name',
     ];
@@ -22,9 +23,12 @@ class Attribute extends Model
         'name' => 'string'
     ];
 
-    public function translations(): MorphMany
+    public function getNameAttribute($name): string|null
     {
-        return $this->morphMany('App\Models\Translation', 'translationable');
+        if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
+            return $name;
+        }
+        return $this->getTranslatedField('name') ?? $name;
     }
 
     protected static function boot(): void

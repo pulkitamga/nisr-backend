@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\CacheManagerTrait;
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -69,7 +69,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Product extends Model
 {
-    use StorageTrait, CacheManagerTrait, SoftDeletes;
+    use StorageTrait, CacheManagerTrait, HasTranslations, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -197,11 +197,6 @@ class Product extends Model
     protected $dates = ['deleted_at'];
 
     protected $appends = ['is_shop_temporary_close', 'thumbnail_full_url', 'preview_file_full_url', 'color_images_full_url', 'meta_image_full_url', 'images_full_url', 'digital_file_ready_full_url'];
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 
     public function scopeActive($query)
     {

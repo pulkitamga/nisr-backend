@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Product;
 use App\Traits\CacheManagerTrait;
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class Tag extends Model
 {
-    use HasFactory, CacheManagerTrait;
+    use HasFactory, CacheManagerTrait, HasTranslations;
 
     /**
      * The attributes that are mass assignable.

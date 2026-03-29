@@ -65,7 +65,7 @@
                             
                                 <tr>
                                     <td>{{$departments->firstItem()+$key}}</td>
-                                    <td>{{$dept->name}}</td>                                    
+                                    <td>{{$dept->getTranslatedField('name')}}</td>                                    
                                     <td>
                                         <div class="mb-1">
                                             <strong><a class="title-color hover-c1" href="mailto:{{$dept->users[0]->name}}">{{$dept->users[0]->name}}</a></strong>

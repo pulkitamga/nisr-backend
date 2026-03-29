@@ -11,7 +11,7 @@
                         <h6 class="product-id" hidden>{{$product['id']}}</h6>
                         <h6 class="fz-13 mb-1 text-truncate custom-width product-name ">{{$product['name']}}</h6>
                         <div class="fz-10">{{ translate('category') }}: {{ $product?->category?->name ?? 'N/a' }}</div>
-                        <div class="fz-10">{{ translate('brand_Name') }}: {{ $product?->brand?->name }}</div>
+                        <div class="fz-10">{{ translate('brand_Name') }}: {{ $product?->brand?->getTranslatedField('name') }}</div>
                         @if ($product->added_by == 'admin')
                             <div class="fz-10">{{ translate('vendor') }}: {{ $web_config['company_name'] }}</div>
                         @else

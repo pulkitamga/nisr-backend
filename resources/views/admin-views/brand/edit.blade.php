@@ -39,22 +39,13 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     @foreach($language as $lang)
-                                            <?php
-                                            if (count($brand['translations'])) {
-                                                $translate = [];
-                                                foreach ($brand['translations'] as $translations) {
-                                                    if ($translations->locale == $lang && $translations->key == "name") {
-                                                        $translate[$lang]['name'] = $translations->value;
-                                                    }
-                                                }
-                                            }
-                                            ?>
+
                                         <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                                              id="{{$lang}}-form">
                                             <label class="title-color" for="name">{{ translate('brand_Name') }}
                                                 ({{ strtoupper($lang) }})</label>
                                             <input type="text" name="name[]"
-                                                   value="{{$lang == $defaultLanguage ? $brand['name']:($translate[$lang]['name']??'') }}"
+                                                   value="{{$lang == $defaultLanguage ? $brand->getRawOriginal('name') : $brand->getTranslatedField('name', $lang, '') }}"
                                                    class="form-control" id="name"
                                                    placeholder="{{ translate('ex') }} : {{ translate('LUX') }}">
                                         </div>

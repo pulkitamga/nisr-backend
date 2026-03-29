@@ -8,7 +8,7 @@ use App\Models\Color;
 use App\Models\DealOfTheDay;
 use App\Models\FlashDealProduct;
 use App\Models\Product;
-use App\Models\Translation;
+use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Utils\Convert;
 use App\Utils\Helpers;
 use App\Utils\ImageManager;
@@ -19,6 +19,10 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private readonly TranslationRepositoryInterface $translationRepo,
+    ) {}
+
     public function list(Request $request)
     {
         $data = Helpers::get_seller_by_token($request);
@@ -121,6 +125,18 @@ class ProductController extends Controller
             ], 401);
         }
 
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->lang ?? []);
+        if ($defaultLangIndex === false) $defaultLangIndex = 0;
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|array',
+            "name.$defaultLangIndex" => 'required|string|max:255',
+            'description' => 'required|array',
+            "description.$defaultLangIndex" => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'name'                  => 'required',
             'category_id'           => 'required',
@@ -181,8 +197,8 @@ class ProductController extends Controller
         $product->user_id = $seller->id;
         $product->added_by = "seller";
 
-        $product->name = $request->name[array_search(Helpers::default_lang(), $request->lang)];
-        $product->slug = Str::slug($request->name[array_search(Helpers::default_lang(), $request->lang)], '-') . '-' . Str::random(6);
+        $product->name = $request->name[array_search(getSaveLanguage(), $request->lang)];
+        $product->slug = Str::slug($request->name[array_search(getSaveLanguage(), $request->lang)], '-') . '-' . Str::random(6);
 
         $category = [];
 
@@ -212,7 +228,7 @@ class ProductController extends Controller
         $product->digital_product_type  = $request->product_type == 'digital' ? $request->digital_product_type : null;
         $product->code                  = $request->code;
         $product->minimum_order_qty     = $request->minimum_order_qty;
-        $product->details               = $request->description[array_search(Helpers::default_lang(), $request->lang)];
+        $product->details               = $request->description[array_search(getSaveLanguage(), $request->lang)];
 
         $product->images                = json_encode($request->images);
         $product->thumbnail             = $request->thumbnail;
@@ -308,28 +324,7 @@ class ProductController extends Controller
         $product->shipping_cost  = $request->product_type == 'physical' ? Convert::usd($request->shipping_cost) : 0;
         $product->multiply_qty = ($request->product_type == 'physical') ? ($request->multiplyQTY == 1 ? 1 : 0) : 0;
         $product->save();
-        $data = [];
-        foreach ($request->lang as $index => $key) {
-            if ($request->name[$index] && $key != Helpers::default_lang()) {
-                array_push($data, array(
-                    'translationable_type' => 'App\Models\Product',
-                    'translationable_id' => $product->id,
-                    'locale' => $key,
-                    'key' => 'name',
-                    'value' => $request->name[$index],
-                ));
-            }
-            if ($request->description[$index] && $key != Helpers::default_lang()) {
-                array_push($data, array(
-                    'translationable_type' => 'App\Models\Product',
-                    'translationable_id' => $product->id,
-                    'locale' => $key,
-                    'key' => 'description',
-                    'value' => $request->description[$index],
-                ));
-            }
-        }
-        Translation::insert($data);
+        $this->translationRepo->add($request, Product::class, $product->id);
 
         return response()->json(['message' => translate('successfully product added!')], 200);
     }
@@ -363,6 +358,18 @@ class ProductController extends Controller
         }
 
         $product = Product::find($id);
+
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->lang ?? []);
+        if ($defaultLangIndex === false) $defaultLangIndex = 0;
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|array',
+            "name.$defaultLangIndex" => 'required|string|max:255',
+            'description' => 'required|array',
+            "description.$defaultLangIndex" => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
+        }
 
         $validator = Validator::make($request->all(), [
             'name'                  => 'required',
@@ -419,8 +426,8 @@ class ProductController extends Controller
         $product->user_id = $seller->id;
         $product->added_by = "seller";
 
-        $product->name = $request->name[array_search(Helpers::default_lang(), $request->lang)];
-        $product->slug = Str::slug($request->name[array_search(Helpers::default_lang(), $request->lang)], '-') . '-' . Str::random(6);
+        $product->name = $request->name[array_search(getSaveLanguage(), $request->lang)];
+        $product->slug = Str::slug($request->name[array_search(getSaveLanguage(), $request->lang)], '-') . '-' . Str::random(6);
 
         $category = [];
 
@@ -450,7 +457,7 @@ class ProductController extends Controller
         $product->digital_product_type  = $request->product_type == 'digital' ? $request->digital_product_type : null;
         $product->code                  = $request->code;
         $product->minimum_order_qty     = $request->minimum_order_qty;
-        $product->details               = $request->description[array_search(Helpers::default_lang(), $request->lang)];
+        $product->details               = $request->description[array_search(getSaveLanguage(), $request->lang)];
 
         $product->images                = json_encode($request->images);
         $product->thumbnail             = $request->thumbnail;
@@ -571,31 +578,7 @@ class ProductController extends Controller
             $product->request_status = 0;
         }
         $product->save();
-
-        foreach ($request->lang as $index => $key) {
-            if ($request->name[$index] && $key != 'en') {
-                Translation::updateOrInsert(
-                    [
-                        'translationable_type' => 'App\Models\Product',
-                        'translationable_id' => $product->id,
-                        'locale' => $key,
-                        'key' => 'name'
-                    ],
-                    ['value' => $request->name[$index]]
-                );
-            }
-            if ($request->description[$index] && $key != 'en') {
-                Translation::updateOrInsert(
-                    [
-                        'translationable_type' => 'App\Models\Product',
-                        'translationable_id' => $product->id,
-                        'locale' => $key,
-                        'key' => 'description'
-                    ],
-                    ['value' => $request->description[$index]]
-                );
-            }
-        }
+        $this->translationRepo->update($request, Product::class, $product->id);
 
         return response()->json(['message' => translate('successfully product updated!')], 200);
     }

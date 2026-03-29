@@ -949,7 +949,7 @@ class WholeSalerController extends BaseController
 
     public function tierStore(Request $request)
     {
-        $defaultLangIndex = array_search(config('app.locale'), $request->input('lang', []), true);
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []), true);
         if ($defaultLangIndex === false) {
             $defaultLangIndex = 0;
         }
@@ -980,7 +980,7 @@ class WholeSalerController extends BaseController
 
     public function tierUpdate(Request $request, $id)
     {
-        $defaultLangIndex = array_search(config('app.locale'), $request->input('lang', []), true);
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []), true);
         if ($defaultLangIndex === false) {
             $defaultLangIndex = 0;
         }

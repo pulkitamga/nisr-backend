@@ -40,7 +40,7 @@ class ConfigController extends Controller
             $languageItem = collect($languageConfig)->firstWhere('code', $language);
             $languageArray[] = [
                 'code' => $language,
-                'name' => Helpers::get_language_name($language),
+                'name' => getLanguageName($language),
                 'country_code' => $languageItem['country_code'] ?? $language,
             ];
         }

@@ -35,7 +35,7 @@ class ProductCmsController extends Controller
 
     public function index(Request $request)
     {
-        $products = CmsProduct::orderBy('created_at', 'desc')->get();
+        $products = CmsProduct::with('translations')->orderBy('created_at', 'desc')->get();
 
         return view('admin-views.content-management.products.index', compact('products'));
     }

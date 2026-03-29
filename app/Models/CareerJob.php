@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * CareerJob Model - Represents a job posting
@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class CareerJob extends Model
 {
     use HasFactory;
+    use HasTranslations;
 
     protected $fillable = [
         'title',
@@ -41,14 +42,6 @@ class CareerJob extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(careerApplies::class, 'job_id');
-    }
-
-    /**
-     * Get translations for this job
-     */
-    public function translations(): MorphMany
-    {
-        return $this->morphMany(Translation::class, 'translationable');
     }
 
     /**

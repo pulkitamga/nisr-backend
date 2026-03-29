@@ -134,7 +134,7 @@
                             <select class="js-select2-custom form-control" name="category_id">
                                 <option value="all">{{ translate('all') }}</option>
                                 @foreach ($categories as $category)
-                                    @php($categoryName = $category->name ?? ($category->default_name ?? '#' . $category->id))
+                                    @php($categoryName = $category->getTranslatedField('name') ?? '#' . $category->id)
                                     <option value="{{ $category->id }}"
                                         {{ ($filters['category_id'] ?? 'all') == $category->id ? 'selected' : '' }}>
                                         {{ $categoryName }}

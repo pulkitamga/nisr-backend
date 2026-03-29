@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Builder;
 
 class Service extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = [
         'service_id',
@@ -39,11 +39,6 @@ class Service extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
     }
 
   public function getTitleAttribute($value): ?string

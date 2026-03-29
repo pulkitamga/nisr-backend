@@ -21,7 +21,7 @@ class APILocalizationMiddleware
         $requestedLocale = trim((string)$request->header('lang', ''));
 
         if ($requestedLocale === '') {
-            $requestedLocale = $this->resolveUserLanguage($request) ?? Helpers::default_lang();
+            $requestedLocale = $this->resolveUserLanguage($request) ?? getDefaultLanguage();
         }
 
         $resolvedLocale = function_exists('resolveAppLocale')

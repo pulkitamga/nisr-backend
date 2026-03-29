@@ -107,7 +107,7 @@
                                         @foreach($tiers as $tier)
                                         <option value="{{ $tier->name }}" {{ $wholesaler->tier == $tier->name ?
                                             'selected' : '' }}>
-                                            {{ ucfirst($tier->name) }}
+                                            {{ ucfirst($tier->getTranslatedField('name')) }}
                                         </option>
                                         @endforeach
                                     </select>

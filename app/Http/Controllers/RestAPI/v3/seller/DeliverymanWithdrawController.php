@@ -64,7 +64,7 @@ class DeliverymanWithdrawController extends Controller
         }
         $withdraw->approved = $request->approved;
         $withdraw->transaction_note = $request->note;
-        $lang = Helpers::default_lang();
+        $lang = getDefaultLanguage();
 
         $delivery_man = DeliveryMan::find($withdraw->delivery_man_id);
         $delivery_man_fcm_token = $delivery_man?->fcm_token;

@@ -42,8 +42,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
         @endphp
         <tr data-index="{{ $index }}">
             <td>{{ $client['rating'] }}</td>
-            <td>{{$client['name']}} </td>
-            <td>{{ $client['review'] }}</td>
+            <td>{{ $titleLangMap[getDefaultLanguage()] ?? $client['name'] }}</td>
+            <td>{{ $descLangMap[getDefaultLanguage()] ?? $client['review'] }}</td>
             <td><img src="{{ $client['image'] }}" width="50" alt="{{ $client['name'] }}"></td>
             <td class="text-center d-flex gap-2">
                 <button class="btn btn-outline-primary btn-sm square-btn btn-edit" data-index="{{ $index }}"

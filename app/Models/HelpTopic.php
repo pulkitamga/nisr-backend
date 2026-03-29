@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use App\Utils\Helpers;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 
 
 class HelpTopic extends Model
 {
+    use HasTranslations;
     protected $table = 'help_topics';
     protected $casts = [
         'type' => 'string',
@@ -30,11 +31,6 @@ class HelpTopic extends Model
     public function scopeStatus($query)
     {
         return $query->where('status', 1);
-    }
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
     }
 
     public function getQuestionAttribute($question): string|null
@@ -65,7 +61,7 @@ class HelpTopic extends Model
                     return $query->where('locale', App::getLocale());
                 }
 
-                return $query->where('locale', Helpers::default_lang());
+                return $query->where('locale', getDefaultLanguage());
             }]);
         });
     }

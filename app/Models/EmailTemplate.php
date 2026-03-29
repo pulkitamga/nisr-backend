@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\DB;
 class EmailTemplate extends Model
 {
     use HasFactory,StorageTrait;
+    use HasTranslations;
     protected $fillable = [
         'template_name',
         'user_type',
@@ -77,10 +79,6 @@ class EmailTemplate extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
     public function translationCurrentLanguage(): MorphMany
     {
         return $this->morphMany('App\Models\Translation', 'translationable')->where('locale', getDefaultLanguage());

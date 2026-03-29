@@ -58,7 +58,7 @@
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
-                                @php( $local = Helpers::default_lang())
+                                @php( $local = getDefaultLanguage())
                                 @foreach($web_config['language'] as $data)
                                     @if($data['code']==$local)
                                         <img width="20"

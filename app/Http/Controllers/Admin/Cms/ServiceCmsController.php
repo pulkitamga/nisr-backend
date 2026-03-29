@@ -35,7 +35,7 @@ class ServiceCmsController extends Controller
 
     public function index(Request $request)
     {
-        $products = CmsService::orderBy('created_at', 'desc')->get();
+        $products = CmsService::with('translations')->orderBy('created_at', 'desc')->get();
 
         return view('admin-views.content-management.services.index', compact('products'));
     }

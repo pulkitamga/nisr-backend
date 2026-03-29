@@ -66,7 +66,7 @@
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ Str::limit($state->country, 20) }}</td>
-                                            <td>{{ $state->name }}</td>
+                                            <td>{{ $state->getTranslatedField('name') }}</td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <form action="{{ route('admin.business-settings.state-city.state.delete', $state->id) }}"
@@ -111,7 +111,7 @@
                                 <select name="state_id" class="form-control js-select2" required>
                                     <option value="" disabled selected>{{translate('--Select State--')}}</option>
                                     @foreach($states as $state)
-                                        <option value="{{ $state->id }}">{{ $state->name }}</option>
+                                        <option value="{{ $state->id }}">{{ $state->getTranslatedField('name') }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -141,8 +141,8 @@
                                     @forelse($cities as $key => $city)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $city->state->name }}</td>
-                                            <td>{{ $city->name }}</td>
+                                            <td>{{ $city->state->getTranslatedField('name') }}</td>
+                                            <td>{{ $city->getTranslatedField('name') }}</td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <form action="{{ route('admin.business-settings.state-city.city.delete', $city->id) }}"
@@ -187,7 +187,7 @@
                                 <select name="city_id" class="form-control js-select2" required>
                                     <option value="" disabled selected>{{translate('--Select City--')}}</option>
                                     @foreach($cities as $city)
-                                        <option value="{{ $city->id }}">{{ $city->name }}</option>
+                                        <option value="{{ $city->id }}">{{ $city->getTranslatedField('name') }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -217,8 +217,8 @@
                                     @forelse($areas as $key => $area)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $area->city->name ?? '-' }}</td>
-                                            <td>{{ $area->name }}</td>
+                                            <td>{{ $area->city->getTranslatedField('name') ?? '-' }}</td>
+                                            <td>{{ $area->getTranslatedField('name') }}</td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <form action="{{ route('admin.business-settings.state-city.area.delete', $area->id) }}"

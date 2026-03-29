@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\CacheManagerTrait;
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\App;
 class Brand extends Model
 {
     use StorageTrait, CacheManagerTrait;
+    use HasTranslations;
 
     protected $fillable = [
         'name',
@@ -54,11 +56,6 @@ class Brand extends Model
         return $this->hasMany(Product::class);
     }
 
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
-
     public function getNameAttribute($name): string|null
     {
         if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
@@ -66,11 +63,6 @@ class Brand extends Model
         }
 
         return $this->translations[0]->value ?? $name;
-    }
-
-    public function getDefaultNameAttribute(): string|null
-    {
-        return $this->translations[0]->value ?? $this->name;
     }
 
     public function storage(): MorphMany

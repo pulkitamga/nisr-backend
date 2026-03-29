@@ -17,8 +17,8 @@
     <tbody id="faq-table-body">
         @foreach($jsonData['faqs'] ?? [] as $index => $faq)
         <tr data-index="{{ $index }}">
-            <td>{{ $faq['question'] }}</td>
-            <td>{{ $faq['answer'] }}</td>
+            <td>{{ $translations[getDefaultLanguage()]['cards'][$index]['question'] ?? $faq['question'] }}</td>
+            <td>{{ $translations[getDefaultLanguage()]['cards'][$index]['answer'] ?? $faq['answer'] }}</td>
             <td class="text-center d-flex gap-2">
                 <!-- Edit Button -->
                 <button type="button" class="btn btn-outline-primary btn-sm square-btn" data-index="{{ $index }}"

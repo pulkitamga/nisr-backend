@@ -142,8 +142,8 @@ class AboutController extends Controller
         }
 
         $model = $this->modelMap[$section];
-        $data = $model::all();
-        $items = $model::latest()->paginate(10);
+        $data = $model::with('translations')->get();
+        $items = $model::with('translations')->latest()->paginate(10);
         return view('admin-views.content-management.about.index', compact('section', 'data', 'items'));
     }
     public function pages($section = 'hero')
@@ -155,8 +155,8 @@ class AboutController extends Controller
         }
 
         $model = $this->modelMap[$section];
-        $data = $model::all();
-        $items = $model::latest()->paginate(10);
+        $data = $model::with('translations')->get();
+        $items = $model::with('translations')->latest()->paginate(10);
         return view('admin-views.content-management.about.index', compact('section', 'data', 'items'));
     }
 

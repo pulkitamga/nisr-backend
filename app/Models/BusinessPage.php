@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
@@ -27,6 +27,7 @@ class BusinessPage extends Model
 {
     use StorageTrait;
     use HasFactory;
+    use HasTranslations;
 
     protected $fillable = [
         'title',
@@ -64,11 +65,6 @@ class BusinessPage extends Model
     public function banner(): MorphOne
     {
         return $this->morphOne(Attachment::class, 'attachable')->where(['file_type' => 'banner']);
-    }
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany(Translation::class, 'translationable');
     }
 
     public function getTitleAttribute($title): string|null

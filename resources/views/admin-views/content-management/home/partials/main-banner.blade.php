@@ -51,9 +51,9 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
 
             <tr>
-                <td>{{ $item['heading'] ?? '' }}</td>
-                <td>{{ $item['paragraph'] ?? '' }}</td>
-                <td>{{ $item['buttonText'] ?? '' }}</td>
+                <td>{{ $headingLangMap[getDefaultLanguage()] ?? $item['heading'] ?? '' }}</td>
+                <td>{{ $paragraphLangMap[getDefaultLanguage()] ?? $item['paragraph'] ?? '' }}</td>
+                <td>{{ $buttonTextLangMap[getDefaultLanguage()] ?? $item['buttonText'] ?? '' }}</td>
                 <td>{{ $item['buttonLink'] ?? '' }}</td>
                 <td>
                     @if(!empty($item['image']))

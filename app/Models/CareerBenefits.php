@@ -2,18 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CareerBenefits extends Model
 {
     use HasFactory;
+    use HasTranslations;
     protected $fillable = ['icon', 'title', 'description'];
 
 
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 }

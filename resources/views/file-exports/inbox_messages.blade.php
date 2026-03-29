@@ -27,7 +27,7 @@
             <td>{{ $msg->sender_email }}</td>
             <td>{{ $msg->sender_phone }}</td>
             <td>{{ $msg->owner?->name ?? 'Not Assigned' }}</td>
-            <td>{{ $msg->department?->name ?? 'No Department' }}</td>
+            <td>{{ $msg->department?->getTranslatedField('name') ?? 'No Department' }}</td>
             <td>{{ $msg->employee?->name ?? 'Not Assigned' }}</td>
             <td>{{ ucfirst($msg->status) }}</td>
             <td>{{ $msg->created_at->format('d M, Y H:i') }}</td>

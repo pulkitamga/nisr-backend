@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 
 /**
@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class AddFundBonusCategories extends Model
 {
     use HasFactory;
+    use HasTranslations;
 
     protected $guarded = ['id'];
 
@@ -63,9 +64,5 @@ class AddFundBonusCategories extends Model
     {
 
         return $query->where(['is_active' => 1]);
-    }
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
     }
 }

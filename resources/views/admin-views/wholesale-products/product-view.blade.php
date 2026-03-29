@@ -25,17 +25,17 @@
                                 <div>
                                     <span class="key text-nowrap">{{ translate('product_Name') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->product->name ?? __('N/A') }}</span>
+                                    <span class="value">{{ $ProductData->product->getTranslatedField('name') ?? __('N/A') }}</span>
                                 </div>
                                 <div>
                                     <span class="key">{{ translate('Category') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->category->name ?? __('N/A') }}</span>
+                                    <span class="value">{{ $ProductData->category->getTranslatedField('name') ?? __('N/A') }}</span>
                                 </div>
                                 <div>
                                     <span class="key">{{ translate('Sub_Category') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->subcategory->name ?? __('N/A') }}</span>
+                                    <span class="value">{{ $ProductData->subcategory->getTranslatedField('name') ?? __('N/A') }}</span>
                                 </div>
 
                                 <!-- YEH PART REPLACE KAR DO – AB VARIATION KEY BHI DIKHEGA -->

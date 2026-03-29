@@ -72,9 +72,9 @@
                             @foreach($wholesale_products as $key => $product)
                             <tr>
                                 <td>{{ $wholesale_products->firstItem() + $key }}</td>
-                                <td>{{ $product->product->name ?? __('N/A') }}</td>
-                                <td>{{ $product->category->name ?? __('N/A') }}</td>
-                                <td>{{ $product->subcategory->name ?? __('N/A') }}</td>
+                                <td>{{ $product->product->getTranslatedField('name') ?? __('N/A') }}</td>
+                                <td>{{ $product->category->getTranslatedField('name') ?? __('N/A') }}</td>
+                                <td>{{ $product->subcategory->getTranslatedField('name') ?? __('N/A') }}</td>
                                 <td>{{ $product->variation_type ?? __('No Variation') }}</td>
 
                                 <td>

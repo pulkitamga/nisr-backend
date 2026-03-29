@@ -109,7 +109,7 @@
                                 <select name="brand_id" class="js-select2-custom form-control text-capitalize">
                                     <option value="" selected>{{ translate('select_brand') }}</option>
                                     @foreach ($brands as $brand)
-                                        <option value="{{ $brand->id}}" {{request('brand_id')==$brand->id ? 'selected' :''}}>{{ $brand->default_name }}</option>
+                                        <option value="{{ $brand->id}}" {{request('brand_id')==$brand->id ? 'selected' :''}}>{{ $brand->getTranslatedField('name') }}</option>
                                     @endforeach
                                 </select>
                             </div>

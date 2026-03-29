@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use App\Utils\Helpers;
 
 class WholesaleTier extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, SoftDeletes, LogsActivity, HasTranslations;
 
     protected $fillable = ['name', 'is_active', 'rank'];
 
@@ -22,14 +22,6 @@ class WholesaleTier extends Model
         'rank' => 'integer',
         'is_active' => 'boolean',
     ];
-
-    /**
-     * Get all translations for this tier.
-     */
-    public function translations()
-    {
-        return $this->morphMany(\App\Models\Translation::class, 'translationable');
-    }
 
     /**
      * Spatie Activity Log options
@@ -51,11 +43,4 @@ class WholesaleTier extends Model
         $activity->causer()->associate(Helpers::getLoggedInUser());
     }
 
-    public function getTranslation(string $key, string $locale)
-    {
-        return $this->translations->firstWhere(
-            fn($t) =>
-            $t->locale === $locale && $t->key === $key
-        )?->value;
-    }
 }

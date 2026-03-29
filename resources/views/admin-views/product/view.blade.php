@@ -261,23 +261,9 @@ $brandSetting = getWebConfig(name: 'product_brand');
                         </div>
                         <div class="d-block mt-2">
                             @foreach($languages as $language)
-                            <?php
-                            if (count($product['translations'])) {
-                                $translate = [];
-                                foreach ($product['translations'] as $translation) {
-                                    if ($translation->locale == $language && $translation->key == "name") {
-                                        $translate[$language]['name'] = $translation->value;
-                                    }
-                                    if ($translation->locale == $language && $translation->key == "description") {
-                                        $translate[$language]['description'] = $translation->value;
-                                    }
-                                }
-                            }
-                            ?>
                             <div class="{{ $language != 'en'? 'd-none':''}} lang-form" id="{{ $language}}-form">
                                 <div class="d-flex">
-                                    <h2 class="mb-2 pb-1 text-gulf-blue">{{ $translate[$language]['name'] ??
-                                        $product['name'] }}</h2>
+                                    <h2 class="mb-2 pb-1 text-gulf-blue">{{ $product->getTranslatedField('name', $language) }}</h2>
                                     <a class="btn btn-outline--primary btn-sm square-btn mx-2 w-auto h-25"
                                         title="{{ translate('edit') }}"
                                         href="{{ route('admin.products.update', [$product['id']]) }}">
@@ -288,7 +274,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                     <label class="text-gulf-blue font-weight-bold">{{ translate('description').' : '
                                         }}</label>
                                     <div class="rich-editor-html-content">
-                                        {!! $translate[$language]['description'] ?? $product['details'] !!}
+                                        {!! $product->getTranslatedField('description', $language, $product['details']) !!}
                                     </div>
                                 </div>
                             </div>
@@ -325,7 +311,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 <span class="key text-nowrap">{{ translate('brand') }}</span>
                                 <span>:</span>
                                 <span class="value">
-                                    {{isset($product->brand) ? $product->brand->default_name :
+                                    {{isset($product->brand) ? $product->brand->getTranslatedField('name') :
                                     translate('brand_not_found') }}
                                 </span>
                             </div>
@@ -343,7 +329,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 <span class="key text-nowrap">{{ translate('category') }}</span>
                                 <span>:</span>
                                 <span class="value">
-                                    {{isset($product->category) ? $product->category->default_name :
+                                    {{isset($product->category) ? $product->category->getTranslatedField('name') :
                                     translate('category_not_found') }}
                                 </span>
                             </div>
@@ -1005,7 +991,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                         {{ translate('Order_ID') }} # {{ $review['order_id'] }}
                                     </div>
                                     @endif
-                                    <h4>{{ $translate[$language]['name'] ?? $product['name'] }}</h4>
+                                    <h4>{{ $product->getTranslatedField('name', $activeLanguage) }}</h4>
                                 </div>
                             </div>
                             <label class="input-label text--title font-weight-bold">

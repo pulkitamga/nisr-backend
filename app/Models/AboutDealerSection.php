@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class AboutDealerSection extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $table = 'about_dealer_sections';
 
@@ -17,9 +17,5 @@ class AboutDealerSection extends Model
     public function getImageUrlAttribute()
     {
         return asset('storage/' . $this->image);
-    }
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
     }
 }

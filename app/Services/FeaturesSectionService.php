@@ -49,7 +49,7 @@ class FeaturesSectionService
     {
 
         $item = [];
-        $defaultLangIndex = array_search(config('app.locale'), $request->lang);
+        $defaultLangIndex = array_search(getSaveLanguage(), $request->lang);
         $imageArray = null;
         foreach (json_decode($data['value'], true) as $key => $data) {
             if ($request->has('image') && $data['item'] == $request['item']) {

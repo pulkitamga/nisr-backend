@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Builder;
 
 class Policy extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
     protected $table = 'policies';
     protected $fillable = [
         'version',
@@ -26,11 +26,6 @@ class Policy extends Model
         'effective_date' => 'date',
         'published_at' => 'datetime',
     ];
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 
     public function scopePublished(Builder $query): Builder
     {

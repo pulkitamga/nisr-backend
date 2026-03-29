@@ -175,7 +175,7 @@ use Carbon\Carbon;
                                         @if($notification->notification_for == 1 && $notification->employee)
                                         {{ $notification->employee->name }}
                                         @elseif($notification->notification_for == 2 && $notification->department)
-                                        {{ $notification->department->name }} (Dept)
+                                        {{ $notification->department->getTranslatedField('name') }} (Dept)
                                         @elseif($notification->notification_for == 3 && $notification->customer)
                                         {{ $notification->customer->name }} (Customer)
                                         @else

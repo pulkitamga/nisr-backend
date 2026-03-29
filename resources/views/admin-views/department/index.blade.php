@@ -64,7 +64,7 @@
                             @foreach($departments as $key=>$dept)                            
                                 <tr>
                                     <td>{{$departments->firstItem()+$key}}</td>
-                                    <td>{{$dept->name}}</td>                                    
+                                    <td>{{$dept->getTranslatedField('name')}}</td>                                    
                                     <td>
                                         @if(!empty($dept->employee))
                                         <div class="mb-1">

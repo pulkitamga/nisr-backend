@@ -27,7 +27,7 @@
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize">
-                                        <a class="nav-link lang-link {{$lang == $defaultLanguage ? 'active':''}}"
+                                        <a class="nav-link lang-link {{$lang == $activeLanguage ? 'active':''}}"
                                            href="#"
                                            id="{{$lang}}-link">{{getLanguageName($lang).'('.strtoupper($lang).')'}}</a>
                                     </li>
@@ -36,16 +36,7 @@
 
                             <div class="form-group">
                                 @foreach($language as $lang)
-                                        <?php
-                                        if (count($deal['translations'])) {
-                                            $translate = [];
-                                            foreach ($deal['translations'] as $t) {
-                                                if ($t->locale == $lang && $t->key == "title") {
-                                                    $translate[$lang]['title'] = $t->value;
-                                                }
-                                            }
-                                        }
-                                        ?>
+
                                     <div class="row {{$lang != $defaultLanguage ? 'd-none':''}} lang-form"
                                          id="{{$lang}}-form">
                                         <input type="text" name="deal_type" value="feature_deal" class="d-none">
@@ -54,7 +45,7 @@
                                                    class="title-color text-capitalize">{{ translate('title')}}
                                                 ({{strtoupper($lang)}})</label>
                                             <input type="text" name="title[]" class="form-control" id="title"
-                                                   value="{{$lang==$defaultLanguage?$deal['title']:($translate[$lang]['title']??'')}}"
+                                                   value="{{$lang==$defaultLanguage ? $deal->getRawOriginal('title') : $deal->getTranslatedField('title', $lang, '')}}"
                                                    placeholder="{{translate('ex').':'.translate('LUX')}}"
                                                     {{$lang == $defaultLanguage? 'required':''}}>
                                         </div>

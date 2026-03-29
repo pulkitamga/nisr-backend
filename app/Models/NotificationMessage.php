@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,7 +18,7 @@ use Illuminate\Support\Carbon;
  **/
 class NotificationMessage extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
     protected $fillable = [
         'user_type',
         'key',
@@ -35,8 +35,4 @@ class NotificationMessage extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-    public function translations(): MorphMany
-    {
-        return $this->morphMany('App\Models\Translation', 'translationable');
-    }
 }

@@ -47,7 +47,7 @@
                                 <option value="" selected>{{ translate('all_brand') }}</option>
                                 @foreach ($brands as $brand)
                                 <option value="{{ $brand->id}}" {{request('brand_id')==$brand->id ? 'selected' :''}}>{{
-                                    $brand->default_name }}</option>
+                                    $brand->getTranslatedField('name') }}</option>
                                 @endforeach
                             </select>
                         </div>

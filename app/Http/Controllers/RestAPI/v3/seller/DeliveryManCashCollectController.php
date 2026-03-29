@@ -43,7 +43,7 @@ class DeliveryManCashCollectController extends Controller
 
         $id = $request->deliveryman_id;
         $seller = $request->seller;
-        $lang = Helpers::default_lang();
+        $lang = getDefaultLanguage();
 
         $wallet = DeliverymanWallet::where('delivery_man_id', $id)
             ->whereHas('deliveryMan', function($query) use($seller){

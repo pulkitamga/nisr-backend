@@ -77,22 +77,6 @@
                 </div>
                 <div class="card-body">
                     @foreach ($languages as $language)
-                        <?php
-                        if (count($product['translations'])) {
-                            $translate = [];
-                            foreach ($product['translations'] as $translation) {
-                                if ($translation->locale == $language && $translation->key == 'name') {
-                                    $translate[$language]['name'] = $translation->value;
-                                }
-                                if ($translation->locale == $language && $translation->key == 'description') {
-                                    $translate[$language]['description'] = $translation->value;
-                                }
-                                if ($translation->locale == $language && $translation->key == 'service_tittle') {
-                                    $translate[$language]['service_tittle'] = $translation->value;
-                                }
-                            }
-                        }
-                        ?>
                         <div class="{{ $language != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                             id="{{ $language }}-form">
                             <div class="form-group">
@@ -105,7 +89,7 @@
                                 </label>
                                 <input type="text" name="name[]"
                                     id="{{ $language }}_name"
-                                    value="{{ $language == $defaultLanguage ? $product['name'] : ($translate[$language]['name'] ?? '') }}"
+                                    value="{{ $language == $defaultLanguage ? $product->getRawOriginal('name') : $product->getTranslatedField('name', $language, '') }}"
                                     class="form-control {{ $language == $defaultLanguage ? 'product-title-default-language' : '' }}"
                                     placeholder="{{ translate('new_Product') }}">
                             </div>
@@ -114,7 +98,7 @@
                                 <label class="title-color">{{ translate('description') }}
                                     ({{ strtoupper($language) }})</label>
                                 <textarea name="description[]"
-                                    class="summernote {{ $language == $defaultLanguage ? 'product-description-default-language' : '' }}">{!! $language == $defaultLanguage ? $product['details'] : ($translate[$language]['description'] ?? '') !!}</textarea>
+                                    class="summernote {{ $language == $defaultLanguage ? 'product-description-default-language' : '' }}">{!! $language == $defaultLanguage ? $product['details'] : $product->getTranslatedField('description', $language, '') !!}</textarea>
                             </div>
                         </div>
                     @endforeach
@@ -451,19 +435,6 @@
                         @endforeach
                     </ul>
                     @foreach ($languages as $language)
-                        <?php
-                        $translate = [];
-                        if (count($product['translations'])) {
-                            foreach ($product['translations'] as $translation) {
-                                if ($translation->locale == $language && $translation->key == 'service_tittle') {
-                                    $translate[$language]['service_tittle'] = $translation->value;
-                                }
-                                if ($translation->locale == $language && $translation->key == 'parts_included') {
-                                    $translate[$language]['parts_included'] = $translation->value;
-                                }
-                            }
-                        }
-                        ?>
                         <div class="language-tab-form {{ $language != $activeLanguage ? 'd-none' : '' }}"
                             data-lang="{{ $language }}">
                             <div class="row">
@@ -475,7 +446,7 @@
                                     </label>
                                     <textarea name="service_tittle[]" rows="2" class="form-control"
                                         placeholder="{{ translate('e.g. Synthetic Oil Change – up to 5 L') }}">
-                                {{ $translate[$language]['service_tittle'] ?? ($product->service->title ?? '') }}
+                                {{ $product->getTranslatedField('service_tittle', $language, $product->service->title ?? '') }}
                             </textarea>
                                     <small class="text-muted">{{ translate('service_main_title') }}</small>
                                 </div>
@@ -486,7 +457,7 @@
                                                 class="input-required-icon">*</span>
                                         </label>
                                         <textarea name="parts_included[]" class="form-control" rows="2"
-                                            placeholder="{{ translate('e.g. 5 L 5W-30, OEM oil filter') }}">{{ $translate[$language]['parts_included'] ?? (implode(', ', $includedParts) ?? '') }}</textarea>
+                                            placeholder="{{ translate('e.g. 5 L 5W-30, OEM oil filter') }}">{{ $product->getTranslatedField('parts_included', $language, implode(', ', $includedParts) ?? '') }}</textarea>
                                         <small class="text-muted">{{ translate('comma separated values') }}</small>
                                     </div>
                                 </div>

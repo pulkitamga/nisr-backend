@@ -95,7 +95,7 @@
                                                 <span class="key text-nowrap">{{ translate('brand') }}</span>
                                                 <span>:</span>
                                                 <span class="value">
-                                            {{isset($product->brand) ? $product->brand->default_name : translate('brand_not_found') }}
+                                            {{isset($product->brand) ? $product->brand->getTranslatedField('name') : translate('brand_not_found') }}
                                         </span>
                                             </div>
 
@@ -103,7 +103,7 @@
                                                 <span class="key text-nowrap">{{ translate('category') }}</span>
                                                 <span>:</span>
                                                 <span class="value">
-                                            {{isset($product->category) ? $product->category->default_name : translate('category_not_found') }}
+                                            {{isset($product->category) ? $product->category->getTranslatedField('name') : translate('category_not_found') }}
                                         </span>
                                             </div>
 
@@ -139,7 +139,7 @@
                                                 @foreach (json_decode($product->choice_options) as $key => $value)
                                                     <div>
                                                         @if (array_filter($value->options) != null)
-                                                            <span class="key text-nowrap">{{ translate($value->title) }}</span>
+                                                            <span class="key text-nowrap">{{ $value->getTranslatedField('title') }}</span>
                                                             <span>:</span>
                                                             <span class="value">
                                                     @foreach ($value->options as $index => $option)

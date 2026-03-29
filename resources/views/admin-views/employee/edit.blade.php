@@ -70,7 +70,7 @@
                                     <select class="form-control" name="department_id" id="department_id">
                                         <option value="0" {{ (int)$employee['department_id'] === 0 ? 'selected' : '' }}>{{'---'.translate('select').'---'}}</option>
                                         @foreach($departments as $dept)
-                                            <option value="{{$dept->id}}" {{$dept['id']==$employee['department_id']?'selected':''}}>{{ $dept->name }}</option>
+                                            <option value="{{$dept->id}}" {{$dept['id']==$employee['department_id']?'selected':''}}>{{ $dept->getTranslatedField('name') }}</option>
                                         @endforeach
                                     </select>
                                     @if($departments->isEmpty())

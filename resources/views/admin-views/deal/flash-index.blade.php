@@ -37,7 +37,7 @@
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize font-weight-medium">
-                                        <a class="nav-link lang-link {{$lang == $defaultLanguage ? 'active':''}}"
+                                        <a class="nav-link lang-link {{$lang == $activeLanguage ? 'active':''}}"
                                            href="javascript:"
                                            id="{{$lang}}-link">{{getLanguageName($lang).'('.strtoupper($lang).')'}}</a>
                                     </li>

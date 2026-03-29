@@ -30,7 +30,7 @@
                             <div class="col-sm-6 col-lg-4 col-xl-2">
                                 <div class="form-group">
                                     <label class="title-color">{{ translate('category') }}</label>
-                                    <input type="text" class="form-control" value="{{ $ProductData->category->name }}" readonly>
+                                    <input type="text" class="form-control" value="{{ $ProductData->category->getTranslatedField('name') }}" readonly>
                                     <input type="hidden" name="category_id" value="{{ $ProductData->category_id }}">
                                 </div>
                             </div>
@@ -39,7 +39,7 @@
                             <div class="col-sm-6 col-lg-4 col-xl-2">
                                 <div class="form-group">
                                     <label class="title-color">{{ translate('sub_Category') }}</label>
-                                    <input type="text" class="form-control" value="{{ $get_sub_category->name ?? '-' }}" readonly>
+                                    <input type="text" class="form-control" value="{{ $get_sub_category->getTranslatedField('name') ?? '-' }}" readonly>
                                     <input type="hidden" name="sub_category_id" value="{{ $ProductData->sub_category_id }}">
                                 </div>
                             </div>
@@ -48,7 +48,7 @@
                             <div class="col-sm-6 col-lg-4 col-xl-3">
                                 <div class="form-group">
                                     <label class="title-color">{{ translate('Products') }}</label>
-                                    <input type="text" class="form-control" value="{{ $get_product->name }}" readonly>
+                                    <input type="text" class="form-control" value="{{ $get_product->getTranslatedField('name') }}" readonly>
                                     <input type="hidden" name="product_id" value="{{ $ProductData->product_id }}">
                                 </div>
                             </div>

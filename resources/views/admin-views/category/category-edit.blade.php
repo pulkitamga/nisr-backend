@@ -42,21 +42,12 @@
                             <div class="{{ $category['parent_id']==0 || $category['position'] == 1 ? 'col-lg-6':'col-12' }}">
                                 @foreach($languages as $lang)
                                 <div>
-                                    <?php
-                                    if (count($category['translations'])) {
-                                        $translate = [];
-                                        foreach ($category['translations'] as $t) {
-                                            if ($t->locale == $lang && $t->key == "name") {
-                                                $translate[$lang]['name'] = $t->value;
-                                            }
-                                        }
-                                    }
-                                    ?>
+
                                     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang}}-form">
                                         <label class="title-color">
                                             {{ translate('category_Name') }} ({{strtoupper($lang) }})
                                         </label>
-                                        <input type="text" name="name[]" value="{{ $lang==$defaultLanguage?$category['name']:($translate[$lang]['name']??'') }}" class="form-control" placeholder="{{ translate('new_Category') }}">
+                                        <input type="text" name="name[]" value="{{ $lang==$defaultLanguage ? $category->getRawOriginal('name') : $category->getTranslatedField('name', $lang, '') }}" class="form-control" placeholder="{{ translate('new_Category') }}">
                                     </div>
                                     <input type="hidden" name="lang[]" value="{{ $lang}}">
                                     <input type="hidden" name="id" value="{{ $category['id']}}">

@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Traits\CacheManagerTrait;
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\DB;
 class FlashDeal extends Model
 {
     use StorageTrait, CacheManagerTrait;
+    use HasTranslations;
 
     /**
      * The attributes that are mass assignable.
@@ -70,11 +71,6 @@ class FlashDeal extends Model
     public function products(): HasMany
     {
         return $this->hasMany(FlashDealProduct::class, 'flash_deal_id');
-    }
-
-    public function translations(): MorphMany
-    {
-        return $this->morphMany(Translation::class, 'translationable');
     }
 
     public function getTitleAttribute($title): string|null

@@ -50,7 +50,7 @@ class WholeSaleProductController extends BaseController
         $wholesale_products = $this->wholesaleproductrepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            relations: ['price_list', 'product', 'category', 'subcategory'],
+            relations: ['price_list', 'product.translations', 'category.translations', 'subcategory.translations'],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
 
@@ -148,7 +148,7 @@ class WholeSaleProductController extends BaseController
 
     public function getProductView(string|int $id): View
     {
-        $ProductData = $this->wholesaleproductrepo->getFirstWhere(params: ['id' => $id], relations: ['price_list', 'product', 'category', 'subcategory']);
+        $ProductData = $this->wholesaleproductrepo->getFirstWhere(params: ['id' => $id], relations: ['price_list', 'product.translations', 'category.translations', 'subcategory.translations']);
         $categories = $this->categoryRepo->getListWhere(filters: ['position' => 0], dataLimit: 'all');
         $subCategory = [];
         return view(WholeSalesProducts::PRODUCT_VIEW[VIEW], compact('ProductData', 'categories', 'subCategory'));
@@ -156,13 +156,13 @@ class WholeSaleProductController extends BaseController
 
     public function getUpdateView(string|int $id): View
     {
-        $ProductData = $this->wholesaleproductrepo->getFirstWhere(params: ['id' => $id], relations: ['price_list', 'product', 'category', 'subcategory']);
+        $ProductData = $this->wholesaleproductrepo->getFirstWhere(params: ['id' => $id], relations: ['price_list', 'product.translations', 'category.translations', 'subcategory.translations']);
         $get_sub_category = $ProductData->sub_category_id
-            ? $this->categoryRepo->getFirstWhere(params: ['id' => $ProductData->sub_category_id])
+            ? $this->categoryRepo->getFirstWhere(params: ['id' => $ProductData->sub_category_id], relations: ['translations'])
             : "";
 
         $get_product = $ProductData->product_id
-            ? $this->productRepo->getFirstWhere(params: ['id' => $ProductData->product_id])
+            ? $this->productRepo->getFirstWhere(params: ['id' => $ProductData->product_id], relations: ['translations'])
             : "";
 
         $categories = $this->categoryRepo->getListWhere(filters: ['position' => 0], dataLimit: 'all');
@@ -246,7 +246,7 @@ class WholeSaleProductController extends BaseController
         $wholesale_products_with_prices = $this->wholesaleproductrepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            relations: ['price_list', 'product', 'category', 'subcategory'],
+            relations: ['price_list', 'product.translations', 'category.translations', 'subcategory.translations'],
             dataLimit: 'all'
         );
         $data = [];
@@ -276,7 +276,7 @@ class WholeSaleProductController extends BaseController
         $wholesale_products = $this->wholesaleproductrepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            relations: ['price_list', 'product', 'category', 'subcategory'],
+            relations: ['price_list', 'product.translations', 'category.translations', 'subcategory.translations'],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
 

@@ -14,7 +14,7 @@
                 @foreach ($availableLanguages as $lang)
                     <li class="nav-item text-capitalize">
                         <a class="nav-link form-system-language-tab  {{ $lang == $activeLang ? 'active' : '' }}" href="javascript:" id="{{ $lang }}-link">
-                            {{ Helpers::get_language_name($lang) . '(' . strtoupper($lang) . ')' }}
+                            {{ getLanguageName($lang) . '(' . strtoupper($lang) . ')' }}
                         </a>
                     </li>
                 @endforeach
@@ -61,20 +61,7 @@
     </div>
     <div class="bg-light p-3 rounded mb-3">
         @foreach ($availableLanguages as $lang)
-                <?php
-                $translate = [];
-                if (count($template['translations'])) {
-                    foreach ($template['translations'] as $translation) {
-                        if ($translation->locale == $lang && $translation->key == 'title') {
-                            $translate[$lang]['title'] = $translation->value;
-                        }
-                        if ($translation->locale == $lang && $translation->key == 'body') {
-                            $translate[$lang]['body'] = $translation->value;
-                        }
 
-                    }
-                }
-                ?>
 
             <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form" id="{{ $lang}}-form">
                 <div class="form-group">
@@ -82,13 +69,13 @@
                         ({{strtoupper($lang) }})</label>
                     <input type="text" name="title[{{$lang}}]" data-id="mail-title"
                            id="{{ $lang}}-main-title"
-                           value="{{ $translate[$lang]['title'] ??  ($lang == $defaultLang ? $template['title'] : '')}}"
+                           value="{{ $template->getTranslatedField('title', $lang, $lang == $defaultLang ? $template['title'] : '')}}"
                            class="form-control" placeholder="{{translate('ex').' : '.translate('title')}}">
                 </div>
                 <input type="hidden" name="lang[]" value="{{$lang}}">
                 <div class="form-group">
                     <label class="title-color">{{ translate('mail_body') }} ({{strtoupper($lang) }})</label>
-                    <textarea name="body[{{$lang}}]" data-id="mail-body" class="summernote">{!! $translate[$lang]['body'] ?? ($lang == $defaultLang ? $template['body'] : '') !!}</textarea>
+                    <textarea name="body[{{$lang}}]" data-id="mail-body" class="summernote">{!! $template->getTranslatedField('body', $lang, $lang == $defaultLang ? $template['body'] : '') !!}</textarea>
                 </div>
             </div>
         @endforeach
@@ -142,16 +129,7 @@
             <div class="col-lg-6">
                 <div class="form-group">
                     @foreach ($availableLanguages as $lang)
-                            <?php
-                            if (count($template['translations'])) {
-                                $translate = [];
-                                foreach ($template['translations'] as $translation) {
-                                    if ($translation->locale == $lang && $translation->key == 'button_name') {
-                                        $translate[$lang]['button_name'] = $translation->value;
-                                    }
-                                }
-                            }
-                            ?>
+
                     <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form {{ $lang}}-form">
 
                         <div class="d-flex align-items-center gap-2 mb-2">
@@ -163,7 +141,7 @@
                             </span>
                         </div>
                         <input type="text"  id="{{ $lang}}-button-name" name="button_name[{{ $lang}}]"  data-id="button-content"
-                               value="{{ $translate[$lang]['button_name'] ?? ($lang == $defaultLang ? $template['button_name'] : '')}}"
+                               value="{{ $template->getTranslatedField('button_name', $lang, $lang == $defaultLang ? $template['button_name'] : '')}}"
                                placeholder="{{translate('ex').' : '.translate('submit')}}" class="form-control">
                     </div>
                     @endforeach
@@ -217,23 +195,14 @@
 
     <div class="bg-light p-3 rounded mb-3">
         @foreach ($availableLanguages as $lang)
-                <?php
-                $translate = [];
-                if (count($template['translations'])) {
-                    foreach ($template['translations'] as $translation) {
-                        if ($translation->locale == $lang && $translation->key == 'footer_text') {
-                            $translate[$lang]['footer_text'] = $translation->value;
-                        }
-                    }
-                }
-                ?>
+
             <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form {{ $lang}}-form">
                 <div class="form-group">
                     <label class="title-color font-weight-bold text-capitalize" for="{{ $lang}}-footer-text">{{ translate('section_text') }}
                         ({{strtoupper($lang) }})</label>
                     <input type="text" name="footer_text[{{ $lang}}]" data-id="footer-text"
                            id="{{ $lang}}-footer-text"
-                           value="{{ $translate[$lang]['footer_text'] ?? ($lang == $defaultLang ? $template['footer_text'] : '')}}"
+                           value="{{ $template->getTranslatedField('footer_text', $lang, $lang == $defaultLang ? $template['footer_text'] : '')}}"
                            class="form-control" placeholder="{{translate('ex').' : '.translate('please_contact_us_for_any_queries').','.translate('we_are_always_happy_to_help').'.'}}">
                 </div>
             </div>
@@ -272,22 +241,13 @@
             </div>
         </div>
         @foreach ($availableLanguages as $lang)
-                <?php
-                if (count($template['translations'])) {
-                    $translate = [];
-                    foreach ($template['translations'] as $translation) {
-                        if ($translation->locale == $lang && $translation->key == 'copyright_text') {
-                            $translate[$lang]['copyright_text'] = $translation->value;
-                        }
-                    }
-                }
-                ?>
+
             <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form {{ $lang}}-form">
                 <div class="form-group">
                     <label class="title-color font-weight-bold text-capitalize" for="{{ $lang}}-copyright-text">{{ translate('copyright_content') }} ({{strtoupper($lang) }})</label>
                     <input type="text" name="copyright_text[{{ $lang}}]" data-id="copyright-text"
                            id="{{ $lang}}-copyright-text"
-                           value="{{ $translate[$lang]['copyright_text'] ?? ($lang == $defaultLang ? $template['copyright_text'] : '')}}"
+                           value="{{ $template->getTranslatedField('copyright_text', $lang, $lang == $defaultLang ? $template['copyright_text'] : '')}}"
                            class="form-control" placeholder="{{translate('ex').' : '.translate('copyright').' @ '.translate('all_right_reserved')}}">
                 </div>
             </div>

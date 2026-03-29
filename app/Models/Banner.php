@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use App\Traits\StorageTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +31,7 @@ use Illuminate\Support\Facades\DB;
  */
 class Banner extends Model
 {
-    use StorageTrait;
+    use StorageTrait, HasTranslations;
 
     protected $casts = [
         'id' => 'integer',

@@ -10,6 +10,8 @@ return [
         'content', 'buttonText', 'review' ,'branch_address' ,'branch_name', 'cookie_text' ,'image_alt', 'service_tittle','parts_included', 'note' , 'terms_and_conditions', 'subtitle',
         'section_heading', 'hero_heading', 'hero_description', 'filter_title',
         'make_label', 'model_label', 'year_label', 'make_placeholder',
-        'model_placeholder', 'year_placeholder', 'apply_button_text'
+        'model_placeholder', 'year_placeholder', 'apply_button_text',
+        // New models added for multilanguage support
+        'duration', 'vacation_note', 'tag', 'country', 'message', 'status',
     ],
 ];
