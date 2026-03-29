@@ -216,7 +216,7 @@
                             </div>
                         </div>
 
-                        @php($countryCode = getWebConfig(name: 'country_code'))
+                        @php $countryCode = getWebConfig(name: 'country_code'); @endphp
                         <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
                                 <label class="title-color d-flex">{{translate('country')}} </label>
@@ -230,7 +230,7 @@
                             </div>
                         </div>
 
-                        @php($timeZone = getWebConfig(name: 'timezone'))
+                        @php $timeZone = getWebConfig(name: 'timezone'); @endphp
                         <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
                                 <label class="title-color d-flex">{{translate('time_zone')}}</label>
@@ -257,7 +257,7 @@
                                 </select>
                             </div>
                         </div>
-                        @php($default_location = getWebConfig(name: 'default_location'))
+                        @php $default_location = getWebConfig(name: 'default_location'); @endphp
                         @if(getWebConfig('map_api_status') ==1 )
                             <div class="col-sm-6 col-lg-4">
                                 <div class="form-group">
@@ -470,7 +470,7 @@
                                 {{translate('apple_store')}}:
                             </div>
 
-                            @php($appStoreDownload = getWebConfig('download_app_apple_stroe'))
+                            @php $appStoreDownload = getWebConfig('download_app_apple_stroe'); @endphp
 
                             <div class="bg-aliceblue p-3 rounded">
                                 <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
@@ -512,7 +512,7 @@
                                 {{translate('google_play_store').':'}}
                             </div>
 
-                            @php($playStoreDownload = getWebConfig('download_app_google_stroe'))
+                            @php $playStoreDownload = getWebConfig('download_app_google_stroe'); @endphp
                             <div class="bg-aliceblue p-3 rounded">
                                 <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
                                     <span class="title-color text-capitalize">

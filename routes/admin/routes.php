@@ -460,7 +460,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::controller(ProfileController::class)->group(function () {
             Route::get(Profile::INDEX[URI], 'index')->middleware('permission:dashboard.read,admin')->name('index');
             Route::get(Profile::UPDATE[URI] . '/{id}', 'getUpdateView')->middleware('permission:dashboard.read,admin')->name('update');
-            Route::post(Profile::UPDATE[URI] . '/{id}', 'update')->middleware('permission:dashboard.read,admin');
+            Route::post(Profile::UPDATE[URI] . '/{id}', 'update')->middleware('permission:dashboard.read,admin')->name('update.store');
             Route::patch(Profile::UPDATE[URI] . '/{id}', 'updatePassword')->middleware('permission:dashboard.read,admin');
         });
     });
@@ -506,14 +506,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::post(Product::SKU_COMBINATION[URI], 'getSkuCombinationView')->name('sku-combination');
                 Route::post(Product::DIGITAL_VARIATION_COMBINATION[URI], 'getDigitalVariationCombinationView')->name('digital-variation-combination');
                 Route::post(Product::DIGITAL_VARIATION_FILE_DELETE[URI], 'deleteDigitalVariationFile')->name('digital-variation-file-delete');
-                Route::post(Product::BULK_IMPORT[URI], 'importBulkProduct')->middleware('permission:product_management.bulk_import,admin');
+                Route::post(Product::BULK_IMPORT[URI], 'importBulkProduct')->middleware('permission:product_management.bulk_import,admin')->name('bulk-import.store');
             });
         });
 
         // UPDATE permission routes
         Route::middleware('permission:product_management.update,admin')->group(function () {
             Route::controller(ProductController::class)->group(function () {
-                Route::post(Product::UPDATE[URI] . '/{id}', 'update')->middleware('permission:product_management.product_update,admin');
+                Route::post(Product::UPDATE[URI] . '/{id}', 'update')->middleware('permission:product_management.product_update,admin')->name('update.store');
                 Route::post(Product::UPDATE_STATUS[URI], 'updateStatus')->middleware('permission:product_management.product_update,admin')->name('status-update');
                 Route::post(Product::UPDATE_QUANTITY[URI], 'updateQuantity')->name('update-quantity');
                 Route::post(Product::UPDATED_SHIPPING[URI], 'updatedShipping')->name('updated-shipping');
@@ -798,14 +798,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // CREATE
         Route::middleware('permission:product_management.brand_setup,admin')->group(function () {
             Route::controller(BrandController::class)->group(function () {
-                Route::post(Brand::ADD[URI], 'add');
+                Route::post(Brand::ADD[URI], 'add')->name('add-new.store');
             });
         });
 
         // UPDATE
         Route::middleware('permission:product_management.brand_setup,admin')->group(function () {
             Route::controller(BrandController::class)->group(function () {
-                Route::post(Brand::UPDATE[URI] . '/{id}', 'update');
+                Route::post(Brand::UPDATE[URI] . '/{id}', 'update')->name('update.store');
                 Route::post(Brand::STATUS[URI], 'updateStatus')->name('status-update');
             });
         });
@@ -1122,10 +1122,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::get(Branch::BRANCH_STOCK_LIST[URI], [BranchController::class, 'fGetBranchesStockList'])->middleware('permission:branch_management.branch_stock_list,admin')->name('branch-stock-list');
         // CREATE permissions routes
         Route::get(Branch::ADD[URI], [BranchController::class, 'getAddView'])->middleware('permission:branch_management.add_branch,admin')->name('add');
-        Route::post(Branch::ADD[URI], [BranchController::class, 'add'])->middleware('permission:branch_management.add_branch,admin');
+        Route::post(Branch::ADD[URI], [BranchController::class, 'add'])->middleware('permission:branch_management.add_branch,admin')->name('add.store');
         Route::post(Branch::ADD_MANAGER[URI] . '/{branch_id}', [BranchController::class, 'addManager'])->middleware('permission:branch_management.branch_edit,admin')->name('add-manager');
         // UPDATE permissions routes
-        Route::post(Branch::UPDATE[URI] . '/{id}', [BranchController::class, 'update'])->middleware('permission:branch_management.branch_edit,admin');
+        Route::post(Branch::UPDATE[URI] . '/{id}', [BranchController::class, 'update'])->middleware('permission:branch_management.branch_edit,admin')->name('update.store');
         Route::post(Branch::UPDATE_MANAGER[URI] . '/{branch_id}', [BranchController::class, 'updateManager'])->middleware('permission:branch_management.product_list,admin')->name('update-manager');
         Route::post(Branch::STATUS[URI], [BranchController::class, 'updateStatus'])->middleware('permission:branch_management.branch_edit,admin')->name('updateStatus');
         Route::post(Branch::UPDATE_SETTING[URI] . '/{id}', [BranchController::class, 'updateSetting'])->middleware('permission:branch_management.branch_edit,admin')->name('update-setting');
@@ -1154,16 +1154,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:crm_section.create,admin')->group(function () {
             Route::controller(DepartmentController::class)->group(function () {
                 Route::get(Department::ADD[URI], 'getAddView')->name('add');
-                Route::post(Department::ADD[URI], 'add');
+                Route::post(Department::ADD[URI], 'add')->name('add.department');
                 Route::get(Department::USER_ADD[URI] . '/{dept_id}', 'fAddBranchUsers')->name('add-users');
-                Route::post(Department::USER_ADD[URI] . '/{dept_id}', 'addDepartmentUsers')->name('add-users');
+                Route::post(Department::USER_ADD[URI] . '/{dept_id}', 'addDepartmentUsers')->name('add-users.store');
             });
         });
 
         // UPDATE routes
         Route::middleware('permission:crm_section.update,admin')->group(function () {
             Route::controller(DepartmentController::class)->group(function () {
-                Route::post(Department::UPDATE[URI] . '/{id}', 'update')->name('update');
+                Route::post(Department::UPDATE[URI] . '/{id}', 'update')->name('update.department');
                 Route::post(Department::STATUS[URI], 'updateStatus')->name('updateStatus');
                 Route::post(Branch::UPDATE_SETTING[URI] . '/{id}', 'updateSetting')->name('update-setting');
             });
@@ -1192,7 +1192,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // CREATE routes
         Route::middleware('permission:task_section.create,admin')->group(function () {
             Route::controller(TaskManagementController::class)->group(function () {
-                Route::post(TaskManagement::ADD[URI], 'add')->name('add');
+                Route::post(TaskManagement::ADD[URI], 'add')->name('add.store');
             });
         });
 
@@ -1237,12 +1237,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // CREATE permission group
         Route::middleware('permission:user_section.create,admin')->group(function () {
             Route::controller(VendorController::class)->group(function () {
-                Route::post(Vendor::ADD[URI], 'add');
+                Route::post(Vendor::ADD[URI], 'add')->name('add.store');
             });
 
             Route::group(['prefix' => 'withdraw-method', 'as' => 'withdraw-method.'], function () {
                 Route::controller(WithdrawalMethodController::class)->group(function () {
-                    Route::post(WithdrawalMethod::ADD[URI], 'add');
+                    Route::post(WithdrawalMethod::ADD[URI], 'add')->name('add.store');
                 });
             });
         });
@@ -1513,7 +1513,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // Create routes
         Route::middleware('permission:promotion_management.coupon,admin')->group(function () {
             Route::controller(CouponController::class)->group(function () {
-                Route::post(Coupon::ADD[URI], 'add');
+                Route::post(Coupon::ADD[URI], 'add')->name('add.store');
             });
         });
 
@@ -1521,7 +1521,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:promotion_management.coupon,admin')->group(function () {
             Route::controller(CouponController::class)->group(function () {
                 Route::get(Coupon::UPDATE[URI] . '/{id}', 'getUpdateView')->name('update');
-                Route::post(Coupon::UPDATE[URI] . '/{id}', 'update');
+                Route::post(Coupon::UPDATE[URI] . '/{id}', 'update')->name('update.store');
             });
         });
 
@@ -1560,8 +1560,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // Create routes
         Route::middleware('permission:promotion_management.flash_deals,admin')->group(function () {
             Route::controller(FlashDealController::class)->group(function () {
-                Route::post(FlashDeal::LIST[URI], 'add');
-                Route::post(FlashDeal::ADD_PRODUCT[URI] . '/{deal_id}', 'addProduct');
+                Route::post(FlashDeal::LIST[URI], 'add')->name('flash.store');
+                Route::post(FlashDeal::ADD_PRODUCT[URI] . '/{deal_id}', 'addProduct')->name('add-product.store');
             });
         });
 
@@ -1596,7 +1596,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // Create
         Route::middleware('permission:promotion_management.deal_of_the_day,admin')->group(function () {
             Route::controller(DealOfTheDayController::class)->group(function () {
-                Route::post(DealOfTheDay::LIST[URI], 'add');
+                Route::post(DealOfTheDay::LIST[URI], 'add')->name('day.store');
             });
         });
 

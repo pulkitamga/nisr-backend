@@ -372,7 +372,7 @@
                 <form action="{{route('admin.business-settings.shipping-method.add-area')}}" method="post">
                     @csrf
                     <div class="row">
-                        @php($countryCode = getWebConfig(name: 'country_code'))
+                        @php $countryCode = getWebConfig(name: 'country_code'); @endphp
                         <div class="col-xl-4 col-md-6">
                             <div class="form-group">
                                 <div class="row justify-content-center">

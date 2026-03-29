@@ -168,7 +168,7 @@
                             </div>
                         </div>
 
-                        @php($countryCode = getWebConfig(name: 'country_code'))
+                        @php $countryCode = getWebConfig(name: 'country_code'); @endphp
                         <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
                                 <label class="title-color d-flex">{{translate('country')}} </label>
