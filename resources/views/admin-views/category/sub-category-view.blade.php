@@ -58,7 +58,7 @@
                                             </option>
                                             @foreach($parentCategories as $category)
                                             <option value="{{ $category['id']}}">
-                                                {{ $category['defaultname']}}
+                                                {{ $category->getTranslatedField('name')}}
                                             </option>
                                             @endforeach
                                         </select>
@@ -182,7 +182,7 @@
                                 </td>
                                 @endif
                                 <td>{{($category['defaultname']) }}</td>
-                                <td>{{$category?->parent?->defaultname ?? translate('category_not_found') }}</td>
+                                <td>{{$category?->parent?->getTranslatedField('name') ?? translate('category_not_found') }}</td>
                                 <td class="text-center">{{ $category['priority']}}</td>
                                 <td class="text-center">
                                     @php

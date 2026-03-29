@@ -17,7 +17,7 @@
                         <select class="form-control" name="department_id" id="ticket-department-id">
                             <option value="">{{ translate('Select Department') }}</option>
                             @foreach($getDepartment as $dept)
-                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                            <option value="{{ $dept->id }}">{{ $dept->getTranslatedField('name') }}</option>
                             @endforeach
                         </select>
                     </div>

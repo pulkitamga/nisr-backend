@@ -315,14 +315,14 @@
                                                                                 <span class="opacity--70">
                                                                                     {{ translate('category') }}:
                                                                                 </span>
-                                                                                {{ $clearanceProduct?->product?->category->name ?? translate('not_found') }}
+                                                                                {{ $clearanceProduct?->product?->category->getTranslatedField('name') ?? translate('not_found') }}
                                                                             </span>
                                                                             @if($clearanceProduct?->product?->product_type !== 'digital')
                                                                                 <span class="parent">
                                                                                     <span class="opacity--70">
                                                                                         {{translate('brand')}}:
                                                                                     </span>
-                                                                                    {{ $clearanceProduct?->product?->brand->name ?? translate('not_found') }}
+                                                                                    {{ $clearanceProduct?->product?->brand->getTranslatedField('name') ?? translate('not_found') }}
                                                                                 </span>
                                                                             @endif
                                                                         </div>

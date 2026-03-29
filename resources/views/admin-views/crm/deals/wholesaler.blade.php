@@ -210,7 +210,7 @@
                             </a>
                         </td>
                         <td>{{ $deal->owner?->name ?? translate('No Owner') }}</td>
-                        <td>{{ $deal->department?->name ?? translate('No Department') }}</td>
+                        <td>{{ $deal->department?->getTranslatedField('name') ?? translate('No Department') }}</td>
                         <td>{{ $deal->employee?->name ?? translate('No Employee') }}</td>
 
                         <td>

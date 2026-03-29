@@ -46,7 +46,7 @@
                                     <select class="form-control action-get-sub-category-onchange" id="main-category" required data-route="{{ route('admin.sub-sub-category.getSubCategory') }}">
                                         <option value="" disabled selected>{{ translate('select_main_category') }}</option>
                                         @foreach($parentCategories as $category)
-                                        <option value="{{ $category['id']}}">{{ $category['defaultName']}}</option>
+                                        <option value="{{ $category['id']}}">{{ $category->getTranslatedField('name')}}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -153,9 +153,9 @@
                             @foreach($categories as $key=>$category)
                             <tr>
                                 <td>{{ $category['id']}}</td>
-                                <td>{{ $category['defaultName']}}</td>
-                                <td>{{$category?->parent?->defaultname ?? translate('sub_category_not_found') }}</td>
-                                <td>{{$category?->parent?->parent?->defaultname ??translate('sub_category_not_found') }}</td>
+                                <td>{{ $category->getTranslatedField('name')}}</td>
+                                <td>{{$category?->parent?->getTranslatedField('name') ?? translate('sub_category_not_found') }}</td>
+                                <td>{{$category?->parent?->parent?->getTranslatedField('name') ??translate('sub_category_not_found') }}</td>
                                 <td class="text-center">{{ $category['priority']}}</td>
                                 <td class="text-center">
                                     @php

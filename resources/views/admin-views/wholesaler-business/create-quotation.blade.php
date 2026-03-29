@@ -96,13 +96,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                 <option value="{{ $wholesale->id }}"
                                     data-product-id="{{ $wholesale->product_id }}"
                                     data-variation-type="{{ $wholesale->variation_type }}"
-                                    data-name="{{ $wholesale->product->name }}"
+                                    data-name="{{ $wholesale->product->getTranslatedField('name') }}"
                                     data-tax="{{ $wholesale->product->tax_model == 'exclude' ? $wholesale->product->tax : 0 }}"
                                     data-prices='@json($wholesale->price_list->map(fn($p) => [
                                  "tier" => $p->tier,
                                       "price" => $p->price_per_piece
                                              ]))'>
-                                    {{ $wholesale->product->name }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
+                                    {{ $wholesale->product->getTranslatedField('name') }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
                                 </option>
 
                                 @endforeach

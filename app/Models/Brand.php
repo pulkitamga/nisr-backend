@@ -76,7 +76,12 @@ class Brand extends Model
         return $this->storageLink('brand', $value, $this->image_storage_type ?? 'public');
     }
 
-    protected $appends = ['image_full_url'];
+    protected $appends = ['image_full_url', 'defaultName'];
+
+    public function getDefaultNameAttribute(): ?string
+    {
+        return $this->getTranslatedField('name');
+    }
 
     protected static function boot(): void
     {

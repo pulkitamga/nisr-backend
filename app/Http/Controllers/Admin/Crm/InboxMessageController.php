@@ -61,7 +61,7 @@ class InboxMessageController extends BaseController
     {
 
 
-        $query = InboxMessage::with(['department', 'employee', 'owner']);
+        $query = InboxMessage::with(['department.translations', 'employee', 'owner']);
 
         if ($request->filled('searchValue')) {
             $search = trim($request->searchValue);
@@ -96,6 +96,7 @@ class InboxMessageController extends BaseController
         }
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             dataLimit: 'all'
         );
         $employees = $this->adminRepo->getEmployeeListWhere(
@@ -164,7 +165,7 @@ class InboxMessageController extends BaseController
 
     public function exportList(Request $request)
     {
-        $query = InboxMessage::with(['department', 'employee', 'owner']);
+        $query = InboxMessage::with(['department.translations', 'employee', 'owner']);
 
         if ($request->filled('searchValue')) {
             $search = trim($request->searchValue);
@@ -229,10 +230,11 @@ class InboxMessageController extends BaseController
     public function showMassage($id)
     {
         $inbox = InboxMessage::with([
+            'department.translations',
             'activities',
             'notes',
-            'tasks',
-            'calls',
+            'tasks.department.translations',
+            'calls.department.translations',
             'files'
         ])->findOrFail($id);
 
@@ -796,7 +798,7 @@ class InboxMessageController extends BaseController
         ];
         $activity->save();
 
-        $tasks = $lead->tasks()->latest()->get();
+        $tasks = $lead->tasks()->with('department.translations')->latest()->get();
         $activities = $lead->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();
@@ -853,7 +855,7 @@ class InboxMessageController extends BaseController
         $activity->save();
 
         // Render the updated call and activity lists
-        $calls = $lead->calls()->latest()->get();
+        $calls = $lead->calls()->with('department.translations')->latest()->get();
         $activities = $lead->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();
@@ -964,7 +966,7 @@ class InboxMessageController extends BaseController
         ];
         $activity->save();
 
-        $tasks = $lead->tasks()->latest()->get();
+        $tasks = $lead->tasks()->with('department.translations')->latest()->get();
         $activities = $lead->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();
@@ -1009,7 +1011,7 @@ class InboxMessageController extends BaseController
         ];
         $activity->save();
 
-        $tasks = $lead->tasks()->latest()->get();
+        $tasks = $lead->tasks()->with('department.translations')->latest()->get();
         $activities = $lead->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();

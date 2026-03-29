@@ -62,7 +62,7 @@ class ServiceTicketController extends BaseController
     {
         $tickets = $this->supportTicketRepo->getListWhere(
             orderBy: ['id' => 'desc'],
-            relations: ['department', 'employee', 'status_details', 'relatedInboxMessages', 'latestServiceJob'],
+            relations: ['department.translations', 'employee', 'status_details.translations', 'relatedInboxMessages', 'latestServiceJob'],
             searchValue: $request->get('searchValue'),
             filters: [
                 'priority' => $request->get('priority'),
@@ -74,6 +74,7 @@ class ServiceTicketController extends BaseController
 
         $getDepartment = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             dataLimit: 'all'
         );
         $employees = $this->adminRepo->getEmployeeListWhere(
@@ -93,12 +94,12 @@ class ServiceTicketController extends BaseController
 
         $masterId = $masterIds[$status] ?? 0;
 
-        $aAllStatus = SupportTicketStatusMaster::where([
+        $aAllStatus = SupportTicketStatusMaster::with('translations')->where([
             'master_id' => $masterId,
             'status' => 'active'
         ])->get();
 
-        $aInProgressStatus = SupportTicketStatusMaster::where([
+        $aInProgressStatus = SupportTicketStatusMaster::with('translations')->where([
             'master_id' => $masterId,
             'status' => 'active'
         ])->get();
@@ -182,7 +183,7 @@ class ServiceTicketController extends BaseController
             relations: [
                 'customer',
                 'service',
-                'status_details',
+                'status_details.translations',
                 'relatedInboxMessage',
                 'serviceJobs',
                 'serviceJobs.service',

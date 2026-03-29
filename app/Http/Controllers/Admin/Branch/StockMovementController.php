@@ -110,10 +110,10 @@ class StockMovementController extends Controller
             'products' => function ($query) {
                 $query->whereIn('status', self::ACTIONABLE_TRANSFER_STATUSES);
             },
-            'products.product',
-            'products.category',
-            'toBranch',
-            'fromBranch',
+            'products.product.translations',
+            'products.category.translations',
+            'toBranch.translations',
+            'fromBranch.translations',
         ])
             ->when(
                 !$authUser->isSuperAdmin(),
@@ -278,10 +278,10 @@ class StockMovementController extends Controller
     public function getStockTransferListView(Request $request): View|RedirectResponse
     {
         $aStockTransfers = StockTransfers::with([
-            'products.product',
-            'products.category',       // Load product and its category
+            'products.product.translations',
+            'products.category.translations',
             'products.attribute',
-            'toBranch'
+            'toBranch.translations'
         ])
             ->when($request->restock_date, function ($query) use ($request) {
                 return $query->whereDate('transfer_date', $request->restock_date); // Filter by transfer date

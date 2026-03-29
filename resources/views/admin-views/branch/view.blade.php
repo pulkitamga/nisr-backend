@@ -33,7 +33,7 @@
                         <div class="media-body">
                             
                             <div class="d-block">
-                                <h2 class="mb-2 pb-1">{{ $seller->branch_name? $seller->branch_name : translate("shop_Name")." : ".translate("update_Please") }}</h2>
+                                <h2 class="mb-2 pb-1">{{ $seller->getTranslatedField('branch_name')? $seller->getTranslatedField('branch_name') : translate("shop_Name")." : ".translate("update_Please") }}</h2>
                                  
                                  
                             </div>
@@ -87,7 +87,7 @@
                                 <div>
                                     <span class="key text-nowrap">{{translate('branch_name')}}</span>
                                     <span>:</span>
-                                    <span class="value ">{{$seller->branch_name}}</span>
+                                    <span class="value ">{{$seller->getTranslatedField('branch_name')}}</span>
                                 </div>
 
                                 <div>
@@ -99,7 +99,7 @@
                                 <div>
                                     <span class="key">{{translate('address')}}</span>
                                     <span>:</span>
-                                    <span class="value">{{$seller->branch_address}}</span>
+                                    <span class="value">{{$seller->getTranslatedField('branch_address')}}</span>
                                 </div>
 
                                 <div>

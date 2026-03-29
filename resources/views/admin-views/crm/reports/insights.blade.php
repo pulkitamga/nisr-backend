@@ -137,7 +137,7 @@
                                 @foreach ($departments as $department)
                                     <option value="{{ $department->id }}"
                                         {{ (int) ($filters['department_id'] ?? 0) === (int) $department->id ? 'selected' : '' }}>
-                                        {{ $department->name }}
+                                        {{ $department->getTranslatedField('name') }}
                                     </option>
                                 @endforeach
                             </select>

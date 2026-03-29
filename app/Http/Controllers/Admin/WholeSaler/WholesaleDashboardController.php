@@ -68,7 +68,7 @@ class WholesaleDashboardController extends BaseController
     {
         $topWholesaler = $this->orderRepo->getTopWholesalerList(relations: ['wholeseller'], dataLimit: 'all')->take(DASHBOARD_DATA_LIMIT);
         $topSellProduct = $this->productRepo->getTopSellingWholesaleProducts(
-            relations: ['product', 'category', 'subcategory']
+            relations: ['product.translations', 'category.translations', 'subcategory.translations']
         )->take(DASHBOARD_TOP_SELL_DATA_LIMIT);
 
         $data = self::getOrderStatusData();
@@ -111,7 +111,7 @@ class WholesaleDashboardController extends BaseController
             'order' => self::getCommonQueryOrderStatus($orderQuery),
             'purchase' => self::getCommonQueryOrderStatus($purchaseOrderrderQuery),
             'quotation' => self::getCommonQueryOrderStatus($quotationQuery),
-            'product' => self::getCommonQueryOrderStatus($productQuery),
+            'product' => self::getCommonQueryOrderStatus($productQuery)->load('translations'),
             'customer' => self::getCommonQueryOrderStatus($customerQuery),
             'rejected' => self::getCommonQueryOrderStatus($rejectedQuery),
             'confirmed' => self::getCommonQueryOrderStatus($confirmedQuery),
@@ -941,7 +941,7 @@ class WholesaleDashboardController extends BaseController
         $restockProductList = $this->restockProductRepo->getListWhere(filters: ['added_by' => 'in_house'], dataLimit: 'all')->groupBy('product_id');
         $restockProduct = [];
         if (count($restockProductList) == 1) {
-            $products = $this->restockProductRepo->getListWhere(orderBy: ['updated_at' => 'desc'], filters: ['added_by' => 'in_house'], relations: ['product'], dataLimit: 'all');
+            $products = $this->restockProductRepo->getListWhere(orderBy: ['updated_at' => 'desc'], filters: ['added_by' => 'in_house'], relations: ['product.translations'], dataLimit: 'all');
             $firstProduct = $products->first();
             $count = $products?->sum('restock_product_customers_count') ?? 0;
             $restockProduct = [

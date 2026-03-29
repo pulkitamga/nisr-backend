@@ -263,7 +263,7 @@ class BranchController extends BaseController
     {
         $seller = $this->branchRepo->getFirstWhere(
             params: ['id' => $id],
-            relations: []
+            relations: ['translations']
         );
 
         if (!$seller) {
@@ -365,7 +365,7 @@ class BranchController extends BaseController
     $productFilter = $request->input('product_id', '');
     $attributeFilter = $request->input('attribute', '');
     $escapedAttributeFilter = $this->escapeLikeValue($attributeFilter);
-    $branches = ManageBranchProductStock::with(['branch', 'product'])
+    $branches = ManageBranchProductStock::with(['branch.translations', 'product.translations'])
         ->select(
             'branch_id',
             'product_id',

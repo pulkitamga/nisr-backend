@@ -56,7 +56,7 @@ class LeadController extends BaseController
         $query = Lead::with([
             'owner',
             'contact',
-            'department',
+            'department.translations',
             'employee',
             'inboxMessages' => function ($q) {
                 $q->latest()->limit(1);
@@ -130,6 +130,7 @@ class LeadController extends BaseController
         $lead = $query->latest()->paginate(perPage: $perPage)->appends($request->all());
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             dataLimit: 'all'
         );
         $employees = $this->adminRepo->getEmployeeListWhere(
@@ -147,7 +148,7 @@ class LeadController extends BaseController
         $query = Lead::with([
             'owner',
             'contact',
-            'department',
+            'department.translations',
             'employee',
             'inboxMessages' => function ($q) {
                 $q->latest()->limit(1);
@@ -399,14 +400,15 @@ public function getUserOrders(Request $request)
                 $q->latest()->first();
             },
             'latestInboxMessage',
+            'department.translations',
             'escalations.escalatedBy',
             'activities',
             'notes',
-            'tasks',
-            'calls',
+            'tasks.department.translations',
+            'calls.department.translations',
             'files',
             'deals',
-            'purchaseOrder.items.product'
+            'purchaseOrder.items.product.translations'
         ])->findOrFail($id);
 
         return view(Leads::SHOW[VIEW], compact('lead'));

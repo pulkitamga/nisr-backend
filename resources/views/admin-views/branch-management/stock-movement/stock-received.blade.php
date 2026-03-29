@@ -75,17 +75,17 @@
                                         @if ($index == 0)
                                             <th scope="row" class="text-center align-middle" rowspan="{{ $productCount }}">{{ $aStockTransfers->firstItem() + $key }}</th>
                                             <td rowspan="{{ $productCount }}" class="align-middle">
-                                                {{ $transferRequest->toBranch ? $transferRequest->toBranch->branch_name : 'N/A' }}
+                                                {{ $transferRequest->toBranch ? $transferRequest->toBranch->getTranslatedField('branch_name') : 'N/A' }}
                                             </td>
                                             <!-- <td rowspan="{{ $productCount }}" class="text-start align-middle">
-                                                {{ $transferRequest->toBranch ? $transferRequest->toBranch->branch_name : 'N/A' }}
+                                                {{ $transferRequest->toBranch ? $transferRequest->toBranch->getTranslatedField('branch_name') : 'N/A' }}
                                             </td> -->
                                             <td rowspan="{{ $productCount }}" class="text-startStockTransfers align-middle">
                                                 {{ $transferRequest->transfer_date ? date('M d, Y', strtotime($transferRequest->transfer_date)) : 'N/A' }}
                                             </td>
                                         @endif
-                                        <td class="">{{ $product->product->name }}</td>
-                                        <td class="">{{ $product->category->name }}</td>
+                                        <td class="">{{ $product->product->getTranslatedField('name') }}</td>
+                                        <td class="">{{ $product->category->getTranslatedField('name') }}</td>
                                         <td class="">{{ $product->attribute }}</td>
                                         <td class="text-center align-middle">{{ $product->quantity }}</td>
                                         <td class="text-success text-center align-middle">{{ translate( $product->status ) }}</td>

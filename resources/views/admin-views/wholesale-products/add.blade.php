@@ -123,7 +123,7 @@
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td>
                                                 <input type="hidden" name="tier[]" value="{{ $tier->name }}">
-                                                <input type="text" class="form-control" value="{{ $tier->name }}"
+                                                <input type="text" class="form-control" value="{{ $tier->getTranslatedField('name') }}"
                                                     disabled>
                                             </td>
                                             <td><input type="number" class="form-control" name="min_qty[]"

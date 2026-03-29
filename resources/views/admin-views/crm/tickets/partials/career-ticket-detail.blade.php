@@ -44,7 +44,7 @@
                 <div class="card-header">{{ translate('ticket_details') }}</div>
                 <div class="card-body">
                     <p><strong>{{ translate('subject') }}:</strong> <span class="bidi-auto">{{ $supportTicket->subject }}</span></p>
-                    <p><strong>{{ translate('status') }}:</strong> <span class="bidi-auto">{{ $supportTicket->status_details->name ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('status') }}:</strong> <span class="bidi-auto">{{ $supportTicket->status_details?->getTranslatedField('name') ?? translate('N/A') }}</span></p>
                     <p><strong>{{ translate('recruiter') }}:</strong> <span class="bidi-auto">{{ $supportTicket->employee->name ?? translate('Unassigned') }}</span></p>
                     <p><strong>{{ translate('created_at') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->created_at->format('d-m-Y H:i') }}</span></p>
                 </div>

@@ -42,10 +42,10 @@
                 @foreach($transfers as $transfer)
                 @foreach($transfer->products as $product)
                 <tr class="hover:bg-gray-50 transition-all">
-                    <td class="px-6 py-4 text-gray-900">{{ $product->product->name ?? __('N/A') }}</td>
-                    <td class="px-6 py-4 text-gray-700">{{ $product->category->name ?? __('N/A') }}</td>
+                    <td class="px-6 py-4 text-gray-900">{{ $product->product->getTranslatedField('name') ?? __('N/A') }}</td>
+                    <td class="px-6 py-4 text-gray-700">{{ $product->category->getTranslatedField('name') ?? __('N/A') }}</td>
                     <td class="px-6 py-4 text-gray-800 font-semibold">{{ $product->quantity }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ $transfer->fromBranch->branch_name ?? translate('N/A') }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ $transfer->fromBranch->getTranslatedField('branch_name') ?? translate('N/A') }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ \Carbon\Carbon::parse($transfer->transfer_date)->format('d M Y, h:i A') }}</td>
                     <td class="px-6 py-4">
                         <div class="d-flex gap-4">

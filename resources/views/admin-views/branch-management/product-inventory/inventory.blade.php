@@ -60,14 +60,14 @@
                         <td>{{ $key + 1 }}</td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <span>{{ Str::limit($product->name, 25) }}</span>
+                                <span>{{ Str::limit($product->getTranslatedField('name'), 25) }}</span>
                             </div>
                         </td>
                         <td>{{ $product->code }}</td>
-                        <td>{{ $product->category->name ?? 'N/A' }}</td>
-                        <td>{{ $product->subCategory->name ?? 'N/A' }}</td>
-                        <td>{{ $product->subSubCategory->name ?? 'N/A' }}</td>
-                        <td>{{ $product->brand->name ?? 'N/A' }}</td>
+                        <td>{{ $product->category->getTranslatedField('name') ?? 'N/A' }}</td>
+                        <td>{{ $product->subCategory->getTranslatedField('name') ?? 'N/A' }}</td>
+                        <td>{{ $product->subSubCategory->getTranslatedField('name') ?? 'N/A' }}</td>
+                        <td>{{ $product->brand->getTranslatedField('name') ?? 'N/A' }}</td>
                         <td>{{ $product->unit }}</td>
                         <td>{{ translate($product->product_type) }}</td>
                         <td>{!! Str::limit($product->details, 50) !!}</td>

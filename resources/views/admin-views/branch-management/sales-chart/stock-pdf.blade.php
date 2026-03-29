@@ -444,7 +444,7 @@
                 $branch = \App\Models\Branch::find($filters['branch_id']);
             @endphp
             | {{ translate('branch') }}:
-            <strong>{{ $branch ? $branch->branch_name : translate('selected_branch') }}</strong>
+            <strong>{{ $branch ? $branch->getTranslatedField('branch_name') : translate('selected_branch') }}</strong>
         @endif
     </div>
 

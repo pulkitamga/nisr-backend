@@ -105,7 +105,12 @@ class Category extends Model
         $value = $this->icon;
         return $this->storageLink('category', $value, $this->icon_storage_type ?? 'public');
     }
-    protected $appends = ['icon_full_url'];
+    protected $appends = ['icon_full_url', 'defaultName'];
+
+    public function getDefaultNameAttribute(): ?string
+    {
+        return $this->getTranslatedField('name');
+    }
 
     protected static function boot(): void
     {

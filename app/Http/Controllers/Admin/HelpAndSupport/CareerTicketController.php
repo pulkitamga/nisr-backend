@@ -60,9 +60,9 @@ class CareerTicketController extends BaseController
         // Start query
         $query = $this->supportTicketRepo->getQuery()
             ->with([
-                'department',
+                'department.translations',
                 'employee',
-                'status_details',
+                'status_details.translations',
                 'customer',
                 'conversations',
                 'careerInterviews',
@@ -98,9 +98,9 @@ class CareerTicketController extends BaseController
             ->select('support_tickets.*')
             ->orderByDesc('support_tickets.id');
         $tickets = $query->paginate(getWebConfig('pagination_limit'));
-        $departments = $this->departmentRepo->getListWhere(orderBy: ['id' => 'desc'], dataLimit: 'all');
+        $departments = $this->departmentRepo->getListWhere(orderBy: ['id' => 'desc'], relations: ['translations'], dataLimit: 'all');
         $employees = $this->adminRepo->getEmployeeListWhere(orderBy: ['id' => 'desc'], dataLimit: 'all');
-        $statuses = SupportTicketStatusMaster::where([
+        $statuses = SupportTicketStatusMaster::with('translations')->where([
             'master_id' => SupportTicketStatusGroup::Career->value,
             'status' => 'active',
         ])
@@ -116,7 +116,7 @@ class CareerTicketController extends BaseController
     {
         $supportTicket = $this->supportTicketRepo->getListWhere(
             filters: ['id' => $id, 'type' => 'career'],
-            relations: ['customer', 'careerInterviews', 'careerActivities', 'careerActivities.createdBy', 'careerOffers', 'careerRejections', 'conversations', 'escalations.escalatedBy'],
+            relations: ['customer', 'status_details.translations', 'careerInterviews', 'careerActivities', 'careerActivities.createdBy', 'careerOffers', 'careerRejections', 'conversations', 'escalations.escalatedBy'],
             dataLimit: 'all'
         )->first();
 

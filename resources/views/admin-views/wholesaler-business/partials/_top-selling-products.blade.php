@@ -21,9 +21,9 @@
             <div class="grid-item bg-transparent basic-box-shadow">
                 <div class="d-flex gap-10 align-items-center">
                     <img src="{{ getStorageImages(path: $mainProduct->thumbnail_full_url, type: 'backend-product') }}"
-                        class="avatar avatar-lg rounded avatar-bordered" alt="{{ $mainProduct->name . '_image' }}">
+                        class="avatar avatar-lg rounded avatar-bordered" alt="{{ $mainProduct->getTranslatedField('name') . '_image' }}">
                     <div class="title-color line--limit-2">
-                        {{ Str::limit($mainProduct->name, 20) }}
+                        {{ Str::limit($mainProduct->getTranslatedField('name'), 20) }}
                     </div>
                 </div>
 

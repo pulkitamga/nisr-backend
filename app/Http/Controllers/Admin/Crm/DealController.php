@@ -60,7 +60,7 @@ class DealController extends BaseController
     public function getListView(Request $request)
     {
 
-        $query = Deal::with(['owner', 'relatedParty', 'employee', 'lead'])
+        $query = Deal::with(['owner', 'relatedParty', 'employee', 'lead', 'department.translations'])
             ->where('related_party_type', 'company');
          
         $dataLimit = getWebConfig(name: WebConfigKey::PAGINATION_LIMIT);
@@ -114,6 +114,7 @@ class DealController extends BaseController
         $deals = $query->latest()->paginate(perPage: $perPage)->appends($request->all());
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             dataLimit: 'all'
         );
         $employees = $this->adminRepo->getEmployeeListWhere(
@@ -128,7 +129,7 @@ class DealController extends BaseController
 
     public function getRetailView(Request $request)
     {
-        $query = Deal::with(['owner', 'relatedParty', 'employee', 'lead', 'order'])
+        $query = Deal::with(['owner', 'relatedParty', 'employee', 'lead', 'order', 'department.translations'])
             ->where('related_party_type', 'contact');
 
 
@@ -178,6 +179,7 @@ class DealController extends BaseController
         $deals = $query->latest()->paginate(perPage: $perPage)->appends($request->all());
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             dataLimit: 'all'
         );
         $employees = $this->adminRepo->getEmployeeListWhere(
@@ -198,7 +200,7 @@ class DealController extends BaseController
 
         $deal = Deal::with([
             'owner',
-            'department',
+            'department.translations',
             'relatedParty',
             'employee',
             'lead',
@@ -206,8 +208,8 @@ class DealController extends BaseController
             'escalations.escalatedBy',
             'activities',
             'notes',
-            'tasks',
-            'calls',
+            'tasks.department.translations',
+            'calls.department.translations',
             'files'
         ])->findOrFail($id);
 
@@ -225,7 +227,7 @@ class DealController extends BaseController
         $deal = Deal::with([
             'owner',
             'order',
-            'department',
+            'department.translations',
             'relatedParty',
             'employee',
             'lead',
@@ -233,8 +235,8 @@ class DealController extends BaseController
             'escalations.escalatedBy',
             'activities',
             'notes',
-            'tasks',
-            'calls',
+            'tasks.department.translations',
+            'calls.department.translations',
             'files'
         ])->findOrFail($id);
 
@@ -245,7 +247,7 @@ class DealController extends BaseController
     {
         $isRetail = $request->routeIs('admin.crm.deals.retail.export');
 
-        $query = Deal::with(['owner', 'employee', 'user'])
+        $query = Deal::with(['owner', 'employee', 'user', 'department.translations'])
             ->where('related_party_type', $isRetail ? 'contact' : 'company');
 
         if ($request->filled('searchValue')) {
@@ -618,7 +620,7 @@ class DealController extends BaseController
         ];
         $activity->save();
 
-        $tasks = $deal->tasks()->latest()->get();
+        $tasks = $deal->tasks()->with('department.translations')->latest()->get();
         $activities = $deal->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();
@@ -675,7 +677,7 @@ class DealController extends BaseController
         $activity->save();
 
         // Render the updated call and activity lists
-        $calls = $deal->calls()->latest()->get();
+        $calls = $deal->calls()->with('department.translations')->latest()->get();
         $activities = $deal->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();
@@ -794,7 +796,7 @@ class DealController extends BaseController
         ];
         $activity->save();
 
-        $tasks = $deal->tasks()->latest()->get();
+        $tasks = $deal->tasks()->with('department.translations')->latest()->get();
         $activities = $deal->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();
@@ -839,7 +841,7 @@ class DealController extends BaseController
         ];
         $activity->save();
 
-        $tasks = $deal->tasks()->latest()->get();
+        $tasks = $deal->tasks()->with('department.translations')->latest()->get();
         $activities = $deal->activities()
             ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->get();

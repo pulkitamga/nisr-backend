@@ -18,7 +18,7 @@ class ProductInventoryController extends Controller
     {
         $branchId = Auth::guard('admin')->user()->branch_id;
 
-        $products = Product::with(['branch', 'category', 'subCategory', 'subSubCategory', 'brand'])
+        $products = Product::with(['branch', 'category.translations', 'subCategory.translations', 'subSubCategory.translations', 'brand.translations'])
             ->where('branch_id', $branchId)
             ->get([
                 'id',

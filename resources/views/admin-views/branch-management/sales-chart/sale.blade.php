@@ -46,7 +46,7 @@
                             <option value="">{{ translate('all_branches') }}</option>
                             @foreach ($branches as $branch)
                                 <option value="{{ $branch->id }}">
-                                    {{ $branch->branch_name }}
+                                    {{ $branch->getTranslatedField('branch_name') }}
                                 </option>
                             @endforeach
                         </select>

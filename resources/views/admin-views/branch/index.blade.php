@@ -75,7 +75,7 @@
                                 <tr>
                                     <td>{{$branches->firstItem()+$key}}</td>
                                      
-                                    <td>{{$seller->branch_name}}</td>
+                                    <td>{{$seller->getTranslatedField('branch_name')}}</td>
                                     <td>
                                         @if($seller->manager)
                                             {{ $seller->manager->name }}
@@ -84,7 +84,7 @@
                                         @endif
                                     </td>
                                     
-                                    <td>{{$seller->branch_country}},{{$seller->branch_address}}</td>
+                                    <td>{{$seller->getTranslatedField('branch_country') }},{{ $seller->getTranslatedField('branch_address')}}</td>
                                     <td>{{$seller->branch_zipcode}}</td>
                                     <!-- <td>{{$seller->mon_branch_hours_from}} To {{$seller->mon_branch_hours_to}} </td> -->
                                     

@@ -42,7 +42,7 @@
                         <select class="form-control" id="from-branch-id" name="from_branch_id">
                             <option value="">{{ translate('all') }}</option>
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
+                                <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -52,7 +52,7 @@
                         <select class="form-control" id="to-branch-id" name="to_branch_id">
                             <option value="">{{ translate('all') }}</option>
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
+                                <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}</option>
                             @endforeach
                         </select>
                     </div>

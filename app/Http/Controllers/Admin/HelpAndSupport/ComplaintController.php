@@ -180,7 +180,7 @@ class ComplaintController extends BaseController
 
         $tickets = $this->supportTicketRepo->getListWhere(
             orderBy: ['id' => 'desc'],
-            relations: ['department', 'employee', 'status_details'],
+            relations: ['department.translations', 'employee', 'status_details.translations'],
             searchValue: $request->get('searchValue'),
             filters: [
                 'priority' => $request['priority'],
@@ -192,15 +192,16 @@ class ComplaintController extends BaseController
 
         $getDepartment = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             filters: ['status' => 1],
             dataLimit: 'all'
         );
 
-        $aInProgressStatus = SupportTicketStatusMaster::where([
+        $aInProgressStatus = SupportTicketStatusMaster::with('translations')->where([
             'master_id' => SupportTicketStatusGroup::Complaint->value,
             'status' => 'active',
         ])->orderBy('position')->get();
-        $aAllStatus = SupportTicketStatusMaster::where([
+        $aAllStatus = SupportTicketStatusMaster::with('translations')->where([
             'master_id' => SupportTicketStatusGroup::Complaint->value,
             'status' => 'active',
         ])->orderBy('position')->get();
@@ -286,6 +287,7 @@ class ComplaintController extends BaseController
         $success = 1;
         $getDepartment = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             dataLimit: 'all'
         );
 

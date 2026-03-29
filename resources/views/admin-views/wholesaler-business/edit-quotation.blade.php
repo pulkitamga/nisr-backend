@@ -82,10 +82,10 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                <option value="{{ $wholesale->product_id }}|{{ $wholesale->variation_type ?? '' }}" 
                                         data-product-id="{{ $wholesale->product_id }}"
                                         data-variation="{{ $wholesale->variation_type ?? '' }}"
-                                        data-name="{{ $wholesale->product->name }}"
+                                        data-name="{{ $wholesale->product->getTranslatedField('name') }}"
                                         data-price="{{ optional($wholesale->price_list->first())->price_per_piece ?? 0 }}"
                                         data-tax="{{ $wholesale->product->tax_model == 'exclude' ? $wholesale->product->tax : 0 }}">
-                                    {{ $wholesale->product->name }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
+                                    {{ $wholesale->product->getTranslatedField('name') }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
                                 </option>
                                 @endforeach
                             </select>
@@ -117,7 +117,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
         @endphp
         <tr data-product-id="{{ $item->product_id }}" data-variation-type="{{ $item->product_variation_type }}">
             <td class="px-4 py-2">
-                {{ $item->product->name ?? __('N/A') }} ({{ $item->product_variation_type ?? translate('No Variation') }})
+                {{ $item->product->getTranslatedField('name') ?? __('N/A') }} ({{ $item->product_variation_type ?? translate('No Variation') }})
             </td>
 
             <td class="px-4 py-2">

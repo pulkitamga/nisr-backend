@@ -23,7 +23,7 @@
                 <td>{{ $task->due_date }}</td>
                 <td>{{ ucfirst($task->status) }}</td>
                 <td>{{ $task->employee->name ?? translate('Unassigned') }}</td>
-                <td>{{ $task->department->name ?? translate('Unassigned') }}</td>
+                <td>{{ $task->department?->getTranslatedField('name') ?? translate('Unassigned') }}</td>
                 <td>
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-primary task-edit-btn-inbox"

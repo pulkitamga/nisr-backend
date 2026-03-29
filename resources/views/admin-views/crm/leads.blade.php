@@ -164,7 +164,7 @@
                         </td>
                         <td>{{ $msg->owner?->name ?? translate('Not Assigned') }}</td>
 
-                        <td>{{ $msg->department?->name ?? translate('No Department') }}</td>
+                        <td>{{ $msg->department?->getTranslatedField('name') ?? translate('No Department') }}</td>
 
                         <td>{{ $msg->employee?->name ?? translate('Not Assigned') }}</td>
                         <td> {{ $msg?->priority ?? translate('Not Available') }}

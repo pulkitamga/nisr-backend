@@ -22,7 +22,7 @@
 @php
     $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
     $localizedTicketPriority = translate($supportTicket->priority);
-    $localizedTicketStatus = translate($supportTicket->status_details->name ?? $supportTicket->status);
+    $localizedTicketStatus = $supportTicket->status_details->getTranslatedField('name') ?? $supportTicket->status;
 @endphp
 <div class="content container-fluid" dir="{{ $pageDirection }}">
     <div class="mb-4">

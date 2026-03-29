@@ -88,7 +88,7 @@ class SupportTicketController extends BaseController
             ? $request->get('status', 'all')
             : $request->get('status', $defaultStatusIds[$status] ?? null);
 
-        $relations = ['department', 'employee', 'status_details', 'relatedInboxMessages', 'customer'];
+        $relations = ['department.translations', 'employee', 'status_details.translations', 'relatedInboxMessages', 'customer'];
         if ($status === 'service') {
             $relations = array_merge($relations, ['service', 'relatedInboxMessage', 'latestServiceJob', 'latestServiceJob.service']);
         }
@@ -107,6 +107,7 @@ class SupportTicketController extends BaseController
 
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
+            relations: ['translations'],
             dataLimit: 'all'
         );
         $employees = $this->adminRepo->getEmployeeListWhere(
@@ -124,12 +125,12 @@ class SupportTicketController extends BaseController
         ];
 
         $masterId = $masterIds[$status] ?? 0;
-        $aAllStatus = SupportTicketStatusMaster::where([
+        $aAllStatus = SupportTicketStatusMaster::with('translations')->where([
             'master_id' => $masterId,
             'status'    => 'active'
         ])->get();
 
-        $aInProgressStatus = SupportTicketStatusMaster::where([
+        $aInProgressStatus = SupportTicketStatusMaster::with('translations')->where([
             'master_id' => $masterId,
             'status'    => 'active'
         ])->get();

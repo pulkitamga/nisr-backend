@@ -106,8 +106,8 @@
                             @forelse($branches as $key => $stock)
                             <tr>
                                 <td class="text-center">{{ $key + 1 + ($branches->currentPage() - 1) * $branches->perPage() }}</td>
-                                <td>{{ $stock->branch->branch_name ?? translate('N/A') }}</td>
-                                <td>{{ $stock->product->name ?? translate('N/A') }}</td>
+                                <td>{{ $stock->branch?->getTranslatedField('branch_name') ?? translate('N/A') }}</td>
+                                <td>{{ $stock->product?->getTranslatedField('name') ?? translate('N/A') }}</td>
                                 <td>
                                     @if($stock->variation_type)
                                     <div class="d-flex align-items-center gap-2">
@@ -244,8 +244,8 @@
                             @forelse($branches as $key => $stock)
                             <tr>
                                 <td class="text-center">{{ $key + 1 + ($branches->currentPage() - 1) * $branches->perPage() }}</td>
-                                <td>{{ $stock->branch->branch_name ?? translate('N/A') }}</td>
-                                <td>{{ $stock->product->name ?? translate('N/A') }}</td>
+                                <td>{{ $stock->branch?->getTranslatedField('branch_name') ?? translate('N/A') }}</td>
+                                <td>{{ $stock->product?->getTranslatedField('name') ?? translate('N/A') }}</td>
                                 <td>
                                     @if($stock->variation_type)
                                     <div class="d-flex align-items-center gap-2">
@@ -288,8 +288,8 @@
                              @forelse($branches as $key => $stock)
                              <tr>
                                  <td class="text-center">{{ $key + 1 + ($branches->currentPage() - 1) * $branches->perPage() }}</td>
-                                 <td>{{ $stock->branch->branch_name ?? translate('N/A') }}</td>
-                                 <td>{{ $stock->product->name ?? translate('N/A') }}</td>
+                                 <td>{{ $stock->branch?->getTranslatedField('branch_name') ?? translate('N/A') }}</td>
+                                 <td>{{ $stock->product?->getTranslatedField('name') ?? translate('N/A') }}</td>
                                  <td>
                                      @if($stock->variation_type)
                                      <div class="d-flex align-items-center gap-2">
@@ -311,8 +311,8 @@
                                          onclick="showStockHistory(this)"
                                          data-branch-id="{{ $stock->branch_id }}"
                                          data-product-id="{{ $stock->product_id }}"
-                                         data-branch-name="{{ $stock->branch->branch_name ?? 'N/A' }}"
-                                         data-product-name="{{ $stock->product->name ?? 'N/A' }}"
+                                         data-branch-name="{{ $stock->branch?->getTranslatedField('branch_name') ?? 'N/A' }}"
+                                         data-product-name="{{ $stock->product?->getTranslatedField('name') ?? 'N/A' }}"
                                          data-variation-type="{{ $stock->variation_type }}"
                                          data-variation-key="{{ $stock->variation_key }}"
                                          data-current-stock="{{ $stock->total_stock }}"

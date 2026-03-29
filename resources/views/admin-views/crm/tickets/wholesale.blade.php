@@ -61,7 +61,7 @@
                                     };
                                     @endphp
                                     <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ translate($status['name']) }}
+                                        {{ $status->getTranslatedField('name') }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -169,7 +169,7 @@
                             @endif
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
-                        <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->name ?? $ticket->status }}</span></td>
+                        <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->getTranslatedField('name') ?? $ticket->status }}</span></td>
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         <td class="text-center">
 
@@ -287,7 +287,7 @@
                                     <option value="{{ $status['id'] }}"
                                         data-status-name="{{ $wholesaleStatusName }}"
                                         data-require-follow-up-date="{{ $wholesaleRequiresFollowUpDate }}">
-                                        {{ translate($status['name']) }}
+                                        {{ $status->getTranslatedField('name') }}
                                     </option>
                                     @endforeach
                                 </select>

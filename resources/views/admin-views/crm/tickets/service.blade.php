@@ -59,7 +59,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                                     <option value="all">{{ translate('all_Status') }}</option>
                                     @foreach($aAllStatus as $status)
                                     <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ translate($status['name']) }}
+                                        {{ $status->getTranslatedField('name') }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -152,7 +152,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                             @endif
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span></td>
-                        <td><span class="badge {{ $statusClass }}">{{ translate($ticket->status_details->name ?? $ticket->status) }}</span></td>
+                        <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->getTranslatedField('name') ?? $ticket->status }}</span></td>
                         <td>{{ $service ? $service->title : translate('No Service Picked') }}</td>
                         <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
                         <td class="text-center">

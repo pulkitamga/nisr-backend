@@ -133,7 +133,7 @@
                         <tbody>
                             @foreach($lead->purchaseOrder->items as $item)
                             <tr>
-                                <td>{{ $item->product->name ?? translate('N/A') }}</td>
+                                <td>{{ $item->product?->getTranslatedField('name') ?? translate('N/A') }}</td>
                                 <td>{{ $item->product_quantity ?? 0 }}</td>
                                 <td>
                                     {{ setCurrencySymbol(

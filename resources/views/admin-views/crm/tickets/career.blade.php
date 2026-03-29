@@ -60,7 +60,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                     <option value="all">{{ translate('all_status') }}</option>
                                     @foreach($statuses as $status)
                                     <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ translate($status['name']) }}
+                                        {{ $status->getTranslatedField('name') }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -124,7 +124,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <td>{{ $tickets->firstItem() + $index }}</td>
                         <td>{{ $ticket->subject }}</td>
                         <td>{{ optional($ticket->relatedInboxMessage)->sender_name ?? optional($ticket->relatedInboxMessage)->sender_email ?? translate('N/A') }}</td>
-                        <td>{{ $ticket->status_details->name ?? translate('N/A') }}</td>
+                        <td>{{ $ticket->status_details?->getTranslatedField('name') ?? translate('N/A') }}</td>
                         <td>{{ $ticket->employee->name ?? translate('Unassigned') }}</td>
                         <td>{{ $ticket->created_at->format('d-m-Y H:i') }}</td>
                         @php

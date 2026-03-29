@@ -17,7 +17,7 @@
                 <div class="col-md-3 border-right">
                     <div class="d-flex flex-column">
                         <span class="text-muted fz-12">{{ translate('Branch') }}</span>
-                        <span class="h4 mb-0">{{ $branch->branch_name }}</span>
+                        <span class="h4 mb-0">{{ $branch->getTranslatedField('branch_name') }}</span>
                     </div>
                 </div>
                 <div class="col-md-3 border-right">

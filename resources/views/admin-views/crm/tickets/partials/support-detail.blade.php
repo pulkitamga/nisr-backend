@@ -194,11 +194,11 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <strong>{{ translate('status') }}</strong>
-                        <span class="badge badge-soft-info">{{ $translateDynamic($ticket->status_details->name ?? null) }}</span>
+                        <span class="badge badge-soft-info">{{ $ticket->status_details->getTranslatedField('name') ?? translate('N/A') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <strong>{{ translate('department') }}</strong>
-                        <span class="text-end" dir="auto">{{ $translateDynamic($ticket->department->name ?? translate('unassigned')) }}</span>
+                        <span class="text-end" dir="auto">{{ $ticket->department?->getTranslatedField('name') ?? translate('unassigned') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <strong>{{ translate('assigned_employee') }}</strong>

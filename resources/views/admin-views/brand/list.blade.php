@@ -65,8 +65,8 @@
                                             </div>
                                         </td>
                                         <td class="overflow-hidden max-width-100px">
-                                            <span data-toggle="tooltip" data-placement="right" title="{{$brand['defaultname']}}">
-                                                 {{ Str::limit($brand['defaultname'],20) }}
+                                            <span data-toggle="tooltip" data-placement="right" title="{{$brand->getTranslatedField('name')}}">
+                                                 {{ Str::limit($brand->getTranslatedField('name'),20) }}
                                             </span>
                                         </td>
                                         <td class="text-center">{{ $brand['brand_all_products_count'] }}</td>
@@ -82,8 +82,8 @@
                                                            data-toggle-id = "brand-status{{ $brand['id'] }}"
                                                            data-on-image = "brand-status-on.png"
                                                            data-off-image = "brand-status-off.png"
-                                                           data-on-title = "{{ translate('Want_to_Turn_ON').' '.$brand['defaultname'].' '. translate('status') }}"
-                                                           data-off-title = "{{ translate('Want_to_Turn_OFF').' '.$brand['defaultname'].' '.translate('status') }}"
+                                                           data-on-title = "{{ translate('Want_to_Turn_ON').' '.$brand->getTranslatedField('name').' '. translate('status') }}"
+                                                           data-off-title = "{{ translate('Want_to_Turn_OFF').' '.$brand->getTranslatedField('name').' '.translate('status') }}"
                                                            data-on-message = "<p>{{ translate('if_enabled_this_brand_will_be_available_on_the_website_and_customer_app') }}</p>"
                                                            data-off-message = "<p>{{ translate('if_disabled_this_brand_will_be_hidden_from_the_website_and_customer_app') }}</p>">
                                                     <span class="switcher_control"></span>

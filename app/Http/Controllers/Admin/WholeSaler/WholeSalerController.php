@@ -170,7 +170,7 @@ class WholeSalerController extends BaseController
     }
     public function exporPurchaseList(Request $request): BinaryFileResponse
     {
-        $purchaseReq = WholesalePurchaseOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller', 'items.product'])->get();
+        $purchaseReq = WholesalePurchaseOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller', 'items.product.translations'])->get();
 
         $filter = 'all';
 
@@ -185,7 +185,7 @@ class WholeSalerController extends BaseController
     {
         $wholesaleQuotations = WholesaleQuotation::with([
             'wholeseller.wholesalerBusiness',
-            'items.product'
+            'items.product.translations'
         ])->get();
         $filter = 'all';
 
@@ -258,7 +258,7 @@ class WholeSalerController extends BaseController
 
         $wholesaler = $business->wholesaler;
 
-        $orders = WholesalePurchaseOrder::with(['items.product'])
+        $orders = WholesalePurchaseOrder::with(['items.product.translations'])
             ->where('wholeseller_id', $wholesaler->id)
             ->latest()
             ->paginate($dataLimit);
@@ -497,7 +497,7 @@ class WholeSalerController extends BaseController
 
         $dataLimit = getWebConfig('pagination_limit') ?? 10;
 
-        $query = WholesalePurchaseOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller', 'items.product']);
+        $query = WholesalePurchaseOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller', 'items.product.translations']);
 
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
@@ -602,7 +602,7 @@ class WholeSalerController extends BaseController
 
         $dataLimit = getWebConfig('pagination_limit') ?? 10;
 
-        $query = WholesaleQuotation::with(['wholeseller.wholesalerBusiness', 'items.product']);
+        $query = WholesaleQuotation::with(['wholeseller.wholesalerBusiness', 'items.product.translations']);
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -616,7 +616,7 @@ class WholeSalerController extends BaseController
             $query->where('status', $request->status);
         }
         if ($request->filled('searchValue')) {
-            $query->whereHas('items.product', function ($q) use ($request) {
+            $query->whereHas('items.product.translations', function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->searchValue . '%');
             });
         }
@@ -636,7 +636,7 @@ class WholeSalerController extends BaseController
 
      public function viewOrder($id)
     {
-        $order = WholesalePurchaseOrder::with(['items.product', 'wholeseller'])->findOrFail($id);
+        $order = WholesalePurchaseOrder::with(['items.product.translations', 'wholeseller'])->findOrFail($id);
 
         // Default empty collection
         $priceRanges = collect();
@@ -651,7 +651,7 @@ class WholeSalerController extends BaseController
             )->get();
         }
 
-        $wholesaleProducts = WholeSaleProducts::with(['product'])->get();
+        $wholesaleProducts = WholeSaleProducts::with(['product.translations'])->get();
 
         return view(WholeSaler::REQUEST_VIEW[VIEW], compact('order', 'priceRanges', 'wholesaleProducts'));
     }
@@ -659,7 +659,7 @@ class WholeSalerController extends BaseController
 
     public function viewPurchaseOrder($id)
     {
-        $order = WholesalePurchaseOrder::with('items.product', 'wholeseller')->findOrFail($id);
+        $order = WholesalePurchaseOrder::with('items.product.translations', 'wholeseller')->findOrFail($id);
 
         $order_no = $order->purchase_order_no;
 
@@ -671,7 +671,7 @@ class WholeSalerController extends BaseController
             $priceRanges = WholesaleProductPriceRange::where('wholesale_id', $firstItem->product->wholesale_id)->get();
         }
 
-        $wholesaleProducts = WholeSaleProducts::with(['product'])->get();
+        $wholesaleProducts = WholeSaleProducts::with(['product.translations'])->get();
 
         return view(WholeSaler::PURCHASE_ORDER_VIEW[VIEW], compact('order', 'priceRanges', 'quotation',  'wholesaleProducts'));
     }
@@ -688,7 +688,7 @@ class WholeSalerController extends BaseController
             ->with('wholesalerBusiness')
             ->get();
 
-        $wholesaleProducts = WholeSaleProducts::with(['product'])->get();
+        $wholesaleProducts = WholeSaleProducts::with(['product.translations'])->get();
 
         return view(WholeSaler::CREATE_QUOTATION[VIEW], compact('wholesalers', 'wholesaleProducts'));
     }
@@ -859,12 +859,12 @@ class WholeSalerController extends BaseController
 
     public function invoiceView($id)
     {
-        $order = WholesaleQuotation::with(['wholeseller', 'items.product', 'metas', 'translations'])->findOrFail($id);
+        $order = WholesaleQuotation::with(['wholeseller', 'items.product.translations', 'metas', 'translations'])->findOrFail($id);
         return view(WholeSaler::INVOICE_VIEW[VIEW], compact('order'));
     }
     public function showCompleteInvoice($id)
     {
-        $order = WholesaleConfirmOrder::with(['wholeseller', 'items.product', 'metas'])->findOrFail($id);
+        $order = WholesaleConfirmOrder::with(['wholeseller', 'items.product.translations', 'metas'])->findOrFail($id);
         $quotation = null;
         if ($order->quotation_no) {
             $quotation = WholesaleQuotation::with('metas')
@@ -879,7 +879,7 @@ class WholeSalerController extends BaseController
 
         $quotationImages = json_decode($businessSetting->value, true);
 
-        $products = WholesaleConfirmOrderItem::with(['product'])
+        $products = WholesaleConfirmOrderItem::with(['product.translations'])
             ->where('confirmed_order_id', $id)
             ->get();
 
@@ -1039,14 +1039,14 @@ class WholeSalerController extends BaseController
 
     public function invoiceEdit($id)
     {
-        $order = WholesaleQuotation::with('items.product', 'wholeseller', 'metas', 'translations')->findOrFail($id);
+        $order = WholesaleQuotation::with('items.product.translations', 'wholeseller', 'metas', 'translations')->findOrFail($id);
 
         $priceRanges = collect([]);
         if ($order->items->isNotEmpty()) {
             $priceRanges = WholesaleProductPriceRange::where('wholesale_id', $order->items->first()->product->wholesale_id)->get();
         }
 
-        $wholesaleProducts = WholeSaleProducts::with('product')->get();
+        $wholesaleProducts = WholeSaleProducts::with('product.translations')->get();
 
         $existingCharges = [];
         $existingDiscounts = [];
@@ -1352,12 +1352,12 @@ class WholeSalerController extends BaseController
         $order = WholesaleConfirmOrder::with(['wholeseller.wholesalerBusiness', 'deliveries'])->findOrFail($id);
 
         // Requested Products
-        $deliveries = WholesaleConfirmOrderItem::with(['product'])
+        $deliveries = WholesaleConfirmOrderItem::with(['product.translations'])
             ->where('confirmed_order_id', $id)
             ->get();
 
         // Delivery Logs
-        $deliveryLogs = WholesaleOrderDelivery::with('product', 'branch')
+        $deliveryLogs = WholesaleOrderDelivery::with('product.translations', 'branch')
             ->where('confirmed_order_id', $id)
             ->latest()
             ->paginate($dataLimit);
@@ -2101,11 +2101,11 @@ class WholeSalerController extends BaseController
 
         $branches = Branch::all();
 
-        $deliveries = WholesaleConfirmOrderItem::with(['product'])
+        $deliveries = WholesaleConfirmOrderItem::with(['product.translations'])
             ->where('confirmed_order_id', $id)
             ->get();
 
-        $deliveryLogs = WholesaleOrderDelivery::with('product', 'branch')
+        $deliveryLogs = WholesaleOrderDelivery::with('product.translations', 'branch')
             ->where('confirmed_order_id', $id)
             ->latest()
             ->paginate($dataLimit);

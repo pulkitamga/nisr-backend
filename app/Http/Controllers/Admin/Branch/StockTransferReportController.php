@@ -111,7 +111,7 @@ class StockTransferReportController extends Controller
                         $builder->where('status', $status);
                     }
 
-                    $builder->with(['product', 'category']);
+                    $builder->with(['product.translations', 'category.translations']);
                 },
             ])
             ->whereDate('transfer_date', '>=', $fromDate->toDateString())

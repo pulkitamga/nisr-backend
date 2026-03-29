@@ -63,6 +63,7 @@ class WholeSaleProductController extends BaseController
         $subCategory = $this->categoryRepo->getFirstWhere(params: ['id' => $request['sub_category_id']]);
 
         $activeTiers = WholesaleTier::where('is_active', 1)
+            ->with('translations')
             ->orderBy('rank')
             ->orderBy('id')
             ->get();
@@ -169,6 +170,7 @@ class WholeSaleProductController extends BaseController
         $subCategory = [];
 
         $activeTiers = WholesaleTier::where('is_active', 1)
+            ->with('translations')
             ->orderBy('rank')
             ->orderBy('id')
             ->get();

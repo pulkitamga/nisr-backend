@@ -72,7 +72,7 @@
 
                         <tr data-product-id="{{ $item->product_id }}">
 
-                            <td>{{ $item->product->name }}  ({{ $item->product_variation_type ?? __('No Variation') }})</td>
+                            <td>{{ $item->product->getTranslatedField('name') }}  ({{ $item->product_variation_type ?? __('No Variation') }})</td>
 
                             <td>
                                 <input type="number" name="products[{{ $item->product_id }}][approved_quantity]"

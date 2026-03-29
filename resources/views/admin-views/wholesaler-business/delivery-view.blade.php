@@ -157,7 +157,7 @@
                                 <tr class="align-middle">
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($delivery->created_at)->format('d/m/Y') }}</td>
-                                    <td>{{ $delivery->product->name ?? __('N/A') }}</td>
+                                    <td>{{ $delivery->product->getTranslatedField('name') ?? __('N/A') }}</td>
                                     <td>{{ $delivery->product_variation_type ?? __('No Variation') }}</td>
                                     <td>{{ $delivery->product_quantity }}</td>
                                     <td>{{ $delivery->quantity_sent }}</td>
@@ -170,7 +170,7 @@
                                             data-product-id="{{ $delivery->product_id }}"
                                             data-order-id="{{ $delivery->confirmed_order_id }}"
                                             data-variation-type="{{ $delivery->product_variation_type ?? '' }}"
-                                            data-product-name="{{ $delivery->product->name ?? __('N/A') }}"
+                                            data-product-name="{{ $delivery->product->getTranslatedField('name') ?? __('N/A') }}"
                                             data-requested-qty="{{ $delivery->product_quantity }}"
                                             data-sent-qty="{{ $delivery->quantity_sent }}"
                                             data-remaining="{{ $delivery->remaining }}"
@@ -326,7 +326,7 @@
                     <tr>
                         <td>{{ $deliveryLogs->firstItem() + $index }}</td>
                         <td>{{ \Carbon\Carbon::parse($log->delivery_date)->format('d/m/Y') }}</td>
-                        <td>{{ $log->product->name ?? __('N/A') }}</td>
+                        <td>{{ $log->product->getTranslatedField('name') ?? __('N/A') }}</td>
                         <td>{{ $log->product_variation_type ?? __('No Variation') }}</td>
                         <td>{{ $log->quantity_sent }}</td>
                         <td>{{ $log->branch->branch_name ?? __('N/A') }}</td>

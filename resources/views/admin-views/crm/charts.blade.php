@@ -346,7 +346,7 @@
                     <select id="departmentFilter" class="form-control">
                         <option value="">{{ translate('All Departments') }}</option>
                         @foreach ($departments as $dept)
-                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                            <option value="{{ $dept->id }}">{{ $dept->getTranslatedField('name') }}</option>
                         @endforeach
                     </select>
                 </div>

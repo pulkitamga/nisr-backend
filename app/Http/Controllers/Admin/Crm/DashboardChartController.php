@@ -64,7 +64,7 @@ class DashboardChartController extends Controller
             ->pluck('count', 'status')
             ->toArray();
 
-        $departmentBreakdown = Departments::select(
+        $departmentBreakdown = Departments::with('translations')->select(
             'departments.id',
             'departments.name',
             DB::raw('COUNT(inbox_messages.id) as message_count')
@@ -363,7 +363,7 @@ class DashboardChartController extends Controller
     }
     public function chartView()
     {
-        $departments = Departments::all();
+        $departments = Departments::with('translations')->get();
         return view('admin-views.crm.charts', compact('departments'));
     }
 
@@ -623,7 +623,7 @@ class DashboardChartController extends Controller
         }
 
         //$departments = Departments::query()->orderBy('name')->get(['id', 'name']);
-        $departments = Departments::whereHas('inboxMessages')->orderBy('name')->get(['id', 'name']);
+        $departments = Departments::with('translations')->whereHas('inboxMessages')->orderBy('name')->get(['id', 'name']);
         $owners = $this->getAssignedCrmOwners();
 
         return view('admin-views.crm.reports.insights', compact(

@@ -25,7 +25,7 @@
             <td>{{ $call->guests ? \App\Models\User::find($call->guests)?->name : translate('None') }}</td>
             <td>{{ $call->location ?? translate('N/A') }}</td>
             <td>{{ $call->employee->name ?? translate('Unassigned') }}</td>
-            <td>{{ $call->department->name ?? translate('Unassigned') }}</td>
+            <td>{{ $call->department?->getTranslatedField('name') ?? translate('Unassigned') }}</td>
         </tr>
         @if($loop->last)
     </tbody>

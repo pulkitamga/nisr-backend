@@ -262,7 +262,7 @@
 
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $item->product->name ?? __('N/A') }}</td>
+                                <td>{{ $item->product->getTranslatedField('name') ?? __('N/A') }}</td>
                                 <td>{{ $item->product_quantity }}</td>
                                 <td>{{ webCurrencyConverter(amount:$item->base_price) }}</td>
                                 <td>{{ webCurrencyConverter(amount:$tax) }}</td>

@@ -61,7 +61,7 @@
                                     };
                                     @endphp
                                     <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ translate($status['name']) }}
+                                        {{ $status->getTranslatedField('name') }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -173,7 +173,7 @@
                         </td>
                         <td>
                             <span class="badge {{ $statusClass }}">
-                                {{ $ticket->status_details?->name ?? translate('No Status') }}
+                                {{ $ticket->status_details?->getTranslatedField('name') ?? translate('No Status') }}
                             </span>
                         </td>
                         <td>{{ $ticket->created_at->format('d M, Y H:i A') }}</td>
