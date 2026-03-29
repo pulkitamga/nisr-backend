@@ -69,14 +69,19 @@ $brandSetting = getWebConfig(name: 'product_brand');
                     </div>
 
                     <div class="d-block flex-grow-1 w-max-md-100">
-                        @php $languages = getWebConfig(name:'pnc_language'); @endphp
-                        @php($defaultLanguage = 'en')
-                        @php($defaultLanguage = config('app.locale', 'en'))
-                        @if(!in_array($defaultLanguage, $languages ?? [], true)) @php($defaultLanguage = $languages[0]) @endif
+                        @php
+                            $languages = getWebConfig(name:'pnc_language');
+                            $languages = is_array($languages) ? $languages : [];
+                            $defaultLanguage = config('app.locale', 'en');
+                            if (!empty($languages) && !in_array($defaultLanguage, $languages, true)) {
+                                $defaultLanguage = $languages[0];
+                            }
+                            $activeLanguage = $defaultLanguage;
+                            if (!empty($languages) && in_array(getDefaultLanguage(), $languages, true)) {
+                                $activeLanguage = getDefaultLanguage();
+                            }
+                        @endphp
                         <div class="d-flex flex-wrap justify-content-between align-items-center">
-                            @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
-                @endphp
                             <ul class="nav nav-tabs w-fit-content mb-2">
                                 @foreach($languages as $language)
                                 <li class="nav-item text-capitalize">

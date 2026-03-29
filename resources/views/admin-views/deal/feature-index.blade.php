@@ -26,8 +26,6 @@
                               method="post">
                             @csrf
                             @php($language = getWebConfig(name:'pnc_language'))
-                            @php($defaultLanguage = 'en')
-
                             @php($defaultLanguage = config('app.locale', 'en'))
                             @if(!in_array($defaultLanguage, $language ?? [], true)) @php($defaultLanguage = $language[0]) @endif
                             @php

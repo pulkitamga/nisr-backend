@@ -58,11 +58,10 @@
 
                         <div class="d-block flex-grow-1 w-max-md-100">
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                @php $languages = getWebConfig(name:'pnc_language'); @endphp
-                                @php($defaultLanguage = 'en')
-                                @php($defaultLanguage = $languages[0])
+                                @php $languages = getWebConfig(name:'pnc_language') ?? []; @endphp
+                                @php($defaultLanguage = !empty($languages) ? $languages[0] : config('app.locale', 'en'))
                                 @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
+                    $activeLanguage = !empty($languages) && in_array(getDefaultLanguage(), $languages, true) ? getDefaultLanguage() : $defaultLanguage;
                 @endphp
                                 <ul class="nav nav-tabs w-fit-content mb-2">
                                     @foreach($languages as $language)

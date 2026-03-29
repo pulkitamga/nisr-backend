@@ -5,11 +5,10 @@
 @section('content')
 
 @php
-$language = getWebConfig(name: 'pnc_language') ?? null;
-$defaultLanguage = config('app.locale', 'en');
-if (!in_array($defaultLanguage, $language ?? [], true)) {
-    $defaultLanguage = $language[0] ?? 'en';
-}
+$language = getWebConfig(name: 'pnc_language');
+$language = is_array($language) ? $language : [];
+$defaultLanguage = $language[0] ?? config('app.locale', 'en');
+$activeLanguage = !empty($language) && in_array(getDefaultLanguage(), $language, true) ? getDefaultLanguage() : $defaultLanguage;
 @endphp
 <div class="content container-fluid">
     <div class="mb-4">
@@ -52,7 +51,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                 <td>{{ $tiers->firstItem() + $key }}</td>
                                 <td>{{ $tier->id }}</td>
                                 <td>{{ $tier->rank }}</td>
-                                <td>{{ translate($tier->name) }}</td>
+                                <td>{{ $tier->getTranslation('name', getDefaultLanguage()) ?? $tier->name }}</td>
                                 <td>
                                     <label class="switcher mx-auto">
                                         <input type="checkbox" class="switcher_input status-toggle"
@@ -92,9 +91,6 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         @method('PUT')
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
-                @endphp
 <ul class="nav nav-tabs w-fit-content mb-4">
                                                     @foreach($language as $lang)
                                                     <li class="nav-item text-capitalize">
@@ -124,7 +120,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                                         <label>{{ translate('Tier Name') }} ({{ strtoupper($lang) }})</label>
                                                         <input type="text" name="name[]" class="form-control"
                                                             value="{{ $lang == $defaultLanguage ? $tier->name : ($tier->getTranslation('name', $lang) ?? '') }}"
-                                                            required>
+                                                            {{ $lang == $defaultLanguage ? 'required' : '' }}>
                                                         <input type="hidden" name="lang[]" value="{{ $lang }}">
                                                     </div>
                                                 </div>
@@ -175,10 +171,6 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
             <div class="modal-content">
 
                 <div class="modal-header">
-
-                    @php
-                    $activeLanguage = in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage;
-                @endphp
 <ul class="nav nav-tabs w-fit-content mb-4">
                         @foreach($language as $lang)
                         <li class="nav-item text-capitalize">
