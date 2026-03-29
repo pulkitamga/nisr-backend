@@ -1603,7 +1603,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // Update
         Route::middleware('permission:promotion_management.deal_of_the_day,admin')->group(function () {
             Route::controller(DealOfTheDayController::class)->group(function () {
-                Route::post(DealOfTheDay::UPDATE[URI] . '/{id}', 'update');
+                Route::post(DealOfTheDay::UPDATE[URI] . '/{id}', 'update')->name('day-update.store');
                 Route::post(DealOfTheDay::STATUS[URI], 'updateStatus')->name('day-status-update');
             });
         });
@@ -1745,14 +1745,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // Create permissions
         Route::middleware('permission:promotion_management.send_notifications,admin')->group(function () {
             Route::controller(NotificationController::class)->group(function () {
-                Route::post(Notification::INDEX[URI], 'add');
+                Route::post(Notification::INDEX[URI], 'add')->name('store');
             });
         });
 
         // Update permissions
         Route::middleware('permission:promotion_management.send_notifications,admin')->group(function () {
             Route::controller(NotificationController::class)->group(function () {
-                Route::post(Notification::UPDATE[URI] . '/{id}', 'update');
+                Route::post(Notification::UPDATE[URI] . '/{id}', 'update')->name('update.store');
                 Route::post(Notification::UPDATE_STATUS[URI], 'updateStatus')->name('update-status');
                 Route::post(Notification::RESEND_NOTIFICATION[URI], 'resendNotification')->name('resend-notification');
             });
@@ -2171,7 +2171,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::controller(WholeSaleProductController::class)->group(function () {
                 Route::get(WholeSalesProducts::ADD[URI], 'getAddView')->middleware('permission:wholesaler_section.product_add,admin')->name('add');
                 Route::get(WholeSalesProducts::GET_VARIATION_PRICE[URI] . '/{id}', 'getVariationsWithPrice')->middleware('permission:wholesaler_section.product_add,admin')->name('get-variations');
-                Route::post(WholeSalesProducts::ADD[URI], 'add')->middleware('permission:wholesaler_section.product_add,admin')->name('add');
+                Route::post(WholeSalesProducts::ADD[URI], 'add')->middleware('permission:wholesaler_section.product_add,admin')->name('add.store');
             });
 
             // Update permissions
@@ -2351,7 +2351,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // Create permissions
         Route::middleware('permission:user_section.create,admin')->group(function () {
             Route::controller(DeliveryManController::class)->group(function () {
-                Route::post(DeliveryMan::ADD[URI], 'add');
+                Route::post(DeliveryMan::ADD[URI], 'add')->name('add.store');
             });
 
             Route::controller(DeliveryManCashCollectController::class)->group(function () {
@@ -2689,7 +2689,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 });
 
                 Route::controller(EnvironmentSettingsController::class)->group(function () {
-                    Route::post(EnvironmentSettings::VIEW[URI], 'update');
+                    Route::post(EnvironmentSettings::VIEW[URI], 'update')->name('environment-setup.store');
                     Route::post(EnvironmentSettings::FORCE_HTTPS[URI], 'updateForceHttps')->name('environment-https-setup');
                     Route::post(EnvironmentSettings::OPTIMIZE_SYSTEM[URI], 'optimizeSystem')->name('optimize-system');
                     Route::post(EnvironmentSettings::INSTALL_PASSPORT[URI], 'installPassport')->name('install-passport');
@@ -2731,10 +2731,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             // ----------- Update Permissions -----------
             Route::middleware('permission:cms_section.update,admin')->group(function () {
                 Route::controller(VendorRegistrationSettingController::class)->group(function () {
-                    Route::post(VendorRegistrationSetting::INDEX[URI], 'updateHeaderSection');
-                    Route::post(VendorRegistrationSetting::WITH_US[URI], 'updateSellWithUsSection');
-                    Route::post(VendorRegistrationSetting::BUSINESS_PROCESS[URI], 'updateBusinessProcess');
-                    Route::post(VendorRegistrationSetting::DOWNLOAD_APP[URI], 'updateDownloadAppSection');
+                    Route::post(VendorRegistrationSetting::INDEX[URI], 'updateHeaderSection')->name('index.store');
+                    Route::post(VendorRegistrationSetting::WITH_US[URI], 'updateSellWithUsSection')->name('with-us.store');
+                    Route::post(VendorRegistrationSetting::BUSINESS_PROCESS[URI], 'updateBusinessProcess')->name('business-process.store');
+                    Route::post(VendorRegistrationSetting::DOWNLOAD_APP[URI], 'updateDownloadAppSection')->name('download-app.store');
                 });
             });
         });
@@ -2788,10 +2788,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             // ----------- Update Permissions -----------
             Route::middleware('permission:cms_section.update,admin')->group(function () {
                 Route::controller(WholesalerRegistrationSettingController::class)->group(function () {
-                    Route::post(WholesalerRegistrationSetting::INDEX[URI], 'updateHeaderSection');
-                    Route::post(WholesalerRegistrationSetting::WITH_US[URI], 'updateSellWithUsSection');
-                    Route::post(WholesalerRegistrationSetting::BUSINESS_PROCESS[URI], 'updateBusinessProcess');
-                    Route::post(WholesalerRegistrationSetting::DOWNLOAD_APP[URI], 'updateDownloadAppSection');
+                    Route::post(WholesalerRegistrationSetting::INDEX[URI], 'updateHeaderSection')->name('index.store');
+                    Route::post(WholesalerRegistrationSetting::WITH_US[URI], 'updateSellWithUsSection')->name('with-us.store');
+                    Route::post(WholesalerRegistrationSetting::BUSINESS_PROCESS[URI], 'updateBusinessProcess')->name('business-process.store');
+                    Route::post(WholesalerRegistrationSetting::DOWNLOAD_APP[URI], 'updateDownloadAppSection')->name('download-app.store');
                     Route::post(WholesalerRegistrationSetting::TOGGLE_TYPE_STATUS[URI], 'toggleActiveStatus')->name('toggle-type-status');
                 });
             });
@@ -2881,7 +2881,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             // ----------- Create Permission -----------
             Route::middleware('permission:system_settings.create,admin')->group(function () {
                 Route::controller(ShippingMethodController::class)->group(function () {
-                    Route::post(ShippingMethod::INDEX[URI], 'add');
+                    Route::post(ShippingMethod::INDEX[URI], 'add')->name('store');
                     Route::post(ShippingMethod::AREA[URI], 'addAreaWiseShipping')->name('add-area');
                 });
             });
@@ -2889,8 +2889,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             // ----------- Update Permission -----------
             Route::middleware('permission:system_settings.update,admin')->group(function () {
                 Route::controller(ShippingMethodController::class)->group(function () {
-                    Route::post(ShippingMethod::UPDATE[URI] . '/{id}', 'update');
-                    Route::post(ShippingMethod::AREA_UPDATE[URI] . '/{id}', 'updateArea');
+                    Route::post(ShippingMethod::UPDATE[URI] . '/{id}', 'update')->name('update.store');
+                    Route::post(ShippingMethod::AREA_UPDATE[URI] . '/{id}', 'updateArea')->name('update-area.store');
                     Route::post(ShippingMethod::UPDATE_STATUS[URI], 'updateStatus')->name('update-status');
                     Route::post(ShippingMethod::UPDATE_AREA_STATUS[URI], 'updateAreaStatus')->name('update-area-status');
                     Route::post(ShippingMethod::UPDATE_SHIPPING_RESPONSIBILITY[URI], 'updateShippingResponsibility')->name('update-shipping-responsibility');
@@ -3014,12 +3014,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
             // Create permission
             Route::middleware('permission:system_settings.create,admin')->group(function () {
-                Route::post(OfflinePaymentMethod::ADD[URI], [OfflinePaymentMethodController::class, 'add']);
+                Route::post(OfflinePaymentMethod::ADD[URI], [OfflinePaymentMethodController::class, 'add'])->name('add.store');
             });
 
             // Update permission
             Route::middleware('permission:system_settings.update,admin')->group(function () {
-                Route::post(OfflinePaymentMethod::UPDATE[URI] . '/{id}', [OfflinePaymentMethodController::class, 'update']);
+                Route::post(OfflinePaymentMethod::UPDATE[URI] . '/{id}', [OfflinePaymentMethodController::class, 'update'])->name('update.store');
                 Route::post(OfflinePaymentMethod::UPDATE_STATUS[URI], [OfflinePaymentMethodController::class, 'updateStatus'])->name('update-status');
             });
 
@@ -3243,7 +3243,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             });
             // Update permission
             Route::middleware('permission:system_settings.update,admin')->group(function () {
-                Route::post(InhouseShop::VIEW[URI], 'update');
+                Route::post(InhouseShop::VIEW[URI], 'update')->name('inhouse-shop.store');
                 Route::post(InhouseShop::TEMPORARY_CLOSE[URI], 'getTemporaryClose')->name('inhouse-shop-temporary-close');
                 Route::post(InhouseShop::VACATION_ADD[URI], 'addVacation')->name('vacation-add');
             });
@@ -3290,8 +3290,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
             // Update permission (post updates)
             Route::middleware('permission:system_settings.update,admin')->group(function () {
-                Route::post(SEOSettings::WEB_MASTER_TOOL[URI], 'updateWebMasterTool');
-                Route::post(SEOSettings::ROBOT_TXT[URI], 'updateRobotText');
+                Route::post(SEOSettings::WEB_MASTER_TOOL[URI], 'updateWebMasterTool')->name('web-master-tool.store');
+                Route::post(SEOSettings::ROBOT_TXT[URI], 'updateRobotText')->name('robot-txt.store');
             });
         });
 
@@ -3395,7 +3395,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
             // Update permission
             Route::middleware('permission:system_settings.update,admin')->group(function () {
-                Route::post(HelpTopic::UPDATE[URI] . '/{id}', 'update')->name('update');
+                Route::post(HelpTopic::UPDATE[URI] . '/{id}', 'update')->name('update.store');
             });
 
             // Delete permission

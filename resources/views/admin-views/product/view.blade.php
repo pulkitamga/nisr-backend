@@ -69,7 +69,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                     </div>
 
                     <div class="d-block flex-grow-1 w-max-md-100">
-                        @php($languages = getWebConfig(name:'pnc_language'))
+                        @php $languages = getWebConfig(name:'pnc_language'); @endphp
                         @php($defaultLanguage = 'en')
                         @php($defaultLanguage = config('app.locale', 'en'))
                         @if(!in_array($defaultLanguage, $languages ?? [], true)) @php($defaultLanguage = $languages[0]) @endif
