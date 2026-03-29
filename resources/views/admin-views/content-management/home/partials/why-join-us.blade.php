@@ -13,7 +13,9 @@ $cards = $jsonData['section']['cards'] ?? [];
 @php
 $content = $jsonData['section'] ?? [];
 @endphp
-@php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
+@php
+                    $activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage);
+                @endphp
 <ul class="nav nav-tabs mb-4" id="language-switcher">
     @foreach($languages as $lang)
     <li class="nav-item">
@@ -73,7 +75,9 @@ $content = $jsonData['section'] ?? [];
 <form action="{{ route('admin.content-management.why_join_us.update') }}" method="post"
     enctype="multipart/form-data">
     @csrf
-    @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
+    @php
+                    $activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage);
+                @endphp
 <ul class="nav nav-tabs mb-4">
         @foreach($languages as $lang)
         <li class="nav-item">

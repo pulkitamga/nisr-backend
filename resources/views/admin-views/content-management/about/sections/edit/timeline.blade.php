@@ -31,7 +31,9 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 <!-- Non-translatable field: Year -->
 
                 <!-- Language Tabs -->
-                @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
+                @php
+                    $activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage);
+                @endphp
 <ul class="nav nav-tabs mb-4">
                     @foreach($language as $lang)
                     <li class="nav-item">

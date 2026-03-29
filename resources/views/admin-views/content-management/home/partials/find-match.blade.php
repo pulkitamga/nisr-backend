@@ -30,7 +30,9 @@ $fallback = [
     @csrf
     @method('PUT')
 
-    @php($activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage))
+    @php
+                    $activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage);
+                @endphp
 <ul class="nav nav-tabs mb-4">
         @foreach($languages as $lang)
             <li class="nav-item">
