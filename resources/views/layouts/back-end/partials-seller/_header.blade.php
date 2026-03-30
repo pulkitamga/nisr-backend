@@ -35,7 +35,7 @@
                     <i class="tio-first-page navbar-vertical-aside-toggle-short-align"></i>
                     <i class="tio-last-page navbar-vertical-aside-toggle-full-align"
                        data-template='<div class="tooltip d-none d-sm-block" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
-                       data-toggle="tooltip" data-placement="right" title="Expand"></i>
+                       data-toggle="tooltip" data-placement="{{ is_rtl() ? 'left' : 'right' }}" title="Expand"></i>
                 </button>
                 <div class="d-none">
                     <form class="position-relative">

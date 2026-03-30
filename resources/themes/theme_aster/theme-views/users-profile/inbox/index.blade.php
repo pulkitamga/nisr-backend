@@ -164,7 +164,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <button class="border-0 bg-F1F7FF px-3 rounded-r" type="submit" id="message-send-button">
+                                                    <button class="border-0 bg-F1F7FF px-3 rounded-e" type="submit" id="message-send-button">
                                                         <i class="bi bi-send-fill fs-16 text-primary"></i>
                                                     </button>
                                                 </div>

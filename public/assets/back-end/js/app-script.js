@@ -1,5 +1,10 @@
 "use strict";
 
+// Set Select2 RTL direction based on HTML dir attribute
+if (typeof $.fn.select2 !== 'undefined') {
+    $.fn.select2.defaults.set('dir', $('html').attr('dir') || 'ltr');
+}
+
 var audio = document.getElementById("myAudio");
 function playAudio() {
     audio.play();
@@ -121,7 +126,9 @@ $(document).on("ready", function () {
         let select2 = $.HSCore.components.HSSelect2.init($(this));
     });
 
-    $(".js-daterangepicker").daterangepicker();
+    $(".js-daterangepicker").daterangepicker({
+        opens: $('html').attr('dir') === 'rtl' ? 'left' : 'right'
+    });
 
     $(".js-daterangepicker-times-sec").daterangepicker({
         timePicker: true,

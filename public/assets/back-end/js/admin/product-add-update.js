@@ -156,6 +156,7 @@ function bindImageFallbackOnError() {
 $(document).on("ready", function () {
     $(".summernote").summernote({
         height: 150,
+        direction: $('html').attr('dir') || 'ltr',
         toolbar: [
             ["style", ["bold", "italic", "underline", "clear"]],
             ["font", ["strikethrough", "superscript", "subscript"]],
