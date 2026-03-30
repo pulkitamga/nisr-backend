@@ -1845,3 +1845,20 @@ input[name="gateway_image"] {
 .text-end { text-align: end !important; }
 .inset-inline-start-0 { inset-inline-start: 0 !important; }
 .inset-inline-end-0 { inset-inline-end: 0 !important; }
+
+/* RTL icon flip */
+html[dir="rtl"] .fa-arrow-right,
+html[dir="rtl"] .bi-arrow-right,
+html[dir="rtl"] .fa-chevron-right,
+html[dir="rtl"] .fa-angle-right,
+html[dir="rtl"] .fa-caret-right {
+    transform: scaleX(-1);
+}
+
+html[dir="rtl"] .fa-arrow-left,
+html[dir="rtl"] .bi-arrow-left,
+html[dir="rtl"] .fa-chevron-left,
+html[dir="rtl"] .fa-angle-left,
+html[dir="rtl"] .fa-caret-left {
+    transform: scaleX(-1);
+}

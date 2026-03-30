@@ -1694,3 +1694,20 @@ body {
 .me-auto { margin-inline-end: auto !important; }
 .text-start { text-align: start !important; }
 .text-end { text-align: end !important; }
+
+/* RTL icon flip */
+html[dir="rtl"] .fa-arrow-right,
+html[dir="rtl"] .bi-arrow-right,
+html[dir="rtl"] .fa-chevron-right,
+html[dir="rtl"] .fa-angle-right,
+html[dir="rtl"] .fa-caret-right {
+    transform: scaleX(-1);
+}
+
+html[dir="rtl"] .fa-arrow-left,
+html[dir="rtl"] .bi-arrow-left,
+html[dir="rtl"] .fa-chevron-left,
+html[dir="rtl"] .fa-angle-left,
+html[dir="rtl"] .fa-caret-left {
+    transform: scaleX(-1);
+}
