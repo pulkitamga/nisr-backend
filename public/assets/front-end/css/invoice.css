@@ -37,7 +37,7 @@ table {
 table thead th {
     padding: 8px;
     font-size: 11px;
-    text-align: left;
+    text-align: start;
 }
 
 table tbody th,
@@ -66,15 +66,15 @@ table.customers tbody td {
 }
 
 table.calc-table th {
-    text-align: left;
+    text-align: start;
 }
 
 table.calc-table td {
-    text-align: right;
+    text-align: end;
 }
 
 table.calc-table td.text-left {
-    text-align: left;
+    text-align: start;
 }
 
 .table-total {
@@ -83,7 +83,7 @@ table.calc-table td.text-left {
 
 
 .text-left {
-    text-align: left !important;
+    text-align: start !important;
 }
 
 .pb-2 {
@@ -95,16 +95,16 @@ table.calc-table td.text-left {
 }
 
 .text-right {
-    text-align: right !important;
+    text-align: end !important;
 }
 
 table th.text-right {
-    text-align: right !important;
+    text-align: end !important;
 }
 
 @media print {
     table th.text-right {
-        text-align: right !important;
+        text-align: end !important;
     }
 }
 
@@ -145,8 +145,8 @@ table th.text-right {
 }
 
 .px-10 {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-inline-start: 10px;
+    padding-inline-end: 10px;
 }
 
 .fz-14 {

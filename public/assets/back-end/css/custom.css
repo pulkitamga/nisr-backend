@@ -1449,7 +1449,7 @@ input[name="gateway_image"] {
 
 .email-dl {
     max-width: 240px;
-    margin-left: auto;
+    margin-inline-start: auto;
     display: flex;
     flex-wrap: wrap;
 }
@@ -1665,7 +1665,7 @@ input[name="gateway_image"] {
     ul.select2-selection__rendered
     .select2-search {
     width: 100% !important;
-    margin-right: 0 !important;
+    margin-inline-end: 0 !important;
 }
 .multiple-tags-with-image
     .multiple-select2

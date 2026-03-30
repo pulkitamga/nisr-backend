@@ -5320,3 +5320,26 @@ input[type="checkbox"]:checked::after {
         color: var(--bs-primary) !important;
     }
 }
+
+/* RTL icon flip */
+html[dir="rtl"] .fa-arrow-right,
+html[dir="rtl"] .bi-arrow-right,
+html[dir="rtl"] .fa-chevron-right,
+html[dir="rtl"] .bi-chevron-right,
+html[dir="rtl"] .fa-angle-right,
+html[dir="rtl"] .bi-angle-right,
+html[dir="rtl"] .fa-caret-right,
+html[dir="rtl"] .bi-caret-right {
+    transform: scaleX(-1);
+}
+
+html[dir="rtl"] .fa-arrow-left,
+html[dir="rtl"] .bi-arrow-left,
+html[dir="rtl"] .fa-chevron-left,
+html[dir="rtl"] .bi-chevron-left,
+html[dir="rtl"] .fa-angle-left,
+html[dir="rtl"] .bi-angle-left,
+html[dir="rtl"] .fa-caret-left,
+html[dir="rtl"] .bi-caret-left {
+    transform: scaleX(-1);
+}
