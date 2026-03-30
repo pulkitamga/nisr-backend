@@ -85,7 +85,8 @@
             "app/Utils/currency.php",
             "app/Utils/file_path.php",
             "app/Utils/order.php",
-            "app/Utils/product.php"
+            "app/Utils/product.php",
+            "app/Helpers/DirectionHelper.php"
         ],
         "psr-4": {
             "App\\": "app/",
