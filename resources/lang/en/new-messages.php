@@ -6663,6 +6663,8 @@ return [
 	"role_form" => "Role form",
 	"role_id_is_required" => "Role id is required",
 	"role_name" => "Role name",
+	"role_name_english_only_hint" => "Role name must be in English only (letters, numbers, spaces, hyphens, underscores). It is used as a system identifier and cannot contain Arabic.",
+	"role_name_must_be_english_only" => "Role name must be in English only. Use letters, numbers, spaces, hyphens, or underscores.",
 	"roles_table" => "Roles table",
 	"root" => "Root",
 	"rtgr" => "Rtgr",

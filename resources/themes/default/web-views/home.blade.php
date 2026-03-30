@@ -217,7 +217,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
     @endphp
     @php
     $categoryCount = count($categories);
-    $repeatCount = $categoryCount < 4 ? ceil(8 / $categoryCount) : 1;
+    $repeatCount = $categoryCount > 0 ? ($categoryCount < 4 ? ceil(8 / $categoryCount) : 1) : 0;
         $repeatedCategories=[];
 
         for ($i=0; $i < $repeatCount; $i++) {

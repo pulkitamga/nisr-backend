@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
+use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Http\Controllers\BaseController;
 use App\Models\State;
 use App\Models\City;
@@ -13,6 +14,11 @@ use Illuminate\Http\RedirectResponse;
 
 class StateCityController extends BaseController
 {
+    public function __construct(
+        private readonly TranslationRepositoryInterface $translationRepo,
+    )
+    {
+    }
 
 
     /**
@@ -33,8 +39,10 @@ class StateCityController extends BaseController
         $cities = City::with('state')->orderBy('name')->get();
         $areas = Area::with('city')->orderBy('name')->get();
         $countries = COUNTRIES;
+        $language = getWebConfig(name: 'pnc_language') ?? null;
+        $defaultLanguage = $language[0];
 
-        return view('admin-views.business-settings.state-city.index', compact('states', 'cities', 'countries', 'areas'));
+        return view('admin-views.business-settings.state-city.index', compact('states', 'cities', 'countries', 'areas', 'language', 'defaultLanguage'));
     }
 
     // Store State
@@ -42,10 +50,15 @@ class StateCityController extends BaseController
     {
         $request->validate([
             'country' => 'required|string|max:100',
-            'name'    => 'required|string|max:255|unique:states,name,NULL,id,country,' . $request->country,
+            'name'    => 'required|array',
+            'name.*'  => 'string|max:255',
         ]);
 
-        State::create($request->only('country', 'name'));
+        $state = State::create([
+            'country' => $request['country'],
+            'name' => $request['name'][getDefaultLanguageIndex($request)],
+        ]);
+        $this->translationRepo->add(request: $request, model: 'App\Models\State', id: $state->id);
         Toastr::success(translate('State added successfully'));
         return back();
     }
@@ -63,10 +76,15 @@ class StateCityController extends BaseController
     {
         $request->validate([
             'state_id' => 'required|exists:states,id',
-            'name'     => 'required|string|max:255',
+            'name'     => 'required|array',
+            'name.*'   => 'string|max:255',
         ]);
 
-        City::create($request->only('state_id', 'name'));
+        $city = City::create([
+            'state_id' => $request['state_id'],
+            'name' => $request['name'][getDefaultLanguageIndex($request)],
+        ]);
+        $this->translationRepo->add(request: $request, model: 'App\Models\City', id: $city->id);
         Toastr::success(translate('City added successfully'));
         return back();
     }
@@ -74,10 +92,15 @@ class StateCityController extends BaseController
     {
         $request->validate([
             'city_id' => 'required|exists:cities,id',
-            'name'     => 'required|string|max:255',
+            'name'     => 'required|array',
+            'name.*'   => 'string|max:255',
         ]);
 
-        Area::create($request->only('city_id', 'name'));
+        $area = Area::create([
+            'city_id' => $request['city_id'],
+            'name' => $request['name'][getDefaultLanguageIndex($request)],
+        ]);
+        $this->translationRepo->add(request: $request, model: 'App\Models\Area', id: $area->id);
         Toastr::success(translate('City added successfully'));
         return back();
     }

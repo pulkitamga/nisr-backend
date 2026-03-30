@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Promotion;
 
 use App\Contracts\Repositories\CouponRepositoryInterface;
 use App\Contracts\Repositories\CustomerRepositoryInterface;
+use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Contracts\Repositories\VendorRepositoryInterface;
 use App\Enums\ExportFileNames\Admin\Coupon as CouponExport;
 use App\Enums\ViewPaths\Admin\Coupon;
@@ -33,6 +34,7 @@ class CouponController extends BaseController
         private readonly CouponRepositoryInterface   $couponRepo,
         private readonly CustomerRepositoryInterface $customerRepo,
         private readonly VendorRepositoryInterface   $vendorRepo,
+        private readonly TranslationRepositoryInterface $translationRepo,
     )
     {
     }
@@ -51,7 +53,9 @@ class CouponController extends BaseController
     {
         $coupons = $this->couponRepo->getListWhere(searchValue: $request['searchValue'],filters: ['added_by'=>'admin'] ,dataLimit: getWebConfig(name: 'pagination_limit'));
         $customers = $this->customerRepo->getListWhereNotIn([0]);
-        return view(Coupon::ADD[VIEW], compact('coupons', 'customers'));
+        $language = getWebConfig(name: 'pnc_language') ?? null;
+        $defaultLanguage = $language[0];
+        return view(Coupon::ADD[VIEW], compact('coupons', 'customers', 'language', 'defaultLanguage'));
     }
 
     public function add(CouponAddRequest $request, CouponService $couponService): RedirectResponse
@@ -61,7 +65,8 @@ class CouponController extends BaseController
             return redirect()->back();
         }
         $data = $couponService->getAddData(request:$request);
-        $this->couponRepo->add(data: $data);
+        $saved = $this->couponRepo->add(data: $data);
+        $this->translationRepo->add(request: $request, model: 'App\Models\Coupon', id: $saved->id);
         Toastr::success(translate('coupon_added_successfully'));
         return back();
     }
@@ -72,7 +77,9 @@ class CouponController extends BaseController
         $customers = $this->customerRepo->getListWhereNotIn([0]);
         $coupon = $this->couponRepo->getFirstWhere(['id' => $id]);
         if($coupon){
-            return view(Coupon::UPDATE[VIEW], compact('coupon', 'customers', 'sellers'));
+            $language = getWebConfig(name: 'pnc_language') ?? null;
+            $defaultLanguage = $language[0];
+            return view(Coupon::UPDATE[VIEW], compact('coupon', 'customers', 'sellers', 'language', 'defaultLanguage'));
         }
         Toastr::error(translate('invalid_Coupon'));
         return redirect()->route(Coupon::ADD[ROUTE]);
@@ -87,6 +94,7 @@ class CouponController extends BaseController
 
         $data = $couponService->getUpdateData(request:$request);
         $this->couponRepo->update(id: $id, data: $data);
+        $this->translationRepo->update(request: $request, model: 'App\Models\Coupon', id: $id);
         Toastr::success(translate('coupon_updated_successfully'));
         return redirect()->route(Coupon::ADD[ROUTE]);
     }

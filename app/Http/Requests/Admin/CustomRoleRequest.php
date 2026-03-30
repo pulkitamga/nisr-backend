@@ -42,7 +42,7 @@ class CustomRoleRequest extends Request
         }
 
         return [
-            'name' => ['required', 'string', 'max:255', $nameRule],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9_\- ]+$/', $nameRule],
             'permissions' => ['required', 'array', 'min:1'],
             'permissions.*' => [
                 'required',
@@ -58,6 +58,7 @@ class CustomRoleRequest extends Request
         return [
             'name.required' => translate('the_Role_field_is_required!'),
             'name.unique' => translate('this_role_already_exists'),
+            'name.regex' => translate('role_name_must_be_english_only'),
             'permissions.required' => translate('select_minimum_one_permission'),
             'permissions.array' => translate('select_minimum_one_permission'),
             'permissions.min' => translate('select_minimum_one_permission'),

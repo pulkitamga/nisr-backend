@@ -17,6 +17,7 @@ class CmsProduct extends Model
         'heading',
         'description',
         'image',
+        'button_text',
     ];
 
 }

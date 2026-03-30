@@ -39,6 +39,10 @@ class TranslationRepository implements TranslationRepositoryInterface
         $translatableFields = collect($request->only($allowedFields))
             ->keys();
 
+        if (empty($request->lang) || !is_array($request->lang)) {
+            return true;
+        }
+
         foreach ($request->lang as $index => $key) {
             if ($key === $defaultLocale) continue;
 
@@ -71,6 +75,10 @@ class TranslationRepository implements TranslationRepositoryInterface
 
         $translatableFields = collect($request->only($allowedFields))
             ->keys();
+
+        if (empty($request->lang) || !is_array($request->lang)) {
+            return true;
+        }
 
         foreach ($request->lang as $index => $key) {
             if ($key === $defaultLocale) continue;

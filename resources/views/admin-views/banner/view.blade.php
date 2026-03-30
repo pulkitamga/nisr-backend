@@ -121,10 +121,32 @@
 
                                     <!-- For Theme Fashion - New input Field - Start -->
                                     @if(theme_root_path() == 'theme_fashion')
-                                    <div class="form-group mt-4 input-field-for-main-banner">
-                                        <label for="button_text" class="title-color text-capitalize">{{ translate('Button_Text') }}</label>
-                                        <input type="text" name="button_text" class="form-control" id="button_text" placeholder="{{ translate('Enter_button_text') }}">
+                                    @php
+                                        $activeLanguage = $defaultLanguage;
+                                        $_la = is_array($language ?? null) ? $language : [];
+                                        if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                                    @endphp
+                                    <ul class="nav nav-tabs w-fit-content mb-4 input-field-for-main-banner">
+                                        @foreach($language as $lang)
+                                            <li class="nav-item text-capitalize">
+                                                <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}"
+                                                   id="{{$lang}}-link">
+                                                    {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                                                </span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                    @foreach($language as $lang)
+                                        <input type="hidden" name="lang[]" value="{{$lang}}">
+                                    @endforeach
+                                    @foreach($language as $lang)
+                                    <div class="form-group mt-4 input-field-for-main-banner {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
+                                         id="{{$lang}}-form">
+                                        <label for="button_text_{{$lang}}" class="title-color text-capitalize">{{ translate('Button_Text') }}
+                                            ({{ strtoupper($lang) }})</label>
+                                        <input type="text" name="button_text[]" class="form-control" id="button_text_{{$lang}}" placeholder="{{ translate('Enter_button_text') }}">
                                     </div>
+                                    @endforeach
                                     <div class="form-group mt-4 mb-0 input-field-for-main-banner">
                                         <label for="background_color" class="title-color text-capitalize">{{ translate('background_color') }}</label>
                                         <input type="color" name="background_color" class="form-control form-control_color w-100" id="background_color" value="#fee440">
@@ -147,14 +169,22 @@
                                         <p>{{ translate('banner_Image_ratio_is_not_same_for_all_sections_in_website') }}. {{ translate('please_review_the_ratio_before_upload') }}</p>
                                         <!-- For Theme Fashion - New input Field - Start -->
                                         @if(theme_root_path() == 'theme_fashion')
-                                        <div class="form-group mt-4 input-field-for-main-banner">
-                                            <label for="title" class="title-color text-capitalize">{{ translate('Title') }}</label>
-                                            <input type="text" name="title" class="form-control" id="title" placeholder="{{ translate('Enter_banner_title') }}">
+                                        @foreach($language as $lang)
+                                        <div class="form-group mt-4 input-field-for-main-banner {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
+                                             id="{{$lang}}-form-title">
+                                            <label for="title_{{$lang}}" class="title-color text-capitalize">{{ translate('Title') }}
+                                                ({{ strtoupper($lang) }})</label>
+                                            <input type="text" name="title[]" class="form-control" id="title_{{$lang}}" placeholder="{{ translate('Enter_banner_title') }}">
                                         </div>
-                                        <div class="form-group mb-0 input-field-for-main-banner">
-                                            <label for="sub_title" class="title-color text-capitalize">{{ translate('Sub_Title') }}</label>
-                                            <input type="text" name="sub_title" class="form-control" id="sub_title" placeholder="{{ translate('Enter_banner_sub_title') }}">
+                                        @endforeach
+                                        @foreach($language as $lang)
+                                        <div class="form-group mb-0 input-field-for-main-banner {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
+                                             id="{{$lang}}-form-sub-title">
+                                            <label for="sub_title_{{$lang}}" class="title-color text-capitalize">{{ translate('Sub_Title') }}
+                                                ({{ strtoupper($lang) }})</label>
+                                            <input type="text" name="sub_title[]" class="form-control" id="sub_title_{{$lang}}" placeholder="{{ translate('Enter_banner_sub_title') }}">
                                         </div>
+                                        @endforeach
                                         @endif
                                         <!-- For Theme Fashion - New input Field - End -->
 

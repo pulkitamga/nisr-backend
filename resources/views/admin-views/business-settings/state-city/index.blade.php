@@ -16,6 +16,12 @@
     </div>
         @include('admin-views.business-settings.business-setup-inline-menu')
 
+    @php
+        $activeLanguage = $defaultLanguage;
+        $_la = is_array($language ?? null) ? $language : [];
+        if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+    @endphp
+
     <div class="row gy-3">
         <!-- STATE CARD -->
         <div class="col-lg-6">
@@ -41,7 +47,21 @@
                             </div>
                             <div class="col-6">
                                 <label class="title-color">{{translate('State Name')}}</label>
-                                <input type="text" name="name" class="form-control" placeholder="{{translate('Enter state')}}" required>
+                                <ul class="nav nav-tabs w-fit-content mb-2">
+                                    @foreach($language as $lang)
+                                        <li class="nav-item text-capitalize">
+                                            <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link-state">
+                                                {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                                            </span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                @foreach($language as $lang)
+                                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form" id="{{$lang}}-form-state">
+                                        <input type="text" name="name[]" class="form-control" placeholder="{{translate('Enter state')}} ({{ strtoupper($lang) }})" required>
+                                    </div>
+                                    <input type="hidden" name="lang[]" value="{{$lang}}">
+                                @endforeach
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
@@ -117,7 +137,21 @@
                             </div>
                             <div class="col-6">
                                 <label class="title-color">{{translate('City Name')}}</label>
-                                <input type="text" name="name" class="form-control" placeholder="{{translate('Enter city')}}" required>
+                                <ul class="nav nav-tabs w-fit-content mb-2">
+                                    @foreach($language as $lang)
+                                        <li class="nav-item text-capitalize">
+                                            <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link-city">
+                                                {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                                            </span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                @foreach($language as $lang)
+                                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form" id="{{$lang}}-form-city">
+                                        <input type="text" name="name[]" class="form-control" placeholder="{{translate('Enter city')}} ({{ strtoupper($lang) }})" required>
+                                    </div>
+                                    <input type="hidden" name="lang[]" value="{{$lang}}">
+                                @endforeach
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
@@ -193,7 +227,21 @@
                             </div>
                             <div class="col-6">
                                 <label class="title-color">{{translate('Area Name')}}</label>
-                                <input type="text" name="name" class="form-control" placeholder="{{translate('Enter Area')}}" required>
+                                <ul class="nav nav-tabs w-fit-content mb-2">
+                                    @foreach($language as $lang)
+                                        <li class="nav-item text-capitalize">
+                                            <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link-area">
+                                                {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                                            </span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                @foreach($language as $lang)
+                                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form" id="{{$lang}}-form-area">
+                                        <input type="text" name="name[]" class="form-control" placeholder="{{translate('Enter Area')}} ({{ strtoupper($lang) }})" required>
+                                    </div>
+                                    <input type="hidden" name="lang[]" value="{{$lang}}">
+                                @endforeach
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">

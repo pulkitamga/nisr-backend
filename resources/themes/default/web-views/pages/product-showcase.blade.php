@@ -199,7 +199,7 @@ if ($total > 0 && $total < $minSlidesNeeded) {
                                 <p class="sec-text">{{ getTranslatedValue($productSlide, 'description', $productSlide->description) }}</p>
                                 <div class="feature-action text-start mt-4">
                                     <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($productSlide->button_link ?? '') ?: '#' }}"
-                                        class="th-btn text-decoration-none"> {{translate('Request_Service') }}</a>
+                                        class="th-btn text-decoration-none"> {{ getTranslatedValue($productSlide, 'button_text', $productSlide->button_text ?? '') ?: translate('Request_Service') }}</a>
                                 </div>
                             </div>
                         </div>
@@ -224,7 +224,7 @@ if ($total > 0 && $total < $minSlidesNeeded) {
                                 <p class="sec-text  mt-lg-2">{{ getTranslatedValue($productSlide, 'description', $productSlide->description) }}</p>
                                 <div class="feature-action text-start mt-4">
                                     <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($productSlide->button_link ?? '') ?: '#' }}"
-                                        class="th-btn text-decoration-none"> {{translate('Request_Service') }}
+                                        class="th-btn text-decoration-none"> {{ getTranslatedValue($productSlide, 'button_text', $productSlide->button_text ?? '') ?: translate('Request_Service') }}
                                     </a>
                                 </div>
                             </div>
@@ -262,7 +262,7 @@ if ($total > 0 && $total < $minSlidesNeeded) {
                                 <p class="sec-text  mt-lg-2">{{ getTranslatedValue($productSlide, 'description', $productSlide->description) }}</p>
                                 <div class="feature-action text-start mt-4">
                                     <a href="{{ \App\Support\CmsContentSanitizer::sanitizeLink($productSlide->button_link ?? '') ?: '#' }}"
-                                        class="th-btn text-decoration-none"> {{translate('Request_Service') }}</a>
+                                        class="th-btn text-decoration-none"> {{ getTranslatedValue($productSlide, 'button_text', $productSlide->button_text ?? '') ?: translate('Request_Service') }}</a>
                                 </div>
                             </div>
                         </div>

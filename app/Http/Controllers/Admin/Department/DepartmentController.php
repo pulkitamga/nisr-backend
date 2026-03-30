@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Department;
 
 use App\Contracts\Repositories\DepartmentRepositoryInterface;
+use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Enums\ViewPaths\Admin\Department;
 use App\Enums\WebConfigKey;
 use App\Http\Controllers\BaseController;
@@ -34,6 +35,7 @@ class DepartmentController extends BaseController
     public function __construct(
         private readonly DepartmentRepositoryInterface         $departmentRepo,
         private readonly DepartmentService                     $departmentService,
+        private readonly TranslationRepositoryInterface        $translationRepo,
     )
     {
     }
@@ -63,7 +65,9 @@ class DepartmentController extends BaseController
 
     public function getAddView(Request $request): View
     {
-        return view(Department::ADD[VIEW]);
+        $language = getWebConfig(name: 'pnc_language') ?? null;
+        $defaultLanguage = $language[0];
+        return view(Department::ADD[VIEW], compact('language', 'defaultLanguage'));
     }
 
     public function fViewBranchUsers(Request $request, $dept_id): View
@@ -98,6 +102,7 @@ class DepartmentController extends BaseController
             $dataArray['head_id'] = 0;
         }
         $savedRequest = $this->departmentRepo->add(data: $dataArray);
+        $this->translationRepo->add(request: $request, model: 'App\Models\Departments', id: $savedRequest->id);
          return response()->json(['message' => translate('Department_added_successfully')]);
     }
 
@@ -121,9 +126,11 @@ class DepartmentController extends BaseController
     {
         $department = $this->departmentRepo->getFirstWhere(
             params:['id' => $id],
-            relations: ['employee']
+            relations: ['employee', 'translations']
         );
-        return view(Department::UPDATE[VIEW], compact('department'));
+        $language = getWebConfig(name: 'pnc_language') ?? null;
+        $defaultLanguage = $language[0];
+        return view(Department::UPDATE[VIEW], compact('department', 'language', 'defaultLanguage'));
     }
 
     public function update(DepartmentUpdateRequest $request, DepartmentService $departmentService): JsonResponse
@@ -133,6 +140,7 @@ class DepartmentController extends BaseController
             return response()->json(['message' => translate('department not found')]);
         }
         $this->departmentRepo->update(id:$request['id'], data: $this->departmentService->getAddData($request));
+        $this->translationRepo->update(request: $request, model: 'App\Models\Departments', id: $request['id']);
         return response()->json(['message' => translate('department_updated_successfully')]);
     }
 

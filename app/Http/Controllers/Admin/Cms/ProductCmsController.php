@@ -64,6 +64,8 @@ class ProductCmsController extends Controller
             'heading.*' => 'nullable|string|max:255',
             'description' => 'required|array',
             'description.*' => 'nullable|string',
+            'button_text' => 'nullable|array',
+            'button_text.*' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
             'lang' => 'required|array',
             'button_link' => [
@@ -82,10 +84,12 @@ class ProductCmsController extends Controller
 
         $cmsProduct = CmsProduct::findOrFail($id);
         $sanitizedDescriptions = CmsContentSanitizer::sanitizeRichTextArray($request->input('description', []));
+        $sanitizedButtonText = CmsContentSanitizer::sanitizePlainTextArray($request->input('button_text', []));
         $sanitizedButtonLink = CmsContentSanitizer::sanitizeLink($request->button_link);
 
         $request->merge([
             'description' => $sanitizedDescriptions,
+            'button_text' => $sanitizedButtonText,
             'button_link' => $sanitizedButtonLink,
         ]);
         $this->validateRequiredCmsEnglishFields($request, [
@@ -96,6 +100,7 @@ class ProductCmsController extends Controller
         if ($defaultLangIndex !== false) {
             $cmsProduct->heading = $request->heading[$defaultLangIndex];
             $cmsProduct->description = $request->description[$defaultLangIndex];
+            $cmsProduct->button_text = $request->button_text[$defaultLangIndex] ?? null;
         }
 
         if ($request->hasFile('image')) {

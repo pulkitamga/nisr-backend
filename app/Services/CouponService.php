@@ -36,7 +36,7 @@ class CouponService
     {
         $data = [
             'coupon_type' => $request['coupon_type'],
-            'title' => $request['title'],
+            'title' => $request['title'][getDefaultLanguageIndex($request)],
             'code' => $request['code'],
             'start_date' => $request['start_date'],
             'expire_date' => $request['expire_date'],
@@ -69,7 +69,7 @@ class CouponService
     {
         $data = [
             'coupon_type' => $request['coupon_type'],
-            'title' => $request['title'],
+            'title' => $request['title'][getDefaultLanguageIndex($request)],
             'code' => $request['code'],
             'start_date' => $request['start_date'],
             'expire_date' => $request['expire_date'],

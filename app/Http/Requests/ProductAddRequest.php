@@ -105,13 +105,15 @@ class ProductAddRequest extends Request
                         translate('discount_can_not_be_more_or_equal_to_the_price') . '!'
                     );
                 }
-                $this->validateEnglishMultilingualFields($validator, [
-                    'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
-                    'description' => [
-                        'message' => translate('The_description_in_english_is_required') . '!',
-                        'rich_text' => true,
-                    ],
-                ]);
+                if ($this['product_type'] != 'services') {
+                    $this->validateEnglishMultilingualFields($validator, [
+                        'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
+                        'description' => [
+                            'message' => translate('The_description_in_english_is_required') . '!',
+                            'rich_text' => true,
+                        ],
+                    ]);
+                }
 
 
                 $productImagesCount = 0;

@@ -34,9 +34,27 @@
                             <div class="col-md-6 col-lg-4 form-group">
                                 <label for="name"
                                     class="title-color font-weight-medium d-flex">{{translate('coupon_title')}}</label>
-                                <input type="text" name="title" class="form-control" value="{{ old('title') }}"
-                                    id="title"
-                                    placeholder="{{translate('title')}}" required>
+                                @php
+                                    $activeLanguage = $defaultLanguage;
+                                    $_la = is_array($language ?? null) ? $language : [];
+                                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                                @endphp
+                                <ul class="nav nav-tabs w-fit-content mb-2">
+                                    @foreach($language as $lang)
+                                        <li class="nav-item text-capitalize">
+                                            <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link">
+                                                {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                                            </span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                @foreach($language as $lang)
+                                    <div class="{{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
+                                        <input type="text" name="title[]" class="form-control"
+                                            placeholder="{{translate('title')}} ({{ strtoupper($lang) }})" required>
+                                    </div>
+                                    <input type="hidden" name="lang[]" value="{{$lang}}">
+                                @endforeach
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
                                 <div class="d-flex justify-content-between">

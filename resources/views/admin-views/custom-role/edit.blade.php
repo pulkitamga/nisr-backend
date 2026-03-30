@@ -85,8 +85,16 @@ $moduleIcons = [
                 <div class="row mt-3">
                     <div class="col-lg-12">
                         <div class="form-group mb-4">
-                            <label for="name" class="title-color">{{translate('role_name')}}</label>
-                            <input type="text" name="name" class="form-control" id="name" value="{{ old('name', $role->name) }}" required>
+                            <label for="name" class="title-color">
+                                {{translate('role_name')}}
+                                <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ translate('role_name_english_only_hint') }}">
+                                    <img src="{{ dynamicAsset('public/assets/back-end/img/info-circle.svg') }}" alt="" width="14">
+                                </span>
+                            </label>
+                            <input type="text" name="name" class="form-control" id="name" value="{{ old('name', $role->name) }}" required
+                                pattern="[a-zA-Z0-9_\- ]+"
+                                oninput="this.value.match(/[^a-zA-Z0-9_\-\s]/) ? this.classList.add('is-invalid') : this.classList.remove('is-invalid')">
+                            <small class="text-muted d-block mt-1">{{ translate('role_name_english_only_hint') }}</small>
                             @error('name')
                             <small class="text-danger">{{ $message }}</small>
                             @enderror

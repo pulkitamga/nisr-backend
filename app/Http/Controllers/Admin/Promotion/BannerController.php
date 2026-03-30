@@ -7,6 +7,7 @@ use App\Contracts\Repositories\BrandRepositoryInterface;
 use App\Contracts\Repositories\CategoryRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Contracts\Repositories\ShopRepositoryInterface;
+use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Enums\ViewPaths\Admin\Banner;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\BannerAddRequest;
@@ -33,6 +34,7 @@ class BannerController extends BaseController
         private readonly BrandRepositoryInterface         $brandRepo,
         private readonly ProductRepositoryInterface       $productRepo,
         private readonly BannerService       $bannerService,
+        private readonly TranslationRepositoryInterface   $translationRepo,
     )
     {
     }
@@ -63,13 +65,16 @@ class BannerController extends BaseController
         $shops = $this->shopRepo->getListWithScope(scope:'active', dataLimit: 'all');
         $brands = $this->brandRepo->getListWhere(dataLimit: 'all');
         $products = $this->productRepo->getListWithScope(scope:'active', dataLimit: 'all');
-        return view(Banner::LIST[VIEW],  compact('banners', 'categories','shops', 'brands', 'products', 'bannerTypes'));
+        $language = getWebConfig(name: 'pnc_language') ?? null;
+        $defaultLanguage = $language[0];
+        return view(Banner::LIST[VIEW],  compact('banners', 'categories','shops', 'brands', 'products', 'bannerTypes', 'language', 'defaultLanguage'));
     }
 
     public function add(BannerAddRequest $request): RedirectResponse
     {
         $data = $this->bannerService->getProcessedData(request: $request);
-        $this->bannerRepo->add(data:$data);
+        $saved = $this->bannerRepo->add(data:$data);
+        $this->translationRepo->add(request:$request, model:'App\Models\Banner', id:$saved->id);
         Toastr::success(translate('banner_added_successfully'));
         return redirect()->route('admin.banner.list');
     }
@@ -82,7 +87,9 @@ class BannerController extends BaseController
         $shops = $this->shopRepo->getListWithScope(scope:'active', dataLimit: 'all');
         $brands = $this->brandRepo->getListWhere(dataLimit: 'all');
         $products = $this->productRepo->getListWithScope(scope:'active', dataLimit: 'all');
-        return view(Banner::UPDATE[VIEW], compact('banner', 'categories','shops', 'brands', 'products', 'bannerTypes'));
+        $language = getWebConfig(name: 'pnc_language') ?? null;
+        $defaultLanguage = $language[0];
+        return view(Banner::UPDATE[VIEW], compact('banner', 'categories','shops', 'brands', 'products', 'bannerTypes', 'language', 'defaultLanguage'));
     }
 
     public function update(BannerUpdateRequest $request, $id): RedirectResponse
@@ -90,6 +97,7 @@ class BannerController extends BaseController
         $banner = $this->bannerRepo->getFirstWhere(params: ['id'=>$id]);
         $data = $this->bannerService->getProcessedData(request: $request, image: $banner['photo']);
         $this->bannerRepo->update(id:$banner['id'], data:$data);
+        $this->translationRepo->update(request:$request, model:'App\Models\Banner', id:$id);
         Toastr::success(translate('banner_updated_successfully'));
         return redirect()->route(Banner::UPDATE[ROUTE]);
     }

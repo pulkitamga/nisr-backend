@@ -20,10 +20,21 @@ use Illuminate\Support\Facades\Session;
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group mb-4">
-                            <label for="name" class="title-color">{{translate('role_name')}}</label>
+                            <label for="name" class="title-color">
+                                {{translate('role_name')}}
+                                <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ translate('role_name_english_only_hint') }}">
+                                    <img src="{{ dynamicAsset('public/assets/back-end/img/info-circle.svg') }}" alt="" width="14">
+                                </span>
+                            </label>
                             <input type="text" name="name" class="form-control" id="name"
                                 aria-describedby="emailHelp"
-                                placeholder="{{translate('ex').':'.translate('store')}}" required>
+                                placeholder="{{translate('ex').':'.translate('store')}}" required
+                                pattern="[a-zA-Z0-9_\- ]+"
+                                oninput="this.value.match(/[^a-zA-Z0-9_\-\s]/) ? this.classList.add('is-invalid') : this.classList.remove('is-invalid')">
+                            <small class="text-muted d-block mt-1">{{ translate('role_name_english_only_hint') }}</small>
+                            @error('name')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -48,19 +59,19 @@ use Illuminate\Support\Facades\Session;
                         <div id="crud-options-{{ $module }}" class="crud-options mb-2" style="display: none;">
                             <label>{{ translate('select_crud_permissions') }}</label>
                             <div>
-                                <input type="checkbox" name="permissions[{{ $module }}][create]" id="create_{{ $module }}">
+                                <input type="checkbox" name="permissions[]" value="{{ $module }}.create" id="create_{{ $module }}">
                                 <label for="create_{{ $module }}">{{ translate('create') }}</label>
                             </div>
                             <div>
-                                <input type="checkbox" name="permissions[{{ $module }}][read]" id="read_{{ $module }}">
+                                <input type="checkbox" name="permissions[]" value="{{ $module }}.read" id="read_{{ $module }}">
                                 <label for="read_{{ $module }}">{{ translate('read') }}</label>
                             </div>
                             <div>
-                                <input type="checkbox" name="permissions[{{ $module }}][update]" id="update_{{ $module }}">
+                                <input type="checkbox" name="permissions[]" value="{{ $module }}.update" id="update_{{ $module }}">
                                 <label for="update_{{ $module }}">{{ translate('update') }}</label>
                             </div>
                             <div>
-                                <input type="checkbox" name="permissions[{{ $module }}][delete]" id="delete_{{ $module }}">
+                                <input type="checkbox" name="permissions[]" value="{{ $module }}.delete" id="delete_{{ $module }}">
                                 <label for="delete_{{ $module }}">{{ translate('delete') }}</label>
                             </div>
                         </div>

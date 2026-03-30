@@ -100,7 +100,7 @@
                                 @foreach($attributes as $key => $attribute)
                                     <tr>
                                         <td>{{$attributes->firstItem()+$key}}</td>
-                                        <td class="text-center">{{ translate($attribute['name'])}}</td>
+                                        <td class="text-center">{{ $attribute->getTranslatedField('name') }}</td>
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline-info btn-sm square-btn"

@@ -31,7 +31,7 @@ class DepartmentService
     public function getAddData(object $request):array
     {
         $data = [
-            'name' => $request['name'],
+            'name' => $request['name'][getDefaultLanguageIndex($request)],
             'status' => $request['status'] == '0' ? '0' : '1',
         ];
 

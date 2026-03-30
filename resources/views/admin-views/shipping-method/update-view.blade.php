@@ -18,22 +18,37 @@
                           class="text-start"
                           method="post">
                         @csrf
-                        <div class="form-group">
-                            <div class="row ">
-                                <div class="col-md-12">
-                                    <label class="title-color" for="title">{{translate('title')}}</label>
-                                    <input type="text" name="title" value="{{$method['title']}}" class="form-control" placeholder="{{translate('title')}}">
-                                </div>
+                        @php
+                            $activeLanguage = $defaultLanguage;
+                            $_la = is_array($language ?? null) ? $language : [];
+                            if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                        @endphp
+                        <ul class="nav nav-tabs w-fit-content mb-4">
+                            @foreach($language as $lang)
+                                <li class="nav-item text-capitalize">
+                                    <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link">
+                                        {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <div class="row">
+                            <div class="col-md-6">
+                                @foreach($language as $lang)
+                                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
+                                        <label class="title-color">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                        <input type="text" name="title[]" value="{{$lang == $defaultLanguage ? $method->getRawOriginal('title') : $method->getTranslatedField('title', $lang, '') }}" class="form-control" placeholder="{{translate('title')}}">
+                                    </div>
+                                    <input type="hidden" name="lang[]" value="{{$lang}}">
+                                @endforeach
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="row ">
-                                <div class="col-md-12">
-                                    <label class="title-color" for="duration">{{translate('duration')}}</label>
-                                    <input type="text" name="duration" value="{{$method['duration']}}"
-                                           class="form-control"
-                                           placeholder="{{translate('ex').' '.':'.' '.translate('4_to_6_days')}}">
-                                </div>
+                            <div class="col-md-6">
+                                @foreach($language as $lang)
+                                    <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
+                                        <label class="title-color">{{ translate('duration') }} ({{ strtoupper($lang) }})</label>
+                                        <input type="text" name="duration[]" value="{{$lang == $defaultLanguage ? $method->getRawOriginal('duration') : $method->getTranslatedField('duration', $lang, '') }}" class="form-control" placeholder="{{translate('ex').' '.':'.' '.translate('4_to_6_days')}}">
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
 

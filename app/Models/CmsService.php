@@ -17,6 +17,7 @@ class CmsService extends Model
         'heading',
         'description',
         'image',
+        'button_text',
     ];
 
 }

@@ -231,27 +231,37 @@
                     @csrf
                     <div class="row">
                         <div class="col-xl-4 col-md-6">
-                            <div class="form-group">
-                                <div class="row justify-content-center">
-                                    <div class="col-md-12">
-                                        <label class="title-color d-flex" for="title">{{translate('title')}}</label>
-                                        <input type="text" name="title" class="form-control"
-                                            placeholder="{{translate('title')}}" required>
-                                    </div>
+                            @php
+                                $activeLanguage = $defaultLanguage;
+                                $_la = is_array($language ?? null) ? $language : [];
+                                if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                            @endphp
+                            <ul class="nav nav-tabs w-fit-content mb-2">
+                                @foreach($language as $lang)
+                                    <li class="nav-item text-capitalize">
+                                        <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link">
+                                            {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            @foreach($language as $lang)
+                                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
+                                    <label class="title-color d-flex">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                    <input type="text" name="title[]" class="form-control"
+                                        placeholder="{{translate('title')}}" required>
                                 </div>
-                            </div>
+                                <input type="hidden" name="lang[]" value="{{$lang}}">
+                            @endforeach
                         </div>
                         <div class="col-xl-4 col-md-6">
-                            <div class="form-group">
-                                <div class="row justify-content-center">
-                                    <div class="col-md-12">
-                                        <label class="title-color d-flex"
-                                            for="duration">{{translate('duration')}}</label>
-                                        <input type="text" name="duration" class="form-control"
-                                            placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}" required>
-                                    </div>
+                            @foreach($language as $lang)
+                                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
+                                    <label class="title-color d-flex">{{ translate('duration') }} ({{ strtoupper($lang) }})</label>
+                                    <input type="text" name="duration[]" class="form-control"
+                                        placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}" required>
                                 </div>
-                            </div>
+                            @endforeach
                         </div>
                         <div class="col-xl-4 col-md-6">
                             <div class="form-group">

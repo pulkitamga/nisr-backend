@@ -8,6 +8,7 @@ use App\Contracts\Repositories\CategoryShippingCostRepositoryInterface;
 use App\Contracts\Repositories\ShippingMethodRepositoryInterface;
 use App\Contracts\Repositories\ShippingMethodAreaRepositoryInterface;
 use App\Contracts\Repositories\ShippingTypeRepositoryInterface;
+use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Enums\ViewPaths\Admin\ShippingMethod;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\ShippingMethodRequest;
@@ -48,6 +49,7 @@ class ShippingMethodController extends BaseController
         private readonly CategoryShippingCostRepositoryInterface $categoryShippingCostRepo,
         private readonly CategoryShippingCostService             $categoryShippingCostService,
         private readonly BusinessSettingRepositoryInterface      $businessSettingRepo,
+        private readonly TranslationRepositoryInterface          $translationRepo,
     )
     {
     }
@@ -105,7 +107,9 @@ class ShippingMethodController extends BaseController
         $states = State::all();  // Assuming you have a State model to get the states
         $cities = City::all();
         $areas = Area::all();
-        return view(ShippingMethod::INDEX[VIEW], compact('allCategoryShippingCost', 'shippingMethods', 'shippingMethodsArea', 'adminShipping', 'states', 'cities', 'areas'));
+        $language = getWebConfig(name: 'pnc_language') ?? null;
+        $defaultLanguage = $language[0];
+        return view(ShippingMethod::INDEX[VIEW], compact('allCategoryShippingCost', 'shippingMethods', 'shippingMethodsArea', 'adminShipping', 'states', 'cities', 'areas', 'language', 'defaultLanguage'));
     }
 
     /**
@@ -114,7 +118,8 @@ class ShippingMethodController extends BaseController
      */
     public function add(ShippingMethodRequest $request): RedirectResponse
     {
-        $this->shippingMethodRepo->add($this->shippingMethodService->addShippingMethodData(request: $request, addedBy: 'admin'));
+        $saved = $this->shippingMethodRepo->add($this->shippingMethodService->addShippingMethodData(request: $request, addedBy: 'admin'));
+        $this->translationRepo->add(request: $request, model: 'App\Models\ShippingMethod', id: $saved->id);
         Toastr::success(translate('successfully_added'));
         return redirect()->back();
     }
@@ -158,7 +163,9 @@ class ShippingMethodController extends BaseController
     {
         if ($id != 1) {
             $method = $this->shippingMethodRepo->getFirstWhere(params: ['id' => $id]);
-            return view(ShippingMethod::UPDATE[VIEW], compact('method'));
+            $language = getWebConfig(name: 'pnc_language') ?? null;
+            $defaultLanguage = $language[0];
+            return view(ShippingMethod::UPDATE[VIEW], compact('method', 'language', 'defaultLanguage'));
         }
         Toastr::success(translate('can_not_update_first_records'));
         return back();
@@ -174,7 +181,9 @@ class ShippingMethodController extends BaseController
         $cities = City::all();
         if ($id != 1) {
             $method = $this->shippingMethodAreaRepo->getFirstWhere(params: ['id' => $id]);
-            return view(ShippingMethod::AREA_UPDATE[VIEW], compact('method', 'states', 'cities'));
+            $language = getWebConfig(name: 'pnc_language') ?? null;
+            $defaultLanguage = $language[0];
+            return view(ShippingMethod::AREA_UPDATE[VIEW], compact('method', 'states', 'cities', 'language', 'defaultLanguage'));
         }
         return back();
     }
@@ -187,6 +196,7 @@ class ShippingMethodController extends BaseController
     public function update(ShippingMethodRequest $request, string|int $id): RedirectResponse
     {
         $this->shippingMethodRepo->update(id: $id, data: $this->shippingMethodService->addShippingMethodData(request: $request, addedBy: 'admin'));
+        $this->translationRepo->update(request: $request, model: 'App\Models\ShippingMethod', id: $id);
         Toastr::success(translate('successfully_updated'));
         return redirect()->route(ShippingMethod::INDEX[ROUTE]);
     }

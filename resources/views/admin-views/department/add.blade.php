@@ -21,14 +21,34 @@
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" class="mb-1" alt="">
                     {{ translate('department_information') }}
                 </h5>
+                @php
+                    $activeLanguage = $defaultLanguage;
+                    $_la = is_array($language ?? null) ? $language : [];
+                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                @endphp
+                <ul class="nav nav-tabs w-fit-content mb-4">
+                    @foreach($language as $lang)
+                        <li class="nav-item text-capitalize">
+                            <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}"
+                               id="{{$lang}}-link">
+                                {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
                 <div class="row">
                     <div class="col-sm-6 col-lg-4">
-                        <div class="form-group">
-                            <label class="title-color d-flex">{{translate('Name')}}</label>
-                            <input class="form-control" type="text" name="name"
-                                value=""
-                                placeholder="{{translate('enter_department_name')}}">
-                        </div>
+                        @foreach($language as $lang)
+                            <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
+                                 id="{{$lang}}-form">
+                                <label class="title-color" for="name">{{ translate('Name') }}
+                                    ({{ strtoupper($lang) }})</label>
+                                <input type="text" name="name[]" class="form-control" id="name"
+                                       value=""
+                                       placeholder="{{translate('enter_department_name')}}">
+                            </div>
+                            <input type="hidden" name="lang[]" value="{{$lang}}">
+                        @endforeach
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">

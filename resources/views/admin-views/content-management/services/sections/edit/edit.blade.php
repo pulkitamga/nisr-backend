@@ -62,6 +62,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
             {{$lang == $defaultLanguage ? $products->description : ($translations[$lang]['description'] ?? '') }}
         </textarea>
 
+                    <!-- Button Text -->
+                    <label class="mt-3">{{ translate('Button_Text') }} ({{ strtoupper($lang) }})</label>
+                    <input type="text" name="button_text[]" class="form-control"
+                        value="{{ $lang == $defaultLanguage ? ($products->button_text ?? '') : ($translations[$lang]['button_text'] ?? '') }}">
+
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
                 </div>
                 @endforeach

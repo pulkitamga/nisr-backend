@@ -16,9 +16,10 @@ class WarrantyPolicyRequest extends FormRequest
         return [
             'lang' => 'required|array',
             'value' => 'required|array',
-            'value.*' => 'required|string',
+            'value.0' => 'required|string',
+            'value.*' => 'nullable|string',
             'version' => 'nullable|string',
-            'published_at' => 'nullable|date', 
+            'published_at' => 'nullable|date',
         ];
     }
 }
