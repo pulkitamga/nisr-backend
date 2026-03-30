@@ -1689,3 +1689,8 @@ body {
 .bg-count-light:hover {
     filter: none !important;
 }
+
+/* Additional RTL/LTR logical property utilities */
+.me-auto { margin-inline-end: auto !important; }
+.text-start { text-align: start !important; }
+.text-end { text-align: end !important; }
