@@ -52,13 +52,13 @@
                                 @php( $local = session()->has('local')?session('local'):'en')
                                 @php($lang = \App\Models\BusinessSetting::where('type', 'language')->first())
                                 <div
-                                    class="topbar-text dropdown disable-autohide {{$direction === "rtl" ? 'me-3' : 'm-1'}} text-capitalize">
+                                    class="topbar-text dropdown disable-autohide m-1 text-capitalize">
                                     <a class="topbar-link dropdown-toggle text-black d-flex align-items-center title-color"
                                        href="javascript:" data-toggle="dropdown"
                                     >
                                         @foreach(json_decode($lang['value'],true) as $data)
                                             @if($data['code']==$local)
-                                                <img class="{{$direction === "rtl" ? 'me-2' : ''}}" width="20"
+                                                <img class="me-2" width="20"
                                                      src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                                      alt="{{$data['name']}}">
                                                 <span class="d-none d-sm-block">{{$data['name']}}</span>
@@ -73,7 +73,7 @@
                                                     data-language-code="{{$data['code']}}">
                                                     <a class="dropdown-item pb-1 {{$data['code']==$local ? 'active' : ':'}}"
                                                        href="javascript:">
-                                                        <img class="{{$direction === "rtl" ? 'me-2' : ''}}"
+                                                        <img class="me-2"
                                                              width="20"
                                                              src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                                              alt="{{$data['name']}}"/>
@@ -152,12 +152,12 @@
                                 @foreach ($notification_data as $item)
                                     <button class="dropdown-item position-relative notification-data-view"
                                             data-id="{{ $item->id }}">
-                                    <span class="text-truncate pr-2 d-block"
+                                    <span class="text-truncate pe-2 d-block"
                                           title="Settings">{{translate($item->title)}}</span>
                                         <span class="fs-10">{{ $item->created_at->diffforHumans() }}</span>
                                         @if($item->notification_seen_by == null)
                                             <span
-                                                class="badge-soft-danger float-right small py-1 px-2 rounded notification_data_new_badge{{ $item->id }}">{{translate('new')}}</span>
+                                                class="badge-soft-danger float-end small py-1 px-2 rounded notification_data_new_badge{{ $item->id }}">{{translate('new')}}</span>
                                         @endif
                                     </button>
                                     <div class="dropdown-divider"></div>
@@ -201,7 +201,7 @@
                                  class="hs-unfold-content width--16rem dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account">
                                 <a class="dropdown-item position-relative"
                                    href="{{route('vendor.messages.index', ['type' => 'customer'])}}">
-                                    <span class="text-truncate pr-2"
+                                    <span class="text-truncate pe-2"
                                           title="Settings">{{translate('customer')}}</span>
                                     @php($messageCustomer=\App\Models\Chatting::where(['seen_by_seller'=>0, 'seller_id'=>auth('seller')->id()])->whereNotNull(['user_id'])->count())
                                     @if($messageCustomer > 0)
@@ -212,7 +212,7 @@
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item position-relative"
                                    href="{{route('vendor.messages.index', ['type' => 'delivery-man'])}}">
-                                    <span class="text-truncate pr-2"
+                                    <span class="text-truncate pe-2"
                                           title="Settings">{{translate('delivery_man')}}</span>
                                     @php($messageDeliveryMan =\App\Models\Chatting::where(['seen_by_seller'=>0, 'seller_id'=>auth('seller')->id()])->whereNotNull(['delivery_man_id'])->count())
                                     @if($messageDeliveryMan > 0)
@@ -264,7 +264,7 @@
                                      "target": "#accountNavbarDropdown",
                                      "type": "css-animation"
                                    }'>
-                                <div class="d-none d-md-block media-body text-right">
+                                <div class="d-none d-md-block media-body text-end">
                                     <h5 class="profile-name mb-0">{{$vendor->name}}</h5>
                                 </div>
                                 <div class="avatar avatar-sm avatar-circle">
@@ -293,12 +293,12 @@
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item"
                                    href="{{route('vendor.profile.update',[auth('seller')->id()])}}">
-                                    <span class="text-truncate pr-2" title="Settings">{{translate('settings')}}</span>
+                                    <span class="text-truncate pe-2" title="Settings">{{translate('settings')}}</span>
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="javascript:" data-toggle="modal"
                                    data-target="#sign-out-modal">
-                                    <span class="text-truncate pr-2"
+                                    <span class="text-truncate pe-2"
                                           title="{{translate('logout')}}">{{translate('logout')}}</span>
                                 </a>
                             </div>
@@ -311,12 +311,12 @@
             <div class="p-3">
                 <div class="bg-white p-1 rounded">
                     <div
-                        class="topbar-text dropdown disable-autohide {{$direction === "rtl" ? 'me-3' : 'm-1'}} text-capitalize">
+                        class="topbar-text dropdown disable-autohide m-1 text-capitalize">
                         <a class="topbar-link dropdown-toggle title-color d-flex align-items-center" href="#"
                            data-toggle="dropdown">
                             @foreach(json_decode($lang['value'],true) as $data)
                                 @if($data['code']==$local)
-                                    <img class="{{$direction === "rtl" ? 'me-2' : ''}}" width="20"
+                                    <img class="me-2" width="20"
                                          src="{{dynamicAsset(path: 'public/assets/front-end').'/img/flags/'.getLanguageFlagCode($data)}}.png"
                                          alt="{{$data['name']}}">
                                     {{$data['name']}}
@@ -329,7 +329,7 @@
                                     <li class="change-language" data-action="{{route('change-language')}}"
                                         data-language-code="{{$data['code']}}">
                                         <a class="dropdown-item pb-1" href="javascript:">
-                                            <img class="{{$direction === "rtl" ? 'me-2' : ''}}" width="20"
+                                            <img class="me-2" width="20"
                                                  src="{{dynamicAsset(path: 'public/assets/front-end').'/img/flags/'.getLanguageFlagCode($data)}}.png"
                                                  alt="{{$data['name']}}"/>
                                             <span class="text-capitalize">{{$data['name']}}</span>

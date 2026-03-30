@@ -51,12 +51,12 @@ use Carbon\Carbon;
                             <div>
                                 @php( $local = session()->has('local')?session('local'):'en')
                                 @php($lang = \App\Models\BusinessSetting::where('type', 'language')->first())
-                                <div class="topbar-text dropdown disable-autohide {{$direction == "rtl" ? 'me-3' : 'm-1'}} text-capitalize">
+                                <div class="topbar-text dropdown disable-autohide m-1 text-capitalize">
                                     <a class="topbar-link dropdown-toggle d-flex align-items-center title-color"
                                         href="javascript:" data-toggle="dropdown">
                                         @foreach(json_decode($lang['value'],true) as $data)
                                         @if($data['code']==$local)
-                                        <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
+                                        <img class="me-2" width="20"
                                             src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                             alt="{{$data['name']}}">
                                         <span class="d-none d-sm-block">{{$data['name']}}</span>
@@ -71,7 +71,7 @@ use Carbon\Carbon;
                                         <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                             <a class="dropdown-item py-1 {{$data['code']==$local ? 'active' : ':'}}"
                                                 href="javascript:">
-                                                <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
+                                                <img class="me-2" width="20"
                                                     src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                                     alt="{{$data['name']}}" />
                                                 <span class="text-capitalize">{{$data['name']}}</span>
@@ -203,7 +203,7 @@ use Carbon\Carbon;
 
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item text-center" href="{{ route('admin.notifications.list') }}">
-                                    <span class="text-truncate pr-2" title="Settings">
+                                    <span class="text-truncate pe-2" title="Settings">
                                         {{ translate('See_all_notifications') }}
                                     </span>
                                 </a>
@@ -242,7 +242,7 @@ use Carbon\Carbon;
                                      "target": "#accountNavbarDropdown",
                                      "type": "css-animation"
                                    }'>
-                                <div class="d-none d-md-block media-body text-right">
+                                <div class="d-none d-md-block media-body text-end">
                                     <h5 class="profile-name mb-0">{{auth('admin')->user()->name}}</h5>
                                     <span class="fz-12">{{ auth('admin')->user()->roles->first()?->name ?? '' }}</span>
                                 </div>
@@ -270,11 +270,11 @@ use Carbon\Carbon;
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item"
                                     href="{{route('admin.profile.update',auth('admin')->user()->id)}}">
-                                    <span class="text-truncate pr-2" title="Settings">{{ translate('settings')}}</span>
+                                    <span class="text-truncate pe-2" title="Settings">{{ translate('settings')}}</span>
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="javascript:" data-toggle="modal" data-target="#sign-out-modal">
-                                    <span class="text-truncate pr-2" title="{{translate('logout')}}">{{translate('logout')}}</span>
+                                    <span class="text-truncate pe-2" title="{{translate('logout')}}">{{translate('logout')}}</span>
                                 </a>
                             </div>
                         </div>
@@ -286,12 +286,12 @@ use Carbon\Carbon;
             <div class="p-3">
                 <div class="bg-white p-1 rounded">
                     @php( $local = session()->has('local')?session('local'):'en')
-                    <div class="topbar-text dropdown disable-autohide {{$direction == "rtl" ? 'me-3' : 'm-1'}} text-capitalize">
+                    <div class="topbar-text dropdown disable-autohide m-1 text-capitalize">
                         <a class="topbar-link dropdown-toggle title-color d-flex align-items-center" href="#"
                             data-toggle="dropdown">
                             @foreach(json_decode($lang['value'],true) as $data)
                             @if($data['code']==$local)
-                            <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
+                            <img class="me-2" width="20"
                                 src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                 alt="{{$data['name']}}">
                             {{$data['name']}}
@@ -303,7 +303,7 @@ use Carbon\Carbon;
                             @if($data['status']==1)
                             <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                 <a class="dropdown-item pb-1" href="javascript:">
-                                    <img class="{{$direction == "rtl" ? 'me-2' : ''}}" width="20"
+                                    <img class="me-2" width="20"
                                         src="{{dynamicAsset(path: 'public/assets/front-end/img/flags/'.getLanguageFlagCode($data).'.png')}}"
                                         alt="{{$data['name']}}" />
                                     <span class="text-capitalize">{{$data['name']}}</span>

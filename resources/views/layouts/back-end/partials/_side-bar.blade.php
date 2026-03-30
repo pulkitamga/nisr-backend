@@ -193,7 +193,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('all') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\Order::count() }}
                                                 </span>
                                             </span>
@@ -206,7 +206,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('pending') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'pending'])->count() }}
                                                 </span>
                                             </span>
@@ -219,7 +219,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('confirmed') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'confirmed'])->count() }}
                                                 </span>
                                             </span>
@@ -232,7 +232,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('packaging') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'processing'])->count() }}
                                                 </span>
                                             </span>
@@ -246,7 +246,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('out_for_delivery') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'out_for_delivery'])->count() }}
                                                 </span>
                                             </span>
@@ -259,7 +259,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('delivered') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'delivered'])->count() }}
                                                 </span>
                                             </span>
@@ -272,7 +272,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('returned') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\Order::where('order_status', 'returned')->count() }}
                                                 </span>
                                             </span>
@@ -285,7 +285,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('failed_to_Deliver') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'failed'])->count() }}
                                                 </span>
                                             </span>
@@ -299,7 +299,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('canceled') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'canceled'])->count() }}
                                                 </span>
                                             </span>
@@ -327,7 +327,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('pending') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\RefundRequest::where('status', 'pending')->count() }}
                                                 </span>
                                             </span>
@@ -342,7 +342,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('approved') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\RefundRequest::where('status', 'approved')->count() }}
                                                 </span>
                                             </span>
@@ -356,7 +356,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('refunded') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\RefundRequest::where('status', 'refunded')->count() }}
                                                 </span>
                                             </span>
@@ -370,7 +370,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('rejected') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\RefundRequest::where('status', 'rejected')->count() }}
                                                 </span>
                                             </span>
@@ -487,7 +487,7 @@
                                             title="{{ translate('Product_List') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('Product_List') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ getAdminProductsCount('all') }}
                                                 </span>
                                             </span>
@@ -538,7 +538,7 @@
                                             href="{{ route('admin.products.list', ['vendor', 'status' => '0']) }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('new_Products_Requests') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ getVendorProductsCount('new-product') }}
                                                 </span>
                                             </span>
@@ -553,7 +553,7 @@
                                                 <span class="tio-circle nav-indicator-icon"></span>
                                                 <span
                                                     class="text-truncate text-capitalize">{{ Str::limit(translate('product_update_requests'), 18, '...') }}
-                                                    <span class="badge badge-soft-info badge-pill ml-1">
+                                                    <span class="badge badge-soft-info badge-pill ms-1">
                                                         {{ getVendorProductsCount('product-updated-request') }}
                                                     </span>
                                                 </span>
@@ -566,7 +566,7 @@
                                             href="{{ route('admin.products.list', ['vendor', 'status' => '1']) }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('approved_Products') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ getVendorProductsCount('approved') }}
                                                 </span>
                                             </span>
@@ -578,7 +578,7 @@
                                             href="{{ route('admin.products.list', ['vendor', 'status' => '2']) }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('denied_Products') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ getVendorProductsCount('denied') }}
                                                 </span>
                                             </span>
@@ -668,7 +668,7 @@
                                             title="{{ translate('history') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('history') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\Warranty::where('status', 'preactivated')->distinct()->count(\Illuminate\Support\Facades\DB::raw('DATE(created_at)')) }}
                                                 </span>
                                             </span>
@@ -692,7 +692,7 @@
                                             title="{{ translate('all') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('all') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\Warranty::count() }}
                                                 </span>
                                             </span>
@@ -725,7 +725,7 @@
                                             title="{{ translate('activation_reviews') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('activation_reviews') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\ActivationReview::where('status', 'pending')->count() }}
                                                 </span>
                                             </span>
@@ -741,7 +741,7 @@
                                     <i class="tio-warning nav-icon"></i>
                                     <span
                                         class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('blacklist') }}
-                                        <span class="badge badge-soft-danger badge-pill ml-1">
+                                        <span class="badge badge-soft-danger badge-pill ms-1">
                                             {{ \App\Models\Blacklist::count() }}
                                         </span>
                                     </span>
@@ -756,7 +756,7 @@
                                     <i class="tio-history nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                         {{ translate('serial_transaction_history') }}
-                                        <span class="badge badge-soft-info badge-pill ml-1">
+                                        <span class="badge badge-soft-info badge-pill ms-1">
                                             {{ \App\Models\SerialTransferHistory::count() }}
                                         </span>
                                     </span>
@@ -777,7 +777,7 @@
                                             title="{{ translate('all') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('all') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::count() }}
                                                 </span>
                                             </span>
@@ -788,7 +788,7 @@
                                             title="{{ translate('new') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('new') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'new')->count() }}
                                                 </span>
                                             </span>
@@ -798,7 +798,7 @@
                                         <a class="nav-link" href="{{ route('admin.warranty.claim.triage-pending') }}" title="{{ translate('triage_pending') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('triage_pending') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'triage_pending')->count() }}
                                                 </span>
                                             </span>
@@ -810,7 +810,7 @@
                                             title="{{ translate('approved') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('approved') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'approved')->count() }}
                                                 </span>
                                             </span>
@@ -822,7 +822,7 @@
                                             title="{{ translate('rma_issued') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('rma_issued') }}
-                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                <span class="badge badge-soft-primary badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'rma_issued')->count() }}
                                                 </span>
                                             </span>
@@ -834,7 +834,7 @@
                                             title="{{ translate('received') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('received') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'received')->count() }}
                                                 </span>
                                             </span>
@@ -847,7 +847,7 @@
                                             title="{{ translate('repair_pending') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('repair_pending') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'repair_pending')->count() }}
                                                 </span>
                                             </span>
@@ -858,7 +858,7 @@
                                             title="{{ translate('replacement_pending') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('replacement_pending') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'replacement_pending')->count() }}
                                                 </span>
                                             </span>
@@ -869,7 +869,7 @@
                                             title="{{ translate('waiting_customer') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('waiting_customer') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'waiting_customer')->count() }}
                                                 </span>
                                             </span>
@@ -880,7 +880,7 @@
                                             title="{{ translate('waiting_parts') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('waiting_parts') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'waiting_parts')->count() }}
                                                 </span>
                                             </span>
@@ -891,7 +891,7 @@
                                             title="{{ translate('waiting_payment') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('waiting_payment') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'waiting_payment')->count() }}
                                                 </span>
                                             </span>
@@ -902,7 +902,7 @@
                                             title="{{ translate('diagnosis_pending') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('diagnosis_pending') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'diagnosis_pending')->count() }}
                                                 </span>
                                             </span>
@@ -913,7 +913,7 @@
                                             title="{{ translate('qc_pending') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('qc_pending') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'qc_pending')->count() }}
                                                 </span>
                                             </span>
@@ -924,7 +924,7 @@
                                             title="{{ translate('shipped_ready') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('shipped_ready') }}
-                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                <span class="badge badge-soft-primary badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'shipped_ready')->count() }}
                                                 </span>
                                             </span>
@@ -935,7 +935,7 @@
                                             title="{{ translate('dispatched') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('dispatched') }}
-                                                <span class="badge badge-soft-primary badge-pill ml-1">
+                                                <span class="badge badge-soft-primary badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'dispatched')->count() }}
                                                 </span>
                                             </span>
@@ -947,7 +947,7 @@
                                             title="{{ translate('resolved') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('resolved') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'resolved')->count() }}
                                                 </span>
                                             </span>
@@ -959,7 +959,7 @@
                                             title="{{ translate('closed') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('closed') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'closed')->count() }}
                                                 </span>
                                             </span>
@@ -971,7 +971,7 @@
                                             title="{{ translate('rejected') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('rejected') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'rejected')->count() }}
                                                 </span>
                                             </span>
@@ -1535,7 +1535,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('branch_List') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\Branch::count() }}
                                                 </span>
                                             </span>
@@ -2011,7 +2011,7 @@
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
                                             {{ translate('all') }}
-                                            <span class="badge badge-soft-info badge-pill ml-1">
+                                            <span class="badge badge-soft-info badge-pill ms-1">
                                                 {{ \App\Models\SupportTicket::count() }}
                                             </span>
                                         </span>
@@ -2025,7 +2025,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('support') }}
-                                                <span class="badge badge-soft-info badge-pill ml-1">
+                                                <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'support', 'status' => 1])->count() }}
                                                 </span>
                                             </span>
@@ -2039,7 +2039,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('complaint') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'complaint', 'status' => 36])->count() }}
                                                 </span>
                                             </span>
@@ -2052,7 +2052,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('career') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'career', 'status' => 27])->count() }}
                                                 </span>
                                             </span>
@@ -2066,7 +2066,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('service') }}
-                                                <span class="badge badge-soft-warning badge-pill ml-1">
+                                                <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'service', 'status' => 20])->count() }}
                                                 </span>
                                             </span>
@@ -2080,7 +2080,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('retail') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'retail', 'status' => 43])->count() }}
                                                 </span>
                                             </span>
@@ -2094,7 +2094,7 @@
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
                                                 {{ translate('wholesale') }}
-                                                <span class="badge badge-soft-danger badge-pill ml-1">
+                                                <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'wholesale', 'status' => 56])->count() }}
                                                 </span>
                                             </span>
@@ -2202,7 +2202,7 @@
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Tiers') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholesaleTier::count() }}
                                                 </span>
                                             </span>
@@ -2217,7 +2217,7 @@
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Join Requests') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholeSalerBusiness::whereHas('wholesaler', function ($query) {
                                                         $query->where('user_type', 1)->where('wholesaler_status', '!=', 1);
                                                     })->count() }}
@@ -2234,7 +2234,7 @@
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Wholesalers') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholeSalerBusiness::whereHas('wholesaler', function ($query) {
                                                         $query->where('user_type', 1)->where('wholesaler_status', '!=', 0);
                                                     })->count() }}
@@ -2251,7 +2251,7 @@
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Purchase Requests') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholesalePurchaseOrder::count() }}
                                                 </span>
                                             </span>
@@ -2266,7 +2266,7 @@
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Quotation_Sent') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholesaleQuotation::count() }}
                                                 </span>
                                             </span>
@@ -2293,7 +2293,7 @@
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Confirmed_Orders') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholesaleConfirmOrder::count() }}
                                                 </span>
                                             </span>
@@ -2331,7 +2331,7 @@
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                                 {{ translate('Product_List') }}
-                                                <span class="badge badge-soft-success badge-pill ml-1">
+                                                <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholeSaleProducts::where('status', 1)
                                                         ->whereHas('product', function ($query) {
                                                             $query->whereNull('deleted_at')
