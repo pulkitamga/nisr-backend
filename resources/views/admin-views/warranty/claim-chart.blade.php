@@ -208,42 +208,42 @@
 
         <div class="row mb-4" id="summaryCards">
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left: 4px solid #3498db;">
+                <div class="stat-card" style="border-inline-start: 4px solid #3498db;">
                     <div class="stat-number text-primary" id="card-total">{{ $cards['total'] }}</div>
                     <div class="stat-label">{{ translate('total_claims') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left: 4px solid #f39c12;">
+                <div class="stat-card" style="border-inline-start: 4px solid #f39c12;">
                     <div class="stat-number text-warning" id="card-new">{{ $cards['new'] }}</div>
                     <div class="stat-label">{{ translate('new') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left: 4px solid #2ecc71;">
+                <div class="stat-card" style="border-inline-start: 4px solid #2ecc71;">
                     <div class="stat-number text-success" id="card-approved">{{ $cards['approved'] }}</div>
                     <div class="stat-label">{{ translate('approved') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left: 4px solid #e74c3c;">
+                <div class="stat-card" style="border-inline-start: 4px solid #e74c3c;">
                     <div class="stat-number text-danger" id="card-rejected">{{ $cards['rejected'] }}</div>
                     <div class="stat-label">{{ translate('rejected') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left: 4px solid #9b59b6;">
+                <div class="stat-card" style="border-inline-start: 4px solid #9b59b6;">
                     <div class="stat-number text-info" id="card-pending">{{ $cards['pending'] }}</div>
                     <div class="stat-label">{{ translate('pending') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left: 4px solid #34495e;">
+                <div class="stat-card" style="border-inline-start: 4px solid #34495e;">
                     <div class="stat-number text-dark" id="card-resolved">{{ $cards['resolved'] }}</div>
                     <div class="stat-label">{{ translate('resolved') }}</div>
                 </div>

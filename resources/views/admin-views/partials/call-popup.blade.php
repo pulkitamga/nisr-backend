@@ -1,6 +1,6 @@
 <!-- resources/views/admin-views/partials/_call-popup.blade.php -->
 
-<div id="call-popup-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+<div id="call-popup-container" style="position: fixed; bottom: 20px; inset-inline-end: 20px; z-index: 9999;">
     <!-- Calls yahan Ajax se append honge -->
 </div>
 

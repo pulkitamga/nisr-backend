@@ -71,7 +71,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     @endif
                     <div id="image-preview" class="mt-2 position-relative d-inline-block" style="{{ $model->image ? '' : 'display:none;' }}">
                         <img id="preview_img" src="{{ $model->image ? Storage::url($model->image) : '' }}" style="width: 100px;">
-                        <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; right: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
+                        <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; inset-inline-end: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
                     </div>
                 </div>
 

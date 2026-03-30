@@ -64,7 +64,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 {{-- Image Preview --}}
                 <div id="image-preview" class="mt-2 position-relative d-inline-block" style="display: none;">
                     <img id="imagePreview" src="#" alt="Image Preview" style="width: 100px;">
-                    <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; right: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
+                    <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; inset-inline-end: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
                 </div>
 
                 <div class="form-group mt-3">

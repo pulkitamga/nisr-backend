@@ -82,7 +82,7 @@
 
     .policy-content {
         flex-grow: 1;
-        text-align: left;
+        text-align: start;
     }
 
     .policy-content h3 {

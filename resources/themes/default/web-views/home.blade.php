@@ -535,7 +535,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                         <!-- Right Image -->
                         <div class="col-md-6 text-end position-relative hidden lg:block img-user-div">
                             <img src="{{ asset($data['image']) }}" alt="Wholeseller Image" class="img-fluid img-user-mobile"
-                                style="max-height: 28rem; position: absolute; top: -18rem; right: 0; object-fit: contain;">
+                                style="max-height: 28rem; position: absolute; top: -18rem; inset-inline-end: 0; object-fit: contain;">
                         </div>
 
                     </div>
@@ -756,7 +756,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                             @if (!empty($content['mockup_image']['image']))
                             <img src="{{ $resolveDownloadImage($content['mockup_image']['image'] ?? '') }}"
                                 alt="{{ $content['mockup_image']['alt'] ?? '' }}" class="img-fluid img-app"
-                                style="max-height: 20rem; position: absolute; top: -9rem; right: 5rem; object-fit: contain; z-index: 1;">
+                                style="max-height: 20rem; position: absolute; top: -9rem; inset-inline-end: 5rem; object-fit: contain; z-index: 1;">
                             @endif
                         </div>
 

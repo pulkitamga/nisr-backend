@@ -31,7 +31,7 @@
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid #3498db;
+            border-inline-start: 4px solid #3498db;
             transition: transform 0.2s;
         }
 
@@ -964,37 +964,37 @@
             function updateSummaryStats(summary) {
                 $('#summaryStats').html(`
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left-color: #3498db">
+                <div class="stat-card" style="border-inline-start-color: #3498db">
                     <div class="stat-number text-primary">${summary.total || 0}</div>
                     <div class="stat-label">${crmChartText.totalMessages}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left-color: #2ecc71">
+                <div class="stat-card" style="border-inline-start-color: #2ecc71">
                     <div class="stat-number text-success">${summary.assigned || 0}</div>
                     <div class="stat-label">${crmChartText.assigned}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left-color: #f39c12">
+                <div class="stat-card" style="border-inline-start-color: #f39c12">
                     <div class="stat-number text-warning">${summary.pending || 0}</div>
                     <div class="stat-label">${crmChartText.pending}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left-color: #9b59b6">
+                <div class="stat-card" style="border-inline-start-color: #9b59b6">
                     <div class="stat-number text-info">${summary.converted || 0}</div>
                     <div class="stat-label">${crmChartText.converted}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left-color: #e74c3c">
+                <div class="stat-card" style="border-inline-start-color: #e74c3c">
                     <div class="stat-number text-danger">${summary.ignored || 0}</div>
                     <div class="stat-label">${crmChartText.ignored}</div>
                 </div>
             </div>
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-left-color: #34495e">
+                <div class="stat-card" style="border-inline-start-color: #34495e">
                     <div class="stat-number text-dark">${summary.spam || 0}</div>
                     <div class="stat-label">${crmChartText.spam}</div>
                 </div>

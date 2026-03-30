@@ -235,8 +235,8 @@ $direction = Session::get('direction');
                     <td style="padding: 8px">
                         <table style="width:100%; background: #ffffff">
                             <tr>
-                                <td style="text-align:left;padding:15px 15px 5px">{{translate('Order').'#'.$data['order']->id}}</td>
-                                <td style="text-align:right;padding:15px 15px 5px">{{$data['order']->customer['phone']}}</td>
+                                <td style="text-align:start;padding:15px 15px 5px">{{translate('Order').'#'.$data['order']->id}}</td>
+                                <td style="text-align:end;padding:15px 15px 5px">{{$data['order']->customer['phone']}}</td>
                             </tr>
                             <tr>
                                 <td colspan="2" style="padding:5px 15px">

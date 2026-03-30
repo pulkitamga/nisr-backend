@@ -121,7 +121,7 @@
         table thead th {
             padding: 8px;
             font-size: 9px;
-            text-align: left
+            text-align: start
         }
 
         table tbody th,

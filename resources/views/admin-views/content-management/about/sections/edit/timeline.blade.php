@@ -83,7 +83,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             style="width: 60px; height: 60px; object-fit: cover; border: 1px solid #ccc; display: {{ $model->image ? 'inline-block' : 'none' }};">
 
                         <button type="button" id="removeImageBtn"
-                            style="position:absolute; top:-10px; right:-10px; background:#ff0000; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:14px; cursor:pointer; display: {{ $model->image ? 'block' : 'none' }};">
+                            style="position:absolute; top:-10px; inset-inline-end:-10px; background:#ff0000; color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:14px; cursor:pointer; display: {{ $model->image ? 'block' : 'none' }};">
                             &times;
                         </button>
                     </div>

@@ -65,7 +65,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
            border: 2px dashed #139d91; overflow: hidden; 
            position: relative; display: flex; justify-content: center; align-items: center;">
                     <img id="imagePreview" src="#" alt="Image Preview"
-                        style="width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0;">
+                        style="width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; inset-inline-start: 0;">
                 </div>
 
                 <div class="form-group mt-3">

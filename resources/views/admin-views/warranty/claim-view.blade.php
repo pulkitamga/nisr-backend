@@ -162,7 +162,7 @@
             <div class="table-responsive mt-4">
                 <h6 class="font-weight-bold mb-3">{{ translate('Payment Records') }}</h6>
                 <table class="table table-sm table-bordered"
-                    style="text-align: {{ $isRtl ? 'right' : 'left' }};">
+                    style="text-align: start;">
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('Channel') }}</th>

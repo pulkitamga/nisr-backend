@@ -70,7 +70,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                          border: 2px dashed #139d91; overflow: hidden; 
                               position: relative; display: flex; justify-content: center; align-items: center;">
                         <img src="{{ Storage::url($model->image) }}" alt="Image Preview"
-                            style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                            style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; inset-inline-start: 0;">
                     </div>
 
                     @endif

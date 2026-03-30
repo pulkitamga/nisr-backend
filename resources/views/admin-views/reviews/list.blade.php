@@ -114,7 +114,7 @@
             <div class="table-responsive datatable-custom">
                 <table
                     class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100"
-                    style="text-align: {{ Session::get('direction') === 'rtl' ? 'right' : 'left' }}">
+                    style="text-align: start;">
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{ translate('SL') }}</th>
