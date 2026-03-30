@@ -81,7 +81,7 @@
             session('direction') === 'rtl' ||
             (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
-    <div class="content container-fluid voip-report-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid voip-report-page {{ $isRtl ? 'text-end' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
                 <div>

@@ -22,7 +22,7 @@
             <p class="text-gray-500">{{ translate('Quotation') }} #: {{ $order->id }}</p>
             <p class="text-gray-500">{{ translate('Date') }}: {{ $order->created_at->format('d M Y') }}</p>
         </div>
-        <div class="text-right">
+        <div class="text-end">
             <h2 class="line-height-1 text-bold text-sm-left">{{ getWebConfig('company_name') }}</h2>
             <h5 class="line-height-1 font-size-16px">
                 {{ translate('phone') }} : {{ getWebConfig('company_phone') }}
@@ -50,7 +50,7 @@
     <!-- Products Table -->
     <div class="overflow-x-auto">
         <table class="w-full table-auto border border-gray-200">
-            <thead class="bg-gray-100 text-left">
+            <thead class="bg-gray-100 text-start">
                 <tr>
                     <th class="p-2 border">#</th>
                     <th class="p-2 border">{{ __('Product') }}</th>

@@ -139,7 +139,7 @@
                         <ul class="list-group mt-2">
                             @foreach($inbox->details as $key => $value)
                             @if(!empty($value)) 
-                            <li class="list-group-item d-flex justify-content-between align-items-center {{ $isRtl ? 'flex-row-reverse text-right' : '' }}">
+                            <li class="list-group-item d-flex justify-content-between align-items-center {{ $isRtl ? 'flex-row-reverse text-end' : '' }}">
                                 <span class="fw-bold">{{ translate($key) }}</span>
                                 <span class="{{ $valueClass($value) }}">{{ $translateToken($value) }}</span>
                             </li>

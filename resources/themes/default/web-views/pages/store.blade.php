@@ -98,7 +98,7 @@
                     <div class="w-0 flex-grow-1">
                         <span class="featured_deal_title font-bold text-dark">{{ translate('featured_deal')}}</span>
                         <br>
-                        <span class="text-left text-nowrap">{{
+                        <span class="text-start text-nowrap">{{
                             translate('see_the_latest_deals_and_exciting_new_offers')}}!</span>
                     </div>
                     <div>

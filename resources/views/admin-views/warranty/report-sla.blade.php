@@ -70,7 +70,7 @@
         $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
     @endphp
 
-    <div class="content container-fluid warranty-sla-page {{ $isRtl ? 'text-right' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+    <div class="content container-fluid warranty-sla-page {{ $isRtl ? 'text-end' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>

@@ -62,7 +62,7 @@
                                     @endif
                                 @endforeach
 
-                                <div class="text-right mt-20px">
+                                <div class="text-end mt-20px">
                                     <button type="submit" class="btn btn-primary px-5">{{translate('save')}}</button>
                                 </div>
                             </div>

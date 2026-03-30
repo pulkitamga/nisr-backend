@@ -81,7 +81,7 @@
                         <ul class="list-group mt-2">
                             @foreach($inbox->details as $key => $value)
                             @if(!empty($value)) {{-- Only show if value is not empty --}}
-                            <li class="list-group-item d-flex justify-content-between align-items-center {{ $isRtl ? 'flex-row-reverse text-right' : '' }}">
+                            <li class="list-group-item d-flex justify-content-between align-items-center {{ $isRtl ? 'flex-row-reverse text-end' : '' }}">
                                 <span class="fw-bold">{{ ucfirst($key) }}</span>
                                 <span class="bidi-auto">{{ $value }}</span>
                             </li>

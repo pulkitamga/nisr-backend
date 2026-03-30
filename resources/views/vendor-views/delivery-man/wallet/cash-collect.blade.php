@@ -56,7 +56,7 @@
             <div class="col-sm-12 mb-3">
                 <div class="card">
                     <div class="table-responsive datatable-custom">
-                        <table class="table table-hover table-borderless table-thead-bordered table-align-middle card-table {{ Session::get('direction') === 'rtl' ? 'text-right' : 'text-left' }}">
+                        <table class="table table-hover table-borderless table-thead-bordered table-align-middle card-table {{ Session::get('direction') === 'rtl' ? 'text-end' : 'text-start' }}">
                             <thead class="thead-light thead-50 text-capitalize table-nowrap">
                             <tr>
                                 <th>{{translate('SL')}}</th>

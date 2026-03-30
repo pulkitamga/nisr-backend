@@ -49,9 +49,9 @@
                             <tr>
                                 <th>{{translate('SL')}}</th>
                                 <th>{{translate('product Name')}}</th>
-                                <th class="text-right">{{translate('product Type')}}</th>
-                                <th class="text-right">{{translate('purchase_price')}}</th>
-                                <th class="text-right">{{translate('selling_price')}}</th>
+                                <th class="text-end">{{translate('product Type')}}</th>
+                                <th class="text-end">{{translate('purchase_price')}}</th>
+                                <th class="text-end">{{translate('selling_price')}}</th>
                                 <th class="text-center">{{translate('show_as_featured')}}</th>
                                 <th class="text-center">{{translate('active_status')}}</th>
                                 <th class="text-center">{{translate('action')}}</th>
@@ -74,10 +74,10 @@
                                     <td class="text-center">
                                         {{translate(str_replace('_',' ',$product['product_type']))}}
                                     </td>
-                                    <td class="text-right">
+                                    <td class="text-end">
                                         {{setCurrencySymbol(amount:usdToDefaultCurrency(amount: $product['purchase_price']))}}
                                     </td>
-                                    <td class="text-right">
+                                    <td class="text-end">
                                         {{setCurrencySymbol(amount:usdToDefaultCurrency(amount: $product['unit_price']))}}
                                     </td>
                                     <td class="text-center">

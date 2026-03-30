@@ -99,7 +99,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <table class="table table-hover table-borderless table-thead-bordered min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
-                            <th class= "text-left">{{ translate('Product Name') }}</th>
+                            <th class= "text-start">{{ translate('Product Name') }}</th>
                                 <th class="">{{ translate('Requested Qty') }}</th>
                                 <th class="">{{ translate('Base Price') }}</th>
                                 <th class="">{{ translate('Tax') }}</th>

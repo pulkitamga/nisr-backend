@@ -67,11 +67,11 @@
         }
 
 
-        .text-left {
+        .text-start {
             text-align: left;
         }
 
-        .text-right {
+        .text-end {
             text-align: right;
         }
 
@@ -290,10 +290,10 @@
         <td>
             <table class="bs-0">
                 <tr>
-                    <th class="h3 p-0 text-left">
+                    <th class="h3 p-0 text-start">
                         {{translate('order_Transaction_Statement')}}
                     </th>
-                    <th class="p-0 text-right">
+                    <th class="p-0 text-end">
                         <img class="logo" src="{{dynamicStorage(path: "storage/app/public/company/".$data['company_web_logo'])}}"
                              alt="">
                     </th>
@@ -305,7 +305,7 @@
         <td class="pt-0">
             <table class="bs-0">
                 <tr>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                         <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
@@ -320,10 +320,10 @@
         <td class="pt-0">
             <table class="bs-0">
                 <tr>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                         <table>
                             <tr>
-                                <th class="bold black p-0 text-left"
+                                <th class="bold black p-0 text-start"
                                     style="padding: 3px 0">{{translate('duration')}}</th>
                                 <td class="p-0" style="padding: 3px 0">: {{ $data['duration'] }}</td>
                             </tr>
@@ -333,7 +333,7 @@
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                     </td>
                 </tr>
             </table>
@@ -349,28 +349,28 @@
                 <tr>
                     <th class="pl-0 pr-0 text-center">{{translate('SL')}}</th>
                     <th>{{translate('details')}}</th>
-                    <th class="text-right">{{translate('amount')}}</th>
+                    <th class="text-end">{{translate('amount')}}</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
                     <td class="text-center">1</td>
                     <td>{{translate('total_expense_amount')}}</td>
-                    <td class="text-right">
+                    <td class="text-end">
                         {{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($data['total_expense'])) }}
                     </td>
                 </tr>
                 <tr>
                     <td class="text-center">2</td>
                     <td>{{translate('free_delivery_amount')}}</td>
-                    <td class="text-right" style="padding: 3px 0;">
+                    <td class="text-end" style="padding: 3px 0;">
                         {{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($data['free_delivery'])) }}
                     </td>
                 </tr>
                 <tr>
                     <td class="text-center">3</td>
                     <td>{{translate('coupon_discount_amount')}}</td>
-                    <td class="text-right" style="padding: 3px 0;">
+                    <td class="text-end" style="padding: 3px 0;">
                         {{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($data['coupon_discount'])) }}
                     </td>
                 </tr>

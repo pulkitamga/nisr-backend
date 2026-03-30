@@ -68,7 +68,7 @@
             @if ($isAreaWiseShippingPending)
             <div class="d-flex justify-content-between align-items-start">
                 <span class="cart_title">{{translate('shipping')}}</span>
-                <span class="cart_value text-muted text-right" style="max-width: 65%;">
+                <span class="cart_value text-muted text-end" style="max-width: 65%;">
                     {{ $shippingNotice }}
                 </span>
             </div>

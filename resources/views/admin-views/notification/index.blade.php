@@ -46,7 +46,7 @@
                                         <label
                                             class="title-color text-capitalize">{{translate('image')}} </label>
                                         <span class="text-info">({{translate('ratio').'1:1'}})</span>
-                                        <div class="custom-file text-left">
+                                        <div class="custom-file text-start">
                                             <input type="file" name="image" class="custom-file-input image-input"
                                                    data-image-id="viewer"
                                                    accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">

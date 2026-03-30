@@ -125,7 +125,7 @@
             max-width: 58.333333% !important;
         }
 
-        .text-right {
+        .text-end {
             text-align: right !important;
         }
 
@@ -226,7 +226,7 @@
 
                         </p>
                     </div>
-                    <div class="col-md-6 {{ $isRtl ? 'text-right' : 'text-left' }}">
+                    <div class="col-md-6 {{ $isRtl ? 'text-end' : 'text-start' }}">
                         <h6>{{ translate('Order Info') }}</h6>
                         <p>
                             <strong>{{ translate('Invoice NO') }}:</strong> #<span class="bidi-ltr">{{ $order->invoice_no }}</span><br>

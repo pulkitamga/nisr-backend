@@ -19,7 +19,7 @@
             <div class="card-body">
                 <form action="" id="form-data" method="GET">
                     <h4 class="mb-3">{{translate('filter_Data')}}</h4>
-                    <div class="row gx-2 gy-3 align-items-center text-left">
+                    <div class="row gx-2 gy-3 align-items-center text-start">
                         <div class="col-sm-6 col-md-3">
                             <select class="js-select2-custom form-control __form-control" name="seller_id">
                                 <option class="text-center"
@@ -73,7 +73,7 @@
                         <h4 class="subtitle">{{ $product_count['reject_product_count']+$product_count['active_product_count']+$product_count['pending_product_count'] }}</h4>
                         <h6 class="subtext">{{translate('total_Product')}}</h6>
                     </div>
-                    <div class="coupon__discount w-100 text-right d-flex justify-content-between">
+                    <div class="coupon__discount w-100 text-end d-flex justify-content-between">
                         <div class="text-center">
                             <strong class="text-danger">{{ $product_count['reject_product_count'] }}</strong>
                             <div class="d-flex">
@@ -161,7 +161,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive" id="products-table">
                     <table
-                        class="table table-hover __table table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}">
+                        class="table table-hover __table table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}">
                         <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>

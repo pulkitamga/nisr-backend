@@ -122,7 +122,7 @@
                                            class="form-label text-capitalize">{{translate('choose_logo')}} </label>
                                     <input type="file" class="form-control image-input" name="gateway_image" accept=".jpg, .png, .jpeg|image/*" data-image-id="gateway-image-{{$gateway->key_name}}" >
                                 </div>
-                                <div class="text-right mb-20px">
+                                <div class="text-end mb-20px">
                                     <button type="submit" class="btn btn-primary px-5">{{translate('save')}}</button>
                                 </div>
                             </div>

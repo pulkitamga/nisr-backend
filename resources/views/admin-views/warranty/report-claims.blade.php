@@ -101,7 +101,7 @@
         ];
     @endphp
 
-    <div class="content container-fluid warranty-report-page {{ $isRtl ? 'text-right' : '' }}"
+    <div class="content container-fluid warranty-report-page {{ $isRtl ? 'text-end' : '' }}"
         dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">

@@ -38,12 +38,12 @@
                                              src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}"
                                              alt="{{ translate('product') }}" width="60">
                                     </div>
-                                    <div class="col-9 col-sm-7 text-left">
+                                    <div class="col-9 col-sm-7 text-start">
                                         <p>{{$product['name']}}</p>
                                         <span>{{translate('variant')}} : </span>
                                         {{$order_details->variant}}
                                     </div>
-                                    <div class="col-4 col-sm-3 text-left d-flex flex-column pl-0 mt-2 mt-sm-0 pl-sm-5">
+                                    <div class="col-4 col-sm-3 text-start d-flex flex-column pl-0 mt-2 mt-sm-0 pl-sm-5">
                                         <span>{{translate('QTY')}} : {{$order_details->qty}}</span>
                                         <span>{{translate('price')}} : {{ webCurrencyConverter(amount: $order_details->price) }}</span>
                                         <span>{{translate('discount')}} : {{ webCurrencyConverter(amount: $order_details->discount) }}</span>

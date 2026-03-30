@@ -51,7 +51,7 @@
                                         {{translate('all_customer')}}
                                     </option>
                                     @foreach($customers as $customer)
-                                        <option class="text-left text-capitalize"
+                                        <option class="text-start text-capitalize"
                                                 value="{{ $customer->id }}" {{ $customer->id == $customer_id ? 'selected' : '' }}>
                                             {{ $customer->f_name.' '.$customer->l_name }}
                                         </option>
@@ -102,7 +102,7 @@
                         <h4 class="subtitle">{{ $order_data['total_orders'] }}</h4>
                         <h6 class="subtext">{{translate('total_Orders')}}</h6>
                     </div>
-                    <div class="coupon__discount w-100 text-right d-flex justify-content-between">
+                    <div class="coupon__discount w-100 text-end d-flex justify-content-between">
                         <div class="text-center">
                             <strong class="text-primary">{{ $order_data['in_house_orders'] }}</strong>
                             <div class="d-flex">
@@ -119,7 +119,7 @@
                 </div>
                 <div class="left-content-card">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/products.svg')}}" alt="">
-                    <div class="coupon__discount w-100 text-right d-flex justify-content-between">
+                    <div class="coupon__discount w-100 text-end d-flex justify-content-between">
                         <div class="text-center">
                             <strong class="text-primary">{{ $order_data['total_in_house_products'] }}</strong>
                             <div class="d-flex">

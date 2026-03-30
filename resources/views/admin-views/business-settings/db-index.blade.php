@@ -20,7 +20,7 @@
         @include('admin-views.business-settings.system-settings-inline-menu')
         <div class="row">
             <div class="col-12 mb-3">
-                <div class="alert badge-soft-danger mb-0 mx-sm-2 {{ $direction === 'rtl' ? 'text-right' : 'text-left' }}" role="alert">
+                <div class="alert badge-soft-danger mb-0 mx-sm-2 {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}" role="alert">
                     {{translate('this_page_contains_sensitive_information.Make_sure_before_changing.')}}
                 </div>
             </div>
@@ -33,7 +33,7 @@
                             <div class="row">
                                 @foreach($tables as $key=>$table)
                                     <div class="col-sm-6 col-xl-3">
-                                        <div class="form-group form-check {{ $direction === 'rtl' ? 'text-right' : 'text-left' }}">
+                                        <div class="form-group form-check {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}">
                                             <input type="checkbox" name="tables[]" value="{{$table}}"
                                                 class="form-check-input"
                                                 id="business_section_{{$key}}">

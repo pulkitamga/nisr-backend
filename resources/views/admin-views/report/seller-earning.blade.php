@@ -14,7 +14,7 @@
             <div class="card-body">
                 <form action="" id="form-data" method="GET">
                     <h4 class="mb-3">{{ translate('filter_Data')}}</h4>
-                    <div class="row gy-3 gx-2 align-items-center text-left">
+                    <div class="row gy-3 gx-2 align-items-center text-start">
                         <div class="col-sm-6 col-md-3">
                             <select class="form-control __form-control" name="date_type" id="date_type">
                                 <option value="this_year" {{ $date_type == 'this_year'? 'selected' : '' }}>{{translate('this_Year')}}</option>
@@ -61,7 +61,7 @@
                         <h4 class="subtitle">{{ $data['all_product'] }}</h4>
                         <h6 class="subtext">{{ translate('total_Vendor_Products')}}</h6>
                     </div>
-                    <div class="coupon__discount w-100 text-right d-flex flex-wrap justify-content-between g-1">
+                    <div class="coupon__discount w-100 text-end d-flex flex-wrap justify-content-between g-1">
                         <div class="text-center">
                             <strong class="text-danger">{{ $data['rejected_product'] }}</strong>
                             <div>{{ translate('denied')}}</div>

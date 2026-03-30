@@ -84,9 +84,9 @@
             </a>
         </div>
 
-        <div class="card-body mb-4 {{ $isRtl ? 'text-right' : 'text-left' }}">
+        <div class="card-body mb-4 {{ $isRtl ? 'text-end' : 'text-start' }}">
             <div class="row mb-4 claim-overview-row {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                <div class="col-md-6 {{ $isRtl ? 'text-right' : 'text-left' }}">
+                <div class="col-md-6 {{ $isRtl ? 'text-end' : 'text-start' }}">
                     <h6 class="font-weight-bold">{{ translate('Warranty') }}</h6>
                     <p class="kv-row">
                         <span class="kv-label">{{ translate('serial') }}</span>
@@ -110,7 +110,7 @@
                         <span class="kv-value bidi-ltr">{{$claim->warranty->user->email ?? $claim->warranty->activated_by_email}}</span>
                     </p>
                 </div>
-                <div class="col-md-6 {{ $isRtl ? 'text-right' : 'text-left' }}">
+                <div class="col-md-6 {{ $isRtl ? 'text-end' : 'text-start' }}">
                     <h6 class="font-weight-bold">{{ translate('Claim') }}</h6>
                     <p class="kv-row">
                         <span class="kv-label">{{ translate('Submitted') }}</span>

@@ -102,7 +102,7 @@
                                                 @foreach($child->childes as $ch)
                                                     <div class="card-header">
                                                         <label
-                                                            class="for-hover-label d-block cursor-pointer text-left get-view-by-onclick"
+                                                            class="for-hover-label d-block cursor-pointer text-start get-view-by-onclick"
                                                             data-link="{{ route('shopView', ['id' => $seller_id, 'sub_category_id' => $ch['id'], 'data_from' => 'category', 'offer_type' => request('offer_type') ?? '', 'page' => 1])}}">
                                                             {{$ch['name']}}
                                                         </label>

@@ -50,7 +50,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="name" class="title-color text-capitalize">{{translate('upload_image')}}</label>
-                                    <div class="custom-file text-left">
+                                    <div class="custom-file text-start">
                                         <input type="file" name="image" id="custom-file-upload" class="custom-file-input image-input"
                                                data-image-id="viewer"
                                             accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
@@ -70,7 +70,7 @@
                                             <span class="text-info">{{ THEME_RATIO[theme_root_path()]['Store cover Image'] }}</span>
                                         </div>
                                     </div>
-                                    <div class="custom-file text-left">
+                                    <div class="custom-file text-start">
                                         <input type="file" name="banner" id="banner-upload" class="custom-file-input image-input"
                                                data-image-id="viewer-banner"
                                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
@@ -93,7 +93,7 @@
                                             <span class="text-info">{{translate('ratio').' '.'( 6:1 )'}}</span>
                                         </div>
                                     </div>
-                                    <div class="custom-file text-left">
+                                    <div class="custom-file text-start">
                                         <input type="file" name="bottom_banner" id="bottom-banner-upload" class="custom-file-input image-input"
                                                data-image-id="viewer-bottom-banner"
                                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
@@ -116,7 +116,7 @@
                                                 <span class="text-info">{{translate('ratio').' '.'( 7:1 )'}}</span>
                                             </div>
                                         </div>
-                                        <div class="custom-file text-left">
+                                        <div class="custom-file text-start">
                                             <input type="file" name="offer_banner" id="offer-banner-upload" class="custom-file-input image-input"
                                                 data-image-id="viewer-offer-banner"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">

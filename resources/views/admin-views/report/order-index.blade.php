@@ -72,7 +72,7 @@
             <div class="card-body">
                 <form action="" id="form-data" method="GET">
                     <h4 class="mb-3">{{ translate('filter_Data') }}</h4>
-                    <div class="row gx-2 gy-3 align-items-center text-left">
+                    <div class="row gx-2 gy-3 align-items-center text-start">
                         <div class="col-sm-6 col-md-3">
                             <select class="js-select2-custom form-control text-ellipsis" name="seller_id">
                                 <option value="inhouse" {{ $seller_id == 'inhouse' ? 'selected' : '' }}>
@@ -132,7 +132,7 @@
                         <h4 class="subtitle">{{ $order_count['total_order'] }}</h4>
                         <h6 class="subtext">{{ translate('total_Orders') }}</h6>
                     </div>
-                    <div class="coupon__discount w-100 text-right d-flex flex-wrap justify-content-between gap-2">
+                    <div class="coupon__discount w-100 text-end d-flex flex-wrap justify-content-between gap-2">
                         <div class="text-center">
                             <strong
                                 class="text-danger fs-12 font-weight-bold">{{ $order_count['canceled_order'] }}</strong>
@@ -183,7 +183,7 @@
                         </h4>
                         <h6 class="subtext">{{ translate('total_Order_Amount') }}</h6>
                     </div>
-                    <div class="coupon__discount w-100 text-right d-flex justify-content-between">
+                    <div class="coupon__discount w-100 text-end d-flex justify-content-between">
                         <div class="text-center">
                             <strong class="text-danger">
                                 {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $due_amount), currencyCode: getCurrencyCode()) }}

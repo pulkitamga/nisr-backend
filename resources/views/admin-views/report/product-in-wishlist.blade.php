@@ -19,7 +19,7 @@
                     <div class="card-body">
                         <form action="" id="form-data" method="GET">
                             <h4 class="mb-3">{{translate('filter_Data')}}</h4>
-                            <div class="row g-2 align-items-center text-left">
+                            <div class="row g-2 align-items-center text-start">
                                 <div class="col-sm-6 col-md-4 col-lg-3">
                                     <select
                                         class="js-select2-custom form-control text-ellipsis"
@@ -43,7 +43,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4 col-lg-3 text-right text-md-left">
+                                <div class="col-md-4 col-lg-3 text-end text-md-left">
                                     <button type="submit" class="btn btn--primary px-4 px-md-5">
                                         {{translate('filter')}}
                                     </button>
@@ -86,7 +86,7 @@
 
                     <div class="table-responsive" id="products-table">
                         <table
-                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}">
+                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>

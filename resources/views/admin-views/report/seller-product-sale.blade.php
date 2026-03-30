@@ -18,7 +18,7 @@
             <div class="card-body">
                 <form action="" id="form-data" method="GET">
                     <h4 class="mb-3">{{translate('filter_Data')}}</h4>
-                    <div class="row gx-2 gy-3 align-items-center text-left">
+                    <div class="row gx-2 gy-3 align-items-center text-start">
                         <div class="col-sm-6 col-md-3">
                             <select class="js-select2-custom form-control" name="seller_id">
                                 <option value="all">{{ translate('all_vendors') }}</option>
@@ -81,7 +81,7 @@
                         <h4 class="subtitle">{{ $canceled_order+$ongoing_order+$delivered_order }}</h4>
                         <h6 class="subtext">{{translate('total_Orders')}}</h6>
                     </div>
-                    <div class="coupon__discount w-100 text-right d-flex flex-wrap justify-content-between">
+                    <div class="coupon__discount w-100 text-end d-flex flex-wrap justify-content-between">
                         <div class="text-center">
                             <strong class="text-danger">{{ $canceled_order }}</strong>
                             <div class="d-flex justify-content-center">

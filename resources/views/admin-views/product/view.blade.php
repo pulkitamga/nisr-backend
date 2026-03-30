@@ -1019,7 +1019,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             <input type="hidden" name="review_id" value="{{ $review['id'] }}">
                             <textarea class="form-control text-area-max-min" rows="3" name="reply_text"
                                 placeholder="{{ translate('Write_the_reply_of_the_product_review') }}...">{{ $review?->reply?->reply_text ?? '' }}</textarea>
-                            <div class="text-right mt-4">
+                            <div class="text-end mt-4">
                                 <button type="submit" class="btn btn--primary">
                                     @if($review?->reply?->reply_text)
                                     {{ translate('Update') }}

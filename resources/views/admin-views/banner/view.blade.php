@@ -217,10 +217,10 @@
                                 </h5>
                             </div>
                             <div class="col-md-8 col-lg-6">
-                                <div class="row gy-2 gx-2 align-items-center text-left">
+                                <div class="row gy-2 gx-2 align-items-center text-start">
                                     <div class="col-sm-12 col-md-9">
                                         <form action="{{ url()->current() }}" method="GET">
-                                            <div class="row gy-2 gx-2 align-items-center text-left">
+                                            <div class="row gy-2 gx-2 align-items-center text-start">
                                                 <div class="col-sm-12 col-md-9">
                                                     <select class="form-control __form-control" name="searchValue" id="date_type">
                                                         <option value="">{{ translate('all') }}</option>

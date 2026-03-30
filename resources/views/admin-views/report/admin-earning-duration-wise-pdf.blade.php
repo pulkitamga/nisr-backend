@@ -81,7 +81,7 @@
             text-align: right;
         }
 
-        table.calc-table td.text-left {
+        table.calc-table td.text-start {
             text-align: left;
         }
 
@@ -90,7 +90,7 @@
         }
 
 
-        .text-left {
+        .text-start {
             text-align: left !important;
         }
 
@@ -102,7 +102,7 @@
             padding-bottom: 16px !important;
         }
 
-        .text-right {
+        .text-end {
             text-align: right;
         }
 
@@ -259,12 +259,12 @@
     <div class="first">
         <table class="bs-0 mb-30 px-10">
             <tr>
-                <th class="content-position-y text-left">
+                <th class="content-position-y text-start">
                     <h2>{{translate('admin_Earning_Report')}}</h2>
                     <p class="fz-14">{{translate('date')}} : <span
                                 style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
                 </th>
-                <th class="content-position-y text-right">
+                <th class="content-position-y text-end">
                     <img height="50" src="{{ getStorageImages(path: $companyLogo, type: 'backend-logo') }}" alt="">
                 </th>
             </tr>
@@ -300,49 +300,49 @@
                 <tr>
                     <td style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('SL')}}</td>
                     <td style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('details')}}</td>
-                    <td class="text-right"
+                    <td class="text-end"
                         style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('amount')}}</td>
                 </tr>
                 <tr>
                     <td>1</td>
                     <td>{{translate('in_House_earning')}}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['inhouse_earning'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['inhouse_earning'])) }}</td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td>{{translate('admin_Commission')}}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['admin_commission'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['admin_commission'])) }}</td>
                 </tr>
                 <tr>
                     <td>3</td>
                     <td>{{translate('earning_From_Shipping')}}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['shipping_earn'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['shipping_earn'])) }}</td>
                 </tr>
                 <tr>
                     <td>4</td>
                     <td>{{translate('deliveryman_incentive')}}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['deliveryman_incentive'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['deliveryman_incentive'])) }}</td>
                 </tr>
                 <tr>
                     <td>5</td>
                     <td>{{translate('discount_Given')}}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['discount_given'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['discount_given'])) }}</td>
                 </tr>
                 <tr>
                     <td>6</td>
                     <td>{{translate('total_Tax')}}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['total_tax'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['total_tax'])) }}</td>
                 </tr>
                 <tr>
                     <td>7</td>
                     <td>{{translate('refund_Given')}}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['refund_given'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['refund_given'])) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="2" class="text-right">
+                    <td colspan="2" class="text-end">
                         <b>{{translate('total_Earning')}}</b>
                     </td>
-                    <td class="text-right">
+                    <td class="text-end">
                         <b>{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['total_earning'])) }}</b>
                     </td>
                 </tr>

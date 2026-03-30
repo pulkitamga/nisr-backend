@@ -345,11 +345,11 @@
             background: transparent;
         }
 
-        .text-left {
+        .text-start {
             text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};
         }
 
-        .text-right {
+        .text-end {
             text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'left' : 'right' }};
         }
 
@@ -572,7 +572,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="total-row">
-                        <td colspan="{{ !empty($filters['variation_type']) ? 4 : 3 }}" class="text-right">
+                        <td colspan="{{ !empty($filters['variation_type']) ? 4 : 3 }}" class="text-end">
                             <strong>{{ translate('total_stock') }}:</strong>
                         </td>
                         <td><strong>{{ number_format($totalStockCalc) }}</strong></td>

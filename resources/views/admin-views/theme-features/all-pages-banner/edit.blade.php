@@ -58,7 +58,7 @@
                                         <label for="name"
                                             class="title-color text-capitalize">{{ translate('image')}}</label>
                                         <span class="text-info">( {{ translate('ratio')}} 6:1 )</span>
-                                        <div class="custom-file text-left">
+                                        <div class="custom-file text-start">
                                             <input type="file" name="image" id="banner-image" data-preview="#banner-image-view"
                                                 class="custom-file-input image-preview-before-upload"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">

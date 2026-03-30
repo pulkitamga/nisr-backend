@@ -117,7 +117,7 @@
                                     <label for="customFileUpload" class="title-color">{{translate('employee_image')}}</label>
                                     <span class="text-info">( {{translate('ratio').'1:1'}})</span>
                                     <div class="form-group">
-                                        <div class="custom-file text-left">
+                                        <div class="custom-file text-start">
                                             <input type="file" name="image" id="custom-file-upload" class="custom-file-input image-input"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" data-image-id="viewer">
                                             <label class="custom-file-label" for="custom-file-upload">{{translate('choose_file')}}</label>

@@ -19,10 +19,10 @@
         <td>
             <table class="bs-0">
                 <tr>
-                    <th class="h3 p-0 text-left">
+                    <th class="h3 p-0 text-start">
                         {{translate('expense_Transaction_Statement')}}
                     </th>
-                    <th class="p-0 text-right">
+                    <th class="p-0 text-end">
                         <img class="logo" src="{{ getStorageImages(path: $companyLogo, type: 'backend-logo') }}" alt="">
                     </th>
                 </tr>
@@ -33,7 +33,7 @@
         <td class="pt-0">
             <table class="bs-0">
                 <tr>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                         <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
@@ -48,15 +48,15 @@
         <td class="pt-0">
             <table class="bs-0">
                 <tr>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                         <table>
                             <tr>
-                                <th class="bold black p-0 text-left p-3">{{translate('transaction_date')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('transaction_date')}}</th>
                                 <td class="p-0 p-3">
                                     : {{ date_format($transaction->orderTransaction->updated_at, 'd F Y') }}</td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-left p-3">{{translate('order_id')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('order_id')}}</th>
                                 <td class="p-0 p-3">:
                                     {{ $transaction->id }}
                                 </td>
@@ -66,15 +66,15 @@
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                         <table>
                             <tr>
-                                <th class="bold black p-0 text-left">{{translate('XID')}}</th>
+                                <th class="bold black p-0 text-start">{{translate('XID')}}</th>
                                 <td class="p-0 p-3">
                                     : {{ ucfirst($transaction->orderTransaction->transaction_id) }}</td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-left">{{translate('expense_type')}} </th>
+                                <th class="bold black p-0 text-start">{{translate('expense_type')}} </th>
                                 <td class="p-0 p-3">:
                                     {{ $transaction->coupon_discount_bearer == 'seller'?(isset($transaction->coupon->coupon_type) ? ($transaction->coupon->coupon_type == 'free_delivery' ? 'Free Delivery Promotion':ucwords(str_replace('_', ' ', $transaction->coupon->coupon_type))) : ''):'' }}
                                     {{ $transaction->free_delivery_bearer == 'seller'?ucwords(str_replace('_', ' ', $transaction->extra_discount_type)):'' }}
@@ -97,13 +97,13 @@
                     <td class="text-center"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('SL')}}</td>
                     <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('details')}}</td>
-                    <td class="text-right"
+                    <td class="text-end"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('amount')}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">1</td>
                     <td>{{translate('expense_Amount')}}</td>
-                    <td class="text-right">
+                    <td class="text-end">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: ($transaction->coupon_discount_bearer == 'seller'?$transaction->discount_amount:0) + ($transaction->free_delivery_bearer=='seller'?$transaction->extra_discount:0)), currencyCode: getCurrencyCode()) }}
                     </td>
                 </tr>

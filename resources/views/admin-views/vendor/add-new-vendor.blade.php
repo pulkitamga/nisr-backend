@@ -52,7 +52,7 @@
                         </div>
                         <div class="form-group">
                             <div class="title-color mb-2 d-flex gap-1 align-items-center">{{translate('vendor_Image')}} <span class="text-info">({{translate('ratio')}} {{translate('1')}}:{{translate('1')}})</span></div>
-                            <div class="custom-file text-left">
+                            <div class="custom-file text-start">
                                 <input type="file" name="image" id="custom-file-upload" class="custom-file-input image-input"
                                        data-image-id="viewer"
                                     accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">

@@ -191,8 +191,8 @@
                                         <tr class="fs-13 font-semi-bold">
                                             <th>{{translate('order_details')}}</th>
                                             <th>{{translate('qty')}}</th>
-                                            <th class="text-right">{{translate('Inst._Charges')}}</th>
-                                            <th class="text-right">{{translate('price')}}</th>
+                                            <th class="text-end">{{translate('Inst._Charges')}}</th>
+                                            <th class="text-end">{{translate('price')}}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -318,14 +318,14 @@
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td class="text-right align-middle">
+                                            <td class="text-end align-middle">
                                                 <div class="pl-2">
                                                     <span class="word-nobreak font-weight-bold">
                                                         {{ webCurrencyConverter(amount: $detail->qty*$detail->installtion_charges) }}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td class="text-right align-middle">
+                                            <td class="text-end align-middle">
                                                 <span class="font-weight-bold amount">
                                                     {{ webCurrencyConverter(amount: getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'value') + ($detail->qty*$detail->installtion_charges)) }}
                                                 </span>

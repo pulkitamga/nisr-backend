@@ -97,7 +97,7 @@
 
 @section('content')
     @php($isRtl = Session::get('direction') === 'rtl')
-    <div class="content container-fluid {{ $isRtl ? 'text-right' : 'text-left' }}">
+    <div class="content container-fluid {{ $isRtl ? 'text-end' : 'text-start' }}">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
             <div class="report-hero d-flex justify-content-between align-items-center flex-wrap">
 

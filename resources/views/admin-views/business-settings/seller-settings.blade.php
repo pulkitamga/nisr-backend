@@ -234,7 +234,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <input name="product_wise_shipping_cost_approval" type="checkbox" value="1"
                                    id="product_wise_shipping_cost_approval" {{$productWiseShippingCostApproval==1?'checked':''}}>
-                            <label class="title-color mb-0 {{ Session::get('direction') === 'rtl' ? 'text-right' : 'text-left' }}"
+                            <label class="title-color mb-0 {{ Session::get('direction') === 'rtl' ? 'text-end' : 'text-start' }}"
                                    for="product_wise_shipping_cost_approval">
                                 {{ translate('product_wise_shipping_cost')}}
                                 <span class="text-info">( {{ translate('this_feature_will_activate_whenever_a_Vendor_add_a_product_or_modifies_the_shipping_cost_of_any_product')}} )</span>

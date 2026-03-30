@@ -122,9 +122,9 @@
                             <div class="col">
                                 <!-- Media -->
                                 <div class="media">
-                                    <i class="tio-dollar-outlined nav-icon {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}"></i>
+                                    <i class="tio-dollar-outlined nav-icon {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}"></i>
 
-                                    <div class="media-body {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}">
+                                    <div class="media-body {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}">
                                         <h4 class="mb-1">{{translate('total_earning')}} </h4>
                                         <span class="font-size-sm text-success">
                                           <i class="tio-trending-up"></i> {{\App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($total_earning))}}
@@ -161,9 +161,9 @@
                         <div class="row">
                             <div class="col">
                                 <div class="media">
-                                    <i class="tio-money nav-icon {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}"></i>
+                                    <i class="tio-money nav-icon {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}"></i>
 
-                                    <div class="media-body {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}">
+                                    <div class="media-body {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}">
                                         <h4 class="mb-1">{{translate('total_Tax')}} </h4>
                                         <span class="font-size-sm text-warning">
                                           <i class="tio-trending-up"></i>  {{\App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($total_tax))}}
@@ -199,9 +199,9 @@
                         <div class="row">
                             <div class="col">
                                 <div class="media">
-                                    <i class="tio-money nav-icon {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}"></i>
+                                    <i class="tio-money nav-icon {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}"></i>
 
-                                    <div class="media-body {{Session::get('direction') === "rtl" ? 'text-right' : 'text-left'}}">
+                                    <div class="media-body {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}">
                                         <h4 class="mb-1">{{translate('total_commission')}} </h4>
                                         <span class="font-size-sm text-primary">
                                           <i class="tio-trending-up"></i>  {{\App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($total_commission))}}

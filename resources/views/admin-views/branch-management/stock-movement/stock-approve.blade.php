@@ -30,11 +30,11 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-100 text-xs text-gray-600 uppercase tracking-wide">
                 <tr>
-                    <th class="px-6 py-3 text-left">{{ __('Product') }}</th>
-                    <th class="px-6 py-3 text-left">{{ __('Category') }}</th>
-                    <th class="px-6 py-3 text-left">{{ __('Quantity') }}</th>
-                    <th class="px-6 py-3 text-left">{{ __('Sent From') }}</th>
-                    <th class="px-6 py-3 text-left">{{ __('Transfer Date') }}</th>
+                    <th class="px-6 py-3 text-start">{{ __('Product') }}</th>
+                    <th class="px-6 py-3 text-start">{{ __('Category') }}</th>
+                    <th class="px-6 py-3 text-start">{{ __('Quantity') }}</th>
+                    <th class="px-6 py-3 text-start">{{ __('Sent From') }}</th>
+                    <th class="px-6 py-3 text-start">{{ __('Transfer Date') }}</th>
                     <th class="px-6 py-3 text-center">{{ __('Action') }}</th>
                 </tr>
             </thead>

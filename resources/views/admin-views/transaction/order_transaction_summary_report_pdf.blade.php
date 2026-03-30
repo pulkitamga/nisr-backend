@@ -193,7 +193,7 @@
             text-align: right;
         }
 
-        .text-right {
+        .text-end {
             text-align: right !important;
         }
 
@@ -276,7 +276,7 @@
                 text-align: left;
             }
 
-            .text-right {
+            .text-end {
                 text-align: left !important;
             }
         @endif
@@ -411,28 +411,28 @@
             <tr>
                 <td>1</td>
                 <td>{{ translate('total_Expense_Amount') }}</td>
-                <td class="text-right">
+                <td class="text-end">
                     {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}
                 </td>
             </tr>
             <tr>
                 <td>2</td>
                 <td>{{ translate('free_Delivery_Amount') }}</td>
-                <td class="text-right">
+                <td class="text-end">
                     {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}
                 </td>
             </tr>
             <tr>
                 <td>3</td>
                 <td>{{ translate('coupon_Discount_Amount') }}</td>
-                <td class="text-right">
+                <td class="text-end">
                     {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
                 </td>
             </tr>
             <tr>
                 <td>4</td>
                 <td>{{ translate('free_Shipping_Over_Order_Amount_Discount') }}</td>
-                <td class="text-right">
+                <td class="text-end">
                     {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
                 </td>
             </tr>
@@ -465,7 +465,7 @@
                         <td>{{ $transaction->order_id ?? '-' }}</td>
                         <td>{{ $transaction->coupon_code ?? '-' }}</td>
                         <td>{{ $transaction->discount_type ?? '-' }}</td>
-                        <td class="text-right">
+                        <td class="text-end">
                             {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->discount_amount ?? 0), currencyCode: getCurrencyCode()) }}
                         </td>
                         <td>{{ $transaction->free_delivery_bearer ?? '-' }}</td>

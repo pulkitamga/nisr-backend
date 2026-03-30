@@ -14,10 +14,10 @@
         <td>
             <table class="bs-0">
                 <tr>
-                    <th class="h3 p-0 text-left">
+                    <th class="h3 p-0 text-start">
                         {{translate('expense_Transaction_Statement')}}
                     </th>
-                    <th class="p-0 text-right">
+                    <th class="p-0 text-end">
                         <img class="logo" src="{{getStorageImages(path: $data['company_web_logo'],type: 'backend-logo')}}"
                              alt="">
                     </th>
@@ -29,7 +29,7 @@
         <td class="pt-0">
             <table class="bs-0">
                 <tr>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                         <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
@@ -44,18 +44,18 @@
         <td class="pt-0">
             <table class="bs-0">
                 <tr>
-                    <td class="p-0 text-left">
-                        <span class="bold black p-0 text-left">{{translate('duration')}}</span> :
+                    <td class="p-0 text-start">
+                        <span class="bold black p-0 text-start">{{translate('duration')}}</span> :
                         <span class="p-0 p-3 text-capitalize">{{ $data['duration'] }}</span>
                         <br><br>
-                        <span class="bold black p-0 text-left">{{translate('vendor_Info')}}</span> :
+                        <span class="bold black p-0 text-start">{{translate('vendor_Info')}}</span> :
                         <span class="p-0 p-3 text-capitalize">{{ $data['shop_name'] }}</span>
                     </td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-                    <td class="p-0 text-left">
+                    <td class="p-0 text-start">
                     </td>
                 </tr>
             </table>
@@ -72,20 +72,20 @@
                     <td class="pl-0 pr-0 text-center"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('SL')}}</td>
                     <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('details')}}</td>
-                    <td class="text-right"
+                    <td class="text-end"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('amount')}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">1</td>
                     <td>{{translate('total_Expense_Amount')}}</td>
-                    <td class="text-right">
+                    <td class="text-end">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense']), currencyCode: getCurrencyCode()) }}
                     </td>
                 </tr>
                 <tr>
                     <td class="text-center">2</td>
                     <td>{{translate('free_Delivery_Amount')}}</td>
-                    <td class="text-right p-3">
+                    <td class="text-end p-3">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery']), currencyCode: getCurrencyCode()) }}
                         &nbsp;
                     </td>
@@ -93,7 +93,7 @@
                 <tr>
                     <td class="text-center">3</td>
                     <td>{{translate('coupon_Discount_Amount')}}</td>
-                    <td class="text-right p-3">
+                    <td class="text-end p-3">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount']), currencyCode: getCurrencyCode()) }}
                         &nbsp;
                     </td>
@@ -101,7 +101,7 @@
                 <tr>
                     <td class="text-center">4</td>
                     <td>{{translate('free_Shipping_Over_Order_Amount_Discount')}}</td>
-                    <td class="text-right">
+                    <td class="text-end">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount']), currencyCode: getCurrencyCode()) }}
                     </td>
                 </tr>

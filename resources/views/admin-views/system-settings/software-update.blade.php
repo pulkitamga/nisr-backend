@@ -35,7 +35,7 @@
 
                             <div class="row">
                                 <div class="col-12 mb-3">
-                                    <div class="custom-file text-left">
+                                    <div class="custom-file text-start">
                                         <input type="file" name="update_file" class="custom-file-input form-control"
                                                accept=".zip" required>
                                         <label class="custom-file-label"

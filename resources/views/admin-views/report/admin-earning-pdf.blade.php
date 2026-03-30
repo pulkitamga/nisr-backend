@@ -34,7 +34,7 @@
             padding: 8px;
             font-size: 11px;
         }
-        .text-right {
+        .text-end {
             text-align: right;
         }
         .content-position-y {
@@ -98,11 +98,11 @@
     <div>
         <table class="bs-0 mb-30 px-10" style="width: 100%;">
             <tr>
-                <th class="content-position-y text-left">
+                <th class="content-position-y text-start">
                     <h2>{{ translate('admin_Earning_Report') }}</h2>
                     <p class="fz-14">{{ translate('date') }} : <span style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
                 </th>
-                <th class="content-position-y text-right">
+                <th class="content-position-y text-end">
                     @php
                         // PDF में लोगो दिखाने के लिए बेस64 एनकोडिंग
                         $logoPath = public_path('storage/app/public/company/' . $pdfData['company_logo']);
@@ -165,48 +165,48 @@
                 <tr>
                     <th>{{ translate('SL') }}</th>
                     <th>{{ translate('details') }}</th>
-                    <th class="text-right">{{ translate('amount') }}</th>
+                    <th class="text-end">{{ translate('amount') }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>1</td>
                     <td>{{ translate('in_House_earning') }}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['inhouse_earning'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['inhouse_earning'])) }}</td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td>{{ translate('admin_Commission') }}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['admin_commission'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['admin_commission'])) }}</td>
                 </tr>
                 <tr>
                     <td>3</td>
                     <td>{{ translate('earning_From_Shipping') }}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['shipping_earn'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['shipping_earn'])) }}</td>
                 </tr>
                 <tr>
                     <td>4</td>
                     <td>{{ translate('deliveryman_incentive') }}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['deliveryman_incentive'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['deliveryman_incentive'])) }}</td>
                 </tr>
                 <tr>
                     <td>5</td>
                     <td>{{ translate('discount_Given') }}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['discount_given'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['discount_given'])) }}</td>
                 </tr>
                 <tr>
                     <td>6</td>
                     <td>{{ translate('total_Tax') }}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['total_tax'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['total_tax'])) }}</td>
                 </tr>
                 <tr>
                     <td>7</td>
                     <td>{{ translate('refund_Given') }}</td>
-                    <td class="text-right">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['refund_given'])) }}</td>
+                    <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['refund_given'])) }}</td>
                 </tr>
                 <tr style="font-weight: bold; background-color: #e9ecef;">
-                    <td colspan="2" class="text-right"><b>{{ translate('total_Earning') }}</b></td>
-                    <td class="text-right"><b>{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['total_earning'])) }}</b></td>
+                    <td colspan="2" class="text-end"><b>{{ translate('total_Earning') }}</b></td>
+                    <td class="text-end"><b>{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['total_earning'])) }}</b></td>
                 </tr>
             </tbody>
         </table>

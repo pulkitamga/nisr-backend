@@ -87,7 +87,7 @@
                         </div>
                         <div>
                             <form action="{{ url()->current() }}" method="GET">
-                                <div class="d-flex gap-2 align-items-center text-left">
+                                <div class="d-flex gap-2 align-items-center text-start">
                                     <div>
                                         <select class="form-control text-ellipsis min-w-200" name="category">
                                             <option value="all" {{ request('category')=='all' ? 'selected' : '' }}>{{

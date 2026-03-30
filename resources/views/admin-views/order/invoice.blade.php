@@ -188,7 +188,7 @@
             padding: 0 !important
         }
 
-        .text-left {
+        .text-start {
             text-align: {{$direction === "rtl" ? 'right' : 'left'}}  !important;
         }
 
@@ -200,16 +200,16 @@
             padding-bottom: 16px !important;
         }
 
-        .text-right {
+        .text-end {
             text-align: {{$direction === "rtl" ? 'left' : 'right'}}  !important;
         }
 
-        table th.text-right {
+        table th.text-end {
             text-align: {{$direction === "rtl" ? 'left' : 'right'}}  !important;
         }
 
         @media print {
-            table th.text-right {
+            table th.text-end {
                 text-align: {{$direction === "rtl" ? 'left' : 'right'}}  !important;
             }
         }
@@ -492,7 +492,7 @@
     <table class="border bs-0" style="border-radius:12px;">
         @if ($order->order_type == 'default_type')
             <tr>
-                <td class="text-left" style="padding:23px 16px">
+                <td class="text-start" style="padding:23px 16px">
                     <div class="mb-1 fz-10">
                         <span class="font-bold">{{ translate('order')}}</span> <span class="font-normal">#{{ $order->id }}</span>
                     </div>
@@ -502,11 +502,11 @@
                     </div>
                 </td>
                 <td ></td>
-                <td class="text-right" style="padding:23px 16px">
+                <td class="text-end" style="padding:23px 16px">
                     <div class="mb-1 fz-10">
                         <span class="font-bold">{{translate('invoice_of')}}</span> <span class="font-normal">{{' ( '.$currencyCode.' )'}}</span>
                     </div>
-                    <div class="fz-17 text-primary text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalAmount']) }}</div>
+                    <div class="fz-17 text-primary text-end">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalAmount']) }}</div>
                 </td>
             </tr>
             <tr>
@@ -600,7 +600,7 @@
             </tr>
         @else
             <tr>
-                <td class="text-left border-bottom" style="padding:23px 16px">
+                <td class="text-start border-bottom" style="padding:23px 16px">
                     <div class="mb-1 fz-10">
                         <span class="font-bold">{{ translate('order')}}</span> <span class="font-normal">#{{ $order->id }}</span>
                     </div>
@@ -623,12 +623,12 @@
                     <div class="font-normal mb-1 fz-10">{{translate('payment')}}</div>
                     <div class="font-semibold fz-10">{{ translate($order->payment_status) }}</div>
                 </td>
-                <td class="text-right border-bottom" style="padding:23px 16px">
+                <td class="text-end border-bottom" style="padding:23px 16px">
                     <div class="fz-10">
                         {{translate('invoice_of')}}
                         <span>{{' ( '.$currencyCode.' )'}}</span>
                     </div>
-                    <div class="fz-17 text-primary text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalAmount']) }}</div>
+                    <div class="fz-17 text-primary text-end">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalAmount']) }}</div>
                 </td>
             </tr>
         @endif
@@ -645,14 +645,14 @@
                         <th class="text-uppercase text-dark fz-12 font-normal" style="text-align: {{$direction === "rtl" ? 'end' : 'start'}}">
                             {{ translate('item_Description')}}
                         </th>
-                        <th class="text-uppercase fz-12 text-dark font-normal text-right">
+                        <th class="text-uppercase fz-12 text-dark font-normal text-end">
                             {{ translate('qty')}}
                         </th>
-                        <th class="text-uppercase text-dark fz-12 font-normal text-right">
+                        <th class="text-uppercase text-dark fz-12 font-normal text-end">
                             {{ translate('unit_Price')}}
                         </th>
                        
-                        <th class="text-right text-dark text-uppercase fz-12 font-normal">
+                        <th class="text-end text-dark text-uppercase fz-12 font-normal">
                             {{ translate('total')}}
                         </th>
                     </tr>
@@ -683,14 +683,14 @@
                                 </div>
                                
                             </td>
-                            <td class="text-right">
+                            <td class="text-end">
                                 <div class="fz-10 text-dark" style="margin:0 15px">{{$details->qty}}</div>
                             </td>
-                            <td class="text-right">
+                            <td class="text-end">
                                 <div class="fz-10 text-dark">{{ webCurrencyConverter(amount: $details['price']) }}</div>
                             </td>
                           
-                            <td class="text-right">
+                            <td class="text-end">
                                 <div class="fz-10 text-dark">
                                     {{ webCurrencyConverter(amount: ($details['price'] * $details['qty']) ) }}
                                 </div>
@@ -712,87 +712,87 @@
             <td colspan="5" class="pt-0 pb-0">
                 <table class="fz-10">
                     <tr>
-                        <th class="text-left" style="width:50%">
+                        <th class="text-start" style="width:50%">
                         </th>
                         <th class="calc-table">
                             <table>
                                 <tbody>
                                 <tr>
-                                    <td class="text-left font-bold">{{ translate('total_Item_Price')}}</td>
-                                    <td class="text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['itemPrice']) }}</td>
+                                    <td class="text-start font-bold">{{ translate('total_Item_Price')}}</td>
+                                    <td class="text-end">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['itemPrice']) }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-left font-bold">{{ translate('product_Discount')}}</td>
-                                    <td class="text-right">
+                                    <td class="text-start font-bold">{{ translate('product_Discount')}}</td>
+                                    <td class="text-end">
                                         - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])) }}</td>
                                 </tr>
                                 @if($orderTotalPriceSummary['totalInstallationPrice'] > 0)
                                 <tr>
-                                    <td class="text-left font-bold">{{translate('installation_charge')}}</td>
-                                    <td class="text-right">
+                                    <td class="text-start font-bold">{{translate('installation_charge')}}</td>
+                                    <td class="text-end">
                                      {{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalInstallationPrice']) }}</strong>
                                     </td>
                                 </tr>
                                     @endif
                                 @if($orderTotalPriceSummary['totalExchangePrice'] > 0)
                                 <tr>
-                                    <td class="text-left font-bold">{{translate('exchange_charge')}}</td>
-                                    <td class="text-right">
+                                    <td class="text-start font-bold">{{translate('exchange_charge')}}</td>
+                                    <td class="text-end">
                                     - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['totalExchangePrice'])) }}</strong>
                                     </td>
                                 </tr>
                                     @endif
                                 @if ($order->order_type != 'default_type')
                                     <tr>
-                                        <td class="text-left font-bold">{{ translate('extra_Discount')}}</td>
-                                        <td class="text-right">
+                                        <td class="text-start font-bold">{{ translate('extra_Discount')}}</td>
+                                        <td class="text-end">
                                             - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['extraDiscount'])) }}
                                         </td>
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td class="text-left font-bold">{{ translate('sub_Total')}}</td>
-                                    <td class="text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['subTotal']) }}</td>
+                                    <td class="text-start font-bold">{{ translate('sub_Total')}}</td>
+                                    <td class="text-end">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['subTotal']) }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-left font-bold">{{ __('Net (before VAT)') }}</td>
-                                    <td class="text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['netBeforeVat']) }}</td>
+                                    <td class="text-start font-bold">{{ __('Net (before VAT)') }}</td>
+                                    <td class="text-end">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['netBeforeVat']) }}</td>
                                 </tr>
                                 @if($order->order_type == 'default_type' && $order?->is_shipping_free != 1)
                                     <tr>
-                                        <td class="text-left font-bold">{{ translate('shipping')}}</td>
-                                        <td class="text-right">{{webCurrencyConverter(amount: $orderTotalPriceSummary['shippingTotal']) }}</td>
+                                        <td class="text-start font-bold">{{ translate('shipping')}}</td>
+                                        <td class="text-end">{{webCurrencyConverter(amount: $orderTotalPriceSummary['shippingTotal']) }}</td>
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td class="text-left font-bold">{{ translate('coupon_Discount')}}</td>
-                                    <td class="text-right">
+                                    <td class="text-start font-bold">{{ translate('coupon_Discount')}}</td>
+                                    <td class="text-end">
                                         - {{ webCurrencyConverter(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])) }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-left font-bold">{{ translate('tax')}}</td>
-                                    <td class="text-right">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['taxTotal']) }}</td>
+                                    <td class="text-start font-bold">{{ translate('tax')}}</td>
+                                    <td class="text-end">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['taxTotal']) }}</td>
                                 </tr>
 
                                 <tr>
-                                    <td class="border-dashed-top font-weight-bold text-left fz-14 font-bold">
+                                    <td class="border-dashed-top font-weight-bold text-start fz-14 font-bold">
                                         {{ translate('total')}}</td>
-                                    <td class="border-dashed-top font-weight-bold text-right fz-14">
+                                    <td class="border-dashed-top font-weight-bold text-end fz-14">
                                         {{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalAmount']) }}
                                     </td>
                                 </tr>
                                 @if ($order->order_type == 'POS' || $order->order_type == 'pos')
                                     <tr>
-                                        <td class="border-dashed-top font-weight-bold text-left fz-14 font-bold">
+                                        <td class="border-dashed-top font-weight-bold text-start fz-14 font-bold">
                                             {{ translate('paid_amount')}}</td>
-                                        <td class="border-dashed-top font-weight-bold text-right fz-14">
+                                        <td class="border-dashed-top font-weight-bold text-end fz-14">
                                             {{ webCurrencyConverter(amount: $orderTotalPriceSummary['paidAmount']) }}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="border-dashed-top font-weight-bold text-left fz-14 font-bold">
+                                        <td class="border-dashed-top font-weight-bold text-start fz-14 font-bold">
                                             {{ translate('change_amount')}}</td>
-                                        <td class="border-dashed-top font-weight-bold text-right fz-14">
+                                        <td class="border-dashed-top font-weight-bold text-end fz-14">
                                             {{ webCurrencyConverter(amount: $orderTotalPriceSummary['changeAmount']) }}
                                         </td>
                                     </tr>

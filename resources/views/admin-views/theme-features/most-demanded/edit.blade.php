@@ -47,7 +47,7 @@
                                         <span class="text-info ml-1">
                                             ( {{ translate('ratio') }} {{ '5:1' }} )
                                         </span>
-                                        <div class="custom-file text-left">
+                                        <div class="custom-file text-start">
                                             <input type="file" name="image" id="banner-image"
                                                    class="custom-file-input image-preview-before-upload"
                                                    data-preview="#viewer"

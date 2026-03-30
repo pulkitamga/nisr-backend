@@ -298,7 +298,7 @@ $selectedYear = $selectedVehicleFilters['year'] ?? null;
                                                 @foreach($child->childes as $ch)
                                                 <div class="card-header">
                                                     <label
-                                                        class="for-hover-label d-block cursor-pointer text-left get-view-by-onclick"
+                                                        class="for-hover-label d-block cursor-pointer text-start get-view-by-onclick"
                                                         data-link="{{ route('products',['sub_sub_category_id'=> $ch['id'],'data_from'=>'category','page'=>1]) }}">
                                                         {{$ch['name']}}
                                                     </label>

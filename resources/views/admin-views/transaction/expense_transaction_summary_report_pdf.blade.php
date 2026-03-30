@@ -51,7 +51,7 @@
         .summary-table td:nth-child(2) { text-align:left; width:60%; }
         .summary-table td:last-child { text-align:right; width:30%; }
         .summary-table tr:nth-child(even) { background:#f9fafb; }
-        .text-right { text-align:right !important; }
+        .text-end { text-align:right !important; }
  
         /* SECTION HEADING */
         .section-heading { margin-top:20px; margin-bottom:8px; font-size:12px; font-weight:bold; color:#0f766e; border-left:3px solid #0f766e; padding-left:8px; }
@@ -70,7 +70,7 @@
             .section-heading { border-left:none; border-right:3px solid #0f766e; padding-left:0; padding-right:10px; text-align:right; }
             .summary-table td:nth-child(2) { text-align:right; }
             .detail-table td:last-child, .detail-table th:last-child { text-align:left; }
-            .text-right { text-align:left !important; }
+            .text-end { text-align:left !important; }
         @endif
     </style>
 </head>
@@ -164,22 +164,22 @@
             <tr>
                 <td>1</td>
                 <td>{{ translate('total_Expense_Amount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
+                <td class="text-end">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
             </tr>
             <tr>
                 <td>2</td>
                 <td>{{ translate('free_Delivery_Amount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
+                <td class="text-end">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
             </tr>
             <tr>
                 <td>3</td>
                 <td>{{ translate('coupon_Discount_Amount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
+                <td class="text-end">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
             </tr>
             <tr>
                 <td>4</td>
                 <td>{{ translate('free_Shipping_Over_Order_Amount_Discount') }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
+                <td class="text-end">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td>
             </tr>
         </tbody>
     </table>
@@ -210,7 +210,7 @@
                 <td>{{ $transaction->order_id ?? '-' }}</td>
                 <td>{{ $transaction->coupon_code ?? '-' }}</td>
                 <td>{{ $transaction->discount_type ?? '-' }}</td>
-                <td class="text-right">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->discount_amount ?? 0), currencyCode: getCurrencyCode()) }}</td>
+                <td class="text-end">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->discount_amount ?? 0), currencyCode: getCurrencyCode()) }}</td>
                 <td>{{ $transaction->free_delivery_bearer ?? '-' }}</td>
                 <td>{{ $transaction->coupon_discount_bearer ?? '-' }}</td>
                 <td>{{ $transaction->created_at ? $transaction->created_at->format('d M Y') : '-' }}</td>

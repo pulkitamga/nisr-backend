@@ -94,12 +94,12 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <table class="table table-hover table-borderless table-thead-bordered min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
-                                    <th class="px-4 py-2 text-left">{{ translate('Product Name') }}</th>
-                                    <th class="px-2 py-2 text-left">{{ translate('Requested Qty') }}</th>
-                                    <th class="px-4 py-2 text-left">{{ translate('Base Price') }}</th>
-                                    <th class="px-4 py-2 text-left">{{ translate('Tax') }}</th>
-                                    <th class="px-4 py-2 text-left">{{ translate('Final Price') }}</th>
-                                    <th class="px-4 py-2 text-left">{{ translate('Action') }}</th>
+                                    <th class="px-4 py-2 text-start">{{ translate('Product Name') }}</th>
+                                    <th class="px-2 py-2 text-start">{{ translate('Requested Qty') }}</th>
+                                    <th class="px-4 py-2 text-start">{{ translate('Base Price') }}</th>
+                                    <th class="px-4 py-2 text-start">{{ translate('Tax') }}</th>
+                                    <th class="px-4 py-2 text-start">{{ translate('Final Price') }}</th>
+                                    <th class="px-4 py-2 text-start">{{ translate('Action') }}</th>
 
                                 </tr>
                             </thead>

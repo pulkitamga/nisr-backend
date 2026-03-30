@@ -34,7 +34,7 @@
             padding: 8px;
             font-size: 11px;
         }
-        .text-right {
+        .text-end {
             text-align: right;
         }
         .content-position-y {
@@ -114,11 +114,11 @@
 <body>
     <table style="width:100%; margin-bottom:20px;">
         <tr>
-            <td class="text-left">
+            <td class="text-start">
                 <h2>{{ translate('product_Report') }}</h2>
                 <p>{{ translate('date') }} : <span style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
             </td>
-            <td class="text-right">
+            <td class="text-end">
                 @php
                     $logoArray = $data['company_web_logo'] ?? [];
                     $logoKey = is_array($logoArray) ? ($logoArray['key'] ?? '') : $logoArray;
@@ -142,8 +142,8 @@
         <tr>
             <td>
                 <table>
-                    <tr><th class="text-left">{{ translate('duration') }}</th><td>: {{ str_replace('_',' ', $data['date_type']) }}</td></tr>
-                    <tr><th class="text-left">{{ translate('vendor_Info') }}</th><td>: 
+                    <tr><th class="text-start">{{ translate('duration') }}</th><td>: {{ str_replace('_',' ', $data['date_type']) }}</td></tr>
+                    <tr><th class="text-start">{{ translate('vendor_Info') }}</th><td>: 
                         @if(is_object($data['seller']))
                             {{ $data['seller']->f_name ?? '' }} {{ $data['seller']->l_name ?? '' }}
                         @else
@@ -154,9 +154,9 @@
             </td>
             <td>
                 <table>
-                    <tr><th class="text-left">{{ translate('total_Products') }}</th><td>: {{ count($data['products']) }}</td></tr>
+                    <tr><th class="text-start">{{ translate('total_Products') }}</th><td>: {{ count($data['products']) }}</td></tr>
                     @if($data['search'])
-                    <tr><th class="text-left">{{ translate('search') }}</th><td>: {{ $data['search'] }}</td></tr>
+                    <tr><th class="text-start">{{ translate('search') }}</th><td>: {{ $data['search'] }}</td></tr>
                     @endif
                 </table>
             </td>

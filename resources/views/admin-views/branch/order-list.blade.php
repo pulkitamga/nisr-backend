@@ -61,7 +61,7 @@
                                     <th>{{translate('order_Date')}}</th>
                                     <th>{{translate('customer_Info')}}</th>
                                     <th>{{translate('store')}}</th>
-                                    <th class="text-right">{{translate('total_Amount')}}</th>
+                                    <th class="text-end">{{translate('total_Amount')}}</th>
                                     <th class="text-center">{{translate('order_Status')}} </th>
                                     <th class="text-center">{{translate('action')}}</th>
                                 </tr>
@@ -110,7 +110,7 @@
                                                 @endif
                                             </a>
                                         </td>
-                                        <td class="text-right">
+                                        <td class="text-end">
                                             <div>
                                                 @php($orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order))
                                                 {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}

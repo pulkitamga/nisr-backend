@@ -94,7 +94,7 @@
                         <img src="{{ asset('storage/' . $post->image) }}" class="w-full h-full object-cover" alt="{{ $post->heading }}">
                     </div>
                 </a>
-                <div class="text-center md:text-left">
+                <div class="text-center md:text-start">
                     <a href="{{ route('blog.details', $post->id) }}">
                         <h3 class="text-xl font-semibold hover:text-[#119d90] mt-2 md:mt-0">
                             {{ $post->heading }}

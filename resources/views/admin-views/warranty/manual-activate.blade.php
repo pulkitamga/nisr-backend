@@ -118,7 +118,7 @@
             suggestionsBox.innerHTML = customers.map((customer) => `
                 <button
                     type="button"
-                    class="list-group-item list-group-item-action manual-customer-suggestion w-100 text-left mb-2 border rounded"
+                    class="list-group-item list-group-item-action manual-customer-suggestion w-100 text-start mb-2 border rounded"
                     data-customer-id="${customer.id}"
                     data-customer-name="${escapeHtml(customer.name)}"
                     data-customer-phone="${escapeHtml(customer.phone || '')}"
