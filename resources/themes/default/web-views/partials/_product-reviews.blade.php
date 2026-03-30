@@ -7,7 +7,7 @@
                          src="{{ isset($productReview->user) ? getStorageImages(path: $productReview->user->image_full_url, type: 'avatar') : theme_asset(path: 'public/assets/front-end/img/image-place-holder.png') }}"
                          alt="{{isset($productReview->user)?$productReview->user->f_name : translate('not exist')}}"/>
                     <div
-                        class="media-body {{Session::get('direction') === "rtl" ? 'pr-3' : 'pl-3'}} text-body">
+                        class="media-body {{Session::get('direction') === "rtl" ? 'pe-3' : 'ps-3'}} text-body">
                         <span class="mb-0 text-body font-semi-bold fs-13">{{isset($productReview->user)?$productReview->user->f_name.' '.$productReview->user->l_name : translate('not exist')}}</span>
                         <div class="d-flex ">
                             <div class="me-2">
@@ -40,8 +40,8 @@
     </div>
 
     @if($productReview->reply)
-        <div class="pl-md-4 mt-3 mb-3">
-            <div class="review-reply rounded bg-E9F3FF80 p-3 ml-md-4">
+        <div class="ps-md-4 mt-3 mb-3">
+            <div class="review-reply rounded bg-E9F3FF80 p-3 ms-md-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <div class="d-flex align-items-center gap-2">
                         <img src="{{dynamicAsset('public/assets/front-end/img/seller-reply-icon.png')}}" alt="">

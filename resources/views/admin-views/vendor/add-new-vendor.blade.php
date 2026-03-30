@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-body">
                 <input type="hidden" name="status" value="approved">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
                     {{ translate('vendor_information') }}
                 </h5>
@@ -66,7 +66,7 @@
         <div class="card mt-3">
             <div class="card-body">
                 <input type="hidden" name="status" value="approved">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
                     {{translate('account_information')}}
                 </h5>
@@ -126,7 +126,7 @@
 
         <div class="card mt-3">
             <div class="card-body">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
                     {{translate('shop_information')}}
                 </h5>

@@ -160,7 +160,7 @@
             <div class="card-header text-capitalize gap-2">
                 <h4 class="mb-0 text-nowrap ">
                     {{translate('transactions')}}
-                    <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ $transactions->total() }}</span>
+                    <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $transactions->total() }}</span>
                 </h4>
                 <div class="d-flex justify-content-end">
                     <div class="dropdown">

@@ -115,7 +115,7 @@
                                                    class="title-color hover-c1 d-flex align-items-start">
                                                     <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-basic') }}"
                                                          class="avatar border me-3 object-fit-cover" alt="">
-                                                    <div class="ml-2">
+                                                    <div class="ms-2">
                                                         <div class="fw-bold text-truncate">
                                                             {{ substr($product['name'], 0, 20) }}{{ strlen($product['name']) > 20 ? '...' : '' }}
                                                         </div>

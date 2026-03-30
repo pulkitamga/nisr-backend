@@ -214,11 +214,11 @@
             text-align: center;
         }
 
-        .pl-0 {
+        .ps-0 {
             padding-inline-start: 0 !important;
         }
 
-        .pr-0 {
+        .pe-0 {
             padding-inline-end: 0 !important;
         }
 
@@ -347,7 +347,7 @@
             <table class="bs-0 __product-table inter">
                 <thead>
                 <tr>
-                    <th class="pl-0 pr-0 text-center">{{translate('SL')}}</th>
+                    <th class="ps-0 pe-0 text-center">{{translate('SL')}}</th>
                     <th>{{translate('details')}}</th>
                     <th class="text-end">{{translate('amount')}}</th>
                 </tr>

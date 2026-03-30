@@ -5,7 +5,7 @@
                 <div>
                     <img class="size-30" src="{{theme_asset(path: "public/assets/front-end/png/top-rated.png")}}"
                          alt="">
-                    <span class="font-bold pl-1">{{ translate('top_rated')}}</span>
+                    <span class="font-bold ps-1">{{ translate('top_rated')}}</span>
                 </div>
                 <div>
                     <a class="text-capitalize view-all-text web-text-primary"
@@ -21,7 +21,7 @@
                             <a class="__best-selling" href="{{route('product', $product->slug)}}">
                                 @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
                                     <div class="d-flex">
-                                    <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
+                                    <span class="for-discount-value p-1 ps-2 pe-2 font-bold fs-13">
                                         <span class="direction-ltr d-block">
                                             -{{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
                                         </span>

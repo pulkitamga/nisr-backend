@@ -40,7 +40,7 @@
             <div class="card-body">
                 <input type="hidden" name="status" value="active">
                 <input type="hidden" name="branch_id" value="{{$seller['id']}}">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
                     {{translate('assign_manager')}}
                 </h5>

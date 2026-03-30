@@ -9,7 +9,7 @@
         <h2 class="h1 mb-0 text-capitalize d-flex gap-2 align-items-center">
             <img src="{{ asset('public/assets/back-end/img/stock.png') }}" alt="" width="30">
             {{ translate('Branch Product Inventory') }}
-            <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ count($products)}}</span>
+            <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ count($products)}}</span>
         </h2>
     </div>
     <div class="card mb-4">

@@ -36,7 +36,7 @@
                                 </button>
                                 <div class="how-to-use-hover-ele">
                                     <h6 class='subtitle text-capitalize mb-2 fs-14 font-bold'>{{translate('how_to_use')}}</h6>
-                                    <ul class='pl-4 fs-12'>
+                                    <ul class='ps-4 fs-12'>
                                         <li>
                                             {{translate('convert_your_loyalty_point_to_wallet_money')}}.
                                         </li>
@@ -143,7 +143,7 @@
 
                             <div class="navbar-nav">
                                 <div class="dropdown border rounded">
-                                    <button class="btn btn-sm pl-3 dropdown-toggle" type="button" id="dropdownMenuButton"
+                                    <button class="btn btn-sm ps-3 dropdown-toggle" type="button" id="dropdownMenuButton"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         @if (Session::get('direction') === 'rtl')
                                             {{ request()->has('type') ? ucwords(translate(request('type'))):translate('all')}}

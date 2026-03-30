@@ -8,7 +8,7 @@
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2 text-capitalize">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png')}}" alt="">
                 {{translate('vendor_product_list')}}
-                <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $products->total() }}</span>
+                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $products->total() }}</span>
             </h2>
         </div>
         <div class="row mt-20">
@@ -18,7 +18,7 @@
                         <div class="row g-2 justify-content-between align-items-center">
                             <div class="col-lg-4">
                                 <h5 class="m-0">{{translate('product_table')}}
-                                    <span class="badge badge-soft-dark ml-2">{{$products->total()}}</span>
+                                    <span class="badge badge-soft-dark ms-2">{{$products->total()}}</span>
                                 </h5>
                             </div>
                             <div class="col-lg-4">

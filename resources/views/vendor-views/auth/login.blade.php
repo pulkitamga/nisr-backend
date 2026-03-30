@@ -104,7 +104,7 @@
                         <br/>
                     @else
                         <div class="row p-2">
-                            <div class="col-6 pr-0">
+                            <div class="col-6 pe-0">
                                 <input type="text" class="form-control form-control-lg form-control-focus-none h-50px"
                                        id="vendor-login-recaptcha-input"
                                        name="vendorRecaptchaKey" value="" required

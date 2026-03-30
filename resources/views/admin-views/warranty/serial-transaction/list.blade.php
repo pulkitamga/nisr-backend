@@ -125,7 +125,7 @@
                                     {{ $t->toBranch->branch_name ?? 'N/A' }}
                                     @elseif($t->distributor_id)
                                     {{ $t->distributor->company_name ?? 'N/A' }}
-                                    <span class="badge badge-soft-success ml-1">{{ translate('Wholesaler') }}</span>
+                                    <span class="badge badge-soft-success ms-1">{{ translate('Wholesaler') }}</span>
                                     @else
                                     N/A
                                     @endif

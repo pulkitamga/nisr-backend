@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Session;
         <div class="flex-between d-sm-flex row align-items-center justify-content-between mb-2 mx-1">
             <div>
                 @if ($seller->status=="pending")
-                    <div class="mt-4 pr-2 float-{{$direction === "rtl" ? 'left' : 'right'}}">
+                    <div class="mt-4 pe-2 float-{{$direction === "rtl" ? 'left' : 'right'}}">
                         <div class="flex-start">
                             <div class="mx-1"><h4><i class="tio-shop-outlined"></i></h4></div>
                             <div>{{translate('vendor_request_for_open_a_shop')}}</div>

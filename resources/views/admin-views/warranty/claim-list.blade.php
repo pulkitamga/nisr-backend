@@ -17,7 +17,7 @@
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/warranty.png') }}" alt="">
             {{ translate($pageTitleKey) }}
-            <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $claims->total() }}</span>
+            <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $claims->total() }}</span>
         </h2>
     </div>
 
@@ -92,9 +92,9 @@
     {{-- ==== TABLE CARD ==== --}}
     <div class="card">
         <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 mr-auto">
+            <h5 class="mb-0 me-auto">
                 {{ translate($pageTitleKey) }}
-                <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $claims->total() }}</span>
+                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $claims->total() }}</span>
             </h5>
 
             {{-- Search Form (preserves other filters) --}}

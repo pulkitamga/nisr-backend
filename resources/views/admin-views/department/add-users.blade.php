@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-body">
                 <input type="hidden" name="dept_id" value="{{$dept_id}}">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" class="mb-1" alt="">
                     {{ translate('department_information') }}
                 </h5>
@@ -35,7 +35,7 @@
         </div>
         <div class="card mt-3 rest-part">
             <div class="card-body">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" class="mb-1" alt="">
                     {{ translate('User_details') }}
                 </h5>

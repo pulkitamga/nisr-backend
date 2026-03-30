@@ -103,7 +103,7 @@
             @php($couponDiscount = session()->has('coupon_discount')?session('coupon_discount'):0)
 
             <div class="pt-2">
-                <div class="d-flex align-items-center form-control rounded-pill pl-3 p-1">
+                <div class="d-flex align-items-center form-control rounded-pill ps-3 p-1">
                     <img width="24" src="{{asset('public/assets/front-end/img/icons/coupon.svg')}}" alt="">
                     <div class="px-2 d-flex justify-content-between w-100">
                         <div>

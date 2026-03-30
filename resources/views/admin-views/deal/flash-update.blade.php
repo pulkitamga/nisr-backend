@@ -76,7 +76,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="name" class="title-color">{{translate('upload_Image')}}</label>
-                                            <span class="text-info ml-0">( {{translate('ratio').' '.'5:1'}})</span>
+                                            <span class="text-info ms-0">( {{translate('ratio').' '.'5:1'}})</span>
                                             <div class="custom-file text-start">
                                                 <input type="file" name="image" id="custom-file-upload"
                                                        class="custom-file-input image-input" data-image-id="viewer"

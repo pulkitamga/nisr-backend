@@ -23,7 +23,7 @@
                             <div class="col-auto">
                                 <h5 class="text-capitalize">
                                     {{ translate('withdraw_request_table')}}
-                                    <span class="badge badge-soft-dark radius-50 fz-12 ml-1" id="withdraw-requests-count">{{ $withdrawRequests->total() }}</span>
+                                    <span class="badge badge-soft-dark radius-50 fz-12 ms-1" id="withdraw-requests-count">{{ $withdrawRequests->total() }}</span>
                                 </h5>
                             </div>
                             <div class="d-flex col-auto gap-3">

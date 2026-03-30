@@ -184,7 +184,7 @@
         <div class="card">
             <div class="px-3 py-4">
                 <div class="d-flex flex-wrap gap-3 align-items-center">
-                    <h4 class="mb-0 mr-auto">
+                    <h4 class="mb-0 me-auto">
                         {{translate('total_Transactions')}}
                         <span class="badge badge-soft-dark radius-50 fz-12">{{ $transactions->total() }}</span>
                     </h4>

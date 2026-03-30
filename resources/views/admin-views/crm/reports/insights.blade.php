@@ -291,7 +291,7 @@
                         <span class="badge-soft">{{ translate('auto_summary') }}</span>
                     </div>
                     <div class="card-body">
-                        <ol class="insight-list pl-3 mb-0">
+                        <ol class="insight-list ps-3 mb-0">
                             @foreach ($insights as $insight)
                                 <li>{{ $insight }}</li>
                             @endforeach

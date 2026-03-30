@@ -76,7 +76,7 @@
         </div>
         @include('admin-views.business-settings.theme-and-addon-menu')
         <div class="card mb-5">
-            <div class="card-body pl-md-10">
+            <div class="card-body ps-md-10">
                 <h4 class="mb-3 text-capitalize d-flex align-items-center">{{translate('upload_Addons')}}</h4>
                 <form enctype="multipart/form-data" id="addon-upload-form">
                     @csrf
@@ -112,9 +112,9 @@
                         @php($conditionTwo=str_replace('MB','',ini_get('post_max_size'))>=20 && str_replace('MB','',ini_get('post_max_size'))>=20)
 
                         <div class="col-sm-6 col-lg-5 col-xl-4 col-xxl-9">
-                            <div class="pl-sm-5">
+                            <div class="ps-sm-5">
                                 <h5 class="mb-3 d-flex">{{ translate('instructions') }}</h5>
-                                <ul class="pl-3 d-flex flex-column gap-2 instructions-list">
+                                <ul class="ps-3 d-flex flex-column gap-2 instructions-list">
                                     <li>
                                         {{ translate('please_make_sure').','.translate('your_server_php').'"'.translate('upload_max_filesize').'"'.translate('value_is_grater_or_equal_to_20MB').'.'.translate('current_value_is').'-'.ini_get('upload_max_filesize').'B' }}
                                     </li>

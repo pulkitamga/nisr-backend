@@ -62,7 +62,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-5 mr-auto">
+                    <div class="col-md-5 me-auto">
                         <div>
                             <label for="from" class="title-color d-flex">{{ translate('Date_Wise_Filter') }}</label>
                             <input type="text" name="from" id="start-date-time" value="{{ $from }}"
@@ -86,9 +86,9 @@
         </div>
         <div class="card mt-20">
             <div class="card-header gap-3 align-items-center">
-                <h5 class="mb-0 mr-auto">
+                <h5 class="mb-0 me-auto">
                     {{translate('Customer_Reviews_List')}}
-                    <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $reviews->total() }}</span>
+                    <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $reviews->total() }}</span>
                 </h5>
 
                 <form action="{{ url()->current() }}" method="GET">

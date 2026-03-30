@@ -45,7 +45,7 @@
                                     placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
                             </div>
                             <div class="dropdown">
-                                <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pr-4" href="{{route('admin.wholesale.business.wholesale-req.export')}}">
+                                <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pe-4" href="{{route('admin.wholesale.business.wholesale-req.export')}}">
                                     <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
                                     <span class="ps-2">{{ translate('export') }}</span>
                                 </a>

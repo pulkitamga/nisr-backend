@@ -4,7 +4,7 @@
     data-link="{{ route('product',$product->slug) }}">
     @if($product->discount > 0)
     <div class="d-flex position-absolute z-2">
-        <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
+        <span class="for-discount-value p-1 ps-2 pe-2 font-bold fs-13">
             <span class="direction-ltr d-block">
                 @if ($product->discount_type == 'percent')
                     -{{ round($product->discount,(!empty($decimalPointSettings) ? $decimalPointSettings: 0))}}%
@@ -21,7 +21,7 @@
                 <img class="__img-125px" alt="" src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}">
             </div>
         </div>
-        <div class=" flash_deal_product_details pl-3 pr-3 pr-1 d-flex align-items-center">
+        <div class=" flash_deal_product_details ps-3 pe-3 pe-1 d-flex align-items-center">
             <div>
                 <div>
                     <span class="flash-product-title">

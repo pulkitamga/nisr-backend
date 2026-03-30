@@ -285,7 +285,7 @@
                         @foreach($product['digital_product_extensions'] as $extensionKey => $extensionGroup)
                             <div class="row flex-start mx-0 align-items-center mb-1">
                                 <div
-                                    class="product-description-label text-dark font-bold {{Session::get('direction') === "rtl" ? 'pl-2' : 'pr-2'}} text-capitalize mb-2">
+                                    class="product-description-label text-dark font-bold {{Session::get('direction') === "rtl" ? 'ps-2' : 'pe-2'}} text-capitalize mb-2">
                                     {{ translate($extensionKey) }} :
                                 </div>
                                 <div>

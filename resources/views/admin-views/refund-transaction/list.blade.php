@@ -15,7 +15,7 @@
         <div class="card">
             <div class="card-header border-0 px-3 py-4">
                 <div class="w-100 d-flex flex-wrap gap-3 align-items-center">
-                    <h4 class="mb-0 mr-auto">
+                    <h4 class="mb-0 me-auto">
                         {{ translate('total_transaction')}}
                         <span class="badge badge-soft-dark radius-50 fz-14">{{$refundTransactions->total()}}</span>
                     </h4>

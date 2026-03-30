@@ -60,7 +60,7 @@
                         <div class="col-md-4 col-lg-6 mb-2 mb-md-0">
                             <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
                                 {{ translate('earning_history') }}
-                                <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ $orders->total() }}</span>
+                                <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $orders->total() }}</span>
                             </h4>
                         </div>
                         <div class="col-md-8 col-lg-6">

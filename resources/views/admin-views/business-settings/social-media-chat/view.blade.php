@@ -38,7 +38,7 @@
                     @if($whatsapp)
                         <div class="form-group">
                             <label class="title-color font-weight-bold text-capitalize">{{translate('whatsapp_number')}}</label>
-                            <span class="ml-2" data-toggle="tooltip" data-placement="top" title="{{translate('provide_a_WhatsApp_number_without_country_code')}}">
+                            <span class="ms-2" data-toggle="tooltip" data-placement="top" title="{{translate('provide_a_WhatsApp_number_without_country_code')}}">
                                 <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="img">
                             </span>
                             <input type="text" class="form-control form-ellipsis" name="phone" value="{{ $whatsapp['phone'] }}" placeholder="{{translate('ex').':'.'1234567890'}}">

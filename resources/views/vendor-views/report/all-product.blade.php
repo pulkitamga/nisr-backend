@@ -91,7 +91,7 @@
                         </h4>
                         <h6 class="subtext">
                             {{translate('total_Discount_Given')}}
-                            <span class="ml-2" data-toggle="tooltip" data-placement="top"
+                            <span class="ms-2" data-toggle="tooltip" data-placement="top"
                                   title="{{translate('product_wise_discounted_amount_will_be_shown_here')}}">
                                 <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
                                      alt="{{translate('image')}}">
@@ -108,7 +108,7 @@
         <div class="card">
             <div class="card-header border-0">
                 <div class="d-flex flex-wrap w-100 gap-3 align-items-center">
-                    <h4 class="mb-0 mr-auto">
+                    <h4 class="mb-0 me-auto">
                         {{translate('total_Product')}}
                         <span class="badge badge-soft-dark radius-50 fz-12"> {{ $products->total() }}</span>
                     </h4>

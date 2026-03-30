@@ -237,7 +237,7 @@
                             <br />
                             @else
                             <div class="row mb-3 mt-1">
-                                <div class="col-6 pr-0">
+                                <div class="col-6 pe-0">
                                     <input type="text" class="form-control" name="default_captcha_value" value=""
                                         placeholder="{{translate('enter_captcha_value')}}" autocomplete="off">
                                 </div>

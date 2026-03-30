@@ -374,11 +374,11 @@
             <div class="card-header border-0">
                 <h4 class="mb-0">{{ translate('online') }}</h4>
                 @if (($filters['date_type'] ?? 'this_year') == 'this_year')
-                    <span class="badge badge-soft-info ml-2">{{ translate('monthly_breakdown') }}</span>
+                    <span class="badge badge-soft-info ms-2">{{ translate('monthly_breakdown') }}</span>
                 @elseif(($filters['date_type'] ?? '') == 'this_month')
-                    <span class="badge badge-soft-info ml-2">{{ translate('daily_breakdown') }}</span>
+                    <span class="badge badge-soft-info ms-2">{{ translate('daily_breakdown') }}</span>
                 @elseif(($filters['date_type'] ?? '') == 'this_week')
-                    <span class="badge badge-soft-info ml-2">{{ translate('weekly_breakdown') }}</span>
+                    <span class="badge badge-soft-info ms-2">{{ translate('weekly_breakdown') }}</span>
                 @endif
             </div>
             <div class="table-responsive">
@@ -434,11 +434,11 @@
             <div class="card-header border-0">
                 <h4 class="mb-0">{{ translate('wholesale') }}</h4>
                 @if (($filters['date_type'] ?? 'this_year') == 'this_year')
-                    <span class="badge badge-soft-info ml-2">{{ translate('monthly_breakdown') }}</span>
+                    <span class="badge badge-soft-info ms-2">{{ translate('monthly_breakdown') }}</span>
                 @elseif(($filters['date_type'] ?? '') == 'this_month')
-                    <span class="badge badge-soft-info ml-2">{{ translate('daily_breakdown') }}</span>
+                    <span class="badge badge-soft-info ms-2">{{ translate('daily_breakdown') }}</span>
                 @elseif(($filters['date_type'] ?? '') == 'this_week')
-                    <span class="badge badge-soft-info ml-2">{{ translate('weekly_breakdown') }}</span>
+                    <span class="badge badge-soft-info ms-2">{{ translate('weekly_breakdown') }}</span>
                 @endif
             </div>
             <div class="table-responsive">

@@ -124,7 +124,7 @@
         <div class="card">
             <div class="card-header border-0">
                 <div class="w-100 d-flex flex-wrap gap-3 align-items-center">
-                    <h4 class="mb-0 mr-auto">
+                    <h4 class="mb-0 me-auto">
                         {{translate('total_Vendor')}}
                         <span class="badge badge-soft-dark radius-50 fz-12">{{ count($table_earning['seller_earn_table']) }}</span>
                     </h4>

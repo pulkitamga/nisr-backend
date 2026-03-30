@@ -148,7 +148,7 @@
                                             <input type="file" id="select-image" class="h-100 position-absolute w-100 " hidden multiple  accept="image/*">
                                         </label>
                                     @endif
-                                    <textarea class="form-control {{ theme_root_path() == "default" ? 'pl-8':'' }}" id="msgInputValue" name="replay"
+                                    <textarea class="form-control {{ theme_root_path() == "default" ? 'ps-8':'' }}" id="msgInputValue" name="replay"
                                               type="text" placeholder="{{translate('write_your_message_here')}}" ></textarea>
                                 </div>
                                 <div class="mt-3 d-flex justify-content-between">

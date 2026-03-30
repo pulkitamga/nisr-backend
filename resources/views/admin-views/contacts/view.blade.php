@@ -35,7 +35,7 @@
                             </form>
                         </div>
                         <div class="card-body">
-                            <div class="pl-2 d-flex gap-2 align-items-center mb-3">
+                            <div class="ps-2 d-flex gap-2 align-items-center mb-3">
                                 <strong class="">{{$contact->subject}}</strong>
                                 @if($contact->seen==1)
                                     <label class="badge badge-soft-info mb-0">{{translate('seen')}}</label>
@@ -132,7 +132,7 @@
                                         </div>
                                         <div class="d-flex justify-content-end pt-3 mt-5">
                                             <button type="submit" class="btn btn--primary px-4">
-                                            {{translate('send')}}<i class="tio-send ml-2"></i>
+                                            {{translate('send')}}<i class="tio-send ms-2"></i>
                                             </button>
                                         </div>
                                     </form>

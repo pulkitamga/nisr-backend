@@ -75,9 +75,9 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
     </div>
     <div class="card">
         <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 mr-auto">
+            <h5 class="mb-0 me-auto">
                 {{translate('Service_Ticket_List')}}
-                <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $tickets->total() }}</span>
+                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $tickets->total() }}</span>
             </h5>
 
             <div class="dropdown">

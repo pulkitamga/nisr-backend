@@ -149,7 +149,7 @@
                                         </div>
                                     @endif
                                     @if(getWebConfig(name: 'order_verification'))
-                                        <span class="ml-2 ml-sm-3">
+                                        <span class="ms-2 ms-sm-3">
                                             <b>
                                                 {{translate('order_verification_code').':'.$order['verification_code']}}
                                             </b>

@@ -72,7 +72,7 @@
         </div>
         @include('admin-views.business-settings.theme-and-addon-menu')
         <div class="card mb-5">
-            <div class="card-body pl-md-10">
+            <div class="card-body ps-md-10">
                 <h4 class="mb-3 text-capitalize d-flex align-items-center mt-xl-2">{{translate('upload_theme')}}</h4>
                 <form enctype="multipart/form-data" id="theme-form">
                     @csrf
@@ -108,9 +108,9 @@
                         @php($conditionOne=str_replace('MB','',ini_get('upload_max_filesize'))>=20 && str_replace('MB','',ini_get('upload_max_filesize'))>=20)
                         @php($conditionTwo=str_replace('MB','',ini_get('post_max_size'))>=20 && str_replace('MB','',ini_get('post_max_size'))>=20)
                         <div class="col-sm-6 col-lg-5 col-xl-5 col-xxl-7">
-                            <div class="pl-sm-5">
+                            <div class="ps-sm-5">
                                 <h5 class="mb-3 d-flex">{{ translate('instructions') }}</h5>
-                                <ul class="pl-3 d-flex flex-column gap-2 instructions-list">
+                                <ul class="ps-3 d-flex flex-column gap-2 instructions-list">
                                     <li>{{translate('maximum_file_size')}} 50 MB</li>
                                     <li>{{translate('have_to_upload_zip_file')}}</li>
                                 </ul>

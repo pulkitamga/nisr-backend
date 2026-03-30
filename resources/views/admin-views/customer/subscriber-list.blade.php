@@ -9,7 +9,7 @@
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/subscribers.png')}}" width="20" alt="">
             {{translate('subscriber_list')}}
-            <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $totalSubscribers }}</span>
+            <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $totalSubscribers }}</span>
         </h2>
     </div>
     <div class="card mb-3">
@@ -50,9 +50,9 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header gap-3 align-items-center">
-                    <h5 class="mb-0 mr-auto">
+                    <h5 class="mb-0 me-auto">
                         {{translate('subscriber_list')}}
-                        <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $subscriberList->total() }}</span>
+                        <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $subscriberList->total() }}</span>
                     </h5>
 
                     <form action="{{ url()->current() }}" method="GET">

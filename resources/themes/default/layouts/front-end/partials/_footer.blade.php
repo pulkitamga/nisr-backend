@@ -97,7 +97,7 @@
                         </div>
                         @endif
 
-                        <div class="store-contents d-flex justify-content-center pr-lg-4">
+                        <div class="store-contents d-flex justify-content-center pe-lg-4">
                             @if($web_config['ios']['status'])
                             <div class="me-2 mb-2">
                                 <a class="" href="{{ $web_config['ios']['link'] }}" role="button">

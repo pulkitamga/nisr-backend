@@ -9,7 +9,7 @@
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" class="mb-1 me-1"
                     alt="">
                 {{ translate('Products_Stocked_List') }}
-                <span class="badge badge-soft-dark radius-50 fz-14 ml-1">
+                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">
                     {{ $products->total() }}
                 </span>
             </h2>

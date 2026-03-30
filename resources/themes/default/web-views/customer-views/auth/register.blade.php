@@ -145,7 +145,7 @@
 
                                 @else
                                 <div class="row">
-                                    <div class="col-6 pr-2">
+                                    <div class="col-6 pe-2">
                                         <input type="text" class="form-control border __h-40" name="default_recaptcha_value_customer_regi" value=""
                                                id="customer-register-recaptcha-input"
                                                 placeholder="{{ translate('enter_captcha_value') }}" autocomplete="off">

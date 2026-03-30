@@ -19,7 +19,7 @@
                             <div class="col-auto">
                                 <h5 class="mb-0">
                                     {{ translate('product_table') }}
-                                    <span class="badge badge-soft-dark radius-50 fz-12 ml-1">
+                                    <span class="badge badge-soft-dark radius-50 fz-12 ms-1">
                                         {{ $products->total() }}
                                     </span>
                                 </h5>

@@ -133,7 +133,7 @@
                     <div class="col-sm-4 col-md-6 col-lg-8 mb-2 mb-sm-0">
                         <h5 class="mb-0 d-flex align-items-center gap-10">
                             {{translate('wallet_Bonus_Table')}}
-                            <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ $data->total() }}</span>
+                            <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $data->total() }}</span>
                         </h5>
                     </div>
                     <div class="col-sm-8 col-md-6 col-lg-4">

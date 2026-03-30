@@ -5,7 +5,7 @@
     <div class="overflow-hidden position-relative">
         <div class=" inline_product clickable d-flex justify-content-center">
             @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
-                <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
+                <span class="for-discount-value p-1 ps-2 pe-2 font-bold fs-13">
                     <span class="direction-ltr d-block">
                         -{{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
                     </span>

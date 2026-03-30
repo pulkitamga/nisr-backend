@@ -37,17 +37,17 @@
                 <thead class="thead-light">
                     <tr class="">
                         <th class="font-weight-bold __w-45">
-                            <div class="pl-3">
+                            <div class="ps-3">
                                 {{ translate('product')}}
                             </div>
                         </th>
-                        <th class="font-weight-bold pl-0 __w-15p text-capitalize text-center">{{
+                        <th class="font-weight-bold ps-0 __w-15p text-capitalize text-center">{{
                             translate('unit_price')}}</th>
                         <th class="font-weight-bold __w-15p text-center">
-                            <span class="pl-3">{{ translate('qty')}}</span>
+                            <span class="ps-3">{{ translate('qty')}}</span>
                         </th>
                         <th class="font-weight-bold __w-15p text-end">
-                            <div class="pr-3">
+                            <div class="pe-3">
                                 {{ translate('total')}}
                             </div>
                         </th>
@@ -115,7 +115,7 @@
                             </a>
                         </div>
                         @if ($verify_status['minimum_order_amount'] > $verify_status['amount'])
-                        <span class="pl-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
+                        <span class="ps-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
                             data-placement="right"
                             data-title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif"
                             title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif">
@@ -141,7 +141,7 @@
                         </div>
 
                         @if ($verify_status['minimum_order_amount'] > $verify_status['amount'])
-                        <span class="pl-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
+                        <span class="ps-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
                             data-placement="right"
                             data-title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif"
                             title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif">
@@ -637,7 +637,7 @@
                 </a>
             </div>
             @if ($verify_status['minimum_order_amount'] > $verify_status['amount'])
-            <span class="pl-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
+            <span class="ps-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
                 data-placement="bottom"
                 data-title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif"
                 title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif">
@@ -662,7 +662,7 @@
                 </a>
             </div>
             @if ($verify_status['minimum_order_amount'] > $verify_status['amount'])
-            <span class="pl-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
+            <span class="ps-1 text-danger pulse-button minimum-order-amount-message" data-toggle="tooltip"
                 data-placement="right"
                 data-title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif"
                 title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter(amount: $verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ \App\Utils\get_shop_name($cartItem['seller_id']) }} @endif">

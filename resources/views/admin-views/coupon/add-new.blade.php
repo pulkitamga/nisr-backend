@@ -177,9 +177,9 @@
             <div class="card">
                 <div class="px-3 py-4">
                     <div class="d-flex flex-wrap  gap-3 align-items-center">
-                        <h5 class="mb-0 text-capitalize d-flex gap-2 mr-auto">
+                        <h5 class="mb-0 text-capitalize d-flex gap-2 me-auto">
                             {{translate('coupon_list')}}
-                            <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ $coupons->total() }}</span>
+                            <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $coupons->total() }}</span>
                         </h5>
                         <form action="{{ url()->current() }}" method="GET">
                             <div class="input-group input-group-merge input-group-custom">
@@ -240,7 +240,7 @@
                                         <strong>{{ $coupon['limit'] }},</strong>
                                     </span>
 
-                                    <span class="ml-1">{{translate('used')}}:
+                                    <span class="ms-1">{{translate('used')}}:
                                         <strong>{{ $coupon['order_count'] }}</strong>
                                     </span>
                                 </td>

@@ -39,7 +39,7 @@
                                     <label for="name" class="title-color font-weight-medium">
                                         {{ translate('banner') }}
                                     </label>
-                                    <span class="text-info ml-1">
+                                    <span class="text-info ms-1">
                                         ( {{ translate('ratio') }} {{ translate('4') }}:{{ translate('1') }} )
                                     </span>
                                     <div class="custom-file text-start">
@@ -113,7 +113,7 @@
                             class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
-                                <th class="pl-xl-5">{{ translate('SL') }}</th>
+                                <th class="ps-xl-5">{{ translate('SL') }}</th>
                                 <th>{{ translate('banner') }}</th>
                                 <th>{{ translate('product') }}</th>
                                 <th class="text-center">{{ translate('published') }}</th>
@@ -123,7 +123,7 @@
                             <tbody>
                             @foreach($mostDemandedProducts as $key=>$mostDemanded)
                                 <tr id="data-{{ $mostDemanded->id}}">
-                                    <td class="pl-xl-5">{{ $mostDemandedProducts->firstItem()+ $key}}</td>
+                                    <td class="ps-xl-5">{{ $mostDemandedProducts->firstItem()+ $key}}</td>
                                     <td>
                                         <img class="ratio-4:1" width="80" alt=""
                                              src="{{ getStorageImages(path:$mostDemanded->banner_full_url,type: 'backend-banner')}}">

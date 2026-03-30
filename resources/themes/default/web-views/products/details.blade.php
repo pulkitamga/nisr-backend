@@ -279,7 +279,7 @@
                                     @if($product['product_type'] == 'digital' && $product['digital_product_file_types'] && count($product['digital_product_file_types']) > 0 && $product['digital_product_extensions'])
                                         @foreach($product['digital_product_extensions'] as $extensionKey => $extensionGroup)
                                         <div class="row flex-start mx-0 align-items-center mb-1">
-                                            <div class="product-description-label text-dark font-bold {{Session::get('direction') === "rtl" ? 'pl-2' : 'pr-2'}} text-capitalize mb-2">
+                                            <div class="product-description-label text-dark font-bold {{Session::get('direction') === "rtl" ? 'ps-2' : 'pe-2'}} text-capitalize mb-2">
                                                 {{ translate($extensionKey) }} :
                                             </div>
                                             <div>
@@ -311,7 +311,7 @@
                                     @foreach (json_decode($product->choice_options) as $key => $choice)
                                         <div class="row flex-start mx-0 align-items-center">
                                             <div
-                                                class="product-description-label text-dark font-bold {{Session::get('direction') === "rtl" ? 'pl-2' : 'pr-2'}} text-capitalize mb-2">{{ $choice->title }}
+                                                class="product-description-label text-dark font-bold {{Session::get('direction') === "rtl" ? 'ps-2' : 'pe-2'}} text-capitalize mb-2">{{ $choice->title }}
                                                 :
                                             </div>
                                             <div>
@@ -802,7 +802,7 @@
                                             <img class="__inline-32" alt=""
                                                  src="{{ getStorageImages(path:$web_config['fav_icon'], type: 'logo') }}">
                                         </div>
-                                        <div class="{{Session::get('direction') === "rtl" ? 'right' : 'mt-3 ml-2'}} get-view-by-onclick"
+                                        <div class="{{Session::get('direction') === "rtl" ? 'right' : 'mt-3 ms-2'}} get-view-by-onclick"
                                              data-link="{{ route('shopView',[0]) }}">
                                             <span class="font-bold __text-16px">
                                                 {{$web_config['company_name']}}
@@ -810,7 +810,7 @@
                                         </div>
 
                                         @if($product->added_by == 'admin' && ($inHouseTemporaryClose || ($inHouseVacationStatus && $currentDate >= $inHouseVacationStartDate && $currentDate <= $inHouseVacationEndDate)))
-                                            <div class="{{Session::get('direction') === "rtl" ? 'right' : 'ml-3'}}">
+                                            <div class="{{Session::get('direction') === "rtl" ? 'right' : 'ms-3'}}">
                                                 <span class="chat-seller-info" data-toggle="tooltip"
                                                       title="{{translate('this_shop_is_temporary_closed_or_on_vacation._You_cannot_add_product_to_cart_from_this_shop_for_now')}}">
                                                     <img src="{{theme_asset(path: 'public/assets/front-end/img/info.png')}}"

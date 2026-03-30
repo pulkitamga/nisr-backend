@@ -10,7 +10,7 @@
                 <img class="__img-125px" alt="" src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}">
             </div>
         </div>
-        <div class=" flash_deal_product_details pl-3 pr-3 pr-1 d-flex align-items-center">
+        <div class=" flash_deal_product_details ps-3 pe-3 pe-1 d-flex align-items-center">
             <div>
                 <div>
                     <span class="flash-product-title">

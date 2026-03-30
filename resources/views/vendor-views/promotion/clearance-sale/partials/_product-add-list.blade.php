@@ -93,7 +93,7 @@
         <div class="card-header d-flex gap-10 flex-wrap">
             <h4 class="m-0">
                 {{ translate('Product_List') }}
-                <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $stockClearanceProduct->total() }}</span>
+                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $stockClearanceProduct->total() }}</span>
             </h4>
             <div class="d-flex flex-wrap justify-content-end gap-3">
                 <form action="{{ url()->current() }}" method="GET">

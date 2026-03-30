@@ -93,7 +93,7 @@
             @php($categories = \App\Utils\CategoryManager::getCategoriesWithCountingAndPriorityWiseSorting(dataLimit:
             11))
 
-            <ul class="navbar-nav mega-nav pr-lg-2 pl-lg-2 me-2 d-none d-lg-block __mega-nav custom-category-width">
+            <ul class="navbar-nav mega-nav pe-lg-2 ps-lg-2 me-2 d-none d-lg-block __mega-nav custom-category-width">
                 <li class="nav-item {{!request()->is('/')?'dropdown':''}} ">
 
                     <a class="nav-link dropdown-toggle category-menu-toggle-btn ps-0 store-category" href="javascript:">
@@ -317,13 +317,13 @@
             </li>
             @else
             <li class="nav-item d-md-none">
-                <a class="dropdown-item pl-2 font-bold-on-mobile" href="{{route('customer.auth.login')}}">
+                <a class="dropdown-item ps-2 font-bold-on-mobile" href="{{route('customer.auth.login')}}">
                     <i class="fa fa-sign-in me-2"></i> {{ translate('sign_in')}}
                 </a>
                 <div class="dropdown-divider"></div>
             </li>
             <li class="nav-item d-md-none">
-                <a class="dropdown-item pl-2 font-bold-on-mobile" href="{{route('customer.auth.sign-up')}}">
+                <a class="dropdown-item ps-2 font-bold-on-mobile" href="{{route('customer.auth.sign-up')}}">
                     <i class="fa fa-user-circle me-2"></i>{{ translate('sign_up')}}
                 </a>
             </li>
@@ -536,7 +536,7 @@
                                 </a>
                             <?php endforeach; ?>
                             <a class="dropdown-item text-center" href="{{route('notifications')}}">
-                                <span class="text-truncate pr-2" title="Settings">{{
+                                <span class="text-truncate pe-2" title="Settings">{{
                                 translate('See_all_notifications')}}</span>
                             </a>
                         </div>

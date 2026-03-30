@@ -23,7 +23,7 @@
                                 <div class="col-lg-4">
                                     <div class="d-flex gap-2 flex-wrap">
                                         <h5 class="m-0">{{translate('order_list')}}
-                                            <span class="badge badge-soft-dark ml-2">{{$orders->total()}}</span>
+                                            <span class="badge badge-soft-dark ms-2">{{$orders->total()}}</span>
                                         </h5>
                                         <h5 class="mb-0 text-black-50">( {{translate('vendor_Name')}}
                                             : {{$seller['f_name'].' '.$seller['l_name']}} , {{translate('vendor_Id')}}

@@ -13,7 +13,7 @@
             @elseif($type == 'seller')
             {{ translate('vendor_Product_List') }}
             @endif
-            <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $products->total() }}</span>
+            <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $products->total() }}</span>
         </h2>
     </div>
 

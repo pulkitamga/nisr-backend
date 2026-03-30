@@ -44,7 +44,7 @@
                                         <label for="name" class="title-color font-weight-medium">
                                             {{ translate('banner') }}
                                         </label>
-                                        <span class="text-info ml-1">
+                                        <span class="text-info ms-1">
                                             ( {{ translate('ratio') }} {{ '5:1' }} )
                                         </span>
                                         <div class="custom-file text-start">

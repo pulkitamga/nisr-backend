@@ -35,7 +35,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
         <div class="card">
             <div class="card-body">
                 <input type="hidden" name="status" value="approved">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
                     {{ translate('branch_information') }}
                 </h5>
@@ -143,7 +143,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
         </div>
         <div class="card mt-3 rest-part">
             <div class="card-body">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <i class="tio-time tio-lg fw-bold"></i>
                     {{ translate('Working Hours') }}
                 </h5>
@@ -240,7 +240,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
         </div>
         <div class="card mt-3 rest-part">
             <div class="card-body">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <i class="ti-share tio-lg fw-bold"></i>
                     {{ translate('Area_Covered') }}
                 </h5>
@@ -287,7 +287,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
         </div>
         <div class="card mt-3 rest-part">
             <div class="card-body">
-                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/location.png')}}" class="mb-1" alt="">
                     {{ translate('MAP_Location') }}
                 </h5>

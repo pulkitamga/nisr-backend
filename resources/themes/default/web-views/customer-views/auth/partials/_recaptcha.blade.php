@@ -6,7 +6,7 @@
     <div id="recaptcha_element" class="w-100 my-2" data-type="image"></div>
 @else
     <div class="d-flex justify-content-between py-2">
-        <div class="pr-2">
+        <div class="pe-2">
             <input type="text" class="form-control border __h-40" name="default_recaptcha_id_customer_login" value=""
                    id="customer-login-recaptcha-input"
                    placeholder="{{ translate('enter_captcha_value') }}" autocomplete="off">

@@ -92,7 +92,7 @@ use Illuminate\Support\Facades\Session;
                 <div class="col-md-4 col-lg-6 mb-2 mb-sm-0">
                     <h5 class="d-flex align-items-center gap-2">
                         {{translate('employee_Roles')}}
-                        <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ count($roles) }}</span>
+                        <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ count($roles) }}</span>
                     </h5>
                 </div>
                 <div class="col-md-8 col-lg-6 d-flex flex-wrap flex-sm-nowrap justify-content-sm-end gap-3">

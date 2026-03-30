@@ -191,7 +191,7 @@
                                             </label>
                                         </div>
                                         <label class="w-0 flex-grow-1 uploaded-file-container">
-                                            <textarea class="form-control pt-3 radius-left-button pl-105px" id="msgInputValue" name="message" type="text" placeholder="{{translate('send_a_message')}}" aria-label="Search"></textarea>
+                                            <textarea class="form-control pt-3 radius-left-button ps-105px" id="msgInputValue" name="message" type="text" placeholder="{{translate('send_a_message')}}" aria-label="Search"></textarea>
                                             <div class="d-flex justify-content-between items-container">
                                                 <div class="overflow-x-auto pt-3 pb-2">
                                                     <div>

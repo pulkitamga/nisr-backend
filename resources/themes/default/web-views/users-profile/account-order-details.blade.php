@@ -312,14 +312,14 @@
                                                 </div>
                                             </td>
                                             <td class="align-middle">
-                                                <div class="pl-2">
+                                                <div class="ps-2">
                                                     <span class="word-nobreak font-weight-bold">
                                                         {{$detail->qty}}
                                                     </span>
                                                 </div>
                                             </td>
                                             <td class="text-end align-middle">
-                                                <div class="pl-2">
+                                                <div class="ps-2">
                                                     <span class="word-nobreak font-weight-bold">
                                                         {{ webCurrencyConverter(amount: $detail->qty*$detail->installtion_charges) }}
                                                     </span>

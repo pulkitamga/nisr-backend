@@ -36,7 +36,7 @@
             @endif
 
             <div class="col-12 col-xl-9 __top-slider-images">
-                <div class="{{Session::get('direction') === "rtl" ? 'pr-xl-2' : 'pl-xl-2'}}">
+                <div class="{{Session::get('direction') === "rtl" ? 'pe-xl-2' : 'ps-xl-2'}}">
                     <div class="owl-theme owl-carousel hero-slider">
                         @foreach($bannerTypeMainBanner as $key=>$banner)
                             <a href="{{$banner['url']}}" class="d-block" target="_blank">

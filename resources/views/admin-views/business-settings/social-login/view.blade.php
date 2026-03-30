@@ -42,7 +42,7 @@
                                                 <img width="16" class="svg" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" loading="lazy" alt="">
                                             </span>
                                         </div>
-                                        <div class="form-control d-flex align-items-center justify-content-between py-1 pl-3 pr-2">
+                                        <div class="form-control d-flex align-items-center justify-content-between py-1 ps-3 pe-2">
                                             <span class="form-ellipsis d-flex" id="id_{{$socialLoginService['login_medium']}}">{{ url('/') }}/customer/auth/login/{{$socialLoginService['login_medium']}}/callback</span>
                                             <span class="btn-link copy-to-clipboard" data-id="#id_{{$socialLoginService['login_medium']}}">
                                                 <i class="tio-copy"></i>

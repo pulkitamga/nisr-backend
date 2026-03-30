@@ -1,4 +1,4 @@
-<aside class="col-lg-3 hidden-xs col-md-3 col-sm-4 SearchParameters __search-sidebar {{Session::get('direction') === "rtl" ? 'pl-2' : 'pr-2'}}" id="SearchParameters">
+<aside class="col-lg-3 hidden-xs col-md-3 col-sm-4 SearchParameters __search-sidebar {{Session::get('direction') === "rtl" ? 'ps-2' : 'pe-2'}}" id="SearchParameters">
     @php($selectedMake = $selectedVehicleFilters['make'] ?? request('make'))
     @php($selectedModel = $selectedVehicleFilters['model'] ?? request('model'))
     @php($selectedYear = $selectedVehicleFilters['year'] ?? request('year') ?? $currentYear ?? null)

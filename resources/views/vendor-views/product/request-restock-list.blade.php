@@ -9,7 +9,7 @@
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" alt="">
                 {{ translate('Request_Restock_List') }}
-                <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $totalRestockProducts }}</span>
+                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $totalRestockProducts }}</span>
             </h2>
         </div>
 
@@ -107,9 +107,9 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header gap-3 align-items-center">
-                        <h5 class="mb-0 mr-auto">
+                        <h5 class="mb-0 me-auto">
                             {{translate('request_list')}}
-                            <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $restockProducts->total() }}</span>
+                            <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $restockProducts->total() }}</span>
                         </h5>
 
                         <form action="{{ url()->current() }}" method="GET">

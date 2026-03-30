@@ -44,7 +44,7 @@
                 <div class="card">
                     <div class="card-header justify-content-between">
                         <h5 class="mb-0">{{ translate('features_Section').' '.'-'.' '.translate('middle') }}</h5>
-                        <span id="add-this-features-card-middle" class="btn btn--primary text-capitalize"><i class="tio-add pr-2"></i>{{ translate('add_new') }}</span>
+                        <span id="add-this-features-card-middle" class="btn btn--primary text-capitalize"><i class="tio-add pe-2"></i>{{ translate('add_new') }}</span>
                     </div>
                     <div class="card-body">
                         <div class="row" id="features-section-middle-row">
@@ -113,7 +113,7 @@
                 <div class="card">
                     <div class="card-header justify-content-between">
                         <h5 class="mb-0">{{ translate('features_Section').' '.'-'.' '.translate('bottom') }}</h5>
-                        <span id="add-this-features-card-bottom" class="btn btn--primary text-capitalize"><i class="tio-add pr-2"></i>{{ translate('add_new') }}</span>
+                        <span id="add-this-features-card-bottom" class="btn btn--primary text-capitalize"><i class="tio-add pe-2"></i>{{ translate('add_new') }}</span>
                     </div>
                     <div class="card-body">
                         <div class="row" id="features-Section-bottom-row">

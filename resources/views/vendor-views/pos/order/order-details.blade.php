@@ -87,7 +87,7 @@
                                         @endif
                                     </div>
                                     @if(getWebConfig('order_verification') && $order->order_type == "default_type")
-                                        <span class="ml-2 ml-sm-3">
+                                        <span class="ms-2 ms-sm-3">
                                             <b>
                                                 {{ translate('order_verification_code') }} : {{$order['verification_code']}}
                                             </b>

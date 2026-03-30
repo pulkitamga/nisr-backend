@@ -15,7 +15,7 @@
                                     <img class="__rounded-top aspect-1 h-auto" alt=""
                                          src="{{ getStorageImages(path: $dealOfTheDay?->product?->thumbnail_full_url, type: 'product') }}">
                                     @if(getProductPriceByType(product: $dealOfTheDay?->product, type: 'discount', result: 'value') > 0)
-                                        <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
+                                        <span class="for-discount-value p-1 ps-2 pe-2 font-bold fs-13">
                                             <span class="direction-ltr d-block">
                                                 -{{ getProductPriceByType(product: $dealOfTheDay?->product, type: 'discount', result: 'string') }}
                                             </span>
@@ -78,7 +78,7 @@
                                         <img src="{{ getStorageImages(path: $recommendedProduct?->thumbnail_full_url, type: 'product') }}"
                                             alt="">
                                         @if($recommendedProduct->discount > 0)
-                                            <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
+                                            <span class="for-discount-value p-1 ps-2 pe-2 font-bold fs-13">
                                                 <span class="direction-ltr d-block">
                                                     @if ($recommendedProduct->discount_type == 'percent')
                                                         -{{ round($recommendedProduct->discount,(!empty($decimal_point_settings) ? $decimal_point_settings: 0))}}%

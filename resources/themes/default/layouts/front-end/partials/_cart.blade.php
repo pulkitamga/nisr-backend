@@ -229,12 +229,12 @@ $cartRoute = $isLoggedIn ? route('shop-cart') : route('customer.auth.login');
                 @if($web_config['guest_checkout_status'] || auth('customer')->check())
                 <a class="btn btn-outline-secondary btn-sm" href="{{route('shop-cart') }}">
                     {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === "rtl"
-                        ? 'left me-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
+                        ? 'left me-1 ms-n1' : 'right ms-1 me-n1' }}"></i>
                 </a>
                 @else
                 <a class="btn btn-outline-secondary btn-sm" href="{{route('customer.auth.login') }}">
                     {{ translate('expand_carts') }}<i class="czi-arrow-{{Session::get('direction') === "rtl"
-                        ? 'left me-1 ml-n1' : 'right ml-1 mr-n1' }}"></i>
+                        ? 'left me-1 ms-n1' : 'right ms-1 me-n1' }}"></i>
                 </a>
                 @endif
             </div>

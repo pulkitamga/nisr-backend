@@ -35,7 +35,7 @@
                         </div>
                     @endif
                 </div>
-                <div class="__w-100px flex-grow-1 {{Session::get('direction') === "rtl" ? ' pr-2 pr-sm-4' : ' pl-2 pl-sm-4'}}">
+                <div class="__w-100px flex-grow-1 {{Session::get('direction') === "rtl" ? ' pe-2 pe-sm-4' : ' ps-2 ps-sm-4'}}">
                     <div class="font-weight-bolder mb-2">
                         @if($shopInfoArray['id'] != 0)
                             {{ $shopInfoArray['name']}}
@@ -54,7 +54,7 @@
                                     <i class="tio-star-outlined text-warning"></i>
                                 @endif
                             @endfor
-                            <span class="ml-1">({{ round($shopInfoArray['average_rating'], 1) }})</span>
+                            <span class="ms-1">({{ round($shopInfoArray['average_rating'], 1) }})</span>
                             <span class="__inline-69"></span>
                             <span class="text-nowrap fs-13 font-semibold text-base">
                                 {{ $shopInfoArray['total_review']}} {{translate('reviews')}}

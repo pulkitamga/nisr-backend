@@ -148,7 +148,7 @@
                                                 <label class="form-label font-semibold">{{ translate('captcha') }}
                                                     <span class="input-required-icon">*</span></label>
                                                 <div class="row">
-                                                    <div class="col-6 pr-2">
+                                                    <div class="col-6 pe-2">
                                                         <input type="text" class="form-control"
                                                             name="default_recaptcha_value_customer_regi" value=""
                                                             id="customer-register-recaptcha-input"

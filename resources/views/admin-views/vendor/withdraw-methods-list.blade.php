@@ -20,7 +20,7 @@
                             <div class="col-auto">
                                 <h5>
                                 {{ translate('methods')}}
-                                    <span class="badge badge-soft-dark radius-50 fz-12 ml-1"> {{ $withdrawalMethods->total() }}</span>
+                                    <span class="badge badge-soft-dark radius-50 fz-12 ms-1"> {{ $withdrawalMethods->total() }}</span>
                                 </h5>
                             </div>
                             <div class="col-auto">

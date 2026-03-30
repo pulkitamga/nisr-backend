@@ -74,7 +74,7 @@
                                         <img
                                             src="{{ dynamicAsset(path: '/public/assets/back-end/img/upload-icon.png') }}"
                                             alt="">
-                                        <span class="mr-auto text--title">{{ translate('Uploading') }}</span>
+                                        <span class="me-auto text--title">{{ translate('Uploading') }}</span>
                                         <button class="no-gutter cancel-upload" type="button">
                                             <img
                                                 src="{{ dynamicAsset(path: '/public/assets/back-end/img/cancel-icon.png') }}"
@@ -84,7 +84,7 @@
 
                                     <div
                                         class="variation-upload-file uploaded-item {{ $combination['file'] ? '' : 'collapse' }}">
-                                        <span class="mr-auto text--title file-name">
+                                        <span class="me-auto text--title file-name">
                                             {{ $combination['file'] }}
                                         </span>
 

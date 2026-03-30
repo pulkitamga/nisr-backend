@@ -80,7 +80,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">{{ translate('SLA Policy List') }}
-                <span class="badge badge-soft-dark ml-1">{{ $policies->total() }}</span>
+                <span class="badge badge-soft-dark ms-1">{{ $policies->total() }}</span>
             </h5>
             <a href="{{ route('admin.sla.create') }}" class="btn btn-outline--primary text-nowrap">
                 <i class="tio-add"></i> {{ translate('Create New Policy') }}

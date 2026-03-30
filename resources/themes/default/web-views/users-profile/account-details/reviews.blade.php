@@ -96,8 +96,8 @@
                                     </div>
 
                                     @if($order_details->reviewData && $order_details->reviewData->reply)
-                                        <div class="pl-md-4 mt-3">
-                                            <div class="review-reply rounded bg-E9F3FF80 p-3 ml-md-4 before-border-left">
+                                        <div class="ps-md-4 mt-3">
+                                            <div class="review-reply rounded bg-E9F3FF80 p-3 ms-md-4 before-border-left">
                                                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                                                     <div class="d-flex align-items-center gap-2">
                                                         <img src="{{theme_asset('public/assets/front-end/img/seller-reply-icon.png')}}" alt="">

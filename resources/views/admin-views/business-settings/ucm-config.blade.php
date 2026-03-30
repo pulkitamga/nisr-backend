@@ -86,7 +86,7 @@
                                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/ucm.png')}}" alt="{{ translate('UCM') }}">
                                         {{translate('UCM_API_Config')}}
                                     </h5>
-                                    <div id="webhook-status-container" class="ml-auto" style="display: none;">
+                                    <div id="webhook-status-container" class="ms-auto" style="display: none;">
                                         <div class="webhook-status-indicator polling">
                                             <span class="dot"></span>
                                             <span class="status-text">{{translate('polling_mode')}}</span>

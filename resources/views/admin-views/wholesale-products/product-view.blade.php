@@ -15,7 +15,7 @@
         <div class="col-md-12">
             <div class="card mt-3 rest-part">
                 <div class="card-body">
-                    <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                    <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                         <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" class="mb-1" alt="">
                         {{ translate('Product_Information') }}
                     </h5>
@@ -78,7 +78,7 @@
             </div>
             <div class="card mt-3 rest-part">
                 <div class="card-body">
-                    <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
+                    <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                         <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" class="mb-1" alt="">
                         {{ translate('wholesale_Prices') }}
                     </h5>

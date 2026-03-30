@@ -130,7 +130,7 @@
         <div class="card">
             <div class="card-header border-0">
                 <div class="d-flex flex-wrap w-100 gap-3 align-items-center">
-                    <h4 class="mb-0 mr-auto">
+                    <h4 class="mb-0 me-auto">
                         {{translate('total_Earnings')}}
                         <span class="badge badge-soft-dark radius-50 fz-12">{{ count($inhouse_earn) }}</span>
                     </h4>

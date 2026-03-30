@@ -59,7 +59,7 @@
                             <strong class="text-danger">{{ $order_count['canceled_order'] }}</strong>
                             <div>
                                 <span>{{translate('canceled')}}</span>
-                                <span class="ml-2" data-toggle="tooltip" data-placement="top"
+                                <span class="ms-2" data-toggle="tooltip" data-placement="top"
                                       title="{{translate('this_count_is_the_summation_of')}} {{translate('failed_to_deliver')}}, {{translate('canceled')}}, {{translate('and')}} {{translate('returned_orders')}}">
                                     <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
                                          alt="{{translate('image')}}">
@@ -70,7 +70,7 @@
                             <strong class="text-primary">{{ $order_count['ongoing_order'] }}</strong>
                             <div>
                                 <span>{{translate('ongoing')}}</span>
-                                <span class="ml-2" data-toggle="tooltip" data-placement="top"
+                                <span class="ms-2" data-toggle="tooltip" data-placement="top"
                                       title="{{translate('this_count_is_the_summation_of')}} {{translate('pending')}}, {{translate('confirmed')}}, {{translate('packaging')}}, {{translate('out_for_delivery_orders')}}">
                                     <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
                                          alt="{{translate('image')}}">
@@ -81,7 +81,7 @@
                             <strong class="text-success">{{ $order_count['delivered_order'] }}</strong>
                             <div class="d-flex">
                                 <span>{{translate('completed')}}</span>
-                                <span class="ml-2" data-toggle="tooltip" data-placement="top"
+                                <span class="ms-2" data-toggle="tooltip" data-placement="top"
                                       title="{{translate('this_count_is_the_summation_of_delivered_orders')}}">
                                     <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
                                          alt="{{translate('image')}}">
@@ -105,7 +105,7 @@
                             </strong>
                             <div class="d-flex">
                                 <span>{{translate('due_Amount')}}</span>
-                                <span class="trx-y-2 ml-2" data-toggle="tooltip" data-placement="top"
+                                <span class="trx-y-2 ms-2" data-toggle="tooltip" data-placement="top"
                                       title="{{translate('the_ongoing_order_amount_will_be_shown_here')}}">
                                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="{{translate('image')}}">
                                 </span>
@@ -117,7 +117,7 @@
                             </strong>
                             <div class="d-flex">
                                 <span>{{translate('already_Settled')}}</span>
-                                <span class="trx-y-2 ml-2" data-toggle="tooltip" data-placement="top"
+                                <span class="trx-y-2 ms-2" data-toggle="tooltip" data-placement="top"
                                       title="{{translate('after_the_order_is_delivered_total_order_amount_will_be_shown_here')}}">
                                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="{{translate('image')}}">
                                 </span>
@@ -175,7 +175,7 @@
         <div class="card">
             <div class="card-header border-0">
                 <div class="d-flex flex-wrap w-100 gap-3 align-items-center">
-                    <h4 class="mb-0 mr-auto">
+                    <h4 class="mb-0 me-auto">
                         {{translate('total_Orders')}}
                         <span class="badge badge-soft-dark radius-50 fz-14">{{ $orders->total() }}</span>
                         <span class="badge badge-soft-dark radius-50 fz-14"></span>

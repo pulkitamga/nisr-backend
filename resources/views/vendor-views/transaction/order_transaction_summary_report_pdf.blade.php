@@ -118,7 +118,7 @@
             <table class="bs-0 __product-table inter">
                 <tbody>
                 <tr>
-                    <td class="pl-0 pr-0 text-center"
+                    <td class="ps-0 pe-0 text-center"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('SL')}}</td>
                     <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('details')}}</td>
                     <td class="text-end"

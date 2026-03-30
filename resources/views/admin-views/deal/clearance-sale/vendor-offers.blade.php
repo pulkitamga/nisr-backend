@@ -65,9 +65,9 @@
                 </div>
                 <div class="mt-3">
                     <div class="position-relative">
-                        <input type="text" class="form-control pl-5 search-vendor-for-clearance-sale" placeholder="{{ translate('Search_Vendors') }}">
+                        <input type="text" class="form-control ps-5 search-vendor-for-clearance-sale" placeholder="{{ translate('Search_Vendors') }}">
                         <span
-                            class="tio-search position-absolute left-0 top-0 h-42px d-flex align-items-center pl-2"></span>
+                            class="tio-search position-absolute left-0 top-0 h-42px d-flex align-items-center ps-2"></span>
                         <div class="dropdown-menu select-clearance-vendor-search w-100 px-2">
                             <div class="d-flex flex-column max-h-200 overflow-y-auto overflow-x-hidden search-result-box">
                                 @include('admin-views.deal.clearance-sale.partials._search-vendor', ['vendorList' => $vendorList])
@@ -81,7 +81,7 @@
             <div class="card-body">
                 <h3 class="mb-3">
                     {{ translate('Vendor_List') }}
-                    <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $vendorList->count() > 0? count($vendorList) : null }}</span>
+                    <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $vendorList->count() > 0? count($vendorList) : null }}</span>
                 </h3>
                 @if($vendorList->count() > 0)
                     <div class="table-responsive datatable-custom">

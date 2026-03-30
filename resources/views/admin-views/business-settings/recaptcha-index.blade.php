@@ -72,7 +72,7 @@
                                 </div>
                             </div>
                             <h5 class="mt-4 mb-3 d-flex">{{translate('instructions')}}</h5>
-                            <ol class="pl-4 instructions-list">
+                            <ol class="ps-4 instructions-list">
                                 <li>
                                     {{translate('to_get_site_key_and_secret_key_Go_to_the_Credentials_page')}}
                                     (<a href="https://www.google.com/recaptcha/admin/create"

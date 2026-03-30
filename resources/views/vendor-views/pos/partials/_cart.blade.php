@@ -25,7 +25,7 @@
                                         <h5 class="text-hover-primary mb-0">
                                             {{Str::limit($item['name'], 12)}}
                                             @if($item['tax_model'] == 'include')
-                                                <span class="ml-2" data-toggle="tooltip" data-placement="top" title="{{ translate('tax_included') }}">
+                                                <span class="ms-2" data-toggle="tooltip" data-placement="top" title="{{ translate('tax_included') }}">
                                                 <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="img">
                                             </span>
                                             @endif

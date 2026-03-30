@@ -63,7 +63,7 @@
     <!-- History Table -->
     <div class="card mt-4">
         <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 mr-auto">
+            <h5 class="mb-0 me-auto">
                 {{translate('import_history')}}
             </h5>
             <form action="{{ url()->current() }}" method="GET">

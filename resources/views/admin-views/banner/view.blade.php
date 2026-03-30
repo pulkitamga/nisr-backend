@@ -255,7 +255,7 @@
                                class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
-                                <th class="pl-xl-5">{{ translate('SL') }}</th>
+                                <th class="ps-xl-5">{{ translate('SL') }}</th>
                                 <th>{{ translate('image') }}</th>
                                 <th>{{ translate('banner_type') }}</th>
                                 <th>{{ translate('published') }}</th>
@@ -265,7 +265,7 @@
                             @foreach($banners as $key=>$banner)
                                 <tbody>
                                 <tr id="data-{{ $banner->id}}">
-                                    <td class="pl-xl-5">{{ $banners->firstItem()+$key}}</td>
+                                    <td class="ps-xl-5">{{ $banners->firstItem()+$key}}</td>
                                     <td>
                                         <img class="ratio-4-2 rounded" width="80" alt=""
                                              src="{{ getStorageImages(path: $banner->photo_full_url , type: 'backend-banner') }}">

@@ -74,7 +74,7 @@
                                 <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2">
                                     {{ translate('push_notification_table')}}
                                     <span
-                                        class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ $notifications->total() }}</span>
+                                        class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $notifications->total() }}</span>
                                 </h5>
                             </div>
                             <div class="col-sm-8 col-md-6 col-lg-4">

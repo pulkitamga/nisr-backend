@@ -122,7 +122,7 @@ $selectedYear = $selectedVehicleFilters['year'] ?? null;
     <div class="row">
         <aside
             class="col-lg-3 hidden-xs col-md-3 col-sm-4 SearchParameters __search-sidebar {{Session::get('direction') === "
-            rtl" ? 'pl-2' : 'pr-2' }}" id="SearchParameters">
+            rtl" ? 'ps-2' : 'pe-2' }}" id="SearchParameters">
             <div class="cz-sidebar __inline-35 p-4 overflow-hidden" id="shop-sidebar">
                 <div class="cz-sidebar-header p-0">
                     <button class="close ms-auto fs-18-mobile" type="button" data-dismiss="sidebar" aria-label="{{ translate('Close') }}">

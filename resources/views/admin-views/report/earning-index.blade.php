@@ -35,7 +35,7 @@
 
                                     <div class="col-auto">
                                         <div class="row align-items-center g-0">
-                                            <h5 class="text-muted col-auto {{Session::get('direction') === "rtl" ? 'pl-2' : 'pr-2'}}">{{translate('date')}}</h5>
+                                            <h5 class="text-muted col-auto {{Session::get('direction') === "rtl" ? 'ps-2' : 'pe-2'}}">{{translate('date')}}</h5>
 
                                             <!-- Flatpickr -->
                                             <h5 class="text-muted">( {{session('from_date')}} - {{session('to_date')}}

@@ -27,7 +27,7 @@
                                 </div>
                             </div>
                             <div class="article-nav-wrapper sticky-top-wrapper sticky-top-blog-details card border-0 p-3 pt-4 pt-lg-3 d-none d-lg-block">
-                                <h5 class="fw-semibold mb-4 mb-lg-3 ml-5 ml-lg-0">{{ translate('In_this_article') }}:</h5>
+                                <h5 class="fw-semibold mb-4 mb-lg-3 ms-5 ms-lg-0">{{ translate('In_this_article') }}:</h5>
                                 <hr class="mt-0 mb-3 d-none d-lg-block">
                                 <ul class="m-0 p-0 scrollspy-blog-details-menu">
                                     @foreach ($articleLinks as $link)

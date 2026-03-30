@@ -55,7 +55,7 @@
                     <div class="px-3 py-4">
                         <h5 class="mb-0 text-capitalize">
                             {{ translate('product_table')}}
-                            <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ $dealProducts->total() }}</span>
+                            <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $dealProducts->total() }}</span>
                         </h5>
                     </div>
                     <div class="table-responsive">
