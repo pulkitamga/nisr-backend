@@ -1,11 +1,10 @@
 @php
 use App\Utils\Helpers;
 use Carbon\Carbon;
-$direction = Session::get('direction') ?? 'ltr';
+$direction = get_direction();
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction }}"
-    style="text-align: {{ $direction === 'rtl' ? 'right' : 'left' }};">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction }}">
 
 <head>
     <meta charset="utf-8">
