@@ -43,7 +43,7 @@
                             @endif
 
                             <a href="{{route('admin.business-settings.language.index')}}"
-                               class="btn btn-danger btn-icon-split float-right">
+                               class="btn btn-danger btn-icon-split float-end">
                                 <i class="tio-first-page"></i>
                                 <span class="text text-capitalize">{{translate('back')}}</span>
                             </a>

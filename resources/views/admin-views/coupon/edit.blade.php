@@ -55,7 +55,7 @@
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
                                 <label for="name" class="title-color text-capitalize">{{translate('coupon_code')}}</label>
-                                <a href="javascript:void(0)" class="float-right" id="generateCode">{{translate('generate_code')}}</a>
+                                <a href="javascript:void(0)" class="float-end" id="generateCode">{{translate('generate_code')}}</a>
                                 <input type="text" name="code" value="{{$coupon['code']}}"
                                     class="form-control" id="code"
                                     placeholder="{{translate('ex')}}: EID100" required>

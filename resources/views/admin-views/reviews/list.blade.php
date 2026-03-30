@@ -304,7 +304,7 @@
                                         <div class="d-flex flex-wrap gap-2">
                                             @if(count($review->attachment_full_url)>0)
                                                 @foreach ($review->attachment_full_url as $img)
-                                                    <a class="aspect-1 float-left overflow-hidden"
+                                                    <a class="aspect-1 float-start overflow-hidden"
                                                        href="{{ getStorageImages(path: $img,type: 'backend-basic') }}"
                                                        data-lightbox="review-gallery-modal{{ $review['id'] }}" >
                                                         <img width="45" class="rounded aspect-1 border"
@@ -382,7 +382,7 @@
                                 <div class="d-flex flex-wrap gap-2">
                                     @if(count($review->attachment_full_url) > 0)
                                         @foreach ($review->attachment_full_url as $img)
-                                            <a class="aspect-1 float-left overflow-hidden"
+                                            <a class="aspect-1 float-start overflow-hidden"
                                                href="{{ getStorageImages(path: $img,type: 'backend-basic') }}"
                                                data-lightbox="review-gallery-modal{{ $review['id'] }}" >
                                                 <img width="45" class="rounded aspect-1 border"

@@ -70,7 +70,7 @@
                             <div class="d-flex gap-3 flex-wrap flex-md-nowrap justify-content-center justify-content-md-start">
                                 <div class="media flex-nowrap flex-column flex-sm-row gap-3">
                                     <div class="d-flex flex-column align-items-center __min-w-165px">
-                                        <a class="aspect-1 float-left overflow-hidden"
+                                        <a class="aspect-1 float-start overflow-hidden"
                                            href="{{ getStorageImages(path: $product->thumbnail_full_url,type: 'backend-product') }}"
                                            data-lightbox="product-gallery-{{ $product['id'] }}">
                                             <img class="avatar avatar-170 rounded object-fit-cover"

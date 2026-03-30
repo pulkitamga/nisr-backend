@@ -101,7 +101,7 @@
 
                         <section class="col-lg-8">
                             @if(isset($chattingMessages) && count($chattingMessages) > 0)
-                                <div class="bg-white Chat __shadow h-100 rounded-left-0">
+                                <div class="bg-white Chat __shadow h-100 rounded-start-0">
                                     <div class="messaging ">
                                         <div class="inbox_msg position-relative">
                                             <div class="mesgs">
@@ -205,7 +205,7 @@
                                     </div>
                                 </div>
                             @else
-                                <div class="card Chat __shadow h-100 d-flex flex-column justify-content-center rounded-left-0">
+                                <div class="card Chat __shadow h-100 d-flex flex-column justify-content-center rounded-start-0">
                                     <div class="text-center">
                                         <img src="{{theme_asset(path: 'public/assets/front-end/img/empt-msg.png')}}" alt="">
                                         <p class="text-body mt-4">

@@ -115,7 +115,7 @@
                     <form method="get" action="{{route('shopView', ['id' => $seller_id])}}">
                         <div class="search_form input-group search-form-input-group">
                             <input type="hidden" value="search" name="data_from">
-                            <input type="search" class="form-control rounded-left text-align-direction"
+                            <input type="search" class="form-control rounded-start text-align-direction"
                                    name="search"
                                    value="{{ request('search') }}"
                                    placeholder="{{translate('search_products_from_this_store')}}">

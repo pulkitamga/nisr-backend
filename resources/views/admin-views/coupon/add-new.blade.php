@@ -60,7 +60,7 @@
                                 <div class="d-flex justify-content-between">
                                     <label for="name"
                                         class="title-color font-weight-medium text-capitalize">{{translate('coupon_code')}}</label>
-                                    <a href="javascript:void(0)" class="float-right c1 fz-12" id="generateCode">{{translate('generate_code')}}</a>
+                                    <a href="javascript:void(0)" class="float-end c1 fz-12" id="generateCode">{{translate('generate_code')}}</a>
                                 </div>
                                 <input type="text" name="code" value=""
                                     class="form-control" id="code"

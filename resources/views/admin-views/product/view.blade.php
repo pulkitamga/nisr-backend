@@ -34,7 +34,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 {{ translate('Clearance_Sale') }}
                             </div>
                             @endif
-                            <a class="aspect-1 float-left overflow-hidden"
+                            <a class="aspect-1 float-start overflow-hidden"
                                 href="{{ getStorageImages(path: $product->thumbnail_full_url,type: 'backend-product') }}"
                                 data-lightbox="product-gallery-{{ $product['id'] }}">
                                 <img class="avatar avatar-170 rounded object-fit-cover"
@@ -131,7 +131,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 $colorImageGalleryCount > 0)
                                 @foreach ($product->color_images_full_url as $colorImageKey => $photo)
                                 <div class="{{$colorImageKey > 4 ? 'd-none' : ''}}">
-                                    <a class="aspect-1 float-left overflow-hidden d-block border rounded-lg position-relative"
+                                    <a class="aspect-1 float-start overflow-hidden d-block border rounded-lg position-relative"
                                         href="{{ getStorageImages(path: $photo['image_name'], type: 'backend-product') }}"
                                         data-lightbox="product-gallery-{{ $product['id'] }}">
                                         <img width="50" class="img-fit max-50" alt=""
@@ -149,7 +149,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 @else
                                 @foreach ($product->images_full_url as $imageKey => $photo)
                                 <div class="{{$imageKey > 4 ? 'd-none' : ''}}">
-                                    <a class="aspect-1 float-left overflow-hidden d-block border rounded-lg position-relative {{$imageKey > 4 ? 'd-none' : ''}}"
+                                    <a class="aspect-1 float-start overflow-hidden d-block border rounded-lg position-relative {{$imageKey > 4 ? 'd-none' : ''}}"
                                         href="{{ getStorageImages(path: $photo, type: 'backend-product') }}"
                                         data-lightbox="product-gallery-{{ $product['id'] }}">
                                         <img width="50" class="img-fit max-50" alt=""
@@ -765,7 +765,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                     </p>
                     @if($product?->seoInfo?->image_full_url['path'] || $product->meta_image_full_url['path'])
                     <div class="d-flex flex-wrap gap-2">
-                        <a class="aspect-1 float-left overflow-hidden"
+                        <a class="aspect-1 float-start overflow-hidden"
                             href="{{ getStorageImages(path: $product?->seoInfo?->image_full_url['path'] ? $product?->seoInfo?->image_full_url : $product->meta_image_full_url,type: 'backend-product') }}"
                             data-lightbox="meta-thumbnail">
                             <img class="max-width-100px rounded"
@@ -875,7 +875,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 </p>
                                 @if(count($review->attachment_full_url) > 0)
                                 @foreach ($review->attachment_full_url as $img)
-                                <a class="aspect-1 float-left overflow-hidden"
+                                <a class="aspect-1 float-start overflow-hidden"
                                     href="{{ getStorageImages(path: $img,type: 'backend-product') }}"
                                     data-lightbox="review-gallery{{ $review['id'] }}">
                                     <img class="p-2" width="60" height="60"
@@ -1003,7 +1003,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             <div class="d-flex flex-wrap gap-2">
                                 @if(count($review->attachment_full_url) > 0)
                                 @foreach ($review->attachment_full_url as $img)
-                                <a class="aspect-1 float-left overflow-hidden"
+                                <a class="aspect-1 float-start overflow-hidden"
                                     href="{{ getStorageImages(path: $img,type: 'backend-product') }}"
                                     data-lightbox="review-gallery-modal{{ $review['id'] }}">
                                     <img width="45" class="rounded aspect-1 border"
@@ -1080,7 +1080,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                         <div class="d-flex flex-wrap gap-2">
                             @if(count($review->attachment_full_url) > 0)
                             @foreach ($review->attachment_full_url as $img)
-                            <a class="aspect-1 float-left overflow-hidden"
+                            <a class="aspect-1 float-start overflow-hidden"
                                 href="{{ getStorageImages(path: $img,type: 'backend-product') }}"
                                 data-lightbox="review-gallery-modal{{ $review['id'] }}">
                                 <img width="45" class="rounded aspect-1 border"
