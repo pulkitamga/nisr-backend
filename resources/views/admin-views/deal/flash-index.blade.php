@@ -137,7 +137,7 @@
                     <div class="table-responsive">
                         <table id="datatable"
                                style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};"
-                               class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table">
+                               class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table text-start">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL')}}</th>
@@ -223,7 +223,7 @@
 
     <div class="modal fade" id="prioritySetModal" tabindex="-1" aria-labelledby="prioritySetModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <form action="{{route('admin.business-settings.priority-setup.index',['type'=>'flash_deal'])}}" method="post">
                     @csrf
                     <div class="modal-body px-sm-4 mb-sm-3">

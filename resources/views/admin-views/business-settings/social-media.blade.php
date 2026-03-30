@@ -63,7 +63,7 @@
                     </div>
                     <div class="pb-3">
                         <div class="table-responsive">
-                            <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100" id="dataTable"
+                            <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start" id="dataTable"
                                    style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>

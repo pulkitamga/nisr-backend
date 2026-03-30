@@ -86,7 +86,7 @@
                 @if($vendorList->count() > 0)
                     <div class="table-responsive datatable-custom">
                         <table
-                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('sl') }}</th>

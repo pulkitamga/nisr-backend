@@ -117,8 +117,8 @@
         <div class="table-responsive datatable-custom">
 
             <table
-                style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th> <input type="checkbox" id="select-all">
@@ -267,7 +267,7 @@
 
 <div class="modal fade" id="suggestionModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title">                                   {{ translate('User_Suggestion') }}
 </h5>

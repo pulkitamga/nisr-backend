@@ -55,8 +55,8 @@
                 </div>
                 <div class="px-3 py-4">
                     <div class="table-responsive">
-                        <table style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left' }};"
-                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+                        <table
+                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                             <thead class="thead-light text-capitalize">
                                 <tr>
                                     <th>{{translate('SL')}}</th>
@@ -156,7 +156,7 @@
                                 <div class="modal fade" id="registrationModal{{$business->id}}" tabindex="-1"
                                     role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered" role="document">
-                                        <div class="modal-content">
+                                        <div class="modal-content text-start">
                                             <div class="modal-header">
                                                 <h5 class="modal-title" id="exampleModalLongTitle">{{ __('Registration Copy') }}
                                                 </h5>
@@ -177,7 +177,7 @@
                                 <div class="modal fade" id="taxModal{{$business->id}}" tabindex="-1" role="dialog"
                                     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered" role="document">
-                                        <div class="modal-content">
+                                        <div class="modal-content text-start">
                                             <div class="modal-header">
                                                 <h5 class="modal-title" id="exampleModalLongTitle">{{ __('Tax Card Copy') }}</h5>
                                                 <button type="button" class="close" data-dismiss="modal"
@@ -198,7 +198,7 @@
                                 <div class="modal fade" id="vatModal{{$business->id}}" tabindex="-1" role="dialog"
                                     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered" role="document">
-                                        <div class="modal-content">
+                                        <div class="modal-content text-start">
                                             <div class="modal-header">
                                                 <h5 class="modal-title" id="exampleModalLongTitle">{{ __('VAT Register Copy') }}
                                                 </h5>

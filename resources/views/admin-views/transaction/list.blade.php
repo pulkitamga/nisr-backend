@@ -34,7 +34,7 @@
                     <div class="col-xl-9">
                         <form action="#" id="form-data" method="GET">
                             <div
-                                class="row  gy-2 align-items-center text-{{Session::get('direction') === "rtl" ? 'right' : 'left'}}">
+                                class="row  gy-2 align-items-center text-start">
                                 <div class="col-md-3">
                                     <div class="">
                                         <select class="js-select2-custom form-control" name="customer_id">
@@ -88,7 +88,7 @@
                                             {{translate('export')}}
                                             <i class="tio-chevron-down"></i>
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-right">
+                                        <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item"
                                                    href="{{ route('admin.transaction.transaction-export', ['customer_id'=>request('customer_id'), 'status'=>request('status'), 'from'=>request('from'), 'to'=>request('to')]) }}">{{translate('excel')}}</a>
                                             </li>
@@ -103,8 +103,8 @@
 
             <div class="table-responsive">
                 <table id="datatable"
-                       style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                       class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                       class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>

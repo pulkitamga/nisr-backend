@@ -147,7 +147,7 @@
                                 @endif
                             </a>
                             <div id="notificationDropdown"
-                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account py-0 overflow-hidden width--20rem">
+                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-end navbar-dropdown-menu navbar-dropdown-account py-0 overflow-hidden width--20rem">
                                 @php($notification_data=App\Models\Notification::whereBetween('created_at', [auth('seller')->user()->created_at, Carbon::now()])->where('sent_to', 'seller')->with('notificationSeenBy')->latest()->get())
                                 @foreach ($notification_data as $item)
                                     <button class="dropdown-item position-relative notification-data-view"
@@ -198,7 +198,7 @@
                                 @endif
                             </a>
                             <div id="messageDropdown"
-                                 class="hs-unfold-content width--16rem dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account">
+                                 class="hs-unfold-content width--16rem dropdown-unfold dropdown-menu dropdown-menu-end navbar-dropdown-menu navbar-dropdown-account">
                                 <a class="dropdown-item position-relative"
                                    href="{{route('vendor.messages.index', ['type' => 'customer'])}}">
                                     <span class="text-truncate pe-2"
@@ -275,7 +275,7 @@
                                 </div>
                             </a>
                             <div id="accountNavbarDropdown"
-                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account __w-16rem">
+                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-end navbar-dropdown-menu navbar-dropdown-account __w-16rem">
                                 <div class="dropdown-item-text">
                                     <div class="media align-items-center text-break">
                                         <div class="avatar avatar-sm avatar-circle me-2">

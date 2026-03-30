@@ -2,8 +2,8 @@
 @if($loop->first)
 <div class="table-responsive">
     <table
-        style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
         <thead class="thead-light thead-50 text-capitalize">
             <tr>
                 <th>{{ translate('Date') }}</th>
@@ -32,7 +32,7 @@
 </div>
 <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="activityModalLabel">{{ translate('Activity Details') }}</h5>
                 <button type="button" class="btn btn-sm btn-outline--primary btn-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}"> &times;

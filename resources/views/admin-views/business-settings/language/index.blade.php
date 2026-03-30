@@ -1,12 +1,10 @@
 @php
     use App\Models\BusinessSetting;
     use Illuminate\Support\Facades\File;
-    use Illuminate\Support\Facades\Session;
 @endphp
 @extends('layouts.back-end.app')
 @section('title', translate('language'))
 @section('content')
-    @php($direction = Session::get('direction') === "rtl" ? 'right' : 'left')
     <div class="content container-fluid">
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -44,8 +42,8 @@
                     </div>
                     <div class="table-responsive pb-3">
                         <table
-                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
-                            style="text-align: {{$direction}};">
+                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table text-start"
+                            >
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL')}}</th>
@@ -164,7 +162,7 @@
         <div class="modal fade" id="lang-modal" tabindex="-1" role="dialog"
              aria-hidden="true">
             <div class="modal-dialog" role="document">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">{{translate('new_language')}}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -233,7 +231,7 @@
             <div class="modal fade" id="lang-modal-update-{{$data['code']}}" tabindex="-1" role="dialog"
                  aria-hidden="true">
                 <div class="modal-dialog" role="document">
-                    <div class="modal-content">
+                    <div class="modal-content text-start">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel">{{translate('new_language')}}</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">

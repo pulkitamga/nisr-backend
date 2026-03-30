@@ -243,7 +243,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 <!-- Modal for Assigning Ticket -->
 <div class="modal fade" id="assignTicketModal" tabindex="-1" role="dialog" aria-labelledby="assignTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="assignTicketModalLabel">{{translate('Assign Ticket')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -296,7 +296,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="estimateTicketModal" tabindex="-1" role="dialog" aria-labelledby="estimateTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="estimateTicketModalLabel">{{translate('Create Estimate')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -443,7 +443,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="scheduleTicketModal" tabindex="-1" role="dialog" aria-labelledby="scheduleTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="scheduleTicketModalLabel">{{translate('Schedule Ticket')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -486,7 +486,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="startJobModal" tabindex="-1" role="dialog" aria-labelledby="startJobModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="startJobModalLabel">{{translate('Start Job')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -550,7 +550,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="completeJobModal" tabindex="-1" role="dialog" aria-labelledby="completeJobModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="completeJobModalLabel">{{translate('Complete Job')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -616,7 +616,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="changeOrderModal" tabindex="-1" role="dialog" aria-labelledby="changeOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="changeOrderModalLabel">{{translate('Create Change Order')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -675,7 +675,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="qaTicketModal" tabindex="-1" role="dialog" aria-labelledby="qaTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="qaTicketModalLabel">{{translate('QA Confirmation')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -710,7 +710,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="closeTicketModal" tabindex="-1" role="dialog" aria-labelledby="closeTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="closeTicketModalLabel">{{translate('Close Ticket')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -738,7 +738,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="cancelTicketModal" tabindex="-1" role="dialog" aria-labelledby="cancelTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="cancelTicketModalLabel">{{translate('Cancel Ticket')}}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -775,7 +775,7 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
 
 <div class="modal fade" id="escalateTicketModal" tabindex="-1" role="dialog" aria-labelledby="escalateTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateTicketModalLabel">{{ translate('Escalate Ticket') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">

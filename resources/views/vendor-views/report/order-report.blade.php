@@ -203,7 +203,7 @@
                             {{translate('export')}}
                             <i class="tio-chevron-down"></i>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li>
                                 <a class="dropdown-item"
                                    href="{{ route('vendor.report.order-report-excel', ['date_type'=>request('date_type'), 'from'=>request('from'), 'to'=>request('to'), 'search'=>request('search')]) }}">

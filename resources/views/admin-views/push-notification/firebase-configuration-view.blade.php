@@ -33,7 +33,7 @@
         <div class="card">
             <div class="card-body">
                 <form action="{{ route('admin.push-notification.update-firebase-configuration') }}" method="post"
-                      style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
+
                       enctype="multipart/form-data">
                     @csrf
 

@@ -197,7 +197,7 @@
         </div>
 
         <div id="printModal" class="modal z-index" style="display: none;">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <span class="close align-self-sm-end" onclick="closeModal()">&times;</span>
                 <h3 class="mb-4">{{ translate('Choose Print Option') }}</h3>
                 <button onclick="printWithImages()" class="btn btn--primary">{{ translate('Print with Images') }}</button>

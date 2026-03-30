@@ -227,7 +227,7 @@
         <div class="header-content">
             <h2>{{ translate('stock_transfer_report') }}</h2>
             <p>{{ translate('report_period') }}:
-                <span dir="ltr">
+                <span dir="{{ get_direction() }}">
                     {{ $filters['from'] ?? '-' }} - {{ $filters['to'] ?? '-' }}
                 </span>
             </p>

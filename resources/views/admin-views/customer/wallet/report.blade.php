@@ -16,7 +16,7 @@
         </div>
         <div class="modal fade" id="add-fund-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header d-flex justify-content-between">
                         <h5 class="modal-title text-capitalize" id="exampleModalLongTitle">{{translate('add_fund')}}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -173,7 +173,7 @@
             </div>
             <div class="table-responsive">
                 <table id="datatable"
-                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table {{Session::get('direction') === "rtl" ? 'text-end' : 'text-start'}}">
+                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table text-start">
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>

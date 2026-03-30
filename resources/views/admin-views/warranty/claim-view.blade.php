@@ -161,7 +161,7 @@
 
             <div class="table-responsive mt-4">
                 <h6 class="font-weight-bold mb-3">{{ translate('Payment Records') }}</h6>
-                <table class="table table-sm table-bordered"
+                <table class="table table-sm table-bordered text-start"
                     style="text-align: start;">
                     <thead class="thead-light">
                         <tr>
@@ -320,8 +320,8 @@
             <div class="table-responsive datatable-custom">
 
                 <table
-                    style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{ translate('Type') }}</th>

@@ -160,7 +160,7 @@
 
                     <div class="table-responsive">
                         <table id="datatable"
-                               class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table {{ Session::get('direction') === 'rtl' ? 'text-end' : 'text-start' }}">
+                               class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table text-start">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
@@ -278,7 +278,7 @@
                         <div class="modal fade" id="quick-view" tabindex="-1" role="dialog"
                              aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered coupon-details" role="document">
-                                <div class="modal-content" id="quick-view-modal">
+                                <div class="modal-content text-start" id="quick-view-modal">
                                 </div>
                             </div>
                         </div>

@@ -325,7 +325,7 @@
                                             <div class="modal fade" id="fileUploadModal-{{ $detail->id }}" tabindex="-1"
                                                 aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
+                                                    <div class="modal-content text-start">
                                                         <form
                                                             action="{{ route('admin.orders.digital-file-upload-after-sell') }}"
                                                             method="post" enctype="multipart/form-data">
@@ -948,7 +948,7 @@
         <div class="modal fade" id="order_verification_modal" tabindex="-1" aria-labelledby="order_verification_modal"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header pb-4">
                         <h3 class="mb-0">{{ translate('order_verification_images') }}</h3>
                         <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
@@ -982,7 +982,7 @@
     <div class="modal fade" id="shippingAddressUpdateModal" tabindex="-1" aria-labelledby="shippingAddressUpdateModal"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <div class="modal-header pb-4">
                     <h3 class="mb-0 text-center w-100">{{ translate('shipping_address') }}</h3>
                     <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
@@ -1126,7 +1126,7 @@
         <div class="modal fade" id="billingAddressUpdateModal" tabindex="-1"
             aria-labelledby="billingAddressUpdateModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header pb-4">
                         <h3 class="mb-0 text-center w-100">{{ translate('billing_address') }}</h3>
                         <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}"><i
@@ -1285,7 +1285,7 @@
     @endif
     <div class="modal fade" id="locationModal" tabindex="-1" role="dialog" aria-labelledby="locationModalLabel">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <div class="modal-header pb-0 pt-4">
                     <button type="button" class="close position-absolute right-3 top-3" data-dismiss="modal"
                         aria-label="{{ translate('Close') }}"><spanaria-hidden="true">&times;</span></button>
@@ -1585,7 +1585,7 @@
     </div>
     <div class="modal" id="third_party_delivery_service_modal" role="dialog" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('update_third_party_delivery_info') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -1625,7 +1625,7 @@
     </div>
     <div class="modal" id="exchage_product_modal" role="dialog" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ translate('exchange_product_info') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">

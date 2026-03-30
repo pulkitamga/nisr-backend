@@ -15,7 +15,7 @@
             <div class="card-body">
                 <form action="#" id="form-data" method="GET">
                     <h4 class="mb-3">{{translate('filter_Data')}}</h4>
-                    <div class="row  gy-2 align-items-center text-{{Session::get('direction') === "rtl" ? 'right' : 'left'}}">
+                    <div class="row  gy-2 align-items-center text-start">
                         <div class="col-sm-6 col-md-3">
                             <select class="form-control __form-control" name="date_type" id="date_type">
                                 <option value="this_year" {{ $date_type == 'this_year'? 'selected' : '' }}>{{translate('this_year')}}</option>

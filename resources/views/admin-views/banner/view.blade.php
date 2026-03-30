@@ -26,7 +26,7 @@
                 </div>
 
 
-                <div class="dropdown-menu dropdown-menu-right bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg-30">
+                <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg-30">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}" alt="">
                         <h5 class="text-primary mb-0">{{ translate('note') }}</h5>

@@ -39,7 +39,7 @@
                                     <i class="tio-chevron-down"></i>
                                 </button>
 
-                                <ul class="dropdown-menu dropdown-menu-right">
+                                <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <a type="submit" class="dropdown-item d-flex align-items-center gap-2" href="">
                                             <img width="14" src="{{asset('public/assets/back-end/img/excel.png')}}" alt="">

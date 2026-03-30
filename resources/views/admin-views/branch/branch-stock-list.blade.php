@@ -89,8 +89,8 @@
                 </div>
                 <div class="table-responsive">
                     <table
-                        style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th class="text-center">{{translate('SL')}}</th>
@@ -227,8 +227,8 @@
                  </div>
                  <!-- <div class="table-responsive">
                     <table
-                        style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th class="text-center">{{translate('SL')}}</th>
@@ -273,7 +273,7 @@
 
                  <div class="table-responsive">
                      <table style="text-align: start;"
-                         class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+                         class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                          <thead class="thead-light thead-50 text-capitalize">
                              <tr>
                                  <th class="text-center">{{translate('SL')}}</th>
@@ -349,7 +349,7 @@
  <div class="modal fade" id="stockHistoryModal" tabindex="-1" role="dialog" aria-labelledby="stockHistoryModalLabel" aria-hidden="true" style="overflow: visible !important;">
      <div class="modal-dialog modal-lg" role="document" style="box-shadow: 0 12px 30px rgba(0,0,0,0.28), 0 35px 70px rgba(0,0,0,0.35);
             border-radius:14px;">
-         <div class="modal-content" style="box-shadow:none !important; border-radius:14px; background-clip:padding-box;">
+         <div class="modal-content text-start" style="box-shadow:none !important; border-radius:14px; background-clip:padding-box;">
              <div class="modal-header">
                  <h5 class="modal-title" id="stockHistoryModalLabel">
                      {{ translate('Stock Transfer History') }}
@@ -394,7 +394,7 @@
                  <hr>
 
                  <div id="historyTableContainer" style="max-height: 400px; overflow-y: auto;">
-                     <table class="table table-sm table-bordered">
+                     <table class="table table-sm table-bordered text-start">
                          <thead class="thead-light sticky-top">
                              <tr>
                                  <th>{{ translate('Date') }}</th>

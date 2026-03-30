@@ -22,8 +22,8 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
-                                   style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
+                            <table class="table table-bordered text-start" id="dataTable" width="100%" cellspacing="0"
+>
                                 <thead>
                                 <tr>
                                     <th scope="col">{{translate('SL')}}#</th>

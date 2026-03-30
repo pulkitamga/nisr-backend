@@ -21,7 +21,7 @@
                     </div>
                     <div class="card-body">
                         <form action="{{route('admin.currency.update',[$currency['id']])}}" method="post"
-                              style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
+>
                             @csrf
                             <div class="">
                                 <div class="row">

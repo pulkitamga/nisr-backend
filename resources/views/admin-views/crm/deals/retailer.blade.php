@@ -115,8 +115,8 @@
         <div class="table-responsive datatable-custom">
 
             <table
-                style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
@@ -269,7 +269,7 @@
 <!-- Escalation Modal for Retail Deals -->
 <div class="modal fade" id="escalateRetailDealModal" tabindex="-1" role="dialog" aria-labelledby="escalateRetailDealModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="escalateRetailDealModalLabel">{{ translate('Escalate Deal') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">

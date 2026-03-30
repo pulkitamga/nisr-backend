@@ -119,8 +119,8 @@
                     @if($lead->purchaseOrder->items && $lead->purchaseOrder->items->count() > 0)
                     <h6 class="mt-3">{{ translate('Ordered_Items') }}</h6>
                     <table
-                        style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                        class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('Product') }}</th>

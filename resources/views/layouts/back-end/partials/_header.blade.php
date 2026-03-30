@@ -165,7 +165,7 @@ use Carbon\Carbon;
                                 @endif
                             </a>
 
-                            <div id="notificationDropdown" class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu py-2" style="border: 1px solid #ccc;">
+                            <div id="notificationDropdown" class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-end navbar-dropdown-menu py-2" style="border: 1px solid #ccc;">
 
                                 @forelse($notifications as $notification)
                                 <a href="{{ route('admin.notifications.view', $notification->id) }}"
@@ -254,7 +254,7 @@ use Carbon\Carbon;
                                 </div>
                             </a>
                             <div id="accountNavbarDropdown"
-                                class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account">
+                                class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-end navbar-dropdown-menu navbar-dropdown-account">
                                 <div class="dropdown-item-text">
                                     <div class="media align-items-center text-break">
                                         <div class="avatar avatar-sm avatar-circle me-2">

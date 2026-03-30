@@ -44,7 +44,7 @@
                 </svg>
             </div>
             <div
-                class="dropdown-menu dropdown-menu-right bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
+                class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
                     <h5 class="text-primary mb-0">{{translate('note')}}</h5>
@@ -158,8 +158,8 @@
                     <form action="{{route('admin.business-settings.category-shipping-cost.store')}}" method="POST">
                         @csrf
                         <table
-                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100"
-                            style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left' }};">
+                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start"
+>
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th>{{translate('SL')}}</th>
@@ -293,8 +293,8 @@
             </div>
             <div class="table-responsive pb-3">
                 <table
-                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
-                    style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left' }};">
+                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table text-start"
+>
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>
@@ -517,8 +517,8 @@
             </div>
             <div class="table-responsive pb-3">
                 <table
-                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
-                    style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left' }};">
+                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table text-start"
+>
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>

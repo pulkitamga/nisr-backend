@@ -389,7 +389,7 @@
         <div class="header-content">
             <h2>{{ translate('branch_stock_report') }}</h2>
             <p>
-                <span dir="ltr">{{ $startDateFormatted ?? '' }} - {{ $endDateFormatted ?? '' }}</span>
+                <span dir="{{ get_direction() }}">{{ $startDateFormatted ?? '' }} - {{ $endDateFormatted ?? '' }}</span>
             </p>
         </div>
         <div class="logo-container">
@@ -426,7 +426,7 @@
     <!-- Filter Summary -->
     <div class="filter-summary">
         <strong>{{ translate('filters_applied') }}:</strong>
-        <span dir="ltr">
+        <span dir="{{ get_direction() }}">
             @if (!empty($startDateFormatted) && !empty($endDateFormatted))
                 {{ $startDateFormatted }} - {{ $endDateFormatted }}
             @else

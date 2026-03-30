@@ -973,7 +973,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
         <div class="modal fade" id="review-update-for-{{ $review['id'] }}" tabindex="-1"
             aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header">
                         <button type="button" class="close text-BFBFBF" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <i class="tio-clear-circle"></i>
@@ -1038,7 +1038,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
         <div class="modal fade" id="review-view-for-{{ $review['id'] }}" tabindex="-1"
             aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header">
                         <button type="button" class="close text-BFBFBF" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <i class="tio-clear-circle"></i>
@@ -1118,7 +1118,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
 <div class="modal fade" id="publishNoteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">{{ translate('rejected_note') }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">

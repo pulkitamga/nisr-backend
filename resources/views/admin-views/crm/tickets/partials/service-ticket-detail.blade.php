@@ -458,7 +458,7 @@
 </div>
 <div class="modal fade" id="customerSignatureModal" tabindex="-1" aria-labelledby="signatureModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="signatureModalLabel">{{ translate('Customer Signature') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -474,7 +474,7 @@
 <div class="modal fade" id="activityDetailsModal" tabindex="-1" role="dialog"
     aria-labelledby="activityDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="activityDetailsModalLabel">{{ translate('Activity Details') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -498,7 +498,7 @@
 <div class="modal fade" id="estimateDetailsModal" tabindex="-1" role="dialog"
     aria-labelledby="estimateDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="estimateDetailsModalLabel">{{ translate('Estimate Details') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -525,7 +525,7 @@
 <div class="modal fade" id="invoiceDetailsModal" tabindex="-1" role="dialog" aria-labelledby="invoiceDetailsModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="invoiceDetailsModalLabel">{{ translate('Invoice Details') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -551,7 +551,7 @@
 <div class="modal fade" id="changeOrderDetailsModal" tabindex="-1" role="dialog"
     aria-labelledby="changeOrderDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="changeOrderDetailsModalLabel">{{ translate('Change Order Details') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -574,7 +574,7 @@
 <!-- Attachment Preview Modal -->
 <div class="modal fade" id="attachmentsModal" tabindex="-1" aria-labelledby="attachmentsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="attachmentsModalLabel">{{ translate('Job Attachments') }}</h5>
  <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -591,7 +591,7 @@
 <div class="modal fade" id="cancellationDetailsModal" tabindex="-1" role="dialog"
     aria-labelledby="cancellationDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="cancellationDetailsModalLabel">{{ translate('Cancellation Details') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
@@ -616,7 +616,7 @@
 <!-- Service Details Modal -->
 <div class="modal fade" id="serviceDetailsModal" tabindex="-1" role="dialog" aria-labelledby="serviceDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <div class="modal-header">
                 <h5 class="modal-title" id="serviceDetailsModalLabel">{{ translate('Service Details') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">

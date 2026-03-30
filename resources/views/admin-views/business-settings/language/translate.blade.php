@@ -10,7 +10,6 @@
 @endpush
 
 @section('content')
-    @php($direction = Session::get('direction') === "rtl" ? 'right' : 'left')
     <div class="content container-fluid">
 
         <div class="mb-4 pb-2">
@@ -22,7 +21,7 @@
 
         <div class="row">
             <div class="col-md-12">
-                <div class="card" style="text-align: {{$direction}};">
+                <div class="card text-start">
                     <div class="card-header">
                         <h4 class="m-0">{{translate('language_content_table')}}</h4>
                         <div class="d-flex align-items-center gap-2">
@@ -51,7 +50,7 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <table class="table table-bordered text-start" id="dataTable" width="100%" cellspacing="0">
                                 <thead class="bg-white">
                                 <tr>
                                     <th class="max-width-100px border-0">{{translate('SL')}}</th>
@@ -78,7 +77,7 @@
 
     <div class="modal fade language-complete-modal" id="complete-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <div class="modal-body text-center">
                     <div class="py-5">
                         <div class="mb-4">
@@ -96,7 +95,7 @@
 
     <div class="modal fade" id="warning-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <div class="modal-body">
                     <div class="d-flex gap-3 align-items-center mb-3">
                         <div>
@@ -133,7 +132,7 @@
     <div class="modal fade language-complete-modal" id="translating-modal" data-backdrop="static"
          data-keyboard="false" aria-labelledby="languageCompleteModalLabel" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content text-start">
                 <div class="modal-body text-center">
                     <div class="py-5 px-sm-2">
                         <div class="progress-circle-container mb-4">

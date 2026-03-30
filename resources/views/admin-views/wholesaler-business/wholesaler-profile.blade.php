@@ -216,8 +216,8 @@
                     <div class="table-responsive datatable-custom">
 
                         <table
-                            style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
-                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+
+                            class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th>{{ translate('Name') }}</th>
@@ -280,7 +280,7 @@
             <form method="POST" action="{{ route('admin.wholesale.business.order.assign-invoice-no') }}">
                 @csrf
                 <input type="hidden" name="order_id" id="invoice_order_id">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ translate('Assign Invoice No') }}</h5>
                         <button type="button"
@@ -309,7 +309,7 @@
             <form method="POST" action="{{ route('admin.wholesale.business.order.assign-confirm-no') }}">
                 @csrf
                 <input type="hidden" name="order_id" id="confirm_order_id">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ translate('Assign Confirm Order No') }}</h5>
                         <button type="button"
@@ -366,7 +366,7 @@
                 action="{{ route('admin.wholesale.business.order.assign-number') }}">
                 @csrf
                 <input type="hidden" name="order_id" id="modal_order_id">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ translate('Assign Purchase Order No') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"

@@ -17,7 +17,7 @@
                               fill="currentColor"></path>
                     </svg>
                 </div>
-                <div class="dropdown-menu dropdown-menu-right bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
+                <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
                         <h5 class="text-primary mb-0">{{ translate('note')}}</h5>
@@ -234,7 +234,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <input name="product_wise_shipping_cost_approval" type="checkbox" value="1"
                                    id="product_wise_shipping_cost_approval" {{$productWiseShippingCostApproval==1?'checked':''}}>
-                            <label class="title-color mb-0 {{ Session::get('direction') === 'rtl' ? 'text-end' : 'text-start' }}"
+                            <label class="title-color mb-0 text-start"
                                    for="product_wise_shipping_cost_approval">
                                 {{ translate('product_wise_shipping_cost')}}
                                 <span class="text-info">( {{ translate('this_feature_will_activate_whenever_a_Vendor_add_a_product_or_modifies_the_shipping_cost_of_any_product')}} )</span>

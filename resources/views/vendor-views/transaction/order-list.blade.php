@@ -14,7 +14,7 @@
             <div class="card-body">
                 <h4 class="mb-3">{{translate('filter_Data')}}</h4>
                 <form action="#" id="form-data" method="GET" class="w-100">
-                    <div class="row  gx-2 gy-3 align-items-center text-{{Session::get('direction') === "rtl" ? 'right' : 'left'}}">
+                    <div class="row  gx-2 gy-3 align-items-center text-start">
                         <div class="col-sm-6 col-md-3">
                             <div class="">
                                 <select class="form-control __form-control" name="status">

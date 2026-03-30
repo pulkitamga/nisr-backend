@@ -2,7 +2,6 @@
 @extends('layouts.back-end.app')
 @section('title', translate('payment_Method'))
 @section('content')
-    @php($direction = Session::get('direction') === "rtl" ? 'right' : 'left')
     <div class="content container-fluid">
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">

@@ -67,7 +67,7 @@
         <div class="card-body">
             <div class="tab-content">
                 <div class="tab-pane active" id="activity">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered text-start">
                         <thead>
                             <tr>
                                 <th>{{ translate('Type') }}</th>
@@ -93,7 +93,7 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="interviews">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered text-start">
                         <thead>
                             <tr>
                                 <th>{{ translate('Scheduled At') }}</th>
@@ -115,7 +115,7 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="offers">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered text-start">
                         <thead>
                             <tr>
                                 <th>{{ translate('status') }}</th>
@@ -135,7 +135,7 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="rejections">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered text-start">
                         <thead>
                             <tr>
                                 <th>{{ translate('reason_code') }}</th>
@@ -155,7 +155,7 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="talent-pool">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered text-start">
                         <thead>
                             <tr>
                                 <th>{{ translate('consent') }}</th>

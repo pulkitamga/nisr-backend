@@ -20,7 +20,7 @@
                     </svg>
                 </div>
 
-                <div class="dropdown-menu dropdown-menu-right bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
+                <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}" alt="">
                         <h5 class="text-primary mb-0">{{ translate('note') }}</h5>
@@ -167,8 +167,8 @@
 
         <div class="modal fade" id="vacation_mode_modal" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content"
-                     style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
+                <div class="modal-content text-start"
+>
                     <form action="{{ route('admin.product-settings.vacation-add') }}" method="post">
                         @csrf
                         <div class="modal-header border-bottom pb-2">

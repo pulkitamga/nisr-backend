@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Session;
         <div class="modal fade" id="howItWorksModal" tabindex="-1" aria-labelledby="howItWorksModal"
              aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header border-0 pb-0 d-flex justify-content-end">
                         <button type="button" class="btn-close border-0" data-dismiss="modal" aria-label="Close"><i
                                 class="tio-clear"></i></button>
@@ -225,7 +225,7 @@ use Illuminate\Support\Facades\Session;
                 <div class="table-responsive">
                     <form action="{{route('vendor.business-settings.category-wise-shipping-cost.index')}}" method="POST">
                         @csrf
-                        <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
+                        <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table text-start"
                                style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>

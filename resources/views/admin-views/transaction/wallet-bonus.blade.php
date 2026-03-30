@@ -140,7 +140,7 @@
                                 <i class="tio-chevron-down"></i>
                             </button>
 
-                            <ul class="dropdown-menu dropdown-menu-right">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="#">{{translate('excel')}}</a></li>
                             </ul>
                         </div>
