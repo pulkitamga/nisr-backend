@@ -189,7 +189,7 @@
                                 {{ ucfirst($msg->status) }}
                             </span>
                         </td>
-                        <td>{{ $msg->created_at->format('d M, Y H:i') }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ $msg->created_at->format('d M, Y H:i') }}</span></td>
                         <td>
                             <div class="d-flex flex-wrap gap-1">
                                 <a href="{{ route('admin.crm.massage.show', $msg->id) }}" class="btn btn-sm btn-outline-info">
@@ -315,4 +315,3 @@
 </script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 @endpush
-

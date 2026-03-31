@@ -25,7 +25,7 @@
                                 {{ ucwords(str_replace('_', ' ', $h->transfer_type)) }}
                             </span>
                             <small class="text-muted">
-                                {{ \Carbon\Carbon::parse($h->transferred_at)->format('d M Y, h:i A') }}
+                                <span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($h->transferred_at)->format('d M Y, h:i A') }}</span>
                             </small>
                         </div>
                         @if($h->stock_transfer_id)

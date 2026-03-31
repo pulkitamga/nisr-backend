@@ -53,7 +53,7 @@
                     </div>
                     <div>
                         <strong>{{ translate('Escalated At') }}:</strong>
-                        <span>{{ $latestEscalation->created_at?->translatedFormat('d M, Y H:i') }}</span>
+                        <span class="bidi-ltr d-inline-block">{{ $latestEscalation->created_at?->translatedFormat('d M, Y H:i') }}</span>
                     </div>
                 </div>
                 <div class="col-lg-5">
@@ -105,7 +105,7 @@
                                 </td>
                                 <td dir="auto">{{ $escalation->reason ?: translate('N/A') }}</td>
                                 <td>{{ $escalation->escalatedBy?->name ?? translate('System') }}</td>
-                                <td>{{ $escalation->created_at?->translatedFormat('d M, Y H:i') }}</td>
+                                <td><span class="bidi-ltr d-inline-block">{{ $escalation->created_at?->translatedFormat('d M, Y H:i') }}</span></td>
                             </tr>
                         @endforeach
                     </tbody>

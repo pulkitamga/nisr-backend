@@ -173,7 +173,7 @@
                                             <td>{{ $activity->description }}</td>
                                             <td>{{ $activity->createdBy ? $activity->createdBy->name : translate('System') }}
                                             </td>
-                                            <td>{{ $activity->created_at->format('d M, Y H:i A') }}</td>
+                                            <td><span class="bidi-ltr d-inline-block">{{ $activity->created_at->format('d M, Y H:i A') }}</span></td>
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-info view-details"
                                                     data-details='@json($activity)' data-bs-toggle="modal"
@@ -222,7 +222,7 @@
                                             <td> {{ webCurrencyConverter(amount:  $estimate->subtotal) }}</td>
                                             <td> {{ webCurrencyConverter(amount:  $estimate->tax) }}</td>
                                             <td> {{ webCurrencyConverter(amount:  $estimate->total) }}</td>
-                                            <td>{{ $estimate->created_at->format('d M, Y H:i A') }}</td>
+                                            <td><span class="bidi-ltr d-inline-block">{{ $estimate->created_at->format('d M, Y H:i A') }}</span></td>
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-info view-details"
                                                     data-details='{{ json_encode($estimate) }}' data-bs-toggle="modal"
@@ -269,8 +269,8 @@
                                             <td> {{ webCurrencyConverter(amount:  $invoice->total) }}</td>
                                             <td><a href="{{ $invoice->payment_link }}">{{ $invoice->payment_link }}</a></td>
                                             <td>{{ translate($invoice->payment_status) }}</td>
-                                            <td>{{ $invoice->generated_at->format('d M, Y H:i A') }}</td>
-                                            <td>{{ $invoice->payment_link_expires_at?->format('d M, Y H:i A') ?? '-' }}</td>
+                                            <td><span class="bidi-ltr d-inline-block">{{ $invoice->generated_at->format('d M, Y H:i A') }}</span></td>
+                                            <td><span class="bidi-ltr d-inline-block">{{ $invoice->payment_link_expires_at?->format('d M, Y H:i A') ?? '-' }}</span></td>
                                             <td class="text-center">
                                                 @if(in_array($invoice->payment_status, ['pending', 'expired'], true))
                                                 <form method="POST"
@@ -323,7 +323,7 @@
                                             <td>{{ $key + 1 }}</td>
                                             <td> {{ webCurrencyConverter(amount:  $changeOrder->additional_charges) }}</td>
                                             <td>{{ $changeOrder->description }}</td>
-                                            <td>{{ $changeOrder->created_at->format('d M, Y H:i A') }}</td>
+                                            <td><span class="bidi-ltr d-inline-block">{{ $changeOrder->created_at->format('d M, Y H:i A') }}</span></td>
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-info view-details"
                                                     data-details='{{ json_encode($changeOrder) }}'
@@ -365,7 +365,7 @@
                                             <td>{{ $cancellation->cancellation_reason }}</td>
                                             <td> {{ webCurrencyConverter(amount: $cancellation->fee_amount) }}</td>
                                             <td> {{ webCurrencyConverter(amount: $cancellation->refund_amount) }}</td>
-                                            <td>{{ $cancellation->created_at->format('d M, Y H:i A') }}</td>
+                                            <td><span class="bidi-ltr d-inline-block">{{ $cancellation->created_at->format('d M, Y H:i A') }}</span></td>
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-info view-details"
                                                     data-details='{{ json_encode($cancellation) }}'
@@ -433,7 +433,7 @@
                                                     {{ translate('View Signature') }}
                                                 </button>
                                             </td>
-                                            <td>{{ $serviceJob->created_at->format('d M, Y H:i A') }}</td>
+                                            <td><span class="bidi-ltr d-inline-block">{{ $serviceJob->created_at->format('d M, Y H:i A') }}</span></td>
 
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-info view-details"
@@ -837,4 +837,3 @@ document.addEventListener('click', function (e) {
 </script>
 
 @endpush
-

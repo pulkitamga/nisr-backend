@@ -40,6 +40,12 @@ $direction = get_direction();
             background-size: 7px;
             background-position: 96% center;
         }
+
+        .bidi-ltr {
+            direction: ltr;
+            unicode-bidi: isolate;
+            text-align: left;
+        }
     </style>
     @if(Request::is('admin/payment/configuration/addon-payment-get'))
     <style>
@@ -271,4 +277,3 @@ $direction = get_direction();
 </body>
 
 </html>
-

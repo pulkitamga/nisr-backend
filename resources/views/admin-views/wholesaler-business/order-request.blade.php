@@ -117,7 +117,7 @@
                         <tr class="{{ $bgClass }}">
                             @if ($index == 0)
                             <td>{{ $orders->firstItem() + $key }}</td>
-                            <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
+                            <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span></td>
                             <td>{{ $order->purchase_order_no}}</td>
                             <td>
                                 {{$order->wholeseller->wholesalerBusiness->company_name ?? ''}}
@@ -206,7 +206,7 @@
                         
                                 <tr class="{{ $bgClass }}">
                                     <td>{{ $orders->firstItem() + $key }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
+                                    <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span></td>
                                     <td>{{ $order->purchase_order_no }}</td>
                                     <td>{{ $order->wholeseller->wholesalerBusiness->company_name ?? '' }}</td>
                                     <td>{{ $order->wholeseller_tier ?? __('N/A') }}</td>
@@ -418,5 +418,4 @@
         });
     </script>
 @endpush
-
 

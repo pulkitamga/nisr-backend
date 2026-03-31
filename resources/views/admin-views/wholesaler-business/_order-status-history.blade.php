@@ -71,7 +71,7 @@ use Illuminate\Support\Arr;
                         {{ translate('By') }}: {{ $causer }}
                     </p>
                     <p class="timeline-text">
-                        {{ translate('At') }}: {{ $history->created_at->format('d/m/y h:i A') }}
+                        {{ translate('At') }}: <span class="bidi-ltr d-inline-block">{{ $history->created_at->format('d/m/y h:i A') }}</span>
                     </p>
 
                     @foreach($attributes as $key => $value)

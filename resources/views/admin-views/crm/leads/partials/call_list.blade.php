@@ -20,8 +20,8 @@
         @endif
         <tr>
             <td>{{ $call->title }}</td>
-            <td>{{ $call->from->format('d M, Y H:i') }}</td>
-            <td>{{ $call->to->format('d M, Y H:i') }}</td>
+            <td><span class="bidi-ltr d-inline-block">{{ $call->from->format('d M, Y H:i') }}</span></td>
+            <td><span class="bidi-ltr d-inline-block">{{ $call->to->format('d M, Y H:i') }}</span></td>
             <td>{{ $call->guests ? \App\Models\User::find($call->guests)?->name : translate('None') }}</td>
             <td>{{ $call->location ?? translate('N/A') }}</td>
             <td>{{ $call->employee->name ?? translate('Unassigned') }}</td>
@@ -35,4 +35,3 @@
 @empty
 @include('layouts.back-end._empty-state',['text'=>'no_record_found'],['image'=>'default'])
 @endforelse
-

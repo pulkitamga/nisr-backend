@@ -47,7 +47,7 @@
         @foreach($confirmed as $i => $c)
         <tr>
             <td>{{ $i + 1 }}</td>
-            <td>{{ \Carbon\Carbon::parse($c->created_at)->format('d/m/Y') }}</td>
+            <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($c->created_at)->format('d/m/Y') }}</span></td>
             <td>{{ $c->purchase_order_no }}</td>
             <td>{{ $c->quotation_no }}</td>
             <td>{{ $c->confirm_order_no ?? '' }}</td>
@@ -166,4 +166,3 @@
     });
 });
 </script>
-

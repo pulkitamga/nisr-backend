@@ -155,7 +155,7 @@
                         @php $bgClass = $rowColor[$key % 2]; @endphp
                         <tr class="{{ $bgClass }}">
                             <td>{{ $orders->firstItem() + $key }}</td>
-                            <td>{{ \Carbon\Carbon::parse($order->confirmed_at)->format('d/m/Y') }}</td>
+                            <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($order->confirmed_at)->format('d/m/Y') }}</span></td>
                             <td>{{ $order->purchase_order_no }}</td>
                             <td>{{ $order->external_po_number ?? '' }}</td>
                             <td>{{ $order->quotation_no }}</td>
@@ -532,5 +532,4 @@
 </script>
 
 @endpush
-
 

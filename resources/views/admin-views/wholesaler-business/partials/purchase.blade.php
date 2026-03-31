@@ -38,7 +38,7 @@
                 @foreach($orders as $i => $order)
                 <tr>
                     <td>{{ $i + 1 }}</td>
-                    <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
+                    <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span></td>
                     <td>{{ $order->purchase_order_no }}</td>
                     <td>{{ $order->final_price }}</td>
                     <td>

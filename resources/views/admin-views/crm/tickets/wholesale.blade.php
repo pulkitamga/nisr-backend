@@ -170,7 +170,7 @@
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
                         <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->getTranslatedField('name') ?? $ticket->status }}</span></td>
-                        <td>{{ $ticket->created_at->format('d M, Y H:i') }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d M, Y H:i') }}</span></td>
                         <td class="text-center">
 
                             <a href="{{ route('admin.support-ticket.details', $ticket->id) }}"

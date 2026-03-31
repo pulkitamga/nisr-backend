@@ -49,7 +49,7 @@
                             <td>{{$warranty->serial_number}}</td>
                             <td>{{$warranty->product->name ?? '-'}}</td>
                             <td><span class="badge badge-soft-primary">{{$warranty->status}}</span></td>
-                            <td>{{$warranty->created_at->format('Y-m-d H:i')}}</td>
+                            <td><span class="bidi-ltr d-inline-block">{{$warranty->created_at->format('Y-m-d H:i')}}</span></td>
                             <td>
                                 <a href="{{ route('admin.warranty.activation.manual.view', ['serial_number' => $warranty->serial_number]) }}" class="btn btn-sm btn-outline-primary">{{translate('activate')}}</a>
                             </td>

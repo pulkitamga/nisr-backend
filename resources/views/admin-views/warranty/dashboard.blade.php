@@ -76,7 +76,7 @@
                             <td><span class="badge badge-soft-{{ $claim->status == 'new' ? 'warning' : 'success' }}">{{translate($claim->status)}}</span></td>
                             <td>{{$claim->warranty->user->name ?? $claim->warranty->activated_by_name}}</td>
                             <td>{{$claim->serial_number}}</td>
-                            <td>{{$claim->submitted_at->format('Y-m-d')}}</td>
+                            <td><span class="bidi-ltr d-inline-block">{{$claim->submitted_at->format('Y-m-d')}}</span></td>
                             <td><a href="{{route('admin.warranty.claim.view', $claim->id)}}" class="btn btn-sm btn-outline-primary">{{translate('view')}}</a></td>
                         </tr>
                         @endforeach

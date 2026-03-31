@@ -206,7 +206,7 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <strong>{{ translate('created_at') }}</strong>
-                        <span class="text-end" dir="auto">{{ $ticket->created_at?->translatedFormat('d M, Y H:i') }}</span>
+                        <span class="text-end bidi-ltr d-inline-block">{{ $ticket->created_at?->translatedFormat('d M, Y H:i') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2">
                         <strong>{{ translate('reopen_count') }}</strong>
@@ -306,7 +306,7 @@
                                     <td dir="auto">{{ $translateActivityTitle($act->title) }}</td>
                                     <td dir="auto">{{ $translateActivityDescription($act->description) }}</td>
                                     <td>{{ $act->employee?->name ?? translate('System') }}</td>
-                                    <td>{{ Carbon::parse($act->noted_at)->translatedFormat('d M, Y H:i') }}</td>
+                                    <td><span class="bidi-ltr d-inline-block">{{ Carbon::parse($act->noted_at)->translatedFormat('d M, Y H:i') }}</span></td>
                                 </tr>
                             @endforeach
                         </tbody>

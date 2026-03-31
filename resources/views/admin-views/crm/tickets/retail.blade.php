@@ -176,7 +176,7 @@
                                 {{ $ticket->status_details?->getTranslatedField('name') ?? translate('No Status') }}
                             </span>
                         </td>
-                        <td>{{ $ticket->created_at->format('d M, Y H:i A') }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d M, Y H:i A') }}</span></td>
                         <td class="text-center">
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="{{ route('admin.support-ticket.details', $ticket->id) }}"
@@ -292,4 +292,3 @@
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/support-tickets.js')}}"></script>
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
 @endpush
-

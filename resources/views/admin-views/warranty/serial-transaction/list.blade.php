@@ -132,7 +132,7 @@
                                 </td>
 
                                 <td><span class="badge badge-soft-info">{{ ucwords(str_replace('_', ' ', $t->transfer_type)) }}</span></td>
-                                <td>{{ \Carbon\Carbon::parse($t->transferred_at)->format('d M Y, h:i A') }}</td>
+                                <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($t->transferred_at)->format('d M Y, h:i A') }}</span></td>
                                 <td class="text-center">
                                     <button class="btn btn-sm btn-outline-primary view-history-btn"
                                         data-serial="{{ $t->serial_number }}"
@@ -199,4 +199,3 @@
     });
 </script>
 @endpush
-

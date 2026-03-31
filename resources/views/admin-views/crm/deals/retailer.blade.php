@@ -136,7 +136,7 @@
 
                     <tr>
                         <td>{{ $deal->id }}</td>
-                        <td>{{ $deal->created_at->format('d M, Y H:i A') }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ $deal->created_at->format('d M, Y H:i A') }}</span></td>
                         <td>{{ $deal->relatedParty->name ?? translate('N/A') }}</td>
                         <td>
                             <a href="mailto:{{ $deal->relatedParty->email ?? '' }}">
@@ -618,4 +618,3 @@
     });
 </script>
 @endpush
-

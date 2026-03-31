@@ -155,8 +155,8 @@
                             </span>
                         </td>
                         <td>{{ $claim->warranty->user->name ?? $claim->warranty->activated_by_name }}</td>
-                        <td>{{ $claim->submitted_at->format('Y-m-d H:i A') }}</td>
-                        <td>{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ $claim->submitted_at->format('Y-m-d H:i A') }}</span></td>
+                        <td><span class="bidi-ltr d-inline-block">{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</span></td>
                         <td class="text-center">
                             <div class="d-flex flex-wrap gap-1 justify-content-center">
 

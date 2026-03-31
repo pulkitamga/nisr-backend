@@ -145,7 +145,7 @@
                                     <td>{{ $payment->payment_through }}</td>
                                     <td>{{ $payment->reference }}</td>
                                     <td>{{ $payment->notes }}</td>
-                                    <td>{{ $payment->created_at->format('d M Y') }}</td>
+                                    <td><span class="bidi-ltr d-inline-block">{{ $payment->created_at->format('d M Y') }}</span></td>
 
                                 </tr>
                                 @empty
@@ -243,4 +243,3 @@
     });
 </script>
 @endpush
-

@@ -126,7 +126,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <td>{{ optional($ticket->relatedInboxMessage)->sender_name ?? optional($ticket->relatedInboxMessage)->sender_email ?? translate('N/A') }}</td>
                         <td>{{ $ticket->status_details?->getTranslatedField('name') ?? translate('N/A') }}</td>
                         <td>{{ $ticket->employee->name ?? translate('Unassigned') }}</td>
-                        <td>{{ $ticket->created_at->format('d-m-Y H:i') }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d-m-Y H:i') }}</span></td>
                         @php
                         $pendingInterview = $ticket->careerInterviews->whereNull('conducted_at')->first();
                         @endphp
@@ -595,5 +595,4 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     });
 </script>
 @endpush
-
 

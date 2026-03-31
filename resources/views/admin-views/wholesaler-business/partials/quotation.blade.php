@@ -39,7 +39,7 @@
                 @foreach($quotations as $i => $quote)
                 <tr>
                     <td>{{ $i + 1 }}</td>
-                    <td>{{ \Carbon\Carbon::parse($quote->created_at)->format('d/m/Y') }}</td>
+                    <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($quote->created_at)->format('d/m/Y') }}</span></td>
                     <td>{{ $quote->quotation_no }}</td>
                     <td>{{ $quote->purchase_order_no }}</td>
                     <td>{{ $quote->final_price }}</td>
@@ -99,4 +99,3 @@
             });
         });
     </script>
-

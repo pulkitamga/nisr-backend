@@ -17,7 +17,7 @@
         <tbody>
             @endif
             <tr>
-                <td>{{ $activity->created_at->format('d M, Y ') }}</td>
+                <td><span class="bidi-ltr d-inline-block">{{ $activity->created_at->format('d M, Y') }}</span></td>
                 <td>{{ ucfirst($activity->activity_type) }}</td>
                 <td>{{ $activity->title }}</td>
                 <!-- <td>{{ $activity->subject ?? translate('N/A') }}</td> -->
@@ -94,5 +94,4 @@
         });
     });
 </script>
-
 

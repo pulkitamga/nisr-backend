@@ -187,7 +187,7 @@
                                 {{ ucfirst($msg->status) }}
                             </span>
                         </td>
-                        <td>{{ ($msg->updated_at ?? $msg->created_at)?->format('d M, Y H:i A') }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ ($msg->updated_at ?? $msg->created_at)?->format('d M, Y H:i A') }}</span></td>
 
                         <td>
                             <div class="d-flex flex-wrap gap-1">
@@ -518,4 +518,3 @@ $(document).ready(function() {
 
 </script>
 @endpush
-

@@ -156,7 +156,7 @@
                                 @forelse($deliveries as $index => $delivery)
                                 <tr class="align-middle">
                                     <td>{{ $index + 1 }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($delivery->created_at)->format('d/m/Y') }}</td>
+                                    <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($delivery->created_at)->format('d/m/Y') }}</span></td>
                                     <td>{{ $delivery->product->getTranslatedField('name') ?? __('N/A') }}</td>
                                     <td>{{ $delivery->product_variation_type ?? __('No Variation') }}</td>
                                     <td>{{ $delivery->product_quantity }}</td>
@@ -325,7 +325,7 @@
                     @forelse($deliveryLogs as $index => $log)
                     <tr>
                         <td>{{ $deliveryLogs->firstItem() + $index }}</td>
-                        <td>{{ \Carbon\Carbon::parse($log->delivery_date)->format('d/m/Y') }}</td>
+                        <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($log->delivery_date)->format('d/m/Y') }}</span></td>
                         <td>{{ $log->product->getTranslatedField('name') ?? __('N/A') }}</td>
                         <td>{{ $log->product_variation_type ?? __('No Variation') }}</td>
                         <td>{{ $log->quantity_sent }}</td>
