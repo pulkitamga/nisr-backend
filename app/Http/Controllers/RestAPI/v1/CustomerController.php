@@ -569,6 +569,11 @@ class CustomerController extends Controller
                         $query->where('order_type', 'default_type');
                     });
             })
+            ->when($request->type === 'refunds_only', function ($query) {
+                $query->whereHas('details', function ($detailsQuery) {
+                    $detailsQuery->where('refund_request', '>', 0);
+                });
+            })
             ->orderBy('id', 'desc')
             ->paginate($request['limit'], ['*'], 'page', $request['offset']);
 
