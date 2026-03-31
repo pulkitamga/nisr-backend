@@ -21,6 +21,7 @@ class GeneralController extends Controller
     public function contacts(): JsonResponse
     {
         $branches = Branch::query()
+            ->with('translations')
             ->where('id', '!=', 1)
             ->where('status', 'active')
             ->where('branch_name', '!=', 'System')
@@ -60,15 +61,24 @@ class GeneralController extends Controller
                 'description_en' => null,
                 'address_ar' => null,
                 'address_en' => null,
-                'branches' => $branches->map(fn(Branch $branch): array => [
-                    'id' => (int)$branch->id,
-                    'branch_name' => $this->preferredValue($branch->branch_name) ?? '',
-                    'address' => $this->preferredValue($branch->branch_address),
-                    'phone' => $this->preferredValue($branch->phone),
-                    'email' => $this->preferredValue($branch->email),
-                    'latitude' => $branch->branch_latitude !== null ? (float)$branch->branch_latitude : null,
-                    'longitude' => $branch->branch_longitude !== null ? (float)$branch->branch_longitude : null,
-                ])->values()->all(),
+                'branches' => $branches->map(function (Branch $branch): array {
+                    $branchName = $this->preferredValue($branch->branch_name) ?? '';
+                    $branchAddress = $this->preferredValue($branch->branch_address);
+
+                    return [
+                        'id' => (int)$branch->id,
+                        'branch_name' => $branchName,
+                        'branch_name_ar' => $branch->getTranslation('branch_name', 'ar') ?? $branchName,
+                        'branch_name_en' => $branch->getTranslation('branch_name', 'en') ?? $branchName,
+                        'address' => $branchAddress,
+                        'address_ar' => $branch->getTranslation('branch_address', 'ar') ?? $branchAddress,
+                        'address_en' => $branch->getTranslation('branch_address', 'en') ?? $branchAddress,
+                        'phone' => $this->preferredValue($branch->phone),
+                        'email' => $this->preferredValue($branch->email),
+                        'latitude' => $branch->branch_latitude !== null ? (float)$branch->branch_latitude : null,
+                        'longitude' => $branch->branch_longitude !== null ? (float)$branch->branch_longitude : null,
+                    ];
+                })->values()->all(),
             ],
         ], 200);
     }
