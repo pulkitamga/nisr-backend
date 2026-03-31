@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
 @font-face {
     font-family: mulish;
     font-style: normal;
@@ -108,4 +110,33 @@
     font-style: italic;
     font-weight: 900;
     src: local('Mulish'), url(https://fonts.cdnfonts.com/s/46609/Mulish-BlackItalic.woff) format('woff')
+}
+
+html[lang^="ar"] body,
+html[lang^="ar"] body h1,
+html[lang^="ar"] body h2,
+html[lang^="ar"] body h3,
+html[lang^="ar"] body h4,
+html[lang^="ar"] body h5,
+html[lang^="ar"] body h6,
+html[lang^="ar"] body p,
+html[lang^="ar"] body span,
+html[lang^="ar"] body a,
+html[lang^="ar"] body button,
+html[lang^="ar"] body input,
+html[lang^="ar"] body select,
+html[lang^="ar"] body textarea,
+html[lang^="ar"] body label,
+html[lang^="ar"] body small,
+html[lang^="ar"] body strong,
+html[lang^="ar"] body li,
+html[lang^="ar"] body td,
+html[lang^="ar"] body th,
+html[lang^="ar"] body .btn,
+html[lang^="ar"] body .form-control,
+html[lang^="ar"] body .nav-link,
+html[lang^="ar"] body .dropdown-item,
+html[lang^="ar"] body .select2-container .select2-selection__rendered,
+html[lang^="ar"] body .select2-results__option {
+    font-family: 'Cairo', sans-serif !important;
 }
