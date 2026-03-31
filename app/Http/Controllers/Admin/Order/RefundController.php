@@ -120,14 +120,7 @@ class RefundController extends BaseController
             return response()->json(['error' => translate('this_account_has_been_deleted_you_can_not_modify_the_status') . '.'], 404);
         }
 
-        $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
         $loyaltyPoint = $this->countLoyaltyPointForAmount(id: $currentRefund['order_details_id']);
-
-        if ($loyaltyPointStatus == 1) {
-            if ($user['loyalty_point'] < $loyaltyPoint && ($request['refund_status'] == 'refunded' || $request['refund_status'] == 'approved')) {
-                return response()->json(['error' => translate('customer_has_not_sufficient_loyalty_point_to_take_refund_for_this_order') . '.'], 409);
-            }
-        }
 
         $eventPayload = [];
         try {

@@ -564,16 +564,27 @@ function addToCartOnclick() {
 function buyNow() {
     $(".product-buy-now-button").on("click", function () {
         $('.product-details-sticky-section').removeClass('active');
-        let redirectStatus = $(this).data("auth");
+        let isAuthenticated = $(this).data("auth");
         let url = $(this).data("route");
         let parentElement = $(this).closest('.product-cart-option-container');
         let productCartForm = parentElement.find('.addToCartDynamicForm');
-        addToCart(productCartForm ?? $(".add-to-cart-details-form"), redirectStatus, url);
-        if (redirectStatus === false) {
+
+        if (isAuthenticated === false) {
             $("#quickViewModal").modal("hide");
             $("#loginModal").modal("show");
             toastr.warning($(".login-warning").data("login-warning-message"));
+            return;
         }
+
+        addToCart(
+            productCartForm ?? $(".add-to-cart-details-form"),
+            false,
+            url,
+            {
+                redirectAfterAdd: url,
+                skipShippingMethodModal: true,
+            }
+        );
     });
 }
 
@@ -584,7 +595,7 @@ function hideProductDetailsStickySection() {
     })
 }
 
-function addToCart(formSelector, redirectToCheckout = false, url = null) {
+function addToCart(formSelector, redirectToCheckout = false, url = null, options = {}) {
     if (checkValidityForVariantPrice(formSelector)) {
         $.ajaxSetup({
             headers: {
@@ -594,7 +605,7 @@ function addToCart(formSelector, redirectToCheckout = false, url = null) {
 
         let existCartItem = $('.product-exist-in-cart-list[name="key"]').val();
         let formActionUrl = $(formSelector).attr("action");
-        if (existCartItem !== "" && !redirectToCheckout) {
+        if (existCartItem !== "" && !redirectToCheckout && !options.redirectAfterAdd) {
             formActionUrl = $("#update_quantity_url").data("url");
         }
 
@@ -607,6 +618,11 @@ function addToCart(formSelector, redirectToCheckout = false, url = null) {
             beforeSend: function () { },
             success: function (response) {
                 if (response.status === 2) {
+                    if (options.skipShippingMethodModal && options.redirectAfterAdd) {
+                        location.href = options.redirectAfterAdd;
+                        return false;
+                    }
+
                     hideProductDetailsStickySection()
                     $("#buyNowModal-body").html(
                         response.shippingMethodHtmlView
@@ -630,7 +646,11 @@ function addToCart(formSelector, redirectToCheckout = false, url = null) {
                         actionAddToCartBtn.html(actionAddToCartBtn.data("update"));
                     }
 
-                    if (redirectToCheckout?.toString() === 'true' && response.redirect_to_url) {
+                    if (options.redirectAfterAdd) {
+                        setTimeout(function () {
+                            location.href = options.redirectAfterAdd;
+                        }, 100);
+                    } else if (redirectToCheckout?.toString() === 'true' && response.redirect_to_url) {
                         setTimeout(function () {
                             location.href = response.redirect_to_url;
                         }, 100);

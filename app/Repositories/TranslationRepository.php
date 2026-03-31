@@ -13,19 +13,15 @@ class TranslationRepository implements TranslationRepositoryInterface
 
     private function resolveDefaultLocale(object $request): string
     {
+        $configuredLocale = getConfiguredDefaultLanguage();
+
+        if ($configuredLocale !== '') {
+            return $configuredLocale;
+        }
+
         $requestLanguages = collect(data_get($request, 'lang', []))
             ->filter(fn ($locale) => is_string($locale) && $locale !== '')
             ->values();
-
-        // Use getSaveLanguage() instead of config('app.locale') because the
-        // Localization middleware mutates config('app.locale') at runtime
-        // via App::setLocale(). getSaveLanguage() reads the original config
-        // file value, immune to middleware mutation.
-        $configuredLocale = getSaveLanguage();
-
-        if ($requestLanguages->contains($configuredLocale)) {
-            return $configuredLocale;
-        }
 
         return (string) ($requestLanguages->first() ?? 'en');
     }

@@ -10,7 +10,6 @@ use App\Models\OrderDetail;
 use App\Models\RefundRequest;
 use App\Models\RefundStatus;
 use App\Models\User;
-use App\Utils\CustomerManager;
 use App\Utils\Helpers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -130,18 +129,6 @@ class RefundController extends Controller
         $user = User::find($refund->customer_id);
         if (!$user) {
             return response()->json(['message' => 'Customer not found'], 404);
-        }
-
-        $loyalty_point_status = getWebConfig(name: 'loyalty_point_status');
-
-        if($loyalty_point_status == 1)
-        {
-            $loyalty_point = CustomerManager::count_loyalty_point_for_amount($refund->order_details_id);
-
-            if($user->loyalty_point < $loyalty_point && $request->refund_status == 'approved')
-            {
-                return response()->json(['message'=>'Customer has not sufficient loyalty point to take refund for this order'],409);
-            }
         }
 
         if($refund->change_by =='admin'){

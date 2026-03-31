@@ -61,7 +61,7 @@
                                     };
                                     @endphp
                                     <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ $status->getTranslatedField('name') }}
+                                        {{ translate($status['name']) }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -287,7 +287,7 @@
                                     <option value="{{ $status['id'] }}"
                                         data-status-name="{{ $wholesaleStatusName }}"
                                         data-require-follow-up-date="{{ $wholesaleRequiresFollowUpDate }}">
-                                        {{ $status->getTranslatedField('name') }}
+                                        {{ translate($status['name']) }}
                                     </option>
                                     @endforeach
                                 </select>

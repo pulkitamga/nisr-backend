@@ -170,7 +170,7 @@
                         </button>
                     </div>
                     <form action="{{route('admin.business-settings.language.add-new')}}" method="post"
-                          style="text-align: {{$direction}};">
+                          style="text-align: {{get_direction()}};">
                         @csrf
                         <div class="modal-body">
                             <div class="row">

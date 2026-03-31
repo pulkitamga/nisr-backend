@@ -33,7 +33,6 @@ use App\Models\SupportTicketNotification;
 use App\Traits\CommonTrait;
 use App\Models\User;
 use App\Models\WholeSalerBusiness;
-use App\Utils\CustomerManager;
 use App\Utils\ImageManager;
 use App\Utils\OrderManager;
 use Brian2694\Toastr\Facades\Toastr;
@@ -1127,15 +1126,6 @@ class UserProfileController extends Controller
             return back();
         }
 
-        $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
-        if ($loyaltyPointStatus == 1) {
-            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount($id);
-            if ($user['loyalty_point'] < $loyaltyPoint) {
-                Toastr::warning(translate('you_have_not_sufficient_loyalty_point_to_refund_this_order') . '!!');
-                return back();
-            }
-        }
-
         return view('web-views.users-profile.refund-request', [
             'order_details' => $orderDetails,
         ]);
@@ -1169,15 +1159,6 @@ class UserProfileController extends Controller
         if ($this->hasRefundRequest(orderDetailsId: (int)$orderDetails->id, currentFlag: (int)$orderDetails->refund_request)) {
             Toastr::warning(translate('already_applied_for_refund_request!!'));
             return back();
-        }
-
-        $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
-        if ($loyaltyPointStatus == 1) {
-            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int)$orderDetails->id);
-            if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
-                Toastr::warning(translate('you_have_not_sufficient_loyalty_point_to_refund_this_order') . '!!');
-                return back();
-            }
         }
 
         // RefundRequest save code

@@ -585,15 +585,6 @@ class OrderController extends Controller
             return response()->json(['message' => translate('order_not_found')], 404);
         }
 
-        $user = $request->user();
-        $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
-        if ($loyaltyPointStatus == 1) {
-            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int) $order_details->id);
-            if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
-                return response()->json(['message' => translate('you_have_not_sufficient_loyalty_point_to_refund_this_order')], 409);
-            }
-        }
-
         if ($order_details->delivery_status == 'delivered') {
             $data = $this->getRefundBreakdown(orderDetails: $order_details);
             $expired = false;
@@ -626,15 +617,6 @@ class OrderController extends Controller
         $orderDetails = $this->getCustomerOrderDetail(request: $request, orderDetailsId: (int) $request->order_details_id);
         if (! $orderDetails) {
             return response()->json(['message' => translate('order_not_found')], 404);
-        }
-
-        $user = $request->user();
-        $loyaltyPointStatus = getWebConfig(name: 'loyalty_point_status');
-        if ($loyaltyPointStatus == 1) {
-            $loyaltyPoint = CustomerManager::count_loyalty_point_for_amount((int) $orderDetails->id);
-            if (($user->loyalty_point ?? 0) < $loyaltyPoint) {
-                return response()->json(['message' => translate('you have not sufficient loyalty point to refund this order!!')], 409);
-            }
         }
 
         if ($orderDetails->delivery_status !== 'delivered') {

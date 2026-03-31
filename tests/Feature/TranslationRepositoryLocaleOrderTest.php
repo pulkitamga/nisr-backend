@@ -89,4 +89,34 @@ class TranslationRepositoryLocaleOrderTest extends TestCase
 
         $this->assertSame('en', getConfiguredDefaultLanguage());
     }
+
+    public function test_array_based_updates_save_non_default_locale_even_when_default_locale_is_absent_from_request(): void
+    {
+        $request = new Request([
+            'lang' => ['ar'],
+            'index' => 0,
+            'title' => ['عنوان عربي'],
+            'description' => ['وصف عربي'],
+        ]);
+
+        $repository = new TranslationRepository(new Translation());
+
+        $repository->updateArrayBasedSectionTranslations($request, 'App\\Models\\HomePageSection', 6);
+
+        $storedTranslations = Translation::query()
+            ->orderBy('key')
+            ->get(['locale', 'key', 'item_index', 'value'])
+            ->map(fn ($translation) => [
+                'locale' => $translation->locale,
+                'key' => $translation->key,
+                'item_index' => $translation->item_index,
+                'value' => $translation->value,
+            ])
+            ->all();
+
+        $this->assertSame([
+            ['locale' => 'ar', 'key' => 'description', 'item_index' => '0', 'value' => 'وصف عربي'],
+            ['locale' => 'ar', 'key' => 'title', 'item_index' => '0', 'value' => 'عنوان عربي'],
+        ], $storedTranslations);
+    }
 }

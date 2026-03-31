@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/swiper-bundle.min.css') }}">
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}">
 
-  
+
 
 @endpush
 
@@ -252,7 +252,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
                         <a href="{{ route('products', ['category_id' => $category->id, 'data_from' => 'category', 'page' => 1]) }}" class="bg-danger text-white text-uppercase fw-bold px-5 py-2 rounded-pill mb-2"
                             style="font-size: 1rem;"> {{translate('DEALS')}}
                         </a>
-                        <p class="text-uppercase font-semi-bold mb-3"> {{translate('ON')}}{{ strtoupper($category->name) }}</p>
+                        <p class="text-uppercase font-semi-bold mb-3"> {{ strtoupper($category->name) }}</p>
 
                         <a href="{{ route('products', ['category_id' => $category->id, 'data_from' => 'category', 'page' => 1]) }}"
                             class="btn btn-sm btn-light text-primary fw-semibold d-flex align-items-center justify-content-center">
