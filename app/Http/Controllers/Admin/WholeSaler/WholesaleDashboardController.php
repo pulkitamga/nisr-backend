@@ -111,7 +111,7 @@ class WholesaleDashboardController extends BaseController
             'order' => self::getCommonQueryOrderStatus($orderQuery),
             'purchase' => self::getCommonQueryOrderStatus($purchaseOrderrderQuery),
             'quotation' => self::getCommonQueryOrderStatus($quotationQuery),
-            'product' => self::getCommonQueryOrderStatus($productQuery)->load('translations'),
+            'product' => self::getCommonQueryOrderStatus($productQuery),
             'customer' => self::getCommonQueryOrderStatus($customerQuery),
             'rejected' => self::getCommonQueryOrderStatus($rejectedQuery),
             'confirmed' => self::getCommonQueryOrderStatus($confirmedQuery),

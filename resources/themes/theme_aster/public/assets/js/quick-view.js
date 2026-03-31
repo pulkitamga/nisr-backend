@@ -1,5 +1,6 @@
 'use strict';
 $(document).ready(function () {
+    initializeProductExtraChargeForms();
     getVariantPrice(".add-to-cart-details-form");
     function stockCheckQuickView() {
         let productQty = $('.product_quantity__qty');

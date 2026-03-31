@@ -128,27 +128,31 @@
                 </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2 gap-sm-3 gap-xl-4">
-                <div class="quantity quantity--style-two d-flex align-items-center">
-                        <span class="quantity__minus single-quantity-minus form-control h-42px bg--light px-3" data-form=".add-to-cart-sticky-form">
-                            <i class="bi bi-dash"></i>
-                        </span>
-                    <input type="text"
-                           data-details-page="1"
-                           class="quantity__qty product_quantity__qty"
-                           name="quantity"
-                           value="{{ $productDetails?->minimum_order_qty ?? 1 }}"
-                           min="{{ $productDetails?->minimum_order_qty ?? 1 }}"
-                           max="{{$productDetails['product_type'] == 'physical' ? $productDetails->current_stock : 100}}">
+            <div class="d-flex flex-column gap-3 align-items-stretch">
+                <div class="d-flex align-items-center gap-2 gap-sm-3 gap-xl-4">
+                    <div class="quantity quantity--style-two d-flex align-items-center">
+                            <span class="quantity__minus single-quantity-minus form-control h-42px bg--light px-3" data-form=".add-to-cart-sticky-form">
+                                <i class="bi bi-dash"></i>
+                            </span>
+                        <input type="text"
+                               data-details-page="1"
+                               class="quantity__qty product_quantity__qty"
+                               name="quantity"
+                               value="{{ $productDetails?->minimum_order_qty ?? 1 }}"
+                               min="{{ $productDetails?->minimum_order_qty ?? 1 }}"
+                               max="{{$productDetails['product_type'] == 'physical' ? $productDetails->current_stock : 100}}">
 
-                    <span class="quantity__plus single-quantity-plus form-control h-42px bg--light px-3" data-form=".add-to-cart-sticky-form">
-                            <i class="bi bi-plus"></i>
-                        </span>
+                        <span class="quantity__plus single-quantity-plus form-control h-42px bg--light px-3" data-form=".add-to-cart-sticky-form">
+                                <i class="bi bi-plus"></i>
+                            </span>
+                    </div>
+
+                    <div class="font-weight-normal text-accent align-items-end gap-2 d-none d-lg-flex">
+                        <span class="text-primary fs-5 fw-bold product-details-chosen-price-amount user-select-none"></span>
+                    </div>
                 </div>
 
-                <div class="font-weight-normal text-accent align-items-end gap-2 d-none d-lg-flex">
-                    <span class="text-primary fs-5 fw-bold product-details-chosen-price-amount user-select-none"></span>
-                </div>
+                @include('theme-views.product._extra-charge-options', ['productData' => $productDetails])
 
                 @if(($product->added_by == 'seller' && ($sellerTemporaryClose || (isset($product->seller->shop) && $product->seller->shop->vacation_status && $currentDate >= $sellerVacationStartDate && $currentDate <= $sellerVacationEndDate))) ||
                                                         ($product->added_by == 'admin' && ($inHouseTemporaryClose || ($inHouseVacationStatus && $currentDate >= $inHouseVacationStartDate && $currentDate <= $inHouseVacationEndDate))))
@@ -204,7 +208,6 @@
                         @endif
                     </div>
                 @endif
-
             </div>
         </div>
         </form>

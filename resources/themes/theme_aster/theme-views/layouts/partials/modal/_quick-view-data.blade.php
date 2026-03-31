@@ -350,6 +350,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                @include('theme-views.product._extra-charge-options', ['productData' => $product])
                                 <div class="d-flex gap-2 mt-4">
                                     <div class="product-add-and-buy-section d--flex flex-wrap gap-3" {!! $firstVariationQuantity <= 0 ? 'style="display: none;"' : '' !!}>
                                         @if(($product->added_by == 'seller' && ($seller_temporary_close || (isset($product->seller->shop) && $product->seller->shop->vacation_status && $currentDate >= $seller_vacation_start_date && $currentDate <= $seller_vacation_end_date))) ||

@@ -12859,5 +12859,7 @@ return [
 	"you_are_not_authorized_to_view_this_vendor" => "You are not authorized to view this vendor.",
 	"installation_charges_can_not_exceed_product_total" => "Installation charges cannot exceed the product total.",
 	"exchange_charges_can_not_exceed_product_total" => "Replacement discount cannot exceed the product total.",
+	"Exchange qty must be at least 1 when Replacement Discount is enabled." => "Exchange qty must be at least 1 when Replacement Discount is enabled.",
+	"Exchange qty cannot exceed product quantity." => "Exchange qty cannot exceed product quantity.",
 	"The_branch_address_in_english_is_required" => "The branch address in english is required",
 ];

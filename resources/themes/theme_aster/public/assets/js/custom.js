@@ -504,6 +504,126 @@ function getStockCheckOnVariantPrice(formSelector = ".add-to-cart-details-form")
     }
 }
 
+function getProductFormInstance(formSelector) {
+    return formSelector instanceof jQuery ? formSelector : $(formSelector);
+}
+
+function getProductExtraChargeContainer(formSelector) {
+    return getProductFormInstance(formSelector).find(".product-extra-charge-options");
+}
+
+function getProductQuantityValue(formSelector) {
+    return parseInt(getProductFormInstance(formSelector).find(".product_quantity__qty").val()) || 0;
+}
+
+function syncProductExtraChargeState(formSelector) {
+    const $form = getProductFormInstance(formSelector);
+    const $container = getProductExtraChargeContainer($form);
+    if (!$container.length) {
+        return;
+    }
+
+    const $installationCheckbox = $form.find(".js-installation-charge-checkbox");
+    const $installationValue = $form.find(".js-installation-charge-value");
+    const $exchangeCheckbox = $form.find(".js-exchange-charge-checkbox");
+    const $exchangeQtyWrapper = $form.find(".js-exchange-qty-wrapper");
+    const $exchangeQtyInput = $form.find(".js-exchange-qty-input");
+    const $exchangeQtyValue = $form.find(".js-exchange-quantity-value");
+    const $replacementEnabledValue = $form.find(".js-replacement-discount-enabled");
+    const $exchangeQtyPlus = $form.find(".js-exchange-qty-plus");
+    const $exchangeQtyMinus = $form.find(".js-exchange-qty-minus");
+
+    const productQty = getProductQuantityValue($form);
+    const installationCharge = parseFloat($installationCheckbox.data("price")) || 0;
+    const exchangeCharge = parseFloat($exchangeCheckbox.data("price")) || 0;
+
+    $installationValue.val($installationCheckbox.is(":checked") && installationCharge > 0 ? installationCharge : 0);
+
+    const replacementEnabled = $exchangeCheckbox.is(":checked") && exchangeCharge > 0;
+    let exchangeQty = parseInt($exchangeQtyInput.val()) || 0;
+    if (exchangeQty < 0) {
+        exchangeQty = 0;
+    }
+
+    if (replacementEnabled && exchangeQty < 1) {
+        exchangeQty = 1;
+    }
+
+    if (!replacementEnabled) {
+        exchangeQty = 0;
+    }
+
+    $exchangeQtyInput.val(exchangeQty);
+    $exchangeQtyInput.attr("min", replacementEnabled ? 1 : 0);
+    $exchangeQtyInput.attr("max", productQty);
+    $exchangeQtyValue.val(replacementEnabled ? exchangeQty : 0);
+    $replacementEnabledValue.val(replacementEnabled ? 1 : 0);
+    $exchangeQtyWrapper.toggleClass("d-none", !replacementEnabled);
+
+    const disablePlus = !replacementEnabled || productQty < 1 || exchangeQty >= productQty;
+    const disableMinus = !replacementEnabled || exchangeQty <= 1;
+    $exchangeQtyPlus.prop("disabled", disablePlus);
+    $exchangeQtyMinus.prop("disabled", disableMinus);
+}
+
+function validateProductExtraCharges(formSelector) {
+    const $form = getProductFormInstance(formSelector);
+    const $container = getProductExtraChargeContainer($form);
+    if (!$container.length) {
+        return true;
+    }
+
+    syncProductExtraChargeState($form);
+
+    const replacementEnabled = parseInt($form.find(".js-replacement-discount-enabled").val()) === 1;
+    if (!replacementEnabled) {
+        return true;
+    }
+
+    const exchangeQty = parseInt($form.find(".js-exchange-quantity-value").val()) || 0;
+    const productQty = getProductQuantityValue($form);
+
+    if (exchangeQty < 1) {
+        toastr.error($container.data("exchangeQtyMinMessage"));
+        return false;
+    }
+
+    if (productQty > 0 && exchangeQty > productQty) {
+        toastr.error($container.data("exchangeQtyLimitMessage"));
+        return false;
+    }
+
+    return true;
+}
+
+function initializeProductExtraChargeForms() {
+    $(".addToCartDynamicForm").each(function () {
+        syncProductExtraChargeState($(this));
+    });
+}
+
+$(document).on("click", ".js-exchange-qty-plus", function () {
+    const $form = $(this).closest("form");
+    const $input = $form.find(".js-exchange-qty-input");
+    const currentValue = parseInt($input.val()) || 0;
+    $input.val(currentValue + 1);
+    getVariantPrice($form);
+});
+
+$(document).on("click", ".js-exchange-qty-minus", function () {
+    const $form = $(this).closest("form");
+    const $input = $form.find(".js-exchange-qty-input");
+    const currentValue = parseInt($input.val()) || 0;
+    $input.val(Math.max(0, currentValue - 1));
+    getVariantPrice($form);
+});
+
+$(document).on("input", ".js-exchange-qty-input", function () {
+    this.value = this.value.replace(/[^0-9]/g, "");
+});
+
+initializeProductExtraChargeForms();
+
 /* Increase */
 $(".quantity__plus").on("click", function () {
     if ($(this).data("prevent") !== true) {
@@ -564,27 +684,16 @@ function addToCartOnclick() {
 function buyNow() {
     $(".product-buy-now-button").on("click", function () {
         $('.product-details-sticky-section').removeClass('active');
-        let isAuthenticated = $(this).data("auth");
+        let redirectStatus = $(this).data("auth");
         let url = $(this).data("route");
         let parentElement = $(this).closest('.product-cart-option-container');
         let productCartForm = parentElement.find('.addToCartDynamicForm');
-
-        if (isAuthenticated === false) {
+        addToCart(productCartForm ?? $(".add-to-cart-details-form"), redirectStatus, url);
+        if (redirectStatus === false) {
             $("#quickViewModal").modal("hide");
             $("#loginModal").modal("show");
             toastr.warning($(".login-warning").data("login-warning-message"));
-            return;
         }
-
-        addToCart(
-            productCartForm ?? $(".add-to-cart-details-form"),
-            false,
-            url,
-            {
-                redirectAfterAdd: url,
-                skipShippingMethodModal: true,
-            }
-        );
     });
 }
 
@@ -595,8 +704,8 @@ function hideProductDetailsStickySection() {
     })
 }
 
-function addToCart(formSelector, redirectToCheckout = false, url = null, options = {}) {
-    if (checkValidityForVariantPrice(formSelector)) {
+function addToCart(formSelector, redirectToCheckout = false, url = null) {
+    if (checkValidityForVariantPrice(formSelector) && validateProductExtraCharges(formSelector)) {
         $.ajaxSetup({
             headers: {
                 "X-CSRF-TOKEN": $('meta[name="_token"]').attr("content"),
@@ -605,7 +714,8 @@ function addToCart(formSelector, redirectToCheckout = false, url = null, options
 
         let existCartItem = $('.product-exist-in-cart-list[name="key"]').val();
         let formActionUrl = $(formSelector).attr("action");
-        if (existCartItem !== "" && !redirectToCheckout && !options.redirectAfterAdd) {
+        let hasProductExtraChargeOptions = getProductExtraChargeContainer(formSelector).length > 0;
+        if (existCartItem !== "" && !redirectToCheckout && !hasProductExtraChargeOptions) {
             formActionUrl = $("#update_quantity_url").data("url");
         }
 
@@ -618,11 +728,6 @@ function addToCart(formSelector, redirectToCheckout = false, url = null, options
             beforeSend: function () { },
             success: function (response) {
                 if (response.status === 2) {
-                    if (options.skipShippingMethodModal && options.redirectAfterAdd) {
-                        location.href = options.redirectAfterAdd;
-                        return false;
-                    }
-
                     hideProductDetailsStickySection()
                     $("#buyNowModal-body").html(
                         response.shippingMethodHtmlView
@@ -646,11 +751,7 @@ function addToCart(formSelector, redirectToCheckout = false, url = null, options
                         actionAddToCartBtn.html(actionAddToCartBtn.data("update"));
                     }
 
-                    if (options.redirectAfterAdd) {
-                        setTimeout(function () {
-                            location.href = options.redirectAfterAdd;
-                        }, 100);
-                    } else if (redirectToCheckout?.toString() === 'true' && response.redirect_to_url) {
+                    if (redirectToCheckout?.toString() === 'true' && response.redirect_to_url) {
                         setTimeout(function () {
                             location.href = response.redirect_to_url;
                         }, 100);
@@ -908,6 +1009,7 @@ function checkValidityForVariantPrice(formSelector) {
 let checkFirstTimeVariant = true;
 function getVariantPrice(formSelector = ".add-to-cart-details-form") {
     getStockCheckOnVariantPrice(formSelector);
+    syncProductExtraChargeState(formSelector);
 
     if (checkValidityForVariantPrice(formSelector)) {
         $.ajaxSetup({

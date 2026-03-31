@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Repositories\DealOfTheDayRepository;
 use App\Repositories\WishlistRepository;
+use App\Services\ProductExtraChargeResolverService;
 use App\Services\ProductService;
 use App\Traits\ProductTrait;
 use Brian2694\Toastr\Facades\Toastr;
@@ -70,6 +71,7 @@ class ProductDetailsController extends Controller
         );
 
         if ($product) {
+            $product->extraCharges = app(ProductExtraChargeResolverService::class)->resolveForProduct($product);
             $productDetailsMeta = $product?->seoInfo;
             $productAuthorsInfo = $this->productService->getProductAuthorsInfo(product: $product);
             $productPublishingHouseInfo = $this->productService->getProductPublishingHouseInfo(product: $product);

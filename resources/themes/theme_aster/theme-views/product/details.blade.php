@@ -373,9 +373,9 @@
                                                     </div>
                                                     <input type="hidden" class="product-generated-variation-code" name="product_variation_code" data-product-id="{{ $product['id'] }}">
                                                     <input type="hidden" value="" class="product-exist-in-cart-list form-control w-50" name="key">
-                                                    <div class="mx-w width--24rem">
-                                                        <div class="bg-light w-100 rounded p-4">
-                                                            <div class="flex-between-gap-3">
+                                                     <div class="mx-w width--24rem">
+                                                         <div class="bg-light w-100 rounded p-4">
+                                                             <div class="flex-between-gap-3">
                                                                 <div class="">
                                                                     <h6 class="flex-middle-gap-2 mb-2">
                                                                         <span class="text-muted">
@@ -394,11 +394,13 @@
                                                                         </span>
                                                                     </h6>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                             </div>
+                                                         </div>
+                                                     </div>
 
-                                                    <div class="mx-w d-flex flex-wrap gap-3 mt-4 width--24rem product-add-and-buy-section-parent">
+                                                    @include('theme-views.product._extra-charge-options', ['productData' => $product])
+
+                                                     <div class="mx-w d-flex flex-wrap gap-3 mt-4 width--24rem product-add-and-buy-section-parent">
                                                         <div class="product-add-and-buy-section d--flex flex-wrap gap-3" {!! $firstVariationQuantity <= 0 ? 'style="display: none;"' : '' !!}>
                                                             @if(($product->added_by == 'seller' && ($sellerTemporaryClose || (isset($product->seller->shop) && $product->seller->shop->vacation_status && $currentDate >= $sellerVacationStartDate && $currentDate <= $sellerVacationEndDate))) ||
                                                         ($product->added_by == 'admin' && ($inHouseTemporaryClose || ($inHouseVacationStatus && $currentDate >= $inHouseVacationStartDate && $currentDate <= $inHouseVacationEndDate))))
@@ -916,6 +918,7 @@
         $(".easyzoom").each(function () {
             $(this).easyZoom();
         });
+        initializeProductExtraChargeForms();
         getVariantPrice(".add-to-cart-details-form");
         getVariantPrice(".add-to-cart-sticky-form");
     </script>

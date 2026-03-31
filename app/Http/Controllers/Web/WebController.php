@@ -49,6 +49,7 @@ use App\Traits\CacheManagerTrait;
 use Illuminate\Http\JsonResponse;
 use App\Models\ManageExtraCharges;
 use App\Models\ShippingMethodArea;
+use App\Services\ProductExtraChargeResolverService;
 use Gregwar\Captcha\PhraseBuilder;
 use Illuminate\Support\Facades\DB;
 use App\Models\DeliveryCountryCode;
@@ -1204,6 +1205,7 @@ class WebController extends Controller
     public function getQuickView(Request $request): JsonResponse
     {
         $product = ProductManager::get_product($request['product_id']);
+        $product->extraCharges = app(ProductExtraChargeResolverService::class)->resolveForProduct($product);
         $order_details = OrderDetail::where('product_id', $product->id)->get();
         $wishlists = Wishlist::where('product_id', $product->id)->get();
         $wishlist_status = Wishlist::where(['product_id' => $product->id, 'customer_id' => auth('customer')->id()])->count();

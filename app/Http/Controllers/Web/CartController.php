@@ -12,6 +12,7 @@ use App\Models\BusinessSetting;
 use App\Models\CartShipping;
 use App\Models\DigitalProductVariation;
 use App\Models\RestockProductCustomer;
+use App\Services\ProductExtraChargeResolverService;
 use App\Models\Shop;
 use App\Models\ShippingMethodArea;
 use App\Services\RestockProductService;
@@ -62,6 +63,7 @@ class CartController extends Controller
         $product = Product::with(['digitalVariation', 'clearanceSale' => function ($query) {
             return $query->active();
         }])->where(['id' => $request['id']])->first();
+        $resolvedExtraCharges = app(ProductExtraChargeResolverService::class)->resolveForProduct($product);
         $productVariationCode = $request['product_variation_code'];
 
         if ($request->has('color')) {
@@ -187,9 +189,25 @@ class CartController extends Controller
         $safeInCartQuantity = $product['product_type'] == 'physical' && $stockCheckStatus == 1
             ? min(max(0, (int)$requestQuantity), $availableQuantity)
             : (int)$requestQuantity;
+        $installationCharge = max(0, (float)$request->input('installation_charge', 0)) > 0
+            ? max(0, (float)($resolvedExtraCharges['installation'] ?? 0))
+            : 0;
+        $replacementDiscountEnabled = (int)$request->input('replacement_discount_enabled', 0) === 1
+            && max(0, (float)($resolvedExtraCharges['exchange'] ?? 0)) > 0;
+        $exchangeQuantity = $replacementDiscountEnabled ? max(0, (int)$request->input('exchange_quantity', 0)) : 0;
+        if ($replacementDiscountEnabled && $exchangeQuantity < 1) {
+            $exchangeQuantity = 1;
+        }
+        if ($availableQuantity > 0) {
+            $exchangeQuantity = min($exchangeQuantity, $requestQuantity);
+        }
+        $exchangeDiscountTotal = $replacementDiscountEnabled
+            ? $exchangeQuantity * max(0, (float)($resolvedExtraCharges['exchange'] ?? 0))
+            : 0;
+        $linePrice = ($price * $requestQuantity) + $installationCharge - $exchangeDiscountTotal;
 
         return [
-            'price' => webCurrencyConverter($price * $requestQuantity),
+            'price' => webCurrencyConverter($linePrice),
             'discount' => $discountType == 'flat' ? webCurrencyConverter($discount) : getProductPriceByType(product: $product, type: 'discount', result: 'value') . '%',
             'discount_type' => $discountType,
             'discount_amount' => $discount,

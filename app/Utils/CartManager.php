@@ -6,6 +6,7 @@ use App\Domain\Stock\DTO\StockValidationContext;
 use App\Domain\Stock\Enums\StockChannel;
 use App\Domain\Stock\StockAvailabilityService;
 use App\Domain\Stock\Support\VariantMatcher;
+use App\Services\ProductExtraChargeResolverService;
 use App\Models\DigitalProductVariation;
 use App\Models\ShippingMethod;
 use App\Utils\Helpers;
@@ -923,6 +924,14 @@ class CartManager
         $getProductDiscount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: $price);
         $taxablePrice = max(0, $price - $getProductDiscount);
         $tax = Helpers::tax_calculation(product: $product, price: $taxablePrice, tax: $product['tax'], tax_type: 'percent');
+        $extraChargeData = self::resolveRequestedExtraCharges(
+            product: $product,
+            request: $request,
+            quantity: (int)$request['quantity']
+        );
+        if ($extraChargeData['status'] === 0) {
+            return $extraChargeData;
+        }
 
         $cartArray += [
             'customer_id' => ($user == 'offline' ? $guestId : $user->id),
@@ -945,6 +954,9 @@ class CartManager
             'shipping_cost' => $product->product_type == 'physical' ? CartManager::get_shipping_cost_for_product_category_wise($product, $request['quantity']) : 0,
             'shipping_type' => $shippingType,
             'is_guest' => ($user == 'offline' ? 1 : 0),
+            'installtion_charges' => $extraChargeData['installation_charge'],
+            'exchange_qty' => $extraChargeData['exchange_qty'],
+            'exchange_charges' => $extraChargeData['exchange_charge'],
         ];
 
         $cartCheck = Cart::where(['customer_id' => $customerId, 'is_guest' => $isGuest, 'seller_id' => ($product->added_by == 'admin') ? 1 : $product->user_id, 'seller_is' => $product->added_by])->first();
@@ -970,7 +982,10 @@ class CartManager
 
         if ($request['buy_now'] == 1) {
             $calculateTax = $product['tax_model'] == 'exclude' ? ($tax * $request['quantity']) : 0;
-            $productTotalPrice = (($price - $getProductDiscount) * $request['quantity']) + $calculateTax;
+            $productTotalPrice = (($price - $getProductDiscount) * $request['quantity'])
+                + $calculateTax
+                + $extraChargeData['installation_charge']
+                - ($extraChargeData['exchange_charge'] * $extraChargeData['exchange_qty']);
             $verifyStatus = OrderManager::checkSingleProductMinimumOrderAmountVerify(request: $request, product: $product, totalAmount: $productTotalPrice);
             if ($verifyStatus['status'] == 0) {
                 return ['status' => 0, 'message' => $verifyStatus['message']];
@@ -1084,6 +1099,14 @@ class CartManager
         $getProductDiscount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: $price);
         $taxablePrice = max(0, $price - $getProductDiscount);
         $tax = Helpers::tax_calculation(product: $product, price: $taxablePrice, tax: $product['tax'], tax_type: 'percent');
+        $extraChargeData = self::resolveRequestedExtraCharges(
+            product: $product,
+            request: $request,
+            quantity: (int)$request['quantity']
+        );
+        if ($extraChargeData['status'] === 0) {
+            return $extraChargeData;
+        }
         $cartArray = [
             'customer_id' => $customerId,
             'product_id' => $request['id'],
@@ -1109,6 +1132,9 @@ class CartManager
             'shipping_cost' => $product['product_type'] == 'physical' ? CartManager::get_shipping_cost_for_product_category_wise($product, $request['quantity']) : 0,
             'shipping_type' => $shippingType,
             'is_guest' => $isGuest,
+            'installtion_charges' => $extraChargeData['installation_charge'],
+            'exchange_qty' => $extraChargeData['exchange_qty'],
+            'exchange_charges' => $extraChargeData['exchange_charge'],
         ];
 
         $cartCheck = Cart::where(['customer_id' => $customerId, 'is_guest' => $isGuest, 'seller_id' => ($product->added_by == 'admin') ? 1 : $product->user_id, 'seller_is' => $product->added_by])->first();
@@ -1133,7 +1159,10 @@ class CartManager
 
         if ($request['buy_now'] == 1) {
             $calculateTax = $product['tax_model'] == 'exclude' ? ($tax * $request['quantity']) : 0;
-            $productTotalPrice = (($price - $getProductDiscount) * $request['quantity']) + $calculateTax;
+            $productTotalPrice = (($price - $getProductDiscount) * $request['quantity'])
+                + $calculateTax
+                + $extraChargeData['installation_charge']
+                - ($extraChargeData['exchange_charge'] * $extraChargeData['exchange_qty']);
             $verifyStatus = OrderManager::checkSingleProductMinimumOrderAmountVerify(request: $request, product: $product, totalAmount: $productTotalPrice);
             if ($verifyStatus['status'] == 0) {
                 return ['status' => 0, 'message' => $verifyStatus['message']];
@@ -1160,6 +1189,50 @@ class CartManager
             'cart' => $cart,
             'message' => translate('successfully_added') . '!',
             'product_variant_type' => count(json_decode($product['variation'], true)) > 0 ? 'multi_variant' : 'single_variant',
+        ];
+    }
+
+    private static function resolveRequestedExtraCharges(Product $product, $request, int $quantity): array
+    {
+        $resolvedExtraCharges = app(ProductExtraChargeResolverService::class)->resolveForProduct($product);
+        $resolvedInstallationCharge = max(0, (float)($resolvedExtraCharges['installation'] ?? 0));
+        $resolvedExchangeCharge = max(0, (float)($resolvedExtraCharges['exchange'] ?? 0));
+
+        $isInstallationRequested = max(0, (float)$request->input('installation_charge', 0)) > 0;
+        $installationCharge = ($isInstallationRequested && $resolvedInstallationCharge > 0)
+            ? $resolvedInstallationCharge
+            : 0.0;
+
+        $exchangeQuantity = max(0, (int)$request->input('exchange_quantity', 0));
+        $exchangeCharge = 0.0;
+        $isReplacementDiscountEnabled = (int)$request->input('replacement_discount_enabled', 0) === 1
+            && $resolvedExchangeCharge > 0;
+
+        if ($isReplacementDiscountEnabled) {
+            if ($exchangeQuantity < 1) {
+                return [
+                    'status' => 0,
+                    'message' => translate('Exchange qty must be at least 1 when Replacement Discount is enabled.'),
+                ];
+            }
+
+            if ($exchangeQuantity > $quantity) {
+                return [
+                    'status' => 0,
+                    'message' => translate('Exchange qty cannot exceed product quantity.'),
+                ];
+            }
+
+            $exchangeCharge = $resolvedExchangeCharge;
+        } else {
+            $exchangeQuantity = 0;
+        }
+
+        return [
+            'status' => 1,
+            'installation_charge' => $installationCharge,
+            'exchange_charge' => $exchangeCharge,
+            'exchange_qty' => $exchangeQuantity,
         ];
     }
 
