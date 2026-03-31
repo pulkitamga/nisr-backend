@@ -1,7 +1,7 @@
 <div class="footer">
     <div class="row justify-content-between align-items-center">
         <div class="col-lg-4 mb-2 mb-lg-0">
-            <p class="font-size-sm mb-0 title-color text-center text-lg-left">
+            <p class="font-size-sm mb-0 title-color text-center text-lg-start">
                 {{ getWebConfig(name: 'company_name').'.' }}
                 <span class="d-none d-sm-inline-block">{{ getWebConfig('company_copyright_text') }}</span>
             </p>

@@ -57,13 +57,13 @@
                                                                     class="avatar-status avatar-sm-status avatar-status-success"></span>
                                                             </div>
                                                             <div class="chat_ib media-body">
-                                                                <h5 class="mb-1 seller {{$chatting->seen_by_seller ?'active-text' :''}}"
+                                                                <h5 class="mb-1 seller chat-list-heading {{$chatting->seen_by_seller ?'active-text' :''}}"
                                                                     id="{{ $chatting->user_id }}"
                                                                     data-name="{{ $chatting->customer->f_name.' '.$chatting->customer->l_name }}"
                                                                     data-phone="{{ $chatting->customer->phone }}">
                                                                     {{ $chatting->customer->f_name .' '. $chatting->customer->l_name }}
 
-                                                                    <span class="lead small float-end">{{ $chatting->created_at->diffForHumans() }}</span>
+                                                                    <span class="lead small chat-list-time">{{ $chatting->created_at->diffForHumans() }}</span>
                                                                 </h5>
                                                                 <span
                                                                     class="mt-2 font-weight-normal text-muted d-block"
@@ -93,13 +93,13 @@
                                                                     class="avatar-status avatar-sm-status avatar-status-success"></span>
                                                             </div>
                                                             <div class="chat_ib media-body">
-                                                                <h5 class="mb-1 seller {{$chatting->seen_by_seller ?'active-text' :''}}"
+                                                                <h5 class="mb-1 seller chat-list-heading {{$chatting->seen_by_seller ?'active-text' :''}}"
                                                                     id="{{ $chatting->delivery_man_id }}"
                                                                     data-name="{{ $chatting->deliveryMan->f_name.' '.$chatting->deliveryMan->l_name }}"
                                                                     data-phone="{{ $chatting->deliveryMan->country_code.$chatting->deliveryMan->phone }}">
                                                                     {{ $chatting->deliveryMan->f_name.' '.$chatting->deliveryMan->l_name }}
 
-                                                                    <span class="lead small float-end">{{ $chatting->created_at->diffForHumans() }}</span>
+                                                                    <span class="lead small chat-list-time">{{ $chatting->created_at->diffForHumans() }}</span>
                                                                 </h5>
                                                                 <span
                                                                     class="mt-2 font-weight-normal text-muted d-block"
@@ -153,7 +153,7 @@
                                     @csrf
                                     <input type="hidden" id="current-user-hidden-id" value="{{ $lastChatUser->id }}" name="{{ $userType == 'customer' ? 'user_id' : 'delivery_man_id' }}">
                                     <div class="position-relative d-flex">
-                                        <div class="d-flex align-items-center m-0 position-absolute top-3 px-3 gap-2">
+                                        <div class="chat-composer-tools d-flex align-items-center m-0 position-absolute top-3 px-3 gap-2">
                                             <label class="py-0 cursor-pointer">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
                                                     <path
@@ -187,7 +187,7 @@
                                             </label>
                                         </div>
                                         <label class="w-0 flex-grow-1 uploaded-file-container">
-                                            <textarea class="form-control pt-3 radius-left-button ps-105px" id="msgInputValue" name="message" type="text" placeholder="{{translate('send_a_message')}}" aria-label="{{ translate('send_a_message') }}"></textarea>
+                                            <textarea class="form-control pt-3 radius-left-button pl-105px" id="msgInputValue" name="message" type="text" placeholder="{{translate('send_a_message')}}" aria-label="{{ translate('send_a_message') }}"></textarea>
                                             <div class="d-flex justify-content-between items-container">
                                                 <div class="overflow-x-auto pt-3 pb-2">
                                                     <div>

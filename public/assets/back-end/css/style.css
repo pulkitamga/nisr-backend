@@ -168,7 +168,7 @@ a:hover {
     border-top-color: transparent;
     border-inline-start-color: transparent;
     transform: rotate(45deg);
-    left: -17px;
+    inset-inline-start: -17px;
     top: 2px;
 }
 
@@ -208,7 +208,7 @@ a:hover {
     border-top-color: transparent;
     border-inline-start-color: transparent;
     transform: rotate(45deg);
-    left: -17px;
+    inset-inline-start: -17px;
     top: 2px;
 }
 
@@ -1181,7 +1181,7 @@ label {
 
 .sidebar--search-form .search--form-group .btn {
     position: absolute;
-    left: 5px;
+    inset-inline-start: 5px;
     top: 0;
     color: #99a7ba !important;
     padding-inline-start: 12px !important;
@@ -2156,7 +2156,7 @@ select {
     width: 94%;
     padding: 10px 0 10px 10px;
     text-align: center;
-    border-right-style: none;
+    border-inline-end-style: none;
 }
 
 .message-status {
@@ -5937,7 +5937,7 @@ aside .navbar-vertical-content {
 
 .valley-alert {
     border: 1px solid rgba(var(--c1-rgb), 0.2);
-    border-left-width: 3px;
+    border-inline-start-width: 3px;
     border-inline-start-color: var(--c1);
     padding: 1rem;
     border-radius: 0 4px 4px 0;
@@ -6367,11 +6367,17 @@ body *::-webkit-scrollbar-thumb {
 }
 
 .radius-right-button {
-    border-radius: 0 10px 10px 0;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    border-start-end-radius: 10px;
+    border-end-end-radius: 10px;
 }
 
 .radius-left-button {
-    border-radius: 10px 0 0 10px;
+    border-start-start-radius: 10px;
+    border-end-start-radius: 10px;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
 }
 
 .bank-info-card .edit-btn {
@@ -6599,7 +6605,7 @@ body *::-webkit-scrollbar-thumb {
 
 .pos-alert-message {
     position: absolute;
-    left: 36px;
+    inset-inline-start: 36px;
     bottom: calc(100% - 22px);
     width: 80vw;
     max-width: 350px;
@@ -6616,7 +6622,7 @@ body *::-webkit-scrollbar-thumb {
     content: "";
     position: absolute;
     top: 100%;
-    left: 30px;
+    inset-inline-start: 30px;
     background: #fef7d1;
     clip-path: polygon(0 0, 50% 100%, 100% 0);
     height: 10px;
@@ -6625,21 +6631,21 @@ body *::-webkit-scrollbar-thumb {
 
 @media screen and (max-width: 991px) and (min-width: 768px) {
     .pos-alert-message {
-        left: -60px;
+        inset-inline-start: -60px;
     }
 
     .pos-alert-message::before {
-        left: 110px;
+        inset-inline-start: 110px;
     }
 }
 
 @media screen and (max-width: 575px) {
     .pos-alert-message {
-        left: 0px;
+        inset-inline-start: 0;
     }
 
     .pos-alert-message::before {
-        left: 60px;
+        inset-inline-start: 60px;
     }
 }
 
@@ -6875,7 +6881,7 @@ table .store-name:hover {
     border-inline-start: 3px solid var(--c1);
     border-radius: 6px;
     position: fixed;
-    right: 20px;
+    inset-inline-end: 20px;
     top: 80px;
     z-index: 9999;
     background: #fff;
@@ -8469,3 +8475,29 @@ img[class*="ratio-"] {
     .bg-red {
         background-color: #fd1414;
     }
+
+/* RTL overrides for status badge positioning */
+[dir="rtl"] .btn.rounded-circle .btn-sm-status {
+    right: auto;
+    left: -12px;
+}
+
+[dir="rtl"] .btn-sm-status {
+    right: auto;
+    left: -0.3125rem;
+}
+
+[dir="rtl"] .btn-xs-status {
+    right: auto;
+    left: -12px;
+}
+
+/* RTL overrides for valley-alert border-radius */
+[dir="rtl"] .valley-alert {
+    border-radius: 4px 0 0 4px;
+}
+
+/* RTL override for input-field padding */
+[dir="rtl"] .input-field {
+    padding: 10px 10px 10px 0;
+}

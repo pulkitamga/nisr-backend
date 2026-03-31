@@ -181,6 +181,8 @@ class ServiceRequestWebFlowTest extends TestCase
             $table->string('vehicle_year')->nullable();
             $table->integer('vehicle_mileage')->nullable();
             $table->string('vin')->nullable();
+            $table->text('problem_description')->nullable();
+            $table->text('notes')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

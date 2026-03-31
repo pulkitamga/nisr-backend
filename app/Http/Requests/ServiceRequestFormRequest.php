@@ -43,6 +43,7 @@ class ServiceRequestFormRequest extends FormRequest
             'vehicle_mileage' => 'nullable|integer',
             'vin' => 'nullable|string',
             'problem_description' => 'nullable|string|max:2000',
+            'notes' => 'nullable|string|max:2000',
         ];
     }
 }

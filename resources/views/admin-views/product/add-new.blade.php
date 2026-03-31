@@ -389,6 +389,13 @@
                             <textarea name="parts_included[]" rows="2" class="form-control"
                                 placeholder="{{ translate('e.g. 5 L 5W-30, OEM oil filter') }}"></textarea>
                         </div>
+                        <div class="col-12 mt-3">
+                            <label class="title-color">
+                                {{ translate('description') }} ({{ strtoupper($lang) }}) <span class="input-required-icon">*</span>
+                            </label>
+                            <textarea name="service_description[]" class="summernote"
+                                placeholder="{{ translate('description') }}"></textarea>
+                        </div>
 
                     </div>
                 </div>

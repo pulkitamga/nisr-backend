@@ -1,4 +1,6 @@
-@if(auth()->guard('customer')->check() && auth()->guard('customer')->user()->user_type == 0)
+@php($customer = auth()->guard('customer')->user())
+
+@if(!$customer || $customer->user_type == 0)
 <aside class="col-lg-4 pt-4 pt-lg-2 px-max-md-0 order-summery-aside">
     <div class="__cart-total __cart-total_sticky" id="cart-summary">
         <div class="cart_total p-0">
@@ -186,7 +188,7 @@
         class="btn btn--primary btn-block proceed_to_next_button text-capitalize {{$cart->count() <= 0 ? 'custom-disabled' : ''}} action-checkout-function">{{translate('proceed_to_checkout')}}</a>
 </div>
 
-@elseif(auth()->guard('customer')->check() && auth()->guard('customer')->user()->user_type == 1)
+@elseif($customer && $customer->user_type == 1)
 
     <aside class="col-lg-4 pt-4 pt-lg-2 px-max-md-0 order-summery-aside">
         <div class="__cart-total __cart-total_sticky">

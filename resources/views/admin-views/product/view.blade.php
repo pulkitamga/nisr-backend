@@ -188,7 +188,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
                                                 <li class="d-flex align-items-center font-size-sm">
                                                     @php($five = getRatingCount($product['id'], 5))
-                                                    <span class="{{ Session::get('direction') === "rtl" ? 'me-3' : '' }}">
+                                                    <span class="me-3">
                                                         {{ translate('5') }} {{ translate('star') }}
                                                     </span>
                                                     <div class="progress flex-grow-1">
@@ -203,7 +203,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
                                                 <li class="d-flex align-items-center font-size-sm">
                                                     @php($four=getRatingCount($product['id'],4))
-                                                    <span class="{{ Session::get('direction') === "rtl" ? 'me-3' : '' }}">{{ translate('4') }} {{ translate('star') }}</span>
+                                                    <span class="me-3">{{ translate('4') }} {{ translate('star') }}</span>
                                                     <div class="progress flex-grow-1">
                                                         <div class="progress-bar" role="progressbar"
                                                             style="width: {{ $total == 0 ? 0 : ($four/$total)*100}}%;"
@@ -215,7 +215,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
                                                 <li class="d-flex align-items-center font-size-sm">
                                                     @php($three=getRatingCount($product['id'],3))
-                                                    <span class="{{ Session::get('direction') === "rtl" ? 'me-3' : '' }}">{{ translate('3') }} {{ translate('star') }}</span>
+                                                    <span class="me-3">{{ translate('3') }} {{ translate('star') }}</span>
                                                     <div class="progress flex-grow-1">
                                                         <div class="progress-bar" role="progressbar"
                                                             style="width: {{ $total == 0 ? 0 : ($three/$total)*100 }}%;"
@@ -227,7 +227,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
                                                 <li class="d-flex align-items-center font-size-sm">
                                                     @php($two=getRatingCount($product['id'],2))
-                                                    <span class="{{ Session::get('direction') === "rtl" ? 'me-3' : '' }}">{{ translate('2') }} {{ translate('star') }}</span>
+                                                    <span class="me-3">{{ translate('2') }} {{ translate('star') }}</span>
                                                     <div class="progress flex-grow-1">
                                                         <div class="progress-bar" role="progressbar"
                                                             style="width: {{ $total == 0 ? 0 : ($two/$total)*100}}%;"
@@ -239,7 +239,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
                                                 <li class="d-flex align-items-center font-size-sm">
                                                     @php($one=getRatingCount($product['id'],1))
-                                                    <span class="{{ Session::get('direction') === "rtl" ? 'me-3' : '' }}">{{ translate('1') }} {{ translate('star') }}</span>
+                                                    <span class="me-3">{{ translate('1') }} {{ translate('star') }}</span>
                                                     <div class="progress flex-grow-1">
                                                         <div class="progress-bar" role="progressbar"
                                                             style="width: {{ $total == 0 ? 0 : ($one/$total)*100}}%;"

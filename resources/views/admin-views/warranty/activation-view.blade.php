@@ -305,7 +305,7 @@
         background: #f8f9fc;
         padding: 15px;
         border-radius: 8px;
-        border-left: 4px solid #377dff;
+        border-inline-start: 4px solid #377dff;
     }
 </style>
 @endpush

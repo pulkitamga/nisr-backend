@@ -46,6 +46,20 @@ class ProductService
         return in_array($configuredTaxModel, ['include', 'exclude'], true) ? $configuredTaxModel : 'include';
     }
 
+    private function normalizeServiceDescription(object $request): void
+    {
+        if (($request['product_type'] ?? null) !== 'services') {
+            return;
+        }
+
+        $serviceDescription = $request->input('service_description');
+        if (!is_array($serviceDescription) || !method_exists($request, 'merge')) {
+            return;
+        }
+
+        $request->merge(['description' => $serviceDescription]);
+    }
+
     public function getProcessedImages(object $request): array
     {
         $colorImageSerial = [];
@@ -416,6 +430,7 @@ class ProductService
 
     public function getAddProductData(object $request, string $addedBy): array
     {
+        $this->normalizeServiceDescription($request);
         $taxModel = $this->getConfiguredTaxModel();
         $storage = config('filesystems.disks.default') ?? 'public';
         if ($storage === 'local') {
@@ -502,6 +517,7 @@ class ProductService
     }
     public function getUpdateProductData(object $request, object $product, string $updateBy): array
     {
+        $this->normalizeServiceDescription($request);
         $taxModel = $this->getConfiguredTaxModel();
         $storage = config('filesystems.disks.default') ?? 'public';
         if ($storage === 'local') {

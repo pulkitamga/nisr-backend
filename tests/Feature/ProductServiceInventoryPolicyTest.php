@@ -67,6 +67,7 @@ class ProductServiceInventoryPolicyTest extends TestCase
         $this->assertSame('[]', $data['variation']);
         $this->assertSame('[]', $data['choice_options']);
         $this->assertSame('[]', $data['attributes']);
+        $this->assertSame('<p>Service description from service field</p>', $data['details']);
     }
 
     public function test_service_products_are_updated_without_inventory_or_tracking_flags(): void
@@ -110,6 +111,7 @@ class ProductServiceInventoryPolicyTest extends TestCase
         $this->assertSame('[]', $data['variation']);
         $this->assertSame('[]', $data['choice_options']);
         $this->assertSame('[]', $data['attributes']);
+        $this->assertSame('<p>Service description from service field</p>', $data['details']);
     }
 
     private function baseServicePayload(): array
@@ -117,7 +119,8 @@ class ProductServiceInventoryPolicyTest extends TestCase
         return [
             'lang' => ['en'],
             'name' => ['Service Product'],
-            'description' => ['Service description'],
+            'description' => ['Legacy service description'],
+            'service_description' => ['<p>Service description from service field</p>'],
             'code' => 'SRV001',
             'branch_id' => 1,
             'category_id' => 1,

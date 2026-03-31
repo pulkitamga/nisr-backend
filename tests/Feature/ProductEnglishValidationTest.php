@@ -154,6 +154,81 @@ class ProductEnglishValidationTest extends TestCase
         );
     }
 
+    public function test_add_request_uses_service_fields_for_service_products(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validServicePayload([
+            'name' => ['', ''],
+            'description' => ['<p><br></p>', '<p><br></p>'],
+            'service_tittle' => ['', 'عنوان الخدمة'],
+            'parts_included' => ['', 'القطع المشمولة'],
+            'service_description' => ['<p><br></p>', '<p>وصف الخدمة</p>'],
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertFalse($validator->errors()->has('name.0'));
+        $this->assertFalse($validator->errors()->has('description.0'));
+        $this->assertSame(
+            translate('The_title_in_english_is_required') . '!',
+            $validator->errors()->first('service_tittle.0')
+        );
+        $this->assertSame(
+            translate('The_description_in_english_is_required') . '!',
+            $validator->errors()->first('parts_included.0')
+        );
+        $this->assertSame(
+            translate('The_description_in_english_is_required') . '!',
+            $validator->errors()->first('service_description.0')
+        );
+    }
+
+    public function test_update_request_uses_service_fields_for_service_products(): void
+    {
+        $productRepository = $this->mock(ProductRepositoryInterface::class);
+        $product = new class extends Model {
+            protected $table = 'products';
+            public $timestamps = false;
+            protected $guarded = [];
+        };
+        $product->forceFill([
+            'id' => 8,
+            'images' => '["product.webp"]',
+            'color_image' => null,
+        ]);
+        $product->setRelation('digitalVariation', collect());
+
+        $productRepository->shouldReceive('getFirstWhere')
+            ->andReturn($product);
+
+        $request = new ProductUpdateRequest($productRepository);
+        $request->initialize($this->validServicePayload([
+            'name' => ['', ''],
+            'description' => ['<p><br></p>', '<p><br></p>'],
+            'service_tittle' => ['', 'عنوان الخدمة'],
+            'parts_included' => ['', 'القطع المشمولة'],
+            'service_description' => ['<p><br></p>', '<p>وصف الخدمة</p>'],
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertFalse($validator->errors()->has('name.0'));
+        $this->assertFalse($validator->errors()->has('description.0'));
+        $this->assertSame(
+            translate('The_title_in_english_is_required') . '!',
+            $validator->errors()->first('service_tittle.0')
+        );
+        $this->assertSame(
+            translate('The_description_in_english_is_required') . '!',
+            $validator->errors()->first('parts_included.0')
+        );
+        $this->assertSame(
+            translate('The_description_in_english_is_required') . '!',
+            $validator->errors()->first('service_description.0')
+        );
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
@@ -176,6 +251,23 @@ class ProductEnglishValidationTest extends TestCase
             'existing_thumbnail' => 'thumb.webp',
             'existing_images' => ['product.webp'],
         ], $overrides);
+    }
+
+    private function validServicePayload(array $overrides = []): array
+    {
+        return array_merge($this->validPayload([
+            'product_type' => 'services',
+            'service_tittle' => ['Synthetic Oil Change', 'تغيير زيت صناعي'],
+            'parts_included' => ['Oil and filter', 'الزيت والفلتر'],
+            'service_description' => ['<p>Service description</p>', '<p>وصف الخدمة</p>'],
+            'service_id' => 'SRV-OIL-SYN',
+            'base_price_inshop' => 20,
+            'base_price_mobile' => 27.5,
+            'parts_cost' => 0,
+            'included_km_mobile' => 20,
+            'travel_fee_per_km' => 1,
+            'labor_hours' => 0.5,
+        ]), $overrides);
     }
 
     private function validateFormRequest(ProductAddRequest|ProductUpdateRequest $request): \Illuminate\Validation\Validator

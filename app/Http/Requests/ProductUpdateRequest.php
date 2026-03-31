@@ -53,6 +53,19 @@ class ProductUpdateRequest extends FormRequest
             'discount' => 'required|gt:-1',
             'shipping_cost' => 'required_if:product_type,physical|gt:-1',
             'minimum_order_qty' => 'required|numeric|min:1',
+            'service_tittle' => 'required_if:product_type,services|array',
+            'service_tittle.*' => 'nullable|string',
+            'parts_included' => 'required_if:product_type,services|array',
+            'parts_included.*' => 'nullable|string',
+            'service_description' => 'required_if:product_type,services|array',
+            'service_description.*' => 'nullable|string',
+            'service_id' => 'required_if:product_type,services|string|max:255',
+            'base_price_inshop' => 'required_if:product_type,services|numeric|min:0',
+            'base_price_mobile' => 'required_if:product_type,services|numeric|min:0',
+            'parts_cost' => 'required_if:product_type,services|numeric|min:0',
+            'included_km_mobile' => 'required_if:product_type,services|numeric|min:0',
+            'travel_fee_per_km' => 'required_if:product_type,services|numeric|min:0',
+            'labor_hours' => 'required_if:product_type,services|numeric|min:0',
 
             'code' => ['nullable',
                 Rule::requiredIf($this->product_type === 'physical'),
@@ -108,13 +121,24 @@ class ProductUpdateRequest extends FormRequest
                     );
                 }
 
-                $this->validateEnglishMultilingualFields($validator, [
-                    'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
-                    'description' => [
-                        'message' => translate('The_description_in_english_is_required') . '!',
-                        'rich_text' => true,
-                    ],
-                ]);
+                if ($this['product_type'] === 'services') {
+                    $this->validateEnglishMultilingualFields($validator, [
+                        'service_tittle' => ['message' => translate('The_title_in_english_is_required') . '!'],
+                        'parts_included' => ['message' => translate('The_description_in_english_is_required') . '!'],
+                        'service_description' => [
+                            'message' => translate('The_description_in_english_is_required') . '!',
+                            'rich_text' => true,
+                        ],
+                    ]);
+                } else {
+                    $this->validateEnglishMultilingualFields($validator, [
+                        'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
+                        'description' => [
+                            'message' => translate('The_description_in_english_is_required') . '!',
+                            'rich_text' => true,
+                        ],
+                    ]);
+                }
 
                 if ($this->has('colors_active') && $this->has('colors') && count($this['colors']) > 0) {
                     $databaseColorImages = $product['color_image'] ? json_decode($product['color_image'], true) : [];

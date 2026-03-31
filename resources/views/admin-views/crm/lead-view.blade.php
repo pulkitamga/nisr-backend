@@ -7,17 +7,17 @@
 <link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
 <style>
     .detail-card {
-        border-left: 4px solid var('');
+        border-inline-start: 4px solid var('');
     }
 
     .detail-card.rtl {
         direction: rtl;
-        text-align: right;
+        text-align: start;
     }
 
     .detail-card.ltr {
         direction: ltr;
-        text-align: left;
+        text-align: start;
     }
 
     .detail-card p {

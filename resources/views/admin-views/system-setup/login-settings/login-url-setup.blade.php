@@ -25,8 +25,7 @@
                             {{translate('admin_Login_Page')}}
                         </h5>
                     </div>
-                    <div class="card-body"
-                        style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
+                    <div class="card-body text-start">
                         <div class="mb-3">
                             <label class="form-label">
                                 {{translate('admin_login_url')}}
@@ -38,7 +37,7 @@
                             </label>
                             @php($adminLoginUrl = getWebConfig('admin_login_url'))
                             <div class="input-group mb-3">
-                                <span class="input-group-text radius-0 border-right-0">{{ url('/').'/login/' }}</span>
+                                <span class="input-group-text radius-0 border-end-0">{{ url('/').'/login/' }}</span>
                                 <input type="text" class="form-control" name="url" value="{{ $adminLoginUrl }}">
                                 <input type="hidden" class="form-control" name="type" value="admin_login_url">
                             </div>
@@ -60,8 +59,7 @@
                             {{translate('employee_Login_Page')}}
                         </h5>
                     </div>
-                    <div class="card-body"
-                        style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
+                    <div class="card-body text-start">
                         <div class="mb-3">
                             <label class="form-label">
                                 {{translate('employee_login_url')}}
@@ -73,7 +71,7 @@
                             </label>
                             @php($employeeLoginUrl = getWebConfig('employee_login_url'))
                             <div class="input-group mb-3">
-                                <span class="input-group-text radius-0 border-right-0">{{ url('/').'/login/' }}</span>
+                                <span class="input-group-text radius-0 border-end-0">{{ url('/').'/login/' }}</span>
                                 <input type="text" class="form-control" name="url" value="{{ $employeeLoginUrl }}">
                                 <input type="hidden" class="form-control" name="type" value="employee_login_url">
                             </div>

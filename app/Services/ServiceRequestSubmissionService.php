@@ -124,6 +124,7 @@ class ServiceRequestSubmissionService
             'vehicle_mileage' => $serviceRequest->vehicle_mileage,
             'vin' => $serviceRequest->vin,
             'problem_description' => $serviceRequest->problem_description,
+            'notes' => $serviceRequest->notes,
         ];
     }
 
@@ -134,6 +135,10 @@ class ServiceRequestSubmissionService
             "Vehicle: {$serviceRequest->vehicle_type} / {$serviceRequest->vehicle_make} / {$serviceRequest->vehicle_model} / {$serviceRequest->vehicle_year}",
             "Mileage: {$serviceRequest->vehicle_mileage}",
             $serviceRequest->vin ? "VIN: {$serviceRequest->vin}" : null,
+            $serviceRequest->problem_description
+                ? "Problem description: {$serviceRequest->problem_description}"
+                : null,
+            $serviceRequest->notes ? "Notes: {$serviceRequest->notes}" : null,
             $serviceRequest->service_option === 'mobile'
                 ? "Address: {$serviceRequest->address}, {$serviceRequest->area}, {$serviceRequest->city}, {$serviceRequest->state}, {$serviceRequest->country}"
                 : null,

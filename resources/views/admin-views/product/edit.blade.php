@@ -461,6 +461,14 @@
                                         <small class="text-muted">{{ translate('comma separated values') }}</small>
                                     </div>
                                 </div>
+                                <div class="col-12 mt-3">
+                                    <label class="title-color">
+                                        {{ translate('description') }} ({{ strtoupper($language) }}) <span
+                                            class="input-required-icon">*</span>
+                                    </label>
+                                    <textarea name="service_description[]" class="summernote"
+                                        placeholder="{{ translate('description') }}">{!! $product->getTranslatedField('description', $language, $product['details'] ?? '') !!}</textarea>
+                                </div>
                             </div>
                         </div>
                     @endforeach

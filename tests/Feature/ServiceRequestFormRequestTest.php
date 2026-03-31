@@ -87,6 +87,23 @@ class ServiceRequestFormRequestTest extends TestCase
         $this->assertTrue($validator->errors()->has('country'));
     }
 
+    public function test_notes_field_is_optional(): void
+    {
+        $validator = Validator::make(
+            [
+                'service_id' => 1,
+                'service_option' => 'in_shop',
+                'vehicle_type' => 'Sedan',
+                'notes' => 'Customer prefers afternoon visit.',
+            ],
+            $this->makeRequestWithInput([
+                'service_option' => 'in_shop',
+            ])->rules()
+        );
+
+        $this->assertFalse($validator->errors()->has('notes'));
+    }
+
     private function makeRequestWithInput(array $input): ServiceRequestFormRequest
     {
         $request = new ServiceRequestFormRequest();

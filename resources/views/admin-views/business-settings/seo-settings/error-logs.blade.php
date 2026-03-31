@@ -120,7 +120,7 @@
                     <input name="id" hidden>
                     <div class="modal-header">
                         <h3 class="modal-title w-100 text-center">{{translate('redirection_link')}}</h3>
-                        <button type="button" class="position-absolute right-0 top-2 bg-transparent border-0 p-3 opacity--40 fz-16" data-dismiss="modal">
+                        <button type="button" class="position-absolute top-2 bg-transparent border-0 p-3 opacity--40 fz-16" style="inset-inline-end: 0" data-dismiss="modal">
                             <i class="tio-clear-circle"></i>
                         </button>
                     </div>

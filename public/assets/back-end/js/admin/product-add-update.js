@@ -27,6 +27,30 @@ let messageProductDescriptionInEnglishRequired = $(
     "#message-product-description-in-english-required"
 ).data("text");
 let getSystemCurrencyCode = $("#system-currency-code").data("value");
+const physicalOnlyRequiredSelectors = [
+    "select[name='brand_id']",
+    "input[name='code']",
+    "select[name='unit']",
+    "input[name='current_stock']",
+    "input[name='shipping_cost']",
+];
+const nonServiceRequiredSelectors = [
+    "input[name='unit_price']",
+    "input[name='minimum_order_qty']",
+];
+const digitalRequiredSelectors = ["select[name='digital_product_type']"];
+const serviceRequiredSelectors = [
+    "textarea[name='service_tittle[]']",
+    "textarea[name='parts_included[]']",
+    "textarea[name='service_description[]']",
+    "input[name='service_id']",
+    "input[name='base_price_inshop']",
+    "input[name='base_price_mobile']",
+    "input[name='parts_cost']",
+    "input[name='included_km_mobile']",
+    "input[name='travel_fee_per_km']",
+    "input[name='labor_hours']",
+];
 
 function getProductLanguageForms() {
     return Array.from(document.querySelectorAll(".form-system-language-form"));
@@ -83,6 +107,11 @@ function plainTextFromRichText(value) {
 }
 
 function validateEnglishProductContent() {
+    const productType = String(elementProductTypeByID.val() || "");
+    if (productType === "services") {
+        return true;
+    }
+
     const locales = getProductLanguageLocales();
     const englishIndex = locales.indexOf("en");
 
@@ -115,6 +144,24 @@ function validateEnglishProductContent() {
     }
 
     return true;
+}
+
+function setRequiredState(selectors, isRequired) {
+    selectors.forEach((selector) => {
+        $(selector).prop("required", isRequired);
+    });
+}
+
+function toggleConditionalRequiredFields(productType) {
+    const normalizedProductType = String(productType || "");
+    const isPhysical = normalizedProductType === "physical";
+    const isDigital = normalizedProductType === "digital";
+    const isService = normalizedProductType === "services";
+
+    setRequiredState(physicalOnlyRequiredSelectors, isPhysical);
+    setRequiredState(nonServiceRequiredSelectors, isPhysical || isDigital);
+    setRequiredState(digitalRequiredSelectors, isDigital);
+    setRequiredState(serviceRequiredSelectors, isService);
 }
 
 function openProductLanguageTabFromErrors(errors) {
@@ -227,11 +274,11 @@ function getProductTypeFunctionality() {
         $(".digitalProductVariationSetupSection").hide();
         $(".service_product_show").hide();
 
-        $("#shipping_cost_multy").show().find('input, select').prop('required', true);
-        $("#shipping_cost").show().find('input, select').prop('required', true);
-        $("#quantity").show().find('input, select').prop('required', true);
-        $("#minimum_order_qty").show().find('input, select').prop('required', true);
-        $("#unit_price_wrapper").show().find('input, select').prop('required', true);
+        $("#shipping_cost_multy").show();
+        $("#shipping_cost").show();
+        $("#quantity").show();
+        $("#minimum_order_qty").show();
+        $("#unit_price_wrapper").show();
     }
     else if (productType && productType.toString() === "digital") {
         elementProductColorSwitcherByID.prop("checked", false);
@@ -259,14 +306,14 @@ function getProductTypeFunctionality() {
         $(".physical_product_show").hide();
 
         // Hide selected fields
-        $("#shipping_cost_multy").hide().find('input, select').prop('required', false);
-        $("#shipping_cost").hide().find('input, select').prop('required', false);
-        $("#quantity").hide().find('input, select').prop('required', false);
-        $("#minimum_order_qty").hide().find('input, select').prop('required', false);
-        $("#unit_price_wrapper").hide().find('input, select').prop('required', false);
+        $("#shipping_cost_multy").hide();
+        $("#shipping_cost").hide();
+        $("#quantity").hide();
+        $("#minimum_order_qty").hide();
+        $("#unit_price_wrapper").hide();
     }
 
-    toggleServiceFieldRequired(productType);
+    toggleConditionalRequiredFields(productType);
 
     try {
         if (productType && productType.toString() === "physical") {
@@ -275,22 +322,6 @@ function getProductTypeFunctionality() {
         }
     } catch (e) { }
 }
-
-
-function toggleServiceFieldRequired(productType) {
-    const serviceFields = $(".service_product_show").find("input, textarea, select");
-
-    if (productType === "services") {
-        serviceFields.each(function () {
-            $(this).attr("required", true);
-        });
-    } else {
-        serviceFields.each(function () {
-            $(this).removeAttr("required");
-        });
-    }
-}
-
 
 function getDigitalProductTypeFunctionality() {
     let digitalProductType = elementDigitalProductTypeByID.val();

@@ -53,6 +53,19 @@ class ProductAddRequest extends Request
             'code' => 'nullable|required_if:product_type,physical|regex:/^[a-zA-Z0-9]+$/|min:6|max:20|unique:products,code',
             'minimum_order_qty' =>  'required_if' . ':' . 'product_type' . ',' . 'physical' . '|' . 'numeric' . '|' . 'min' . ':1',
             'current_stock' => 'integer',
+            'service_tittle' => 'required_if:product_type,services|array',
+            'service_tittle.*' => 'nullable|string',
+            'parts_included' => 'required_if:product_type,services|array',
+            'parts_included.*' => 'nullable|string',
+            'service_description' => 'required_if:product_type,services|array',
+            'service_description.*' => 'nullable|string',
+            'service_id' => 'required_if:product_type,services|string|max:255',
+            'base_price_inshop' => 'required_if:product_type,services|numeric|min:0',
+            'base_price_mobile' => 'required_if:product_type,services|numeric|min:0',
+            'parts_cost' => 'required_if:product_type,services|numeric|min:0',
+            'included_km_mobile' => 'required_if:product_type,services|numeric|min:0',
+            'travel_fee_per_km' => 'required_if:product_type,services|numeric|min:0',
+            'labor_hours' => 'required_if:product_type,services|numeric|min:0',
         ];
 
         if (!isset($this['existing_thumbnail'])) {
@@ -105,7 +118,16 @@ class ProductAddRequest extends Request
                         translate('discount_can_not_be_more_or_equal_to_the_price') . '!'
                     );
                 }
-                if ($this['product_type'] != 'services') {
+                if ($this['product_type'] === 'services') {
+                    $this->validateEnglishMultilingualFields($validator, [
+                        'service_tittle' => ['message' => translate('The_title_in_english_is_required') . '!'],
+                        'parts_included' => ['message' => translate('The_description_in_english_is_required') . '!'],
+                        'service_description' => [
+                            'message' => translate('The_description_in_english_is_required') . '!',
+                            'rich_text' => true,
+                        ],
+                    ]);
+                } else {
                     $this->validateEnglishMultilingualFields($validator, [
                         'name' => ['message' => translate('The_name_in_english_is_required') . '!'],
                         'description' => [

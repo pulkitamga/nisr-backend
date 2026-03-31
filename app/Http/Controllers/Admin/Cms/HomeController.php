@@ -143,7 +143,7 @@ class HomeController extends Controller
                     $translations[$locale] = [];
                 }
 
-                if ($index === '-1') {
+                if ((int)$index === -1) {
                     if (!isset($translations[$locale]['section'])) {
                         $translations[$locale]['section'] = [];
                     }

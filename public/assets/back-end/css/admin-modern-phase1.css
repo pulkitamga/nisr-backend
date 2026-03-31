@@ -258,6 +258,20 @@
     box-shadow: var(--admin-shadow-md);
 }
 
+[dir="rtl"] .admin-modern-phase1 .navbar-vertical-aside .nav-link:hover {
+    transform: translateX(-2px);
+}
+
+[dir="rtl"] .admin-modern-phase1 .business-analytics {
+    padding-inline-start: 1.2rem;
+    padding-inline-end: 4.35rem;
+}
+
+[dir="rtl"] .admin-modern-phase1 .business-analytics__subtitle,
+[dir="rtl"] .admin-modern-phase1 .business-analytics__title {
+    text-align: start;
+}
+
 .admin-modern-phase1 .option-select-btn {
     border: 1px solid var(--admin-border);
     border-radius: var(--admin-radius-sm);

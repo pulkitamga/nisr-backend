@@ -7,7 +7,7 @@
 <link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
 <style>
     .detail-card {
-        border-left: 4px solid var('');
+        border-inline-start: 4px solid var('');
     }
 
     .detail-card .detail-row {

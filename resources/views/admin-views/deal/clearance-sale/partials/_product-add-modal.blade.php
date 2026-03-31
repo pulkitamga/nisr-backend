@@ -16,7 +16,7 @@
                             <div class="search-form" data-toggle="dropdown" aria-expanded="false">
                                 <input type="text" class="form-control ps-5 search-product-for-clearance-sale" placeholder="{{ translate('Search_Product') }}" multiple>
                                 <span
-                                    class="tio-search position-absolute left-0 top-0 h-42px d-flex align-items-center ps-2"></span>
+                                    class="tio-search position-absolute start-0 top-0 h-42px d-flex align-items-center ps-2"></span>
                             </div>
                             <div class="dropdown-menu w-100 px-2">
                                 <div class="d-flex flex-column max-h-300 overflow-y-auto overflow-x-hidden search-result-box">

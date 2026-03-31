@@ -258,7 +258,7 @@
                                 <th class="ps-xl-5">{{ translate('SL') }}</th>
                                 <th>{{ translate('image') }}</th>
                                 <th>{{ translate('banner_type') }}</th>
-                                <th>{{ translate('published') }}</th>
+                                <th class="text-center">{{ translate('published') }}</th>
                                 <th class="text-center">{{ translate('action') }}</th>
                             </tr>
                             </thead>
@@ -271,7 +271,7 @@
                                              src="{{ getStorageImages(path: $banner->photo_full_url , type: 'backend-banner') }}">
                                     </td>
                                     <td>{{ translate(str_replace('_',' ',$banner->banner_type)) }}</td>
-                                    <td>
+                                    <td class="text-center">
                                         <form action="{{ route('admin.banner.status') }}" method="post" id="banner-status{{ $banner['id'] }}-form">
                                             @csrf
                                             <input type="hidden" name="id" value="{{ $banner['id'] }}">

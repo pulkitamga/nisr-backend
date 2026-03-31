@@ -62,7 +62,9 @@
                 {{translate('shipping')}}
             </h5>
         </div>
-        @php($shippingMethod=getWebConfig('shipping_method'))
+        @php
+            $shippingMethod = getWebConfig('shipping_method');
+        @endphp
         <div class="card-body">
             <form action="{{ route('admin.business-settings.shipping-method.update-shipping-responsibility') }}"
                 method="post">
@@ -102,7 +104,9 @@
                         </div>
                     </div>
 
-                    @php($shippingType =isset($adminShipping)? $adminShipping['shipping_type']:'order_wise')
+                    @php
+                        $shippingType = isset($adminShipping) ? $adminShipping['shipping_type'] : 'order_wise';
+                    @endphp
 
                     <div class="col-md-6">
                         <div class="">
@@ -170,7 +174,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php($sl =0)
+                                @php
+                                    $sl = 0;
+                                @endphp
                                 @foreach ($allCategoryShippingCost as $key=>$item)
                                 @if($item->category)
                                 <tr>
@@ -608,7 +614,9 @@
 <span id="route-get-state-cities" data-url="{{route('admin.business-settings.shipping-method.getCities')}}"></span>
 <span id="route-get-city-areas" data-url="{{route('admin.business-settings.shipping-method.getAreas')}}"></span>
 <span id="get-shipping-type-value" data-value="{{$shippingType}}"></span>
-@php($default_location = getWebConfig(name: 'default_location'))
+@php
+    $default_location = getWebConfig(name: 'default_location');
+@endphp
 @endsection
 
 @push('script')

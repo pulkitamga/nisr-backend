@@ -342,6 +342,8 @@ class ServiceRequestController extends Controller
             'location' => $this->formatLocation($details),
             'created_at' => $ticket->created_at?->toIso8601String(),
             'updated_at' => $ticket->updated_at?->toIso8601String(),
+            'problem_description' => $details['problem_description'] ?? null,
+            'notes' => $details['notes'] ?? null,
             'latest_invoice' => $this->formatInvoice($latestInvoice),
             'latest_job' => $this->formatLatestJob($ticket),
             'can_reply' => $this->statusKey($ticket) !== 'closed',
@@ -389,6 +391,8 @@ class ServiceRequestController extends Controller
             'service_id' => $details['service_id'] ?? null,
             'service_option' => $details['service_option'] ?? null,
             'service_option_label' => $this->serviceOptionLabel($details['service_option'] ?? null),
+            'problem_description' => $details['problem_description'] ?? null,
+            'notes' => $details['notes'] ?? null,
             'vehicle' => $this->formatVehicle($details),
             'location' => $this->formatLocation($details),
         ];

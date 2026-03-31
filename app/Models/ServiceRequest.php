@@ -31,6 +31,7 @@ class ServiceRequest extends Model
         'vehicle_mileage',
         'vin',
         'problem_description',
+        'notes',
     ];
 
     // Relations (optional)

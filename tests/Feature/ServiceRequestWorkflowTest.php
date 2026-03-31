@@ -96,6 +96,8 @@ class ServiceRequestWorkflowTest extends TestCase
                 'vehicle_year' => 2023,
                 'vehicle_mileage' => 22000,
                 'vin' => 'VIN-200',
+                'problem_description' => 'Battery warning light stays on.',
+                'notes' => 'Customer will arrive after 4 PM.',
             ]);
         $request->expects($this->once())
             ->method('user')
@@ -118,6 +120,14 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('In Shop', $payload['ticket']['service_option_label']);
         $this->assertSame('Toyota', $payload['ticket']['vehicle']['make']);
         $this->assertNull($payload['ticket']['location']);
+        $this->assertSame(
+            'Battery warning light stays on.',
+            $payload['ticket']['problem_description']
+        );
+        $this->assertSame(
+            'Customer will arrive after 4 PM.',
+            $payload['ticket']['notes']
+        );
         $this->assertTrue($payload['ticket']['can_reply']);
         $this->assertSame(1, SupportTicket::query()->count());
         $this->assertSame(1, ServiceRequest::query()->count());
@@ -206,6 +216,8 @@ class ServiceRequestWorkflowTest extends TestCase
             'vehicle_year' => 2024,
             'vehicle_mileage' => 15000,
             'vin' => 'VIN-123',
+            'problem_description' => 'Oil leak under the engine.',
+            'notes' => 'Please call before arrival.',
         ], $customer);
 
         $this->assertNotNull($ticket->id);
@@ -227,7 +239,23 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('mobile', $inboxMessage->details['service_option'] ?? null);
         $this->assertSame('VIN-123', $inboxMessage->details['vin'] ?? null);
         $this->assertSame('Street 10', $inboxMessage->details['address'] ?? null);
+        $this->assertSame(
+            'Oil leak under the engine.',
+            $inboxMessage->details['problem_description'] ?? null
+        );
+        $this->assertSame(
+            'Please call before arrival.',
+            $inboxMessage->details['notes'] ?? null
+        );
         $this->assertArrayHasKey('service_request_id', $inboxMessage->details);
+        $this->assertStringContainsString(
+            'Problem description: Oil leak under the engine.',
+            (string) $ticket->description
+        );
+        $this->assertStringContainsString(
+            'Notes: Please call before arrival.',
+            (string) $ticket->description
+        );
     }
 
     public function test_submission_service_still_returns_ticket_when_notification_dispatch_fails(): void
@@ -386,6 +414,8 @@ class ServiceRequestWorkflowTest extends TestCase
                 'vehicle_year' => 2024,
                 'vehicle_mileage' => 12000,
                 'vin' => 'VIN-300',
+                'problem_description' => 'Brakes squeal at low speed.',
+                'notes' => 'Customer requests weekend slot.',
             ],
             'status' => 'converted',
             'convert_type' => 'ticket',
@@ -411,6 +441,14 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('Brake Inspection', $payload['service']['title']);
         $this->assertSame('mobile', $payload['service_option']);
         $this->assertSame('SUV', $payload['vehicle']['type']);
+        $this->assertSame(
+            'Brakes squeal at low speed.',
+            $payload['vehicle']['problem_description']
+        );
+        $this->assertSame(
+            'Customer requests weekend slot.',
+            $payload['notes']
+        );
         $this->assertSame('Street 20', $payload['location']['address']);
         $this->assertCount(2, $payload['messages']);
         $this->assertSame(
@@ -419,6 +457,14 @@ class ServiceRequestWorkflowTest extends TestCase
         );
         $this->assertSame(44, $payload['service_request']['service_request_id']);
         $this->assertSame('Mobile Service', $payload['service_request']['service_option_label']);
+        $this->assertSame(
+            'Brakes squeal at low speed.',
+            $payload['service_request']['problem_description']
+        );
+        $this->assertSame(
+            'Customer requests weekend slot.',
+            $payload['service_request']['notes']
+        );
         $this->assertSame([], $payload['activities']);
         $this->assertSame([], $payload['invoices']);
     }
@@ -697,6 +743,17 @@ class ServiceRequestWorkflowTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('translations', function (Blueprint $table) {
+            $table->id();
+            $table->string('translationable_type');
+            $table->unsignedBigInteger('translationable_id');
+            $table->string('locale')->nullable();
+            $table->string('key')->nullable();
+            $table->unsignedInteger('item_index')->nullable();
+            $table->text('value')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('support_ticket_status_master', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->unsignedInteger('master_id')->nullable();
@@ -723,6 +780,8 @@ class ServiceRequestWorkflowTest extends TestCase
             $table->integer('vehicle_year');
             $table->integer('vehicle_mileage');
             $table->string('vin')->nullable();
+            $table->text('problem_description')->nullable();
+            $table->text('notes')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
