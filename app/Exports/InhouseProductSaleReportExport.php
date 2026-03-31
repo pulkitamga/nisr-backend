@@ -29,7 +29,6 @@ class InhouseProductSaleReportExport implements WithMultipleSheets
             translate('orders'),
             translate('sales'),
         ];
-
         $posRows = collect($this->data['posRows'] ?? [])->values()->map(function ($row, $index) {
             return [
                 $index + 1,
@@ -63,6 +62,36 @@ class InhouseProductSaleReportExport implements WithMultipleSheets
             ];
         })->all();
 
+        $stateRows = collect($this->data['retailStateRows'] ?? [])->values()->map(function ($row, $index) {
+            return [
+                $index + 1,
+                $row->location_name ?? '',
+                (int)($row->total_qty ?? 0),
+                (int)($row->total_orders ?? 0),
+                (float)($row->total_amount ?? 0),
+            ];
+        })->all();
+
+        $cityRows = collect($this->data['retailCityRows'] ?? [])->values()->map(function ($row, $index) {
+            return [
+                $index + 1,
+                $row->location_name ?? '',
+                (int)($row->total_qty ?? 0),
+                (int)($row->total_orders ?? 0),
+                (float)($row->total_amount ?? 0),
+            ];
+        })->all();
+
+        $areaRows = collect($this->data['retailAreaRows'] ?? [])->values()->map(function ($row, $index) {
+            return [
+                $index + 1,
+                $row->location_name ?? '',
+                (int)($row->total_qty ?? 0),
+                (int)($row->total_orders ?? 0),
+                (float)($row->total_amount ?? 0),
+            ];
+        })->all();
+
         return [
             new InhouseProductSaleSheetExport(
                 title: translate('summary'),
@@ -86,6 +115,24 @@ class InhouseProductSaleReportExport implements WithMultipleSheets
                 title: translate('wholesale'),
                 headings: $commonHeadings,
                 rows: $wholesaleRows,
+                isRtl: $isRtl
+            ),
+            new InhouseProductSaleSheetExport(
+                title: translate('state'),
+                headings: [translate('SL'), translate('state'), translate('qty'), translate('orders'), translate('sales')],
+                rows: $stateRows,
+                isRtl: $isRtl
+            ),
+            new InhouseProductSaleSheetExport(
+                title: translate('city'),
+                headings: [translate('SL'), translate('city'), translate('qty'), translate('orders'), translate('sales')],
+                rows: $cityRows,
+                isRtl: $isRtl
+            ),
+            new InhouseProductSaleSheetExport(
+                title: translate('area'),
+                headings: [translate('SL'), translate('area'), translate('qty'), translate('orders'), translate('sales')],
+                rows: $areaRows,
                 isRtl: $isRtl
             ),
         ];

@@ -23,7 +23,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CrmEmployeeChannelAssignmentReportController extends BaseController
 {
-    private const DEFAULT_CHANNELS = ['phone', 'social', 'chat', 'email', 'form'];
+    private const DEFAULT_CHANNELS = ['phone', 'chat', 'email', 'form', 'social'];
+    private const PDF_EMPLOYEES_PER_PAGE_OPTIONS = [5, 6, 7, 8, 10, 'auto'];
+    private const DEFAULT_PDF_EMPLOYEES_PER_PAGE = 5;
+    private const PDF_PAGE_WIDTH_MM = 297.0;
+    private const PDF_HORIZONTAL_MARGIN_MM = 30.0;
+    private const PDF_PERIOD_COLUMN_WIDTH_MM = 24.0;
+    private const PDF_SUB_COLUMN_WIDTH_MM = 16.0;
 
     public function index(?Request $request, string $type = null): View|EloquentCollection|LengthAwarePaginator|null|callable|RedirectResponse
     {
@@ -103,6 +109,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
 
         $departmentIds = $this->normalizeMultiIds($request->input('department_ids', $request->input('department_id', [])));
         $employeeIds = $this->normalizeMultiIds($request->input('employee_ids', $request->input('employee_id', [])));
+        $employeesPerPageSelection = $this->normalizePdfEmployeesPerPageSelection($request->input('employees_per_page'));
         $availableChannels = $this->getAvailableChannels();
         $channels = $this->normalizeChannels(
             $request->input('channels', $request->input('channel', [])),
@@ -152,6 +159,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         $counterTotals = $this->buildCounterTotals($rows, $counterChannels);
 
         $employeesForMatrix = $this->resolveEmployeeListForMatrix($rows, $employees, $employeeIds);
+        $pdfMatrixLayout = $this->buildPdfMatrixLayout($employeesForMatrix, $displayChannels, $employeesPerPageSelection);
         $monthlyRows = $this->buildPeriodMatrix(
             rows: $rows,
             fromDate: $fromDate,
@@ -167,6 +175,12 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         })->values()->all();
 
         $summary = $this->buildSummary($monthlyRows, $employeesForMatrix, $displayChannels);
+        $selectedFilterLabels = $this->buildSelectedFilterLabels(
+            departmentIds: $departmentIds,
+            employeeIds: $employeeIds,
+            channels: $channels,
+            channelLabels: $channelLabels
+        );
 
         return [
             'departments' => $departments,
@@ -187,10 +201,13 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
                 'channels' => $channels,
+                'employees_per_page' => $employeesPerPageSelection,
                 'period_type' => $periodStrategy['type'],
             ],
             'monthlyRows' => $monthlyRows,
             'summary' => $summary,
+            'selectedFilterLabels' => $selectedFilterLabels,
+            'pdfMatrixLayout' => $pdfMatrixLayout,
             'chart' => [
                 'labels' => $monthLabels, // Use the cleaned labels
                 'series' => collect($displayChannels)->map(function (string $channel) use ($monthlyRows, $channelLabels) {
@@ -283,14 +300,13 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->map(fn($value) => strtolower(trim((string)$value)))
             ->values();
 
-        return collect(self::DEFAULT_CHANNELS)
+        $channels = collect(self::DEFAULT_CHANNELS)
             ->merge($inboxChannels)
             ->merge($leadChannels)
             ->merge($ticketChannels)
-            ->filter()
-            ->unique()
-            ->values()
             ->all();
+
+        return $this->sortChannelsForDisplay($channels);
     }
 
     private function getRows(
@@ -781,16 +797,20 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->all();
 
         if (!empty($selectedChannels)) {
-            return collect($selectedChannels)
+            return $this->sortChannelsForDisplay(
+                collect($selectedChannels)
                 ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
                 ->values()
-                ->all();
+                ->all()
+            );
         }
 
-        return collect($availableChannels)
+        return $this->sortChannelsForDisplay(
+            collect($availableChannels)
             ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
             ->values()
-            ->all();
+            ->all()
+        );
     }
 
     private function buildCounterTotals(Collection $rows, array $counterChannels): array
@@ -807,6 +827,119 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         }
 
         return $totals;
+    }
+
+    private function buildSelectedFilterLabels(
+        array $departmentIds,
+        array $employeeIds,
+        array $channels,
+        array $channelLabels
+    ): array {
+        return [
+            'department' => $this->resolveSelectedDepartmentLabel($departmentIds),
+            'employee' => $this->resolveSelectedEmployeeLabel($employeeIds),
+            'channel' => empty($channels)
+                ? translate('all')
+                : collect($this->sortChannelsForDisplay($channels))
+                    ->map(fn(string $channel) => (string)($channelLabels[$channel] ?? $this->getChannelLabel($channel)))
+                    ->implode(', '),
+        ];
+    }
+
+    private function resolveSelectedDepartmentLabel(array $departmentIds): string
+    {
+        if (empty($departmentIds)) {
+            return translate('all');
+        }
+
+        $names = Departments::query()
+            ->whereIn('id', $departmentIds)
+            ->orderBy('name')
+            ->pluck('name')
+            ->filter()
+            ->values()
+            ->all();
+
+        return !empty($names) ? implode(', ', $names) : implode(', ', $departmentIds);
+    }
+
+    private function resolveSelectedEmployeeLabel(array $employeeIds): string
+    {
+        if (empty($employeeIds)) {
+            return translate('all');
+        }
+
+        $names = Admin::query()
+            ->whereIn('id', $employeeIds)
+            ->orderBy('name')
+            ->pluck('name')
+            ->filter()
+            ->values()
+            ->all();
+
+        return !empty($names) ? implode(', ', $names) : implode(', ', $employeeIds);
+    }
+
+    private function buildPdfMatrixLayout(
+        Collection $employeesForMatrix,
+        array $usedChannelsThisPeriod,
+        string $requestedEmployeesPerPage
+    ): array {
+        $employeeSubColumns = array_values($usedChannelsThisPeriod);
+        $employeeSubColumns[] = 'total';
+
+        $employeeBlockColumnCount = count($employeeSubColumns);
+        $employeeBlockWidthMm = $employeeBlockColumnCount * self::PDF_SUB_COLUMN_WIDTH_MM;
+        // Reserve one extra block width for the repeated totals group on every matrix page.
+        $fixedColumnsWidthMm = self::PDF_PERIOD_COLUMN_WIDTH_MM + $employeeBlockWidthMm;
+        $usablePageWidthMm = max(0.0, self::PDF_PAGE_WIDTH_MM - self::PDF_HORIZONTAL_MARGIN_MM);
+        $maxAllowedEmployeesPerPage = max(
+            1,
+            (int)floor(
+                max(0.0, $usablePageWidthMm - $fixedColumnsWidthMm) / max($employeeBlockWidthMm, 1.0)
+            )
+        );
+
+        if ($requestedEmployeesPerPage === 'auto') {
+            $employeesPerPage = $maxAllowedEmployeesPerPage;
+        } else {
+            $employeesPerPage = min(max(1, (int)$requestedEmployeesPerPage), $maxAllowedEmployeesPerPage);
+        }
+
+        $employeeChunks = collect(array_chunk($employeesForMatrix->values()->all(), max(1, $employeesPerPage)));
+
+        if ($employeeChunks->isEmpty()) {
+            $employeeChunks = collect([[]]);
+        }
+
+        return [
+            'requested_option' => $requestedEmployeesPerPage,
+            'employees_per_page' => max(1, $employeesPerPage),
+            'employee_sub_columns' => $employeeSubColumns,
+            'employee_block_column_count' => $employeeBlockColumnCount,
+            'employee_block_width_mm' => $employeeBlockWidthMm,
+            'period_column_width_mm' => self::PDF_PERIOD_COLUMN_WIDTH_MM,
+            'sub_column_width_mm' => self::PDF_SUB_COLUMN_WIDTH_MM,
+            'usable_page_width_mm' => $usablePageWidthMm,
+            'fixed_columns_width_mm' => $fixedColumnsWidthMm,
+            'max_allowed_employees_per_page' => $maxAllowedEmployeesPerPage,
+            'employee_chunks' => $employeeChunks,
+        ];
+    }
+
+    private function normalizePdfEmployeesPerPageSelection(mixed $input): string
+    {
+        $normalized = is_string($input) ? strtolower(trim($input)) : $input;
+
+        if ($normalized === 'auto') {
+            return 'auto';
+        }
+
+        $value = (int)$normalized;
+
+        return in_array($value, array_filter(self::PDF_EMPLOYEES_PER_PAGE_OPTIONS, 'is_int'), true)
+            ? (string)$value
+            : (string)self::DEFAULT_PDF_EMPLOYEES_PER_PAGE;
     }
 
     private function normalizeMultiIds(mixed $input): array
@@ -838,13 +971,27 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             $input = is_string($input) ? explode(',', $input) : [$input];
         }
 
-        return collect($input)
+        $channels = collect($input)
             ->map(fn($value) => strtolower(trim((string)$value)))
             ->filter()
             ->when(!empty($availableChannels), fn(Collection $collection) => $collection->filter(
                 fn(string $value) => in_array($value, $availableChannels, true)
             ))
+            ->values()
+            ->all();
+
+        return $this->sortChannelsForDisplay($channels);
+    }
+
+    private function sortChannelsForDisplay(array $channels): array
+    {
+        $priority = array_flip(self::DEFAULT_CHANNELS);
+
+        return collect($channels)
+            ->map(fn($value) => strtolower(trim((string)$value)))
+            ->filter()
             ->unique()
+            ->sortBy(fn(string $channel) => sprintf('%04d_%s', $priority[$channel] ?? 9999, $channel))
             ->values()
             ->all();
     }

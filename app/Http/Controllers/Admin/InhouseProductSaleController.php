@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Services\ReportPdfService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -160,6 +161,9 @@ class InhouseProductSaleController extends BaseController
         'branch_type' => $request->branch_type_chart,
         'product_type' => $request->product_type_chart,
         'branch_product' => $request->branch_product_chart,
+        'state' => $request->state_chart,
+        'city' => $request->city_chart,
+        'area' => $request->area_chart,
     ];
 
     return app(ReportPdfService::class)->download(
@@ -177,6 +181,10 @@ class InhouseProductSaleController extends BaseController
         $categoryId = (string)$request->input('category_id', 'all');
         $productIds = $this->normalizeMultiIds($request->input('product_ids', $request->input('product_id', [])));
         $branchIds = $this->normalizeMultiIds($request->input('branch_ids', $request->input('branch_id', [])));
+        $stateFilters = $this->normalizeMultiTextValues($request->input('states', $request->input('state', [])));
+        $cityFilters = $this->normalizeMultiTextValues($request->input('cities', $request->input('city', [])));
+        $areaFilters = $this->normalizeMultiTextValues($request->input('areas', $request->input('area', [])));
+        $locationFiltersApplied = $this->hasRetailLocationFilters($stateFilters, $cityFilters, $areaFilters);
 
         $categories = $this->categoryRepo->getListWhere(filters: ['parent_id' => 0], dataLimit: 'all');
         $products = Product::query()
@@ -192,6 +200,18 @@ class InhouseProductSaleController extends BaseController
             ->orderBy('branch_name')
             ->get();
         $branchMap = $branches->pluck('branch_name', 'id');
+        $addressOptions = $this->getRetailAddressOptions(
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters
+        );
+        $addressOptions['states'] = $this->mergeSelectedTextOptions($addressOptions['states'], $stateFilters);
+        $addressOptions['cities'] = $this->mergeSelectedTextOptions($addressOptions['cities'], $cityFilters);
+        $addressOptions['areas'] = $this->mergeSelectedTextOptions($addressOptions['areas'], $areaFilters);
 
         // FOR CHARTS - Use original methods (no period)
         $posRowsForCharts = $this->getOrderChannelRows(
@@ -201,7 +221,10 @@ class InhouseProductSaleController extends BaseController
             categoryId: $categoryId,
             productIds: $productIds,
             branchIds: $branchIds,
-            branchMap: $branchMap
+            branchMap: $branchMap,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters
         );
 
         $onlineRowsForCharts = $this->getOrderChannelRows(
@@ -211,17 +234,22 @@ class InhouseProductSaleController extends BaseController
             categoryId: $categoryId,
             productIds: $productIds,
             branchIds: $branchIds,
-            branchMap: $branchMap
+            branchMap: $branchMap,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters
         );
 
-        $wholesaleRowsForCharts = $this->getWholesaleRows(
-            fromDate: $fromDate,
-            toDate: $toDate,
-            categoryId: $categoryId,
-            productIds: $productIds,
-            branchIds: $branchIds,
-            branchMap: $branchMap
-        );
+        $wholesaleRowsForCharts = $locationFiltersApplied
+            ? collect()
+            : $this->getWholesaleRows(
+                fromDate: $fromDate,
+                toDate: $toDate,
+                categoryId: $categoryId,
+                productIds: $productIds,
+                branchIds: $branchIds,
+                branchMap: $branchMap
+            );
 
         // FOR TABLES (POS, Online, Wholesale) - Use new period methods
         $posRowsForTables = $this->getOrderChannelRowsWithPeriod(
@@ -231,7 +259,10 @@ class InhouseProductSaleController extends BaseController
             categoryId: $categoryId,
             productIds: $productIds,
             branchIds: $branchIds,
-            branchMap: $branchMap
+            branchMap: $branchMap,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters
         );
 
         $onlineRowsForTables = $this->getOrderChannelRowsWithPeriod(
@@ -241,17 +272,22 @@ class InhouseProductSaleController extends BaseController
             categoryId: $categoryId,
             productIds: $productIds,
             branchIds: $branchIds,
-            branchMap: $branchMap
+            branchMap: $branchMap,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters
         );
 
-        $wholesaleRowsForTables = $this->getWholesaleRowsWithPeriod(
-            fromDate: $fromDate,
-            toDate: $toDate,
-            categoryId: $categoryId,
-            productIds: $productIds,
-            branchIds: $branchIds,
-            branchMap: $branchMap
-        );
+        $wholesaleRowsForTables = $locationFiltersApplied
+            ? collect()
+            : $this->getWholesaleRowsWithPeriod(
+                fromDate: $fromDate,
+                toDate: $toDate,
+                categoryId: $categoryId,
+                productIds: $productIds,
+                branchIds: $branchIds,
+                branchMap: $branchMap
+            );
 
         $summary = [
             'pos_amount' => (float)$posRowsForCharts->sum('total_amount'),
@@ -269,7 +305,47 @@ class InhouseProductSaleController extends BaseController
             toDate: $toDate,
             categoryId: $categoryId,
             productIds: $productIds,
-            branchIds: $branchIds
+            branchIds: $branchIds,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters,
+            includeWholesale: !$locationFiltersApplied
+        );
+
+        $retailStateRows = $this->getRetailLocationRows(
+            dimension: 'state',
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters
+        );
+
+        $retailCityRows = $this->getRetailLocationRows(
+            dimension: 'city',
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters
+        );
+
+        $retailAreaRows = $this->getRetailLocationRows(
+            dimension: 'area',
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds,
+            stateFilters: $stateFilters,
+            cityFilters: $cityFilters,
+            areaFilters: $areaFilters
         );
 
         // FOR CHARTS - Use chart data from original methods
@@ -311,19 +387,29 @@ class InhouseProductSaleController extends BaseController
             'categories' => $categories,
             'products' => $products,
             'branches' => $branches,
+            'stateOptions' => $addressOptions['states'],
+            'cityOptions' => $addressOptions['cities'],
+            'areaOptions' => $addressOptions['areas'],
             'filters' => [
                 'category_id' => $categoryId,
                 'product_ids' => $productIds,
                 'branch_ids' => $branchIds,
+                'states' => $stateFilters,
+                'cities' => $cityFilters,
+                'areas' => $areaFilters,
                 'date_type' => $request->input('date_type', 'this_year'),
                 'from' => $fromDate->toDateString(),
                 'to' => $toDate->toDateString(),
             ],
             'summary' => $summary,
+            'locationFiltersApplied' => $locationFiltersApplied,
             // Tables use period-based data
             'posRows' => $posRowsForTables,
             'onlineRows' => $onlineRowsForTables,
             'wholesaleRows' => $wholesaleRowsForTables,
+            'retailStateRows' => $retailStateRows,
+            'retailCityRows' => $retailCityRows,
+            'retailAreaRows' => $retailAreaRows,
             'chart' => [
                 'trend_labels' => $trend['labels'],
                 'trend_pos' => $trend['pos'],
@@ -349,6 +435,12 @@ class InhouseProductSaleController extends BaseController
                 'product_type_wholesale' => $productBySalesType['wholesale'],
                 'branch_product_labels' => $branchProductBreakdown->pluck('label')->all(),
                 'branch_product_values' => $branchProductBreakdown->pluck('total_amount')->all(),
+                'state_labels' => $retailStateRows->pluck('location_name')->all(),
+                'state_values' => $retailStateRows->pluck('total_amount')->all(),
+                'city_labels' => $retailCityRows->pluck('location_name')->all(),
+                'city_values' => $retailCityRows->pluck('total_amount')->all(),
+                'area_labels' => $retailAreaRows->pluck('location_name')->all(),
+                'area_values' => $retailAreaRows->pluck('total_amount')->all(),
             ],
         ];
     }
@@ -415,22 +507,20 @@ class InhouseProductSaleController extends BaseController
         string $categoryId,
         array $productIds,
         array $branchIds,
-        Collection $branchMap
+        Collection $branchMap,
+        array $stateFilters = [],
+        array $cityFilters = [],
+        array $areaFilters = []
     ): Collection {
         $branchExpr = 'COALESCE(orders.transfer_from_branch, orders.pickup_from_branch, 1)';
-        $branchPlaceholders = implode(',', array_fill(0, count($branchIds), '?'));
-
-        $query = OrderDetail::query()
-            ->join('orders', 'orders.id', '=', 'order_details.order_id')
-            ->join('products', 'products.id', '=', 'order_details.product_id')
-            ->where('orders.seller_is', 'admin')
-            ->where('orders.order_status', 'delivered')
-            ->where('products.added_by', 'admin')
-            ->where('products.product_type', 'physical')
-            ->whereBetween('orders.created_at', [$fromDate, $toDate])
-            ->when($categoryId !== 'all', fn($q) => $q->where('products.category_id', (int)$categoryId))
-            ->when(!empty($productIds), fn($q) => $q->whereIn('products.id', $productIds))
-            ->when(!empty($branchIds), fn($q) => $q->whereRaw("{$branchExpr} IN ({$branchPlaceholders})", $branchIds));
+        $query = $this->buildRetailOrderBaseQuery(
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds
+        );
+        $this->applyRetailLocationFilters($query, $stateFilters, $cityFilters, $areaFilters);
 
         if ($channel === 'POS') {
             $query->whereRaw("UPPER(COALESCE(orders.order_type, '')) = 'POS'");
@@ -516,23 +606,21 @@ class InhouseProductSaleController extends BaseController
         string $categoryId,
         array $productIds,
         array $branchIds,
-        Collection $branchMap
+        Collection $branchMap,
+        array $stateFilters = [],
+        array $cityFilters = [],
+        array $areaFilters = []
     ): Collection {
         $daysDifference = $fromDate->diffInDays($toDate);
         $branchExpr = 'COALESCE(orders.transfer_from_branch, orders.pickup_from_branch, 1)';
-        $branchPlaceholders = implode(',', array_fill(0, count($branchIds), '?'));
-
-        $query = OrderDetail::query()
-            ->join('orders', 'orders.id', '=', 'order_details.order_id')
-            ->join('products', 'products.id', '=', 'order_details.product_id')
-            ->where('orders.seller_is', 'admin')
-            ->where('orders.order_status', 'delivered')
-            ->where('products.added_by', 'admin')
-            ->where('products.product_type', 'physical')
-            ->whereBetween('orders.created_at', [$fromDate, $toDate])
-            ->when($categoryId !== 'all', fn($q) => $q->where('products.category_id', (int)$categoryId))
-            ->when(!empty($productIds), fn($q) => $q->whereIn('products.id', $productIds))
-            ->when(!empty($branchIds), fn($q) => $q->whereRaw("{$branchExpr} IN ({$branchPlaceholders})", $branchIds));
+        $query = $this->buildRetailOrderBaseQuery(
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds
+        );
+        $this->applyRetailLocationFilters($query, $stateFilters, $cityFilters, $areaFilters);
 
         if ($channel === 'POS') {
             $query->whereRaw("UPPER(COALESCE(orders.order_type, '')) = 'POS'");
@@ -699,7 +787,11 @@ class InhouseProductSaleController extends BaseController
         Carbon $toDate,
         string $categoryId,
         array $productIds,
-        array $branchIds
+        array $branchIds,
+        array $stateFilters = [],
+        array $cityFilters = [],
+        array $areaFilters = [],
+        bool $includeWholesale = true
     ): array {
         $daysDifference = $fromDate->diffInDays($toDate);
         $labels = [];
@@ -756,20 +848,14 @@ class InhouseProductSaleController extends BaseController
             }
         }
 
-        $orderBranchExpr = 'COALESCE(orders.transfer_from_branch, orders.pickup_from_branch, 1)';
-        $branchPlaceholders = implode(',', array_fill(0, count($branchIds), '?'));
-
-        $baseOrderQuery = OrderDetail::query()
-            ->join('orders', 'orders.id', '=', 'order_details.order_id')
-            ->join('products', 'products.id', '=', 'order_details.product_id')
-            ->where('orders.seller_is', 'admin')
-            ->where('orders.order_status', 'delivered')
-            ->where('products.added_by', 'admin')
-            ->where('products.product_type', 'physical')
-            ->whereBetween('orders.created_at', [$fromDate, $toDate])
-            ->when($categoryId !== 'all', fn($q) => $q->where('products.category_id', (int)$categoryId))
-            ->when(!empty($productIds), fn($q) => $q->whereIn('products.id', $productIds))
-            ->when(!empty($branchIds), fn($q) => $q->whereRaw("{$orderBranchExpr} IN ({$branchPlaceholders})", $branchIds));
+        $baseOrderQuery = $this->buildRetailOrderBaseQuery(
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds
+        );
+        $this->applyRetailLocationFilters($baseOrderQuery, $stateFilters, $cityFilters, $areaFilters);
 
         $posDaily = (clone $baseOrderQuery)
             ->whereRaw("UPPER(COALESCE(orders.order_type, '')) = 'POS'")
@@ -809,34 +895,36 @@ class InhouseProductSaleController extends BaseController
             }
         }
 
-        $wholesaleDaily = DB::table('wholesale_order_delivery as wod')
-            ->join('products as p', 'p.id', '=', 'wod.product_id')
-            ->leftJoin('wholesale_confirmorder_item as wci', function ($join) {
-                $join->on('wci.confirmed_order_id', '=', 'wod.confirmed_order_id')
-                    ->on('wci.product_id', '=', 'wod.product_id')
-                    ->whereRaw('COALESCE(wci.product_variation_type, "") = COALESCE(wod.product_variation_type, "")');
-            })
-            ->where('p.added_by', 'admin')
-            ->where('p.product_type', 'physical')
-            ->whereDate('wod.delivery_date', '>=', $fromDate->toDateString())
-            ->whereDate('wod.delivery_date', '<=', $toDate->toDateString())
-            ->when($categoryId !== 'all', fn($q) => $q->where('p.category_id', (int)$categoryId))
-            ->when(!empty($productIds), fn($q) => $q->whereIn('p.id', $productIds))
-            ->when(!empty($branchIds), fn($q) => $q->whereIn('wod.branch_id', $branchIds))
-            ->selectRaw('DATE(wod.delivery_date) as report_date, SUM(wod.quantity_sent * (CASE WHEN COALESCE(wci.product_quantity, 0) > 0 THEN (COALESCE(wci.final_price, 0) / wci.product_quantity) ELSE COALESCE(wci.base_price, 0) END)) as total_amount')
-            ->groupBy(DB::raw('DATE(wod.delivery_date)'))
-            ->get();
+        if ($includeWholesale) {
+            $wholesaleDaily = DB::table('wholesale_order_delivery as wod')
+                ->join('products as p', 'p.id', '=', 'wod.product_id')
+                ->leftJoin('wholesale_confirmorder_item as wci', function ($join) {
+                    $join->on('wci.confirmed_order_id', '=', 'wod.confirmed_order_id')
+                        ->on('wci.product_id', '=', 'wod.product_id')
+                        ->whereRaw('COALESCE(wci.product_variation_type, "") = COALESCE(wod.product_variation_type, "")');
+                })
+                ->where('p.added_by', 'admin')
+                ->where('p.product_type', 'physical')
+                ->whereDate('wod.delivery_date', '>=', $fromDate->toDateString())
+                ->whereDate('wod.delivery_date', '<=', $toDate->toDateString())
+                ->when($categoryId !== 'all', fn($q) => $q->where('p.category_id', (int)$categoryId))
+                ->when(!empty($productIds), fn($q) => $q->whereIn('p.id', $productIds))
+                ->when(!empty($branchIds), fn($q) => $q->whereIn('wod.branch_id', $branchIds))
+                ->selectRaw('DATE(wod.delivery_date) as report_date, SUM(wod.quantity_sent * (CASE WHEN COALESCE(wci.product_quantity, 0) > 0 THEN (COALESCE(wci.final_price, 0) / wci.product_quantity) ELSE COALESCE(wci.base_price, 0) END)) as total_amount')
+                ->groupBy(DB::raw('DATE(wod.delivery_date)'))
+                ->get();
 
-        foreach ($wholesaleDaily as $row) {
-            $date = Carbon::parse($row->report_date);
-            if ($daysDifference > 60) {
-                $key = $date->format('Y-m');
-            } else {
-                $key = $date->format('Y-m-d');
-            }
+            foreach ($wholesaleDaily as $row) {
+                $date = Carbon::parse($row->report_date);
+                if ($daysDifference > 60) {
+                    $key = $date->format('Y-m');
+                } else {
+                    $key = $date->format('Y-m-d');
+                }
 
-            if (isset($seriesDateMap[$key])) {
-                $seriesDateMap[$key]['wholesale'] += round((float)$row->total_amount, 2);
+                if (isset($seriesDateMap[$key])) {
+                    $seriesDateMap[$key]['wholesale'] += round((float)$row->total_amount, 2);
+                }
             }
         }
 
@@ -891,6 +979,190 @@ class InhouseProductSaleController extends BaseController
             ->unique()
             ->values()
             ->all();
+    }
+
+    private function normalizeMultiTextValues(mixed $input): array
+    {
+        if ($input === null || $input === '' || $input === 'all') {
+            return [];
+        }
+
+        if (!is_array($input)) {
+            $input = is_string($input) ? explode(',', $input) : [$input];
+        }
+
+        $normalized = [];
+        foreach ($input as $value) {
+            $label = trim((string)$value);
+            if ($label === '' || $label === 'all') {
+                continue;
+            }
+
+            $normalized[mb_strtolower($label)] = $label;
+        }
+
+        return array_values($normalized);
+    }
+
+    private function hasRetailLocationFilters(array $stateFilters, array $cityFilters, array $areaFilters): bool
+    {
+        return !empty($stateFilters) || !empty($cityFilters) || !empty($areaFilters);
+    }
+
+    private function buildRetailOrderBaseQuery(
+        Carbon $fromDate,
+        Carbon $toDate,
+        string $categoryId,
+        array $productIds,
+        array $branchIds
+    ): EloquentBuilder {
+        $branchExpr = 'COALESCE(orders.transfer_from_branch, orders.pickup_from_branch, 1)';
+        $branchPlaceholders = implode(',', array_fill(0, count($branchIds), '?'));
+
+        return OrderDetail::query()
+            ->join('orders', 'orders.id', '=', 'order_details.order_id')
+            ->join('products', 'products.id', '=', 'order_details.product_id')
+            ->leftJoin('shipping_addresses', 'shipping_addresses.id', '=', 'orders.shipping_address')
+            ->where('orders.seller_is', 'admin')
+            ->where('orders.order_status', 'delivered')
+            ->where('products.added_by', 'admin')
+            ->where('products.product_type', 'physical')
+            ->whereBetween('orders.created_at', [$fromDate, $toDate])
+            ->when($categoryId !== 'all', fn($query) => $query->where('products.category_id', (int)$categoryId))
+            ->when(!empty($productIds), fn($query) => $query->whereIn('products.id', $productIds))
+            ->when(!empty($branchIds), fn($query) => $query->whereRaw("{$branchExpr} IN ({$branchPlaceholders})", $branchIds));
+    }
+
+    private function applyRetailLocationFilters(
+        EloquentBuilder $query,
+        array $stateFilters = [],
+        array $cityFilters = [],
+        array $areaFilters = []
+    ): EloquentBuilder {
+        $normalizedStateFilters = collect($stateFilters)->map(fn($value) => mb_strtolower(trim((string)$value)))
+            ->filter()
+            ->values()
+            ->all();
+        $normalizedCityFilters = collect($cityFilters)->map(fn($value) => mb_strtolower(trim((string)$value)))
+            ->filter()
+            ->values()
+            ->all();
+        $normalizedAreaFilters = collect($areaFilters)->map(fn($value) => mb_strtolower(trim((string)$value)))
+            ->filter()
+            ->values()
+            ->all();
+
+        $query
+            ->when(!empty($normalizedStateFilters), function ($builder) use ($normalizedStateFilters) {
+                $builder->whereIn(DB::raw("LOWER(TRIM(COALESCE(shipping_addresses.state, '')))"), $normalizedStateFilters);
+            })
+            ->when(!empty($normalizedCityFilters), function ($builder) use ($normalizedCityFilters) {
+                $builder->whereIn(DB::raw("LOWER(TRIM(COALESCE(shipping_addresses.city, '')))"), $normalizedCityFilters);
+            })
+            ->when(!empty($normalizedAreaFilters), function ($builder) use ($normalizedAreaFilters) {
+                $builder->whereIn(DB::raw("LOWER(TRIM(COALESCE(shipping_addresses.area, '')))"), $normalizedAreaFilters);
+            });
+
+        return $query;
+    }
+
+    private function getRetailAddressOptions(
+        Carbon $fromDate,
+        Carbon $toDate,
+        string $categoryId,
+        array $productIds,
+        array $branchIds,
+        array $stateFilters = [],
+        array $cityFilters = []
+    ): array {
+        $stateQuery = $this->buildRetailOrderBaseQuery($fromDate, $toDate, $categoryId, $productIds, $branchIds);
+        $cityQuery = $this->buildRetailOrderBaseQuery($fromDate, $toDate, $categoryId, $productIds, $branchIds);
+        $areaQuery = $this->buildRetailOrderBaseQuery($fromDate, $toDate, $categoryId, $productIds, $branchIds);
+
+        $this->applyRetailLocationFilters($cityQuery, $stateFilters, [], []);
+        $this->applyRetailLocationFilters($areaQuery, $stateFilters, $cityFilters, []);
+
+        return [
+            'states' => $this->getDistinctTrimmedRetailAddressValues($stateQuery, 'shipping_addresses.state'),
+            'cities' => $this->getDistinctTrimmedRetailAddressValues($cityQuery, 'shipping_addresses.city'),
+            'areas' => $this->getDistinctTrimmedRetailAddressValues($areaQuery, 'shipping_addresses.area'),
+        ];
+    }
+
+    private function getDistinctTrimmedRetailAddressValues(EloquentBuilder $query, string $column): array
+    {
+        return $query
+            ->whereRaw("TRIM(COALESCE({$column}, '')) <> ''")
+            ->selectRaw("TRIM({$column}) as label")
+            ->distinct()
+            ->orderBy('label')
+            ->pluck('label')
+            ->map(fn($value) => (string)$value)
+            ->values()
+            ->all();
+    }
+
+    private function mergeSelectedTextOptions(array $options, array $selectedValues): array
+    {
+        return collect(array_merge($options, $selectedValues))
+            ->map(fn($value) => trim((string)$value))
+            ->filter()
+            ->unique(fn($value) => mb_strtolower($value))
+            ->sort()
+            ->values()
+            ->all();
+    }
+
+    private function getRetailLocationRows(
+        string $dimension,
+        Carbon $fromDate,
+        Carbon $toDate,
+        string $categoryId,
+        array $productIds,
+        array $branchIds,
+        array $stateFilters = [],
+        array $cityFilters = [],
+        array $areaFilters = [],
+        int $limit = 15
+    ): Collection {
+        $column = match ($dimension) {
+            'state' => 'shipping_addresses.state',
+            'city' => 'shipping_addresses.city',
+            'area' => 'shipping_addresses.area',
+            default => throw new \InvalidArgumentException('Unsupported retail location dimension.'),
+        };
+
+        $query = $this->buildRetailOrderBaseQuery(
+            fromDate: $fromDate,
+            toDate: $toDate,
+            categoryId: $categoryId,
+            productIds: $productIds,
+            branchIds: $branchIds
+        );
+
+        $this->applyRetailLocationFilters($query, $stateFilters, $cityFilters, $areaFilters);
+
+        $rows = $query
+            ->whereRaw("TRIM(COALESCE({$column}, '')) <> ''")
+            ->selectRaw("
+                TRIM({$column}) as location_name,
+                SUM(order_details.qty) as total_qty,
+                SUM(order_details.qty * order_details.price) as total_amount,
+                COUNT(DISTINCT orders.id) as total_orders
+            ")
+            ->groupBy(DB::raw("TRIM({$column})"))
+            ->orderByDesc('total_amount')
+            ->limit($limit)
+            ->get();
+
+        return $rows->map(function ($row) {
+            $row->location_name = (string)($row->location_name ?? '');
+            $row->total_qty = (int)($row->total_qty ?? 0);
+            $row->total_amount = round((float)($row->total_amount ?? 0), 2);
+            $row->total_orders = (int)($row->total_orders ?? 0);
+
+            return $row;
+        });
     }
 
     private function buildChannelSplitByDimension(

@@ -243,6 +243,18 @@
             <h2>{{ translate('inhouse_product_sale_report') }}</h2>
             <p>{{ translate('report_period') }}: {{ $filters['from'] }} - {{ $filters['to'] }}</p>
             <p>{{ translate('generated_on') }}: {{ now()->format('d M Y, h:i A') }}</p>
+            @if (!empty($filters['states'] ?? []))
+                <p>{{ translate('state') }}: {{ implode(', ', $filters['states']) }}</p>
+            @endif
+            @if (!empty($filters['cities'] ?? []))
+                <p>{{ translate('city') }}: {{ implode(', ', $filters['cities']) }}</p>
+            @endif
+            @if (!empty($filters['areas'] ?? []))
+                <p>{{ translate('area') }}: {{ implode(', ', $filters['areas']) }}</p>
+            @endif
+            @if ($locationFiltersApplied ?? false)
+                <p>{{ translate('wholesale_is_excluded_when_retail_address_filters_are_applied') }}</p>
+            @endif
         </div>
         <div class="logo-container">
             @php
@@ -360,7 +372,38 @@
         </div>
     </div>
 
-    <!-- TABLES: Start on PAGE 4 -->
+    <!-- PAGE 4: Retail location charts -->
+    <div class="page-break">
+        <table class="chart-row-table" cellpadding="0" cellspacing="0">
+            <tr>
+                <td width="50%">
+                    <div class="chart-box">
+                        <div class="chart-title">{{ translate('sales_by_state') }}</div>
+                        @if (!empty($chartImages['state']))
+                            <img src="{{ $chartImages['state'] }}" class="chart-image row2-chart-img">
+                        @endif
+                    </div>
+                </td>
+                <td width="50%">
+                    <div class="chart-box">
+                        <div class="chart-title">{{ translate('sales_by_city') }}</div>
+                        @if (!empty($chartImages['city']))
+                            <img src="{{ $chartImages['city'] }}" class="chart-image row2-chart-img">
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="chart-box">
+            <div class="chart-title">{{ translate('sales_by_area') }}</div>
+            @if (!empty($chartImages['area']))
+                <img src="{{ $chartImages['area'] }}" class="chart-image row3-chart-img">
+            @endif
+        </div>
+    </div>
+
+    <!-- TABLES: Start on PAGE 5 -->
     <div class="page-break">
         @php
             $sections = [
@@ -429,6 +472,55 @@
                         @endforelse
                     </tbody>
                  </table>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="page-break">
+        @php
+            $locationSections = [
+                ['title' => translate('state_sales_summary'), 'column' => translate('state'), 'data' => $retailStateRows],
+                ['title' => translate('city_sales_summary'), 'column' => translate('city'), 'data' => $retailCityRows],
+                ['title' => translate('area_sales_summary'), 'column' => translate('area'), 'data' => $retailAreaRows],
+            ];
+        @endphp
+
+        @foreach($locationSections as $section)
+            <div class="table-container">
+                <div class="table-header">
+                    <h4>{{ $section['title'] }}</h4>
+                </div>
+
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">{{ translate('sl') }}</th>
+                            <th style="width: 34%;">{{ $section['column'] }}</th>
+                            <th style="width: 16%;">{{ translate('qty') }}</th>
+                            <th style="width: 16%;">{{ translate('orders') }}</th>
+                            <th style="width: 26%;">{{ translate('sales') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($section['data'] as $index => $row)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $row->location_name ?? '-' }}</td>
+                                <td>{{ number_format($row->total_qty ?? 0) }}</td>
+                                <td>{{ number_format($row->total_orders ?? 0) }}</td>
+                                <td style="text-align: right;">
+                                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $row->total_amount ?? 0), currencyCode: getCurrencyCode()) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 15px;">
+                                    {{ translate('no_data_found') }}
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         @endforeach
     </div>

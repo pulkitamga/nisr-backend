@@ -128,7 +128,6 @@
             overflow: hidden;
             margin-top: 20px;
             margin-bottom: 20px;
-             page-break-before: always;
         }
 
         .table-header {
@@ -144,6 +143,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 9px;
+            table-layout: fixed;
         }
 
         .matrix-table th {
@@ -158,6 +158,58 @@
             padding: 6px 4px;
             border: 1px solid #cbd5e1;
             text-align: center;
+        }
+
+        .matrix-table thead {
+            display: table-header-group;
+        }
+
+        .matrix-table tfoot {
+            display: table-footer-group;
+        }
+
+        .matrix-table tr,
+        .matrix-table th,
+        .matrix-table td {
+            page-break-inside: avoid;
+        }
+
+        .matrix-page {
+            page-break-before: always;
+        }
+
+        .matrix-page-header {
+            margin-bottom: 12px;
+        }
+
+        .matrix-page-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f766e;
+            margin-bottom: 8px;
+        }
+
+        .matrix-filter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 9px;
+        }
+
+        .matrix-filter-table td {
+            border: 1px solid #e5e7eb;
+            padding: 6px 8px;
+            vertical-align: top;
+        }
+
+        .matrix-filter-label {
+            width: 18%;
+            font-weight: 600;
+            background: #f8fafc;
+        }
+
+        .summary-section {
+            page-break-before: always;
         }
 
         .group-header {
@@ -325,96 +377,144 @@
         </div>
     @endif
 
+    @php
+        $employeeChunks = collect(data_get($pdfMatrixLayout, 'employee_chunks', [[]]));
+        $employeeSubColumns = data_get($pdfMatrixLayout, 'employee_sub_columns', array_merge($displayChannels, ['total']));
+        $periodColumnWidthMm = (float) data_get($pdfMatrixLayout, 'period_column_width_mm', 24);
+        $subColumnWidthMm = (float) data_get($pdfMatrixLayout, 'sub_column_width_mm', 16);
+        $employeeBlockWidthMm = (float) data_get($pdfMatrixLayout, 'employee_block_width_mm', count($employeeSubColumns) * $subColumnWidthMm);
+    @endphp
+
     <!-- MATRIX TABLE -->
-    <div class="table-container">
-        <div class="table-header">
-            {{ translate('employee_channel_assignment_matrix') }}
+    @foreach ($employeeChunks as $employeeChunk)
+        @php
+            $employeeChunk = collect($employeeChunk);
+            $matrixColumnCount = 1 + (($employeeChunk->count() + 1) * count($employeeSubColumns));
+            $matrixTableWidthMm = $periodColumnWidthMm + (($employeeChunk->count() + 1) * $employeeBlockWidthMm);
+        @endphp
+        <div class="matrix-page">
+            <div class="matrix-page-header">
+                <div class="matrix-page-title">{{ translate('crm_employee_channel_assignment_report') }}</div>
+                <table class="matrix-filter-table">
+                    <tr>
+                        <td class="matrix-filter-label">{{ translate('department') }}</td>
+                        <td>{{ $selectedFilterLabels['department'] ?? translate('all') }}</td>
+                        <td class="matrix-filter-label">{{ translate('employee') }}</td>
+                        <td>{{ $selectedFilterLabels['employee'] ?? translate('all') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="matrix-filter-label">{{ translate('channel') }}</td>
+                        <td>{{ $selectedFilterLabels['channel'] ?? translate('all') }}</td>
+                        <td class="matrix-filter-label">{{ translate('date_range') }}</td>
+                        <td>{{ $filters['from'] }} - {{ $filters['to'] }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    {{ translate('employee_channel_assignment_matrix') }}
+                </div>
+                <table class="matrix-table" style="width: {{ number_format($matrixTableWidthMm, 2, '.', '') }}mm;">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="left-align"
+                                style="width: {{ number_format($periodColumnWidthMm, 2, '.', '') }}mm;">
+                                {{ translate('period') }}
+                            </th>
+                            @foreach ($employeeChunk as $employee)
+                                <th class="group-header {{ !$loop->last ? 'group-separator' : '' }}"
+                                    colspan="{{ count($employeeSubColumns) }}"
+                                    style="width: {{ number_format($employeeBlockWidthMm, 2, '.', '') }}mm;">
+                                    {{ $employee->name }}
+                                </th>
+                            @endforeach
+                            <th class="group-header total-separator" colspan="{{ count($employeeSubColumns) }}"
+                                style="width: {{ number_format($employeeBlockWidthMm, 2, '.', '') }}mm;">
+                                {{ translate('totals') }}
+                            </th>
+                        </tr>
+                        <tr>
+                            @foreach ($employeeChunk as $employee)
+                                @foreach ($displayChannels as $channel)
+                                    <th style="width: {{ number_format($subColumnWidthMm, 2, '.', '') }}mm;">
+                                        {{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}
+                                    </th>
+                                @endforeach
+                                <th class="{{ !$loop->last ? 'group-separator' : '' }}"
+                                    style="width: {{ number_format($subColumnWidthMm, 2, '.', '') }}mm;">
+                                    {{ translate('total') }}
+                                </th>
+                            @endforeach
+                            @foreach ($displayChannels as $channel)
+                                <th class="{{ $loop->first ? 'total-separator' : '' }}"
+                                    style="width: {{ number_format($subColumnWidthMm, 2, '.', '') }}mm;">
+                                    {{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}
+                                </th>
+                            @endforeach
+                            <th style="width: {{ number_format($subColumnWidthMm, 2, '.', '') }}mm;">
+                                {{ translate('total') }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($monthlyRows as $row)
+                            <tr>
+                                <td class="left-align">{{ $row->month_label }}</td>
+                                @foreach ($employeeChunk as $employee)
+                                    @php($cell = $row->employees[$employee->id] ?? null)
+                                    @foreach ($displayChannels as $channel)
+                                        <td>{{ $cell['channels'][$channel] ?? 0 }}</td>
+                                    @endforeach
+                                    <td class="{{ !$loop->last ? 'group-separator' : '' }}">
+                                        {{ $cell['total_count'] ?? 0 }}
+                                    </td>
+                                @endforeach
+                                @foreach ($displayChannels as $channel)
+                                    <td class="{{ $loop->first ? 'total-separator' : '' }} text-bold">
+                                        {{ $row->totals['channels'][$channel] ?? 0 }}
+                                    </td>
+                                @endforeach
+                                <td class="text-bold">{{ $row->totals['total_count'] }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ $matrixColumnCount }}" style="text-align: center; padding: 20px;">
+                                    {{ translate('no_data_found') }}
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    @if ($monthlyRows->isNotEmpty())
+                        <tfoot>
+                            <tr class="totals-row">
+                                <td class="left-align">{{ translate('grand_total') }}</td>
+                                @foreach ($employeeChunk as $employee)
+                                    @php($employeeTotal = $summary['per_employee']->firstWhere('employee_id', $employee->id))
+                                    @foreach ($displayChannels as $channel)
+                                        <td>{{ $employeeTotal->channels[$channel] ?? 0 }}</td>
+                                    @endforeach
+                                    <td class="{{ !$loop->last ? 'group-separator' : '' }}">
+                                        {{ $employeeTotal->total_count ?? 0 }}
+                                    </td>
+                                @endforeach
+                                @foreach ($displayChannels as $channel)
+                                    <td class="{{ $loop->first ? 'total-separator' : '' }} text-bold">
+                                        {{ $summary['grand']['channels'][$channel] ?? 0 }}
+                                    </td>
+                                @endforeach
+                                <td class="text-bold">{{ $summary['grand']['total_count'] }}</td>
+                            </tr>
+                        </tfoot>
+                    @endif
+                </table>
+            </div>
         </div>
-        <table class="matrix-table">
-            <thead>
-                <tr>
-                    <th rowspan="2" class="left-align">{{ translate('period') }}</th>
-                    @foreach ($employeesForMatrix as $employee)
-                        <th class="group-header {{ !$loop->last ? 'group-separator' : '' }}"
-                            colspan="{{ count($displayChannels) + 1 }}">
-                            {{ $employee->name }}
-                        </th>
-                    @endforeach
-                    <th class="group-header total-separator" colspan="{{ count($displayChannels) + 1 }}">
-                        {{ translate('totals') }}
-                    </th>
-                </tr>
-                <tr>
-                    @foreach ($employeesForMatrix as $employee)
-                        @foreach ($displayChannels as $channel)
-                            <th>{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
-                        @endforeach
-                        <th class="{{ !$loop->last ? 'group-separator' : '' }}">{{ translate('total') }}</th>
-                    @endforeach
-                    @foreach ($displayChannels as $channel)
-                        <th class="{{ $loop->first ? 'total-separator' : '' }}">
-                            {{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}
-                        </th>
-                    @endforeach
-                    <th>{{ translate('total') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($monthlyRows as $row)
-                    <tr>
-                        <td class="left-align">{{ $row->month_label }}</td>
-                        @foreach ($employeesForMatrix as $employee)
-                            @php($cell = $row->employees[$employee->id] ?? null)
-                            @foreach ($displayChannels as $channel)
-                                <td>{{ $cell['channels'][$channel] ?? 0 }}</td>
-                            @endforeach
-                            <td class="{{ !$loop->last ? 'group-separator' : '' }}">
-                                {{ $cell['total_count'] ?? 0 }}
-                            </td>
-                        @endforeach
-                        @foreach ($displayChannels as $channel)
-                            <td class="{{ $loop->first ? 'total-separator' : '' }} text-bold">
-                                {{ $row->totals['channels'][$channel] ?? 0 }}
-                            </td>
-                        @endforeach
-                        <td class="text-bold">{{ $row->totals['total_count'] }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="{{ count($employeesForMatrix) * (count($displayChannels) + 1) + count($displayChannels) + 2 }}"
-                            style="text-align: center; padding: 20px;">
-                            {{ translate('no_data_found') }}
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-            @if ($monthlyRows->isNotEmpty())
-                <tfoot>
-                    <tr class="totals-row">
-                        <td class="left-align">{{ translate('grand_total') }}</td>
-                        @foreach ($employeesForMatrix as $employee)
-                            @php($employeeTotal = $summary['per_employee']->firstWhere('employee_id', $employee->id))
-                            @foreach ($displayChannels as $channel)
-                                <td>{{ $employeeTotal->channels[$channel] ?? 0 }}</td>
-                            @endforeach
-                            <td class="{{ !$loop->last ? 'group-separator' : '' }}">
-                                {{ $employeeTotal->total_count ?? 0 }}
-                            </td>
-                        @endforeach
-                        @foreach ($displayChannels as $channel)
-                            <td class="{{ $loop->first ? 'total-separator' : '' }} text-bold">
-                                {{ $summary['grand']['channels'][$channel] ?? 0 }}
-                            </td>
-                        @endforeach
-                        <td class="text-bold">{{ $summary['grand']['total_count'] }}</td>
-                    </tr>
-                </tfoot>
-            @endif
-        </table>
-    </div>
+    @endforeach
 
     <!-- EMPLOYEE SUMMARY TABLE -->
-    <div class="table-container">
+    <div class="summary-section">
+        <div class="table-container">
         <div class="table-header">
             {{ translate('total_interactions_by_employee') }}
         </div>
@@ -446,6 +546,7 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
     </div>
 </body>
 

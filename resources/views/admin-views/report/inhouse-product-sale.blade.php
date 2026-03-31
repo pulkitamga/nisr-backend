@@ -54,7 +54,7 @@
             <div class="card-body">
                 <form method="GET" action="{{ url()->current() }}">
                     <div class="row g-2 align-items-start">
-                        <div class="col-md-3">
+                        <div class="col-xl-2 col-md-4">
                             <label class="form-label mb-1">{{ translate('category') }}</label>
                             <select class="js-select2-custom form-control" name="category_id">
                                 <option value="all">{{ translate('all') }}</option>
@@ -66,7 +66,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-xl-2 col-md-4">
                             <label class="form-label mb-1">{{ translate('product') }}</label>
                             <select class="js-select2-custom form-control" name="product_ids[]" multiple>
                                 @foreach ($products as $product)
@@ -78,7 +78,7 @@
                             </select>
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-xl-2 col-md-4">
                             <label class="form-label mb-1">{{ translate('branch') }}</label>
                             <select class="js-select2-custom form-control" name="branch_ids[]" multiple>
                                 @foreach ($branches as $branch)
@@ -90,7 +90,43 @@
                             </select>
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-xl-2 col-md-4">
+                            <label class="form-label mb-1">{{ translate('state') }}</label>
+                            <select class="js-select2-custom form-control" name="states[]" multiple>
+                                @foreach ($stateOptions as $stateOption)
+                                    <option value="{{ $stateOption }}"
+                                        {{ in_array($stateOption, $filters['states'] ?? []) ? 'selected' : '' }}>
+                                        {{ $stateOption }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <label class="form-label mb-1">{{ translate('city') }}</label>
+                            <select class="js-select2-custom form-control" name="cities[]" multiple>
+                                @foreach ($cityOptions as $cityOption)
+                                    <option value="{{ $cityOption }}"
+                                        {{ in_array($cityOption, $filters['cities'] ?? []) ? 'selected' : '' }}>
+                                        {{ $cityOption }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <label class="form-label mb-1">{{ translate('area') }}</label>
+                            <select class="js-select2-custom form-control" name="areas[]" multiple>
+                                @foreach ($areaOptions as $areaOption)
+                                    <option value="{{ $areaOption }}"
+                                        {{ in_array($areaOption, $filters['areas'] ?? []) ? 'selected' : '' }}>
+                                        {{ $areaOption }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
@@ -136,6 +172,13 @@
                 </form>
             </div>
         </div>
+
+        @if ($locationFiltersApplied)
+            <div class="alert alert-warning mb-3" role="alert">
+                {{ translate('wholesale_is_excluded_when_retail_address_filters_are_applied') }}
+            </div>
+        @endif
+
         <div class="row g-2 mb-3">
             <div class="col-md-3">
                 <div class="report-kpi-card">
@@ -204,6 +247,24 @@
                 <div class="report-chart-card">
                     <h4 class="mb-2">{{ translate('branch_and_product') }}</h4>
                     <div id="inhouse-branch-product-chart"></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="report-chart-card">
+                    <h4 class="mb-2">{{ translate('sales_by_state') }}</h4>
+                    <div id="inhouse-state-sales-chart"></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="report-chart-card">
+                    <h4 class="mb-2">{{ translate('sales_by_city') }}</h4>
+                    <div id="inhouse-city-sales-chart"></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="report-chart-card">
+                    <h4 class="mb-2">{{ translate('sales_by_area') }}</h4>
+                    <div id="inhouse-area-sales-chart"></div>
                 </div>
             </div>
         </div>
@@ -488,6 +549,53 @@
                 </table>
             </div>
         </div>
+
+        @php($locationTableSections = [
+            ['title' => translate('state_sales_summary'), 'column' => translate('state'), 'rows' => $retailStateRows],
+            ['title' => translate('city_sales_summary'), 'column' => translate('city'), 'rows' => $retailCityRows],
+            ['title' => translate('area_sales_summary'), 'column' => translate('area'), 'rows' => $retailAreaRows],
+        ])
+        <div class="row g-2 mb-3">
+            @foreach ($locationTableSections as $section)
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header border-0">
+                            <h4 class="mb-0">{{ $section['title'] }}</h4>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-thead-bordered table-nowrap card-table">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>{{ translate('SL') }}</th>
+                                        <th>{{ $section['column'] }}</th>
+                                        <th class="text-center">{{ translate('qty') }}</th>
+                                        <th class="text-center">{{ translate('orders') }}</th>
+                                        <th class="text-end">{{ translate('sales') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($section['rows'] as $index => $row)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $row->location_name }}</td>
+                                            <td class="text-center">{{ $row->total_qty }}</td>
+                                            <td class="text-center">{{ $row->total_orders }}</td>
+                                            <td class="text-end">
+                                                {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $row->total_amount), currencyCode: getCurrencyCode()) }}
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
     </div>
 @endsection
 
@@ -505,6 +613,35 @@
                 const el = document.querySelector(selector);
                 if (!el) return;
                 new ApexCharts(el, options).render();
+            };
+
+            const renderLocationChart = (selector, labels, values, color) => {
+                renderChart(selector, {
+                    chart: {
+                        type: 'bar',
+                        height: 340,
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            borderRadius: 4
+                        }
+                    },
+                    series: [{
+                        name: salesLabel,
+                        data: values
+                    }],
+                    xaxis: {
+                        categories: labels
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    colors: [color]
+                });
             };
 
             renderChart("#inhouse-sales-trend-chart", {
@@ -648,6 +785,13 @@
                 },
                 colors: ['#0ea5e9']
             });
+
+            renderLocationChart("#inhouse-state-sales-chart", chartData.state_labels, chartData.state_values,
+                '#6366f1');
+            renderLocationChart("#inhouse-city-sales-chart", chartData.city_labels, chartData.city_values,
+                '#14b8a6');
+            renderLocationChart("#inhouse-area-sales-chart", chartData.area_labels, chartData.area_values,
+                '#f97316');
         })();
         $(document).ready(function() {
             $('#date_type').on('change', function() {
@@ -678,6 +822,9 @@
                         '#inhouse-product-type-chart svg');
                     const branchProductChart = document.querySelector(
                         '#inhouse-branch-product-chart svg');
+                    const stateChart = document.querySelector('#inhouse-state-sales-chart svg');
+                    const cityChart = document.querySelector('#inhouse-city-sales-chart svg');
+                    const areaChart = document.querySelector('#inhouse-area-sales-chart svg');
 
                     try {
                         const form = document.createElement('form');
@@ -714,6 +861,9 @@
                         addChart('branch_type_chart', branchTypeChart);
                         addChart('product_type_chart', productTypeChart);
                         addChart('branch_product_chart', branchProductChart);
+                        addChart('state_chart', stateChart);
+                        addChart('city_chart', cityChart);
+                        addChart('area_chart', areaChart);
 
                         // Query params
                         const urlParams = new URLSearchParams(window.location.search);

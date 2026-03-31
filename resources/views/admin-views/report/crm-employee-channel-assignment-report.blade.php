@@ -161,7 +161,7 @@
                             <label class="form-label mb-1">{{ translate('to') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] }}">
                         </div>
-                        <div class="col-12 d-flex flex-wrap gap-2">
+                        <div class="col-12 d-flex flex-wrap gap-2 align-items-end">
                             <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment') }}"
                                 class="btn btn-outline-secondary">{{ translate('reset') }}</a>
@@ -169,8 +169,26 @@
                                 class="btn btn-outline-success">
                                 <i class="tio-download-to me-1"></i> {{ translate('excel') }}
                             </a>
+                            <div class="ms-md-auto">
+                                <label class="form-label mb-1" for="crm_employee_pdf_employees_per_page">
+                                    {{ translate('employees_per_pdf_page') }}
+                                </label>
+                                <select class="form-control" id="crm_employee_pdf_employees_per_page"
+                                    name="employees_per_page">
+                                    @foreach ([5, 6, 7, 8, 10] as $option)
+                                        <option value="{{ $option }}"
+                                            {{ (string) ($filters['employees_per_page'] ?? '5') === (string) $option ? 'selected' : '' }}>
+                                            {{ $option }}
+                                        </option>
+                                    @endforeach
+                                    <option value="auto"
+                                        {{ ($filters['employees_per_page'] ?? '5') === 'auto' ? 'selected' : '' }}>
+                                        {{ translate('auto') }}
+                                    </option>
+                                </select>
+                            </div>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment-export-pdf', request()->query()) }}"
-                                class="btn btn-outline-danger">
+                                class="btn btn-outline-danger" id="crm-employee-channel-export-pdf">
                                 <i class="tio-download-to me-1"></i> {{ translate('PDF') }}
                             </a>
                         </div>
@@ -382,12 +400,67 @@
 
         // PDF Download with chart images - FIXED version
         $(document).ready(function() {
-            $('.btn-outline-danger[href*="export-pdf"]').on('click', function(e) {
+            $('#crm-employee-channel-export-pdf').on('click', function(e) {
                 e.preventDefault();
 
                 // Store reference to the clicked element
                 const $button = $(this);
                 const href = $button.attr('href');
+
+                const submitPdfForm = function(channelChartValue = null, chartDataValue = null) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = href;
+
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfInput);
+
+                    if (channelChartValue) {
+                        const chartInput = document.createElement('input');
+                        chartInput.type = 'hidden';
+                        chartInput.name = 'channel_chart';
+                        chartInput.value = channelChartValue;
+                        form.appendChild(chartInput);
+                    }
+
+                    if (chartDataValue) {
+                        const chartDataInput = document.createElement('input');
+                        chartDataInput.type = 'hidden';
+                        chartDataInput.name = 'chart_data';
+                        chartDataInput.value = chartDataValue;
+                        form.appendChild(chartDataInput);
+                    }
+
+                    const urlParams = new URLSearchParams(window.location.search);
+                    urlParams.forEach((value, key) => {
+                        if (key === 'employees_per_page') {
+                            return;
+                        }
+
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    });
+
+                    // Always send the current PDF layout selection, even before a page reload.
+                    const employeesPerPageField = document.getElementById(
+                        'crm_employee_pdf_employees_per_page');
+                    if (employeesPerPageField) {
+                        const employeesPerPageInput = document.createElement('input');
+                        employeesPerPageInput.type = 'hidden';
+                        employeesPerPageInput.name = 'employees_per_page';
+                        employeesPerPageInput.value = employeesPerPageField.value || '5';
+                        form.appendChild(employeesPerPageInput);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                };
 
                 // Wait a moment for charts to render
                 setTimeout(function() {
@@ -408,52 +481,13 @@
                             // Create a more reliable chart representation
                             const chartImage = 'data:image/svg+xml;base64,' +
                                 btoa(unescape(encodeURIComponent(chartEl.outerHTML)));
-
-                            // Create a form and submit it
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = href;
-
-                            // Add CSRF token
-                            const csrfInput = document.createElement('input');
-                            csrfInput.type = 'hidden';
-                            csrfInput.name = '_token';
-                            csrfInput.value = '{{ csrf_token() }}';
-                            form.appendChild(csrfInput);
-
-                            // Add chart image
-                            const chartInput = document.createElement('input');
-                            chartInput.type = 'hidden';
-                            chartInput.name = 'channel_chart';
-                            chartInput.value = chartImage;
-                            form.appendChild(chartInput);
-
-                            // Add the chart data as JSON to ensure proper rendering in PDF
-                            const chartDataInput = document.createElement('input');
-                            chartDataInput.type = 'hidden';
-                            chartDataInput.name = 'chart_data';
-                            chartDataInput.value = JSON.stringify(chartData);
-                            form.appendChild(chartDataInput);
-
-                            // Add all current query parameters
-                            const urlParams = new URLSearchParams(window.location.search);
-                            urlParams.forEach((value, key) => {
-                                const input = document.createElement('input');
-                                input.type = 'hidden';
-                                input.name = key;
-                                input.value = value;
-                                form.appendChild(input);
-                            });
-
-                            document.body.appendChild(form);
-                            form.submit();
+                            submitPdfForm(chartImage, JSON.stringify(chartData));
                         } catch (error) {
                             console.error('Error capturing chart:', error);
-                            window.location.href = href;
+                            submitPdfForm();
                         }
                     } else {
-                        console.log('Chart element not found, falling back to regular link');
-                        window.location.href = href;
+                        submitPdfForm();
                     }
                 }, 800); // Increased wait time to ensure chart is fully rendered
             });

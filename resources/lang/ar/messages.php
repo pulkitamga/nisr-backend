@@ -124,7 +124,7 @@ return [
     'Net (before VAT)' => 'صافي (قبل ضريبة القيمة المضافة)',
     'Select Area' => 'اختر المنطقة',
     'Select City' => 'اختر المدينة',
-    'Select State' => 'اختر الولاية',
+    'Select State' => 'اختر المحافظة',
     'Select Branch' => 'اختر الفرع',
     'Select Model' => 'اختر الموديل',
     'Get Direction' => 'احصل على الاتجاهات',
