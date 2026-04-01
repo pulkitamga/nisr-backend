@@ -75,7 +75,6 @@
             "app/Utils/BackEndHelper.php",
             "app/Utils/Convert.php",
             "app/Utils/SMSModule.php",
-            "app/Utils/FileManagerLogic.php",
             "app/Library/Constant.php",
             "app/Utils/module-helper.php",
             "app/Library/Responses.php",
