@@ -16,6 +16,15 @@ use Illuminate\Http\Request;
 
 class ServiceService
 {
+    private function normalizeIncludedParts(?string $partsIncluded): string
+    {
+        $parts = array_values(array_filter(
+            array_map('trim', explode(',', (string)$partsIncluded)),
+            static fn(string $part): bool => $part !== ''
+        ));
+
+        return json_encode($parts);
+    }
 
     public function getServiceData(Request $request, int $productId): array
     {
@@ -32,7 +41,7 @@ class ServiceService
             'included_km_mobile' => $request->input('included_km_mobile'),
             'travel_fee_per_km' => $request->input('travel_fee_per_km'),
             'labor_hours' => $request->input('labor_hours'),
-            'parts_included' => json_encode(explode(',', $request['parts_included'][$enIndex])),
+            'parts_included' => $this->normalizeIncludedParts($request['parts_included'][$enIndex] ?? null),
             'call_center_flag' => $request->has('call_center_flag') ? 1 : 0,
         ];
     }
@@ -49,9 +58,7 @@ class ServiceService
             'included_km_mobile' => $request->input('included_km_mobile'),
             'travel_fee_per_km' => $request->input('travel_fee_per_km'),
             'labor_hours' => $request->input('labor_hours'),
-            'parts_included' => json_encode(
-                array_map('trim', explode(',', $request['parts_included'][$enIndex]))
-            ),
+            'parts_included' => $this->normalizeIncludedParts($request['parts_included'][$enIndex] ?? null),
 
             'call_center_flag' => $request->has('call_center_flag') ? 1 : 0,
         ];

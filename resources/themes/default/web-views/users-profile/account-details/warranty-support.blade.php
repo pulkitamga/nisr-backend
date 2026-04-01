@@ -52,6 +52,9 @@
                                         $canActivateWarranty = \App\Support\WarrantyOrderSupport::canActivate($isWarrantyEnabled, $isDeliveredItem, $remainingCount);
                                         $defaultTicketType = ($isWarrantyEnabled && $warranty) ? 'service' : 'retail';
                                         $supportMessage = \App\Support\WarrantyOrderSupport::supportMessage($isWarrantyEnabled, $isDeliveredItem, $remainingCount);
+                                        $openClaim = $warranty?->claims?->first(fn($claim) => !in_array($claim->status, ['closed', 'rejected'], true));
+                                        $latestClaim = $warranty?->claims?->first();
+                                        $claimForView = $openClaim ?? $latestClaim;
                                     @endphp
                                     <tr class="border-bottom">
                                         <td>
@@ -79,6 +82,13 @@
                                                             class="btn btn-sm btn-outline-primary">
                                                             {{ translate('view_warranty') }}
                                                         </a>
+                                                        @if($claimForView)
+                                                            <a
+                                                                href="{{ route('warranty.claim.view', ['warranty_public_id' => $warranty->warranty_public_id, 'claim_number' => $claimForView->claim_number]) }}"
+                                                                class="btn btn-sm btn-outline-secondary">
+                                                                {{ translate('view_claim') }}
+                                                            </a>
+                                                        @endif
                                                     @else
                                                         <span class="badge badge-soft-secondary">
                                                             {{ $supportMessage }}
@@ -297,4 +307,3 @@
     });
 </script>
 @endpush
-

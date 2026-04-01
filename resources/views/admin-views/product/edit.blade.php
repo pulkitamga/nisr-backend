@@ -374,13 +374,13 @@
                         <div class="col-md-3 physical_product_show">
                             <div class="form-group">
                                 <label class="title-color d-flex align-items-center gap-2">
-                                    Product Traceability
+                                    {{ translate('product_traceability') }}
                                 </label>
                                 <div
                                     class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
 
                                     <label class="title-color mb-0">
-                                        Is Traceable</label>
+                                        {{ translate('is_traceable') }}</label>
 
                                     <label class="switcher">
                                         <input type="checkbox" class="switcher_input" name="is_traceable" value="1"
@@ -393,13 +393,13 @@
                         <div class="col-md-3 physical_product_show">
                             <div class="form-group">
                                 <label class="title-color d-flex align-items-center gap-2">
-                                    Product Warranty
+                                    {{ translate('product_warranty') }}
                                 </label>
                                 <div
                                     class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
 
                                     <label class="title-color mb-0">
-                                        Is Warranty</label>
+                                        {{ translate('is_warranty') }}</label>
 
                                     <label class="switcher">
                                         <input type="checkbox" class="switcher_input" name="is_warranty" value="1"
@@ -557,7 +557,7 @@
                                 <div
                                     class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
                                     <label class="title-color mb-0">
-                                        {{ translate('call_center_flag') }} : <span class="input-required-icon">*</span>
+                                        {{ translate('call_center_flag') }}
                                     </label>
                                     <label class="switcher">
                                         <input type="checkbox" class="switcher_input" name="call_center_flag"
@@ -1334,9 +1334,9 @@
                         <span class="text-info"> ( {{ translate('optional_please_provide_embed_link_not_direct_link') }}.
                             )</span>
                     </div>
-                    <input type="text" value="{{ $product['video_url'] }}" name="video_url"
+                    <input type="url" value="{{ $product['video_url'] }}" name="video_url"
                         placeholder="{{ translate('ex') . ': https://www.youtube.com/embed/5R06LRdUCSE' }}"
-                        class="form-control" required>
+                        class="form-control" inputmode="url">
                 </div>
             </div>
 
@@ -1487,11 +1487,12 @@
         data-text="{{ translate('want_to_update_this_product') }}"></span>
     <span id="message-please-only-input-png-or-jpg"
         data-text="{{ translate('please_only_input_png_or_jpg_type_file') }}"></span>
-    <span id="message-product-added-successfully" data-text="{{ translate('product_added_successfully') }}"></span>
+    <span id="message-product-added-successfully" data-text="{{ translate('product_updated_successfully') }}"></span>
     <span id="message-product-name-in-english-required"
         data-text="{{ translate('The_name_in_english_is_required') }}"></span>
     <span id="message-product-description-in-english-required"
         data-text="{{ translate('The_description_in_english_is_required') }}"></span>
+    <span id="message-valid-video-url" data-text="{{ translate('please_enter_a_valid_video_url') }}"></span>
     <span id="message-discount-will-not-larger-then-variant-price"
         data-text="{{ translate('the_discount_price_will_not_larger_then_Variant_Price') }}"></span>
     <span id="system-currency-code" data-value="{{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}"></span>

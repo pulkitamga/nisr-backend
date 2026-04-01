@@ -310,12 +310,12 @@
                     <div class="col-md-3 physical_product_show">
                         <div class="form-group">
                             <label class="title-color">
-                                Product Traceability
+                                {{ translate('product_traceability') }}
                             </label>
                             <div class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
 
                                 <label class="title-color mb-0">
-                                    Is Traceable</label>
+                                    {{ translate('is_traceable') }}</label>
 
                                 <label class="switcher">
                                     <input type="checkbox"
@@ -330,11 +330,11 @@
                     <div class="col-md-3 physical_product_show">
                         <div class="form-group">
                             <label class="title-color">
-                                Product Warranty
+                                {{ translate('product_warranty') }}
                             </label>
                             <div class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
                                 <label class="title-color mb-0">
-                                    Is Warranty</label>
+                                    {{ translate('is_warranty') }}</label>
 
                                 <label class="switcher">
                                     <input type="checkbox"
@@ -353,7 +353,7 @@
             <div class="card-header">
                 <div class="d-flex gap-2">
                     <i class="tio-settings"></i>
-                    <h4 classCF="mb-0">{{ translate('service_details') }}</h4>
+                    <h4 class="mb-0">{{ translate('service_details') }}</h4>
                 </div>
             </div>
             <div class="card-body">
@@ -388,6 +388,7 @@
                             </label>
                             <textarea name="parts_included[]" rows="2" class="form-control"
                                 placeholder="{{ translate('e.g. 5 L 5W-30, OEM oil filter') }}"></textarea>
+                            <small class="text-muted">{{ translate('comma separated values') }}</small>
                         </div>
                         <div class="col-12 mt-3">
                             <label class="title-color">
@@ -455,7 +456,7 @@
                     <div class="col-md-6 col-lg-6 col-xl-6">
                         <div class="form-group">
                             <div class="form-control h-auto min-form-control-height d-flex align-items-center flex-wrap justify-content-between gap-2.5">
-                                <label class="title-color mb-0">{{ translate('call_center_flag') }} : <span class="input-required-icon">*</span></label>
+                                <label class="title-color mb-0">{{ translate('call_center_flag') }}</label>
                                 <label class="switcher">
                                     <input type="checkbox" class="switcher_input" name="call_center_flag" value="1">
                                     <span class="switcher_control"></span>
@@ -891,7 +892,7 @@
                     </label>
                     <span class="text-info"> ({{ translate('optional_please_provide_embed_link_not_direct_link') }}.)</span>
                 </div>
-                <input type="text" name="video_url" placeholder="{{ translate('ex').': https://www.youtube.com/embed/5R06LRdUCSE' }}" class="form-control" required>
+                <input type="url" name="video_url" placeholder="{{ translate('ex').': https://www.youtube.com/embed/5R06LRdUCSE' }}" class="form-control" inputmode="url">
             </div>
         </div>
 
@@ -999,6 +1000,7 @@
 <span id="message-product-added-successfully" data-text="{{ translate('product_added_successfully') }}"></span>
 <span id="message-product-name-in-english-required" data-text="{{ translate('The_name_in_english_is_required') }}"></span>
 <span id="message-product-description-in-english-required" data-text="{{ translate('The_description_in_english_is_required') }}"></span>
+<span id="message-valid-video-url" data-text="{{ translate('please_enter_a_valid_video_url') }}"></span>
 <span id="message-discount-will-not-larger-then-variant-price" data-text="{{ translate('the_discount_price_will_not_larger_then_Variant_Price') }}"></span>
 <span id="system-currency-code" data-value="{{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}"></span>
 <span id="system-session-direction" data-value="{{ Session::get('direction') }}"></span>

@@ -204,6 +204,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
     Route::post('/lookup/verify', [WarrantyViewController::class, 'lookupVerify'])->name('warranty.lookup.verify')->middleware('throttle:warranty-lookup');
 
     Route::get('/view/{warranty_public_id}', [WarrantyViewController::class, 'view'])->name('warranty.view');
+    Route::get('/view/{warranty_public_id}/claims/{claim_number}', [WarrantyViewController::class, 'claimView'])->name('warranty.claim.view');
     Route::post('/{warranty}/share', [WarrantyViewController::class, 'share'])->name('warranty.share');
 
     Route::controller(ProductDetailsController::class)->group(function () {

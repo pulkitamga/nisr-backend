@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Warranty\LookupSubmitRequest;
 use App\Http\Requests\Warranty\LookupVerifyRequest;
 use App\Models\Warranty;
+use App\Models\WarrantyClaim;
+use App\Models\WarrantyClaimPayment;
 use App\Models\ViewToken;
 use App\Events\DigitalProductOtpVerificationEvent;
 use Illuminate\Http\Request;
@@ -204,28 +206,7 @@ class WarrantyViewController extends Controller
 
     public function view(Request $request, $warranty_public_id)
     {
-        $token = ViewToken::where('warranty_public_id', $warranty_public_id)
-            ->where('jti', $request->query('vt'))
-            ->whereNull('used_at')
-            ->where('expires_at', '>', now())
-            ->first();
-
-        $ownerId = auth()->id();
-        if (auth('customer')->check()) {
-            $ownerId = auth('customer')->id();
-        }
-
-        $isOwner = !empty($ownerId) && Warranty::where('warranty_public_id', $warranty_public_id)
-            ->where('final_user_id', $ownerId)
-            ->exists();
-
-        if (!$token && !$isOwner) {
-            abort(403, translate('invalid/expired token'));
-        }
-
-        if ($token) {
-            $token->update(['used_at' => now()]);
-        }
+        $isOwner = $this->authorizeWarrantyAccess($request, (string) $warranty_public_id);
 
         $warranty = Warranty::where('warranty_public_id', $warranty_public_id)
             ->with([
@@ -260,6 +241,56 @@ class WarrantyViewController extends Controller
         }
 
         return view(VIEW_FILE_NAMES['warranty_view'], compact('warranty', 'isOwner', 'timelineEvents', 'latestClaim', 'openClaim'));
+    }
+
+    public function claimView(Request $request, string $warranty_public_id, string $claim_number)
+    {
+        $isOwner = $this->authorizeWarrantyAccess($request, $warranty_public_id);
+
+        $claim = WarrantyClaim::query()
+            ->with([
+                'attachments',
+                'payments',
+                'timelineEvents' => fn($query) => $query->latest('timestamp'),
+                'warranty.product:id,name,code',
+                'warranty.user:id,f_name,l_name,email,phone',
+            ])
+            ->where('claim_number', $claim_number)
+            ->whereHas('warranty', fn($query) => $query->where('warranty_public_id', $warranty_public_id))
+            ->firstOrFail();
+
+        $payment = $this->resolveActiveClaimPayment($claim);
+        $parsedDescription = $this->parseClaimDescription((string) $claim->description);
+        $claimViewData = [
+            'claim_number' => $claim->claim_number,
+            'status' => $this->claimStatusLabel($claim->status),
+            'grouped_status' => $this->groupClaimStatus($claim->status),
+            'customer_meaning' => $this->claimStatusMeaning($claim->status),
+            'subject' => $parsedDescription['subject'],
+            'details' => $parsedDescription['details'],
+            'issue' => $parsedDescription['issue'],
+            'submitted_at' => $claim->submitted_at,
+            'updated_at' => $claim->updated_at,
+            'serial_number' => $claim->serial_number,
+            'attachments' => collect($claim->attachments_full_url ?? [])
+                ->values()
+                ->map(fn($url, $index) => ['id' => $index + 1, 'url' => $url]),
+            'timeline_events' => $claim->timelineEvents,
+            'payment' => $payment,
+            'can_pay' => $isOwner && auth('customer')->check() && $payment !== null && !empty($payment->payment_link),
+        ];
+
+        $warranty = $claim->warranty;
+        if (!$isOwner) {
+            $customerName = trim((string) (($warranty->user?->f_name ?? '') . ' ' . ($warranty->user?->l_name ?? '')));
+            $email = (string) ($warranty->user?->email ?? $warranty->activated_by_email ?? '');
+            $phone = (string) ($warranty->user?->phone ?? $warranty->activated_by_phone ?? '');
+            $warranty->activated_by_name = $this->maskName($customerName !== '' ? $customerName : (string) $warranty->activated_by_name);
+            $warranty->activated_by_email = $this->maskEmail($email);
+            $warranty->activated_by_phone = $this->maskPhone($phone);
+        }
+
+        return view('web-views.pages.warranty-claim-view', compact('claim', 'claimViewData', 'warranty', 'isOwner'));
     }
 
     public function share(Request $request, Warranty $warranty)
@@ -312,5 +343,204 @@ class WarrantyViewController extends Controller
                 'verificationCode' => $otp,
             ]));
         }
+    }
+
+    private function authorizeWarrantyAccess(Request $request, string $warrantyPublicId): bool
+    {
+        $ownerId = auth()->id();
+        if (auth('customer')->check()) {
+            $ownerId = auth('customer')->id();
+        }
+
+        $isOwner = !empty($ownerId) && Warranty::where('warranty_public_id', $warrantyPublicId)
+            ->where('final_user_id', $ownerId)
+            ->exists();
+
+        if ($isOwner) {
+            return true;
+        }
+
+        if ($this->hasWarrantySessionAccess($request, $warrantyPublicId)) {
+            return false;
+        }
+
+        $token = $this->findValidViewToken($warrantyPublicId, (string) $request->query('vt'));
+        if (!$token) {
+            abort(403, translate('invalid/expired token'));
+        }
+
+        $this->grantWarrantySessionAccess($request, $warrantyPublicId, $token->expires_at);
+        $token->update(['used_at' => now()]);
+
+        return false;
+    }
+
+    private function findValidViewToken(string $warrantyPublicId, string $jti): ?ViewToken
+    {
+        if ($jti === '') {
+            return null;
+        }
+
+        return ViewToken::where('warranty_public_id', $warrantyPublicId)
+            ->where('jti', $jti)
+            ->where('scope', 'warranty:view')
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->first();
+    }
+
+    private function grantWarrantySessionAccess(Request $request, string $warrantyPublicId, $expiresAt): void
+    {
+        $accessList = $request->session()->get('warranty_view_access', []);
+        $accessList[$warrantyPublicId] = optional($expiresAt)->toIso8601String();
+        $request->session()->put('warranty_view_access', $accessList);
+    }
+
+    private function hasWarrantySessionAccess(Request $request, string $warrantyPublicId): bool
+    {
+        $accessList = collect($request->session()->get('warranty_view_access', []))
+            ->filter(fn($expiresAt) => filled($expiresAt) && now()->lt($expiresAt))
+            ->all();
+
+        $request->session()->put('warranty_view_access', $accessList);
+
+        return array_key_exists($warrantyPublicId, $accessList);
+    }
+
+    private function resolveActiveClaimPayment(WarrantyClaim $claim): ?WarrantyClaimPayment
+    {
+        return $claim->payments
+            ->sortByDesc('id')
+            ->first(function (WarrantyClaimPayment $payment) {
+                if ($payment->payment_status !== 'pending') {
+                    return false;
+                }
+
+                if ($payment->payment_link_expires_at && $payment->payment_link_expires_at->isPast()) {
+                    return false;
+                }
+
+                return true;
+            });
+    }
+
+    private function parseClaimDescription(string $description): array
+    {
+        $parsed = ['subject' => '', 'details' => '', 'issue' => ''];
+        foreach (preg_split("/(\r\n|\n|\r)/", $description) ?: [] as $line) {
+            if (str_starts_with($line, 'Subject: ')) {
+                $parsed['subject'] = trim(substr($line, 9));
+            } elseif (str_starts_with($line, 'Details: ')) {
+                $parsed['details'] = trim(substr($line, 9));
+            } elseif (str_starts_with($line, 'Issue: ')) {
+                $parsed['issue'] = trim(substr($line, 7));
+            }
+        }
+
+        if ($parsed['details'] === '' && $description !== '') {
+            $parsed['details'] = $description;
+        }
+
+        return $parsed;
+    }
+
+    private function groupClaimStatusKey(string $status): string
+    {
+        return match ($status) {
+            'new', 'triage_pending', 'approved', 'rma_issued' => 'submitted',
+            'received', 'diagnosis_pending', 'repair_pending', 'replacement_pending', 'qc_pending' => 'in_service',
+            'waiting_customer', 'waiting_parts', 'waiting_payment' => 'waiting',
+            'shipped_ready', 'dispatched', 'resolved' => 'ready_delivered',
+            'closed', 'rejected' => 'ended',
+            default => 'submitted',
+        };
+    }
+
+    private function groupClaimStatus(string $status): string
+    {
+        return translate('warranty_claim_group_' . $this->groupClaimStatusKey($status));
+    }
+
+    private function claimStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'new' => translate('warranty_claim_status_new'),
+            'triage_pending' => translate('warranty_claim_status_triage_pending'),
+            'approved' => translate('warranty_claim_status_approved'),
+            'rma_issued' => translate('warranty_claim_status_rma_issued'),
+            'received' => translate('warranty_claim_status_received'),
+            'diagnosis_pending' => translate('warranty_claim_status_diagnosis_pending'),
+            'repair_pending' => translate('warranty_claim_status_repair_pending'),
+            'replacement_pending' => translate('warranty_claim_status_replacement_pending'),
+            'qc_pending' => translate('warranty_claim_status_qc_pending'),
+            'waiting_customer' => translate('warranty_claim_status_waiting_customer'),
+            'waiting_parts' => translate('warranty_claim_status_waiting_parts'),
+            'waiting_payment' => translate('warranty_claim_status_waiting_payment'),
+            'shipped_ready' => translate('warranty_claim_status_shipped_ready'),
+            'dispatched' => translate('warranty_claim_status_dispatched'),
+            'resolved' => translate('warranty_claim_status_resolved'),
+            'closed' => translate('warranty_claim_status_closed'),
+            'rejected' => translate('warranty_claim_status_rejected'),
+            default => str($status)->replace('_', ' ')->title()->value(),
+        };
+    }
+
+    private function claimStatusMeaning(string $status): string
+    {
+        return match ($status) {
+            'new' => translate('warranty_claim_meaning_new'),
+            'triage_pending' => translate('warranty_claim_meaning_triage_pending'),
+            'approved' => translate('warranty_claim_meaning_approved'),
+            'rma_issued' => translate('warranty_claim_meaning_rma_issued'),
+            'received' => translate('warranty_claim_meaning_received'),
+            'diagnosis_pending' => translate('warranty_claim_meaning_diagnosis_pending'),
+            'repair_pending' => translate('warranty_claim_meaning_repair_pending'),
+            'replacement_pending' => translate('warranty_claim_meaning_replacement_pending'),
+            'qc_pending' => translate('warranty_claim_meaning_qc_pending'),
+            'waiting_customer' => translate('warranty_claim_meaning_waiting_customer'),
+            'waiting_parts' => translate('warranty_claim_meaning_waiting_parts'),
+            'waiting_payment' => translate('warranty_claim_meaning_waiting_payment'),
+            'shipped_ready' => translate('warranty_claim_meaning_shipped_ready'),
+            'dispatched' => translate('warranty_claim_meaning_dispatched'),
+            'resolved' => translate('warranty_claim_meaning_resolved'),
+            'closed' => translate('warranty_claim_meaning_closed'),
+            'rejected' => translate('warranty_claim_meaning_rejected'),
+            default => translate('warranty_claim_meaning_updated'),
+        };
+    }
+
+    private function maskName(string $value): string
+    {
+        if ($value === '') {
+            return '****';
+        }
+
+        return mb_substr($value, 0, 1) . str_repeat('*', max(3, mb_strlen($value) - 1));
+    }
+
+    private function maskEmail(string $value): string
+    {
+        if ($value === '' || !str_contains($value, '@')) {
+            return '****';
+        }
+
+        [$localPart, $domain] = explode('@', $value, 2);
+        $visible = mb_substr($localPart, 0, 1);
+
+        return $visible . str_repeat('*', max(3, mb_strlen($localPart) - 1)) . '@' . $domain;
+    }
+
+    private function maskPhone(string $value): string
+    {
+        if ($value === '') {
+            return '****';
+        }
+
+        $length = strlen($value);
+        if ($length <= 4) {
+            return str_repeat('*', $length);
+        }
+
+        return substr($value, 0, 2) . str_repeat('*', max(3, $length - 4)) . substr($value, -2);
     }
 }

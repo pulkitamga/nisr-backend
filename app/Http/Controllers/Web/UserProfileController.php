@@ -484,6 +484,7 @@ class UserProfileController extends Controller
                 ->whereIn('product_id', $productIds)
                 ->where('activation_method', 'order_activation')
                 ->whereNotNull('activation_date')
+                ->with(['claims' => fn($query) => $query->latest('submitted_at')])
                 ->orderBy('activation_date')
                 ->get()
                 ->groupBy('product_id');

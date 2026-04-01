@@ -23,7 +23,14 @@
     @if ($latestClaim)
     <div class="card mb-4">
         <div class="card-body">
-            <h3 class="mb-3">{{ translate('Latest Claim') }}</h3>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h3 class="mb-0">{{ translate('Latest Claim') }}</h3>
+                <a
+                    href="{{ route('warranty.claim.view', ['warranty_public_id' => $warranty->warranty_public_id, 'claim_number' => $latestClaim->claim_number]) }}"
+                    class="btn btn-sm btn-outline-primary">
+                    {{ translate('View Claim Details') }}
+                </a>
+            </div>
             <p><strong>{{ translate('Claim Number') }}:</strong> {{ $latestClaim->claim_number }}</p>
             <p><strong>{{ translate('Claim Status') }}:</strong> {{ translate($latestClaim->status) }}</p>
             <p><strong>{{ translate('Submitted On') }}:</strong> {{ $latestClaim->submitted_at ? $latestClaim->submitted_at->format('Y-m-d H:i:s') : 'N/A' }}</p>
@@ -40,7 +47,50 @@
     </a>
     @elseif ($openClaim)
     <div class="alert alert-warning mb-4" role="alert">
-        {{ translate('There is already an open claim for this warranty.') }}
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span>{{ translate('There is already an open claim for this warranty.') }}</span>
+            <a
+                href="{{ route('warranty.claim.view', ['warranty_public_id' => $warranty->warranty_public_id, 'claim_number' => $openClaim->claim_number]) }}"
+                class="btn btn-sm btn-outline-warning">
+                {{ translate('View Claim Details') }}
+            </a>
+        </div>
+    </div>
+    @endif
+
+    @if ($warranty->claims->isNotEmpty())
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-3">{{ translate('Claims History') }}</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead>
+                        <tr>
+                            <th>{{ translate('Claim Number') }}</th>
+                            <th>{{ translate('Status') }}</th>
+                            <th>{{ translate('Submitted On') }}</th>
+                            <th>{{ translate('Action') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($warranty->claims as $claim)
+                        <tr>
+                            <td>{{ $claim->claim_number }}</td>
+                            <td>{{ translate($claim->status) }}</td>
+                            <td>{{ $claim->submitted_at ? $claim->submitted_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                            <td>
+                                <a
+                                    href="{{ route('warranty.claim.view', ['warranty_public_id' => $warranty->warranty_public_id, 'claim_number' => $claim->claim_number]) }}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    {{ translate('View Claim Details') }}
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     @endif
 

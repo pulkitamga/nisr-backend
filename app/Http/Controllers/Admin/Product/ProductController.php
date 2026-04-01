@@ -367,10 +367,6 @@ class ProductController extends BaseController
     {
         Log::info('Product Add Request:', ['request' => $request->all()]);
 
-        if ($request->ajax()) {
-            return response()->json([], 200);
-        }
-
         // 1️⃣ Create the main product
         $dataArray = $service->getAddProductData(request: $request, addedBy: 'admin');
         $savedProduct = $this->productRepo->add(data: $dataArray);
@@ -484,8 +480,19 @@ class ProductController extends BaseController
             }
         }
 
-        Toastr::success(translate('product_added_successfully'));
-        return redirect()->route('admin.products.list', ['in_house']);
+        $successMessage = translate('product_added_successfully');
+        $redirectUrl = route('admin.products.list', ['in_house']);
+
+        Toastr::success($successMessage);
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'message' => $successMessage,
+                'redirect_url' => $redirectUrl,
+            ]);
+        }
+
+        return redirect()->to($redirectUrl);
     }
     // public function add(ProductAddRequest $request, ProductService $service): JsonResponse|RedirectResponse
     // {
@@ -738,10 +745,6 @@ class ProductController extends BaseController
 
     public function update(ProductUpdateRequest $request, ProductService $service, string|int $id): JsonResponse|RedirectResponse
     {
-        if ($request->ajax()) {
-            return response()->json([], 200);
-        }
-
         $product = $this->productRepo->getFirstWhereWithoutGlobalScope(
             params: ['id' => $id],
             relations: ['digitalVariation', 'seoInfo']
@@ -784,9 +787,19 @@ class ProductController extends BaseController
         $this->updateRestockRequestListAndNotify(product: $product, updatedProduct: $updatedProduct);
         $this->updateStockClearanceProduct(product: $updatedProduct);
 
-        Toastr::success(translate('product_updated_successfully'));
+        $successMessage = translate('product_updated_successfully');
+        $redirectUrl = route(Product::VIEW[ROUTE], ['addedBy' => $product['added_by'], 'id' => $product['id']]);
 
-        return redirect()->route(Product::VIEW[ROUTE], ['addedBy' => $product['added_by'], 'id' => $product['id']]);
+        Toastr::success($successMessage);
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'message' => $successMessage,
+                'redirect_url' => $redirectUrl,
+            ]);
+        }
+
+        return redirect()->to($redirectUrl);
     }
 
 

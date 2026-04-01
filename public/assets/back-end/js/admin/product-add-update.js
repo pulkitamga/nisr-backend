@@ -26,7 +26,9 @@ let messageProductNameInEnglishRequired = $(
 let messageProductDescriptionInEnglishRequired = $(
     "#message-product-description-in-english-required"
 ).data("text");
+let messageValidVideoUrl = $("#message-valid-video-url").data("text");
 let getSystemCurrencyCode = $("#system-currency-code").data("value");
+let isProductFormSubmitting = false;
 const physicalOnlyRequiredSelectors = [
     "select[name='brand_id']",
     "input[name='code']",
@@ -62,6 +64,16 @@ function getProductLanguageLocales() {
     );
 }
 
+function getServiceLanguageForms() {
+    return Array.from(document.querySelectorAll(".language-tab-form"));
+}
+
+function getServiceLanguageLocales() {
+    return getServiceLanguageForms().map(
+        (form) => form.dataset.lang || ""
+    );
+}
+
 function showValidationToast(message) {
     toastr.error(message, {
         CloseButton: true,
@@ -91,6 +103,39 @@ function openProductLanguageTab(locale) {
 
     const firstFocusableField = languageForm.querySelector(
         "input[name='name[]'], textarea[name='description[]']"
+    );
+
+    if (firstFocusableField) {
+        firstFocusableField.focus();
+    }
+}
+
+function openServiceLanguageTab(locale) {
+    if (!locale) {
+        return;
+    }
+
+    const languageTabs = document.querySelectorAll(".language-tab");
+    const languageForms = getServiceLanguageForms();
+    const activeTab = document.querySelector(
+        `.language-tab[data-lang="${locale}"]`
+    );
+    const activeForm = document.querySelector(
+        `.language-tab-form[data-lang="${locale}"]`
+    );
+
+    if (!activeTab || !activeForm) {
+        return;
+    }
+
+    languageTabs.forEach((tab) => tab.classList.remove("active"));
+    languageForms.forEach((form) => form.classList.add("d-none"));
+
+    activeTab.classList.add("active");
+    activeForm.classList.remove("d-none");
+
+    const firstFocusableField = activeForm.querySelector(
+        "textarea[name='service_tittle[]'], textarea[name='parts_included[]'], textarea[name='service_description[]']"
     );
 
     if (firstFocusableField) {
@@ -146,6 +191,33 @@ function validateEnglishProductContent() {
     return true;
 }
 
+function validateOptionalVideoUrl() {
+    const videoInput = document.querySelector("input[name='video_url']");
+    const videoUrl = (videoInput?.value || "").trim();
+
+    if (videoUrl === "") {
+        return true;
+    }
+
+    try {
+        const parsedUrl = new URL(videoUrl);
+        const isHttpProtocol =
+            parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+
+        if (!isHttpProtocol) {
+            throw new Error("invalid_protocol");
+        }
+    } catch (error) {
+        if (videoInput) {
+            videoInput.focus();
+        }
+        showValidationToast(messageValidVideoUrl);
+        return false;
+    }
+
+    return true;
+}
+
 function setRequiredState(selectors, isRequired) {
     selectors.forEach((selector) => {
         $(selector).prop("required", isRequired);
@@ -169,18 +241,36 @@ function openProductLanguageTabFromErrors(errors) {
         return;
     }
 
-    const locales = getProductLanguageLocales();
+    const productLocales = getProductLanguageLocales();
+    const serviceLocales = getServiceLanguageLocales();
 
     for (const error of errors) {
         const errorCode = String(error.error_code || "");
-        const match = errorCode.match(/^(name|description)\.(\d+)$/);
+        const match = errorCode.match(
+            /^(name|description|service_tittle|parts_included|service_description)\.(\d+)$/
+        );
 
-        if (!match) {
-            continue;
+        if (match) {
+            const fieldName = match[1];
+            const localeIndex = Number(match[2]);
+
+            if (
+                fieldName === "service_tittle" ||
+                fieldName === "parts_included" ||
+                fieldName === "service_description"
+            ) {
+                openServiceLanguageTab(serviceLocales[localeIndex] || "en");
+            } else {
+                openProductLanguageTab(productLocales[localeIndex] || "en");
+            }
+
+            break;
         }
 
-        openProductLanguageTab(locales[Number(match[2])] || "en");
-        break;
+        if (errorCode === "video_url") {
+            document.querySelector("input[name='video_url']")?.focus();
+            continue;
+        }
     }
 }
 
@@ -702,6 +792,10 @@ function generateRandomString(length) {
 }
 
 function getProductAddRequirementsCheck() {
+    if (isProductFormSubmitting) {
+        return;
+    }
+
     Swal.fire({
         title: messageAreYouSure,
         text: messageWantAddOrUpdateThisProduct,
@@ -714,10 +808,18 @@ function getProductAddRequirementsCheck() {
         reverseButtons: true,
     }).then((result) => {
         if (result.value) {
+            if (isProductFormSubmitting) {
+                return;
+            }
+
             let discountValue = parseFloat($("#discount").val());
             let submitStatus = 1;
 
             if (!validateEnglishProductContent()) {
+                return;
+            }
+
+            if (!validateOptionalVideoUrl()) {
                 return;
             }
 
@@ -745,12 +847,18 @@ function getProductAddRequirementsCheck() {
                         ),
                     },
                 });
-                $.post({
+                $.ajax({
+                    type: "POST",
                     url: $("#product_form").attr("action"),
                     data: formData,
                     contentType: false,
                     processData: false,
                     beforeSend: function () {
+                        isProductFormSubmitting = true;
+                        $(".product-add-requirements-check").prop(
+                            "disabled",
+                            true
+                        );
                         $("#loading").fadeIn();
                     },
                     success: function (data) {
@@ -760,19 +868,18 @@ function getProductAddRequirementsCheck() {
                                 showValidationToast(data.errors[i].message);
                             }
                         } else {
-                            toastr.success(
-                                $("#message-product-added-successfully").data(
-                                    "text"
-                                ),
-                                {
-                                    CloseButton: true,
-                                    ProgressBar: true,
-                                }
-                            );
-                            $("#product_form").submit();
+                            const redirectUrl = data.redirect_url || "";
+                            if (redirectUrl !== "") {
+                                window.location.assign(redirectUrl);
+                            }
                         }
                     },
                     complete: function () {
+                        isProductFormSubmitting = false;
+                        $(".product-add-requirements-check").prop(
+                            "disabled",
+                            false
+                        );
                         $("#loading").fadeOut();
                     },
                     error: function (jqXHR, textStatus, errorThrown) {

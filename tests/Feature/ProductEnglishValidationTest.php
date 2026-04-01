@@ -229,6 +229,53 @@ class ProductEnglishValidationTest extends TestCase
         );
     }
 
+    public function test_add_request_rejects_invalid_video_url_when_present(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validPayload([
+            'video_url' => 'not-a-valid-url',
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            translate('please_enter_a_valid_video_url') . '!',
+            $validator->errors()->first('video_url')
+        );
+    }
+
+    public function test_update_request_rejects_invalid_video_url_when_present(): void
+    {
+        $productRepository = $this->mock(ProductRepositoryInterface::class);
+        $product = new class extends Model {
+            protected $table = 'products';
+            public $timestamps = false;
+            protected $guarded = [];
+        };
+        $product->forceFill([
+            'id' => 8,
+            'images' => '["product.webp"]',
+            'color_image' => null,
+        ]);
+        $product->setRelation('digitalVariation', collect());
+
+        $productRepository->shouldReceive('getFirstWhere')
+            ->andReturn($product);
+
+        $request = new ProductUpdateRequest($productRepository);
+        $request->initialize($this->validPayload([
+            'video_url' => 'still-not-a-valid-url',
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            translate('please_enter_a_valid_video_url') . '!',
+            $validator->errors()->first('video_url')
+        );
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
