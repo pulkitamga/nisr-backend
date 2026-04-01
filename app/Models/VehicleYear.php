@@ -20,7 +20,17 @@ class VehicleYear extends Model
             return $year;
         }
 
-        return $this->translations[0]->value ?? $year;
+        $translation = $this->translations
+            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'year');
+
+        if ($translation) {
+            return $translation->value;
+        }
+
+        return $this->translations()
+            ->where('locale', App::getLocale())
+            ->where('key', 'year')
+            ->value('value') ?? $year;
     }
 
     protected static function boot(): void
@@ -29,11 +39,7 @@ class VehicleYear extends Model
 
         static::addGlobalScope('translate', function (Builder $builder) {
             $builder->with(['translations' => function ($query) {
-                if (strpos(url()->current(), '/api')) {
-                    return $query->where('locale', App::getLocale());
-                }
-
-                return $query->where('locale', getDefaultLanguage());
+                return $query->where('locale', App::getLocale());
             }]);
         });
     }

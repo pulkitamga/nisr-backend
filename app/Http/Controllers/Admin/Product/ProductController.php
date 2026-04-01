@@ -190,15 +190,21 @@ class ProductController extends BaseController
             return response()->json(['models' => []]);
         }
 
-        $makes = VehicleMake::whereIn('name', $makeNames)->pluck('id');
-        $models = VehicleModel::whereIn('make_id', $makes)
-            ->select('name')
-            ->distinct()
-            ->orderBy('name')
-            ->get();
+        $locale = app()->getLocale();
+        $makes = VehicleMake::withoutGlobalScopes()->whereIn('name', $makeNames)->pluck('id');
+        $models = VehicleModel::withoutGlobalScopes()
+            ->with('translations')
+            ->whereIn('make_id', $makes)
+            ->get()
+            ->unique(fn (VehicleModel $model) => $model->getRawOriginal('name'))
+            ->sortBy(fn (VehicleModel $model) => $model->getTranslatedField('name', $locale, $model->getRawOriginal('name')))
+            ->values();
 
         return response()->json([
-            'models' => $models->pluck('name')
+            'models' => $models->map(fn (VehicleModel $model) => [
+                'value' => $model->getRawOriginal('name'),
+                'label' => $model->getTranslatedField('name', $locale, $model->getRawOriginal('name')),
+            ])->all(),
         ]);
     }
 

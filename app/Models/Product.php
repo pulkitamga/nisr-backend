@@ -519,7 +519,17 @@ class Product extends Model
             return $name;
         }
 
-        return $this->translations->firstWhere('key', 'name')->value ?? $name;
+        $translation = $this->translations
+            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'name');
+
+        if ($translation) {
+            return $translation->value;
+        }
+
+        return $this->translations()
+            ->where('locale', App::getLocale())
+            ->where('key', 'name')
+            ->value('value') ?? $name;
     }
 
     public function getDetailsAttribute($detail): string|null
@@ -528,7 +538,17 @@ class Product extends Model
             return $detail;
         }
 
-        return $this->translations->firstWhere('key', 'description')->value ?? $detail;
+        $translation = $this->translations
+            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'description');
+
+        if ($translation) {
+            return $translation->value;
+        }
+
+        return $this->translations()
+            ->where('locale', App::getLocale())
+            ->where('key', 'description')
+            ->value('value') ?? $detail;
     }
     public function getThumbnailFullUrlAttribute(): string|null|array
     {

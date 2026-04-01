@@ -343,7 +343,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             <div>
                                 <span class="key text-nowrap text-capitalize">{{ translate('product_unit') }}</span>
                                 <span>:</span>
-                                <span class="value">{{ $product['unit']}}</span>
+                                <span class="value">{{ getUnitLabel($product['unit']) }}</span>
                             </div>
                             <div>
                                 <span class="key text-nowrap">{{ translate('current_Stock') }}</span>
@@ -454,7 +454,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                     <span class="value">
                                         @if(!empty($product->match_makes) && is_iterable($product->match_makes))
                                         @foreach($product->match_makes as $make)
-                                        {{ $make . ',' }}
+                                        {{ getVehicleMakeLabel($make) . ',' }}
                                         @endforeach
                                         @else
                                         <em class="text-muted">{{ __('N/A') }}</em>
@@ -472,7 +472,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                     <span class="value">
                                         @if(!empty($product->match_models) && is_iterable($product->match_models))
                                         @foreach($product->match_models as $model)
-                                        {{ $model . ',' }}
+                                        {{ getVehicleModelLabel($model) . ',' }}
                                         @endforeach
                                         @else
                                         <em class="text-muted">{{ __('N/A') }}</em>
@@ -1148,7 +1148,6 @@ $brandSetting = getWebConfig(name: 'product_brand');
 @push('script')
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-view.js') }}"></script>
 @endpush
-
 
 
 

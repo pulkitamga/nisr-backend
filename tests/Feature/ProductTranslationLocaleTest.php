@@ -62,8 +62,6 @@ class ProductTranslationLocaleTest extends TestCase
 
     public function test_product_uses_active_locale_translation_on_web_requests(): void
     {
-        App::setLocale('ar');
-
         Product::query()->create([
             'name' => 'Battery Service',
             'slug' => 'battery-service',
@@ -74,6 +72,20 @@ class ProductTranslationLocaleTest extends TestCase
         ]);
 
         \DB::table('translations')->insert([
+            [
+                'translationable_type' => Product::class,
+                'translationable_id' => 1,
+                'locale' => 'en',
+                'key' => 'name',
+                'value' => 'Full Service',
+            ],
+            [
+                'translationable_type' => Product::class,
+                'translationable_id' => 1,
+                'locale' => 'en',
+                'key' => 'description',
+                'value' => 'English service details',
+            ],
             [
                 'translationable_type' => Product::class,
                 'translationable_id' => 1,
@@ -92,7 +104,12 @@ class ProductTranslationLocaleTest extends TestCase
 
         $product = Product::query()->firstOrFail();
 
+        App::setLocale('ar');
         $this->assertSame('صيانة شاملة', $product->name);
         $this->assertSame('تفاصيل عربية', $product->details);
+
+        App::setLocale('en');
+        $this->assertSame('Full Service', $product->name);
+        $this->assertSame('English service details', $product->details);
     }
 }

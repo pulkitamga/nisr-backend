@@ -74,6 +74,16 @@ function getServiceLanguageLocales() {
     );
 }
 
+function syncProductTypeSwitcher(selectedValue) {
+    const normalizedValue = String(selectedValue || "");
+
+    document.querySelectorAll(".product-type-option").forEach((button) => {
+        const isActive = String(button.dataset.value || "") === normalizedValue;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+}
+
 function showValidationToast(message) {
     toastr.error(message, {
         CloseButton: true,
@@ -322,6 +332,7 @@ $(document).on("ready", function () {
 
     getProductTypeFunctionality();
     getDigitalProductTypeFunctionality();
+    syncProductTypeSwitcher(elementProductTypeByID.val());
 
     if ($("#product-color-switcher").prop("checked")) {
         $("#color-wise-image-area").show();
@@ -350,8 +361,27 @@ $(document).on("ready", function () {
     }
 });
 
+$(document).on("click", ".product-type-option", function () {
+    if ($(this).prop("disabled")) {
+        return;
+    }
+
+    const nextValue = String($(this).data("value") || "");
+    if (nextValue === "") {
+        return;
+    }
+
+    if (String(elementProductTypeByID.val() || "") === nextValue) {
+        syncProductTypeSwitcher(nextValue);
+        return;
+    }
+
+    elementProductTypeByID.val(nextValue).trigger("change");
+});
+
 function getProductTypeFunctionality() {
     let productType = elementProductTypeByID.val();
+    syncProductTypeSwitcher(productType);
 
     if (productType && productType.toString() === "physical") {
         elementDigitalProductTypeByID.val($("#digital_product_type option:first").val());

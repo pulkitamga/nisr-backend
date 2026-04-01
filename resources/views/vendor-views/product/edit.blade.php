@@ -246,7 +246,7 @@
                                     name="unit">
                                     @foreach(units() as $unit)
                                         <option
-                                            value={{ $unit}} {{ $product['unit'] == $unit ? 'selected' : ''}}>{{ $unit }}</option>
+                                            value={{ $unit}} {{ $product['unit'] == $unit ? 'selected' : ''}}>{{ getUnitLabel($unit) }}</option>
                                     @endforeach
                                 </select>
                             </div>

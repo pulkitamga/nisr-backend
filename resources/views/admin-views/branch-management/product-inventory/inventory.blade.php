@@ -68,7 +68,7 @@
                         <td>{{ $product->subCategory->getTranslatedField('name') ?? 'N/A' }}</td>
                         <td>{{ $product->subSubCategory->getTranslatedField('name') ?? 'N/A' }}</td>
                         <td>{{ $product->brand->getTranslatedField('name') ?? 'N/A' }}</td>
-                        <td>{{ $product->unit }}</td>
+                        <td>{{ getUnitLabel($product->unit) }}</td>
                         <td>{{ translate($product->product_type) }}</td>
                         <td>{!! Str::limit($product->details, 50) !!}</td>
                         <td>{{ setCurrencySymbol(usdToDefaultCurrency($product->unit_price)) }}</td>

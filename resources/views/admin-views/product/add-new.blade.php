@@ -6,6 +6,7 @@
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/css/tags-input.min.css') }}" rel="stylesheet">
 <link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
+@include('admin-views.product.partials._form-ux-styles')
 @endpush
 
 @section('content')
@@ -14,6 +15,16 @@
     $configuredTaxModel = in_array($productTaxCalculation, ['include', 'exclude'], true)
         ? $productTaxCalculation
         : 'include';
+    $selectedProductType = old('product_type', 'physical');
+    if (!$servicesSetting) {
+        $selectedProductType = 'physical';
+    }
+    $videoSectionOpen = filled((string) old('video_url', '')) || $errors->has('video_url');
+    $seoSectionOpen = filled((string) old('meta_title', ''))
+        || filled((string) old('meta_description', ''))
+        || $errors->has('meta_title')
+        || $errors->has('meta_description')
+        || $errors->has('meta_image');
 @endphp
 
 
@@ -27,6 +38,50 @@
 
     <form class="product-form text-start" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="product_form">
         @csrf
+        <div class="product-form-section-block mt-0" id="section-basic">
+            <div class="product-form-section-heading">
+                <span class="product-form-section-index">1</span>
+                <h3 class="product-form-section-title">{{ translate('basic_information') }}</h3>
+            </div>
+
+            <div class="card product-form-overview">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-5">
+                            <label class="title-color d-block mb-2">
+                                {{ translate('product_type') }}
+                                <span class="input-required-icon">*</span>
+                            </label>
+                            <div class="product-type-switcher">
+                                <button type="button" class="product-type-option {{ $selectedProductType === 'physical' ? 'is-active' : '' }}" data-value="physical" aria-pressed="{{ $selectedProductType === 'physical' ? 'true' : 'false' }}">
+                                    {{ translate('physical') }}
+                                </button>
+                                @if($servicesSetting)
+                                <button type="button" class="product-type-option {{ $selectedProductType === 'services' ? 'is-active' : '' }}" data-value="services" aria-pressed="{{ $selectedProductType === 'services' ? 'true' : 'false' }}">
+                                    {{ translate('services') }}
+                                </button>
+                                @endif
+                            </div>
+                            <select name="product_type" id="product_type" class="d-none" required>
+                                <option value="physical" {{ $selectedProductType === 'physical' ? 'selected' : '' }}>{{ translate('physical') }}</option>
+                                @if($servicesSetting)
+                                <option value="services" {{ $selectedProductType === 'services' ? 'selected' : '' }}>{{ translate('services') }}</option>
+                                @endif
+                            </select>
+                        </div>
+                        <div class="col-lg-7">
+                            <label class="title-color d-block mb-2">{{ translate('jump_to_section') }}</label>
+                            <div class="product-form-jump-links">
+                                <a class="product-form-jump-link" href="#section-basic">{{ translate('basic_information') }}</a>
+                                <a class="product-form-jump-link" href="#section-catalog">{{ translate('catalog_setup') }}</a>
+                                <a class="product-form-jump-link" href="#section-pricing">{{ translate('pricing_and_inventory') }}</a>
+                                <a class="product-form-jump-link" href="#section-media">{{ translate('media_and_seo') }}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         <div class="card physical_product_show">
             <div class="px-4 pt-3 d-flex justify-content-between">
                 @php
@@ -47,21 +102,6 @@
             <div class="card-body">
                 @foreach ($languages as $lang)
                 <div class="{{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang }}-form">
-                    @if($lang == $defaultLanguage)
-                    <div class="form-group">
-                        <label class="title-color">
-                            {{ translate('product_type') }}
-                            <span class="input-required-icon">*</span>
-                        </label>
-                        <select name="product_type" id="product_type" class="form-control" required>
-                            <option value="physical" selected>{{ translate('physical') }}</option>
-                            @if($servicesSetting)
-                            <option value="services">{{ translate('services') }}</option>
-                            @endif
-                        </select>
-                    </div>
-                    @endif
-
                     <div class="form-group">
                         <label class="title-color" for="{{ $lang }}_name">{{ translate('product_name') }}
                             ({{ strtoupper($lang) }})
@@ -85,7 +125,13 @@
                 @endforeach
             </div>
         </div>
+        </div>
 
+        <div class="product-form-section-block" id="section-catalog">
+            <div class="product-form-section-heading">
+                <span class="product-form-section-index">2</span>
+                <h3 class="product-form-section-title">{{ translate('catalog_setup') }}</h3>
+            </div>
 
         <div class="card mt-3 rest-part">
             <div class="card-header">
@@ -148,21 +194,6 @@
                         </div>
                     </div>
                     @endif
-
-                    <!-- <div class="col-md-6 col-lg-4 col-xl-3">
-                        <div class="form-group">
-                            <label class="title-color">
-                                {{ translate('product_type') }}
-                                <span class="input-required-icon">*</span>
-                            </label>
-                            <select name="product_type" id="product_type" class="form-control" required>
-                                <option value="physical" selected>{{ translate('physical') }}</option>
-                                @if($servicesSetting)
-                                <option value="services">{{ translate('services') }}</option>
-                                @endif
-                            </select>
-                        </div>
-                    </div> -->
 
                     <div class="col-md-6 col-lg-4 col-xl-3 digital-product-sections-show">
                         <label class="title-color">
@@ -228,7 +259,7 @@
                             <select class="js-example-basic-multiple form-control" name="unit">
                                 @foreach (units() as $unit)
                                 <option value="{{ $unit }}" {{ old('unit') == $unit ? 'selected' : '' }}>
-                                    {{ $unit }}
+                                    {{ getUnitLabel($unit) }}
                                 </option>
                                 @endforeach
                             </select>
@@ -253,7 +284,7 @@
                             </label>
                             <select class="js-select2-custom form-control" name="match_makes[]" multiple>
                                 @foreach($makes as $make)
-                                <option value="{{ $make->name }}">{{ $make->name }}</option>
+                                <option value="{{ $make->getRawOriginal('name') }}">{{ $make->getTranslatedField('name', app()->getLocale(), $make->getRawOriginal('name')) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -265,7 +296,7 @@
                             </label>
                             <select class="js-select2-custom form-control" name="match_models[]" multiple>
                                 @foreach($models as $model)
-                                <option value="{{ $model->name }}">{{ $model->name }}</option>
+                                <option value="{{ $model->getRawOriginal('name') }}">{{ $model->getTranslatedField('name', app()->getLocale(), $model->getRawOriginal('name')) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -470,6 +501,13 @@
                 </div>
             </div>
         </div>
+        </div>
+
+        <div class="product-form-section-block" id="section-pricing">
+            <div class="product-form-section-heading">
+                <span class="product-form-section-index">3</span>
+                <h3 class="product-form-section-title">{{ translate('pricing_and_inventory') }}</h3>
+            </div>
 
         <div class="card mt-3 rest-part">
             <div class="card-header">
@@ -726,6 +764,13 @@
         </div>
 
         <div class="card mt-3 rest-part" id="digital-product-variation-section"></div>
+        </div>
+
+        <div class="product-form-section-block" id="section-media">
+            <div class="product-form-section-heading">
+                <span class="product-form-section-index">4</span>
+                <h3 class="product-form-section-title">{{ translate('media_and_seo') }}</h3>
+            </div>
 
         <div class="mt-3 rest-part">
             <div class="product-image-wrapper">
@@ -875,16 +920,17 @@
             </div>
         </div>
 
-        <div class="card mt-3 rest-part">
-            <div class="card-header">
-                <div class="d-flex gap-2">
+        <details class="card mt-3 rest-part optional-form-card" @if($videoSectionOpen) open @endif>
+            <summary class="card-header optional-form-card__summary">
+                <div class="d-flex align-items-center gap-2">
                     <i class="tio-user-big"></i>
                     <h4 class="mb-0">{{ translate('product_video') }}</h4>
-                    <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" title="{{ translate('add_the_YouTube_video_link_here._Only_the_YouTube-embedded_link_is_supported') }}.">
-                        <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
-                    </span>
+                    <span class="badge badge-soft-info">{{ translate('optional') }}</span>
                 </div>
-            </div>
+                <span class="optional-form-card__indicator">
+                    <i class="tio-chevron-right"></i>
+                </span>
+            </summary>
             <div class="card-body">
                 <div class="mb-3">
                     <label class="title-color mb-0">
@@ -894,20 +940,19 @@
                 </div>
                 <input type="url" name="video_url" placeholder="{{ translate('ex').': https://www.youtube.com/embed/5R06LRdUCSE' }}" class="form-control" inputmode="url">
             </div>
-        </div>
+        </details>
 
-        <div class="card mt-3 rest-part">
-            <div class="card-header">
-                <div class="d-flex gap-2">
+        <details class="card mt-3 rest-part optional-form-card" @if($seoSectionOpen) open @endif>
+            <summary class="card-header optional-form-card__summary">
+                <div class="d-flex align-items-center gap-2">
                     <i class="tio-user-big"></i>
-                    <h4 class="mb-0">
-                        {{ translate('seo_section') }}
-                        <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ translate('add_meta_titles_descriptions_and_images_for_products').', '.translate('this_will_help_more_people_to_find_them_on_search_engines_and_see_the_right_details_while_sharing_on_other_social_platforms') }}">
-                            <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
-                        </span>
-                    </h4>
+                    <h4 class="mb-0">{{ translate('seo_section') }}</h4>
+                    <span class="badge badge-soft-info">{{ translate('optional') }}</span>
                 </div>
-            </div>
+                <span class="optional-form-card__indicator">
+                    <i class="tio-chevron-right"></i>
+                </span>
+            </summary>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-8">
@@ -974,6 +1019,7 @@
 
                 @include('admin-views.product.partials._seo-section')
             </div>
+        </details>
         </div>
 
         <div class="row justify-content-end gap-3 mt-3 mx-1">
@@ -1076,9 +1122,11 @@
                     // Add new options
                     if (response.models && Array.isArray(response.models)) {
                         console.log('Adding ' + response.models.length + ' models');
-                        $.each(response.models, function(index, modelName) {
-                            var isSelected = $.inArray(modelName, currentModels) !== -1;
-                            var option = new Option(modelName, modelName, false, isSelected);
+                        $.each(response.models, function(index, model) {
+                            var modelValue = model.value || '';
+                            var modelLabel = model.label || modelValue;
+                            var isSelected = $.inArray(modelValue, currentModels) !== -1;
+                            var option = new Option(modelLabel, modelValue, false, isSelected);
                             modelsSelect.append(option);
                         });
                     } else {

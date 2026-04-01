@@ -59,7 +59,7 @@
                                 <div>
                                     <span class="key">{{ translate('Unit') }}</span>
                                     <span>:</span>
-                                    <span class="value">{{ $ProductData->product->unit ?? __('N/A') }}</span>
+                                    <span class="value">{{ $ProductData->product->unit ? getUnitLabel($ProductData->product->unit) : __('N/A') }}</span>
                                 </div>
                                 <div>
                                     <span class="key">{{ translate('Unit_price') }}</span>

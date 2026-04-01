@@ -27,7 +27,17 @@ class VehicleMake extends Model
             return $name;
         }
 
-        return $this->translations[0]->value ?? $name;
+        $translation = $this->translations
+            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'name');
+
+        if ($translation) {
+            return $translation->value;
+        }
+
+        return $this->translations()
+            ->where('locale', App::getLocale())
+            ->where('key', 'name')
+            ->value('value') ?? $name;
     }
 
     protected static function boot(): void
@@ -36,11 +46,7 @@ class VehicleMake extends Model
 
         static::addGlobalScope('translate', function (Builder $builder) {
             $builder->with(['translations' => function ($query) {
-                if (strpos(url()->current(), '/api')) {
-                    return $query->where('locale', App::getLocale());
-                }
-
-                return $query->where('locale', getDefaultLanguage());
+                return $query->where('locale', App::getLocale());
             }]);
         });
     }

@@ -116,7 +116,7 @@
                                                 <div>
                                                     <span class="key text-nowrap text-capitalize">{{ translate('product_unit') }}</span>
                                                     <span>:</span>
-                                                    <span class="value">{{ $product['unit']}}</span>
+                                                    <span class="value">{{ getUnitLabel($product['unit']) }}</span>
                                                 </div>
                                                 <div>
                                                     <span class="key text-nowrap">{{ translate('current_Stock') }}</span>
@@ -217,4 +217,3 @@
     </div>
     <span id="get-product-gallery-route" data-action="{{route('admin.products.product-gallery')}}" data-brand-id="{{request('brand_id')}}" data-category-id="{{request('category_id')}}" data-vendor-id="{{request('vendor_id')}}">
 @endsection
-

@@ -108,7 +108,7 @@
                                                 <div>
                                                     <span class="key text-nowrap text-capitalize">{{ translate('product_unit') }}</span>
                                                     <span>:</span>
-                                                    <span class="value">{{ $product['unit']}}</span>
+                                                    <span class="value">{{ getUnitLabel($product['unit']) }}</span>
                                                 </div>
                                                 <div>
                                                     <span class="key text-nowrap">{{ translate('current_Stock') }}</span>

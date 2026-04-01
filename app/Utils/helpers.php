@@ -606,7 +606,7 @@ class helpers
 
     public static function units(): array
     {
-        return ['kg', 'pc', 'gms', 'ltrs'];
+        return ['pc', 'kg', 'gms', 'ltrs', 'pair', 'oz', 'lb'];
     }
 
     public static function getDefaultPaymentGateways(): array

@@ -130,7 +130,65 @@ if (!function_exists('getRatingCount')) {
 if (!function_exists('units')) {
     function units(): array
     {
-        return ['kg', 'pc', 'gms', 'ltrs', 'pair', 'oz', 'lb'];
+        return ['pc', 'kg', 'gms', 'ltrs', 'pair', 'oz', 'lb'];
+    }
+}
+
+if (!function_exists('getUnitLabel')) {
+    function getUnitLabel(?string $unit): string
+    {
+        $unit = trim((string)$unit);
+
+        if ($unit === '') {
+            return '';
+        }
+
+        $translationKey = 'unit_option_' . $unit;
+        $translatedValue = translate($translationKey);
+
+        return $translatedValue !== $translationKey ? $translatedValue : $unit;
+    }
+}
+
+if (!function_exists('getTranslatedLookupLabel')) {
+    function getTranslatedLookupLabel(string $modelClass, string $column, string $translationKey, ?string $value): string
+    {
+        $value = trim((string)$value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        $locale = app()->getLocale();
+        $cacheKey = implode('|', [$modelClass, $column, $translationKey, $locale, $value]);
+        static $cache = [];
+
+        if (array_key_exists($cacheKey, $cache)) {
+            return $cache[$cacheKey];
+        }
+
+        $record = $modelClass::withoutGlobalScopes()
+            ->with('translations')
+            ->where($column, $value)
+            ->first();
+
+        return $cache[$cacheKey] = $record
+            ? $record->getTranslatedField($translationKey, $locale, $record->getRawOriginal($column))
+            : $value;
+    }
+}
+
+if (!function_exists('getVehicleMakeLabel')) {
+    function getVehicleMakeLabel(?string $value): string
+    {
+        return getTranslatedLookupLabel(\App\Models\VehicleMake::class, 'name', 'name', $value);
+    }
+}
+
+if (!function_exists('getVehicleModelLabel')) {
+    function getVehicleModelLabel(?string $value): string
+    {
+        return getTranslatedLookupLabel(\App\Models\VehicleModel::class, 'name', 'name', $value);
     }
 }
 if (!function_exists('getVendorProductsCount')) {

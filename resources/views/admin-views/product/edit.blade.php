@@ -6,6 +6,7 @@
     <link href="{{ dynamicAsset(path: 'public/assets/back-end/css/tags-input.min.css') }}" rel="stylesheet">
     <link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
     <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
+    @include('admin-views.product.partials._form-ux-styles')
     <style>
         .readonly-section * {
             pointer-events: none !important;
@@ -46,6 +47,13 @@
         $decodedImages = json_decode($product->images ?? '[]', true);
         $decodedImages = is_array($decodedImages) ? $decodedImages : [];
         $productImageCount = count($decodedImages);
+        $selectedProductType = old('product_type', $product->product_type);
+        $videoSectionOpen = filled((string) old('video_url', $product['video_url'] ?? '')) || $errors->has('video_url');
+        $seoSectionOpen = filled((string) old('meta_title', $product?->seoInfo?->title ?? $product->meta_title ?? ''))
+            || filled((string) old('meta_description', $product?->seoInfo?->description ?? $product->meta_description ?? ''))
+            || $errors->has('meta_title')
+            || $errors->has('meta_description')
+            || $errors->has('meta_image');
     @endphp
     <div class="content container-fluid">
         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
@@ -59,6 +67,49 @@
             action="{{ request('product-gallery') == 1 ? route('admin.products.add') : route('admin.products.update', $product->id) }}"
             method="post" enctype="multipart/form-data" id="product_form">
             @csrf
+            <div class="product-form-section-block mt-0" id="section-basic">
+                <div class="product-form-section-heading">
+                    <span class="product-form-section-index">1</span>
+                    <h3 class="product-form-section-title">{{ translate('basic_information') }}</h3>
+                </div>
+
+                <div class="card product-form-overview">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-lg-5">
+                                <label class="title-color d-block mb-2">
+                                    {{ translate('product_type') }}
+                                    <span class="input-required-icon">*</span>
+                                </label>
+                                <div class="product-type-switcher readonly-section-type">
+                                    <button type="button" class="product-type-option {{ $selectedProductType === 'physical' ? 'is-active' : '' }}" data-value="physical" aria-pressed="{{ $selectedProductType === 'physical' ? 'true' : 'false' }}" disabled>
+                                        {{ translate('physical') }}
+                                    </button>
+                                    @if($servicesSetting)
+                                    <button type="button" class="product-type-option {{ $selectedProductType === 'services' ? 'is-active' : '' }}" data-value="services" aria-pressed="{{ $selectedProductType === 'services' ? 'true' : 'false' }}" disabled>
+                                        {{ translate('services') }}
+                                    </button>
+                                    @endif
+                                </div>
+                                <select name="product_type" id="product_type" class="d-none">
+                                    <option value="physical" {{ $selectedProductType === 'physical' ? 'selected' : '' }}>{{ translate('physical') }}</option>
+                                    @if($servicesSetting)
+                                    <option value="services" {{ $selectedProductType === 'services' ? 'selected' : '' }}>{{ translate('services') }}</option>
+                                    @endif
+                                </select>
+                            </div>
+                            <div class="col-lg-7">
+                                <label class="title-color d-block mb-2">{{ translate('jump_to_section') }}</label>
+                                <div class="product-form-jump-links">
+                                    <a class="product-form-jump-link" href="#section-basic">{{ translate('basic_information') }}</a>
+                                    <a class="product-form-jump-link" href="#section-catalog">{{ translate('catalog_setup') }}</a>
+                                    <a class="product-form-jump-link" href="#section-pricing">{{ translate('pricing_and_inventory') }}</a>
+                                    <a class="product-form-jump-link" href="#section-media">{{ translate('media_and_seo') }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <div class="card physical_product_show">
                 <div class="px-4 pt-3">
@@ -104,6 +155,13 @@
                     @endforeach
                 </div>
             </div>
+            </div>
+
+            <div class="product-form-section-block" id="section-catalog">
+                <div class="product-form-section-heading">
+                    <span class="product-form-section-index">2</span>
+                    <h3 class="product-form-section-title">{{ translate('catalog_setup') }}</h3>
+                </div>
 
             <div class="card mt-3 rest-part">
                 <div class="card-header">
@@ -181,27 +239,6 @@
                                 </div>
                             </div>
                         @endif
-
-                        <div class="col-md-6 col-lg-4 col-xl-3 readonly-section-type">
-                            <div class="form-group">
-                                <label class="title-color">
-                                    {{ translate('product_type') }}
-                                    <span class="input-required-icon">*</span>
-                                </label>
-                                <select name="product_type" id="product_type" class="form-control">
-                                    <option value="physical" {{ $product->product_type == 'physical' ? 'selected' : '' }}>
-                                        {{ translate('physical') }}
-                                    </option>
-                                    @if ($servicesSetting)
-                                        <option value="services"
-                                            {{ $product->product_type == 'services' ? 'selected' : '' }}>
-                                            {{ translate('services') }}
-                                        </option>
-                                    @endif
-
-                                </select>
-                            </div>
-                        </div>
 
                         <div class="col-md-6 col-lg-4 col-xl-3 digital-product-sections-show">
                             <label class="title-color">
@@ -284,7 +321,7 @@
                                     name="unit">
                                     @foreach (units() as $unit)
                                         <option value={{ $unit }} {{ $product->unit == $unit ? 'selected' : '' }}>
-                                            {{ $unit }}</option>
+                                            {{ getUnitLabel($unit) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -318,9 +355,10 @@
                                 </label>
                                 <select name="match_makes[]" class="form-control js-select2-custom" multiple>
                                     @foreach ($makes as $make)
-                                        <option value="{{ $make->name }}"
-                                            {{ in_array($make->name, $product->match_makes ?? []) ? 'selected' : '' }}>
-                                            {{ $make->name }}
+                                        @php($makeValue = $make->getRawOriginal('name'))
+                                        <option value="{{ $makeValue }}"
+                                            {{ in_array($makeValue, $product->match_makes ?? []) ? 'selected' : '' }}>
+                                            {{ $make->getTranslatedField('name', app()->getLocale(), $makeValue) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -341,9 +379,10 @@
                                 </label>
                                 <select name="match_models[]" class="form-control js-select2-custom" multiple>
                                     @foreach ($models as $model)
-                                        <option value="{{ $model->name }}"
-                                            {{ in_array($model->name, $product->match_models ?? []) ? 'selected' : '' }}>
-                                            {{ $model->name }}
+                                        @php($modelValue = $model->getRawOriginal('name'))
+                                        <option value="{{ $modelValue }}"
+                                            {{ in_array($modelValue, $product->match_models ?? []) ? 'selected' : '' }}>
+                                            {{ $model->getTranslatedField('name', app()->getLocale(), $modelValue) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -572,7 +611,13 @@
                     </div>
                 </div>
             </div>
+            </div>
 
+            <div class="product-form-section-block" id="section-pricing">
+                <div class="product-form-section-heading">
+                    <span class="product-form-section-index">3</span>
+                    <h3 class="product-form-section-title">{{ translate('pricing_and_inventory') }}</h3>
+                </div>
 
             <div class="card mt-3 rest-part">
                 <div class="card-header">
@@ -950,6 +995,13 @@
                     </div>
                 </div>
             </div>
+            </div>
+
+            <div class="product-form-section-block" id="section-media">
+                <div class="product-form-section-heading">
+                    <span class="product-form-section-index">4</span>
+                    <h3 class="product-form-section-title">{{ translate('media_and_seo') }}</h3>
+                </div>
 
             <div class="mt-3 rest-part">
                 <div class="product-image-wrapper">
@@ -1316,18 +1368,17 @@
                 <input type="hidden" id="remove_url" value="{{ route('admin.products.delete-image') }}">
             </div>
 
-            <div class="card mt-3 rest-part">
-                <div class="card-header">
-                    <div class="d-flex gap-2">
+            <details class="card mt-3 rest-part optional-form-card" @if($videoSectionOpen) open @endif>
+                <summary class="card-header optional-form-card__summary">
+                    <div class="d-flex align-items-center gap-2">
                         <i class="tio-user-big"></i>
                         <h4 class="mb-0">{{ translate('product_video') }}</h4>
-                        <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                            title="{{ translate('add_the_YouTube_video_link_here._Only_the_YouTube-embedded_link_is_supported') }}.">
-                            <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}"
-                                alt="">
-                        </span>
+                        <span class="badge badge-soft-info">{{ translate('optional') }}</span>
                     </div>
-                </div>
+                    <span class="optional-form-card__indicator">
+                        <i class="tio-chevron-right"></i>
+                    </span>
+                </summary>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="title-color mb-0">{{ translate('youtube_video_link') }}</label>
@@ -1338,22 +1389,19 @@
                         placeholder="{{ translate('ex') . ': https://www.youtube.com/embed/5R06LRdUCSE' }}"
                         class="form-control" inputmode="url">
                 </div>
-            </div>
+            </details>
 
-            <div class="card mt-3 rest-part">
-                <div class="card-header">
-                    <div class="d-flex gap-2">
+            <details class="card mt-3 rest-part optional-form-card" @if($seoSectionOpen) open @endif>
+                <summary class="card-header optional-form-card__summary">
+                    <div class="d-flex align-items-center gap-2">
                         <i class="tio-user-big"></i>
-                        <h4 class="mb-0">
-                            {{ translate('seo_section') }}
-                            <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top"
-                                title="{{ translate('add_meta_titles_descriptions_and_images_for_products') . ', ' . translate('this_will_help_more_people_to_find_them_on_search_engines_and_see_the_right_details_while_sharing_on_other_social_platforms') }}">
-                                <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}"
-                                    alt="">
-                            </span>
-                        </h4>
+                        <h4 class="mb-0">{{ translate('seo_section') }}</h4>
+                        <span class="badge badge-soft-info">{{ translate('optional') }}</span>
                     </div>
-                </div>
+                    <span class="optional-form-card__indicator">
+                        <i class="tio-chevron-right"></i>
+                    </span>
+                </summary>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
@@ -1450,6 +1498,7 @@
                     @include('admin-views.product.partials._seo-update-section')
 
                 </div>
+            </details>
             </div>
 
             <div class="d-flex justify-content-end mt-3">
@@ -1840,9 +1889,11 @@
                         modelsSelect.empty();
 
                         // Add new options
-                        $.each(response.models, function(index, modelName) {
-                            var isSelected = $.inArray(modelName, currentModels) !== -1;
-                            var option = new Option(modelName, modelName, false, isSelected);
+                        $.each(response.models, function(index, model) {
+                            var modelValue = model.value || '';
+                            var modelLabel = model.label || modelValue;
+                            var isSelected = $.inArray(modelValue, currentModels) !== -1;
+                            var option = new Option(modelLabel, modelValue, false, isSelected);
                             modelsSelect.append(option);
                         });
 
