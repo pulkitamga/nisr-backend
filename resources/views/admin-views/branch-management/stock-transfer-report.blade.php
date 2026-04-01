@@ -42,7 +42,8 @@
                         <select class="form-control" id="from-branch-id" name="from_branch_id">
                             <option value="">{{ translate('all') }}</option>
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}</option>
+                                <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -52,7 +53,8 @@
                         <select class="form-control" id="to-branch-id" name="to_branch_id">
                             <option value="">{{ translate('all') }}</option>
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}</option>
+                                <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -67,14 +69,17 @@
                         </select>
                     </div>
 
-                    <div class="col-md-12 d-flex justify-content-center gap-2 mt-3">
+                    <div class="col-12 d-flex flex-wrap gap-2 mt-3">
                         <button type="submit" id="transfer-load-btn"
                             class="btn btn--primary">{{ translate('filter') }}</button>
+
                         <button type="button" id="transfer-reset-btn"
                             class="btn btn-outline-secondary">{{ translate('reset') }}</button>
+
                         <button type="button" id="transfer-export-excel" class="btn btn-outline-success">
                             <i class="tio-download-to me-1"></i>{{ translate('excel') }}
                         </button>
+
                         <button type="button" id="transfer-export-pdf" class="btn btn-outline-danger">
                             <i class="tio-download-to me-1"></i>{{ translate('PDF') }}
                         </button>
@@ -153,9 +158,9 @@
         <div class="card">
             <div class="card-header border-0">
                 <h4 class="mb-0">{{ translate('transfer_details') }}
-                   <small class="text-muted ms-2">
-    (<span id="transfer-period">-</span>)
-</small>
+                    <small class="text-muted ms-2">
+                        (<span id="transfer-period">-</span>)
+                    </small>
                 </h4>
             </div>
             <div class="table-responsive">
@@ -171,9 +176,7 @@
                         </tr>
                     </thead>
                     <tbody id="transfer-table-body">
-                        <tr>
-                            <td colspan="6" class="text-center py-4">{{ translate('loading') }}...</td>
-                        </tr>
+
                     </tbody>
                 </table>
             </div>
@@ -255,7 +258,6 @@
 
             const setLoading = (loading) => {
                 loadBtn.disabled = loading;
-                loadBtn.textContent = loading ? `${text.loading}...` : text.filter;
             };
 
             const renderStats = (stats) => {
@@ -361,8 +363,7 @@
 
             const loadReport = async () => {
                 setLoading(true);
-                tableBody.innerHTML =
-                    `<tr><td colspan="6" class="text-center py-4">${text.loading}...</td></tr>`;
+                tableBody.innerHTML = '';
 
                 try {
                     const payload = buildPayload();

@@ -41,7 +41,7 @@ class ReportPdfService
     //         'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
     //     ]);
     // }
-public function download(
+    public function download(
         string $view,
         array $data,
         string $fileName,
@@ -57,7 +57,8 @@ public function download(
             'default_font' => 'dejavusans',
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'margin_bottom' => 35, 
+            'margin_bottom' => 5,
+            'margin_footer' => 2,
         ]);
 
         $isRtl = $this->resolveRtl($data);
