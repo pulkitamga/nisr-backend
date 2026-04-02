@@ -17,7 +17,9 @@ use App\Models\StockTransfers;
 use App\Services\ProductService;
 use App\Traits\FileManagerTrait;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use App\Exports\ProductListExport;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use App\Models\StockRequestProduct;
 use Illuminate\Contracts\View\View;
@@ -39,7 +41,6 @@ use App\Enums\ViewPaths\Admin\StockRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Events\ProductRequestStatusUpdateEvent;
 use App\Http\Requests\Admin\ProductDenyRequest;
-use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Requests\Admin\StockRequestAddProduct;
 use App\Contracts\Repositories\CartRepositoryInterface;
 use App\Contracts\Repositories\BrandRepositoryInterface;
@@ -68,6 +69,7 @@ use App\Contracts\Repositories\DigitalProductAuthorRepositoryInterface;
 use App\Contracts\Repositories\StockClearanceProductRepositoryInterface;
 use App\Contracts\Repositories\RestockProductCustomerRepositoryInterface;
 use App\Contracts\Repositories\DigitalProductVariationRepositoryInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StockRequestController extends BaseController
 {
@@ -126,51 +128,56 @@ class StockRequestController extends BaseController
 
     public function getStockRequestListView(Request $request): View|RedirectResponse
     {
-        // Step 1: Get filtered collection (all results, no paginate yet)
-        $filtered = StockRequests::with([
-            'products.product',
-            'products.category',
-            'fromBranch'
-        ])
-            ->when($request->restock_date, function ($query) use ($request) {
-                return $query->whereDate('transfer_date', $request->restock_date);
-            })
-            ->when($request->category_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('category_id', $request->category_id);
-                });
-            })
-            ->when($request->sub_category_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('sub_category_id', $request->sub_category_id);
-                });
-            })
-            ->when($request->brand_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('brand_id', $request->brand_id);
-                });
-            })
-            ->when($request->searchValue, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('name', 'like', '%' . $request->searchValue . '%');
-                });
-            })
-            ->orderByDesc('id')
-            ->get();
-
-        $perPage = getWebConfig('pagination_limit');
-        $page = $request->get('page', 1);
-        $offset = ($page - 1) * $perPage;
-
-        $aStockRequests = new LengthAwarePaginator(
-            $filtered->slice($offset, $perPage)->values(),
-            $filtered->count(),
-            $perPage,
-            $page,
-            ['path' => url()->current(), 'query' => $request->query()]
-        );
+        $aStockRequests = $this->stockRequestListQuery($request)
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
         return view(StockRequest::LIST[VIEW], compact('aStockRequests'));
+    }
+
+    public function exportList(Request $request): StreamedResponse
+    {
+        $stockRequests = $this->stockRequestListQuery($request)->get();
+
+        return response()->streamDownload(function () use ($stockRequests) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, [
+                translate('From Branch'),
+                translate('Request Date'),
+                translate('Products'),
+                translate('Category'),
+                translate('Variation'),
+                translate('Qty'),
+            ]);
+
+            foreach ($stockRequests as $stockRequest) {
+                fputcsv($handle, [
+                    $stockRequest->fromBranch?->getTranslatedField('branch_name') ?? translate('not_available'),
+                    $stockRequest->transfer_date ? date('M d, Y', strtotime($stockRequest->transfer_date)) : translate('not_available'),
+                    $stockRequest->products->map(fn($product) => optional($product->product)->getTranslatedField('name') ?? translate('not_available'))->implode(', '),
+                    $stockRequest->products->map(fn($product) => optional($product->category)->getTranslatedField('name') ?? translate('not_available'))->implode(', '),
+                    $stockRequest->products->map(function ($product) {
+                        if (!$product->variation_type) {
+                            return translate('Default');
+                        }
+
+                        $variation = $product->variation_type;
+                        if ($product->variation_key) {
+                            $variation .= ' (' . Str::replace(':', ' : ', Str::replace('|', ' • ', $product->variation_key)) . ')';
+                        }
+
+                        return $variation;
+                    })->implode(', '),
+                    $stockRequest->products->map(fn($product) => $product->quantity)->implode(', '),
+                ]);
+            }
+
+            fclose($handle);
+        }, 'stock-request-list.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
 
@@ -278,6 +285,73 @@ class StockRequestController extends BaseController
             ],
             // 'view' => view(Product::TRANSFER_QUICK_VIEW[VIEW], compact('product'))->render(),
         ]);
+    }
+
+    private function stockRequestListQuery(Request $request): Builder
+    {
+        $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+
+        return StockRequests::query()
+            ->with([
+                'products' => fn ($query) => $this->applyStockRequestProductFilters($query, $request)
+                    ->with(['product.translations', 'category.translations']),
+                'fromBranch.translations',
+            ])
+            ->when($request->filled('restock_date'), fn(Builder $query) => $query->whereDate('transfer_date', $request->restock_date))
+            ->when($request->filled('category_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('category_id', $request->category_id));
+            })
+            ->when($request->filled('sub_category_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('sub_category_id', $request->sub_category_id));
+            })
+            ->when($request->filled('brand_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('brand_id', $request->brand_id));
+            })
+            ->when($searchValue !== '', function (Builder $query) use ($searchValue) {
+                $query->whereHas('products.product', function (Builder $productQuery) use ($searchValue) {
+                    $productQuery
+                        ->where('name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('code', 'like', '%' . $searchValue . '%');
+                });
+            })
+            ->orderByDesc('id');
+    }
+
+    private function applyStockRequestProductFilters($query, Request $request)
+    {
+        $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+
+        return $query
+            ->when($request->filled('category_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('category_id', $request->category_id));
+            })
+            ->when($request->filled('sub_category_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('sub_category_id', $request->sub_category_id));
+            })
+            ->when($request->filled('brand_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('brand_id', $request->brand_id));
+            })
+            ->when($searchValue !== '', function (Builder $innerQuery) use ($searchValue) {
+                $innerQuery->whereHas('product', function (Builder $productQuery) use ($searchValue) {
+                    $productQuery
+                        ->where('name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('code', 'like', '%' . $searchValue . '%');
+                });
+            });
+    }
+
+    private function resolveListPerPage(Request $request): int
+    {
+        if ($request->filled('choose_first') && (int) $request->choose_first > 0) {
+            return (int) $request->choose_first;
+        }
+
+        return (int) (getWebConfig('pagination_limit') ?? 10);
+    }
+
+    private function sanitizeListSearch(?string $value): string
+    {
+        return mb_substr(trim((string) $value), 0, 100);
     }
 
     public function saveStockRequest(StockRequestAddProduct $request, StockRequestService $service): JsonResponse|RedirectResponse

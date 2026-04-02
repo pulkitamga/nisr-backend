@@ -1,93 +1,129 @@
+@php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 @section('title', translate('import_history'))
 
+@php
+    $toolbarFields = [
+        [
+            'type' => 'number',
+            'name' => 'choose_first',
+            'label' => translate('Rows_to_show'),
+            'value' => request('choose_first'),
+            'placeholder' => translate('Ex') . ' : 200',
+            'attributes' => ['min' => '1'],
+        ],
+        [
+            'type' => 'search',
+            'name' => 'searchValue',
+            'label' => translate('search'),
+            'value' => request('searchValue'),
+            'placeholder' => translate('search_by_import_date'),
+            'aria_label' => translate('search_by_import_date'),
+            'col_class' => 'col-xl-4 col-lg-12',
+        ],
+    ];
+
+    $toolbarSummary = [];
+
+    if (request()->filled('searchValue')) {
+        $toolbarSummary[] = [
+            'label' => translate('search'),
+            'value' => Str::limit(request('searchValue'), 28),
+            'muted' => true,
+        ];
+    }
+
+    if (request()->filled('choose_first')) {
+        $toolbarSummary[] = [
+            'label' => translate('Rows_to_show'),
+            'value' => request('choose_first'),
+            'muted' => true,
+        ];
+    }
+
+    $headerActions = [
+        [
+            'type' => 'export',
+            'url' => route('admin.warranty.import-history.export'),
+            'form_id' => 'warranty-import-history-toolbar',
+            'label' => translate('export'),
+        ],
+        [
+            'href' => route('admin.warranty.import'),
+            'class' => 'btn btn--primary text-nowrap',
+            'label' => translate('new_import'),
+        ],
+    ];
+@endphp
+
+@push('css_or_js')
+<link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
+@endpush
+
 @section('content')
 <div class="content container-fluid">
-    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
-        <h2 class="h1 mb-0 text-capitalize">
-            {{translate('import_history')}}
+    <div class="mb-4">
+        <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
+            <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/import-icon.png') }}" alt="">
+            {{ translate('import_history') }}
+            <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $history->total() }}</span>
         </h2>
-        <a href="{{route('admin.warranty.import')}}" class="btn btn--primary">
-            {{translate('new_import')}}
-        </a>
     </div>
 
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'warranty-import-history-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.warranty.import-history'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
+
     <div class="card">
-        <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 me-auto">
-                {{translate('warranty_imports')}}
-            </h5>
-            <form action="{{ url()->current() }}" method="GET">
-                <div class="input-group input-group-merge input-group-custom">
-                    <div class="input-group-prepend">
-                        <div class="input-group-text">
-                            <i class="tio-search"></i>
-                        </div>
-                    </div>
-                    <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                    <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
-                </div>
-            </form>
-            <div class="dropdown">
-                <a type="button"
-                    class="btn btn-outline--primary text-nowrap"
-                    href="{{ route('admin.warranty.import-history.export') }}">
-                    <img width="14" src="{{ dynamicAsset(path: 'public/assets/back-end/img/excel.png') }}" alt="" class="excel">
-                    <span class="ps-2">{{ translate('export') }}</span>
-                </a>
-            </div>
-        </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('warranty_imports'),
+            'listHeaderTotal' => $history->total(),
+            'listHeaderActions' => $headerActions,
+        ])
+
         <div class="card-body p-0">
             <div class="table-responsive datatable-custom">
-
-                <table
-
-                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
+                <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
-                            <th>{{translate('date')}}</th>
-                            <th>{{translate('quantity')}}</th>
-                            <th>{{translate('action')}}</th>
+                            <th>{{ translate('date') }}</th>
+                            <th>{{ translate('quantity') }}</th>
+                            <th>{{ translate('action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($history as $item)
-                        <tr>
-                            <td>{{$item->import_date}}</td>
-                            <td>{{$item->count}}</td>
-                            <td>
-                                <a href="{{route('admin.warranty.history-details', $item->import_date)}}" class="btn btn-sm btn-outline-primary">
-                                    {{translate('view_details')}}
-                                </a>
-                            </td>
-                        </tr>
-                        @endforeach
+                        @forelse($history as $item)
+                            <tr>
+                                <td><span class="bidi-ltr d-inline-block">{{ $item->import_date }}</span></td>
+                                <td>{{ $item->count }}</td>
+                                <td>
+                                    <a href="{{ route('admin.warranty.history-details', $item->import_date) }}" class="btn btn-sm btn-outline-primary">
+                                        {{ translate('view_details') }}
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3">
+                                    @include('layouts.back-end._empty-state', ['text' => 'no_record_found', 'image' => 'default'])
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="table-responsive mt-4">
-                <div class="px-4 d-flex justify-content-lg-end">
-                    {!! $history->links() !!}
+            @if($history->isNotEmpty())
+                <div class="table-responsive mt-4">
+                    <div class="px-4 d-flex justify-content-lg-end">
+                        {!! $history->links() !!}
+                    </div>
                 </div>
-            </div>
-            @if(count($history)==0)
-            @include('layouts.back-end._empty-state',['text'=>'no_record_found'],['image'=>'default'])
             @endif
         </div>
     </div>
 </div>
 @endsection
-
-@push('script')
-<script>
-    // Simple search for date
-    $('.form-control').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        $('table tbody tr').filter(function() {
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-        });
-    });
-</script>
-@endpush
-

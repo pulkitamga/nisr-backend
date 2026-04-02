@@ -53,17 +53,3 @@
         </form>
     </div>
 </div>
-
-@push('script')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const modal = document.getElementById('decideModal');
-        if (!modal) return;
-
-        // Reset form when modal is hidden
-        modal.addEventListener('hidden.bs.modal', function () {
-            modal.querySelector('form').reset();
-        });
-    });
-</script>
-@endpush

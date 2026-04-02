@@ -15,9 +15,11 @@ use App\Models\StockTransfers;
 use App\Services\ProductService;
 use App\Traits\FileManagerTrait;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use App\Exports\ProductListExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use illuminate\Support\Facades\Log;
 use App\Models\StockTransferProduct;
 use Brian2694\Toastr\Facades\Toastr;
@@ -38,7 +40,6 @@ use App\Http\Requests\ProductUpdateRequest;
 use App\Enums\ViewPaths\Admin\StockTransfer;
 use App\Events\ProductRequestStatusUpdateEvent;
 use App\Http\Requests\Admin\ProductDenyRequest;
-use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Requests\Admin\StockTransferAddProduct;
 use App\Contracts\Repositories\CartRepositoryInterface;
 use App\Contracts\Repositories\BrandRepositoryInterface;
@@ -67,6 +68,7 @@ use App\Contracts\Repositories\DigitalProductAuthorRepositoryInterface;
 use App\Contracts\Repositories\StockClearanceProductRepositoryInterface;
 use App\Contracts\Repositories\RestockProductCustomerRepositoryInterface;
 use App\Contracts\Repositories\DigitalProductVariationRepositoryInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StockTransferController extends BaseController
 {
@@ -125,56 +127,54 @@ class StockTransferController extends BaseController
 
     public function getStockTransferListView(Request $request): View|RedirectResponse
     {
-        $perPage = getWebConfig('pagination_limit') ?? 10;
-        $page = $request->get('page', 1);
-
-        $filtered = StockTransfers::with([
-            'products.product',
-            'products.category',
-            'toBranch'
-        ])
-            ->when($request->restock_date, function ($query) use ($request) {
-                return $query->whereDate('transfer_date', $request->restock_date);
-            })
-            ->when($request->category_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('category_id', $request->category_id);
-                });
-            })
-            ->when($request->sub_category_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('sub_category_id', $request->sub_category_id);
-                });
-            })
-            ->when($request->brand_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('brand_id', $request->brand_id);
-                });
-            })
-            ->when($request->searchValue, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('name', 'like', '%' . $request->searchValue . '%');
-                });
-            })
-            ->orderByDesc('id')
-            ->get(); // NO paginate()
-
-        $offset = ($page - 1) * $perPage;
-
-        $aStockTransfers = StockTransfers::with([
-            'products.product',
-            'products.category',
-            'toBranch'
-        ])
-            ->when($request->restock_date, fn($q) => $q->whereDate('transfer_date', $request->restock_date))
-            ->when($request->category_id, fn($q) => $q->whereHas('products.product', fn($q) => $q->where('category_id', $request->category_id)))
-            ->when($request->sub_category_id, fn($q) => $q->whereHas('products.product', fn($q) => $q->where('sub_category_id', $request->sub_category_id)))
-            ->when($request->brand_id, fn($q) => $q->whereHas('products.product', fn($q) => $q->where('brand_id', $request->brand_id)))
-            ->when($request->searchValue, fn($q) => $q->whereHas('products.product', fn($q) => $q->where('name', 'like', "%{$request->searchValue}%")))
-            ->orderByDesc('id')
-            ->paginate($perPage);
+        $aStockTransfers = $this->stockTransferListQuery($request)
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
         return view(StockTransfer::LIST[VIEW], compact('aStockTransfers'));
+    }
+
+    public function exportList(Request $request): StreamedResponse
+    {
+        $stockTransfers = $this->stockTransferListQuery($request)->get();
+
+        return response()->streamDownload(function () use ($stockTransfers) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, [
+                translate('To Branch'),
+                translate('Transfer Date'),
+                translate('Products'),
+                translate('Category'),
+                translate('Variation'),
+                translate('Qty'),
+                translate('Status'),
+            ]);
+
+            foreach ($stockTransfers as $stockTransfer) {
+                foreach ($stockTransfer->products as $product) {
+                    $variationLabel = $product->variation_type ?: translate('Default');
+                    if ($product->variation_key) {
+                        $variationLabel .= ' (' . Str::replace(':', ' : ', Str::replace('|', ' • ', $product->variation_key)) . ')';
+                    }
+
+                    fputcsv($handle, [
+                        $stockTransfer->toBranch?->getTranslatedField('branch_name') ?? translate('not_available'),
+                        $stockTransfer->transfer_date ? date('M d, Y', strtotime($stockTransfer->transfer_date)) : translate('not_available'),
+                        optional($product->product)->getTranslatedField('name') ?? translate('not_available'),
+                        optional($product->category)->getTranslatedField('name') ?? translate('not_available'),
+                        $variationLabel,
+                        (string) $product->quantity,
+                        translate($product->status),
+                    ]);
+                }
+            }
+
+            fclose($handle);
+        }, 'stock-transfer-list.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
   public function getStock(Request $request)
 {
@@ -304,6 +304,73 @@ class StockTransferController extends BaseController
             'productsAttributes'
 
         ));
+    }
+
+    private function stockTransferListQuery(Request $request): Builder
+    {
+        $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+
+        return StockTransfers::query()
+            ->with([
+                'products' => fn ($query) => $this->applyStockTransferProductFilters($query, $request)
+                    ->with(['product.translations', 'category.translations']),
+                'toBranch.translations',
+            ])
+            ->when($request->filled('restock_date'), fn(Builder $query) => $query->whereDate('transfer_date', $request->restock_date))
+            ->when($request->filled('category_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('category_id', $request->category_id));
+            })
+            ->when($request->filled('sub_category_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('sub_category_id', $request->sub_category_id));
+            })
+            ->when($request->filled('brand_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('brand_id', $request->brand_id));
+            })
+            ->when($searchValue !== '', function (Builder $query) use ($searchValue) {
+                $query->whereHas('products.product', function (Builder $productQuery) use ($searchValue) {
+                    $productQuery
+                        ->where('name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('code', 'like', '%' . $searchValue . '%');
+                });
+            })
+            ->orderByDesc('id');
+    }
+
+    private function applyStockTransferProductFilters($query, Request $request)
+    {
+        $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+
+        return $query
+            ->when($request->filled('category_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('category_id', $request->category_id));
+            })
+            ->when($request->filled('sub_category_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('sub_category_id', $request->sub_category_id));
+            })
+            ->when($request->filled('brand_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('brand_id', $request->brand_id));
+            })
+            ->when($searchValue !== '', function (Builder $innerQuery) use ($searchValue) {
+                $innerQuery->whereHas('product', function (Builder $productQuery) use ($searchValue) {
+                    $productQuery
+                        ->where('name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('code', 'like', '%' . $searchValue . '%');
+                });
+            });
+    }
+
+    private function resolveListPerPage(Request $request): int
+    {
+        if ($request->filled('choose_first') && (int) $request->choose_first > 0) {
+            return (int) $request->choose_first;
+        }
+
+        return (int) (getWebConfig('pagination_limit') ?? 10);
+    }
+
+    private function sanitizeListSearch(?string $value): string
+    {
+        return mb_substr(trim((string) $value), 0, 100);
     }
     // public function saveStockTransfer(StockTransferAddProduct $request, StockTransferService $service): JsonResponse|RedirectResponse
     // {

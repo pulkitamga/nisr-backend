@@ -1,0 +1,48 @@
+.warranty-transfer-timeline {
+    position: relative;
+    padding-inline-start: 2rem;
+}
+
+.warranty-transfer-timeline::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #3b82f6, #93c5fd);
+}
+
+.warranty-transfer-timeline__entry {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.warranty-transfer-timeline__entry:last-child {
+    margin-bottom: 0;
+}
+
+.warranty-transfer-timeline__card {
+    border: 1px solid #f0f0f0;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.warranty-transfer-timeline__card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.warranty-transfer-timeline__card h6 {
+    font-size: 15px;
+    color: #1e293b;
+}
+
+.warranty-transfer-timeline__card small {
+    font-size: 13px;
+}
+
+.warranty-transfer-timeline__badge {
+    font-size: 12px;
+    padding: 0.35em 0.6em;
+}

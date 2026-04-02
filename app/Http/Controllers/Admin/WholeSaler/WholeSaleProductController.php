@@ -46,12 +46,11 @@ class WholeSaleProductController extends BaseController
 
     public function getListView(Request $request): View
     {
-        $current_date = date('Y-m-d');
         $wholesale_products = $this->wholesaleproductrepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
             relations: ['price_list', 'product.translations', 'category.translations', 'subcategory.translations'],
-            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
+            dataLimit: $this->resolveListPerPage($request)
         );
 
         return view(WholeSalesProducts::LIST[VIEW], compact('wholesale_products'));
@@ -352,5 +351,14 @@ class WholeSaleProductController extends BaseController
             'variations' => $formattedVariations,
             'unit_price' => $product->unit_price,
         ]);
+    }
+
+    private function resolveListPerPage(Request $request): int
+    {
+        if ($request->filled('choose_first') && (int)$request->choose_first > 0) {
+            return (int)$request->choose_first;
+        }
+
+        return (int)(getWebConfig(name: WebConfigKey::PAGINATION_LIMIT) ?? 10);
     }
 }

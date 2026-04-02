@@ -1,135 +1,176 @@
+@php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
 @section('title', translate('Stock_Request'))
 
-@section('content')
-<div class="content container-fluid">
+@push('css_or_js')
+<link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
+@endpush
 
+@section('content')
+@php
+    $toolbarFields = [
+        [
+            'type' => 'daterange',
+            'name' => 'restock_date',
+            'label' => translate('Request Date'),
+            'value' => request('restock_date'),
+            'placeholder' => translate('Select_Date'),
+            'autocomplete' => 'off',
+            'input_class' => 'js-daterangepicker-with-range form-control cursor-pointer',
+            'attributes' => ['readonly' => 'readonly'],
+            'col_class' => 'col-xl-3 col-lg-6',
+        ],
+        [
+            'type' => 'number',
+            'name' => 'choose_first',
+            'label' => translate('Rows_to_show'),
+            'value' => request('choose_first'),
+            'placeholder' => translate('Ex') . ' : 200',
+            'col_class' => 'col-xl-2 col-lg-6',
+            'attributes' => ['min' => '1'],
+        ],
+        [
+            'type' => 'search',
+            'name' => 'searchValue',
+            'label' => translate('search'),
+            'value' => request('searchValue'),
+            'placeholder' => translate('search_by_product_name_or_code'),
+            'aria_label' => translate('search_by_product_name_or_code'),
+            'col_class' => 'col-xl-4 col-lg-12',
+        ],
+    ];
+
+    $toolbarSummary = [];
+    if (request()->filled('restock_date')) {
+        $toolbarSummary[] = ['label' => translate('Request Date'), 'value' => Str::limit(request('restock_date'), 28), 'muted' => true];
+    }
+    if (request()->filled('searchValue')) {
+        $toolbarSummary[] = ['label' => translate('search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
+    }
+    if (request()->filled('choose_first')) {
+        $toolbarSummary[] = ['label' => translate('Rows_to_show'), 'value' => request('choose_first'), 'muted' => true];
+    }
+
+    $headerActions = [
+        [
+            'type' => 'export',
+            'url' => route('admin.stock-request.export'),
+            'form_id' => 'stock-request-toolbar',
+            'label' => translate('export'),
+        ],
+        [
+            'type' => 'button',
+            'label' => translate('add_New_Stock_Request'),
+            'href' => route('admin.stock-request.add'),
+            'class' => 'btn btn--primary text-nowrap',
+            'icon_html' => '<i class="tio-add"></i>',
+        ],
+    ];
+@endphp
+
+<div class="content container-fluid">
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" alt="">
             {{ translate('Stock_Request_List') }}
-            <span class="badge badge-soft-dark radius-50 fz-14 ms-1"></span>
+            <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $aStockRequests->total() }}</span>
         </h2>
     </div>
 
-    <div class="mt-20">
-        <div class="card">
-            <div class="card-header gap-3 align-items-center">
-                <h5 class="mb-0 me-auto">
-                    {{translate('stock_Request_List')}}
-                    <span class="badge badge-soft-dark radius-50 fz-14 ms-1"></span>
-                </h5>
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'stock-request-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.stock-request.list'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
 
-                <form action="{{ url()->current() }}" method="GET">
-                    <input type="hidden" name="restock_date" value="{{request('restock_date')}}">
-                    <input type="hidden" name="category_id" value="{{request('category_id')}}">
-                    <input type="hidden" name="sub_category_id" value="{{request('sub_category_id')}}">
-                    <input type="hidden" name="brand_id" value="{{request('brand_id')}}">
-                    <div class="input-group input-group-merge input-group-custom">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                                <i class="tio-search"></i>
-                            </div>
-                        </div>
-                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                            placeholder="{{ translate('search_by_Product_Name')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                        <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
-                    </div>
-                </form>
-                <div class="dropdown d-none">
-                    <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.products.restock-export', ['restock_date' => request('restock_date'),'brand_id' => request('brand_id'), 'category_id' => request('category_id'), 'sub_category_id' => request('sub_category_id'),  'searchValue' => request('searchValue')])}}">
-                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
-                        <span class="ps-2">{{ translate('export') }}</span>
-                    </a>
-                </div>
-                <a href="{{route('admin.stock-request.add')}}" type="button" class="btn btn--primary text-nowrap">
-                    <i class="tio-add"></i>
-                    {{translate('add_New_Stock_Request')}}
-                </a>
-            </div>
+    <div class="card">
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('stock_Request_List'),
+            'listHeaderTotal' => $aStockRequests->total(),
+            'listHeaderActions' => $headerActions,
+        ])
 
-            <div class="table-responsive">
-                <table id="datatable" class="table table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
-                    <thead class="thead-light thead-50 text-capitalize">
+        <div class="table-responsive">
+            <table class="table table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
+                <thead class="thead-light thead-50 text-capitalize">
+                    <tr>
+                        <th class="text-center">{{ translate('SL') }}</th>
+                        <th class="text-start">{{ translate('From Branch') }}</th>
+                        <th class="text-start">{{ translate('Request Date') }}</th>
+                        <th>{{ translate('Products') }}</th>
+                        <th>{{ translate('Category') }}</th>
+                        <th>{{ translate('Variation') }}</th>
+                        <th class="text-center">{{ translate('Qty') }}</th>
+                        <th class="text-center">{{ translate('action') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($aStockRequests as $key => $transferRequest)
                         <tr>
-                            <th class="text-center">{{ translate('SL') }}</th>
-                            <th class="text-start">{{ translate('From Branch') }}</th>
-                            <!-- <th class="text-start">{{ translate('To Branch') }}</th> -->
-                            <th class="text-start">{{ translate('Request Date') }}</th>
-                            <th class="">{{ translate('Products') }}</th>
-                            <th class="">{{ translate('Category') }}</th>
-                            <th class="">{{ translate('Variation') }}</th>
-                            <th class="text-center">{{ translate('Qty') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($aStockRequests as $key => $transferRequest)
-                        <tr>
-                            <th scope="row" class="text-center align-middle">
-                                {{ $aStockRequests->firstItem() + $key }}
-                            </th>
-                            <td class="align-middle">
-                                {{ $transferRequest->fromBranch ? $transferRequest->fromBranch->branch_name : 'N/A' }}
-                            </td>
+                            <th scope="row" class="text-center align-middle">{{ $aStockRequests->firstItem() + $key }}</th>
+                            <td class="align-middle">{{ $transferRequest->fromBranch?->getTranslatedField('branch_name') ?? translate('not_available') }}</td>
                             <td class="text-start align-middle">
-                                {{ $transferRequest->transfer_date ? date('M d, Y', strtotime($transferRequest->transfer_date)) : 'N/A' }}
+                                {{ $transferRequest->transfer_date ? date('M d, Y', strtotime($transferRequest->transfer_date)) : translate('not_available') }}
                             </td>
                             <td class="text-start">
-                                {{ $transferRequest->products->map(fn($p) => optional($p->product)->name ?? 'N/A')->implode(', ') }}
+                                <a href="{{ route('admin.stock-request.view', $transferRequest->id) }}" class="crm-primary-link">
+                                    {{ $transferRequest->products->map(fn($product) => optional($product->product)->getTranslatedField('name') ?? translate('not_available'))->implode(', ') }}
+                                </a>
                             </td>
                             <td class="text-start">
-                                {{ $transferRequest->products->map(fn($p) => optional($p->category)->name ?? 'N/A')->implode(', ') }}
+                                {{ $transferRequest->products->map(fn($product) => optional($product->category)->getTranslatedField('name') ?? translate('not_available'))->implode(', ') }}
                             </td>
-                        <td class="text-start">
-    @foreach($transferRequest->products as $p)
-        <div class="mb-1">
-            @if($p->variation_type)
-                <span class="badge badge-soft-primary me-1">{{ $p->variation_type }}</span>
-                @if($p->variation_key)
-                    <small class="text-muted">
-                        ({{ Str::replace(':', ' : ', Str::replace('|', ' • ', $p->variation_key)) }})
-                    </small>
-                @endif
-            @else
-                <span class="badge badge-soft-dark">{{ translate('Default') }}</span>
-            @endif
-        </div>
-    @endforeach
-</td>
-                            <td class="text-center align-middle">
-                                {{-- Quantities --}}
-                                {{ $transferRequest->products->map(fn($p) => $p->quantity)->implode(', ') }}
+                            <td class="text-start">
+                                @foreach($transferRequest->products as $product)
+                                    <div class="mb-1">
+                                        @if($product->variation_type)
+                                            <span class="badge badge-soft-primary me-1">{{ $product->variation_type }}</span>
+                                            @if($product->variation_key)
+                                                <small class="text-muted">
+                                                    ({{ Str::replace(':', ' : ', Str::replace('|', ' • ', $product->variation_key)) }})
+                                                </small>
+                                            @endif
+                                        @else
+                                            <span class="badge badge-soft-dark">{{ translate('Default') }}</span>
+                                        @endif
+                                    </div>
+                                @endforeach
                             </td>
-                            <td>
-                                <div class="d-flex justify-content-center gap-2">
-                                    <a title="{{translate('view')}}"
-                                        class="btn btn-outline-info btn-sm square-btn"
-                                        href="{{route('admin.stock-request.view',$transferRequest->id)}}">
-                                        <i class="tio-invisible"></i>
-                                    </a>
+                            <td class="text-center align-middle">{{ $transferRequest->products->map(fn($product) => $product->quantity)->implode(', ') }}</td>
+                            <td class="text-center">
+                                <div class="crm-row-actions">
+                                    <div class="crm-row-actions__primary">
+                                        <a title="{{ translate('view') }}" class="btn btn-outline-info btn-sm" href="{{ route('admin.stock-request.view', $transferRequest->id) }}">
+                                            {{ translate('view') }}
+                                        </a>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
-                        @endforeach
-                    </tbody>
-
-                </table>
-            </div>
-
-            <div class="table-responsive mt-4">
-                <div class="px-4 d-flex justify-content-lg-end">
-                    {{ $aStockRequests->links() }}
-                </div>
-            </div>
-
-            @if(count($aStockRequests)==0)
-            @include('layouts.back-end._empty-state',['text'=>'no_product_found'],['image'=>'default'])
-            @endif
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center">{{ translate('No data available') }}</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
+
+        <div class="table-responsive mt-4">
+            <div class="px-4 d-flex justify-content-lg-end">
+                {{ $aStockRequests->links() }}
+            </div>
+        </div>
+
+        @if(count($aStockRequests) == 0)
+            @include('layouts.back-end._empty-state', ['text' => 'no_product_found'], ['image' => 'default'])
+        @endif
     </div>
 </div>
+
 <span id="message-select-word" data-text="{{ translate('select') }}"></span>
 <div class="modal fade update-stock-modal restock-stock-update" id="update-stock" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -142,9 +183,7 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             {{ translate('close') }}
                         </button>
-                        <button class="btn btn--primary" class="btn btn--primary" type="submit">
-                            {{ translate('update') }}
-                        </button>
+                        <button class="btn btn--primary" type="submit">{{ translate('update') }}</button>
                     </div>
                 </div>
             </form>
@@ -152,8 +191,3 @@
     </div>
 </div>
 @endsection
-@push('script')
-<script type="text/javascript">
-    changeInputTypeForDateRangePicker($('input[name="restock_date"]'));
-</script>
-@endpush

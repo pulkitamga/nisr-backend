@@ -1,6 +1,91 @@
 @extends('layouts.back-end.app')
 @section('title', translate('warranty_dashboard'))
 
+@php
+    use Illuminate\Support\Str;
+
+    $statusOptions = [
+        'all' => translate('all'),
+        'new' => translate('new'),
+        'triage_pending' => translate('triage_pending'),
+        'approved' => translate('approved'),
+        'rma_issued' => translate('rma_issued'),
+        'received' => translate('received'),
+        'repair_pending' => translate('repair_pending'),
+        'replacement_pending' => translate('replacement_pending'),
+        'diagnosis_pending' => translate('diagnosis_pending'),
+        'qc_pending' => translate('qc_pending'),
+        'shipped_ready' => translate('shipped_ready'),
+        'dispatched' => translate('dispatched'),
+        'resolved' => translate('resolved'),
+        'closed' => translate('closed'),
+        'rejected' => translate('rejected'),
+        'waiting_customer' => translate('waiting_customer'),
+        'waiting_parts' => translate('waiting_parts'),
+        'waiting_payment' => translate('waiting_payment'),
+    ];
+
+    $toolbarFields = [
+        [
+            'type' => 'select',
+            'name' => 'status',
+            'label' => translate('Status'),
+            'value' => request('status', 'all'),
+            'options' => $statusOptions,
+            'input_class' => 'form-control js-select2-custom',
+        ],
+        [
+            'type' => 'number',
+            'name' => 'choose_first',
+            'label' => translate('Rows_to_show'),
+            'value' => request('choose_first', $recentClaimsLimit ?? 10),
+            'placeholder' => translate('Ex') . ' : 10',
+            'attributes' => ['min' => '1'],
+        ],
+        [
+            'type' => 'search',
+            'name' => 'searchValue',
+            'label' => translate('search'),
+            'value' => request('searchValue'),
+            'placeholder' => translate('search_by_claim_or_serial'),
+            'aria_label' => translate('search_by_claim_or_serial'),
+            'col_class' => 'col-xl-4 col-lg-12',
+        ],
+    ];
+
+    $toolbarSummary = [
+        [
+            'label' => translate('Status'),
+            'value' => $statusOptions[(string) request('status', 'all')] ?? translate('all'),
+        ],
+        [
+            'label' => translate('Rows_to_show'),
+            'value' => request('choose_first', $recentClaimsLimit ?? 10),
+            'muted' => true,
+        ],
+    ];
+
+    if (request()->filled('searchValue')) {
+        $toolbarSummary[] = [
+            'label' => translate('search'),
+            'value' => Str::limit(request('searchValue'), 28),
+            'muted' => true,
+        ];
+    }
+
+    $headerActions = [
+        [
+            'href' => route('admin.warranty.claim.all'),
+            'class' => 'btn btn-outline--primary text-nowrap',
+            'label' => translate('view_all'),
+        ],
+    ];
+@endphp
+
+@push('css_or_js')
+<link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
+@endpush
+
 @section('content')
 <div class="content container-fluid">
     <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
@@ -10,6 +95,14 @@
         </h2>
         <a href="{{route('admin.warranty.import')}}" class="btn btn--primary">{{translate('import_serials')}}</a>
     </div>
+
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'warranty-dashboard-toolbar',
+        'toolbarAction' => route('admin.warranty.dashboard'),
+        'toolbarResetUrl' => route('admin.warranty.dashboard'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
 
     <!-- KPI Cards -->
     <div class="row mb-4">
@@ -49,10 +142,11 @@
 
     <!-- Quick Claims Table -->
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5>{{translate('recent_claims')}}</h5>
-
-        </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('recent_claims'),
+            'listHeaderTotal' => $recentClaims->count(),
+            'listHeaderActions' => $headerActions,
+        ])
         <div class="card-body p-0">
             <div class="table-responsive datatable-custom">
 
@@ -90,15 +184,3 @@
     </div>
 </div>
 @endsection
-
-@push('script')
-<script>
-    // Basic search/filter JS (extend your existing)
-    $('.form-control').on('keyup', function() {
-        var value = $(this).val();
-        $('table tbody tr').filter(function() {
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-        });
-    });
-</script>
-@endpush

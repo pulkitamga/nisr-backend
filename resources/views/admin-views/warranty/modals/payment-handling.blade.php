@@ -15,11 +15,21 @@
                         <strong>{{ translate('Pending Charges') }}:</strong>
                         <div class="mt-2">
                             @foreach($claim->charges->where('is_paid', false) as $charge)
+                            @php
+                                $chargeLabel = match ($charge->charge_type) {
+                                    'repair_fee' => translate('warranty_charge_repair_fee'),
+                                    'replacement_fee' => translate('warranty_charge_replacement_fee'),
+                                    'inspection_fee' => translate('warranty_charge_inspection_fee'),
+                                    default => translate($charge->charge_type) !== $charge->charge_type
+                                        ? translate($charge->charge_type)
+                                        : ucwords(str_replace('_', ' ', $charge->charge_type)),
+                                };
+                            @endphp
                             <div>
                                 <label class="d-flex align-items-center">
                                     <input type="checkbox" name="charge_ids[]" value="{{ $charge->id }}" class="me-2">
                                     <span>
-                                        <strong>{{ translate(ucfirst(str_replace('_', ' ', $charge->charge_type))) }}:</strong>
+                                        <strong>{{ $chargeLabel }}:</strong>
                                         {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:$charge->amount))}}
                                     </span>
                                 </label>
@@ -76,58 +86,3 @@
         </form>
     </div>
 </div>
-
-@push('script')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('paymentHandlingModal');
-        if (!modal) return;
-
-        const actionSelect = modal.querySelector('#paymentAction');
-        const chargeCheckboxes = modal.querySelectorAll('input[name="charge_ids[]"]');
-        const pendingWrapper = modal.querySelector('#pendingChargesWrapper');
-        const paymentReferenceWrapper = modal.querySelector('#paymentReferenceWrapper');
-        const paymentReferenceInput = modal.querySelector('#paymentReference');
-        const linkExpiryWrapper = modal.querySelector('#linkExpiryWrapper');
-        const linkExpireHoursInput = modal.querySelector('#linkExpireHours');
-
-        function toggleChargeView() {
-            const action = actionSelect.value;
-            const chargeActions = ['pos', 'cod', 'cod_collect', 'online_link'];
-            const referenceActions = ['pos', 'cod_collect'];
-            const linkActions = ['online_link'];
-
-            const chargeRequired = chargeActions.includes(action);
-            const referenceRequired = referenceActions.includes(action);
-            const linkRequired = linkActions.includes(action);
-
-            if (pendingWrapper) {
-                pendingWrapper.style.display = chargeRequired ? 'block' : 'none';
-            }
-
-            chargeCheckboxes.forEach(cb => {
-                if (!chargeRequired) cb.checked = false;
-            });
-
-            if (paymentReferenceWrapper && paymentReferenceInput) {
-                paymentReferenceWrapper.style.display = referenceRequired ? 'block' : 'none';
-                paymentReferenceInput.required = referenceRequired;
-                if (!referenceRequired) {
-                    paymentReferenceInput.value = '';
-                }
-            }
-
-            if (linkExpiryWrapper && linkExpireHoursInput) {
-                linkExpiryWrapper.style.display = linkRequired ? 'block' : 'none';
-                linkExpireHoursInput.required = linkRequired;
-                if (!linkRequired) {
-                    linkExpireHoursInput.value = '24';
-                }
-            }
-        }
-
-        actionSelect.addEventListener('change', toggleChargeView);
-        modal.addEventListener('shown.bs.modal', toggleChargeView);
-    });
-</script>
-@endpush

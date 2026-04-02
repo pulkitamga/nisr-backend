@@ -46,10 +46,12 @@ use App\Traits\FileManagerTrait;
 use App\Traits\ProductTrait;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Http\Requests\Admin\StockRequestAddProduct;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Models\StockRequestProduct;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 
 
@@ -277,39 +279,49 @@ class StockMovementController extends Controller
 
     public function getStockTransferListView(Request $request): View|RedirectResponse
     {
-        $aStockTransfers = StockTransfers::with([
-            'products.product.translations',
-            'products.category.translations',
-            'products.attribute',
-            'toBranch.translations'
-        ])
-            ->when($request->restock_date, function ($query) use ($request) {
-                return $query->whereDate('transfer_date', $request->restock_date); // Filter by transfer date
-            })
-            ->when($request->category_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('category_id', $request->category_id); // Filter by category
-                });
-            })
-            ->when($request->sub_category_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('sub_category_id', $request->sub_category_id); // Filter by sub-category
-                });
-            })
-            ->when($request->brand_id, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('brand_id', $request->brand_id); // Filter by brand
-                });
-            })
-            ->when($request->searchValue, function ($query) use ($request) {
-                return $query->whereHas('products.product', function ($query) use ($request) {
-                    $query->where('name', 'like', '%' . $request->searchValue . '%'); // Search by product name
-                });
-            })
-            ->paginate(10); // Adjust pagination as needed
-        // dd($aStockRequests);
-        // Pass the data to the view
+        $aStockTransfers = $this->receivedTransfersQuery($request)
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
+
         return view('admin-views.branch-management.stock-movement.stock-received', compact('aStockTransfers'));
+    }
+
+    public function exportReceivedList(Request $request): StreamedResponse
+    {
+        $stockTransfers = $this->receivedTransfersQuery($request)->get();
+
+        return response()->streamDownload(function () use ($stockTransfers) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, [
+                translate('To Branch'),
+                translate('Transfer Date'),
+                translate('Products'),
+                translate('Category'),
+                translate('Attribute'),
+                translate('Qty'),
+                translate('Status'),
+            ]);
+
+            foreach ($stockTransfers as $stockTransfer) {
+                foreach ($stockTransfer->products as $product) {
+                    fputcsv($handle, [
+                        $stockTransfer->toBranch?->getTranslatedField('branch_name') ?? translate('not_available'),
+                        $stockTransfer->transfer_date ? date('M d, Y', strtotime($stockTransfer->transfer_date)) : translate('not_available'),
+                        $product->product?->getTranslatedField('name') ?? translate('not_available'),
+                        $product->category?->getTranslatedField('name') ?? translate('not_available'),
+                        $product->attribute ?: translate('not_available'),
+                        (string) $product->quantity,
+                        translate($product->status),
+                    ]);
+                }
+            }
+
+            fclose($handle);
+        }, 'received-stock-transfer-list.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     public function addStockTransferListView(Request $request): View|RedirectResponse
@@ -345,6 +357,73 @@ class StockMovementController extends Controller
             'cartItems',
             'attributes'
         ));
+    }
+
+    private function receivedTransfersQuery(Request $request): Builder
+    {
+        $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+
+        return StockTransfers::query()
+            ->with([
+                'products' => fn ($query) => $this->applyReceivedTransferProductFilters($query, $request)
+                    ->with(['product.translations', 'category.translations', 'attribute']),
+                'toBranch.translations',
+            ])
+            ->when($request->filled('restock_date'), fn(Builder $query) => $query->whereDate('transfer_date', $request->restock_date))
+            ->when($request->filled('category_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('category_id', $request->category_id));
+            })
+            ->when($request->filled('sub_category_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('sub_category_id', $request->sub_category_id));
+            })
+            ->when($request->filled('brand_id'), function (Builder $query) use ($request) {
+                $query->whereHas('products.product', fn(Builder $productQuery) => $productQuery->where('brand_id', $request->brand_id));
+            })
+            ->when($searchValue !== '', function (Builder $query) use ($searchValue) {
+                $query->whereHas('products.product', function (Builder $productQuery) use ($searchValue) {
+                    $productQuery
+                        ->where('name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('code', 'like', '%' . $searchValue . '%');
+                });
+            })
+            ->orderByDesc('id');
+    }
+
+    private function applyReceivedTransferProductFilters($query, Request $request)
+    {
+        $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+
+        return $query
+            ->when($request->filled('category_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('category_id', $request->category_id));
+            })
+            ->when($request->filled('sub_category_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('sub_category_id', $request->sub_category_id));
+            })
+            ->when($request->filled('brand_id'), function (Builder $innerQuery) use ($request) {
+                $innerQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->where('brand_id', $request->brand_id));
+            })
+            ->when($searchValue !== '', function (Builder $innerQuery) use ($searchValue) {
+                $innerQuery->whereHas('product', function (Builder $productQuery) use ($searchValue) {
+                    $productQuery
+                        ->where('name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('code', 'like', '%' . $searchValue . '%');
+                });
+            });
+    }
+
+    private function resolveListPerPage(Request $request): int
+    {
+        if ($request->filled('choose_first') && (int) $request->choose_first > 0) {
+            return (int) $request->choose_first;
+        }
+
+        return (int) (getWebConfig('pagination_limit') ?? 10);
+    }
+
+    private function sanitizeListSearch(?string $value): string
+    {
+        return mb_substr(trim((string) $value), 0, 100);
     }
 
    

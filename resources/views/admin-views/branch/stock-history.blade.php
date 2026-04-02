@@ -30,7 +30,7 @@
                     <div class="d-flex flex-column">
                         <span class="text-muted fz-12">{{ translate('Variation') }}</span>
                         <div>
-                            <span class="badge badge-soft-primary">{{ $stock->variation_type ?? 'N/A' }}</span>
+                            <span class="badge badge-soft-primary">{{ $stock->variation_type ?? translate('not_available') }}</span>
                             @if($stock->variation_key && $stock->variation_key !== 'No Variation')
                             <small class="text-muted">({{ str_replace(['|', ':'], [' • ', ' : '], $stock->variation_key) }})</small>
                             @endif
@@ -100,7 +100,7 @@
                                 <small class="text-muted">
                                     @if(($logArray['reference'] ?? '') === 'BRANCH TRANSFER')
                                     {{ $isStockIn ? translate('Received from') : translate('Sent to') }}
-                                    {{ $logArray['from_branch'] ?? $logArray['to_branch'] ?? 'Branch' }}
+                                    {{ $logArray['from_branch'] ?? $logArray['to_branch'] ?? translate('Branch') }}
                                     @else
                                     {{ $logArray['remarks'] ?? '' }}
                                     @endif

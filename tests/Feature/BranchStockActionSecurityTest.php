@@ -132,6 +132,48 @@ class BranchStockActionSecurityTest extends TestCase
         $response->assertRedirect(route('admin.branch.branch-stock-list'));
     }
 
+    public function test_branch_stock_history_endpoint_is_limited_to_the_users_branch(): void
+    {
+        $managerBranchId = $this->createBranch('History-Manager');
+        $otherBranchId = $this->createBranch('History-Other');
+        $admin = $this->createAdmin($managerBranchId, 'history-manager');
+        $otherProductId = $this->createProduct($otherBranchId);
+        $ownProductId = $this->createProduct($managerBranchId);
+
+        $this->createManageBranchProductStock($otherBranchId, $otherProductId, 7);
+        $this->createManageBranchProductStock($managerBranchId, $ownProductId, 5);
+
+        $forbiddenResponse = $this->withoutMiddleware()
+            ->actingAs($admin, 'admin')
+            ->getJson(route('admin.branch.stock-history', [
+                'branch_id' => $otherBranchId,
+                'product_id' => $otherProductId,
+                'variation_type' => 'No Variation',
+                'variation_key' => 'No Variation',
+            ]));
+
+        $forbiddenResponse->assertStatus(403);
+
+        $allowedResponse = $this->withoutMiddleware()
+            ->actingAs($admin, 'admin')
+            ->getJson(route('admin.branch.stock-history', [
+                'branch_id' => $managerBranchId,
+                'product_id' => $ownProductId,
+                'variation_type' => 'No Variation',
+                'variation_key' => 'No Variation',
+            ]));
+
+        $allowedResponse->assertOk();
+        $allowedResponse->assertJsonStructure([
+            'branch_name',
+            'product_name',
+            'variation_label',
+            'current_stock',
+            'history',
+            'export_url',
+        ]);
+    }
+
     public function test_vendor_view_is_limited_to_the_managers_branch(): void
     {
         $managerBranchId = $this->createBranch('Vendor-Manager');
@@ -239,6 +281,19 @@ class BranchStockActionSecurityTest extends TestCase
             'product_id' => $productId,
             'quantity' => $quantity,
             'status' => $status,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createManageBranchProductStock(int $branchId, int $productId, int $stock): int
+    {
+        return (int) DB::table('manage_branch_product_stock')->insertGetId([
+            'branch_id' => $branchId,
+            'product_id' => $productId,
+            'current_stock' => $stock,
+            'variation_type' => null,
+            'variation_key' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

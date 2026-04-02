@@ -28,28 +28,3 @@
         </form>
     </div>
 </div>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    const modal = document.getElementById('dispatchModal');
-    const dispatchSelect = modal.querySelector('select[name="dispatch_mode"]');
-    const trackingInput = modal.querySelector('input[name="tracking_number"]');
-
-    function toggleTracking() {
-        if(dispatchSelect.value === 'ship'){
-            trackingInput.required = true;
-            trackingInput.closest('.form-group').style.display = 'block';
-        } else {
-            trackingInput.required = false;
-            trackingInput.value = '';
-            trackingInput.closest('.form-group').style.display = 'none';
-        }
-    }
-
-    dispatchSelect.addEventListener('change', toggleTracking);
-    modal.addEventListener('shown.bs.modal', toggleTracking);
-
-});
-</script>

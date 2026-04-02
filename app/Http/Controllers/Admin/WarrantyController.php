@@ -32,13 +32,13 @@ class ValidationHeading implements WithHeadingRow {}
 
 class WarrantyController extends Controller
 {
+    private const MAX_WARRANTY_LIST_LIMIT = 500;
+
     public function importView(): \Illuminate\Contracts\View\View
     {
-        $history = Warranty::where('status', 'preactivated')
-            ->selectRaw('DATE(created_at) as import_date, COUNT(*) as count')
-            ->groupBy('import_date')
-            ->orderBy('import_date', 'desc')
-            ->get();
+        $history = $this->buildImportHistoryQuery(request())
+            ->paginate($this->resolveListPerPage(request()))
+            ->appends(request()->query());
 
         return view('admin-views.warranty.import', compact('history'));
     }
@@ -269,24 +269,24 @@ class WarrantyController extends Controller
     }
 
     // Import History List
-    public function importHistory()
+    public function importHistory(Request $request)
     {
-        $history = Warranty::where('status', 'preactivated')
-            ->selectRaw('DATE(created_at) as import_date, COUNT(*) as count')
-            ->groupBy('import_date')
-            ->orderBy('import_date', 'desc')
-            ->paginate(10);
+        $history = $this->buildImportHistoryQuery($request)
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
         return view('admin-views.warranty.import-history', compact('history'));
     }
 
     public function exportImportHistory(Request $request): StreamedResponse
     {
-        $history = Warranty::where('status', 'preactivated')
-            ->selectRaw('DATE(created_at) as import_date, COUNT(*) as count')
-            ->groupBy('import_date')
-            ->orderBy('import_date', 'desc')
-            ->get();
+        $historyQuery = $this->buildImportHistoryQuery($request);
+        $limit = $this->resolveResultsLimit($request);
+        if ($limit !== null) {
+            $historyQuery->limit($limit);
+        }
+
+        $history = $historyQuery->get();
 
         $filename = 'warranty-import-history-' . now()->format('Ymd_His') . '.csv';
 
@@ -423,18 +423,40 @@ class WarrantyController extends Controller
     // Activation List
     public function activationList(Request $request)
     {
-        $query = Warranty::with('user', 'product');
-        if ($request->searchValue) {
-            $query->where('serial_number', 'like', '%' . $request->searchValue . '%');
-        }
-        if ($request->method && $request->method != '') {
-            $query->where('activation_method', $request->method);
-        }
-        $dataLimit = getWebConfig('pagination_limit') ?? 10;
-
-        $activations = $query->paginate($dataLimit);
+        $activations = $this->buildActivationListQuery($request)
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
         return view('admin-views.warranty.activation-list', compact('activations'));
+    }
+
+    public function exportActivationList(Request $request): StreamedResponse
+    {
+        $query = $this->buildActivationListQuery($request);
+        $limit = $this->resolveResultsLimit($request);
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+
+        $activations = $query->latest('id')->get();
+
+        return response()->streamDownload(function () use ($activations) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Serial', 'Customer', 'Method', 'Start Date', 'End Date', 'Status']);
+
+            foreach ($activations as $warranty) {
+                fputcsv($handle, [
+                    $warranty->serial_number,
+                    $warranty->user?->name ?? $warranty->activated_by_name,
+                    $this->resolveActivationMethodLabel((string) $warranty->activation_method),
+                    optional($warranty->start_date)->format('Y-m-d'),
+                    optional($warranty->end_date)->format('Y-m-d'),
+                    translate($warranty->statusLabel()),
+                ]);
+            }
+
+            fclose($handle);
+        }, 'warranty-activations-' . now()->format('Ymd_His') . '.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function activationView(Warranty $warranty)
@@ -453,19 +475,37 @@ class WarrantyController extends Controller
 
     public function blacklistView(Request $request)
     {
-        $dataLimit = getWebConfig('pagination_limit') ?? 10;
-
-        $blacklists = Blacklist::with('warranty');
-
-        if ($request->searchValue) {
-            $blacklists = $blacklists->whereHas('warranty', function ($q) use ($request) {
-                $q->where('serial_number', 'like', "%{$request->searchValue}%");
-            });
-        }
-
-        $blacklists = $blacklists->paginate($dataLimit);
+        $blacklists = $this->buildBlacklistQuery($request)
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
         return view('admin-views.warranty.blacklist', compact('blacklists'));
+    }
+
+    public function exportBlacklist(Request $request): StreamedResponse
+    {
+        $query = $this->buildBlacklistQuery($request);
+        $limit = $this->resolveResultsLimit($request);
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+
+        $blacklists = $query->latest('id')->get();
+
+        return response()->streamDownload(function () use ($blacklists) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Serial Number', 'Reason', 'Blacklisted At']);
+
+            foreach ($blacklists as $item) {
+                fputcsv($handle, [
+                    $item->serial_number,
+                    $item->reason,
+                    optional($item->blacklisted_at)->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($handle);
+        }, 'warranty-blacklist-' . now()->format('Ymd_His') . '.csv', ['Content-Type' => 'text/csv']);
     }
 
 
@@ -504,6 +544,82 @@ class WarrantyController extends Controller
 
         Toastr::success(translate('Blacklist removed.'));
         return back();
+    }
+
+    private function buildImportHistoryQuery(Request $request)
+    {
+        $query = Warranty::query()
+            ->where('status', 'preactivated')
+            ->selectRaw('DATE(created_at) as import_date, COUNT(*) as count')
+            ->groupBy('import_date')
+            ->orderBy('import_date', 'desc');
+
+        if ($request->filled('searchValue')) {
+            $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+            $query->whereRaw('DATE(created_at) LIKE ?', ['%' . $searchValue . '%']);
+        }
+
+        return $query;
+    }
+
+    private function buildActivationListQuery(Request $request)
+    {
+        $query = Warranty::with('user', 'product');
+
+        if ($request->filled('searchValue')) {
+            $query->where('serial_number', 'like', '%' . $this->sanitizeListSearch($request->input('searchValue')) . '%');
+        }
+
+        if ($request->filled('method')) {
+            $query->where('activation_method', $request->input('method'));
+        }
+
+        return $query->latest('id');
+    }
+
+    private function buildBlacklistQuery(Request $request)
+    {
+        $query = Blacklist::with('warranty');
+
+        if ($request->filled('searchValue')) {
+            $searchValue = $this->sanitizeListSearch($request->input('searchValue'));
+            $query->where(function ($subQuery) use ($searchValue) {
+                $subQuery->where('serial_number', 'like', '%' . $searchValue . '%')
+                    ->orWhereHas('warranty', function ($warrantyQuery) use ($searchValue) {
+                        $warrantyQuery->where('serial_number', 'like', '%' . $searchValue . '%');
+                    });
+            });
+        }
+
+        return $query->latest('id');
+    }
+
+    private function resolveListPerPage(Request $request): int
+    {
+        return $this->resolveResultsLimit($request)
+            ?? (int) (getWebConfig('pagination_limit') ?? 10);
+    }
+
+    private function resolveResultsLimit(Request $request): ?int
+    {
+        $value = $request->input('choose_first');
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        $limit = (int) $value;
+
+        if ($limit <= 0) {
+            return null;
+        }
+
+        return min($limit, self::MAX_WARRANTY_LIST_LIMIT);
+    }
+
+    private function sanitizeListSearch(?string $value): string
+    {
+        return mb_substr(trim((string) $value), 0, 100);
     }
 
     // History Details
@@ -546,7 +662,7 @@ class WarrantyController extends Controller
                 fputcsv($handle, [
                     $warranty->serial_number,
                     $warranty->product?->name ?? '-',
-                    $warranty->status,
+                    translate($warranty->status),
                     optional($warranty->created_at)->format('Y-m-d H:i:s'),
                 ]);
             }

@@ -6,29 +6,29 @@ use App\Http\Controllers\Controller;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
 use Illuminate\Http\Request;
-use Brian2694\Toastr\Facades\Toastr;
 
 class WarrantyDashboardController extends Controller
 {
+    private const MAX_RECENT_CLAIMS_LIMIT = 100;
+
     public function dashboard(Request $request)
     {
         $query = WarrantyClaim::with('warranty.user')->latest();
 
-        // Search by claim number or serial
-        if ($request->filled('search')) {
-            $search = $request->search;
+        if ($request->filled('searchValue')) {
+            $search = $this->sanitizeSearchTerm($request->input('searchValue'));
             $query->where(function ($q) use ($search) {
                 $q->where('claim_number', 'like', "%{$search}%")
                     ->orWhere('serial_number', 'like', "%{$search}%");
             });
         }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
         }
 
-        $recentClaims = $query->take(10)->get();
+        $recentClaimsLimit = $this->resolveRecentClaimsLimit($request);
+        $recentClaims = $query->take($recentClaimsLimit)->get();
 
         $slaTrackedClaims = WarrantyClaim::whereNotNull('resolution_due');
         $slaTotal = (clone $slaTrackedClaims)->count();
@@ -51,6 +51,28 @@ class WarrantyDashboardController extends Controller
             'sla_compliance' => $slaTotal > 0 ? ($slaWithin / $slaTotal) * 100 : 0,
         ];
 
-        return view('admin-views.warranty.dashboard', compact('stats', 'recentClaims'));
+        return view('admin-views.warranty.dashboard', compact('stats', 'recentClaims', 'recentClaimsLimit'));
+    }
+
+    private function resolveRecentClaimsLimit(Request $request): int
+    {
+        $value = $request->input('choose_first');
+
+        if (!is_numeric($value)) {
+            return 10;
+        }
+
+        $limit = (int) $value;
+
+        if ($limit <= 0) {
+            return 10;
+        }
+
+        return min($limit, self::MAX_RECENT_CLAIMS_LIMIT);
+    }
+
+    private function sanitizeSearchTerm(?string $value): string
+    {
+        return mb_substr(trim((string) $value), 0, 100);
     }
 }

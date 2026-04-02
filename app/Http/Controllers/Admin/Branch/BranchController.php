@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Branch;
 
+use Carbon\Carbon;
 use App\Models\Admin;
 use App\Models\Deal;
 use App\Models\Lead;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use App\Services\ShopService;
 use App\Traits\PaginatorTrait;
 use App\Services\BranchService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use App\Exports\BranchListExport;
 use App\Exports\VendorListExport;
@@ -93,11 +95,13 @@ class BranchController extends BaseController
     public function getListView(Request $request): View
     {
         $current_date = date('Y-m-d');
+        $perPage = $this->resolveListPerPage($request);
+        $searchValue = $this->sanitizeSearchTerm($request['searchValue']);
         $branches = $this->branchRepo->getListWhere(
             orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
+            searchValue: $searchValue,
             relations: ['manager', 'translations', 'shippingAreas', 'deliveryRestrictions'],
-            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
+            dataLimit: $perPage
         );
         foreach ($branches as $branch) {
             $branch->shipping_method_areas = $branch->getShippingMethodsAreas();
@@ -191,7 +195,7 @@ class BranchController extends BaseController
         return back();
     }
 
-    public function exportList(Request $request): BinaryFileResponse|RedirectResponse
+    public function exportList(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse|BinaryFileResponse|RedirectResponse
     {
 
         // --- NEW: Single Product History Export Logic ---
@@ -238,12 +242,16 @@ class BranchController extends BaseController
             return Excel::download(new \App\Exports\BranchStockHistoryExport(['history' => $history]), 'stock-history.xlsx');
         }
 
+        if ($request->input('export_scope') === 'branch_stock') {
+            return $this->exportBranchStockList($request);
+        }
+
         // changes end for single product 
 
 
         $vendors = $this->branchRepo->getListWhere(
             orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
+            searchValue: $this->sanitizeSearchTerm($request['searchValue']),
             relations: [],
             dataLimit: 'all'
         );
@@ -359,48 +367,63 @@ class BranchController extends BaseController
     }
 
     public function fGetBranchesStockList(Request $request): view
-{
-    $searchValue = $request->input('searchValue', '');
-    $branchFilter = $request->input('branch_id', '');
-    $productFilter = $request->input('product_id', '');
-    $attributeFilter = $request->input('attribute', '');
-    $escapedAttributeFilter = $this->escapeLikeValue($attributeFilter);
-    $branches = ManageBranchProductStock::with(['branch.translations', 'product.translations'])
-        ->select(
-            'branch_id',
-            'product_id',
-            DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation') as variation_key"),
-            DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation') as variation_type"),
-            DB::raw('SUM(current_stock) as total_stock')
-        )
-        ->whereHas('product', fn($q) => $q->where('product_type', 'physical'))
-        ->when($branchFilter, fn($q) => $q->where('branch_id', $branchFilter))
-        ->when($productFilter, fn($q) => $q->where('product_id', $productFilter))
-        ->when(
-            $attributeFilter,
-            fn($q) =>
-            $q->where(function ($qq) use ($escapedAttributeFilter) {
-                $qq->where('variation_key', 'LIKE', '%' . $escapedAttributeFilter . '%')
-                   ->orWhere('variation_type', 'LIKE', '%' . $escapedAttributeFilter . '%');
-            })
-        )
-        ->groupBy(
-            'branch_id',
-            'product_id',
-            DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation')"),
-            DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation')")
-        )
-        ->paginate(10);
-    $this->attachUnifiedTransferLogs($branches->getCollection());
+    {
+        $branches = $this->branchStockListQuery($request)
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
-    // Collect branch and product lists **outside** the transform closure
-    $branchList = BranchModel::pluck('branch_name', 'id');
-    $productList = \App\Models\Product::where('product_type', 'physical')->pluck('name', 'id');
+        $branchList = BranchModel::orderBy('branch_name')->pluck('branch_name', 'id');
+        $productList = \App\Models\Product::where('product_type', 'physical')->orderBy('name')->pluck('name', 'id');
 
-    return view(
-        Branch::BRANCH_STOCK_LIST[VIEW],
-        compact('branches', 'branchList', 'productList')
-    );
+        return view(
+            Branch::BRANCH_STOCK_LIST[VIEW],
+            compact('branches', 'branchList', 'productList')
+        );
+    }
+
+    public function getStockHistory(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'branch_id' => 'required|integer|exists:branches,id',
+            'product_id' => 'required|integer|exists:products,id',
+            'variation_type' => 'nullable|string|max:255',
+            'variation_key' => 'nullable|string|max:255',
+        ]);
+
+        $authUser = auth('admin')->user();
+        $branchId = (int) $validated['branch_id'];
+        $productId = (int) $validated['product_id'];
+        $variationType = $validated['variation_type'] ?? 'No Variation';
+        $variationKey = $validated['variation_key'] ?? 'No Variation';
+
+        if (!$this->canAccessBranchData($authUser, $branchId)) {
+            return response()->json([
+                'message' => translate('you_are_not_authorized_to_export_this_branch_data'),
+            ], 403);
+        }
+
+        $stock = $this->findBranchStockSummary($branchId, $productId, $variationType, $variationKey);
+
+        if (!$stock) {
+            return response()->json([
+                'message' => translate('No transfer history found'),
+            ], 404);
+        }
+
+        return response()->json([
+            'branch_name' => $stock->branch?->getTranslatedField('branch_name') ?? translate('not_available'),
+            'product_name' => $stock->product?->getTranslatedField('name') ?? translate('not_available'),
+            'variation_label' => $this->formatVariationLabel($stock->variation_type, $stock->variation_key),
+            'current_stock' => (int) $stock->total_stock,
+            'history' => $this->getUnifiedStockHistory($stock)
+                ->map(fn(array $item) => $this->formatStockHistoryItem($item))
+                ->values(),
+            'export_url' => route('admin.branch.export', [
+                'product_id' => $stock->product_id,
+                'branch_id' => $stock->branch_id,
+                'variation_type' => $stock->variation_type,
+            ]),
+        ]);
     }
     public function deleteBranch($id)
     {
@@ -496,7 +519,7 @@ class BranchController extends BaseController
 
     private function getUnifiedStockHistory($stock)
     {
-        $transactionLogs = ProductStockTransaction::with(['fromBranch', 'toBranch'])
+        $transactionLogs = ProductStockTransaction::with(['fromBranch.translations', 'toBranch.translations'])
             ->whereIn('product_stock_id', function ($q) use ($stock) {
                 $variantMatcher = app(VariantMatcher::class);
                 $matchingStockIds = \App\Models\ProductStock::query()
@@ -538,8 +561,8 @@ class BranchController extends BaseController
         $reasonClean = str_replace('_', ' ', $item->reason ?? 'MANUAL');
         $reference = $reasonClean;
 
-        $fromName = $item->fromBranch?->branch_name;
-        $toName = $item->toBranch?->branch_name;
+        $fromName = $item->fromBranch?->getTranslatedField('branch_name') ?? $item->fromBranch?->branch_name;
+        $toName = $item->toBranch?->getTranslatedField('branch_name') ?? $item->toBranch?->branch_name;
 
         if ($item->reason === 'BRANCH_TRANSFER') {
             if ($item->type === 'IN') {
@@ -547,21 +570,25 @@ class BranchController extends BaseController
                     preg_match('/\d+/', $item->remarks, $matches);
                     $extractedId = $matches[0] ?? null;
                     if ($extractedId) {
-                        $fromName = \App\Models\Branch::withTrashed()->find($extractedId)?->branch_name
+                        $resolvedBranch = \App\Models\Branch::withTrashed()->find($extractedId);
+                        $fromName = $resolvedBranch?->getTranslatedField('branch_name')
+                            ?? $resolvedBranch?->branch_name
                             ?? 'Branch #' . $extractedId;
                     }
                 }
-                $reference .= ' (From: ' . ($fromName ?? 'Unknown') . ')';
+                $reference .= ' (' . translate('From') . ': ' . ($fromName ?? translate('not_available')) . ')';
             } else {
                 if (!$toName && !empty($item->remarks)) {
                     preg_match('/\d+/', $item->remarks, $matches);
                     $extractedId = $matches[0] ?? null;
                     if ($extractedId) {
-                        $toName = \App\Models\Branch::withTrashed()->find($extractedId)?->branch_name
+                        $resolvedBranch = \App\Models\Branch::withTrashed()->find($extractedId);
+                        $toName = $resolvedBranch?->getTranslatedField('branch_name')
+                            ?? $resolvedBranch?->branch_name
                             ?? 'Branch #' . $extractedId;
                     }
                 }
-                $reference .= ' (To: ' . ($toName ?? 'Unknown') . ')';
+                $reference .= ' (' . translate('To') . ': ' . ($toName ?? translate('not_available')) . ')';
             }
         }
 
@@ -573,9 +600,77 @@ class BranchController extends BaseController
             'status' => 'completed',
             'created_at' => $item->created_at,
             'remarks' => $item->remarks,
-            'from_branch' => $fromName ?? 'N/A',
-            'to_branch' => $toName ?? 'N/A',
+            'from_branch' => $fromName ?? translate('not_available'),
+            'to_branch' => $toName ?? translate('not_available'),
         ];
+    }
+
+    private function findBranchStockSummary(int $branchId, int $productId, string $variationType, string $variationKey): ?ManageBranchProductStock
+    {
+        $normalizedVariationType = $variationType !== '' ? $variationType : 'No Variation';
+        $normalizedVariationKey = $variationKey !== '' ? $variationKey : 'No Variation';
+
+        return ManageBranchProductStock::query()
+            ->with(['branch.translations', 'product.translations'])
+            ->select(
+                'branch_id',
+                'product_id',
+                DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation') as variation_key"),
+                DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation') as variation_type"),
+                DB::raw('SUM(current_stock) as total_stock')
+            )
+            ->where('branch_id', $branchId)
+            ->where('product_id', $productId)
+            ->whereRaw("COALESCE(NULLIF(variation_type, ''), 'No Variation') = ?", [$normalizedVariationType])
+            ->whereRaw("COALESCE(NULLIF(variation_key, ''), 'No Variation') = ?", [$normalizedVariationKey])
+            ->groupBy(
+                'branch_id',
+                'product_id',
+                DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation')"),
+                DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation')")
+            )
+            ->first();
+    }
+
+    private function formatVariationLabel(?string $variationType, ?string $variationKey): string
+    {
+        if (blank($variationType) || $variationType === 'No Variation') {
+            return translate('Default');
+        }
+
+        $label = $variationType;
+        if (!blank($variationKey) && $variationKey !== 'No Variation') {
+            $label .= ' (' . Str::replace('|', ' • ', Str::replace(':', ' : ', $variationKey)) . ')';
+        }
+
+        return $label;
+    }
+
+    private function formatStockHistoryItem(array $item): array
+    {
+        $isStockIn = strtoupper((string) ($item['type'] ?? '')) === 'IN';
+
+        return [
+            'date' => Carbon::parse($item['created_at'])->translatedFormat('d M Y, h:i A'),
+            'type_label' => $isStockIn ? translate('Stock In') : translate('Stock Out'),
+            'type_class' => $isStockIn ? 'text-success' : 'text-danger',
+            'quantity_label' => ($isStockIn ? '+' : '-') . ' ' . (int) ($item['quantity'] ?? 0),
+            'reference' => $item['reference'] ?? translate('not_available'),
+            'description' => $this->resolveStockHistoryDescription($item),
+            'status_label' => translate($item['status'] ?? 'completed'),
+            'status_class' => 'badge badge-success',
+        ];
+    }
+
+    private function resolveStockHistoryDescription(array $item): string
+    {
+        if (str_starts_with((string) ($item['reference'] ?? ''), 'BRANCH TRANSFER')) {
+            return strtoupper((string) ($item['type'] ?? '')) === 'IN'
+                ? translate('Received from') . ' ' . ($item['from_branch'] ?? translate('not_available'))
+                : translate('Sent to') . ' ' . ($item['to_branch'] ?? translate('not_available'));
+        }
+
+        return $item['remarks'] ?: ($item['reference'] ?? translate('not_available'));
     }
 
     private function canAccessBranchData(?Admin $authUser, int $branchId): bool
@@ -594,6 +689,103 @@ class BranchController extends BaseController
     private function escapeLikeValue(string $value): string
     {
         return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
+    }
+
+    private function resolveListPerPage(Request $request): int
+    {
+        if ($request->filled('choose_first') && (int) $request->choose_first > 0) {
+            return (int) $request->choose_first;
+        }
+
+        return (int) (getWebConfig(name: WebConfigKey::PAGINATION_LIMIT) ?? 10);
+    }
+
+    private function sanitizeSearchTerm(?string $value): string
+    {
+        return mb_substr(trim((string) $value), 0, 100);
+    }
+
+    private function branchStockListQuery(Request $request): Builder
+    {
+        $searchValue = $this->sanitizeSearchTerm($request->input('searchValue'));
+        $branchFilter = $request->input('branch_id', '');
+        $productFilter = $request->input('product_id', '');
+        $attributeFilter = $this->sanitizeSearchTerm($request->input('attribute'));
+        $escapedAttributeFilter = $this->escapeLikeValue($attributeFilter);
+        $escapedSearchValue = $this->escapeLikeValue($searchValue);
+
+        return ManageBranchProductStock::query()
+            ->with(['branch.translations', 'product.translations'])
+            ->select(
+                'branch_id',
+                'product_id',
+                DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation') as variation_key"),
+                DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation') as variation_type"),
+                DB::raw('SUM(current_stock) as total_stock')
+            )
+            ->whereHas('product', fn($query) => $query->where('product_type', 'physical'))
+            ->when($branchFilter, fn(Builder $query) => $query->where('branch_id', $branchFilter))
+            ->when($productFilter, fn(Builder $query) => $query->where('product_id', $productFilter))
+            ->when(
+                $attributeFilter !== '',
+                fn(Builder $query) => $query->where(function (Builder $innerQuery) use ($escapedAttributeFilter) {
+                    $innerQuery
+                        ->where('variation_key', 'LIKE', '%' . $escapedAttributeFilter . '%')
+                        ->orWhere('variation_type', 'LIKE', '%' . $escapedAttributeFilter . '%');
+                })
+            )
+            ->when(
+                $searchValue !== '',
+                fn(Builder $query) => $query->where(function (Builder $innerQuery) use ($escapedSearchValue) {
+                    $innerQuery
+                        ->whereHas('branch', fn(Builder $branchQuery) => $branchQuery->where('branch_name', 'LIKE', '%' . $escapedSearchValue . '%'))
+                        ->orWhereHas('product', fn(Builder $productQuery) => $productQuery->where('name', 'LIKE', '%' . $escapedSearchValue . '%'));
+                })
+            )
+            ->groupBy(
+                'branch_id',
+                'product_id',
+                DB::raw("COALESCE(NULLIF(variation_key, ''), 'No Variation')"),
+                DB::raw("COALESCE(NULLIF(variation_type, ''), 'No Variation')")
+            );
+    }
+
+    private function exportBranchStockList(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $stocks = $this->branchStockListQuery($request)->get();
+
+        return response()->streamDownload(function () use ($stocks) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, [
+                translate('branch_name'),
+                translate('product_name'),
+                translate('variation'),
+                translate('Current_stock'),
+            ]);
+
+            foreach ($stocks as $stock) {
+                $variationLabel = translate('Default');
+                if (!empty($stock->variation_type) && $stock->variation_type !== 'No Variation') {
+                    $variationLabel = $stock->variation_type;
+                    if (!empty($stock->variation_key) && $stock->variation_key !== 'No Variation') {
+                        $variationLabel .= ' (' . Str::replace('|', ' • ', Str::replace(':', ' : ', $stock->variation_key)) . ')';
+                    }
+                }
+
+                fputcsv($handle, [
+                    $stock->branch?->getTranslatedField('branch_name') ?? translate('not_available'),
+                    $stock->product?->getTranslatedField('name') ?? translate('not_available'),
+                    $variationLabel,
+                    (string) $stock->total_stock,
+                ]);
+            }
+
+            fclose($handle);
+        }, 'branch-stock-list.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     public function getActiveBranchManagers(?BranchModel $branch = null): Collection

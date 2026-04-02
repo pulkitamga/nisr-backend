@@ -45,6 +45,7 @@ use illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\Models\Activity;
 use App\Http\Controllers\BaseController;
 use App\Models\ManageBranchProductStock;
+use Illuminate\Database\Eloquent\Builder;
 use App\Enums\ViewPaths\Admin\WholeSaler;
 use App\Exports\WholesalerConfiremExport;
 use App\Exports\WholesalerPurchaceExport;
@@ -95,13 +96,10 @@ class WholeSalerController extends BaseController
 
     public function getListView(Request $request): View
     {
-        $current_date = date('Y-m-d');
-        $wholesaler_business = $this->wholeSalerRepo->getListWhere(
-            orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
-            relations: ['wholesaler'],
-            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
-        );
+        $wholesaler_business = $this->approvedWholesalerQuery($request)
+            ->latest('id')
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
         return view(WholeSaler::LIST[VIEW], compact('wholesaler_business'));
     }
@@ -112,13 +110,10 @@ class WholeSalerController extends BaseController
 
     public function wholesalerRequest(Request $request): View
     {
-        $current_date = date('Y-m-d');
-        $wholesaler_business = $this->wholeSalerRepo->getListWhere(
-            orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
-            relations: ['wholesaler'],
-            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
-        );
+        $wholesaler_business = $this->pendingWholesalerQuery($request)
+            ->latest('id')
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
         $tiers = WholesaleTier::where('is_active', 1)->orderBy('rank')->orderBy('id')->get();
 
         return view(WholeSaler::LIST_REQUEST[VIEW], compact('wholesaler_business', 'tiers'));
@@ -126,85 +121,45 @@ class WholeSalerController extends BaseController
 
     public function exportReqList(Request $request): BinaryFileResponse
     {
-        $wholesaler_business = $this->wholeSalerRepo->getListWhere(
-            orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
-            relations: ['wholesaler'],
-            dataLimit: 'all'
-        );
-
-        $filtered_wholesalers = $wholesaler_business->filter(function ($item) {
-            return $item->wholesaler && $item->wholesaler->wholesaler_status == 0;
-        });
-
-        $filter = 'all';
-
-
         $data = [
-            'wholesaler' => $filtered_wholesalers,
-            'filter' => $filter
+            'wholesaler' => $this->pendingWholesalerQuery($request)->latest('id')->get(),
+            'filter' => 'all'
         ];
 
         return Excel::download(new WholesalerReqExport($data), WholesalerExport::WHOLESALE_REQ_XLSX);
     }
     public function exportWholesalerList(Request $request): BinaryFileResponse
     {
-        $wholesaler_business = $this->wholeSalerRepo->getListWhere(
-            orderBy: ['id' => 'desc'],
-            searchValue: $request['searchValue'],
-            relations: ['wholesaler'],
-            dataLimit: 'all'
-        );
-
-        $filtered_wholesalers = $wholesaler_business->filter(function ($item) {
-            return $item->wholesaler && $item->wholesaler->wholesaler_status == 1;
-        });
-        $filter = 'all';
-
         $data = [
-            'wholesaler' => $filtered_wholesalers,
-            'filter' => $filter
+            'wholesaler' => $this->approvedWholesalerQuery($request)->latest('id')->get(),
+            'filter' => 'all'
         ];
 
         return Excel::download(new WholesalersExport($data), WholesalerExport::WHOLESALER_XLSX);
     }
     public function exporPurchaseList(Request $request): BinaryFileResponse
     {
-        $purchaseReq = WholesalePurchaseOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller', 'items.product.translations'])->get();
-
-        $filter = 'all';
-
         $data = [
-            'purchase' => $purchaseReq,
-            'filter' => $filter
+            'purchase' => $this->purchaseOrderListQuery($request)->latest()->get(),
+            'filter' => 'all'
         ];
 
         return Excel::download(new WholesalerPurchaceExport($data), WholesalerExport::PURCHASE_ORDER_LIST_XLSX);
     }
     public function exportQuotationList(Request $request): BinaryFileResponse
     {
-        $wholesaleQuotations = WholesaleQuotation::with([
-            'wholeseller.wholesalerBusiness',
-            'items.product.translations'
-        ])->get();
-        $filter = 'all';
-
         $data = [
-            'quotation' => $wholesaleQuotations,
-            'filter' => $filter
+            'quotation' => $this->quotationListQuery($request)->latest()->get(),
+            'filter' => 'all'
         ];
 
         return Excel::download(new WholesalerQuotationExport($data), WholesalerExport::WHOLESALE_QUOTATION_LIST_XLSX);
     }
     public function exporConfirmList(Request $request): BinaryFileResponse
     {
-        $wholesaler_confierm = WholesaleConfirmOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller'])->get();
-
-        $filter = 'all';
-
         $data = [
-            'confirem' => $wholesaler_confierm,
-            'filter' => $filter
+            'confirem' => $this->confirmedOrderListQuery($request)->latest()->get(),
+            'filter' => 'all'
         ];
 
         return Excel::download(new WholesalerConfiremExport($data), WholesalerExport::WHOLESALE_CONFIRM_XLSX);
@@ -402,7 +357,7 @@ class WholeSalerController extends BaseController
             $tier = WholesaleTier::where('name', $approveValidated['tier'])->where('is_active', 1)->first();
 
             if (!$tier) {
-                return redirect()->back()->with('error', 'Selected tier is not valid or inactive.');
+                return redirect()->back()->with('error', translate('Selected tier is not valid or inactive.'));
             }
 
             $wholesaler->update([
@@ -412,8 +367,8 @@ class WholeSalerController extends BaseController
                 'wholesaler_discount' => $approveValidated['wholesaler_discount'],
             ]);
 
-            $title   = "Business Account Approved";
-            $message = "Your Business Account is approved";
+            $title   = translate('Business Account Approved');
+            $message = translate('Your Business Account is approved');
             $link    = route('home');
 
             $recipients = [
@@ -429,7 +384,7 @@ class WholeSalerController extends BaseController
                 $recipients
             );
 
-            return redirect()->back()->with('success', 'Business approved successfully');
+            return redirect()->back()->with('success', translate('Business approved successfully'));
         } elseif ($validated['action'] === 'reject') {
             $wholesaler->update([
                 'user_type' => 0,
@@ -438,8 +393,8 @@ class WholeSalerController extends BaseController
                 'wholesaler_discount' => 0,
                 'moq_override_enabled' => 0,
             ]);
-            $title   = "Business Account is rejected";
-            $message = "Your Business Account is rejected by admin";
+            $title   = translate('Business Account is rejected');
+            $message = translate('Your Business Account is rejected by admin');
             $link    = route('home');
 
             $recipients = [
@@ -454,10 +409,10 @@ class WholeSalerController extends BaseController
                 $link,
                 $recipients
             );
-            return redirect()->back()->with('success', 'Business rejected successfully');
+            return redirect()->back()->with('success', translate('Business rejected successfully'));
         }
 
-        return redirect()->back()->with('error', 'Invalid action');
+        return redirect()->back()->with('error', translate('Invalid action'));
     }
 
     public function toggleMOQOverride(Request $request)
@@ -472,8 +427,10 @@ class WholeSalerController extends BaseController
         $user->save();
 
 
-        $title   = "MOQ override";
-        $message = "Your minimum order quantity restrition is now off you can purchase order start from 1 quantity ";
+        $title   = translate('MOQ override');
+        $message = $request->boolean('status')
+            ? translate('Your minimum order quantity restriction is now disabled. You can start purchase orders from quantity 1.')
+            : translate('Your minimum order quantity restriction is active again. Standard minimum quantities will apply.');
         $link    = route('home');
 
         $recipients = [
@@ -489,37 +446,18 @@ class WholeSalerController extends BaseController
             $recipients
         );
 
-        return response()->json(['message' => 'MOQ override status updated successfully.']);
+        return response()->json(['message' => translate('MOQ override status updated successfully.')]);
     }
 
     public function orderRequest(Request $request)
     {
+        $orders = $this->purchaseOrderListQuery($request)
+            ->latest()
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
+        $tiers = WholesaleTier::where('is_active', 1)->orderBy('rank')->orderBy('id')->get();
 
-        $dataLimit = getWebConfig('pagination_limit') ?? 10;
-
-        $query = WholesalePurchaseOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller', 'items.product.translations']);
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('tier')) {
-            $query->whereHas('wholeseller', function ($q) use ($request) {
-                $q->where('tier', $request->tier);
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $orders = $query->latest()->paginate($dataLimit);
-
-        return view(WholeSaler::ORDER_REQUEST[VIEW], compact('orders'));
+        return view(WholeSaler::ORDER_REQUEST[VIEW], compact('orders', 'tiers'));
     }
 
     public function checkNumber(Request $request)
@@ -565,23 +503,7 @@ class WholeSalerController extends BaseController
 
     public function confirmedOrders(Request $request)
     {
-
-        $dataLimit = getWebConfig('pagination_limit') ?? 10;
-
-        $query = WholesaleConfirmOrder::with(['wholeseller.wholesalerBusiness', 'wholeseller']);
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-        if ($request->filled('delivery_status')) {
-            $query->where('delivery_status', $request->delivery_status);
-        }
-        if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
-        }
-
+        $query = $this->confirmedOrderListQuery($request);
         if ($request->price_sort === 'low_high') {
             $query->orderBy('final_price', 'asc');
         } elseif ($request->price_sort === 'high_low') {
@@ -590,7 +512,9 @@ class WholeSalerController extends BaseController
             $query->latest();
         }
 
-        $orders = $query->paginate($dataLimit);
+        $orders = $query
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
 
         return view(WholeSaler::CONFIRMED_ORDERS[VIEW], compact('orders'));
     }
@@ -599,27 +523,7 @@ class WholeSalerController extends BaseController
 
     public function wholesaleQuotation(Request $request)
     {
-
-        $dataLimit = getWebConfig('pagination_limit') ?? 10;
-
-        $query = WholesaleQuotation::with(['wholeseller.wholesalerBusiness', 'items.product.translations']);
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-        if ($request->filled('tier')) {
-            $query->where('wholeseller_tier', $request->tier); // or use relation if stored in related model
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('searchValue')) {
-            $query->whereHas('items.product.translations', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->searchValue . '%');
-            });
-        }
+        $query = $this->quotationListQuery($request);
         if ($request->price_sort == 'low_high') {
             $query->orderBy('final_price', 'asc');
         } elseif ($request->price_sort == 'high_low') {
@@ -627,14 +531,18 @@ class WholeSalerController extends BaseController
         } else {
             $query->latest();
         }
-        $orders = $query->paginate($dataLimit);
-        return view(WholeSaler::WHOLESALE_QUOTATIONS[VIEW], compact('orders'));
+        $orders = $query
+            ->paginate($this->resolveListPerPage($request))
+            ->appends($request->query());
+        $tiers = WholesaleTier::where('is_active', 1)->orderBy('rank')->orderBy('id')->get();
+
+        return view(WholeSaler::WHOLESALE_QUOTATIONS[VIEW], compact('orders', 'tiers'));
     }
 
 
 
 
-     public function viewOrder($id)
+     public function showPurchaseRequestBuilder($id)
     {
         $order = WholesalePurchaseOrder::with(['items.product.translations', 'wholeseller'])->findOrFail($id);
 
@@ -657,7 +565,7 @@ class WholeSalerController extends BaseController
     }
 
 
-    public function viewPurchaseOrder($id)
+    public function showPurchaseOrderView($id)
     {
         $order = WholesalePurchaseOrder::with('items.product.translations', 'wholeseller')->findOrFail($id);
 
@@ -680,7 +588,7 @@ class WholeSalerController extends BaseController
 
 
 
-    public function createQuotation()
+    public function showQuotationBuilder()
     {
         $wholesalers = User::where('user_type', 1)
             ->where('is_active', 1)
@@ -765,7 +673,7 @@ class WholeSalerController extends BaseController
                 if (!empty($charge['name']) || !empty($charge['value'])) {
                     $quotation->metas()->create([
                         'type' => 'charge',
-                        'key' => $charge['name'] ?? 'Untitled Charge',
+                        'key' => $charge['name'] ?? translate('Untitled Charge'),
                         'value' => $charge['value'] ?? 0,
                     ]);
                 }
@@ -775,7 +683,7 @@ class WholeSalerController extends BaseController
                 if (!empty($discount['name']) || !empty($discount['value'])) {
                     $quotation->metas()->create([
                         'type' => 'discount',
-                        'key' => $discount['name'] ?? 'Untitled Discount',
+                        'key' => $discount['name'] ?? translate('Untitled Discount'),
                         'value' => $discount['value'] ?? 0,
                     ]);
                 }
@@ -791,8 +699,8 @@ class WholeSalerController extends BaseController
         });
 
 
-        $title   = "Quotation Send";
-        $message = "Admin send you an quotation review it in my quotations";
+        $title   = translate('Quotation Send');
+        $message = translate('Admin send you an quotation review it in my quotations');
         $link    = route('home');
 
         $recipients = [
@@ -808,7 +716,7 @@ class WholeSalerController extends BaseController
             $recipients
         );
 
-        Toastr::success('Quotation created successfully!');
+        Toastr::success(translate('Quotation created successfully!'));
         return redirect()->route('admin.wholesale.business.wholesale.order');
     }
     public function orderDestroy($id)
@@ -820,11 +728,11 @@ class WholeSalerController extends BaseController
         Toastr::success(translate('Purchase Request deleted successfully'));
         return back();
     }
-    public function confiremOrderDestroy($id)
+    public function confirmedOrderDestroy($id)
     {
         $order = WholesaleConfirmOrder::findOrFail($id);
         $order->delete();
-        Toastr::success(translate('Confirem order deleted successfully'));
+        Toastr::success(translate('Confirmed order deleted successfully'));
         return back();
     }
     public function quotationDestroy($id)
@@ -1034,7 +942,7 @@ class WholeSalerController extends BaseController
         $tier->is_active = $request->status;
         $tier->save();
 
-        return response()->json(['message' => 'Status updated successfully']);
+        return response()->json(['message' => translate('Status updated successfully')]);
     }
 
     public function invoiceEdit($id)
@@ -1069,7 +977,7 @@ class WholeSalerController extends BaseController
         return view(WholeSaler::INVOICE_EDIT[VIEW], compact('order', 'priceRanges', 'wholesaleProducts',  'existingCharges',  'existingDiscounts'));
     }
 
-    public function quotationCreate(Request $request, $id)
+    public function storeApprovedQuotation(Request $request, $id)
     {
         Log::info("request", ['request' => $request->all()]);
 
@@ -1098,7 +1006,7 @@ class WholeSalerController extends BaseController
                     $wholesalerBusiness = $order->wholeseller->wholesalerBusiness ?? null;
 
                     if (!$wholesalerBusiness) {
-                        Toastr::error('Wholesaler business not found for this wholesaler');
+                        Toastr::error(translate('Wholesaler business not found for this wholesaler'));
                         return redirect()->back();
                     }
 
@@ -1199,8 +1107,8 @@ class WholeSalerController extends BaseController
             id: $purchaseOrder->id
         );
 
-        $title   = "Wholesale Purchase Order Approved";
-        $message = "Your purchase order is approved admin send you a quotation review it in my quotations";
+        $title   = translate('Wholesale Purchase Order Approved');
+        $message = translate('Your purchase order is approved admin send you a quotation review it in my quotations');
         $link    = route('home');
 
         $recipients = [
@@ -1289,7 +1197,7 @@ class WholeSalerController extends BaseController
             if (!empty($charge['name']) || !empty($charge['value'])) {
                 $quotation->metas()->create([
                     'type'  => 'charge',
-                    'key'   => $charge['name'] ?? 'Charge',
+                    'key'   => $charge['name'] ?? translate('Charge'),
                     'value' => $charge['value'] ?? 0,
                 ]);
             }
@@ -1299,7 +1207,7 @@ class WholeSalerController extends BaseController
             if (!empty($discount['name']) || !empty($discount['value'])) {
                 $quotation->metas()->create([
                     'type'  => 'discount',
-                    'key'   => $discount['name'] ?? 'Discount',
+                    'key'   => $discount['name'] ?? translate('Discount'),
                     'value' => $discount['value'] ?? 0,
                 ]);
             }
@@ -1312,8 +1220,8 @@ class WholeSalerController extends BaseController
             id: $quotation->id
         );
 
-        $title   = "Quotation Update";
-        $message = "Your quotation is updated by admin review it in my quotations";
+        $title   = translate('Quotation Update');
+        $message = translate('Your quotation is updated by admin review it in my quotations');
         $link    = route('home');
 
         $recipients = [
@@ -1330,7 +1238,7 @@ class WholeSalerController extends BaseController
         );
 
 
-        Toastr::success('Quotation updated successfully!');
+        Toastr::success(translate('Quotation updated successfully!'));
         return redirect()->back();
     }
 
@@ -1604,7 +1512,7 @@ class WholeSalerController extends BaseController
             $errors = [];
             $serials = $this->parseCsvSerials($request->file('serial_csv'), $errors);
             if (count($serials) !== $qtyToSend) {
-                $errors[] = "CSV must contain exactly {$qtyToSend} serials.";
+                $errors[] = str_replace(':count', (string)$qtyToSend, translate('CSV must contain exactly :count serials.'));
             }
 
             if (!empty($errors)) {
@@ -1612,7 +1520,7 @@ class WholeSalerController extends BaseController
                 session()->forget('error_csv');
                 session()->flash('error_csv', $csvName);
                 session()->flash('error_count', count($errors));
-                Toastr::error('Serial validation failed. Download error report.');
+                Toastr::error(translate('Serial validation failed. Download error report.'));
                 return redirect()->back()->withInput();
             }
 
@@ -1634,17 +1542,17 @@ class WholeSalerController extends BaseController
                 : $confirmItemQuery->first();
 
             if (!$confirmItem) {
-                throw new \Exception('Requested order item/variation not found.');
+                throw new \Exception(translate('Requested order item/variation not found.'));
             }
 
             $confirmOrder = $confirmItem->confirmOrder;
 
             if ($confirmOrder->delivery_status === 'delivered') {
-                throw new \RuntimeException('This order is already fully delivered.');
+                throw new \RuntimeException(translate('This order is already fully delivered.'));
             }
 
             if ($qtyToSend > (int)$confirmItem->remaining) {
-                throw new \RuntimeException('Quantity exceeds remaining quantity for this order item.');
+                throw new \RuntimeException(translate('Quantity exceeds remaining quantity for this order item.'));
             }
 
             if ($isTraceable && !empty($serials)) {
@@ -1658,15 +1566,15 @@ class WholeSalerController extends BaseController
                 foreach ($serials as $serial) {
                     $warranty = $warranties->get($serial);
                     if (!$warranty) {
-                        $serialErrors[] = "Serial {$serial} not found in system.";
+                        $serialErrors[] = str_replace(':serial', (string)$serial, translate('Serial :serial not found in system.'));
                         continue;
                     }
                     if (!empty($warranty->distributor_id)) {
-                        $serialErrors[] = "Serial {$serial} is already delivered to a wholesaler.";
+                        $serialErrors[] = str_replace(':serial', (string)$serial, translate('Serial :serial is already delivered to a wholesaler.'));
                         continue;
                     }
                     if (!empty($warranty->branch_id) && (int)$warranty->branch_id !== (int)$request->branch_id) {
-                        $serialErrors[] = "Serial {$serial} does not belong to selected branch.";
+                        $serialErrors[] = str_replace(':serial', (string)$serial, translate('Serial :serial does not belong to selected branch.'));
                     }
                 }
 
@@ -1675,7 +1583,7 @@ class WholeSalerController extends BaseController
                     session()->forget('error_csv');
                     session()->flash('error_csv', $csvName);
                     session()->flash('error_count', count($serialErrors));
-                    throw new \RuntimeException('Serial validation failed. Download error report.');
+                    throw new \RuntimeException(translate('Serial validation failed. Download error report.'));
                 }
             }
 
@@ -1691,7 +1599,7 @@ class WholeSalerController extends BaseController
             );
 
             if (!($stockMutation['status'] ?? false)) {
-                throw new \RuntimeException($stockMutation['message'] ?? 'Not enough stock in selected branch.');
+                throw new \RuntimeException($stockMutation['message'] ?? translate('Not enough stock in selected branch.'));
             }
 
             $resolvedBranchId = isset($stockMutation['branchId']) && (int)$stockMutation['branchId'] > 0
@@ -1754,12 +1662,12 @@ class WholeSalerController extends BaseController
 
             DB::commit();
 
-            Toastr::success('Delivery recorded successfully.');
+            Toastr::success(translate('Delivery recorded successfully.'));
             return redirect()->back();
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('DeliveryStore error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            Toastr::error('Error: ' . $e->getMessage());
+            Toastr::error($e->getMessage());
             return redirect()->back()->withInput();
         }
     } 
@@ -2138,5 +2046,192 @@ class WholeSalerController extends BaseController
         }
         session()->forget(['error_csv', 'error_count']);
         return Storage::disk('public')->download($item->serial_csv_path, 'transfer_report.csv');
+    }
+
+    private function resolveListPerPage(Request $request): int
+    {
+        if ($request->filled('choose_first') && (int)$request->choose_first > 0) {
+            return (int)$request->choose_first;
+        }
+
+        return (int)(getWebConfig('pagination_limit') ?? 10);
+    }
+
+    private function approvedWholesalerQuery(Request $request): Builder
+    {
+        return $this->wholesalerBusinessQuery($request, 1);
+    }
+
+    private function pendingWholesalerQuery(Request $request): Builder
+    {
+        return $this->wholesalerBusinessQuery($request, 0);
+    }
+
+    private function wholesalerBusinessQuery(Request $request, int $wholesalerStatus): Builder
+    {
+        $query = WholeSalerBusiness::query()
+            ->with(['wholesaler'])
+            ->whereHas('wholesaler', function (Builder $builder) use ($wholesalerStatus) {
+                $builder->where('wholesaler_status', $wholesalerStatus);
+            });
+
+        $searchValue = trim((string)$request->input('searchValue', ''));
+        if ($searchValue !== '') {
+            $escapedSearch = $this->escapeLike($searchValue);
+            $query->where(function (Builder $builder) use ($escapedSearch) {
+                $builder
+                    ->where('company_name', 'like', "%{$escapedSearch}%")
+                    ->orWhere('trade_name', 'like', "%{$escapedSearch}%")
+                    ->orWhere('registration_number', 'like', "%{$escapedSearch}%")
+                    ->orWhere('tax_id', 'like', "%{$escapedSearch}%")
+                    ->orWhere('vat_number', 'like', "%{$escapedSearch}%")
+                    ->orWhereHas('wholesaler', function (Builder $wholesalerQuery) use ($escapedSearch) {
+                        $wholesalerQuery
+                            ->where('name', 'like', "%{$escapedSearch}%")
+                            ->orWhere('email', 'like', "%{$escapedSearch}%")
+                            ->orWhere('phone', 'like', "%{$escapedSearch}%");
+                    });
+            });
+        }
+
+        return $query;
+    }
+
+    private function purchaseOrderListQuery(Request $request): Builder
+    {
+        $query = WholesalePurchaseOrder::query()
+            ->with(['wholeseller.wholesalerBusiness', 'wholeseller', 'items.product.translations']);
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('tier')) {
+            $query->whereHas('wholeseller', function (Builder $builder) use ($request) {
+                $builder->where('tier', $request->tier);
+            });
+        }
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $searchValue = trim((string)$request->input('searchValue', ''));
+        if ($searchValue !== '') {
+            $escapedSearch = $this->escapeLike($searchValue);
+            $query->where(function (Builder $builder) use ($escapedSearch) {
+                $builder
+                    ->where('order_id', 'like', "%{$escapedSearch}%")
+                    ->orWhere('purchase_order_no', 'like', "%{$escapedSearch}%")
+                    ->orWhere('wholeseller_tier', 'like', "%{$escapedSearch}%")
+                    ->orWhereHas('wholeseller', function (Builder $wholesalerQuery) use ($escapedSearch) {
+                        $wholesalerQuery
+                            ->where('name', 'like', "%{$escapedSearch}%")
+                            ->orWhere('email', 'like', "%{$escapedSearch}%")
+                            ->orWhere('phone', 'like', "%{$escapedSearch}%")
+                            ->orWhereHas('wholesalerBusiness', function (Builder $businessQuery) use ($escapedSearch) {
+                                $businessQuery->where('company_name', 'like', "%{$escapedSearch}%");
+                            });
+                    });
+            });
+        }
+
+        return $query;
+    }
+
+    private function quotationListQuery(Request $request): Builder
+    {
+        $query = WholesaleQuotation::query()
+            ->with(['wholeseller.wholesalerBusiness', 'items.product.translations']);
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('tier')) {
+            $query->where('wholeseller_tier', $request->tier);
+        }
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $searchValue = trim((string)$request->input('searchValue', ''));
+        if ($searchValue !== '') {
+            $escapedSearch = $this->escapeLike($searchValue);
+            $query->where(function (Builder $builder) use ($escapedSearch) {
+                $builder
+                    ->where('purchase_order_no', 'like', "%{$escapedSearch}%")
+                    ->orWhere('quotation_no', 'like', "%{$escapedSearch}%")
+                    ->orWhere('wholeseller_tier', 'like', "%{$escapedSearch}%")
+                    ->orWhereHas('wholeseller', function (Builder $wholesalerQuery) use ($escapedSearch) {
+                        $wholesalerQuery
+                            ->where('name', 'like', "%{$escapedSearch}%")
+                            ->orWhere('email', 'like', "%{$escapedSearch}%")
+                            ->orWhere('phone', 'like', "%{$escapedSearch}%")
+                            ->orWhereHas('wholesalerBusiness', function (Builder $businessQuery) use ($escapedSearch) {
+                                $businessQuery->where('company_name', 'like', "%{$escapedSearch}%");
+                            });
+                    })
+                    ->orWhereHas('items.product.translations', function (Builder $translationQuery) use ($escapedSearch) {
+                        $translationQuery->where('name', 'like', "%{$escapedSearch}%");
+                    });
+            });
+        }
+
+        return $query;
+    }
+
+    private function confirmedOrderListQuery(Request $request): Builder
+    {
+        $query = WholesaleConfirmOrder::query()
+            ->with(['wholeseller.wholesalerBusiness', 'wholeseller']);
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('delivery_status') && $request->input('delivery_status') !== 'all') {
+            $query->where('delivery_status', $request->delivery_status);
+        }
+        if ($request->filled('payment_status') && $request->input('payment_status') !== 'all') {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        $searchValue = trim((string)$request->input('searchValue', ''));
+        if ($searchValue !== '') {
+            $escapedSearch = $this->escapeLike($searchValue);
+            $query->where(function (Builder $builder) use ($escapedSearch) {
+                $builder
+                    ->where('purchase_order_no', 'like', "%{$escapedSearch}%")
+                    ->orWhere('external_po_number', 'like', "%{$escapedSearch}%")
+                    ->orWhere('quotation_no', 'like', "%{$escapedSearch}%")
+                    ->orWhere('confirm_order_no', 'like', "%{$escapedSearch}%")
+                    ->orWhere('invoice_no', 'like', "%{$escapedSearch}%")
+                    ->orWhereHas('wholeseller', function (Builder $wholesalerQuery) use ($escapedSearch) {
+                        $wholesalerQuery
+                            ->where('name', 'like', "%{$escapedSearch}%")
+                            ->orWhere('email', 'like', "%{$escapedSearch}%")
+                            ->orWhere('phone', 'like', "%{$escapedSearch}%")
+                            ->orWhereHas('wholesalerBusiness', function (Builder $businessQuery) use ($escapedSearch) {
+                                $businessQuery->where('company_name', 'like', "%{$escapedSearch}%");
+                            });
+                    });
+            });
+        }
+
+        return $query;
+    }
+
+    private function escapeLike(string $value): string
+    {
+        return addcslashes($value, '\\%_');
     }
 }

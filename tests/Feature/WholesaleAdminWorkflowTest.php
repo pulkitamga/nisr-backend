@@ -6,6 +6,7 @@ use App\Contracts\Repositories\AdminNotificationRepositoryInterface;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Models\Admin;
 use App\Models\QuotationMeta;
+use App\Models\WholesaleConfirmOrder;
 use App\Models\WholesalePurchaseOrder;
 use App\Models\WholesaleQuotation;
 use App\Models\WholesaleQuotationItem;
@@ -47,6 +48,10 @@ class WholesaleAdminWorkflowTest extends TestCase
 
         $this->mock(AdminNotificationRepositoryInterface::class, function (MockInterface $mock): void {
             $mock->shouldReceive('notifyRecipients')
+                ->andReturn(new Collection());
+            $mock->shouldReceive('getForEmployee')
+                ->andReturn(new Collection());
+            $mock->shouldReceive('getForUser')
                 ->andReturn(new Collection());
         });
 
@@ -202,6 +207,93 @@ class WholesaleAdminWorkflowTest extends TestCase
         ], $metaSummary);
     }
 
+    public function test_create_quotation_page_renders_structured_builder_sections_and_sticky_submit_bar(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.create_quotation',
+        ]);
+
+        $wholesaler = $this->createWholesalerUser();
+        $this->createWholesalerBusiness($wholesaler->id, [
+            'company_name' => 'Builder Wholesale Company',
+        ]);
+
+        $categoryId = $this->createCategory();
+        $subCategoryId = $this->createCategory($categoryId);
+        $productId = $this->createProduct();
+        $this->createWholesaleProduct($productId, $categoryId, $subCategoryId);
+
+        $response = $this->get(route('admin.wholesale.business.create-quotation'));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('wholesale-builder-shell', $html);
+        $this->assertStringContainsString('id="sticky-submit-bar"', $html);
+        $this->assertStringContainsString('id="summary-selected-wholesaler"', $html);
+        $this->assertStringContainsString('id="builder-quotation-number"', $html);
+        $this->assertStringContainsString(translate('Quotation setup'), $html);
+        $this->assertStringContainsString(translate('Final Summary'), $html);
+        $this->assertStringContainsString('wholesaleBuilderConfig', $html);
+        $this->assertStringContainsString('wholesale-builder.js', $html);
+        $this->assertStringNotContainsString('cdn.tailwindcss.com', $html);
+        $this->assertSame(1, substr_count($html, 'id="quotation-form"'));
+    }
+
+    public function test_order_view_renders_structured_builder_sections_with_single_form(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.purchase_request_view',
+        ]);
+
+        $wholesaler = $this->createWholesalerUser();
+        $this->createWholesalerBusiness($wholesaler->id, [
+            'company_name' => 'Builder Order Company',
+        ]);
+
+        $productId = $this->createProduct();
+        $order = WholesalePurchaseOrder::query()->create([
+            'order_id' => 'PO-BUILDER-' . uniqid(),
+            'purchase_order_no' => 'PO-BUILDER-NO-' . uniqid(),
+            'wholeseller_id' => $wholesaler->id,
+            'wholeseller_tier' => 'gold',
+            'status' => 'processed',
+            'final_price' => 228.00,
+        ]);
+
+        DB::table('wholesale_purchase_order_items')->insert([
+            'wholesale_order_id' => $order->id,
+            'product_id' => $productId,
+            'product_quantity' => 2,
+            'product_variation_type' => 'Default',
+            'base_price' => 100,
+            'tax' => '14',
+            'final_price' => 228,
+            'price_range_id' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->get(route('admin.wholesale.business.order.view', $order->id));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('wholesale-builder-shell', $html);
+        $this->assertStringContainsString('id="sticky-submit-bar"', $html);
+        $this->assertStringContainsString('id="builder-order-number"', $html);
+        $this->assertStringContainsString('wholesale-builder-language-block', $html);
+        $this->assertStringContainsString('id="builder-final-total"', $html);
+        $this->assertStringContainsString(route('admin.wholesale.business.orders.approve', $order->id), $html);
+        $this->assertStringContainsString(translate('Final Summary'), $html);
+        $this->assertStringContainsString('wholesaleBuilderConfig', $html);
+        $this->assertStringContainsString('wholesale-builder.js', $html);
+        $this->assertStringNotContainsString('cdn.tailwindcss.com', $html);
+        $this->assertSame(1, substr_count($html, 'id="quotation-form"'));
+    }
+
     public function test_admin_without_route_specific_permission_is_forbidden_from_wholesale_write_routes(): void
     {
         $this->signInWholesaleAdmin([
@@ -241,6 +333,233 @@ class WholesaleAdminWorkflowTest extends TestCase
                 ],
             ],
         ])->assertForbidden();
+    }
+
+    public function test_wholesaler_list_renders_crm_toolbar_and_primary_company_link(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.wholesaler_view',
+        ]);
+
+        $wholesaler = $this->createWholesalerUser();
+        $businessId = $this->createWholesalerBusiness($wholesaler->id, [
+            'company_name' => 'Toolbar Wholesale Company',
+        ]);
+
+        $response = $this->get(route('admin.wholesale.business.list', [
+            'choose_first' => 50,
+        ]));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('id="wholesale-wholesalers-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString(route('admin.wholesale.business.wholesaler.profile', $businessId), $html);
+        $this->assertStringContainsString('Toolbar Wholesale Company', $html);
+        $this->assertStringContainsString('wholesaleListConfig', $html);
+        $this->assertStringContainsString('wholesale-list.js', $html);
+    }
+
+    public function test_wholesaler_join_request_list_renders_crm_toolbar_and_primary_company_link(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.wholesaler_join_request',
+        ]);
+
+        $wholesaler = $this->createWholesalerUser();
+        $wholesaler->forceFill([
+            'wholesaler_status' => 0,
+            'tier' => null,
+        ])->save();
+
+        $businessId = $this->createWholesalerBusiness($wholesaler->id, [
+            'company_name' => 'Pending Wholesale Company',
+            'register_copy' => 'register-proof.png',
+            'tax_card_copy' => 'tax-proof.png',
+            'vat_register_copy' => 'vat-proof.png',
+        ]);
+
+        $response = $this->get(route('admin.wholesale.business.request', [
+            'choose_first' => 50,
+        ]));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('id="wholesale-request-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString(route('admin.wholesale.business.wholesaler.profile', $businessId), $html);
+        $this->assertStringContainsString('Pending Wholesale Company', $html);
+        $this->assertStringContainsString('approvalReviewModal' . $wholesaler->id, $html);
+        $this->assertStringContainsString(translate('Business summary'), $html);
+        $this->assertStringContainsString(translate('Available documents'), $html);
+        $this->assertStringContainsString(translate('Pending setup'), $html);
+        $this->assertStringContainsString(translate('Approve'), $html);
+        $this->assertStringContainsString(translate('Reject'), $html);
+        $this->assertStringNotContainsString('swal-approve-btn', $html);
+        $this->assertStringContainsString('wholesaleListConfig', $html);
+        $this->assertStringContainsString('wholesale-list.js', $html);
+    }
+
+    public function test_purchase_request_list_renders_crm_toolbar_export_and_primary_company_link(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.purchase_request_view',
+        ]);
+
+        $wholesaler = $this->createWholesalerUser();
+        $this->createWholesalerBusiness($wholesaler->id, [
+            'company_name' => 'Purchase Request Company',
+        ]);
+
+        $order = WholesalePurchaseOrder::query()->create([
+            'order_id' => 'PO-LIST-' . uniqid(),
+            'purchase_order_no' => 'PO-REQUEST-' . uniqid(),
+            'wholeseller_id' => $wholesaler->id,
+            'wholeseller_tier' => 'gold',
+            'status' => 'processed',
+            'final_price' => 150.00,
+        ]);
+
+        $response = $this->get(route('admin.wholesale.business.order.request', [
+            'choose_first' => 50,
+        ]));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('id="wholesale-purchase-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString(route('admin.wholesale.business.order.view', $order->id), $html);
+        $this->assertStringContainsString('Purchase Request Company', $html);
+        $this->assertStringContainsString('crm-row-actions__toggle', $html);
+        $this->assertStringContainsString(translate('Assign Purchase Order No'), $html);
+        $this->assertStringContainsString(translate('History'), $html);
+        $this->assertStringContainsString('wholesaleListConfig', $html);
+        $this->assertStringContainsString('wholesale-list.js', $html);
+        $this->assertStringNotContainsString('confirmAndDelete(', $html);
+    }
+
+    public function test_quotation_list_renders_crm_toolbar_export_and_primary_company_link(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.quotation_view',
+        ]);
+
+        $wholesaler = $this->createWholesalerUser();
+        $this->createWholesalerBusiness($wholesaler->id, [
+            'company_name' => 'Quotation Company',
+        ]);
+
+        $order = WholesaleQuotation::query()->create([
+            'order_id' => 'PO-QUOTE-' . uniqid(),
+            'purchase_order_no' => 'PO-QUOTE-NO-' . uniqid(),
+            'quotation_no' => 'Q-' . uniqid(),
+            'wholeseller_id' => $wholesaler->id,
+            'wholeseller_tier' => 'gold',
+            'status' => 'sent',
+            'final_price' => 220.00,
+        ]);
+
+        $response = $this->get(route('admin.wholesale.business.wholesale.order', [
+            'choose_first' => 50,
+        ]));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('id="wholesale-quotation-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString('crm-primary-link', $html);
+        $this->assertStringContainsString('Quotation Company', $html);
+        $this->assertStringContainsString('crm-row-actions__toggle', $html);
+        $this->assertStringContainsString(translate('History'), $html);
+        $this->assertStringContainsString(translate('Delete'), $html);
+        $this->assertStringContainsString('wholesaleListConfig', $html);
+        $this->assertStringContainsString('wholesale-list.js', $html);
+        $this->assertStringNotContainsString('cdn.tailwindcss.com', $html);
+        $this->assertStringNotContainsString('confirmAndDelete(', $html);
+    }
+
+    public function test_confirmed_order_list_renders_crm_toolbar_export_and_primary_company_link(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.confirme_order_view',
+        ]);
+
+        $wholesaler = $this->createWholesalerUser();
+        $this->createWholesalerBusiness($wholesaler->id, [
+            'company_name' => 'Confirmed Order Company',
+        ]);
+
+        $order = WholesaleConfirmOrder::query()->create([
+            'order_id' => 'PO-CONFIRMED-' . uniqid(),
+            'purchase_order_no' => 'PO-CONF-' . uniqid(),
+            'quotation_no' => 'CQ-' . uniqid(),
+            'confirm_order_no' => 'CONF-' . uniqid(),
+            'invoice_no' => 'INV-' . uniqid(),
+            'wholesaler_id' => $wholesaler->id,
+            'status' => 'accepted',
+            'payment_status' => 'paid',
+            'delivery_status' => 'delivered',
+            'confirmed_at' => now(),
+            'final_price' => 300.00,
+        ]);
+
+        $response = $this->get(route('admin.wholesale.business.wholesale.confirmedorder', [
+            'choose_first' => 50,
+        ]));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('id="wholesale-confirmed-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString('crm-primary-link', $html);
+        $this->assertStringContainsString('Confirmed Order Company', $html);
+        $this->assertStringContainsString('crm-row-actions__toggle', $html);
+        $this->assertStringContainsString(translate('Payment'), $html);
+        $this->assertStringContainsString(translate('History'), $html);
+        $this->assertStringNotContainsString('action-popup', $html);
+        $this->assertStringContainsString('wholesaleListConfig', $html);
+        $this->assertStringContainsString('wholesale-list.js', $html);
+        $this->assertStringNotContainsString('cdn.tailwindcss.com', $html);
+        $this->assertStringNotContainsString('confirmAndDelete(', $html);
+    }
+
+    public function test_wholesale_product_list_renders_crm_toolbar_export_and_primary_product_link(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.product_list',
+        ]);
+
+        $categoryId = $this->createCategory();
+        $subCategoryId = $this->createCategory($categoryId);
+        $productId = $this->createProduct();
+        $wholesaleProductId = $this->createWholesaleProduct($productId, $categoryId, $subCategoryId);
+
+        $response = $this->get(route('admin.wholesale.product.list', [
+            'choose_first' => 50,
+        ]));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('id="wholesale-product-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString(route('admin.wholesale.product.view', $wholesaleProductId), $html);
+        $this->assertStringContainsString('Wholesale Quote Product', $html);
+        $this->assertStringContainsString('crm-row-actions__toggle', $html);
+        $this->assertStringContainsString(translate('delete'), $html);
+        $this->assertStringContainsString('wholesaleListConfig', $html);
+        $this->assertStringContainsString('wholesale-list.js', $html);
     }
 
     private function signInWholesaleAdmin(array $permissions): Admin
@@ -295,6 +614,34 @@ class WholesaleAdminWorkflowTest extends TestCase
         return User::query()->findOrFail($id);
     }
 
+    private function createWholesalerBusiness(int $wholesalerId, array $overrides = []): int
+    {
+        $now = now();
+
+        return (int) DB::table('wholesaler_businesses')->insertGetId(array_merge([
+            'wholesaler_id' => $wholesalerId,
+            'company_name' => 'Wholesale Business ' . uniqid(),
+            'trade_name' => 'Trade ' . uniqid(),
+            'registration_number' => 'REG-' . uniqid(),
+            'tax_id' => 'TAX-' . uniqid(),
+            'vat_number' => 'VAT-' . uniqid(),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $overrides));
+    }
+
+    private function createCategory(int $parentId = 0): int
+    {
+        return (int) DB::table('categories')->insertGetId([
+            'name' => 'Wholesale Category ' . uniqid(),
+            'slug' => 'wholesale-category-' . uniqid(),
+            'parent_id' => $parentId,
+            'position' => $parentId > 0 ? 1 : 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     private function createProduct(): int
     {
         $now = now();
@@ -331,6 +678,19 @@ class WholesaleAdminWorkflowTest extends TestCase
             'is_warranty' => 0,
             'created_at' => $now,
             'updated_at' => $now,
+        ]);
+    }
+
+    private function createWholesaleProduct(int $productId, int $categoryId, int $subCategoryId): int
+    {
+        return (int) DB::table('wholesale_products')->insertGetId([
+            'product_id' => $productId,
+            'category_id' => $categoryId,
+            'sub_category_id' => $subCategoryId,
+            'variation_type' => 'Default',
+            'variation_key' => 'variant:Default',
+            'status' => 1,
+            'deleted_at' => null,
         ]);
     }
 }

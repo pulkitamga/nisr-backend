@@ -270,7 +270,7 @@ class BranchChartController extends BaseAdminController
                 'mode'    => 'branch-single',
                 'branches' => [[
                     'branch_id'     => $branchId,
-                    'branch_name'   => Branch::find($branchId)?->branch_name ?? 'N/A',
+                    'branch_name'   => Branch::find($branchId)?->getTranslatedField('branch_name') ?? translate('not_available'),
                     'current_stock' => ($rows->total_in ?? 0) - ($rows->total_out ?? 0),
                     'total_in'      => (int) ($rows->total_in ?? 0),
                     'total_out'     => (int) ($rows->total_out ?? 0),

@@ -2,6 +2,7 @@
 @section('title', translate('Claim View'))
 
 @push('css_or_js')
+<link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
 <style>
     .claim-rtl {
         direction: rtl;
@@ -53,7 +54,10 @@
     .claim-rtl .claim-overview-row div {
         text-align: right !important;
     }
-    .claim-rtl .claim-actions {
+    .claim-actions .crm-row-actions {
+        justify-content: flex-start;
+    }
+    .claim-rtl .claim-actions .crm-row-actions {
         justify-content: flex-end;
     }
     .claim-rtl .attachments-nav {
@@ -74,6 +78,57 @@
     $paidChargesTotal = (float)$claim->payments->where('payment_status', 'paid')->sum('amount');
     $outstandingCharges = (float)$claim->charges->where('is_paid', false)->sum('amount');
     $hasUnpaidCharges = $claim->charges->where('is_paid', false)->count() > 0;
+    $buildClaimAction = function (string $label, string $routeName, string $modalId, string $buttonClass = 'btn-outline-secondary', string $menuClass = '') use ($claim) {
+        return [
+            'label' => translate($label),
+            'url' => route($routeName, $claim->id),
+            'target' => $modalId,
+            'buttonClass' => $buttonClass,
+            'menuClass' => $menuClass,
+        ];
+    };
+
+    $primaryAction = null;
+    $secondaryActions = [];
+    $resumeStatuses = ['waiting_customer', 'waiting_parts', 'waiting_payment'];
+
+    if (in_array($claim->status, ['new', 'triage_pending'], true)) {
+        $primaryAction = $buildClaimAction('Decide', 'admin.warranty.claim.decide', '#decideModal', 'btn-primary');
+    } elseif ($claim->status === 'approved') {
+        $primaryAction = $buildClaimAction('Issue RMA', 'admin.warranty.claim.issue-rma', '#issueRmaModal', 'btn-info');
+    } elseif ($claim->status === 'rma_issued') {
+        $primaryAction = $buildClaimAction('receive', 'admin.warranty.claim.receive', '#receiveModal', 'btn-info');
+    } elseif (in_array($claim->status, ['received', 'diagnosis_pending'], true)) {
+        $primaryAction = $buildClaimAction('Diagnose', 'admin.warranty.claim.diagnose', '#diagnoseModal', 'btn-warning');
+    } elseif ($claim->status === 'repair_pending') {
+        $primaryAction = $buildClaimAction('Complete Repair', 'admin.warranty.claim.repair-complete', '#repairCompleteModal', 'btn-success');
+    } elseif ($claim->status === 'replacement_pending') {
+        $primaryAction = $buildClaimAction('Commit Replacement', 'admin.warranty.claim.replacement-commit', '#replacementCommitModal', 'btn-warning');
+    } elseif ($claim->status === 'qc_pending') {
+        $primaryAction = $buildClaimAction('QC Pass', 'admin.warranty.claim.qc-pass', '#qcPassModal', 'btn-primary');
+    } elseif ($claim->status === 'shipped_ready') {
+        $primaryAction = $buildClaimAction('Dispatch', 'admin.warranty.claim.dispatch', '#dispatchModal', 'btn-info');
+    } elseif ($claim->status === 'dispatched') {
+        $primaryAction = $buildClaimAction('Mark Resolved', 'admin.warranty.claim.resolve', '#resolveModal', 'btn-success');
+    } elseif ($claim->status === 'resolved') {
+        $primaryAction = $buildClaimAction('Close Claim', 'admin.warranty.claim.close', '#closeModal', 'btn-danger');
+    } elseif ($claim->status === 'waiting_payment' && $hasUnpaidCharges) {
+        $primaryAction = $buildClaimAction('Handle Payment', 'admin.warranty.claim.payment-handle', '#paymentHandlingModal', 'btn-warning');
+    } elseif (in_array($claim->status, $resumeStatuses, true)) {
+        $primaryAction = $buildClaimAction('Resume / Continue', 'admin.warranty.claim.resume', '#resumeClaimModal', 'btn-success');
+    }
+
+    if (in_array($claim->status, $resumeStatuses, true) && ($primaryAction['target'] ?? null) !== '#resumeClaimModal') {
+        $secondaryActions[] = $buildClaimAction('Resume / Continue', 'admin.warranty.claim.resume', '#resumeClaimModal');
+    }
+
+    if ($hasUnpaidCharges && !in_array($claim->status, ['closed', 'rejected'], true) && ($primaryAction['target'] ?? null) !== '#paymentHandlingModal') {
+        $secondaryActions[] = $buildClaimAction('Handle Payment', 'admin.warranty.claim.payment-handle', '#paymentHandlingModal', 'btn-outline-warning', 'text-warning');
+    }
+
+    if (!in_array($claim->status, ['closed'], true) && ($primaryAction['target'] ?? null) !== '#closeModal') {
+        $secondaryActions[] = $buildClaimAction('Close Claim', 'admin.warranty.claim.close', '#closeModal', 'btn-outline-danger', 'text-danger');
+    }
 @endphp
 <div class="content container-fluid {{ $isRtl ? 'claim-rtl' : 'claim-ltr' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
     <div class="card mb-4">
@@ -239,81 +294,44 @@
         <div class="card-body mb-4">
             <div class="d-flex justify-content-between mb-4 claim-activity-header {{ $isRtl ? 'flex-row-reverse' : '' }}">
                 <h6 class="mt-4">{{ translate('activity_log') }}</h6>
-                <div class="mt-4 d-flex flex-wrap gap-2 claim-actions">
+                <div class="mt-4 claim-actions">
+                    <div class="crm-row-actions">
+                        @if($hasUnpaidCharges)
+                            <div class="crm-row-actions__chips">
+                                <span class="crm-row-actions__chip">
+                                    {{ translate('Outstanding Amount') }}:
+                                    <span class="bidi-ltr ms-1">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $outstandingCharges)) }}</span>
+                                </span>
+                            </div>
+                        @endif
 
-                    @if($claim->status === 'new' || $claim->status === 'triage_pending')
-                    <button class="btn btn-primary btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.decide', $claim->id) }}" data-target="#decideModal">
-                        {{ translate('Decide') }}
-                    </button>
-                    @endif
+                        @if($primaryAction)
+                            <div class="crm-row-actions__primary">
+                                <button class="btn btn-sm {{ $primaryAction['buttonClass'] }}" data-toggle="modal"
+                                    data-url="{{ $primaryAction['url'] }}" data-target="{{ $primaryAction['target'] }}">
+                                    {{ $primaryAction['label'] }}
+                                </button>
+                            </div>
+                        @endif
 
-                    @if($claim->status === 'approved')
-                    <button class="btn btn-info btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.issue-rma', $claim->id) }}" data-target="#issueRmaModal">
-                        {{ translate('Issue RMA') }}
-                    </button>
-                    @endif
-
-                    @if($claim->status === 'rma_issued')
-                    <button class="btn btn-info btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.receive', $claim->id) }}" data-target="#receiveModal">
-                        {{ translate('receive') }}
-                    </button>
-                    @endif
-                    @if(in_array($claim->status, ['received', 'diagnosis_pending']))
-                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.diagnose', $claim->id) }}" data-target="#diagnoseModal">
-                        {{ translate('Diagnose') }}
-                    </button>
-                    @endif
-                    @if($claim->status === 'repair_pending')
-                    <button class="btn btn-success btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.repair-complete', $claim->id) }}" data-target="#repairCompleteModal">
-                        {{ translate('Complete Repair') }}
-                    </button>
-                    @endif
-
-                    @if($claim->status === 'replacement_pending')
-                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.replacement-commit', $claim->id) }}" data-target="#replacementCommitModal">
-                        {{ translate('Commit Replacement') }}
-                    </button>
-                    @endif
-
-                    @if($claim->status === 'qc_pending')
-                    <button class="btn btn-primary btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.qc-pass', $claim->id) }}" data-target="#qcPassModal">
-                        {{ translate('QC Pass') }}
-                    </button>
-                    @endif
-                    @if($claim->status === 'shipped_ready')
-                    <button class="btn btn-info btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.dispatch', $claim->id) }}" data-target="#dispatchModal">
-                        {{ translate('Dispatch') }}
-                    </button>
-                    @endif
-
-                    @if($claim->status === 'dispatched')
-                    <button class="btn btn-success btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.resolve', $claim->id) }}" data-target="#resolveModal">
-                        {{ translate('Mark Resolved') }}
-                    </button>
-                    @endif
-
-                    @if($claim->status === 'resolved')
-                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.close', $claim->id) }}" data-target="#closeModal">
-                        {{ translate('Close Claim') }}
-                    </button>
-                    @endif
-
-                    @if(in_array($claim->status, ['waiting_customer', 'waiting_parts', 'waiting_payment']))
-                    <button class="btn btn-success btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.resume', $claim->id) }}" data-target="#resumeClaimModal">
-                        {{ translate('Resume / Continue') }}
-                    </button>
-                    @endif
-                    @if($hasUnpaidCharges && !in_array($claim->status, ['closed', 'rejected']))
-                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.payment-handle', $claim->id) }}" data-target="#paymentHandlingModal">
-                        {{ translate('Handle Payment') }}
-                    </button>
-                    @endif
-
-                    @if(!in_array($claim->status, ['closed']))
-                    <button class="btn btn-dark btn-sm" data-toggle="modal" data-url="{{ route('admin.warranty.claim.close', $claim->id) }}" data-target="#closeModal">
-                        {{ translate('Close') }}
-                    </button>
-                    @endif
+                        @if(!empty($secondaryActions))
+                            <div class="dropdown crm-row-actions__menu">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button"
+                                    id="claim-detail-actions-{{ $claim->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                    <i class="tio-more-horizontal"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="claim-detail-actions-{{ $claim->id }}">
+                                    @foreach($secondaryActions as $action)
+                                        <button class="dropdown-item {{ $action['menuClass'] }}" data-toggle="modal"
+                                            data-url="{{ $action['url'] }}" data-target="{{ $action['target'] }}">
+                                            {{ $action['label'] }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
             </div>
@@ -368,55 +386,10 @@
 @include('admin-views.warranty.modals.resume-claim')
 @include('admin-views.warranty.modals.resolve')
 @include('partials.serial-scanner-assets')
+@include('admin-views.warranty.partials._claim-js-config')
 
 
 @endsection
 @push('script')
-<script>
-    const claimWorkflowI18n = {
-        processing: @json(translate('Processing...')),
-        success: @json(translate('Success!')),
-        error: @json(translate('Something went wrong.'))
-    };
-
-    $(document).on('click', '[data-toggle="modal"]', function() {
-        const button = $(this);
-        const url = button.data('url');
-        const modalId = button.data('target');
-        const form = $(modalId).find('form');
-
-        if (url) {
-            form.attr('action', url);
-        }
-    });
-
-    $(document).on('submit', '.claim-modal-form', function(e) {
-        e.preventDefault();
-        let form = $(this);
-        let btn = form.find('button[type=submit]');
-        const originalLabel = btn.html();
-        btn.prop('disabled', true).html('<i class="tio-loading"></i> ' + claimWorkflowI18n.processing);
-
-        $.ajax({
-            url: form.attr('action'),
-            method: 'POST',
-            data: new FormData(this),
-            contentType: false,
-            processData: false,
-            success: function(res) {
-                const successMessage = res?.payment_link
-                    ? `${res.message || claimWorkflowI18n.success} ${res.payment_link}`
-                    : (res?.message || claimWorkflowI18n.success);
-                toastr.success(successMessage);
-                location.reload();
-            },
-            error: function(xhr) {
-                const validationErrors = xhr.responseJSON?.errors || {};
-                const firstValidationError = Object.values(validationErrors)[0]?.[0];
-                toastr.error(xhr.responseJSON?.message || firstValidationError || claimWorkflowI18n.error);
-                btn.prop('disabled', false).html(originalLabel);
-            }
-        });
-    });
-</script>
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/warranty-claims.js') }}"></script>
 @endpush

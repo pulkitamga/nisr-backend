@@ -40,6 +40,7 @@ use App\Utils\ImageManager;
 use App\Utils\OrderManager;
 use Brian2694\Toastr\Facades\Toastr;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -773,7 +774,7 @@ class UserProfileController extends Controller
 
     private function createConvertedInboxCaseForTicket(
         SupportTicket $ticket,
-        ?User $customer,
+        ?Authenticatable $customer,
         string $category,
         string $messageBody,
         array $sourceContext = []

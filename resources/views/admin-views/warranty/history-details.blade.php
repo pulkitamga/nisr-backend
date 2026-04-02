@@ -48,7 +48,7 @@
                         <tr>
                             <td>{{$warranty->serial_number}}</td>
                             <td>{{$warranty->product->name ?? '-'}}</td>
-                            <td><span class="badge badge-soft-primary">{{$warranty->status}}</span></td>
+                            <td><span class="badge badge-soft-primary">{{ translate($warranty->status) }}</span></td>
                             <td><span class="bidi-ltr d-inline-block">{{$warranty->created_at->format('Y-m-d H:i')}}</span></td>
                             <td>
                                 <a href="{{ route('admin.warranty.activation.manual.view', ['serial_number' => $warranty->serial_number]) }}" class="btn btn-sm btn-outline-primary">{{translate('activate')}}</a>
@@ -70,15 +70,3 @@
     </div>
 </div>
 @endsection
-
-@push('script')
-<script>
-    $('input[name="searchValue"]').on('input', function() {
-        const value = ($(this).val() || '').toLowerCase();
-        $('table tbody tr').each(function() {
-            const rowText = $(this).text().toLowerCase();
-            $(this).toggle(rowText.indexOf(value) > -1);
-        });
-    });
-</script>
-@endpush

@@ -31,6 +31,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WarrantyClaimController extends Controller
 {
@@ -59,17 +60,14 @@ class WarrantyClaimController extends Controller
 
         $this->applySubmittedAtDateFilter($query, $request->input('fhilter_date'));
 
-        $limit = $this->sanitizeResultsLimit($request->input('choose_first'));
-        if ($limit !== null) {
-            $query->limit($limit);
-        }
-
         return $query;
     }
 
     private function renderStatusList(Request $request, string $status)
     {
-        $claims = $this->buildClaimsQuery($request, $status)->paginate(20)->appends($request->query());
+        $claims = $this->buildClaimsQuery($request, $status)
+            ->paginate($this->resolvePerPage($request))
+            ->appends($request->query());
         $pageTitleKey = $status;
 
         return view('admin-views.warranty.claim-list', compact('claims', 'pageTitleKey'));
@@ -78,7 +76,9 @@ class WarrantyClaimController extends Controller
     // All Claims
     public function all(Request $request)
     {
-        $claims = $this->buildClaimsQuery($request)->paginate(20)->appends($request->query());
+        $claims = $this->buildClaimsQuery($request)
+            ->paginate($this->resolvePerPage($request))
+            ->appends($request->query());
         $pageTitleKey = $request->filled('status') && $request->status !== 'all'
             ? $request->status
             : 'claims_list';
@@ -87,7 +87,7 @@ class WarrantyClaimController extends Controller
     }
 
     // WarrantyClaimController.php
-    public function export(Request $request)
+    public function export(Request $request): StreamedResponse
     {
         $query = WarrantyClaim::with([
             'warranty.product',
@@ -114,56 +114,55 @@ class WarrantyClaimController extends Controller
 
         $limit = $this->sanitizeResultsLimit($request->input('choose_first'));
         if ($limit !== null) {
-            $query->limit($limit);
+            $query->take($limit);
         }
 
         $claims = $query->get();
         $filename = 'claims_' . now()->format('Ymd_His') . '.csv';
-        $handle = fopen('php://output', 'w');
-        ob_clean();
-        header('Content-Type:text/csv');
-        header('Content-Disposition:attachment; filename="' . $filename . '"');
 
-        fputcsv($handle, [
-            'SL',
-            'Claim #',
-            'Serial',
-            'Status',
-            'Customer',
-            'Product',
-            'Distributor',
-            'Branch',
-            'Activation Method',
-            'Submitted',
-            'SLA Due',
-            'Resolved Date',
-            'Reopen Count',
-            'Technician',
-            'SLA Result'
-        ]);
+        return response()->streamDownload(function () use ($claims) {
+            $handle = fopen('php://output', 'w');
 
-        foreach ($claims as $i => $c) {
             fputcsv($handle, [
-                $i + 1,
-                $c->claim_number,
-                $c->serial_number,
-                $c->status,
-                $c->warranty->user?->name ?? $c->warranty->activated_by_name,
-                $c->warranty->product?->name,
-                $c->warranty->distributor_id ?? '-',
-                $c->branch?->branch_name ?? '-',
-                $c->warranty->activation_method,
-                $c->submitted_at?->format('Y-m-d H:i'),
-                $c->resolution_due?->format('Y-m-d H:i') ?? '-',
-                $c->resolved_at?->format('Y-m-d H:i') ?? '-',
-                $c->reopen_count,
-                $c->technician?->name ?? '-',
-                optional($c->resolution_due)?->lt(now()) ? 'SLA BREACHED' : 'WITHIN SLA'
+                'SL',
+                'Claim #',
+                'Serial',
+                'Status',
+                'Customer',
+                'Product',
+                'Distributor',
+                'Branch',
+                'Activation Method',
+                'Submitted',
+                'SLA Due',
+                'Resolved Date',
+                'Reopen Count',
+                'Technician',
+                'SLA Result'
             ]);
-        }
 
-        fclose($handle);
-        exit;
+            foreach ($claims as $i => $c) {
+                fputcsv($handle, [
+                    $i + 1,
+                    $c->claim_number,
+                    $c->serial_number,
+                    $this->claimStatusLabel((string) $c->status),
+                    $c->warranty->user?->name ?? $c->warranty->activated_by_name,
+                    $c->warranty->product?->name,
+                    $c->warranty->distributor_id ?? '-',
+                    $c->branch?->branch_name ?? '-',
+                    translate((string) ($c->warranty->activation_method ?: 'unknown')),
+                    $c->submitted_at?->format('Y-m-d H:i'),
+                    $c->resolution_due?->format('Y-m-d H:i') ?? '-',
+                    $c->resolved_at?->format('Y-m-d H:i') ?? '-',
+                    $c->reopen_count,
+                    $c->technician?->name ?? '-',
+                    optional($c->resolution_due)?->lt(now()) ? translate('warranty_sla_breached') : translate('warranty_sla_within')
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 
     // New Claims
@@ -1671,6 +1670,12 @@ class WarrantyClaimController extends Controller
         }
 
         return min($limit, self::MAX_CLAIM_RESULTS_LIMIT);
+    }
+
+    private function resolvePerPage(Request $request): int
+    {
+        return $this->sanitizeResultsLimit($request->input('choose_first'))
+            ?? (int) (getWebConfig('pagination_limit') ?? 20);
     }
 
     private function isSuperAdmin($admin): bool

@@ -556,6 +556,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         });
         Route::controller(WarrantyController::class)->group(function () {
             Route::get('/activation/list', 'activationList')->name('activation.list')->middleware('permission:warranty_section.warranty_activation_list,admin');
+            Route::get('/activation/export', 'exportActivationList')->name('activation.export')->middleware('permission:warranty_section.warranty_activation_list,admin');
             Route::get('/activation/{warranty}/view', 'activationView')->name('activation.view')->middleware('permission:warranty_section.warranty_activation_view,admin');
             Route::get('/activation/manual', 'manualActivateView')->name('activation.manual.view')->middleware('permission:warranty_section.warranty_manual_activation,admin');
             Route::get('/activation/manual/customers', 'manualActivateCustomerSuggestions')->name('activation.manual.customers')->middleware('permission:warranty_section.warranty_manual_activation,admin');
@@ -609,6 +610,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         });
         Route::controller(WarrantyController::class)->group(function () {
             Route::get('/blacklist', 'blacklistView')->name('blacklist')->middleware('permission:warranty_section.warranty_blacklist,admin');
+            Route::get('/blacklist/export', 'exportBlacklist')->name('blacklist.export')->middleware('permission:warranty_section.warranty_blacklist,admin');
             Route::get('/blacklist/add', 'blacklistAddView')->name('blacklist.add')->middleware('permission:warranty_section.warranty_blacklist_add,admin');
             Route::post('/blacklist', 'blacklist')->name('blacklist.store')->middleware('permission:warranty_section.warranty_blacklist_add,admin');
 
@@ -624,6 +626,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
         Route::controller(WarrantyTransferController::class)->group(function () {
             Route::get('/serial-transaction/list', 'list')->name('serial-transaction.list')->middleware('permission:warranty_section.warranty_serial_transaction,admin');
+            Route::get('/serial-transaction/export', 'export')->name('serial-transaction.export')->middleware('permission:warranty_section.warranty_serial_transaction,admin');
             Route::get('/serial-transaction/history/{serial}', 'historyModal')->name('serial-transaction.history-modal')->middleware('permission:warranty_section.warranty_serial_transaction,admin');
         });
         Route::controller(WarrantyClaimChartController::class)->group(function () {
@@ -642,6 +645,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // READ permission routes
         Route::controller(StockRequestController::class)->group(function () {
             Route::get(StockRequest::LIST[URI], 'index')->middleware('permission:branch_management.stock_request_list,admin')->name('list');
+            Route::get('/export', 'exportList')->middleware('permission:branch_management.stock_request_list,admin')->name('export');
             Route::get(StockRequest::VIEW[URI] . '/{id}', 'getStockRequestView')->middleware('permission:branch_management.stock_request_view,admin')->name('view');
             Route::get(StockRequest::TRANSFER_QUICK_VIEW[URI], 'getQuickView')->middleware('permission:branch_management.stock_delivery,admin')->name('quick-view');
             Route::get(StockRequest::PRODUCT_STOCK[URI], 'getBranchesProductStock')->middleware('permission:branch_management.stock_delivery,admin')->name('get-branches-product-stock');
@@ -665,6 +669,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         // READ permission routes
         Route::controller(StockTransferController::class)->group(function () {
             Route::get(StockTransfer::LIST[URI], 'index')->middleware('permission:branch_management.stock_transfer_list,admin')->name('list');
+            Route::get('/export', 'exportList')->middleware('permission:branch_management.stock_transfer_list,admin')->name('export');
             Route::get(StockTransfer::DOWNLOAD_ERROR_CSV[URI], 'downloadErrorCsv')->middleware('permission:branch_management.stock_transfer_list,admin')->name('download-error-csv');
             Route::get(StockRequest::VIEW[URI] . '/{id}', 'getStockRequestView')->middleware('permission:branch_management.transfer_new_stock,admin')->name('view');
             Route::get(StockRequest::SEARCH[URI], 'getStockSearchedProductsView')->middleware('permission:branch_management.transfer_new_stock,admin')->name('search-products');
@@ -1120,6 +1125,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::get(Branch::VIEW[URI] . '/{id}/{tab?}', [BranchController::class, 'getView'])->middleware('permission:branch_management.branch_view,admin')->name('view');
         Route::get('getCitiesArea', [BranchController::class, 'fGetCitiesArea'])->middleware('permission:branch_management.read,admin')->name('getCitiesArea');
         Route::get(Branch::BRANCH_STOCK_LIST[URI], [BranchController::class, 'fGetBranchesStockList'])->middleware('permission:branch_management.branch_stock_list,admin')->name('branch-stock-list');
+        Route::get('stock-history', [BranchController::class, 'getStockHistory'])->middleware('permission:branch_management.branch_stock_list,admin')->name('stock-history');
         // CREATE permissions routes
         Route::get(Branch::ADD[URI], [BranchController::class, 'getAddView'])->middleware('permission:branch_management.add_branch,admin')->name('add');
         Route::post(Branch::ADD[URI], [BranchController::class, 'add'])->middleware('permission:branch_management.add_branch,admin')->name('add.store');
@@ -2190,8 +2196,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::get(WholeSaler::WHOLESALER_VIEW[URI] . '/{id}', 'viewWholesalerDetails')->middleware('permission:wholesaler_section.wholesaler_view,admin')->name('wholesaler.profile');
                 Route::get(WholeSaler::WHOLESALER_EDIT[URI] . '/{id}', 'viewWholesalerEdit')->middleware('permission:wholesaler_section.wholesaler_update,admin')->name('wholesaler.profile.edit');
                 Route::get(WholeSaler::REQUEST_VIEW[URI], 'orderRequest')->middleware('permission:wholesaler_section.purchase_request_view,admin')->name('order.request');
-                Route::get(WholeSaler::ORDER_REQUEST[URI] . '/{id}', 'viewOrder')->middleware('permission:wholesaler_section.purchase_request_view,admin')->name('order.view');
-                Route::get(WholeSaler::PURCHASE_ORDER_VIEW[URI] . '/{id}', 'viewPurchaseOrder')->middleware('permission:wholesaler_section.purchase_request_view,admin')->name('purchase.order.view');
+                Route::get(WholeSaler::ORDER_REQUEST[URI] . '/{id}', 'showPurchaseRequestBuilder')->middleware('permission:wholesaler_section.purchase_request_view,admin')->name('order.view');
+                Route::get(WholeSaler::PURCHASE_ORDER_VIEW[URI] . '/{id}', 'showPurchaseOrderView')->middleware('permission:wholesaler_section.purchase_request_view,admin')->name('purchase.order.view');
                 Route::get(WholeSaler::INVOICE_VIEW[URI] . '/{id}', 'invoiceView')->middleware('permission:wholesaler_section.quotation_view,admin')->name('orders.invoice');
                 Route::get(WholeSaler::INVOICE_EDIT[URI] . '/{id}', 'invoiceEdit')->middleware('permission:wholesaler_section.quotation_update,admin')->name('orders.invoice.edit');
                 Route::get(WholeSaler::TIER_VIEW[URI], 'tierIndex')->middleware('permission:wholesaler_section.tier_view,admin')->name('wholesaler.tier.view');
@@ -2214,9 +2220,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             });
 
             Route::controller(WholeSalerController::class)->group(function () {
-                Route::get(WholeSaler::CREATE_QUOTATION[URI], 'createQuotation')->middleware('permission:wholesaler_section.create_quotation,admin')->name('create-quotation');
+                Route::get(WholeSaler::CREATE_QUOTATION[URI], 'showQuotationBuilder')->middleware('permission:wholesaler_section.create_quotation,admin')->name('create-quotation');
                 Route::post(WholeSaler::STORE_QUOTATION[URI], 'storeQuotation')->middleware('permission:wholesaler_section.create_quotation,admin')->name('store-quotation');
-                Route::post(WholeSaler::ORDER_APPROVE[URI] . '/{id}', 'quotationCreate')->middleware('permission:wholesaler_section.create_quotation,admin')->name('orders.approve');
+                Route::post(WholeSaler::ORDER_APPROVE[URI] . '/{id}', 'storeApprovedQuotation')->middleware('permission:wholesaler_section.create_quotation,admin')->name('orders.approve');
                 Route::post(WholeSaler::PAYMENT_STORE[URI], 'paymentStore')->middleware('permission:wholesaler_section.confirem_order_payment,admin')->name('orders.payment.add');
                 Route::post(WholeSaler::ORDER_ASSIGN[URI], 'assignNumber')->middleware('permission:wholesaler_section.assign_purchase_order_no,admin')->name('order.assign-number');
                 Route::post(WholeSaler::CONFIRMED_ORDER_NO[URI], 'assignConfirmNumber')->middleware('permission:wholesaler_section.assign_confirm_order_no,admin')->name('order.assign-confirm-no');
@@ -2241,7 +2247,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::controller(WholeSalerController::class)->group(function () {
                 Route::post(WholeSaler::REQUEST_DELETE[URI] . '/{id}', 'orderDestroy')->middleware('permission:wholesaler_section.purchase_request_delete,admin')->name('order.delete');
                 Route::post(WholeSaler::QUOTATION_DELETE[URI] . '/{id}', 'quotationDestroy')->middleware('permission:wholesaler_section.quotation_delete,admin')->name('quotation.delete');
-                Route::post(WholeSaler::CONFIREM_ORDER_DELETE[URI] . '/{id}', 'confiremOrderDestroy')->middleware('permission:wholesaler_section.confirem_order_delete,admin')->name('confirem.order.delete');
+                Route::post(WholeSaler::CONFIREM_ORDER_DELETE[URI] . '/{id}', 'confirmedOrderDestroy')->middleware('permission:wholesaler_section.confirem_order_delete,admin')->name('confirem.order.delete');
                 Route::delete(WholeSaler::TIER_DELETE[URI] . '/{id}', 'tierDestroy')->middleware('permission:wholesaler_section.tier_delete,admin')->name('wholesaler.tier.delete');
                 Route::patch(WholeSaler::WHOLESALER_CONTACT_DELETE[URI] . '/{id}', 'wholesalerContactDelete')->middleware('permission:wholesaler_section.wholesaler_contact,admin')->name('wholsaler-contect.softDelete');
             });
@@ -3424,15 +3430,18 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::middleware('permission:branch_management.read,admin')->group(function () {
             Route::get('/', [BranchController::class, 'index'])->name('index');
             Route::get('/product-inventory', [ProductInventoryController::class, 'productInventory'])->name('product-inventory');
+            Route::get('/product-inventory/export', [ProductInventoryController::class, 'exportProductInventory'])->name('product-inventory.export');
             Route::get('sales-tracking', [ProductInventoryController::class, 'totelSale'])->name('product-sells');
             Route::get('/stock-movement', [BranchController::class, 'stockMovement'])->name('stock-movement');
             Route::get('/stock-updates', [BranchController::class, 'stockUpdates'])->name('stock-updates');
             Route::get('/stock-alerts', [BranchController::class, 'stockAlerts'])->name('alerts');
             Route::get('/received', [StockMovementController::class, 'received'])->name('stock.received');
+            Route::get('/received/export', [StockMovementController::class, 'exportReceivedList'])->name('stock.received.export');
             Route::get('/request', [StockMovementController::class, 'request'])->name('stock.request');
             Route::get('/approve', [StockMovementController::class, 'approveIndex'])->name('stock.approvelist');
             Route::get('/support', [BranchController::class, 'support'])->name('support');
             Route::get('/vendors', [ManageBranchController::class, 'vendors'])->name('vendors');
+            Route::get('/vendors/export', [ManageBranchController::class, 'exportVendors'])->name('vendors.export');
             Route::get('vendors/{id}', [ManageBranchController::class, 'show'])->name('vendors.view');
         });
 

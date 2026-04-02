@@ -2,6 +2,11 @@
 
 @section('title', translate('Confirmed_Orders'))
 
+@push('css_or_js')
+    <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
+    <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/wholesale-list.css') }}">
+@endpush
+
 @section('content')
 
 @if(session('success'))
@@ -15,8 +20,6 @@
     {{ session('error') }}
 </div>
 @endif
-<script src="https://cdn.tailwindcss.com"></script>
-
 <div class="content container-fluid">
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -24,111 +27,134 @@
             {{translate('Confirmed_Orders')}}
         </h2>
     </div>
-    <!-- 🔍 Confirmed Orders Filter Row -->
-    <div class="card p-4 mb-4 shadow-sm">
-        <form method="GET" action="{{ url()->current() }}">
-            <div class="row g-3 align-items-end">
-                <!-- Date From -->
-                <div class="col-md-3">
-                    <label class="form-label">{{ translate('Date From') }}</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
-                </div>
+    @php
+        $confirmedSummary = [];
+        if (request()->filled('date_from') || request()->filled('date_to')) {
+            $confirmedSummary[] = [
+                'label' => translate('date'),
+                'value' => trim((request('date_from') ?: '...') . ' - ' . (request('date_to') ?: '...')),
+            ];
+        }
+        if (request('delivery_status') && request('delivery_status') !== 'all') {
+            $confirmedSummary[] = [
+                'label' => translate('Delivery Status'),
+                'value' => request('delivery_status'),
+            ];
+        }
+        if (request('payment_status') && request('payment_status') !== 'all') {
+            $confirmedSummary[] = [
+                'label' => translate('Payment Status'),
+                'value' => request('payment_status'),
+            ];
+        }
+        if (request('price_sort')) {
+            $confirmedSummary[] = [
+                'label' => translate('Price'),
+                'value' => request('price_sort') === 'low_high' ? translate('Low to High') : translate('High to Low'),
+            ];
+        }
+        if (request()->filled('searchValue')) {
+            $confirmedSummary[] = [
+                'label' => translate('search'),
+                'value' => request('searchValue'),
+            ];
+        }
+    @endphp
 
-                <!-- Date To -->
-                <div class="col-md-3">
-                    <label class="form-label">{{ translate('Date To') }}</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
-                </div>
-
-                <!-- Delivery Status -->
-                <div class="col-md-2">
-                    <label class="form-label">{{ translate('Delivery Status') }}</label>
-                    <select name="delivery_status" class="form-control">
-                        <option value="">{{ translate('All') }}</option>
-                        <option value="complete" {{ request('delivery_status')=='completed' ? 'selected' : '' }}>
-                            {{ translate('Complete') }}
-                        </option>
-                        <option value="partials" {{ request('delivery_status')=='partials' ? 'selected' : '' }}>
-                            {{ translate('partials') }}
-                        </option>
-                        <option value="pending" {{ request('delivery_status')=='pending' ? 'selected' : '' }}>
-                            {{ translate('Pending') }}
-                        </option>
-                    </select>
-                </div>
-
-                <!-- Payment Status -->
-                <div class="col-md-2">
-                    <label class="form-label">{{ translate('Payment Status') }}</label>
-                    <select name="payment_status" class="form-control">
-                        <option value="">{{ translate('All') }}</option>
-                        <option value="paid" {{ request('payment_status')=='paid' ? 'selected' : '' }}>
-                            {{ translate('Paid') }}
-                        </option>
-                        <option value="unpaid" {{ request('payment_status')=='unpaid' ? 'selected' : '' }}>
-                            {{ translate('Unpaid') }}
-                        </option>
-                        <option value="partials" {{ request('payment_status')=='partials' ? 'selected' : '' }}>
-                            {{ translate('partials') }}
-                        </option>
-                    </select>
-                </div>
-
-                <!-- Price Sort -->
-                <div class="col-md-2">
-                    <label class="form-label">{{ translate('Price') }}</label>
-                    <select name="price_sort" class="form-control">
-                        <option value="">{{ translate('Default') }}</option>
-                        <option value="low_high" {{ request('price_sort')=='low_high' ? 'selected' : '' }}>
-                            {{ translate('Low to High') }}
-                        </option>
-                        <option value="high_low" {{ request('price_sort')=='high_low' ? 'selected' : '' }}>
-                            {{ translate('High to Low') }}
-                        </option>
-                    </select>
-                </div>
-
-                <!-- Submit -->
-                <div class="col-md-12 d-flex justify-content-end">
-                    <button type="submit" class="btn btn--primary">
-                        <i class="tio-filter-list"></i> {{ translate('Apply Filters') }}
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'wholesale-confirmed-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.wholesale.business.wholesale.confirmedorder'),
+        'toolbarFields' => [
+            [
+                'name' => 'date_from',
+                'label' => translate('Date From'),
+                'type' => 'date',
+                'value' => request('date_from'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+            ],
+            [
+                'name' => 'date_to',
+                'label' => translate('Date To'),
+                'type' => 'date',
+                'value' => request('date_to'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+            ],
+            [
+                'name' => 'delivery_status',
+                'label' => translate('Delivery Status'),
+                'type' => 'select',
+                'value' => request('delivery_status', 'all'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+                'options' => [
+                    'all' => translate('all'),
+                    'delivered' => translate('delivered'),
+                    'partials' => translate('partials'),
+                    'pending' => translate('pending'),
+                ],
+            ],
+            [
+                'name' => 'payment_status',
+                'label' => translate('Payment Status'),
+                'type' => 'select',
+                'value' => request('payment_status', 'all'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+                'options' => [
+                    'all' => translate('all'),
+                    'paid' => translate('paid'),
+                    'unpaid' => translate('unpaid'),
+                    'partials' => translate('partials'),
+                ],
+            ],
+            [
+                'name' => 'price_sort',
+                'label' => translate('Price'),
+                'type' => 'select',
+                'value' => request('price_sort'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+                'options' => [
+                    '' => translate('Default'),
+                    'low_high' => translate('Low to High'),
+                    'high_low' => translate('High to Low'),
+                ],
+            ],
+            [
+                'name' => 'choose_first',
+                'label' => translate('Rows'),
+                'type' => 'number',
+                'value' => request('choose_first', 15),
+                'attributes' => ['min' => 1],
+                'placeholder' => '15',
+                'col_class' => 'col-xl-1 col-lg-3 col-md-6',
+            ],
+            [
+                'name' => 'searchValue',
+                'label' => translate('search'),
+                'type' => 'search',
+                'value' => request('searchValue'),
+                'placeholder' => translate('Search...'),
+                'aria_label' => translate('Search'),
+                'col_class' => 'col-xl-1 col-lg-3 col-md-6',
+            ],
+        ],
+        'toolbarSummary' => $confirmedSummary,
+    ])
 
     <div class="card mt-3">
-        <div class="card-body">
-            <div class="px-3 py-4 light-bg">
-                <div class="row g-2 align-items-center flex-grow-1">
-                    <div class="col-md-7 col-lg-8">
-                        <h5 class="text-capitalize d-flex gap-1">
-                            {{translate('Confirmed_Orders')}}
-                            <span class="badge badge-soft-dark radius-50 fz-12">{{$orders->total()}}</span>
-                        </h5>
-                    </div>
-                    <div class="col-md-5 col-lg-4 d-flex gap-3 flex-sm-nowrap justify-content-end">
-                        <div class="input-group input-group-custom input-group-merge">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                    <i class="tio-search"></i>
-                                </div>
-                            </div>
-                            <input id="datatableSearch_" type="search" class="form-control"
-                                placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
-                        </div>
-                        <div class="dropdown">
-                            <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pe-4"
-                                href="{{route('admin.wholesale.business.wholesale-confirm.export')}}">
-                                <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}"
-                                    class="excel" alt="">
-                                <span class="ps-2">{{ translate('export') }}</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('Confirmed_Orders'),
+            'listHeaderTotal' => $orders->total(),
+            'listHeaderActions' => [
+                [
+                    'type' => 'export',
+                    'url' => route('admin.wholesale.business.wholesale-confirm.export'),
+                    'form_id' => 'wholesale-confirmed-toolbar',
+                    'label' => translate('export'),
+                ],
+            ],
+        ])
+
+        <div class="card-body pt-0">
             <div class="table-responsive">
                 <table
                     class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
@@ -161,97 +187,118 @@
                             <td>{{ $order->quotation_no }}</td>
                             <td>{{ $order->confirm_order_no ?? ''}}</td>
                             <td>{{ $order->invoice_no ?? ''}}</td>
-                            <td>{{ $order->wholeseller->wholesalerBusiness->company_name ?? '' }}</td>
+                            <td>
+                                <a class="crm-primary-link" href="{{ route('admin.wholesale.business.confirm-order.tracking-page', $order->id) }}">
+                                    {{ $order->wholeseller->wholesalerBusiness->company_name ?? __('N/A') }}
+                                </a>
+                            </td>
                             <td>
                                 @php
                                 $deliveryStatus = strtolower($order->delivery_status ?? 'pending');
                                 $deliveryColors = [
-                                'delivered' => 'bg-green-100 text-green-800',
-                                'partials' => 'bg-yellow-100 text-yellow-800',
-                                'pending' => 'bg-red-100 text-red-800',
+                                'delivered' => 'wholesale-status-pill--success',
+                                'partials' => 'wholesale-status-pill--warning',
+                                'pending' => 'wholesale-status-pill--danger',
                                 ];
-                                $deliveryClass = $deliveryColors[$deliveryStatus] ?? 'bg-gray-100
-                                text-gray-800';
+                                $deliveryClass = $deliveryColors[$deliveryStatus] ?? 'wholesale-status-pill--muted';
                                 @endphp
 
-                                <span
-                                    class="px-5 py-1 text-cap text-xs leading-5 rounded-full {{ $deliveryClass }}">
-                                    {{ ucfirst($deliveryStatus) }}
+                                <span class="wholesale-status-pill {{ $deliveryClass }}">
+                                    {{ translate($deliveryStatus) }}
                                 </span>
                             </td>
                             <td>
                                 @php
                                 $status = strtolower($order->payment_status ?? 'unpaid');
                                 $statusColors = [
-                                'paid' => 'bg-green-100 text-green-800',
-                                'partials' => 'bg-yellow-100 text-yellow-800',
-                                'unpaid' => 'bg-red-100 text-red-800',
+                                'paid' => 'wholesale-status-pill--success',
+                                'partials' => 'wholesale-status-pill--warning',
+                                'unpaid' => 'wholesale-status-pill--danger',
                                 ];
-                                $colorClass = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
+                                $colorClass = $statusColors[$status] ?? 'wholesale-status-pill--muted';
                                 @endphp
 
-                                <span
-                                    class="px-5 py-1 text-cap text-xs leading-5b rounded-full {{ $colorClass }}">
-                                    {{ ucfirst($status) }}
+                                <span class="wholesale-status-pill {{ $colorClass }}">
+                                    {{ translate($status) }}
                                 </span>
                             </td>
 
                             <td> {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount:   $order->final_price), currencyCode: getCurrencyCode()) }}
                             </td>
                             <td>
-                                <div class="d-flex align-items-center gap-2 position-relative">
-                                    {{-- View Invoice --}}
-                                    <a title="{{ translate('View Details') }}"
-                                        class="btn btn-outline-info btn-sm square-btn"
-                                        href="{{ route('admin.wholesale.business.confirm-order.tracking-page', $order->id) }}">
-                                        <i class="tio-invisible"></i>
-                                    </a>
-                                    <a data-id="{{ $order->order_id }}" class="btn btn-info btn-sm wholesale-order-status-history" data-toggle="modal" data-target="#exampleModalLong"><i class="tio-history"></i></a>
-
-
-                                    {{-- Action Button --}}
-                                    <button type="button" class="btn btn-outline-secondary btn-sm square-btn action-btn"
-                                        onclick="toggleActionPopup(this)">
-                                        <i class="tio-more-horizontal"></i>
-                                    </button>
-
-                                    <div class="action-popup shadow-sm p-2 bg-white border rounded d-none position-absolute z-3"
-                                        style="top: 100%; inset-inline-start: 0; min-width: 150px;">
+                                <div class="crm-row-actions">
+                                    <div class="crm-row-actions__primary">
+                                        <a class="btn btn-sm btn-info"
+                                            href="{{ route('admin.wholesale.business.confirm-order.tracking-page', $order->id) }}">
+                                            {{ translate('view') }}
+                                        </a>
                                         @if (!$order->invoice_no)
-                                        <a href="javascript:void(0)" class="dropdown-item text-dark py-1 px-2"
-                                            onclick="openInvoicePopup({{ $order->id }})">
-                                            <i class="tio-edit"></i> {{ translate('Invoice No') }}
-                                        </a>
+                                            <button type="button" class="btn btn-sm btn-primary wholesale-open-invoice-modal" data-order-id="{{ $order->id }}">
+                                                {{ translate('Invoice No') }}
+                                            </button>
+                                        @elseif (!$order->confirm_order_no)
+                                            <button type="button" class="btn btn-sm btn-primary wholesale-open-confirm-order-modal" data-order-id="{{ $order->id }}">
+                                                {{ translate('Confirm Order No') }}
+                                            </button>
+                                        @elseif (strtolower($order->payment_status ?? 'unpaid') !== 'paid')
+                                            <a class="btn btn-sm btn-primary" href="{{ route('admin.wholesale.business.orders.payment', $order->id) }}">
+                                                {{ translate('Payment') }}
+                                            </a>
+                                        @else
+                                            <a class="btn btn-sm btn-primary" href="{{ route('admin.wholesale.business.orders.delivery', $order->id) }}">
+                                                {{ translate('Delivery') }}
+                                            </a>
                                         @endif
-                                        @if (!$order->confirm_order_no)
-                                        <a href="javascript:void(0)" class="dropdown-item text-dark py-1 px-2"
-                                            onclick="openConfirmOrderPopup({{ $order->id }})">
-                                            <i class="tio-edit"></i> {{ translate('Confirm Order No') }}
-                                        </a>
-                                        @endif
-                                        @if ($order->invoice_no)
-                                        <a class="dropdown-item text-dark py-1 px-2"
-                                            href="{{ route('admin.wholesale.business.confirm-order.complete.invoice', $order->id) }}">
-                                            <i class="tio-wallet"></i> {{ translate('Invoice') }}
-                                        </a>
-                                        @endif
-                                        <a class="dropdown-item text-dark py-1 px-2"
-                                            href="{{ route('admin.wholesale.business.orders.payment', $order->id) }}">
-                                            <i class="tio-wallet"></i> {{ translate('Payment') }}
-                                        </a>
-                                        <a class="dropdown-item text-dark py-1 px-2"
-                                            href="{{ route('admin.wholesale.business.orders.delivery', $order->id) }}">
-                                            <i class="tio-truck"></i> {{ translate('Delivery') }}
-                                        </a>
-                                        @if ($order->attachments)
-                                        <a class="dropdown-item text-info py-1 px-2" href="{{ asset('storage/wholesale_attachment/'.$order->attachments) }}" target="_blank">
-                                            <i class="tio-attachment"></i> {{ translate('Attachment') }}
-                                        </a>
-                                        @endif
-                                        <a class="dropdown-item text-danger py-1 px-2" href="javascript:void(0);"
-                                            onclick="confirmAndDelete('{{ route('admin.wholesale.business.confirem.order.delete', $order->id) }}')">
-                                            <i class="tio-delete"></i>{{ translate('Delete') }}
-                                        </a>
+                                    </div>
+                                    @if (!$order->invoice_no || !$order->confirm_order_no)
+                                        <div class="crm-row-actions__chips">
+                                            @if (!$order->invoice_no)
+                                                <span class="crm-row-actions__chip">{{ translate('Invoice No') }}</span>
+                                            @endif
+                                            @if (!$order->confirm_order_no)
+                                                <span class="crm-row-actions__chip">{{ translate('Confirm Order No') }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    <div class="dropdown crm-row-actions__menu">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                            <i class="tio-more-horizontal"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a data-id="{{ $order->order_id }}" class="dropdown-item wholesale-order-status-history" data-toggle="modal" data-target="#exampleModalLong">
+                                                {{ translate('History') }}
+                                            </a>
+                                            @if (!$order->invoice_no)
+                                                <button type="button" class="dropdown-item wholesale-open-invoice-modal" data-order-id="{{ $order->id }}">
+                                                    {{ translate('Invoice No') }}
+                                                </button>
+                                            @endif
+                                            @if (!$order->confirm_order_no)
+                                                <button type="button" class="dropdown-item wholesale-open-confirm-order-modal" data-order-id="{{ $order->id }}">
+                                                    {{ translate('Confirm Order No') }}
+                                                </button>
+                                            @endif
+                                            @if ($order->invoice_no)
+                                                <a class="dropdown-item" href="{{ route('admin.wholesale.business.confirm-order.complete.invoice', $order->id) }}">
+                                                    {{ translate('Invoice') }}
+                                                </a>
+                                            @endif
+                                            <a class="dropdown-item" href="{{ route('admin.wholesale.business.orders.payment', $order->id) }}">
+                                                {{ translate('Payment') }}
+                                            </a>
+                                            <a class="dropdown-item" href="{{ route('admin.wholesale.business.orders.delivery', $order->id) }}">
+                                                {{ translate('Delivery') }}
+                                            </a>
+                                            @if ($order->attachments)
+                                                <a class="dropdown-item text-info" href="{{ asset('storage/wholesale_attachment/'.$order->attachments) }}" target="_blank">
+                                                    {{ translate('Attachment') }}
+                                                </a>
+                                            @endif
+                                            <a class="dropdown-item text-danger wholesale-delete-action" href="javascript:void(0);"
+                                                data-delete-url="{{ route('admin.wholesale.business.confirem.order.delete', $order->id) }}">
+                                                {{ translate('Delete') }}
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -337,199 +384,6 @@
 <span class="status-history-url" data-url="{{ route('admin.wholesale.business.ajax-activity-history', ['order' => ':id'] ) }}"></span>
 @endsection
 @push('script')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    const csrfToken = @json(csrf_token());
-
-    function submitDeleteForm(deleteUrl) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = deleteUrl;
-
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = '_token';
-        tokenInput.value = csrfToken;
-        form.appendChild(tokenInput);
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-</script>
-
-
-<script>
-    function confirmAndDelete(deleteUrl) {
-        Swal.fire({
-            title: @json(__('Confirm Deletion')),
-            text: @json(__('Are you sure you want to delete this order?')),
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: @json(__('Yes, delete it!')),
-            cancelButtonText: @json(__('Cancel'))
-        }).then((result) => {
-            if (result.isConfirmed) {
-                submitDeleteForm(deleteUrl);
-            }
-        });
-    }
-
-
-    let currentPopup = null;
-
-    function toggleActionPopup(button) {
-        if (currentPopup) {
-            currentPopup.remove();
-            currentPopup = null;
-        }
-
-        const originalPopup = button.nextElementSibling;
-        const popup = originalPopup.cloneNode(true);
-        popup.classList.remove('d-none');
-        popup.classList.add('show');
-        popup.style.visibility = 'hidden';
-        document.body.appendChild(popup);
-        currentPopup = popup;
-
-        const rect = button.getBoundingClientRect();
-
-        popup.style.position = 'fixed';
-        popup.style.top = rect.bottom + 'px';
-        popup.style.left = rect.left + 'px';
-        popup.style.zIndex = 1050;
-        popup.style.visibility = 'visible';
-
-        const popupRight = rect.left + popup.offsetWidth;
-        const screenWidth = window.innerWidth;
-
-        if (popupRight > screenWidth) {
-            popup.style.left = (screenWidth - popup.offsetWidth - 10) + 'px'; // shift left
-        }
-    }
-
-
-    document.addEventListener('click', function(e) {
-        if (
-            !e.target.closest('.action-popup') &&
-            !e.target.closest('.action-btn')
-        ) {
-            if (currentPopup) {
-                currentPopup.remove();
-                currentPopup = null;
-            }
-        }
-    });
-
-    function openInvoicePopup(orderId) {
-        $('#invoice_order_id').val(orderId);
-        $('#invoice_no').val('');
-        $('#invoiceAvailability').text('');
-        $('#submitInvoice').prop('disabled', true);
-        $('#invoiceModal').modal('show');
-    }
-
-    function openConfirmOrderPopup(orderId) {
-        $('#confirm_order_id').val(orderId);
-        $('#confirm_order_no').val('');
-        $('#confirmOrderAvailability').text('');
-        $('#submitConfirmOrder').prop('disabled', true);
-        $('#confirmOrderModal').modal('show');
-    }
-
-    $('#invoice_no').on('keyup', function() {
-        let value = $(this).val();
-        if (value.length < 1) {
-            $('#invoiceAvailability').text('');
-            $('#submitInvoice').prop('disabled', true);
-            return;
-        }
-        $.get("{{ route('admin.wholesale.business.order.check-confirm-invoice-no') }}", {
-            type: 'invoice_no',
-            number: value
-        }, function(res) {
-            if (res.exists) {
-                $('#invoiceAvailability').text('Invoice number already exists').addClass('text-danger').removeClass('text-success');
-                $('#submitInvoice').prop('disabled', true);
-            } else {
-                $('#invoiceAvailability').text('Invoice number available').addClass('text-success').removeClass('text-danger');
-                $('#submitInvoice').prop('disabled', false);
-            }
-        });
-    });
-
-    $('#confirm_order_no').on('keyup', function() {
-        let value = $(this).val();
-        if (value.length < 1) {
-            $('#confirmOrderAvailability').text('');
-            $('#submitConfirmOrder').prop('disabled', true);
-            return;
-        }
-        $.get("{{ route('admin.wholesale.business.order.check-confirm-invoice-no') }}", {
-            type: 'confirm_order_no',
-            number: value
-        }, function(res) {
-            if (res.exists) {
-                $('#confirmOrderAvailability').text('Confirm order number already exists').addClass('text-danger').removeClass('text-success');
-                $('#submitConfirmOrder').prop('disabled', true);
-            } else {
-                $('#confirmOrderAvailability').text('Confirm order number available').addClass('text-success').removeClass('text-danger');
-                $('#submitConfirmOrder').prop('disabled', false);
-            }
-        });
-    });
-
-
-    document.getElementById('datatableSearch_').addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        const rows = document.querySelectorAll('table tbody tr');
-
-        rows.forEach(row => {
-            const rowText = row.textContent.toLowerCase();
-            if (rowText.indexOf(query) > -1) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-</script>
-
-
-<script>
-    $('.wholesale-order-status-history').on('click', function() {
-        let url = $('.status-history-url').data('url');
-        let id = $(this).data('id');
-        url = url.replace(":id", id)
-        $.ajax({
-            url: url,
-            method: 'GET',
-            success: function(data) {
-                $(".load-with-ajax").empty().append(data);
-            }
-        });
-    });
-
-    function viewAttachment(url) {
-        const ext = url.split('.').pop().toLowerCase();
-        let htmlContent = '';
-
-        if (ext === 'pdf') {
-            htmlContent = `<iframe src="${url}" width="100%" height="400px"></iframe>`;
-        } else {
-            htmlContent = `<p>{{ __('Cannot preview this file.') }} <a href="${url}" target="_blank">{{ __('Click here to download') }}</a></p>`;
-        }
-
-        Swal.fire({
-            title: @json(__('Attachment')),
-            html: htmlContent,
-            showCloseButton: true,
-            showCancelButton: false,
-            confirmButtonText: @json(__('Close'))
-        });
-    }
-</script>
-
+@include('admin-views.wholesaler-business.partials._list-js-config')
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/wholesale-list.js') }}"></script>
 @endpush
-

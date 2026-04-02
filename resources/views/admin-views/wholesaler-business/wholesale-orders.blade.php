@@ -2,6 +2,11 @@
 
 @section('title', translate('Quotation_Sent'))
 
+@push('css_or_js')
+    <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
+    <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/wholesale-list.css') }}">
+@endpush
+
 @section('content')
 
 @if(session('success'))
@@ -15,8 +20,6 @@
     {{ session('error') }}
 </div>
 @endif
-<script src="https://cdn.tailwindcss.com"></script>
-
 <div class="content container-fluid">
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -24,102 +27,135 @@
             {{translate('Quotation_Sent')}}
         </h2>
     </div>
+
+    @php
+        $quotationSummary = [];
+        if (request()->filled('date_from') || request()->filled('date_to')) {
+            $quotationSummary[] = [
+                'label' => translate('date'),
+                'value' => trim((request('date_from') ?: '...') . ' - ' . (request('date_to') ?: '...')),
+            ];
+        }
+        if (request('tier') && request('tier') !== 'all') {
+            $quotationSummary[] = [
+                'label' => translate('tier'),
+                'value' => request('tier'),
+            ];
+        }
+        if (request('status') && request('status') !== 'all') {
+            $quotationSummary[] = [
+                'label' => translate('status'),
+                'value' => request('status'),
+            ];
+        }
+        if (request('price_sort')) {
+            $quotationSummary[] = [
+                'label' => translate('price'),
+                'value' => request('price_sort') === 'low_high' ? translate('Low to High') : translate('High to Low'),
+            ];
+        }
+        if (request()->filled('searchValue')) {
+            $quotationSummary[] = [
+                'label' => translate('search'),
+                'value' => request('searchValue'),
+            ];
+        }
+    @endphp
+
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'wholesale-quotation-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.wholesale.business.wholesale.order'),
+        'toolbarFields' => [
+            [
+                'name' => 'date_from',
+                'label' => translate('Date From'),
+                'type' => 'date',
+                'value' => request('date_from'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+            ],
+            [
+                'name' => 'date_to',
+                'label' => translate('Date To'),
+                'type' => 'date',
+                'value' => request('date_to'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+            ],
+            [
+                'name' => 'tier',
+                'label' => translate('Tier'),
+                'type' => 'select',
+                'value' => request('tier', 'all'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+                'options' => collect($tiers ?? [])
+                    ->pluck('name', 'name')
+                    ->prepend(translate('all'), 'all')
+                    ->all(),
+            ],
+            [
+                'name' => 'status',
+                'label' => translate('Status'),
+                'type' => 'select',
+                'value' => request('status', 'all'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+                'options' => [
+                    'all' => translate('all'),
+                    'sent' => translate('sent'),
+                    'accepted' => translate('accepted'),
+                    'rejected' => translate('rejected'),
+                ],
+            ],
+            [
+                'name' => 'price_sort',
+                'label' => translate('Price'),
+                'type' => 'select',
+                'value' => request('price_sort'),
+                'col_class' => 'col-xl-2 col-lg-4 col-md-6',
+                'options' => [
+                    '' => translate('Default'),
+                    'low_high' => translate('Low to High'),
+                    'high_low' => translate('High to Low'),
+                ],
+            ],
+            [
+                'name' => 'choose_first',
+                'label' => translate('Rows'),
+                'type' => 'number',
+                'value' => request('choose_first', 15),
+                'attributes' => ['min' => 1],
+                'placeholder' => '15',
+                'col_class' => 'col-xl-1 col-lg-3 col-md-6',
+            ],
+            [
+                'name' => 'searchValue',
+                'label' => translate('search'),
+                'type' => 'search',
+                'value' => request('searchValue'),
+                'placeholder' => translate('Search...'),
+                'aria_label' => translate('Search'),
+                'col_class' => 'col-xl-1 col-lg-3 col-md-6',
+            ],
+        ],
+        'toolbarSummary' => $quotationSummary,
+    ])
+
     <div class="row mt-4">
         <div class="col-md-12">
-            <div class="card p-4 mb-4 shadow-sm">
-                <form method="GET" action="{{ url()->current() }}">
-                    <div class="row g-3">
-                        <!-- Date From -->
-                        <div class="col-md-3">
-                            <label class="form-label">{{ translate('Date From') }}</label>
-                            <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
-                        </div>
-
-                        <!-- Date To -->
-                        <div class="col-md-3">
-                            <label class="form-label">{{ translate('Date To') }}</label>
-                            <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
-                        </div>
-
-                        <!-- Tier -->
-                        <div class="col-md-2">
-                            <label class="form-label">{{ translate('Tier') }}</label>
-                            <select name="tier" class="form-control">
-                                <option value="">{{ translate('All Tiers') }}</option>
-                                <option value="gold" {{ request('tier')=='gold' ? 'selected' : '' }}>{{ translate('Gold') }}</option>
-                                <option value="silver" {{ request('tier')=='silver' ? 'selected' : '' }}>{{ translate('Silver') }}</option>
-                                <option value="bronze" {{ request('tier')=='bronze' ? 'selected' : '' }}>{{ translate('Bronze') }}</option>
-                            </select>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="col-md-2">
-                            <label class="form-label">{{ translate('Status') }}</label>
-                            <select name="status" class="form-control">
-                                <option value="">{{ translate('All') }}</option>
-                                <option value="sent" {{ request('status')=='sent' ? 'selected' : '' }}>{{ translate('Sent') }}</option>
-                                <option value="accepted" {{ request('status')=='accepted' ? 'selected' : '' }}>{{ translate('Accepted') }}
-                                </option>
-                                <option value="rejected" {{ request('status')=='rejected' ? 'selected' : '' }}>{{ translate('Rejected') }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Price Sort -->
-                        <div class="col-md-2">
-                            <label class="form-label">{{ translate('Price') }}</label>
-                            <select name="price_sort" class="form-control">
-                                <option value="">{{ translate('Default') }}</option>
-                                <option value="low_high" {{ request('price_sort')=='low_high' ? 'selected' : '' }}>
-                                    {{ translate('Low to High') }}
-                                </option>
-                                <option value="high_low" {{ request('price_sort')=='high_low' ? 'selected' : '' }}>
-                                    {{ translate('High to Low') }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="col-12 text-end mt-3">
-                            <button type="submit" class="btn btn--primary">
-                                <i class="tio-filter-list"></i> {{ translate('Apply Filters') }}
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
             <div class="card mt-3">
-                <div class="card-body">
-                    <div class="px-3 py-4 light-bg">
-                        <div class="row g-2 align-items-center flex-grow-1">
-                            <div class="col-md-7 col-lg-8">
-                                <h5 class="text-capitalize d-flex gap-1">
-                                    {{translate('Quotation_list')}}
-                                    <span class="badge badge-soft-dark radius-50 fz-12">{{$orders->total()}}</span>
-                                </h5>
-                            </div>
-                            <div class="col-md-5 col-lg-4 d-flex gap-3 flex-sm-nowrap justify-content-end">
-                                <div class="input-group input-group-custom input-group-merge">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="tio-search"></i>
-                                        </div>
-                                    </div>
-                                    <input id="datatableSearch_" type="search" class="form-control"
-                                        placeholder="{{ translate('Search...') }}" aria-label="{{ translate('Search') }}">
-                                </div>
-                                <div class="dropdown">
-                                    <a type="button" class="align-items-center btn btn-block btn-outline--primary d-flex pe-4"
-                                        href="{{route('admin.wholesale.business.wholesale-quotation.export')}}">
-                                        <img width="14"
-                                            src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}"
-                                            class="excel" alt="">
-                                        <span class="ps-2">{{ translate('export') }}</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                @include('admin-views.crm.partials._list-card-header', [
+                    'listHeaderTitle' => translate('Quotation_list'),
+                    'listHeaderTotal' => $orders->total(),
+                    'listHeaderActions' => [
+                        [
+                            'type' => 'export',
+                            'url' => route('admin.wholesale.business.wholesale-quotation.export'),
+                            'form_id' => 'wholesale-quotation-toolbar',
+                            'label' => translate('export'),
+                        ],
+                    ],
+                ])
+
+                <div class="card-body pt-0">
                     <div class="table-responsive">
                         <table
                             class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
@@ -146,45 +182,56 @@
                                     <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span></td>
                                     <td>{{ $order->purchase_order_no }}</td>
                                     <td>{{ $order->quotation_no }}</td>
-                                    <td>{{ $order->wholeseller->wholesalerBusiness->company_name ?? '' }}</td>
+                                    <td>
+                                        <a class="crm-primary-link" href="{{ route('admin.wholesale.business.orders.invoice', $order->id) }}">
+                                            {{ $order->wholeseller->wholesalerBusiness->company_name ?? __('N/A') }}
+                                        </a>
+                                    </td>
                                     <td>{{ $order->wholeseller_tier ?? __('N/A') }}</td>
                                     <td>
                                         @php
                                         $status = $order->status;
                                         $color = match($status) {
-                                        'sent' => 'bg-blue-100 text-blue-800',
-                                        'accepted' => 'bg-green-100 text-green-800',
-                                        'rejected' => 'bg-red-100 text-red-800',
-                                        default => 'bg-gray-100 text-gray-800',
+                                        'sent' => 'wholesale-status-pill--info',
+                                        'accepted' => 'wholesale-status-pill--success',
+                                        'rejected' => 'wholesale-status-pill--danger',
+                                        default => 'wholesale-status-pill--muted',
                                         };
                                         @endphp
 
-                                        <span class="px-5 py-1 text-cap text-xs rounded-full {{ $color }}">
-                                            {{ ucfirst($status) }}
+                                        <span class="wholesale-status-pill {{ $color }}">
+                                            {{ translate($status) }}
                                         </span>
                                     </td>
 
                                     <td> {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $order->final_price), currencyCode: getCurrencyCode()) }}
                                     </td>
                                     <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <a title="{{translate('View Details')}}"
-                                                class="btn btn-outline-info btn-sm square-btn"
-                                                href="{{ route('admin.wholesale.business.orders.invoice', $order->id) }}">
-                                                <i class="tio-invisible"></i>
-                                            </a>
-                                            <a title="{{translate('View Details')}}"
-                                                class="btn btn-outline-info btn-sm square-btn"
-                                                href="{{ route('admin.wholesale.business.orders.invoice.edit', $order->id) }}">
-                                                <i class="tio-edit"></i>
-                                            </a>
-                                            <a href="javascript:void(0);" title="{{ translate('Delete') }}"
-                                                class="btn btn-outline-danger btn-sm square-btn"
-                                                onclick="confirmAndDelete('{{ route('admin.wholesale.business.quotation.delete', $order->id) }}')">
-                                                <i class="tio-delete"></i>
-                                            </a>
-                                            <a data-id="{{ $order->order_id }}" class="btn btn-info btn-sm wholesale-order-status-history" data-toggle="modal" data-target="#exampleModalLong"><i class="tio-history"></i></a>
-
+                                        <div class="crm-row-actions">
+                                            <div class="crm-row-actions__primary">
+                                                <a class="btn btn-sm btn-info"
+                                                    href="{{ route('admin.wholesale.business.orders.invoice', $order->id) }}">
+                                                    {{ translate('view') }}
+                                                </a>
+                                                <a class="btn btn-sm btn-outline--primary"
+                                                    href="{{ route('admin.wholesale.business.orders.invoice.edit', $order->id) }}">
+                                                    {{ translate('edit') }}
+                                                </a>
+                                            </div>
+                                            <div class="dropdown crm-row-actions__menu">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                                    <i class="tio-more-horizontal"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end">
+                                                    <a data-id="{{ $order->order_id }}" class="dropdown-item wholesale-order-status-history" data-toggle="modal" data-target="#exampleModalLong">
+                                                        {{ translate('History') }}
+                                                    </a>
+                                                    <a href="javascript:void(0);" class="dropdown-item text-danger wholesale-delete-action"
+                                                        data-delete-url="{{ route('admin.wholesale.business.quotation.delete', $order->id) }}">
+                                                        {{ translate('Delete') }}
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -216,72 +263,6 @@
 
     @endsection
     @push('script')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        const csrfToken = @json(csrf_token());
-
-        function submitDeleteForm(deleteUrl) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = deleteUrl;
-
-            const tokenInput = document.createElement('input');
-            tokenInput.type = 'hidden';
-            tokenInput.name = '_token';
-            tokenInput.value = csrfToken;
-            form.appendChild(tokenInput);
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-    </script>
-
-    <script>
-        function confirmAndDelete(deleteUrl) {
-            Swal.fire({
-                title: @json(__('Confirm Deletion')),
-                text: @json(__('Are you sure you want to delete this order?')),
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: @json(__('Yes, delete it!')),
-                cancelButtonText: @json(__('Cancel'))
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitDeleteForm(deleteUrl);
-                }
-            });
-        }
-
-        document.getElementById('datatableSearch_').addEventListener('input', function() {
-            const query = this.value.toLowerCase();
-            const rows = document.querySelectorAll('table tbody tr');
-
-            rows.forEach(row => {
-                // Convert all text inside the row to lowercase
-                const rowText = row.textContent.toLowerCase();
-                if (rowText.indexOf(query) > -1) {
-                    row.style.display = ''; // Show row
-                } else {
-                    row.style.display = 'none'; // Hide row
-                }
-            });
-        });
-    </script>
-
-    <script>
-        $('.wholesale-order-status-history').on('click', function() {
-            let url = $('.status-history-url').data('url');
-            let id = $(this).data('id');
-            url = url.replace(":id", id)
-            $.ajax({
-                url: url,
-                method: 'GET',
-                success: function(data) {
-                    $(".load-with-ajax").empty().append(data);
-                }
-            });
-        });
-    </script>
+    @include('admin-views.wholesaler-business.partials._list-js-config')
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/wholesale-list.js') }}"></script>
     @endpush
