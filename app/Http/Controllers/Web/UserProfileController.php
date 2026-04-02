@@ -9,6 +9,9 @@ use App\Contracts\Repositories\RobotsMetaContentRepositoryInterface;
 use App\Enums\WebConfigKey;
 use App\Events\RefundEvent;
 use App\Http\Requests\Web\CustomerProfileUpdateRequest;
+use App\Models\Contact;
+use App\Models\InboxActivities;
+use App\Models\InboxMessage;
 use App\Models\SupportTicketConv;
 use App\Traits\PdfGenerator;
 use App\Http\Controllers\Controller;
@@ -41,7 +44,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\InboxMessage;
 use Illuminate\Support\Facades\Log;
 use App\Services\SlaService;
 use App\Support\ServiceTicketWorkflow;
@@ -657,7 +659,6 @@ class UserProfileController extends Controller
             }
         }
 
-        $customer = auth('customer')->check() ? auth('customer')->user() : null;
         $statusMap = [
             'support' => 1,
             'complaint' => 36,
@@ -667,18 +668,28 @@ class UserProfileController extends Controller
         ];
 
         $ticketStatus = $statusMap[$request->ticket_type] ?? 1;
-        $ticketId = DB::table('support_tickets')->insertGetId([
-            'subject' => $request['ticket_subject'],
-            'type' => $request['ticket_type'],
-            'customer_id' => auth('customer')->check() ? auth('customer')->id() : null,
-            'description' => $request['ticket_description'],
-            'attachment' => json_encode($images),
-            'status' => $ticketStatus,
-            'department_id' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
 
+        DB::transaction(function () use ($request, $images, $ticketStatus): void {
+            $customer = auth('customer')->user();
+
+            $ticket = SupportTicket::create([
+                'subject' => $request['ticket_subject'],
+                'type' => $request['ticket_type'],
+                'customer_id' => $customer?->id,
+                'description' => $request['ticket_description'],
+                'attachment' => $images,
+                'status' => $ticketStatus,
+                'department_id' => 1,
+            ]);
+
+            $this->createConvertedInboxCaseForTicket(
+                ticket: $ticket,
+                customer: $customer,
+                category: (string) $request->ticket_type,
+                messageBody: (string) ($request['ticket_description'] ?? ''),
+                sourceContext: []
+            );
+        });
 
         return back();
     }
@@ -725,20 +736,113 @@ class UserProfileController extends Controller
             $descriptionLines[] = 'Customer Message: ' . trim((string)$request->ticket_description);
         }
 
-        $ticket = SupportTicket::create([
-            'subject' => 'Order #' . $order->id . ' - ' . $productName,
-            'description' => implode(PHP_EOL, $descriptionLines),
-            'customer_id' => auth('customer')->id(),
-            'department_id' => 1,
-            'priority' => 'low',
-            'type' => $request->ticket_type,
-            'sub_type' => 'order_item_support',
-            'status' => $this->getSupportTicketStatusByType($request->ticket_type),
-            'source_id' => $orderDetail->id,
-        ]);
+        $ticket = DB::transaction(function () use ($request, $order, $orderDetail, $productName, $descriptionLines) {
+            $customer = auth('customer')->user();
+
+            $ticket = SupportTicket::create([
+                'subject' => 'Order #' . $order->id . ' - ' . $productName,
+                'description' => implode(PHP_EOL, $descriptionLines),
+                'customer_id' => $customer?->id,
+                'department_id' => 1,
+                'priority' => 'low',
+                'type' => $request->ticket_type,
+                'sub_type' => 'order_item_support',
+                'status' => $this->getSupportTicketStatusByType($request->ticket_type),
+                'source_id' => $orderDetail->id,
+            ]);
+
+            $this->createConvertedInboxCaseForTicket(
+                ticket: $ticket,
+                customer: $customer,
+                category: (string) $request->ticket_type,
+                messageBody: implode(PHP_EOL, $descriptionLines),
+                sourceContext: [
+                    'order_id' => $order->id,
+                    'order_detail_id' => $orderDetail->id,
+                    'product_name' => $productName,
+                    'source' => 'order_item_support',
+                ]
+            );
+
+            return $ticket;
+        });
 
         Toastr::success(translate('support_ticket_created_successfully') . ' #' . $ticket->id);
         return redirect()->route('account-order-details-warranty-support', ['id' => $order->id]);
+    }
+
+    private function createConvertedInboxCaseForTicket(
+        SupportTicket $ticket,
+        ?User $customer,
+        string $category,
+        string $messageBody,
+        array $sourceContext = []
+    ): InboxMessage {
+        $normalizedCategory = strtolower(trim($category)) ?: 'support';
+        $messageType = match ($normalizedCategory) {
+            'service' => 'service',
+            'career' => 'career',
+            'retail', 'wholesale' => 'contact',
+            default => 'support',
+        };
+
+        $customerName = trim(implode(' ', array_filter([
+            $customer?->f_name,
+            $customer?->l_name,
+        ])));
+
+        $contact = Contact::create([
+            'name' => $customerName !== '' ? $customerName : ($customer?->name ?? translate('customer')),
+            'email' => $customer?->email ?? '',
+            'mobile_number' => $customer?->phone ?? '',
+            'subject' => $ticket->subject,
+            'message' => $messageBody,
+        ]);
+
+        $inboxMessage = InboxMessage::create([
+            'subject' => $ticket->subject,
+            'body' => $messageBody,
+            'contact_id' => $customer?->id,
+            'sender_name' => $contact->name,
+            'sender_email' => $contact->email,
+            'sender_phone' => $contact->mobile_number,
+            'pipeline' => 'web',
+            'message_type' => $messageType,
+            'status' => 'converted',
+            'priority' => $ticket->priority ?: 'medium',
+            'department_id' => $ticket->department_id,
+            'source_id' => $contact->id,
+            'related_ticket_id' => $ticket->id,
+            'convert_type' => 'ticket',
+            'convert_sub_type' => $normalizedCategory,
+            'details' => array_merge([
+                'category' => $normalizedCategory,
+                'subject' => $ticket->subject,
+                'message' => $messageBody,
+                'contact_id' => $contact->id,
+                'has_attachment' => !empty($ticket->attachment),
+                'attachment_count' => is_array($ticket->attachment) ? count($ticket->attachment) : 0,
+            ], $sourceContext),
+        ]);
+
+        InboxActivities::create([
+            'message_id' => $inboxMessage->id,
+            'activity_type' => 'submission',
+            'title' => translate('crm_timeline_inquiry_submitted'),
+            'subject' => translate('crm_submitted_from_mobile_contact_form'),
+            'note_date' => now(),
+            'employee_id' => null,
+            'details' => [
+                'channel' => 'web',
+                'pipeline' => 'web',
+                'message_type' => $messageType,
+                'category' => $normalizedCategory,
+                'has_attachment' => !empty($ticket->attachment),
+                'ticket_id' => $ticket->id,
+            ],
+        ]);
+
+        return $inboxMessage;
     }
 
     public function single_ticket(Request $request)

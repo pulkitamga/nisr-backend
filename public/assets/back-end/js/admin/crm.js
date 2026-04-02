@@ -1,3 +1,98 @@
+function getCrmUiText(key, fallback) {
+    if (window.crmUiText && Object.prototype.hasOwnProperty.call(window.crmUiText, key)) {
+        return window.crmUiText[key];
+    }
+
+    return fallback;
+}
+
+const crmUiText = {
+    messageTypeUpdatedSuccessfully: getCrmUiText("messageTypeUpdatedSuccessfully", "Message type updated successfully!"),
+    failedToUpdateMessageType: getCrmUiText("failedToUpdateMessageType", "Failed to update message type!"),
+    pleaseSelectAtLeastOneMessage: getCrmUiText("pleaseSelectAtLeastOneMessage", "Please select at least one message!"),
+    successTitle: getCrmUiText("successTitle", "Success!"),
+    errorTitle: getCrmUiText("errorTitle", "Error!"),
+    deletedTitle: getCrmUiText("deletedTitle", "Deleted!"),
+    notConvertedTitle: getCrmUiText("notConvertedTitle", "Not Converted"),
+    noInquiryConverted: getCrmUiText("noInquiryConverted", "No inquiry converted!"),
+    somethingWentWrong: getCrmUiText("somethingWentWrong", "Something went wrong!"),
+    areYouSure: getCrmUiText("areYouSure", "Are you sure?"),
+    ignoreMessagePrompt: getCrmUiText("ignoreMessagePrompt", "Do you want to ignore this message?"),
+    yesIgnoreIt: getCrmUiText("yesIgnoreIt", "Yes, Ignore it!"),
+    cancel: getCrmUiText("cancel", "Cancel"),
+    markSpamPrompt: getCrmUiText("markSpamPrompt", "Do you want marked spam this message?"),
+    yesMarkIt: getCrmUiText("yesMarkIt", "Yes, marked it!"),
+    selectSupervisor: getCrmUiText("selectSupervisor", "Select Supervisor"),
+    loading: getCrmUiText("loading", "Loading..."),
+    selectEmployee: getCrmUiText("selectEmployee", "Select Employee"),
+    notAssigned: getCrmUiText("notAssigned", "Not Assigned"),
+    deleteMessagePrompt: getCrmUiText("deleteMessagePrompt", "This message will be moved to trash!"),
+    yesDeleteIt: getCrmUiText("yesDeleteIt", "Yes, delete it!"),
+    selectReason: getCrmUiText("selectReason", "Select Reason"),
+    selectSubType: getCrmUiText("selectSubType", "Select Sub-Type"),
+    failedToLoadUserInfo: getCrmUiText("failedToLoadUserInfo", "Failed to load user info."),
+    userConnectedSuccessfully: getCrmUiText("userConnectedSuccessfully", "User connected successfully!"),
+    requestFailed: getCrmUiText("requestFailed", "Request failed!"),
+    genericTryAgain: getCrmUiText("genericTryAgain", "Something went wrong!"),
+    saveTask: getCrmUiText("saveTask", "Save Task"),
+    updateTask: getCrmUiText("updateTask", "Update Task"),
+    markTaskCompletePrompt: getCrmUiText("markTaskCompletePrompt", "Do you want to mark this task as complete?"),
+    yesMarkComplete: getCrmUiText("yesMarkComplete", "Yes, mark complete"),
+    nameLabel: getCrmUiText("nameLabel", "Name"),
+    emailLabel: getCrmUiText("emailLabel", "Email"),
+    phoneLabel: getCrmUiText("phoneLabel", "Phone"),
+    statusLabels: getCrmUiText("statusLabels", {
+        new: "New",
+        processing: "Processing",
+        converted: "Converted",
+        ignored: "Ignored",
+        spam: "Spam",
+    }),
+    leadSubTypes: getCrmUiText("leadSubTypes", [
+        { value: "retail", label: "Retail" },
+        { value: "wholesale", label: "Wholesale" },
+    ]),
+    ticketSubTypes: getCrmUiText("ticketSubTypes", [
+        { value: "support", label: "Support" },
+        { value: "complaint", label: "Complaint" },
+        { value: "career", label: "Career" },
+        { value: "service", label: "Service" },
+        { value: "retail", label: "Retail" },
+        { value: "wholesale", label: "Wholesale" },
+    ]),
+    inquiryReasons: getCrmUiText("inquiryReasons", [
+        { value: "complaint", label: "Complaint" },
+        { value: "delivery_issue", label: "Delivery Issue" },
+        { value: "return_rma", label: "Return/RMA" },
+        { value: "billing_refund", label: "Billing/Refund" },
+        { value: "product_issue_defect", label: "Product Issue/Defect" },
+        { value: "setup_how_to", label: "Setup/How-to" },
+        { value: "general_inquiry", label: "General Inquiry" },
+    ]),
+};
+
+function getLocalizedCrmStatus(status) {
+    if (crmUiText.statusLabels && crmUiText.statusLabels[status]) {
+        return crmUiText.statusLabels[status];
+    }
+
+    return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function buildCrmPlaceholderOption(label) {
+    return `<option value="">-- ${label} --</option>`;
+}
+
+function appendCrmSelectOptions(selectElement, options) {
+    if (!selectElement || !Array.isArray(options)) {
+        return;
+    }
+
+    options.forEach((option) => {
+        selectElement.innerHTML += `<option value="${option.value}">${option.label}</option>`;
+    });
+}
+
 $(document).ready(function () {
 
     // जब edit icon click हो
@@ -21,16 +116,16 @@ $(document).ready(function () {
             data: formData,
             success: function (response) {
                 if (response.success) {
-                    toastr.success(response.message || 'Message type updated successfully!');
+                    toastr.success(response.message || crmUiText.messageTypeUpdatedSuccessfully);
 
                     $('div.edit-message-type[data-id="' + $('#message_id').val() + '"]').closest('td').find('.text-success').first().text($('#type-id').val());
                     $('#showTypeModal').modal('hide');
                 } else {
-                    toastr.error(response.message || 'Failed to update message type!');
+                    toastr.error(response.message || crmUiText.failedToUpdateMessageType);
                 }
             },
             error: function (xhr) {
-                toastr.error('Something went wrong!');
+                toastr.error(crmUiText.somethingWentWrong);
             }
         });
     });
@@ -61,7 +156,7 @@ function updateRowStatus(messageId, status) {
 
     badge
         .attr('class', 'btn ' + getStatusClass(status) + ' font-weight-bold px-3 py-1 mb-0 fz-12')
-        .text(status.charAt(0).toUpperCase() + status.slice(1));
+        .text(getLocalizedCrmStatus(status));
 }
 
 function clearActionButtons(messageId) {
@@ -85,7 +180,7 @@ function updateOwnerCell(messageId, ownerName) {
         return;
     }
 
-    ownerCell.text(ownerName || 'Not Assigned');
+    ownerCell.text(ownerName || crmUiText.notAssigned);
 }
 
 const bulkConvertButton = document.querySelector(".bulk-convert-btn");
@@ -95,7 +190,7 @@ if (bulkConvertButton) {
             .map(cb => cb.value);
 
         if (ids.length === 0) {
-            Swal.fire("Please select at least one message!");
+            Swal.fire(crmUiText.pleaseSelectAtLeastOneMessage);
             return false;
         }
         document.getElementById("convertMessageIds").value = ids.join(",");
@@ -124,7 +219,7 @@ if (bulkConvertButton) {
                 if (data.status) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Converted!',
+                        title: crmUiText.successTitle,
                         text: data.message,
                         timer: 2000,
                         showConfirmButton: false
@@ -145,11 +240,11 @@ if (bulkConvertButton) {
                     }
                     $('#select-all').prop('checked', false);
                 } else {
-                    Swal.fire('Not Converted', data.message || 'No inquiry converted!', 'warning');
+                    Swal.fire(crmUiText.notConvertedTitle, data.message || crmUiText.noInquiryConverted, 'warning');
                 }
             }).catch(err => {
                 console.error(err);
-                Swal.fire('Server Error', 'Please try again later!', 'error');
+                Swal.fire(crmUiText.errorTitle, crmUiText.somethingWentWrong, 'error');
             });
     });
 }
@@ -177,14 +272,14 @@ $(document).on('click', '.ignore-btn', function () {
     let token = $('meta[name="csrf-token"]').attr('content'); // 👈 meta se token liya
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you want to ignore this message?",
+        title: crmUiText.areYouSure,
+        text: crmUiText.ignoreMessagePrompt,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Ignore it!',
-        cancelButtonText: 'Cancel'
+        confirmButtonText: crmUiText.yesIgnoreIt,
+        cancelButtonText: crmUiText.cancel
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
@@ -196,7 +291,7 @@ $(document).on('click', '.ignore-btn', function () {
                 },
                 success: function (response) {
                     Swal.fire(
-                        'Ignored!',
+                        crmUiText.successTitle,
                         response.message,
                         'success'
                     )
@@ -205,8 +300,8 @@ $(document).on('click', '.ignore-btn', function () {
                 },
                 error: function (xhr) {
                     Swal.fire(
-                        'Error!',
-                        xhr.responseJSON?.message ?? 'Something went wrong',
+                        crmUiText.errorTitle,
+                        xhr.responseJSON?.message ?? crmUiText.somethingWentWrong,
                         'error'
                     )
                 }
@@ -220,14 +315,14 @@ $(document).on('click', '.mark-spam-btn', function () {
     let token = $('meta[name="csrf-token"]').attr('content'); // 👈 meta se token liya
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you want marked spam this message?",
+        title: crmUiText.areYouSure,
+        text: crmUiText.markSpamPrompt,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, marked it!',
-        cancelButtonText: 'Cancel'
+        confirmButtonText: crmUiText.yesMarkIt,
+        cancelButtonText: crmUiText.cancel
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
@@ -239,7 +334,7 @@ $(document).on('click', '.mark-spam-btn', function () {
                 },
                 success: function (response) {
                     Swal.fire(
-                        'Marked Spam!',
+                        crmUiText.successTitle,
                         response.message,
                         'success'
                     )
@@ -248,8 +343,8 @@ $(document).on('click', '.mark-spam-btn', function () {
                 },
                 error: function (xhr) {
                     Swal.fire(
-                        'Error!',
-                        xhr.responseJSON?.message ?? 'Something went wrong',
+                        crmUiText.errorTitle,
+                        xhr.responseJSON?.message ?? crmUiText.somethingWentWrong,
                         'error'
                     )
                 }
@@ -265,7 +360,7 @@ $(document).on('click', '.assign-owner-btn', function () {
     let form = $('#updateTicketOwnerForm');
 
     form.find('#owner_ticket_id').val(ticketId);
-    form.find('#owner-employee-id').empty().append('<option value="">Select Supervisor</option>');
+    form.find('#owner-employee-id').empty().append(`<option value="">${crmUiText.selectSupervisor}</option>`);
     loadOwners('', ownerId);
 
     $('#showOwnerModal').modal('show');
@@ -286,15 +381,15 @@ $('#updateTicketOwnerForm').on('submit', function (e) {
         data: formData,
         success: function (response) {
             $('#showOwnerModal').modal('hide');
-            Swal.fire('Success!', response.message, 'success');
+            Swal.fire(crmUiText.successTitle, response.message, 'success');
             const ticketId = form.find('#owner_ticket_id').val();
             const ownerName = form.find('#owner-employee-id option:selected').text().trim();
             updateOwnerCell(ticketId, ownerName);
         },
         error: function (xhr) {
             Swal.fire(
-                'Error!',
-                xhr.responseJSON?.message ?? 'Something went wrong',
+                crmUiText.errorTitle,
+                xhr.responseJSON?.message ?? crmUiText.somethingWentWrong,
                 'error'
             )
         }
@@ -316,7 +411,7 @@ function mapEmployeeResponse(res) {
 
 function loadOwners(deptId, selectedOwnerId = null) {
     const employeeRouteUrl = $('#getEmployeeRoute').data('url');
-    $('#owner-employee-id').html('<option value="">Loading...</option>');
+    $('#owner-employee-id').html(`<option value="">${crmUiText.loading}</option>`);
 
     $.ajax({
         url: employeeRouteUrl,
@@ -324,7 +419,7 @@ function loadOwners(deptId, selectedOwnerId = null) {
         data: { department_id: deptId || '', assignment: 'owner' },
         success: function (res) {
             const owners = mapEmployeeResponse(res);
-            $('#owner-employee-id').html('<option value="">Select Supervisor</option>');
+            $('#owner-employee-id').html(`<option value="">${crmUiText.selectSupervisor}</option>`);
 
             $.each(owners, function (key, owner) {
                 const selected = selectedOwnerId && String(selectedOwnerId) === String(owner.id) ? 'selected' : '';
@@ -332,7 +427,7 @@ function loadOwners(deptId, selectedOwnerId = null) {
             });
         },
         error: function () {
-            $('#owner-employee-id').html('<option value="">Select Supervisor</option>');
+            $('#owner-employee-id').html(`<option value="">${crmUiText.selectSupervisor}</option>`);
         }
     });
 }
@@ -350,12 +445,12 @@ $('#updateTicketEmployeeForm').on('submit', function (e) {
         data: formData,
         success: function (response) {
             $('#showEmployeeModal').modal('hide');
-            Swal.fire('Success!', response.message, 'success');
+            Swal.fire(crmUiText.successTitle, response.message, 'success');
         },
         error: function (xhr) {
             Swal.fire(
-                'Error!',
-                xhr.responseJSON?.message ?? 'Something went wrong',
+                crmUiText.errorTitle,
+                xhr.responseJSON?.message ?? crmUiText.somethingWentWrong,
                 'error'
             )
         }
@@ -392,15 +487,15 @@ $('#updateTicketDepartmentForm').on('submit', function (e) {
         success: function (response) {
             $('#showDepartmentsModal').modal('hide'); // modal band karo
             Swal.fire(
-                'Success!',
+                crmUiText.successTitle,
                 response.message,
                 'success'
             );
         },
         error: function (xhr) {
             Swal.fire(
-                'Error!',
-                xhr.responseJSON?.message ?? 'Something went wrong',
+                crmUiText.errorTitle,
+                xhr.responseJSON?.message ?? crmUiText.somethingWentWrong,
                 'error'
             );
         }
@@ -420,24 +515,25 @@ $(document).on('click', '.delete-btn', function () {
     let url = $(".delete-route[data-id='" + id + "']").data('url');
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "This message will be moved to trash!",
+        title: crmUiText.areYouSure,
+        text: crmUiText.deleteMessagePrompt,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: crmUiText.yesDeleteIt,
+        cancelButtonText: crmUiText.cancel
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
                 url: url,
                 type: "DELETE",
                 success: function (response) {
-                    Swal.fire('Deleted!', response.message, 'success');
+                    Swal.fire(crmUiText.deletedTitle, response.message, 'success');
                     $("#row-" + id).fadeOut();
                 },
                 error: function (xhr) {
-                    Swal.fire('Error!', xhr.responseJSON?.message || 'Something went wrong!', 'error');
+                    Swal.fire(crmUiText.errorTitle, xhr.responseJSON?.message || crmUiText.somethingWentWrong, 'error');
                 }
             });
         }
@@ -476,7 +572,7 @@ if (convertForm) {
                 if (data.status) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Converted!',
+                        title: crmUiText.successTitle,
                         text: data.message, // ✅ Controller se aaya message
                         timer: 2000,
                         showConfirmButton: false
@@ -498,15 +594,15 @@ if (convertForm) {
                 } else {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Not Converted',
-                        text: data.message || 'Conversion failed!', // ✅ Exact reason dikhayega
+                        title: crmUiText.notConvertedTitle,
+                        text: data.message || crmUiText.somethingWentWrong,
                     });
                 }
             }).catch(() => {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Server Error',
-                    text: 'Please try again later!'
+                    title: crmUiText.errorTitle,
+                    text: crmUiText.somethingWentWrong
                 });
             });
     });
@@ -529,44 +625,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (type === "ticket" && subType === "retail") {
             bulkReasonWrapper.style.display = "block";
-            const bulkreasons = [
-                "Complaint",
-                "Delivery Issue",
-                "Return/RMA",
-                "Billing/Refund",
-                "Product Issue/Defect",
-                "Setup/How-to",
-                "General Inquiry"
-            ];
-            bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
-            bulkreasons.forEach(opt => {
-                bulkReasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
-            });
+            bulkReasonSelect.innerHTML = buildCrmPlaceholderOption(crmUiText.selectReason);
+            appendCrmSelectOptions(bulkReasonSelect, crmUiText.inquiryReasons);
             return;
         }
 
         bulkReasonWrapper.style.display = "none";
-        bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+        bulkReasonSelect.innerHTML = buildCrmPlaceholderOption(crmUiText.selectReason);
     };
 
     // Type change
     typeSelect.addEventListener("change", function () {
         const type = this.value;
 
-        subTypeSelect.innerHTML = '<option value="">-- Select Sub-Type --</option>';
+        subTypeSelect.innerHTML = buildCrmPlaceholderOption(crmUiText.selectSubType);
         bulkReasonWrapper.style.display = "none";
-        bulkReasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+        bulkReasonSelect.innerHTML = buildCrmPlaceholderOption(crmUiText.selectReason);
 
         if (type === "lead") {
             subTypeWrapper.style.display = "block";
-            ["Retail", "Wholesale"].forEach(opt => {
-                subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
-            });
+            appendCrmSelectOptions(subTypeSelect, crmUiText.leadSubTypes);
         } else if (type === "ticket") {
             subTypeWrapper.style.display = "block";
-            ["Support", "Complaint", "Career", "Service", "Retail", "Wholesale"].forEach(opt => {
-                subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
-            });
+            appendCrmSelectOptions(subTypeSelect, crmUiText.ticketSubTypes);
         } else {
             subTypeWrapper.style.display = "none";
         }
@@ -591,19 +672,8 @@ const reasonSelect = document.getElementById("reasonSelect");
 
 if (typeSelect && subTypeWrapper && subTypeSelect && reasonWrapper && reasonSelect) {
     const renderReasonOptions = () => {
-        let reasons = [
-            "Complaint",
-            "Delivery Issue",
-            "Return/RMA",
-            "Billing/Refund",
-            "Product Issue/Defect",
-            "Setup/How-to",
-            "General Inquiry"
-        ];
-        reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
-        reasons.forEach(opt => {
-            reasonSelect.innerHTML += `<option value="${opt.toLowerCase().replace(/[^a-z0-9]/gi, '_')}">${opt}</option>`;
-        });
+        reasonSelect.innerHTML = buildCrmPlaceholderOption(crmUiText.selectReason);
+        appendCrmSelectOptions(reasonSelect, crmUiText.inquiryReasons);
     };
 
     const toggleReasonByTypeAndSubtype = () => {
@@ -620,20 +690,16 @@ if (typeSelect && subTypeWrapper && subTypeSelect && reasonWrapper && reasonSele
     typeSelect.addEventListener("change", function () {
         let type = this.value;
 
-        subTypeSelect.innerHTML = '<option value="">-- Select Sub-Type --</option>';
+        subTypeSelect.innerHTML = buildCrmPlaceholderOption(crmUiText.selectSubType);
         reasonWrapper.style.display = "none";
-        reasonSelect.innerHTML = '<option value="">-- Select Reason --</option>';
+        reasonSelect.innerHTML = buildCrmPlaceholderOption(crmUiText.selectReason);
 
         if (type === "lead") {
             subTypeWrapper.style.display = "block";
-            ["Retail", "Wholesale"].forEach(opt => {
-                subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
-            });
+            appendCrmSelectOptions(subTypeSelect, crmUiText.leadSubTypes);
         } else if (type === "ticket") {
             subTypeWrapper.style.display = "block";
-            ["Support", "Complaint", "Career", "Service", "Retail", "Wholesale"].forEach(opt => {
-                subTypeSelect.innerHTML += `<option value="${opt.toLowerCase()}">${opt}</option>`;
-            });
+            appendCrmSelectOptions(subTypeSelect, crmUiText.ticketSubTypes);
         } else {
             subTypeWrapper.style.display = "none";
         }
@@ -677,11 +743,11 @@ let employeeRouteUrl = $('#getEmployeeRoute').data('url');
 
 function loadEmployees(deptId, headId = null) {
     if (!deptId) {
-        $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+        $("#ticket-employee-id").html(`<option value="">${crmUiText.selectEmployee}</option>`);
         return;
     }
 
-    $("#ticket-employee-id").html('<option value="">Loading...</option>');
+    $("#ticket-employee-id").html(`<option value="">${crmUiText.loading}</option>`);
 
     $.ajax({
         url: employeeRouteUrl,
@@ -689,13 +755,13 @@ function loadEmployees(deptId, headId = null) {
         data: { department_id: deptId, head_id: headId, assignment: 'employee' },
         success: function (res) {
             const employees = mapEmployeeResponse(res);
-            $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+            $("#ticket-employee-id").html(`<option value="">${crmUiText.selectEmployee}</option>`);
             $.each(employees, function (key, emp) {
                 $("#ticket-employee-id").append(`<option value="${emp.id}">${emp.name}</option>`);
             });
         },
         error: function () {
-            $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+            $("#ticket-employee-id").html(`<option value="">${crmUiText.selectEmployee}</option>`);
         }
     });
 }
@@ -760,14 +826,14 @@ function initLeadDetails(leadId, translations) {
                             form[0].reset();
                             $('#task-id-' + leadId).val('');
                             $('#method-' + leadId).val('POST');
-                            $('#task-submit-btn-' + leadId).text('Save Task');
+                            $('#task-submit-btn-' + leadId).text(crmUiText.saveTask);
                         } else {
                             toastr.error(response.message);
                         }
                     },
                     error: function (xhr) {
                         var errors = xhr.responseJSON.errors || {};
-                        var errorMessage = 'An error occurred. Please try again.';
+                        var errorMessage = crmUiText.genericTryAgain;
                         if (Object.keys(errors).length > 0) {
                             errorMessage = Object.values(errors).flat().join('<br>');
                         }
@@ -791,7 +857,7 @@ function initLeadDetails(leadId, translations) {
             $('#taskDesc-' + leadId).val(description);
             $('#taskDue-' + leadId).val(dueDate);
             $('#taskStatus-' + leadId).val(status);
-            $('#task-submit-btn-' + leadId).text('Update Task');
+            $('#task-submit-btn-' + leadId).text(crmUiText.updateTask);
 
             // Set method to PUT for updates
             $('#method-' + leadId).val('PUT');
@@ -805,13 +871,14 @@ function initLeadDetails(leadId, translations) {
             var taskId = $(this).data('task-id');
 
             Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to mark this task as complete?",
+                title: crmUiText.areYouSure,
+                text: crmUiText.markTaskCompletePrompt,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, mark complete'
+                confirmButtonText: crmUiText.yesMarkComplete,
+                cancelButtonText: crmUiText.cancel
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -831,7 +898,7 @@ function initLeadDetails(leadId, translations) {
                         },
                         error: function (xhr) {
                             var errors = xhr.responseJSON.errors || {};
-                            var errorMessage = 'An error occurred. Please try again.';
+                            var errorMessage = crmUiText.genericTryAgain;
                             if (Object.keys(errors).length > 0) {
                                 errorMessage = Object.values(errors).flat().join('<br>');
                             }
@@ -901,14 +968,14 @@ function initInboxDetails(leadId, translations) {
                             form[0].reset();
                             $('#task-id-' + leadId).val('');
                             $('#method-' + leadId).val('POST');
-                            $('#task-submit-btn-' + leadId).text('Save Task');
+                            $('#task-submit-btn-' + leadId).text(crmUiText.saveTask);
                         } else {
                             toastr.error(response.message);
                         }
                     },
                     error: function (xhr) {
                         var errors = xhr.responseJSON.errors || {};
-                        var errorMessage = 'An error occurred. Please try again.';
+                        var errorMessage = crmUiText.genericTryAgain;
                         if (Object.keys(errors).length > 0) {
                             errorMessage = Object.values(errors).flat().join('<br>');
                         }
@@ -932,7 +999,7 @@ function initInboxDetails(leadId, translations) {
             $('#taskDesc-' + leadId).val(description);
             $('#taskDue-' + leadId).val(dueDate);
             $('#taskStatus-' + leadId).val(status);
-            $('#task-submit-btn-' + leadId).text('Update Task');
+            $('#task-submit-btn-' + leadId).text(crmUiText.updateTask);
 
             $('#method-' + leadId).val('PUT');
 
@@ -944,13 +1011,14 @@ function initInboxDetails(leadId, translations) {
             var taskId = $(this).data('task-id');
 
             Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to mark this task as complete?",
+                title: crmUiText.areYouSure,
+                text: crmUiText.markTaskCompletePrompt,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, mark complete'
+                confirmButtonText: crmUiText.yesMarkComplete,
+                cancelButtonText: crmUiText.cancel
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -970,7 +1038,7 @@ function initInboxDetails(leadId, translations) {
                         },
                         error: function (xhr) {
                             var errors = xhr.responseJSON.errors || {};
-                            var errorMessage = 'An error occurred. Please try again.';
+                            var errorMessage = crmUiText.genericTryAgain;
                             if (Object.keys(errors).length > 0) {
                                 errorMessage = Object.values(errors).flat().join('<br>');
                             }
@@ -1041,14 +1109,14 @@ function initDealDetails(leadId, translations) {
                             form[0].reset();
                             $('#task-id-' + leadId).val('');
                             $('#method-' + leadId).val('POST');
-                            $('#task-submit-btn-' + leadId).text('Save Task');
+                            $('#task-submit-btn-' + leadId).text(crmUiText.saveTask);
                         } else {
                             toastr.error(response.message);
                         }
                     },
                     error: function (xhr) {
                         var errors = xhr.responseJSON.errors || {};
-                        var errorMessage = 'An error occurred. Please try again.';
+                        var errorMessage = crmUiText.genericTryAgain;
                         if (Object.keys(errors).length > 0) {
                             errorMessage = Object.values(errors).flat().join('<br>');
                         }
@@ -1072,7 +1140,7 @@ function initDealDetails(leadId, translations) {
             $('#taskDesc-' + leadId).val(description);
             $('#taskDue-' + leadId).val(dueDate);
             $('#taskStatus-' + leadId).val(status);
-            $('#task-submit-btn-' + leadId).text('Update Task');
+            $('#task-submit-btn-' + leadId).text(crmUiText.updateTask);
 
             $('#method-' + leadId).val('PUT');
 
@@ -1084,13 +1152,14 @@ function initDealDetails(leadId, translations) {
             var taskId = $(this).data('task-id');
 
             Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to mark this task as complete?",
+                title: crmUiText.areYouSure,
+                text: crmUiText.markTaskCompletePrompt,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, mark complete'
+                confirmButtonText: crmUiText.yesMarkComplete,
+                cancelButtonText: crmUiText.cancel
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -1110,7 +1179,7 @@ function initDealDetails(leadId, translations) {
                         },
                         error: function (xhr) {
                             var errors = xhr.responseJSON.errors || {};
-                            var errorMessage = 'An error occurred. Please try again.';
+                            var errorMessage = crmUiText.genericTryAgain;
                             if (Object.keys(errors).length > 0) {
                                 errorMessage = Object.values(errors).flat().join('<br>');
                             }
@@ -1146,12 +1215,12 @@ $(function () {
 
         $.get(getUserUrl, function (data) {
             $('#suggestion-user-info').html(`
-                <strong>Name:</strong> ${data.name ?? '-'}<br>
-                <strong>Email:</strong> ${data.email ?? '-'}<br>
-                <strong>Phone:</strong> ${data.phone ?? '-'}
+                <strong>${crmUiText.nameLabel}:</strong> ${data.name ?? '-'}<br>
+                <strong>${crmUiText.emailLabel}:</strong> ${data.email ?? '-'}<br>
+                <strong>${crmUiText.phoneLabel}:</strong> ${data.phone ?? '-'}
             `);
         }).fail(function () {
-            toastr.error('Failed to load user info.');
+            toastr.error(crmUiText.failedToLoadUserInfo);
         });
     });
 
@@ -1164,14 +1233,12 @@ $(function () {
             if (res.success) {
                 $('#row-' + selectedMessageId + ' .suggestion-btn').remove();
                 $('#suggestionModal').modal('hide');
-                toastr.success('User connected successfully!');
+                toastr.success(crmUiText.userConnectedSuccessfully);
             } else {
-                toastr.error('Something went wrong!');
+                toastr.error(crmUiText.somethingWentWrong);
             }
         }).fail(function () {
-            toastr.error('Request failed!');
+            toastr.error(crmUiText.requestFailed);
         });
     });
 });
-
-

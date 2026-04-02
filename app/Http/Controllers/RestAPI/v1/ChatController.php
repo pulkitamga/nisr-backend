@@ -198,7 +198,13 @@ class ChatController extends Controller
             $data['message'] = $message->items();
             return response()->json($data, 200);
         }
-        return response()->json(['message' => translate('no messages found!')], 200);
+        return response()->json([
+            'total_size' => 0,
+            'limit' => (int) $request->limit,
+            'offset' => (int) $request->offset,
+            'message' => [],
+            'notice' => translate('no messages found!'),
+        ], 200);
     }
 
     public function send_message(Request $request, $type)

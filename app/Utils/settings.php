@@ -96,7 +96,9 @@ if (!function_exists('getLanguageWiseBusinessConfigValue')) {
                 return $languageWiseValue[$currentLanguage];
             }
 
-            $defaultLanguage = getWebConfig('pnc_language')[0] ?? 'en';
+            $defaultLanguage = function_exists('getConfiguredLanguageCodes')
+                ? (getConfiguredLanguageCodes()[0] ?? 'en')
+                : (getWebConfig('pnc_language')[0] ?? 'en');
             if (!empty($languageWiseValue[$defaultLanguage])) {
                 return $languageWiseValue[$defaultLanguage];
             }

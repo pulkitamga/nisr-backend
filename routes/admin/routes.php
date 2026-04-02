@@ -1892,25 +1892,19 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::controller(InboxMessageController::class)->group(function () {
             Route::get(Crm::INDEX[URI], 'index')->name('index')->middleware('permission:crm_section.inbox_list,admin');
             Route::get(Crm::EXPORT[URI], 'exportList')->name('messages.export')->middleware('permission:crm_section.inbox_export,admin');
-            Route::get(Crm::SHOW[URI] . '/{id}', 'showMassage')->name('massage.show')->middleware('permission:crm_section.inbox_view,admin');
-            Route::get('massage-show/{id}', 'showMassage')->name('massage.show.legacy')->middleware('permission:crm_section.inbox_view,admin');
-            Route::post(Crm::ADD_NEW_MESSAGE[URI], 'storeNewMassage')->name('add.massage')->middleware('permission:crm_section.inbox_add_new_message,admin');
-            Route::post('add-new-massage', 'storeNewMassage')->name('add.massage.legacy')->middleware('permission:crm_section.inbox_add_new_message,admin');
+            Route::get(Crm::SHOW[URI] . '/{id}', 'showMessage')->name('message.show')->middleware('permission:crm_section.inbox_view,admin');
+            Route::post(Crm::ADD_NEW_MESSAGE[URI], 'storeNewMessage')->name('add.message')->middleware('permission:crm_section.inbox_add_new_message,admin');
             Route::post(Crm::TICKET_DEPARTMENT[URI], 'updateTicketDepartment')->name('update-ticket-department')->middleware('permission:crm_section.inbox_update_ticket_department,admin');
             Route::post(Crm::CONVERT_INQUIRY[URI], 'convertInquiry')->name('convert-inquiry')->middleware('permission:crm_section.inbox_convert_inquiry,admin');
             Route::post('inquiry-convertd', 'convertInquiry')->name('convert-inquiry.legacy')->middleware('permission:crm_section.inbox_convert_inquiry,admin');
             Route::post(Crm::CONVERT_BULK_INQUIRY[URI], 'convertBulkInquiry')->name('convert-bulk-inquiry')->middleware('permission:crm_section.inbox_convert_bulk_inquiry,admin');
-            Route::post(Crm::TYPE_CHANGE[URI], 'updateMessageType')->name('update-massage-type')->middleware('permission:crm_section.inbox_update_message_type,admin');
-            Route::post('massage-type-change', 'updateMessageType')->name('update-massage-type.legacy')->middleware('permission:crm_section.inbox_update_message_type,admin');
+            Route::post(Crm::TYPE_CHANGE[URI], 'updateMessageType')->name('update-message-type')->middleware('permission:crm_section.inbox_update_message_type,admin');
             Route::post(Crm::MESSAGE_IGNORE[URI], 'ignoreMessage')->name('ignore')->middleware('permission:crm_section.inbox_ignore_message,admin');
-            Route::post('massage-ignore', 'ignoreMessage')->name('ignore.legacy')->middleware('permission:crm_section.inbox_ignore_message,admin');
             Route::post(Crm::SPAM_MESSAGE[URI], 'spamMessage')->name('mark-spam')->middleware('permission:crm_section.inbox_mark_spam,admin');
-            Route::post('spam-massage', 'spamMessage')->name('mark-spam.legacy')->middleware('permission:crm_section.inbox_mark_spam,admin');
             Route::post(Crm::ASSIGN_EMPLOYEE[URI], 'assignEmployee')->name('employee-assign')->middleware('permission:crm_section.inbox_assign_employee,admin');
             Route::post(Crm::ASSIGN_OWNER[URI], 'assignOwner')->name('owner-assign')->middleware('permission:crm_section.inbox_assign_owner,admin');
             Route::post('assignment-update', 'updateAssignment')->name('assignment-update')->middleware('permission:crm_section.inbox_assign_department|crm_section.inbox_assign_owner|crm_section.inbox_assign_employee,admin');
             Route::delete(Crm::MESSAGE_DELETE[URI] . '/{id}', 'destroy')->name('messages.destroy')->middleware('permission:crm_section.inbox_delete_message,admin');
-            Route::delete('massages-destroy/{id}', 'destroy')->name('messages.destroy.legacy')->middleware('permission:crm_section.inbox_delete_message,admin');
             Route::get(Crm::DEPARTMENT_EMPLOYEE[URI], 'getEmployeesByDepartment')->name('getemployee')->middleware('permission:crm_section.inbox_list,admin');
             Route::get('inbox/user-info/{id}',  'getUserInfo')->name('inbox.user-info')->middleware('permission:crm_section.inbox_get_user_info,admin');
             Route::post('inbox/connect-user',  'connectUser')->name('inbox.connect-user')->middleware('permission:crm_section.inbox_connect_user,admin');

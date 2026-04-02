@@ -34,6 +34,7 @@ use App\Exports\LeadsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 class LeadController extends BaseController
 {
@@ -53,75 +54,10 @@ class LeadController extends BaseController
     }
     public function getListView(Request $request)
     {
-        $query = Lead::with([
-            'owner',
-            'contact',
-            'department.translations',
-            'employee',
-            'inboxMessages' => function ($q) {
-                $q->latest()->limit(1);
-            }
-        ]);
+        $query = $this->leadListQuery();
+        $this->applyLeadListFilters($query, $request);
 
         $dataLimit = getWebConfig(name: WebConfigKey::PAGINATION_LIMIT);
-
-       if ($request->filled('searchValue')) {
-        $search = trim($request->searchValue);
-        $searchPattern = $this->likePattern($search);
-        $phoneSearch = $this->normalizedPhoneSearch($search);
-
-        $query->where(function ($q) use ($searchPattern, $phoneSearch) {
-
-            // 1. Contact (User) se search – naam, email, phone
-            $q->orWhereHas('user', function ($sub) use ($searchPattern, $phoneSearch) {
-                $sub->where('f_name', 'LIKE', $searchPattern)
-                    ->orWhere('l_name', 'LIKE', $searchPattern)
-                    ->orWhere('email', 'LIKE', $searchPattern)
-                    ->orWhere('phone', 'LIKE', $searchPattern)
-                    ->orWhereRaw("CONCAT(f_name, ' ', l_name) LIKE ?", [$searchPattern])
-                    ->orWhereRaw("REPLACE(phone, '+', '') LIKE ?", [$phoneSearch]);
-            });
-
-            // 2. Inbox Messages se search – sender ka naam, email, phone, subject
-            $q->orWhereHas('inboxMessages', function ($sub) use ($searchPattern) {
-                $sub->where('sender_name', 'LIKE', $searchPattern)
-                    ->orWhere('sender_email', 'LIKE', $searchPattern)
-                    ->orWhere('sender_phone', 'LIKE', $searchPattern)
-                    ->orWhere('subject', 'LIKE', $searchPattern)
-                    ->orWhere('body', 'LIKE', $searchPattern);
-            });
-
-            // 3. Agar contact_id null hai lekin inbox message se match kar raha hai
-            $q->orWhereExists(function ($exists) use ($searchPattern) {
-                $exists->select(DB::raw(1))
-                       ->from('inbox_messages')
-                       ->whereColumn('inbox_messages.related_lead_id', 'leads.id')
-                       ->where(function ($w) use ($searchPattern) {
-                           $w->where('sender_name', 'LIKE', $searchPattern)
-                             ->orWhere('sender_email', 'LIKE', $searchPattern)
-                             ->orWhere('sender_phone', 'LIKE', $searchPattern)
-                             ->orWhere('subject', 'LIKE', $searchPattern);
-                       });
-            });
-        });
-    }
-        $filterDate = $request->input('filter_date');
-        if (!empty($filterDate)) {
-            $dateRange = explode(' - ', $filterDate);
-            if (count($dateRange) === 2) {
-                $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
-                $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
-                $query->whereBetween('created_at', [$from, $to]);
-            }
-        }
-        if ($request->has('status')) {
-            if ($request->status === 'all') {
-            } else {
-                $query->where('status', $request->status);
-            }
-        } else {
-            $query->where('status', 'new');
-        }
 
         $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
             ? (int)$request->choose_first
@@ -145,18 +81,36 @@ class LeadController extends BaseController
 
     public function exportList(Request $request)
     {
-        $query = Lead::with([
+        $query = $this->leadListQuery();
+        $this->applyLeadListFilters($query, $request);
+
+        if ($request->filled('choose_first') && $request->choose_first > 0) {
+            $leads = $query->latest()->take((int)$request->choose_first)->get();
+        } else {
+            $leads = $query->latest()->get();
+        }
+
+        return Excel::download(new LeadsExport($leads), 'leads.xlsx');
+    }
+
+    private function leadListQuery(): Builder
+    {
+        return Lead::with([
             'owner',
             'contact',
             'department.translations',
             'employee',
+            'purchaseOrder.wholeseller',
             'inboxMessages' => function ($q) {
                 $q->latest()->limit(1);
-            }
+            },
         ]);
+    }
 
+    private function applyLeadListFilters(Builder $query, Request $request): void
+    {
         if ($request->filled('searchValue')) {
-            $search = trim($request->searchValue);
+            $search = trim((string)$request->searchValue);
             $searchPattern = $this->likePattern($search);
             $phoneSearch = $this->normalizedPhoneSearch($search);
 
@@ -170,12 +124,12 @@ class LeadController extends BaseController
                         ->orWhereRaw("REPLACE(phone, '+', '') LIKE ?", [$phoneSearch]);
                 });
 
-                $q->orWhereHas('inboxMessages', function ($subQ) use ($searchPattern) {
-                    $subQ->where('sender_name', 'like', $searchPattern)
-                        ->orWhere('sender_email', 'like', $searchPattern)
-                        ->orWhere('sender_phone', 'like', $searchPattern)
-                        ->orWhere('subject', 'like', $searchPattern)
-                        ->orWhere('body', 'like', $searchPattern);
+                $q->orWhereHas('inboxMessages', function ($sub) use ($searchPattern) {
+                    $sub->where('sender_name', 'LIKE', $searchPattern)
+                        ->orWhere('sender_email', 'LIKE', $searchPattern)
+                        ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                        ->orWhere('subject', 'LIKE', $searchPattern)
+                        ->orWhere('body', 'LIKE', $searchPattern);
                 });
 
                 $q->orWhereExists(function ($exists) use ($searchPattern) {
@@ -192,15 +146,7 @@ class LeadController extends BaseController
             });
         }
 
-        $filterDate = $request->input('filter_date');
-        if (!empty($filterDate)) {
-            $dateRange = explode(' - ', $filterDate);
-            if (count($dateRange) === 2) {
-                $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
-                $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
-                $query->whereBetween('created_at', [$from, $to]);
-            }
-        }
+        $this->applyLeadDateRangeFilter($query, $request->input('filter_date'));
 
         if ($request->has('status')) {
             if ($request->status !== 'all') {
@@ -209,14 +155,22 @@ class LeadController extends BaseController
         } else {
             $query->where('status', 'new');
         }
+    }
 
-        if ($request->filled('choose_first') && $request->choose_first > 0) {
-            $leads = $query->latest()->take((int)$request->choose_first)->get();
-        } else {
-            $leads = $query->latest()->get();
+    private function applyLeadDateRangeFilter(Builder $query, ?string $filterDate): void
+    {
+        if (empty($filterDate)) {
+            return;
         }
 
-        return Excel::download(new LeadsExport($leads), 'leads.xlsx');
+        $dateRange = explode(' - ', $filterDate);
+        if (count($dateRange) !== 2) {
+            return;
+        }
+
+        $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
+        $to = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
+        $query->whereBetween('created_at', [$from, $to]);
     }
 
     public function searchParty(Request $request)

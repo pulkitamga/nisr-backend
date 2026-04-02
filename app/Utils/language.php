@@ -100,6 +100,65 @@ if (!function_exists('normalizeTranslationLocaleCandidate')) {
     }
 }
 
+if (!function_exists('normalizeConfiguredLanguageCodes')) {
+    function normalizeConfiguredLanguageCodes(mixed $languages): array
+    {
+        if (!is_array($languages)) {
+            return [];
+        }
+
+        $normalizedLanguages = [];
+        foreach ($languages as $language) {
+            $candidate = match (true) {
+                is_string($language) => $language,
+                is_array($language) => (string)($language['code'] ?? ''),
+                default => '',
+            };
+
+            $normalizedCandidate = normalizeTranslationLocaleCandidate($candidate);
+            if ($normalizedCandidate === '' || in_array($normalizedCandidate, $normalizedLanguages, true)) {
+                continue;
+            }
+
+            $normalizedLanguages[] = $normalizedCandidate;
+        }
+
+        return $normalizedLanguages;
+    }
+}
+
+if (!function_exists('getConfiguredLanguageCodes')) {
+    function getConfiguredLanguageCodes(): array
+    {
+        $fallbackLanguage = normalizeTranslationLocaleCandidate((string)config('app.locale', 'en'));
+        $fallbackLanguage = $fallbackLanguage !== '' ? $fallbackLanguage : 'en';
+
+        $languageSources = [];
+
+        try {
+            if (
+                function_exists('getWebConfig')
+                && class_exists(Schema::class)
+                && Schema::hasTable('business_settings')
+            ) {
+                $languageSources[] = getWebConfig('pnc_language');
+                $languageSources[] = getWebConfig('language');
+            }
+        } catch (\Throwable) {
+            $languageSources = [];
+        }
+
+        foreach ($languageSources as $languageSource) {
+            $normalizedLanguages = normalizeConfiguredLanguageCodes($languageSource);
+            if ($normalizedLanguages !== []) {
+                return $normalizedLanguages;
+            }
+        }
+
+        return [$fallbackLanguage];
+    }
+}
+
 if (!function_exists('getTranslationCatalogForLocale')) {
     function getTranslationCatalogForLocale(string $local): array
     {
@@ -306,8 +365,9 @@ if (!function_exists('getLanguageName')) {
     function getLanguageName(string $key): string
     {
         $values = getWebConfig('language');
+        $values = is_array($values) ? $values : [];
         foreach ($values as $value) {
-            if ($value['code'] == $key) {
+            if (($value['code'] ?? null) == $key) {
                 $key = $value['name'];
             }
         }
@@ -648,23 +708,8 @@ if (!function_exists('getLanguageInputIndex')) {
 if (!function_exists('getConfiguredDefaultLanguage')) {
     function getConfiguredDefaultLanguage(): string
     {
-        $pncLanguages = [];
-
-        try {
-            if (
-                function_exists('getWebConfig')
-                && class_exists(Schema::class)
-                && Schema::hasTable('business_settings')
-            ) {
-                $pncLanguages = getWebConfig('pnc_language');
-            }
-        } catch (\Throwable) {
-            $pncLanguages = [];
-        }
-
-        $configuredLanguage = is_array($pncLanguages) && !empty($pncLanguages)
-            ? normalizeTranslationLocaleCandidate((string) $pncLanguages[0])
-            : normalizeTranslationLocaleCandidate((string) config('app.locale', 'en'));
+        $configuredLanguages = getConfiguredLanguageCodes();
+        $configuredLanguage = normalizeTranslationLocaleCandidate((string)($configuredLanguages[0] ?? config('app.locale', 'en')));
 
         return $configuredLanguage !== '' ? $configuredLanguage : 'en';
     }

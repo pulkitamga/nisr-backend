@@ -1,6 +1,10 @@
+@php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
 @section('title', translate('Career Ticket'))
+@push('css_or_js')
+<link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/crm.css')}}">
+@endpush
 
 @section('content')
 
@@ -10,99 +14,121 @@ $defaultLanguage = config('app.locale', 'en');
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0]['code'] ?? 'en';
 }
+$priority = request()->has('priority') ? request()->input('priority') : 'all';
+$statusId = request()->has('status') ? request()->input('status') : (string) \App\Support\CareerTicketWorkflow::STATUS_NEW;
+$talentPoolFilter = request()->has('talent_pool') ? request()->input('talent_pool') : 'all';
+$selectedStatusLabel = $statusId === 'all'
+    ? translate('all_status')
+    : ($statuses->firstWhere('id', (int) $statusId)?->getTranslatedField('name') ?? translate('all_status'));
+$toolbarFields = [
+    [
+        'type' => 'search',
+        'name' => 'searchValue',
+        'label' => translate('search'),
+        'value' => request('searchValue'),
+        'placeholder' => translate('search_ticket_by_subject_or_status'),
+        'aria_label' => translate('search_ticket_by_subject_or_status'),
+        'col_class' => 'col-xl-4 col-lg-12',
+    ],
+    [
+        'type' => 'select',
+        'name' => 'priority',
+        'label' => translate('priority'),
+        'value' => $priority,
+        'options' => collect(['all', 'low', 'medium', 'high', 'urgent'])
+            ->mapWithKeys(fn ($option) => [$option => $option === 'all' ? translate('all_priority') : translate($option)])
+            ->all(),
+        'input_class' => 'form-control border-color-c1',
+        'col_class' => 'col-xl-3 col-lg-4',
+    ],
+    [
+        'type' => 'select',
+        'name' => 'status',
+        'label' => translate('status'),
+        'value' => $statusId,
+        'options' => ['all' => translate('all_status')] + $statuses->mapWithKeys(fn ($statusOption) => [
+            (string) $statusOption['id'] => $statusOption->getTranslatedField('name'),
+        ])->all(),
+        'input_class' => 'form-control border-color-c1',
+        'col_class' => 'col-xl-3 col-lg-4',
+    ],
+    [
+        'type' => 'select',
+        'name' => 'talent_pool',
+        'label' => translate('talent_pool'),
+        'value' => $talentPoolFilter,
+        'options' => [
+            'all' => translate('all_talent_pool'),
+            'yes' => translate('talent_pool_yes'),
+            'no' => translate('talent_pool_no'),
+        ],
+        'input_class' => 'form-control border-color-c1',
+        'col_class' => 'col-xl-2 col-lg-4',
+    ],
+];
+$toolbarSummary = [
+    [
+        'label' => translate('status'),
+        'value' => $selectedStatusLabel,
+    ],
+];
+if ($statusId !== 'all' && !request()->has('status')) {
+    $toolbarSummary[] = [
+        'value' => translate('default_status'),
+        'muted' => true,
+    ];
+}
+if ($priority !== 'all') {
+    $toolbarSummary[] = [
+        'label' => translate('priority'),
+        'value' => translate($priority),
+        'muted' => true,
+    ];
+}
+if ($talentPoolFilter !== 'all') {
+    $toolbarSummary[] = [
+        'label' => translate('talent_pool'),
+        'value' => translate($talentPoolFilter === 'yes' ? 'talent_pool_yes' : 'talent_pool_no'),
+        'muted' => true,
+    ];
+}
+if (request()->filled('searchValue')) {
+    $toolbarSummary[] = [
+        'label' => translate('search'),
+        'value' => Str::limit(request('searchValue'), 28),
+        'muted' => true,
+    ];
+}
+$headerActions = [
+    [
+        'type' => 'export',
+        'url' => route('admin.support-ticket.career.pool.export'),
+        'form_id' => 'crm-career-ticket-toolbar',
+        'label' => translate('export'),
+    ],
+];
 @endphp
 <div class="content container-fluid">
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt="">
             {{translate('career_tickets')}}
+            <span class="badge badge-soft-dark radius-50 fz-14">{{ $tickets->total() }}</span>
         </h2>
     </div>
-    <div class="row mt-20">
-        <div class="col-md-12">
-            <div class="card mb-3">
-                <div class="px-3 py-4 mb-3">
-                    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
-                        <div>
-                            <form action="{{ url()->current() }}" method="GET">
-                                <div class="input-group input-group-merge input-group-custom">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="tio-search"></i>
-                                        </div>
-                                    </div>
-                                    <input id="datatableSearch_" type="search" name="searchValue"
-                                        class="form-control"
-                                        placeholder="{{ translate('search_ticket_by_subject_or_status').'...' }}"
-                                        aria-label="{{ translate('Search tickets') }}" value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div>
-                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end ticket-filter-controls">
-                                @php
-                                $priority = request()->has('priority') ? request()->input('priority') : '';
-                                $statusId = request()->has('status') ? request()->input('status') : '27';
-                                $talentPoolFilter = request()->has('talent_pool') ? request()->input('talent_pool') : 'all';
-                                @endphp
-
-                                <!-- Priority -->
-                                <select class="form-control border-color-c1 w-160 filter-tickets" name="priority">
-                                    <option value="all">{{ translate('all_priority') }}</option>
-                                    @foreach(['low','medium','high','urgent'] as $p)
-                                    <option value="{{ $p }}" {{ $priority === $p ? 'selected' : '' }}>{{ translate($p) }}</option>
-                                    @endforeach
-                                </select>
-
-                                <!-- Status -->
-                                <select class="form-control border-color-c1 w-160 filter-tickets" name="status">
-                                    <option value="all">{{ translate('all_status') }}</option>
-                                    @foreach($statuses as $status)
-                                    <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ $status->getTranslatedField('name') }}
-                                    </option>
-                                    @endforeach
-                                </select>
-
-                                <!-- Talent Pool Filter -->
-                                <select class="form-control border-color-c1 w-160 filter-tickets" name="talent_pool">
-                                    <option value="all" {{ $talentPoolFilter === 'all' ? 'selected' : '' }}>{{ translate('all_talent_pool') }}</option>
-                                    <option value="yes" {{ $talentPoolFilter === 'yes' ? 'selected' : '' }}>{{ translate('talent_pool_yes') }}</option>
-                                    <option value="no" {{ $talentPoolFilter === 'no' ? 'selected' : '' }}>{{ translate('talent_pool_no') }}</option>
-                                </select>
-                                <button type="button" class="btn btn--primary text-nowrap apply-career-filters">
-                                    {{ translate('apply') }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'crm-career-ticket-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.support-ticket.career.index'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
     <div class="card">
-        <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 me-auto">
-                {{translate('Career Ticket List')}}
-                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $tickets->total() }}</span>
-            </h5>
-
-            <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap"
-                    href="{{ route('admin.support-ticket.career.pool.export', 'career') }}?{{ http_build_query([
-                        'priority' => request('priority'),
-                        'status' => request('status'),
-                        'searchValue' => request('searchValue'),
-                        'talent_pool' => request('talent_pool')
-                    ]) }}">
-                    <img width="14" src="{{ dynamicAsset('public/assets/back-end/img/excel.png') }}" alt="" class="excel">
-                    <span class="ps-2">{{ translate('export') }}</span>
-                </a>
-            </div>
-
-
-        </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('Career Ticket List'),
+            'listHeaderTotal' => $tickets->total(),
+            'listHeaderActions' => $headerActions,
+        ])
         <div class="table-responsive datatable-custom">
             <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle w-100">
                 <thead class="thead-light text-capitalize">
@@ -122,7 +148,11 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
                     <tr>
                         <td>{{ $tickets->firstItem() + $index }}</td>
-                        <td>{{ $ticket->subject }}</td>
+                        <td>
+                            <a href="{{ route('admin.support-ticket.career.single', $ticket->id) }}" class="crm-primary-link">
+                                {{ $ticket->subject }}
+                            </a>
+                        </td>
                         <td>{{ optional($ticket->relatedInboxMessage)->sender_name ?? optional($ticket->relatedInboxMessage)->sender_email ?? translate('N/A') }}</td>
                         <td>{{ $ticket->status_details?->getTranslatedField('name') ?? translate('N/A') }}</td>
                         <td>{{ $ticket->employee->name ?? translate('Unassigned') }}</td>
@@ -131,41 +161,55 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         $pendingInterview = $ticket->careerInterviews->whereNull('conducted_at')->first();
                         @endphp
                         <td>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ route('admin.support-ticket.career.single', $ticket->id) }}" class="btn btn-sm btn-info">{{ translate('view') }}</a>
-                                @if($ticket->status == 27) <!-- New -->
-                                <button class="btn btn-sm btn-outline-primary action-btn" data-action="assign-recruiter" data-route="{{ route('admin.support-ticket.career.assign') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('assign_recruiter') }}</button>
-                                @elseif($ticket->status == 29) <!-- Assigned -->
-                                <button class="btn btn-sm btn-outline-primary action-btn" data-action="screen" data-route="{{ route('admin.support-ticket.career.screen') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('screen') }}</button>
-                                @elseif($ticket->status == 31 )
-                                @if($pendingInterview)
-                                <button class="btn btn-sm btn-outline-primary action-btn"
-                                    data-action="conduct-interview"
-                                    data-route="{{ route('admin.support-ticket.career.conduct-interview') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-interview-id="{{ $pendingInterview->id }}">
-                                    {{ translate('conduct_interview') }}
-                                </button>
-                                @endif
-                                @endif
-
-                                @if($ticket->status == 31)
-                                <button class="btn btn-sm btn-outline-primary action-btn" data-action="schedule-interview" data-route="{{ route('admin.support-ticket.career.schedule-interview') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('schedule_interview') }}</button>
-                                @endif
-                                @if($ticket->status == 32)
-                                <button class="btn btn-sm btn-outline-primary action-btn" data-action="attach-offer" data-route="{{ route('admin.support-ticket.career.attach-offer') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('attach_offer') }}</button>
-                                <button class="btn btn-sm btn-outline-danger action-btn" data-action="decline-offer" data-route="{{ route('admin.support-ticket.career.decline-offer') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('decline_offer') }}</button>
-                                @endif
-                                @if(in_array($ticket->status, [29, 30, 31, 32]))
-                                <button class="btn btn-sm btn-outline-danger action-btn" data-action="reject" data-route="{{ route('admin.support-ticket.career.reject') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('reject') }}</button>
-                                @endif
-                                @if(in_array($ticket->status, [34, 35]))
-                                <button class="btn btn-sm btn-outline-info action-btn" data-action="talent-pool" data-route="{{ route('admin.support-ticket.career.talent-pool') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('talent_pool') }}</button>
-                                @endif
-                                @if(!in_array($ticket->status, [33, 35]))
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-warning escalate-btn" data-ticket-id="{{ $ticket->id }}">
-                                    {{ translate('Escalate') }}
-                                </a>
+                            @php
+                            $hasCareerOverflow = ($ticket->status == 31 && $pendingInterview) || $ticket->status == 32 || in_array($ticket->status, [29, 30, 31, 32]) || !in_array($ticket->status, [33, 35]);
+                            @endphp
+                            <div class="crm-row-actions">
+                                <div class="crm-row-actions__primary">
+                                    <a href="{{ route('admin.support-ticket.career.single', $ticket->id) }}" class="btn btn-sm btn-info">{{ translate('view') }}</a>
+                                    @if($ticket->status == 27)
+                                    <button type="button" class="btn btn-sm btn-outline-primary action-btn" data-action="assign-recruiter" data-route="{{ route('admin.support-ticket.career.assign') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('assign_recruiter') }}</button>
+                                    @elseif($ticket->status == 29)
+                                    <button type="button" class="btn btn-sm btn-outline-primary action-btn" data-action="screen" data-route="{{ route('admin.support-ticket.career.screen') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('screen') }}</button>
+                                    @elseif($ticket->status == 31 && $pendingInterview)
+                                    <button type="button" class="btn btn-sm btn-outline-primary action-btn"
+                                        data-action="conduct-interview"
+                                        data-route="{{ route('admin.support-ticket.career.conduct-interview') }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-interview-id="{{ $pendingInterview->id }}">
+                                        {{ translate('conduct_interview') }}
+                                    </button>
+                                    @elseif($ticket->status == 31)
+                                    <button type="button" class="btn btn-sm btn-outline-primary action-btn" data-action="schedule-interview" data-route="{{ route('admin.support-ticket.career.schedule-interview') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('schedule_interview') }}</button>
+                                    @elseif($ticket->status == 32)
+                                    <button type="button" class="btn btn-sm btn-outline-primary action-btn" data-action="attach-offer" data-route="{{ route('admin.support-ticket.career.attach-offer') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('attach_offer') }}</button>
+                                    @elseif(in_array($ticket->status, [34, 35]))
+                                    <button type="button" class="btn btn-sm btn-outline-info action-btn" data-action="talent-pool" data-route="{{ route('admin.support-ticket.career.talent-pool') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('talent_pool') }}</button>
+                                    @endif
+                                </div>
+                                @if($hasCareerOverflow)
+                                <div class="dropdown crm-row-actions__menu">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                        <i class="tio-more-horizontal"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        @if($ticket->status == 31 && $pendingInterview)
+                                        <button type="button" class="dropdown-item action-btn" data-action="schedule-interview" data-route="{{ route('admin.support-ticket.career.schedule-interview') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('schedule_interview') }}</button>
+                                        @endif
+                                        @if($ticket->status == 32)
+                                        <button type="button" class="dropdown-item text-danger action-btn" data-action="decline-offer" data-route="{{ route('admin.support-ticket.career.decline-offer') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('decline_offer') }}</button>
+                                        @endif
+                                        @if(in_array($ticket->status, [29, 30, 31, 32]))
+                                        <button type="button" class="dropdown-item text-danger action-btn" data-action="reject" data-route="{{ route('admin.support-ticket.career.reject') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('reject') }}</button>
+                                        @endif
+                                        @if(!in_array($ticket->status, [33, 35]))
+                                        <div class="dropdown-divider"></div>
+                                        <a href="javascript:void(0)" class="dropdown-item text-warning escalate-btn" data-ticket-id="{{ $ticket->id }}">
+                                            {{ translate('Escalate') }}
+                                        </a>
+                                        @endif
+                                    </div>
+                                </div>
                                 @endif
                             </div>
                         </td>
@@ -462,137 +506,12 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     </div>
 </div>
 
+<span id="career-ticket-are-you-sure" data-text="{{ translate('are_you_sure') }}"></span>
+<span id="career-ticket-yes" data-text="{{ translate('yes') }}"></span>
+<span id="career-ticket-cancel" data-text="{{ translate('cancel') }}"></span>
+<span id="career-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
+<span id="career-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
 @endsection
 @push('script')
-
-<script>
-    $('.apply-career-filters').on('click', function() {
-        let url = new URL(window.location.href);
-        $('.ticket-filter-controls .filter-tickets').each(function() {
-            let param = $(this).attr('name');
-            if (!param) {
-                return;
-            }
-
-            let value = $(this).val();
-            if (value === undefined || value === null || value === '') {
-                url.searchParams.delete(param);
-                return;
-            }
-
-            url.searchParams.set(param, value);
-        });
-        url.searchParams.delete('page');
-        window.location.href = url.toString();
-    });
-
-
-
-    $(document).on('click', '.escalate-btn', function() {
-        let ticketId = $(this).data('ticket-id');
-        $('#escalateTicketId').val(ticketId);
-        $('#escalateTicketModal').modal('show');
-    });
-
-    // Form submission with confirmation
-    $('#escalateTicketForm').submit(function(e) {
-        e.preventDefault();
-        let form = $(this);
-        Swal.fire({
-            title: @json(__('Are you sure?')),
-            text: @json(__('This will notify the department and owner.')),
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: @json(__('Yes, Escalate')),
-            cancelButtonText: @json(__('Cancel'))
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.off('submit').submit(); // Submit without further prevention
-            }
-        });
-    });
-</script>
-<script>
-    $(document).ready(function() {
-        $('.select2').select2();
-
-        $('.action-btn').click(function() {
-            var action = $(this).data('action');
-            var route = $(this).data('route');
-            var ticketId = $(this).data('ticket-id');
-            var interviewId = $(this).data('interview-id');
-
-            switch (action) {
-                case 'assign-recruiter':
-                    $('#assignTicketId').val(ticketId);
-                    $('#assignRecruiterForm').attr('action', route);
-                    $('#assignRecruiterModal').modal('show');
-                    break;
-
-                case 'screen':
-                    $('#screenTicketId').val(ticketId);
-                    $('#screenForm').attr('action', route);
-                    $('#screenModal').modal('show');
-
-                    // Show/hide reason code based on selected radio
-                    $('input[name="qualified"]').change(function() {
-                        $('#reasonCodeDiv').toggle($('#qualifiedNo').is(':checked'));
-                    });
-                    break;
-
-                case 'schedule-interview':
-                    $('#scheduleTicketId').val(ticketId);
-                    $('#scheduleInterviewForm').attr('action', route);
-                    $('#scheduleInterviewModal').modal('show');
-                    break;
-
-                case 'conduct-interview':
-                    $('#conductTicketId').val(ticketId);
-                    $('#conductInterviewId').val(interviewId);
-                    $('#conductInterviewForm').attr('action', route);
-                    $('#conductInterviewModal').modal('show');
-                    break;
-
-                case 'attach-offer':
-                    $('#attachTicketId').val(ticketId);
-                    $('#attachOfferForm').attr('action', route);
-                    $('#attachOfferModal').modal('show');
-                    break;
-
-                case 'decline-offer':
-                    $('#declineTicketId').val(ticketId);
-                    $('#declineOfferForm').attr('action', route);
-                    $('#declineOfferModal').modal('show');
-                    break;
-
-                case 'reject':
-                    $('#rejectTicketId').val(ticketId);
-                    $('#rejectForm').attr('action', route);
-                    $('#rejectModal').modal('show');
-                    break;
-
-                case 'talent-pool':
-                    $('#talentPoolTicketId').val(ticketId);
-                    $('#talentPoolForm').attr('action', route);
-                    $('#talentPoolModal').modal('show');
-                    break;
-            }
-        });
-
-        $('.confirm-submit-form').submit(function(e) {
-            e.preventDefault();
-            var form = $(this);
-            Swal.fire({
-                title: '{{ translate("are_you_sure") }}',
-                showCancelButton: true,
-                confirmButtonText: '{{ translate("yes") }}',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.get(0).submit();
-                }
-            });
-        });
-    });
-</script>
+<script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/career-ticket.js')}}"></script>
 @endpush
-

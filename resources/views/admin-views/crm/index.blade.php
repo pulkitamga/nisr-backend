@@ -8,6 +8,148 @@
 @section('content')
 
 <div class="content container-fluid">
+    @php
+        $selectedStatus = request('status', 'new');
+        $selectedChannel = request()->has('Channel')
+            ? (request('Channel') === '' ? 'all' : request('Channel'))
+            : 'all';
+        $statusOptions = [
+            'all' => translate('All'),
+            'new' => translate('New'),
+            'processing' => translate('processing'),
+            'converted' => translate('converted'),
+            'ignored' => translate('ignored'),
+        ];
+        $channelOptions = [
+            'all' => translate('All'),
+            'email' => translate('email'),
+            'form' => translate('form'),
+            'chat' => translate('chat'),
+            'social' => translate('social'),
+            'phone' => translate('phone'),
+        ];
+        $activeFilterDate = request('filter_date', request('fhilter_date'));
+        $selectedChannelValue = $selectedChannel === 'all' ? '' : $selectedChannel;
+        $toolbarFields = [
+            [
+                'type' => 'daterange',
+                'name' => 'filter_date',
+                'label' => translate('Select_Date'),
+                'value' => $activeFilterDate,
+                'placeholder' => translate('Select_Date'),
+                'autocomplete' => 'off',
+                'input_class' => 'js-daterangepicker-with-range form-control cursor-pointer',
+                'attributes' => ['readonly' => 'readonly'],
+            ],
+            [
+                'type' => 'select',
+                'name' => 'status',
+                'label' => translate('Status'),
+                'value' => $selectedStatus,
+                'options' => $statusOptions,
+                'col_class' => 'col-xl-2 col-lg-6',
+                'input_class' => 'form-control js-select2-custom set-filter',
+            ],
+            [
+                'type' => 'select',
+                'name' => 'Channel',
+                'label' => translate('Channel'),
+                'value' => $selectedChannelValue,
+                'options' => [
+                    '' => translate('All'),
+                    'email' => translate('email'),
+                    'form' => translate('form'),
+                    'chat' => translate('chat'),
+                    'social' => translate('social'),
+                    'phone' => translate('phone'),
+                ],
+                'col_class' => 'col-xl-2 col-lg-6',
+                'input_class' => 'form-control js-select2-custom set-filter',
+            ],
+            [
+                'type' => 'number',
+                'name' => 'choose_first',
+                'label' => translate('Rows_to_show'),
+                'value' => request('choose_first'),
+                'placeholder' => translate('Ex') . ' : 200',
+                'col_class' => 'col-xl-2 col-lg-6',
+                'attributes' => ['min' => '1'],
+            ],
+            [
+                'type' => 'search',
+                'name' => 'searchValue',
+                'label' => translate('search'),
+                'value' => request('searchValue'),
+                'placeholder' => translate('search_by_Name_or_Email_or_Phone'),
+                'aria_label' => translate('search_by_Name_or_Email_or_Phone'),
+                'col_class' => 'col-xl-3 col-lg-12',
+            ],
+        ];
+        $toolbarSummary = [
+            [
+                'label' => translate('Status'),
+                'value' => $statusOptions[$selectedStatus] ?? translate('All'),
+            ],
+        ];
+        if (!request()->has('status')) {
+            $toolbarSummary[] = [
+                'value' => translate('default_status'),
+                'muted' => true,
+            ];
+        }
+        if ($selectedChannel !== 'all') {
+            $toolbarSummary[] = [
+                'label' => translate('Channel'),
+                'value' => $channelOptions[$selectedChannel] ?? translate('All'),
+                'muted' => true,
+            ];
+        }
+        if (!empty($activeFilterDate)) {
+            $toolbarSummary[] = [
+                'label' => translate('Select_Date'),
+                'value' => Str::limit($activeFilterDate, 28),
+                'muted' => true,
+            ];
+        }
+        if (request()->filled('searchValue')) {
+            $toolbarSummary[] = [
+                'label' => translate('search'),
+                'value' => Str::limit(request('searchValue'), 28),
+                'muted' => true,
+            ];
+        }
+        if (request()->filled('choose_first')) {
+            $toolbarSummary[] = [
+                'label' => translate('Rows_to_show'),
+                'value' => request('choose_first'),
+                'muted' => true,
+            ];
+        }
+        $headerActions = [
+            [
+                'type' => 'export',
+                'url' => route('admin.crm.messages.export'),
+                'form_id' => 'crm-inbox-toolbar',
+                'label' => translate('export'),
+            ],
+            [
+                'type' => 'button',
+                'label' => translate('Bulk_convert'),
+                'class' => 'btn btn-outline--primary text-nowrap bulk-convert-btn',
+                'icon_html' => '🔀',
+            ],
+            [
+                'type' => 'button',
+                'label' => translate('Add Message'),
+                'class' => 'btn btn-outline--primary text-nowrap',
+                'icon_html' => '<i class="tio-add"></i>',
+                'attributes' => [
+                    'data-bs-toggle' => 'modal',
+                    'data-bs-target' => '#addMessageModal',
+                ],
+            ],
+        ];
+    @endphp
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/customer.png')}}" alt="">
@@ -15,105 +157,19 @@
             <span class="badge badge-soft-dark radius-50"></span>
         </h2>
     </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <form action="{{ url()->current() }}" method="GET">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">{{ translate('Select_Date') }}</label>
-                        <div class="position-relative">
-                            <span class="tio-calendar icon-absolute-on-right"></span>
-                            <input type="text" name="filter_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{ request('filter_date', request('fhilter_date')) }}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">{{translate('Status')}}</label>
-                        <select class="form-control js-select2-custom set-filter" name="status">
-                            <option {{ !request()->has('status') ?'selected':''}} disabled>{{ translate('select_status') }}</option>
-                            <option {{ request()->has('status') && request('status') == 'all' ?'selected':''}} value="all">{{ translate('All') }}</option>
-                            <option {{ request('status')  == 'new'?'selected':''}} value="new">{{ translate('New') }}</option>
-                            <option {{ request('status')  == 'processing'?'selected':''}} value="processing">{{ translate('processing') }}</option>
-                            <option {{ request('status')  == 'converted'?'selected':''}} value="converted">{{ translate('converted') }}</option>
-                            <option {{ request('status')  == 'ignored'?'selected':''}} value="ignored">{{ translate('ignored') }}</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">{{translate('Channel')}}</label>
-                        <select class="form-control js-select2-custom set-filter" name="Channel">
-                            <option {{ !request()->has('Channel') ?'selected':''}} disabled>{{ translate('select_Channel') }}</option>
-                            <option {{ request()->has('Channel') && request('status') == '' ?'selected':''}} value="">{{ translate('All') }}</option>
-                            <option {{ request('Channel')  == 'email'?'selected':''}} value="email">{{ translate('email') }}</option>
-                            <option {{ request('Channel')  == 'form'?'selected':''}} value="form">{{ translate('form') }}</option>
-                            <option {{ request('Channel')  == 'chat'?'selected':''}} value="chat">{{ translate('chat') }}</option>
-                            <option {{ request('Channel')  == 'social'?'selected':''}} value="social">{{ translate('social') }}</option>
-                            <option {{ request('Channel')  == 'phone'?'selected':''}} value="phone">{{ translate('phone') }}</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">{{translate('Choose_First')}}</label>
-                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{ translate('Ex') }} : 200" name="choose_first">
-                    </div>
-                    <div class="col-md-8">
-                        <label class="d-md-block">&nbsp;</label>
-                        <div class="btn--container justify-content-end">
-                            <a href="{{ route('admin.crm.index') }}"
-                                class="btn btn-secondary px-5">
-                                {{ translate('reset') }}
-                            </a>
-                            <button type="submit" class="btn btn--primary">{{translate('Filter')}}</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'crm-inbox-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.crm.index'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
     <div class="card">
-        <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 me-auto">
-                {{translate('Inbox_list')}}
-                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $messages->total() }}</span>
-            </h5>
-            <form action="{{ url()->current() }}" method="GET">
-                <input type="hidden" name="filter_date" value="{{ request('filter_date', request('fhilter_date')) }}">
-                <input type="hidden" name="Channel" value="{{request('Channel')}}">
-                <input type="hidden" name="status" value="{{request('status')}}">
-                <input type="hidden" name="choose_first" value="{{request('choose_first')}}">
-                <div class="input-group input-group-merge input-group-custom">
-                    <div class="input-group-prepend">
-                        <div class="input-group-text">
-                            <i class="tio-search"></i>
-                        </div>
-                    </div>
-                    <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                    <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
-                </div>
-            </form>
-            <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.crm.messages.export', [ 
-                'filter_date' => request('filter_date', request('fhilter_date')),
-                 'Channel' => request('Channel'),
-                        'status'       => request('status'),
-                        'choose_first' => request('choose_first'),
-                        'searchValue'  => request('searchValue'),])}}">
-                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="" class="excel">
-                    <span class="ps-2">{{ translate('export') }}</span>
-                </a>
-            </div>
-            <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap bulk-convert-btn">
-                    🔀 <span class="ps-2">{{ translate('Bulk_convert') }}</span>
-                </a>
-            </div>
-            <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap" data-bs-toggle="modal" data-bs-target="#addMassageModal">
-                    <i class="tio-add"></i>
-                    <span>{{ translate('add_Massage') }}</span>
-                </a>
-            </div>
-        </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('Inbox_list'),
+            'listHeaderTotal' => $messages->total(),
+            'listHeaderActions' => $headerActions,
+        ])
         <div class="table-responsive datatable-custom">
 
             <table
@@ -143,7 +199,11 @@
                         <td>
                             {{$messages->firstItem()+$key}}
                         </td>
-                        <td><a href="">{{ $msg->subject ?? translate('No Subject') }}</a></td>
+                        <td>
+                            <a href="{{ route('admin.crm.message.show', $msg->id) }}" class="crm-primary-link">
+                                {{ $msg->subject ?? translate('No Subject') }}
+                            </a>
+                        </td>
                         <td>{{ ucfirst($msg->pipeline) }} - {{ $msg->message_type }}</td>
                         <!-- <td>
 
@@ -191,60 +251,74 @@
                         </td>
                         <td><span class="bidi-ltr d-inline-block">{{ $msg->created_at->format('d M, Y H:i') }}</span></td>
                         <td>
-                            <div class="d-flex flex-wrap gap-1">
-                                <a href="{{ route('admin.crm.massage.show', $msg->id) }}" class="btn btn-sm btn-outline-info">
-                                    {{ translate('View') }}
-                                </a>
-                                <!-- <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary reply-btn" data-id="{{ $msg['id'] }}">
-                                    {{ translate('Reply') }}
-                                </a> -->
-                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'inbox_assign_owner'))
-                                <a href="javascript:void(0)"
-                                    class="btn btn-sm btn-outline-secondary assign-owner-btn"
-                                    data-id="{{ $msg->id }}"
-                                    data-owner-id="{{ $msg->owner_id ?? '' }}"
-                                    data-department-id="{{ $msg->department_id ?? '' }}"
-                                    data-bs-toggle="false"
-                                    data-bs-target="none">
-                                    {{ $msg->owner_id ? translate('Re-Assign Owner') : translate('Assign Owner') }}
-                                </a>
-                                @endif
-
-                                @if($msg->status != 'ignored' && $msg->status != 'spam' && $msg->status != 'converted')
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-id="{{ $msg['id'] }}" data-bs-target="#convertModal">
-                                    🔀 {{ translate('Convert') }}
-
-                                </a>
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-danger mark-spam-btn" data-id="{{ $msg['id'] }}">
-                                    {{ translate('Mark Spam') }}
-                                </a>
-                                <a href="javascript:void(0)"
-                                    class="btn btn-sm btn-outline-dark ignore-btn"
-                                    data-id="{{ $msg['id'] }}">
-                                    {{ translate('Ignore') }}
-                                </a>
-                                @endif
-
-                                @if($msg->contact_id == null)
-                                @php
+                            @php
+                            $canConvertMessage = $msg->status != 'ignored' && $msg->status != 'spam' && $msg->status != 'converted';
+                            $suggestion = null;
+                            if ($msg->contact_id == null) {
                                 $suggestion = \App\Models\InboxSuggestion::where('inbox_message_id', $msg->id)
-                                ->where('status', 'pending')->first();
-                                @endphp
-                                @if($suggestion)
-                                <button type="button" class="btn btn-sm btn-outline-info suggestion-btn"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#suggestionModal"
-                                    data-message-id="{{ $msg->id }}"
-                                    data-user-id="{{ $suggestion->user_id }}">
-                                    {{ translate('Suggestion') }}
-                                    <span class="badge bg-danger"> {{ translate('Reg') }}
-                                    </span>
-                                </button>
+                                    ->where('status', 'pending')
+                                    ->first();
+                            }
+                            @endphp
+                            <div class="crm-row-actions">
+                                <div class="crm-row-actions__primary">
+                                    <a href="{{ route('admin.crm.message.show', $msg->id) }}" class="btn btn-sm btn-outline-info">
+                                        {{ translate('View') }}
+                                    </a>
+                                    @if($canConvertMessage)
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-id="{{ $msg['id'] }}" data-bs-target="#convertModal">
+                                        🔀 {{ translate('Convert') }}
+                                    </a>
+                                    @endif
+                                </div>
+                                @if(!$msg->owner_id)
+                                <div class="crm-row-actions__chips">
+                                    <span class="crm-row-actions__chip">{{ translate('No Owner') }}</span>
+                                </div>
                                 @endif
-                                @endif
-                                <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="{{ $msg->id }}">
-                                    {{ translate('Delete') }}
-                                </button>
+                                <div class="dropdown crm-row-actions__menu">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                        <i class="tio-more-horizontal"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'inbox_assign_owner'))
+                                        <a href="javascript:void(0)"
+                                            class="dropdown-item assign-owner-btn"
+                                            data-id="{{ $msg->id }}"
+                                            data-owner-id="{{ $msg->owner_id ?? '' }}"
+                                            data-department-id="{{ $msg->department_id ?? '' }}"
+                                            data-bs-toggle="false"
+                                            data-bs-target="none">
+                                            {{ $msg->owner_id ? translate('Re-Assign Owner') : translate('Assign Owner') }}
+                                        </a>
+                                        @endif
+                                        @if($suggestion)
+                                        <button type="button" class="dropdown-item suggestion-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#suggestionModal"
+                                            data-message-id="{{ $msg->id }}"
+                                            data-user-id="{{ $suggestion->user_id }}">
+                                            {{ translate('Suggestion') }}
+                                            <span class="badge bg-danger ms-auto">{{ translate('Reg') }}</span>
+                                        </button>
+                                        @endif
+                                        @if($canConvertMessage)
+                                        <div class="dropdown-divider"></div>
+                                        <a href="javascript:void(0)" class="dropdown-item text-danger mark-spam-btn" data-id="{{ $msg['id'] }}">
+                                            {{ translate('Mark Spam') }}
+                                        </a>
+                                        <a href="javascript:void(0)"
+                                            class="dropdown-item ignore-btn"
+                                            data-id="{{ $msg['id'] }}">
+                                            {{ translate('Ignore') }}
+                                        </a>
+                                        @endif
+                                        <div class="dropdown-divider"></div>
+                                        <button type="button" class="dropdown-item text-danger delete-btn" data-id="{{ $msg->id }}">
+                                            {{ translate('Delete') }}
+                                        </button>
+                                    </div>
+                                </div>
                                 <span class="d-none delete-route" data-id="{{ $msg->id }}"
                                     data-url="{{ route('admin.crm.messages.destroy', $msg->id) }}"></span>
                             </div>
@@ -294,7 +368,7 @@
 @include('admin-views.crm.partials.type')
 @include('admin-views.crm.partials.convert')
 @include('admin-views.crm.partials.convert-bulk')
-@include('admin-views.crm.partials.add-massage')
+@include('admin-views.crm.partials.add-message')
 
 <span id="ignoreRoute" data-url="{{ route('admin.crm.ignore') }}"></span>
 <span id="spamRoute" data-url="{{ route('admin.crm.mark-spam') }}"></span>
@@ -309,9 +383,6 @@
 @endsection
 
 @push('script')
-<script type="text/javascript">
-    changeInputTypeForDateRangePicker($('input[name="order_date"]'));
-    changeInputTypeForDateRangePicker($('input[name="customer_joining_date"]'));
-</script>
+@include('admin-views.crm.partials._crm-js-text')
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 @endpush

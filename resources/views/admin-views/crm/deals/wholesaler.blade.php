@@ -4,6 +4,7 @@
 @section('title', translate('wholesale_Deals'))
 
 @push('css_or_js')
+<link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/crm.css')}}">
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/css/tags-input.min.css') }}" rel="stylesheet">
 <link href="{{ dynamicAsset(path: 'public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
@@ -12,71 +13,97 @@
 
 @section('content')
 
-
-<style>
-    .modal.right .modal-dialog {
-        position: fixed;
-        right: 0;
-        top: 0;
-        margin: 0;
-        width: 600px;
-        height: 100%;
-        transform: translateX(100%);
-        transition: transform 0.3s ease-out;
-    }
-
-    .modal.right.show .modal-dialog {
-        transform: translateX(0);
-    }
-
-    .modal-dialog-slideout .modal-content {
-        height: 100%;
-        overflow-y: auto;
-    }
-
-    /* Dropdown container */
-    .custom-select2-dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        max-height: 250px;
-        overflow-y: auto;
-        background: #fff;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        margin-top: 2px;
-        padding: 0;
-        list-style: none;
-        display: none;
-        z-index: 1055;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Dropdown items */
-    .custom-select2-dropdown li {
-        padding: 8px 12px;
-        cursor: pointer;
-        font-size: 14px;
-        color: #374151;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    /* Hover effect */
-    .custom-select2-dropdown li:hover {
-        background: #f3f4f6;
-        color: #111827;
-    }
-
-    /* Active (selected) item */
-    .custom-select2-dropdown li.active {
-        background: #2563eb;
-        color: #fff;
-    }
-</style>
-
-
 <div class="content container-fluid">
+    @php
+        $selectedStatus = request('status', 'open');
+        $statusOptions = [
+            'all' => translate('All'),
+            'open' => translate('open'),
+            'won' => translate('won'),
+            'lost' => translate('lost'),
+            'closed' => translate('closed'),
+        ];
+        $activeFilterDate = request('filter_date', request('fhilter_date'));
+        $toolbarFields = [
+            [
+                'type' => 'daterange',
+                'name' => 'filter_date',
+                'label' => translate('Select_Date'),
+                'value' => $activeFilterDate,
+                'placeholder' => translate('Select_Date'),
+                'autocomplete' => 'off',
+                'input_class' => 'js-daterangepicker-with-range form-control cursor-pointer',
+                'attributes' => ['readonly' => 'readonly'],
+            ],
+            [
+                'type' => 'select',
+                'name' => 'status',
+                'label' => translate('Status'),
+                'value' => $selectedStatus,
+                'options' => $statusOptions,
+                'input_class' => 'form-control js-select2-custom set-filter',
+            ],
+            [
+                'type' => 'number',
+                'name' => 'choose_first',
+                'label' => translate('Rows_to_show'),
+                'value' => request('choose_first'),
+                'placeholder' => translate('Ex') . ' : 200',
+                'col_class' => 'col-xl-2 col-lg-6',
+                'attributes' => ['min' => '1'],
+            ],
+            [
+                'type' => 'search',
+                'name' => 'searchValue',
+                'label' => translate('search'),
+                'value' => request('searchValue'),
+                'placeholder' => translate('search_by_Name_or_Email_or_Phone'),
+                'aria_label' => translate('search_by_Name_or_Email_or_Phone'),
+                'col_class' => 'col-xl-4 col-lg-12',
+            ],
+        ];
+        $toolbarSummary = [
+            [
+                'label' => translate('Status'),
+                'value' => $statusOptions[$selectedStatus] ?? translate('All'),
+            ],
+        ];
+        if (!request()->has('status')) {
+            $toolbarSummary[] = [
+                'value' => translate('default_status'),
+                'muted' => true,
+            ];
+        }
+        if (!empty($activeFilterDate)) {
+            $toolbarSummary[] = [
+                'label' => translate('Select_Date'),
+                'value' => Str::limit($activeFilterDate, 28),
+                'muted' => true,
+            ];
+        }
+        if (request()->filled('searchValue')) {
+            $toolbarSummary[] = [
+                'label' => translate('search'),
+                'value' => Str::limit(request('searchValue'), 28),
+                'muted' => true,
+            ];
+        }
+        if (request()->filled('choose_first')) {
+            $toolbarSummary[] = [
+                'label' => translate('Rows_to_show'),
+                'value' => request('choose_first'),
+                'muted' => true,
+            ];
+        }
+        $headerActions = [
+            [
+                'type' => 'export',
+                'url' => route('admin.crm.deals.wholesale.export'),
+                'form_id' => 'crm-wholesale-deals-toolbar',
+                'label' => translate('export'),
+            ],
+        ];
+    @endphp
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/customer.png')}}" alt="">
@@ -84,96 +111,19 @@
             <span class="badge badge-soft-dark radius-50"></span>
         </h2>
     </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <form action="{{ url()->current() }}" method="GET">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">{{ translate('Select_Date') }}</label>
-                        <div class="position-relative">
-                            <span class="tio-calendar icon-absolute-on-right"></span>
-                            <input type="text" name="filter_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{ request('filter_date', request('fhilter_date')) }}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">{{translate('Status')}}</label>
-                        <select class="form-control js-select2-custom set-filter" name="status">
-                            <option {{ !request()->has('status') ?'selected':''}} disabled>
-                                {{ translate('select_status') }}
-                            </option>
-                            <option {{ request()->has('status') && request('status') == 'all' ?'selected':''}} value="all">
-                                {{ translate('All') }}
-                            </option>
-                            <option {{ request('status')  == 'open'?'selected':''}} value="open">
-                                {{ translate('open') }}
-                            </option>
-                            <option {{ request('status')  == 'won'?'selected':''}} value="won">
-                                {{ translate('won') }}
-                            </option>
-                            <option {{ request('status')  == 'lost'?'selected':''}} value="lost">
-                                {{ translate('lost') }}
-                            </option>
-                            <option {{ request('status')  == 'closed'?'selected':''}} value="closed">
-                                {{ translate('closed') }}
-                            </option>
-
-                        </select>
-
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">{{translate('Choose_First')}}</label>
-                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{ translate('Ex') }} : 200" name="choose_first">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="d-md-block">&nbsp;</label>
-                        <div class="btn--container justify-content-end">
-                            <a href="{{ route('admin.crm.deals.wholesale.index') }}"
-                                class="btn btn-secondary px-5">
-                                {{ translate('reset') }}
-                            </a>
-                            <button type="submit" class="btn btn--primary">{{translate('Filter')}}</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'crm-wholesale-deals-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.crm.deals.wholesale.index'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
     <div class="card">
-        <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 me-auto">
-                {{translate('wholesale_Deals')}}
-                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $deals->total() }}</span>
-            </h5>
-
-            <form action="{{ url()->current() }}" method="GET">
-                <input type="hidden" name="filter_date" value="{{ request('filter_date', request('fhilter_date')) }}">
-                <input type="hidden" name="Channel" value="{{request('Channel')}}">
-                <input type="hidden" name="status" value="{{request('status')}}">
-                <input type="hidden" name="choose_first" value="{{request('choose_first')}}">
-                <div class="input-group input-group-merge input-group-custom">
-                    <div class="input-group-prepend">
-                        <div class="input-group-text">
-                            <i class="tio-search"></i>
-                        </div>
-                    </div>
-                    <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                    <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
-                </div>
-            </form>
-            <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.crm.deals.wholesale.export', [
-                    'filter_date' => request('filter_date', request('fhilter_date')),
-                    'status' => request('status'),
-                    'choose_first' => request('choose_first'),
-                    'searchValue' => request('searchValue')
-                ])}}">
-                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="" class="excel">
-                    <span class="ps-2">{{ translate('export') }}</span>
-                </a>
-            </div>
-
-        </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('wholesale_Deals'),
+            'listHeaderTotal' => $deals->total(),
+            'listHeaderActions' => $headerActions,
+        ])
         <div class="table-responsive datatable-custom">
 
             <table
@@ -199,7 +149,13 @@
                     <tr>
                         <td>{{ $deal->id }}</td>
                         <td><span class="bidi-ltr d-inline-block">{{ $deal->created_at->format('d M, Y H:i A') }}</span></td>
-                        <td>{{ $deal->relatedParty->company_name ?? translate('N/A') }}</td>
+                        <td>
+                            @if($deal->relatedParty)
+                                <a href="{{ route('admin.crm.deals.wholesale.view', $deal->id) }}" class="crm-primary-link">{{ $deal->relatedParty->company_name }}</a>
+                            @else
+                                {{ translate('N/A') }}
+                            @endif
+                        </td>
                         <td>
                             <a href="mailto:{{ $deal->relatedUser->email ?? '' }}">
                                 {{ $deal->relatedUser->email ?? translate('Not Available') }}
@@ -247,68 +203,86 @@
                         </td>
 
                         <td>
-                            <div class="d-flex flex-wrap gap-1">
-                                <a href="{{ route('admin.crm.deals.wholesale.view', $deal->id) }}" class="btn btn-sm btn-info">{{ __('View') }}</a>
-                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_owner'))
-                                <a href="javascript:void(0)"
-                                    class="btn btn-sm btn-outline-secondary assign-owner-btn"
-                                    data-id="{{ $deal->id }}"
-                                    data-owner-id="{{ $deal->owner_id ?? '' }}"
-                                    data-bs-toggle="false"
-                                    data-bs-target="none">
-                                    {{ translate('Assign Owner') }}
-                                </a>
+                            <div class="crm-row-actions">
+                                <div class="crm-row-actions__primary">
+                                    <a href="{{ route('admin.crm.deals.wholesale.view', $deal->id) }}" class="btn btn-sm btn-info">{{ __('View') }}</a>
+                                    @if(\App\Utils\Helpers::module_permission_check('wholesaler_section', 'create_quotation') && is_null($deal->po_id))
+                                    <a href="{{ route('admin.wholesale.business.create-quotation') }}"
+                                        class="btn btn-sm btn-primary create-quotation-btn"
+                                        data-id="{{ $deal->id }}">
+                                        {{ translate('Create_Quotation') }}
+                                    </a>
+                                    @elseif(is_null($deal->po_id))
+                                    <a href="#" class="btn btn-sm btn-primary request-quotation-btn" data-request-url="{{ route('admin.crm.deals.wholesale.request-quotation', $deal->id) }}">
+                                        {{ translate('Request Quotation') }}
+                                    </a>
+                                    @endif
+                                </div>
+                                @if(!$deal->owner_id || !$deal->department_id || !$deal->employee_id)
+                                <div class="crm-row-actions__chips">
+                                    @if(!$deal->owner_id)
+                                    <span class="crm-row-actions__chip">{{ translate('No Owner') }}</span>
+                                    @endif
+                                    @if(!$deal->department_id)
+                                    <span class="crm-row-actions__chip">{{ translate('No Department') }}</span>
+                                    @endif
+                                    @if(!$deal->employee_id)
+                                    <span class="crm-row-actions__chip">{{ translate('No Employee') }}</span>
+                                    @endif
+                                </div>
                                 @endif
-
-                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_employee'))
-                                <a href="javascript:void(0)"
-                                    class="btn btn-sm btn-outline-secondary assign-employee-btn"
-                                    data-id="{{ $deal->id }}"
-                                    data-department-id="{{ $deal->department->id ?? '' }}"
-                                    data-head-id="{{ $deal->department->head_id ?? '' }}">
-                                    {{ translate('Assign Employee') }}
-                                </a>
-                                @if(!auth('admin')->user()?->isSuperAdmin())
-                                <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
-                                @endif
-                                @endif
-                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_department'))
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary assign-dept-btn" data-id="{{ $deal->id }}" data-department-id="{{ $deal->department->id ?? 0 }}" data-department-employee-id="0">
-                                    {{ translate('Assign Department') }}
-                                </a>
-                                @endif
-
-
-                                @if(\App\Utils\Helpers::module_permission_check('wholesaler_section', 'create_quotation') && is_null($deal->po_id))
-                                <a href="{{ route('admin.wholesale.business.create-quotation') }}"
-                                    class="btn btn-sm btn-primary create-quotation-btn"
-                                    data-id="{{ $deal->id }}">
-                                    Create Quotation
-                                </a>
-                                @elseif(is_null($deal->po_id))
-                                <a href="#" class="btn btn-sm btn-primary request-quotation-btn" data-id="{{ $deal->id }}">
-                                    Request Quotation
-                                </a>
-                                @endif
-
-                                @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_disqualify') && strtolower((string)$deal->status) === 'open')
-                                @if(!in_array(strtolower((string)($deal->quotation_status ?? 'draft')), ['draft', ''], true))
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-danger deal-mark-lost-btn" data-deal-id="{{ $deal->id }}">
-                                    {{ translate('Mark Lost') }}
-                                </a>
-                                @else
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-danger deal-disqualify-btn" data-deal-id="{{ $deal->id }}">
-                                    {{ translate('Disqualify') }}
-                                </a>
-                                @endif
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-dark deal-close-btn" data-deal-id="{{ $deal->id }}">
-                                    {{ translate('Close') }}
-                                </a>
-                                @endif
-
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-warning escalate-wholesale-btn" data-deal-id="{{ $deal->id }}">
-                                    {{ translate('Escalate') }}
-                                </a>
+                                <div class="dropdown crm-row-actions__menu">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                        <i class="tio-more-horizontal"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_owner'))
+                                        <a href="javascript:void(0)"
+                                            class="dropdown-item assign-owner-btn"
+                                            data-id="{{ $deal->id }}"
+                                            data-owner-id="{{ $deal->owner_id ?? '' }}"
+                                            data-bs-toggle="false"
+                                            data-bs-target="none">
+                                            {{ translate('Assign Owner') }}
+                                        </a>
+                                        @endif
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_employee'))
+                                        <a href="javascript:void(0)"
+                                            class="dropdown-item assign-employee-btn"
+                                            data-id="{{ $deal->id }}"
+                                            data-department-id="{{ $deal->department->id ?? '' }}"
+                                            data-head-id="{{ $deal->department->head_id ?? '' }}">
+                                            {{ translate('Assign Employee') }}
+                                        </a>
+                                        @if(!auth('admin')->user()?->isSuperAdmin())
+                                        <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
+                                        @endif
+                                        @endif
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_assign_department'))
+                                        <a href="javascript:void(0)" class="dropdown-item assign-dept-btn" data-id="{{ $deal->id }}" data-department-id="{{ $deal->department->id ?? 0 }}" data-department-employee-id="0">
+                                            {{ translate('Assign Department') }}
+                                        </a>
+                                        @endif
+                                        <div class="dropdown-divider"></div>
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'deal_wholesale_disqualify') && strtolower((string)$deal->status) === 'open')
+                                        @if(!in_array(strtolower((string)($deal->quotation_status ?? 'draft')), ['draft', ''], true))
+                                        <a href="javascript:void(0)" class="dropdown-item text-danger deal-mark-lost-btn" data-deal-id="{{ $deal->id }}">
+                                            {{ translate('Mark Lost') }}
+                                        </a>
+                                        @else
+                                        <a href="javascript:void(0)" class="dropdown-item text-danger deal-disqualify-btn" data-deal-id="{{ $deal->id }}">
+                                            {{ translate('Disqualify') }}
+                                        </a>
+                                        @endif
+                                        <a href="javascript:void(0)" class="dropdown-item deal-close-btn" data-deal-id="{{ $deal->id }}">
+                                            {{ translate('Close') }}
+                                        </a>
+                                        @endif
+                                        <a href="javascript:void(0)" class="dropdown-item text-warning escalate-wholesale-btn" data-deal-id="{{ $deal->id }}">
+                                            {{ translate('Escalate') }}
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -369,149 +343,25 @@
 <span id="dealDisqualifyRoute" data-url="{{ route('admin.crm.deals.wholesale.disqualify') }}"></span>
 <span id="dealMarkLostRoute" data-url="{{ route('admin.crm.deals.wholesale.mark-lost') }}"></span>
 <span id="dealCloseRoute" data-url="{{ route('admin.crm.deals.wholesale.close') }}"></span>
+<span id="crm-deal-are-you-sure" data-text="{{ translate('Are you sure?') }}"></span>
+<span id="crm-deal-yes" data-text="{{ translate('Yes') }}"></span>
+<span id="crm-deal-cancel" data-text="{{ translate('Cancel') }}"></span>
+<span id="crm-deal-success" data-text="{{ translate('Success') }}"></span>
+<span id="crm-deal-error" data-text="{{ translate('Error') }}"></span>
+<span id="crm-deal-updated-successfully" data-text="{{ translate('Updated successfully') }}"></span>
+<span id="crm-deal-something-went-wrong" data-text="{{ translate('Something went wrong') }}"></span>
+<span id="crm-deal-disqualify-title" data-text="{{ translate('Disqualify Deal?') }}"></span>
+<span id="crm-deal-disqualify-body" data-text="{{ translate('This should be used before sending quotation.') }}"></span>
+<span id="crm-deal-mark-lost-title" data-text="{{ translate('Mark Deal Lost?') }}"></span>
+<span id="crm-deal-mark-lost-body" data-text="{{ translate('Use this after quotation is sent.') }}"></span>
+<span id="crm-deal-close-title" data-text="{{ translate('Close Deal?') }}"></span>
+<span id="crm-deal-close-body" data-text="{{ translate('Review logic must be completed before close.') }}"></span>
+<span id="crm-deal-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
+<span id="crm-deal-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
 @endsection
 
 @push('script')
-<script type="text/javascript">
-    changeInputTypeForDateRangePicker($('input[name="order_date"]'));
-    changeInputTypeForDateRangePicker($('input[name="customer_joining_date"]'));
-</script>
+@include('admin-views.crm.partials._crm-js-text')
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
-
-<script>
-    function submitDealStatusAction(routeUrl, dealId, titleText, confirmText) {
-        Swal.fire({
-            title: titleText,
-            text: confirmText,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '{{ translate("Yes") }}',
-            cancelButtonText: '{{ translate("Cancel") }}'
-        }).then((result) => {
-            if (!result.isConfirmed) {
-                return;
-            }
-
-            $.ajax({
-                url: routeUrl,
-                type: 'POST',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
-                    deal_id: dealId
-                },
-                success: function(res) {
-                    Swal.fire('{{ translate("Success") }}', res.message || '{{ translate("Updated successfully") }}', 'success');
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 500);
-                },
-                error: function(xhr) {
-                    Swal.fire('{{ translate("Error") }}', xhr.responseJSON?.message || '{{ translate("Something went wrong") }}', 'error');
-                }
-            });
-        });
-    }
-
-    $(document).on('click', '.deal-disqualify-btn', function() {
-        submitDealStatusAction(
-            $('#dealDisqualifyRoute').data('url'),
-            $(this).data('deal-id'),
-            '{{ translate("Disqualify Deal?") }}',
-            '{{ translate("This should be used before sending quotation.") }}'
-        );
-    });
-
-    $(document).on('click', '.deal-mark-lost-btn', function() {
-        submitDealStatusAction(
-            $('#dealMarkLostRoute').data('url'),
-            $(this).data('deal-id'),
-            '{{ translate("Mark Deal Lost?") }}',
-            '{{ translate("Use this after quotation is sent.") }}'
-        );
-    });
-
-    $(document).on('click', '.deal-close-btn', function() {
-        submitDealStatusAction(
-            $('#dealCloseRoute').data('url'),
-            $(this).data('deal-id'),
-            '{{ translate("Close Deal?") }}',
-            '{{ translate("Review logic must be completed before close.") }}'
-        );
-    });
-
-    $(function () {
-
-    $(document).on('click', '.escalate-wholesale-btn', function() {
-        let dealId = $(this).data('deal-id');
-        $('#escalateWholesaleDealId').val(dealId);
-        $('#escalateWholesaleDealModal').modal('show');
-    });
-
-    if (!window.escalateHandlerAttached) {
-        window.escalateHandlerAttached = true;
-
-        $('#escalateWholesaleDealForm').on('submit', function(e) {
-            e.preventDefault();
-            const form = this;
-
-            Swal.fire({
-                title: '{{ translate("Are you sure?") }}',
-                text: '{{ translate("This will notify the department and owner.") }}',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: '{{ translate("Yes, Escalate") }}',
-                cancelButtonText: '{{ translate("Cancel") }}'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            });
-        });
-    }
-
-});
-</script>
-<script>
-    $(document).ready(function() {
-        $(document).on('click', '.create-quotation-btn', function(e) {
-            e.preventDefault();
-            let dealId = $(this).data('id');
-            let url = $(this).attr('href');
-
-            // Check if URL already has query parameters
-            if (url.indexOf('?') > -1) {
-                url += '&deal_id=' + dealId;
-            } else {
-                url += '?deal_id=' + dealId;
-            }
-
-            window.location.href = url;
-        });
-    });
-
-
-
-    $(document).on('click', '.request-quotation-btn', function(e) {
-        e.preventDefault();
-        let dealId = $(this).data('id');
-
-        $.ajax({
-            url: '/admin/crm/deals/wholesale/request-quotation/' + dealId,
-            type: 'POST',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(res) {
-                if (res.status) {
-                    toastr.success(res.message);
-                } else {
-                    toastr.error(@json(__('Something went wrong')));
-                }
-            }
-        });
-    });
-</script>
-
-
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm-deals.js') }}"></script>
 @endpush
-

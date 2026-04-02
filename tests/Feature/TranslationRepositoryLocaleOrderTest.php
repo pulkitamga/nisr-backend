@@ -90,6 +90,71 @@ class TranslationRepositoryLocaleOrderTest extends TestCase
         $this->assertSame('en', getConfiguredDefaultLanguage());
     }
 
+    public function test_configured_language_codes_normalize_structured_language_entries(): void
+    {
+        DB::table('business_settings')
+            ->where('type', 'pnc_language')
+            ->update([
+                'value' => json_encode([
+                    [
+                        'id' => 1,
+                        'name' => 'english',
+                        'direction' => 'ltr',
+                        'code' => 'en',
+                        'status' => 1,
+                        'default' => true,
+                    ],
+                    [
+                        'id' => 2,
+                        'name' => 'عربي',
+                        'direction' => 'rtl',
+                        'code' => 'ar',
+                        'status' => 1,
+                        'default' => false,
+                    ],
+                ]),
+                'updated_at' => now(),
+            ]);
+
+        $this->assertSame(['en', 'ar'], getConfiguredLanguageCodes());
+        $this->assertSame('en', getConfiguredDefaultLanguage());
+    }
+
+    public function test_direction_helper_uses_language_configuration_when_session_direction_is_missing(): void
+    {
+        DB::table('business_settings')->insert([
+            'type' => 'language',
+            'value' => json_encode([
+                [
+                    'id' => 1,
+                    'name' => 'english',
+                    'direction' => 'ltr',
+                    'code' => 'en',
+                    'status' => 1,
+                    'default' => true,
+                ],
+                [
+                    'id' => 2,
+                    'name' => 'عربي',
+                    'direction' => 'rtl',
+                    'code' => 'ar',
+                    'status' => 1,
+                    'default' => false,
+                ],
+            ]),
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        session()->forget('direction');
+        session()->put('local', 'ar');
+        session()->put('locale', 'ar');
+        app()->setLocale('ar');
+
+        $this->assertSame('rtl', get_direction());
+    }
+
     public function test_array_based_updates_save_non_default_locale_even_when_default_locale_is_absent_from_request(): void
     {
         $request = new Request([

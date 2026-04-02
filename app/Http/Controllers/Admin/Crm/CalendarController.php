@@ -56,7 +56,7 @@ class CalendarController extends Controller
             ['Inbox Task', 'Inbox Call'],
             ['due_date', 'from'],
             ['name', 'title'],
-            ['admin.crm.massage.show', 'admin.crm.massage.show'],
+            ['admin.crm.message.show', 'admin.crm.message.show'],
             $userId,
             $employeeIds,
             false,

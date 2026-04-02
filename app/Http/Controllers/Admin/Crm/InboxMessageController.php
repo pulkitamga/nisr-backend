@@ -33,6 +33,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\InboxMessagesExport;
 use Carbon\Carbon;
 use App\Services\SlaService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,41 +60,8 @@ class InboxMessageController extends BaseController
     }
     public function getListView(Request $request)
     {
-
-
-        $query = InboxMessage::with(['department.translations', 'employee', 'owner']);
-
-        if ($request->filled('searchValue')) {
-            $search = trim($request->searchValue);
-            $searchPattern = $this->likePattern($search);
-            $phoneSearch = $this->normalizedPhoneSearch($search);
-
-            $query->where(function ($q) use ($searchPattern, $phoneSearch) {
-                $q->where('sender_name', 'LIKE', $searchPattern)
-                    ->orWhere('sender_email', 'LIKE', $searchPattern)
-                    ->orWhere('sender_phone', 'LIKE', $searchPattern)
-                    ->orWhere('subject', 'LIKE', $searchPattern)
-                    ->orWhere('body', 'LIKE', $searchPattern)
-
-                    ->orWhereExists(function ($exists) use ($searchPattern, $phoneSearch) {
-                        $exists->select(DB::raw(1))
-                            ->from('users')
-                            ->where(function ($w) {
-                                $w->whereColumn('users.id', 'inbox_messages.contact_id')
-                                    ->orWhereColumn('users.email', 'inbox_messages.sender_email')
-                                    ->orWhereRaw("REPLACE(REPLACE(users.phone, '+', ''), ' ', '') = REPLACE(REPLACE(inbox_messages.sender_phone, '+', ''), ' ', '')");
-                            })
-                            ->where(function ($w) use ($searchPattern, $phoneSearch) {
-                                $w->where('users.f_name', 'LIKE', $searchPattern)
-                                    ->orWhere('users.l_name', 'LIKE', $searchPattern)
-                                    ->orWhere('users.email', 'LIKE', $searchPattern)
-                                    ->orWhere('users.phone', 'LIKE', $searchPattern)
-                                    ->orWhereRaw("CONCAT(TRIM(users.f_name), ' ', TRIM(users.l_name)) LIKE ?", [$searchPattern])
-                                    ->orWhereRaw("REPLACE(users.phone, '+', '') LIKE ?", [$phoneSearch]);
-                            });
-                    });
-            });
-        }
+        $query = $this->inboxListQuery();
+        $this->applyInboxListFilters($query, $request);
         $getDepartment  = $this->departmentRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             relations: ['translations'],
@@ -104,37 +72,6 @@ class InboxMessageController extends BaseController
             dataLimit: 'all'
         );
         $dataLimit = getWebConfig(name: WebConfigKey::PAGINATION_LIMIT);
-
-
-
-        // 📅 Date filter
-        $filterDate = $request->input('filter_date');
-        if (!empty($filterDate)) {
-            $dateRange = explode(' - ', $filterDate);
-            if (count($dateRange) === 2) {
-                $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
-                $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
-                $query->whereBetween('created_at', [$from, $to]);
-            }
-        }
-
-        if ($request->has('status')) {
-            if ($request->status === 'all') {
-            } else {
-                $query->where('status', $request->status);
-            }
-        } else {
-            $query->where('status', 'new');
-        }
-
-        // 📡 Channel filter
-        if ($request->filled('Channel')) {
-            $query->where('pipeline', $request->Channel);
-        }
-
-        // 🪄 Custom ordering: "new" first, then others by created_at desc
-        $query->orderByRaw("CASE WHEN status = 'new' THEN 0 ELSE 1 END")
-            ->orderBy('created_at', 'desc');
 
         $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
             ? (int)$request->choose_first
@@ -165,18 +102,32 @@ class InboxMessageController extends BaseController
 
     public function exportList(Request $request)
     {
-        $query = InboxMessage::with(['department.translations', 'employee', 'owner']);
+        $query = $this->inboxListQuery();
+        $this->applyInboxListFilters($query, $request);
 
+        $messages = $query->get();
+
+        return Excel::download(new InboxMessagesExport($messages), 'inbox_messages.xlsx');
+    }
+
+    private function inboxListQuery(): Builder
+    {
+        return InboxMessage::with(['department.translations', 'employee', 'owner']);
+    }
+
+    private function applyInboxListFilters(Builder $query, Request $request): void
+    {
         if ($request->filled('searchValue')) {
-            $search = trim($request->searchValue);
+            $search = trim((string)$request->searchValue);
             $searchPattern = $this->likePattern($search);
             $phoneSearch = $this->normalizedPhoneSearch($search);
+
             $query->where(function ($q) use ($searchPattern, $phoneSearch) {
-                $q->where('sender_name', 'like', $searchPattern)
-                    ->orWhere('sender_email', 'like', $searchPattern)
-                    ->orWhere('sender_phone', 'like', $searchPattern)
-                    ->orWhere('subject', 'like', $searchPattern)
-                    ->orWhere('body', 'like', $searchPattern)
+                $q->where('sender_name', 'LIKE', $searchPattern)
+                    ->orWhere('sender_email', 'LIKE', $searchPattern)
+                    ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                    ->orWhere('subject', 'LIKE', $searchPattern)
+                    ->orWhere('body', 'LIKE', $searchPattern)
                     ->orWhereExists(function ($exists) use ($searchPattern, $phoneSearch) {
                         $exists->select(DB::raw(1))
                             ->from('users')
@@ -197,15 +148,7 @@ class InboxMessageController extends BaseController
             });
         }
 
-        $filterDate = $request->input('filter_date');
-        if (!empty($filterDate)) {
-            $dateRange = explode(' - ', $filterDate);
-            if (count($dateRange) === 2) {
-                $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
-                $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
-                $query->whereBetween('created_at', [$from, $to]);
-            }
-        }
+        $this->applyInboxDateRangeFilter($query, $request->input('filter_date'));
 
         if ($request->has('status')) {
             if ($request->status !== 'all') {
@@ -221,13 +164,25 @@ class InboxMessageController extends BaseController
 
         $query->orderByRaw("CASE WHEN status = 'new' THEN 0 ELSE 1 END")
             ->orderBy('created_at', 'desc');
-
-        $messages = $query->get();
-
-        return Excel::download(new InboxMessagesExport($messages), 'inbox_messages.xlsx');
     }
 
-    public function showMassage($id)
+    private function applyInboxDateRangeFilter(Builder $query, ?string $filterDate): void
+    {
+        if (empty($filterDate)) {
+            return;
+        }
+
+        $dateRange = explode(' - ', $filterDate);
+        if (count($dateRange) !== 2) {
+            return;
+        }
+
+        $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
+        $to = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
+        $query->whereBetween('created_at', [$from, $to]);
+    }
+
+    public function showMessage($id)
     {
         $inbox = InboxMessage::with([
             'department.translations',
@@ -582,7 +537,7 @@ class InboxMessageController extends BaseController
         ]);
     }
 
-    public function storeNewMassage(Request $request)
+    public function storeNewMessage(Request $request)
     {
         $request->validate([
             'subject'        => 'required|string|max:255',
@@ -989,7 +944,7 @@ class InboxMessageController extends BaseController
         if ($task->message_id !== $lead->id) {
             return response()->json([
                 'status' => false,
-                'message' => translate('Task does not belong to this massage!'),
+                'message' => translate('Task does not belong to this message!'),
             ], 403);
         }
 

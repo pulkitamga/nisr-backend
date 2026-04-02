@@ -30,15 +30,19 @@ class FeaturedDealController extends BaseController
 
     public function getListView(Request $request): View
     {
+        $searchValue = $request->query('searchValue');
+        $searchValue = is_scalar($searchValue) ? trim((string)$searchValue) : null;
+        $searchValue = $searchValue !== '' ? $searchValue : null;
+
         $flashDeals = $this->flashDealRepo->getListWithRelations(
             orderBy: ['id'=>'desc'],
-            searchValue:$request['searchValue'],
+            searchValue: $searchValue,
             filters:['deal_type'=>'feature_deal'],
             withCount: ['products'=>'products'],
             dataLimit: getWebConfig('pagination_limit')
         );
         $featureDealPriority = json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'feature_deal_priority'])['value']);
-        return view(FeatureDeal::LIST[VIEW], compact('flashDeals','featureDealPriority'));
+        return view(FeatureDeal::LIST[VIEW], compact('flashDeals', 'featureDealPriority', 'searchValue'));
     }
 
     public function getUpdateView($deal_id): View

@@ -156,6 +156,7 @@
     changeInputTypeForDateRangePicker($('input[name="customer_joining_date"]'));
 </script>
 
+@include('admin-views.crm.partials._crm-js-text')
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 <script>
     $(document).ready(function() {
@@ -199,4 +200,3 @@
     });
 </script>
 @endpush
-

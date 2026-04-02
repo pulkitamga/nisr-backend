@@ -56,7 +56,7 @@
                                                                 <span
                                                                     class="avatar-status avatar-sm-status avatar-status-success"></span>
                                                             </div>
-                                                            <div class="chat_ib media-body">
+                                                            <div class="chat_ib media-body chat-contact-meta">
                                                                 <h5 class="mb-1 seller chat-list-heading {{$chatting->seen_by_seller ?'active-text' :''}}"
                                                                     id="{{ $chatting->user_id }}"
                                                                     data-name="{{ $chatting->customer->f_name.' '.$chatting->customer->l_name }}"
@@ -66,7 +66,8 @@
                                                                     <span class="lead small chat-list-time">{{ $chatting->created_at->diffForHumans() }}</span>
                                                                 </h5>
                                                                 <span
-                                                                    class="mt-2 font-weight-normal text-muted d-block"
+                                                                    class="mt-2 font-weight-normal text-muted d-block chat-phone-text"
+                                                                    dir="ltr"
                                                                     id="{{ $chatting->user_id }}"
                                                                     data-name="{{ $chatting->customer->f_name .' '. $chatting->customer->l_name}}"
                                                                     data-phone="{{ $chatting->customer->phone }}">{{ $chatting->customer->phone }}</span>
@@ -92,7 +93,7 @@
                                                                 <span
                                                                     class="avatar-status avatar-sm-status avatar-status-success"></span>
                                                             </div>
-                                                            <div class="chat_ib media-body">
+                                                            <div class="chat_ib media-body chat-contact-meta">
                                                                 <h5 class="mb-1 seller chat-list-heading {{$chatting->seen_by_seller ?'active-text' :''}}"
                                                                     id="{{ $chatting->delivery_man_id }}"
                                                                     data-name="{{ $chatting->deliveryMan->f_name.' '.$chatting->deliveryMan->l_name }}"
@@ -102,7 +103,8 @@
                                                                     <span class="lead small chat-list-time">{{ $chatting->created_at->diffForHumans() }}</span>
                                                                 </h5>
                                                                 <span
-                                                                    class="mt-2 font-weight-normal text-muted d-block"
+                                                                    class="mt-2 font-weight-normal text-muted d-block chat-phone-text"
+                                                                    dir="ltr"
                                                                     id="{{ $chatting->delivery_man_id }}"
                                                                     data-name="{{ $chatting->deliveryMan->f_name .' '. $chatting->deliveryMan->l_name}}"
                                                                     data-phone="{{ $chatting->deliveryMan->country_code.$chatting->deliveryMan->phone }}">{{ $chatting->deliveryMan->country_code.$chatting->deliveryMan->phone }}</span>
@@ -136,9 +138,9 @@
                                          alt="{{ translate('profile_image') }}">
                                     <span class="avatar-status avatar-sm-status avatar-status-success"></span>
                                 </div>
-                                <div class="media-body">
+                                <div class="media-body chat-contact-meta">
                                     <h5 class="profile-name mb-1" id="profile_name">{{ $lastChatUser['f_name'].' '.$lastChatUser['l_name'] }}</h5>
-                                    <span class="fz-12" id="profile_phone">{{ $lastChatUser['country_code'] }} {{ $lastChatUser['phone'] }}</span>
+                                    <span class="fz-12 chat-phone-text" id="profile_phone" dir="ltr">{{ $lastChatUser['country_code'] }} {{ $lastChatUser['phone'] }}</span>
                                 </div>
                             </div>
                         </div>

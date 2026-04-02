@@ -1,10 +1,10 @@
-<div class="modal fade" id="addMassageModal" tabindex="-1" aria-labelledby="addMassageModalLabel" aria-hidden="true">
+<div class="modal fade" id="addMessageModal" tabindex="-1" aria-labelledby="addMessageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form action="{{ route('admin.crm.add.massage') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.crm.add.message') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addMassageModalLabel">{{ translate('Add Massage') }}</h5>
+                    <h5 class="modal-title" id="addMessageModalLabel">{{ translate('Add Message') }}</h5>
                     <button type="button" class="radius-50 btn-close border-0" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <i class="tio-clear"></i>
                     </button>
@@ -85,4 +85,3 @@
         </div>
     </div>
 </div>
-

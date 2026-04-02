@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 
 class DealController extends BaseController
@@ -59,53 +60,10 @@ class DealController extends BaseController
     }
     public function getListView(Request $request)
     {
+        $query = $this->wholesaleDealListQuery();
+        $this->applyDealListFilters($query, $request, false);
 
-        $query = Deal::with(['owner', 'relatedParty', 'employee', 'lead', 'department.translations'])
-            ->where('related_party_type', 'company');
-         
         $dataLimit = getWebConfig(name: WebConfigKey::PAGINATION_LIMIT);
-
-       if ($request->filled('searchValue')) {
-    $search = trim($request->searchValue);
-    $searchPattern = $this->likePattern($search);
-
-    $query->where(function ($q) use ($searchPattern) {
-
-        // User (contact) se search
-        $q->orWhereHas('user', function ($sub) use ($searchPattern) {
-            $sub->where('f_name', 'LIKE', $searchPattern)
-                ->orWhere('l_name', 'LIKE', $searchPattern)
-                ->orWhere('email', 'LIKE', $searchPattern)
-                ->orWhere('phone', 'LIKE', $searchPattern);
-        });
-
-        // Company name se search (wholesaler_businesses)
-        $q->orWhereExists(function ($exists) use ($searchPattern) {
-            $exists->select(DB::raw(1))
-                   ->from('wholesaler_businesses')
-                   ->whereColumn('wholesaler_businesses.id', 'deals.related_party_id')
-                   ->where('deals.related_party_type', 'company')
-                   ->where('wholesaler_businesses.company_name', 'LIKE', $searchPattern);
-        });
-    });
-}
-        $filterDate = $request->input('filter_date');
-        if (!empty($filterDate)) {
-            $dateRange = explode(' - ', $filterDate);
-            if (count($dateRange) === 2) {
-                $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
-                $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
-                $query->whereBetween('created_at', [$from, $to]);
-            }
-        }
-        if ($request->has('status')) {
-            if ($request->status === 'all') {
-            } else {
-                $query->where('status', $request->status);
-            }
-        } else {
-            $query->where('status', 'open');
-        }
 
         $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
             ? (int)$request->choose_first
@@ -129,48 +87,10 @@ class DealController extends BaseController
 
     public function getRetailView(Request $request)
     {
-        $query = Deal::with(['owner', 'relatedParty', 'employee', 'lead', 'order', 'department.translations'])
-            ->where('related_party_type', 'contact');
-
+        $query = $this->retailDealListQuery();
+        $this->applyDealListFilters($query, $request, true);
 
         $dataLimit = getWebConfig(name: WebConfigKey::PAGINATION_LIMIT);
-
-        if ($request->filled('searchValue')) {
-            $searchPattern = $this->likePattern(trim((string)$request->searchValue));
-
-            $query->where(function ($q) use ($searchPattern) {
-                $q->whereHas('user', function ($sub) use ($searchPattern) {
-                    $sub->where('f_name', 'LIKE', $searchPattern)
-                        ->orWhere('l_name', 'LIKE', $searchPattern)
-                        ->orWhere('email', 'LIKE', $searchPattern)
-                        ->orWhere('phone', 'LIKE', $searchPattern);
-                })->orWhereHas('lead.inboxMessages', function ($subQ) use ($searchPattern) {
-                    $subQ->where('sender_name', 'like', $searchPattern)
-                        ->orWhere('sender_email', 'like', $searchPattern)
-                        ->orWhere('sender_phone', 'like', $searchPattern)
-                        ->orWhere('subject', 'like', $searchPattern)
-                        ->orWhere('body', 'like', $searchPattern);
-                });
-            });
-        }
-
-        $filterDate = $request->input('filter_date');
-        if (!empty($filterDate)) {
-            $dateRange = explode(' - ', $filterDate);
-            if (count($dateRange) === 2) {
-                $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
-                $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
-                $query->whereBetween('created_at', [$from, $to]);
-            }
-        }
-        if ($request->has('status')) {
-            if ($request->status === 'all') {
-            } else {
-                $query->where('status', $request->status);
-            }
-        } else {
-            $query->where('status', 'open');
-        }
 
         $perPage = ($request->filled('choose_first') && (int)$request->choose_first > 0)
             ? (int)$request->choose_first
@@ -246,58 +166,8 @@ class DealController extends BaseController
     public function exportList(Request $request)
     {
         $isRetail = $request->routeIs('admin.crm.deals.retail.export');
-
-        $query = Deal::with(['owner', 'employee', 'user', 'department.translations'])
-            ->where('related_party_type', $isRetail ? 'contact' : 'company');
-
-        if ($request->filled('searchValue')) {
-            $search = trim($request->searchValue);
-            $searchPattern = $this->likePattern($search);
-            $query->where(function ($q) use ($searchPattern, $isRetail) {
-                $q->orWhereHas('user', function ($sub) use ($searchPattern) {
-                    $sub->where('f_name', 'LIKE', $searchPattern)
-                        ->orWhere('l_name', 'LIKE', $searchPattern)
-                        ->orWhere('email', 'LIKE', $searchPattern)
-                        ->orWhere('phone', 'LIKE', $searchPattern);
-                });
-
-                if (!$isRetail) {
-                    $q->orWhereExists(function ($exists) use ($searchPattern) {
-                        $exists->select(DB::raw(1))
-                            ->from('wholesaler_businesses')
-                            ->whereColumn('wholesaler_businesses.id', 'deals.related_party_id')
-                            ->where('deals.related_party_type', 'company')
-                            ->where('wholesaler_businesses.company_name', 'LIKE', $searchPattern);
-                    });
-                } else {
-                    $q->orWhereHas('lead.inboxMessages', function ($subQ) use ($searchPattern) {
-                        $subQ->where('sender_name', 'LIKE', $searchPattern)
-                            ->orWhere('sender_email', 'LIKE', $searchPattern)
-                            ->orWhere('sender_phone', 'LIKE', $searchPattern)
-                            ->orWhere('subject', 'LIKE', $searchPattern)
-                            ->orWhere('body', 'LIKE', $searchPattern);
-                    });
-                }
-            });
-        }
-
-        $filterDate = $request->input('filter_date');
-        if (!empty($filterDate)) {
-            $dateRange = explode(' - ', $filterDate);
-            if (count($dateRange) === 2) {
-                $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
-                $to   = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
-                $query->whereBetween('created_at', [$from, $to]);
-            }
-        }
-
-        if ($request->has('status')) {
-            if ($request->status !== 'all') {
-                $query->where('status', $request->status);
-            }
-        } else {
-            $query->where('status', 'open');
-        }
+        $query = $isRetail ? $this->retailDealExportQuery() : $this->wholesaleDealExportQuery();
+        $this->applyDealListFilters($query, $request, $isRetail);
 
         $deals = $query->latest()->get();
         $filename = $isRetail ? 'retail-deals.csv' : 'wholesale-deals.csv';
@@ -319,6 +189,93 @@ class DealController extends BaseController
             }
             fclose($handle);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    private function wholesaleDealListQuery(): Builder
+    {
+        return Deal::with(['owner', 'relatedParty', 'relatedUser', 'employee', 'lead', 'department.translations'])
+            ->where('related_party_type', 'company');
+    }
+
+    private function retailDealListQuery(): Builder
+    {
+        return Deal::with(['owner', 'relatedParty', 'employee', 'lead', 'order', 'department.translations'])
+            ->where('related_party_type', 'contact');
+    }
+
+    private function wholesaleDealExportQuery(): Builder
+    {
+        return Deal::with(['owner', 'employee', 'user', 'department.translations'])
+            ->where('related_party_type', 'company');
+    }
+
+    private function retailDealExportQuery(): Builder
+    {
+        return Deal::with(['owner', 'employee', 'user', 'lead.inboxMessages', 'department.translations'])
+            ->where('related_party_type', 'contact');
+    }
+
+    private function applyDealListFilters(Builder $query, Request $request, bool $isRetail): void
+    {
+        if ($request->filled('searchValue')) {
+            $search = trim((string)$request->searchValue);
+            $searchPattern = $this->likePattern($search);
+
+            $query->where(function ($q) use ($searchPattern, $isRetail) {
+                $q->orWhereHas('user', function ($sub) use ($searchPattern) {
+                    $sub->where('f_name', 'LIKE', $searchPattern)
+                        ->orWhere('l_name', 'LIKE', $searchPattern)
+                        ->orWhere('email', 'LIKE', $searchPattern)
+                        ->orWhere('phone', 'LIKE', $searchPattern);
+                });
+
+                if ($isRetail) {
+                    $q->orWhereHas('lead.inboxMessages', function ($subQ) use ($searchPattern) {
+                        $subQ->where('sender_name', 'LIKE', $searchPattern)
+                            ->orWhere('sender_email', 'LIKE', $searchPattern)
+                            ->orWhere('sender_phone', 'LIKE', $searchPattern)
+                            ->orWhere('subject', 'LIKE', $searchPattern)
+                            ->orWhere('body', 'LIKE', $searchPattern);
+                    });
+
+                    return;
+                }
+
+                $q->orWhereExists(function ($exists) use ($searchPattern) {
+                    $exists->select(DB::raw(1))
+                        ->from('wholesaler_businesses')
+                        ->whereColumn('wholesaler_businesses.id', 'deals.related_party_id')
+                        ->where('deals.related_party_type', 'company')
+                        ->where('wholesaler_businesses.company_name', 'LIKE', $searchPattern);
+                });
+            });
+        }
+
+        $this->applyDealDateRangeFilter($query, $request->input('filter_date'));
+
+        if ($request->has('status')) {
+            if ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+        } else {
+            $query->where('status', 'open');
+        }
+    }
+
+    private function applyDealDateRangeFilter(Builder $query, ?string $filterDate): void
+    {
+        if (empty($filterDate)) {
+            return;
+        }
+
+        $dateRange = explode(' - ', $filterDate);
+        if (count($dateRange) !== 2) {
+            return;
+        }
+
+        $from = date('Y-m-d 00:00:00', strtotime($dateRange[0]));
+        $to = date('Y-m-d 23:59:59', strtotime($dateRange[1]));
+        $query->whereBetween('created_at', [$from, $to]);
     }
 
     public function disqualify(Request $request): JsonResponse

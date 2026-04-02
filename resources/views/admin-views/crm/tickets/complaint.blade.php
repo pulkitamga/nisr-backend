@@ -1,10 +1,88 @@
-@php use Carbon\Carbon; @endphp
+@php use Carbon\Carbon; use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
 @section('title', translate('complaint_ticket'))
+@push('css_or_js')
+<link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/crm.css')}}">
+@endpush
 
 @section('content')
 <div class="content container-fluid">
+    @php
+    $priority = request()->has('priority') ? request()->input('priority') : 'all';
+    $statusId = request()->has('status') ? request()->input('status') : (string) \App\Support\ComplaintTicketWorkflow::STATUS_NEW;
+    $selectedStatus = $aAllStatus->firstWhere('id', (int) $statusId);
+    $selectedStatusLabel = $statusId === 'all'
+        ? translate('all_Status')
+        : ($selectedStatus?->getTranslatedField('name') ?? translate('all_Status'));
+    $toolbarFields = [
+        [
+            'type' => 'search',
+            'name' => 'searchValue',
+            'label' => translate('search'),
+            'value' => request('searchValue'),
+            'placeholder' => translate('search_ticket_by_subject_or_status'),
+            'aria_label' => translate('search_ticket_by_subject_or_status'),
+            'col_class' => 'col-xl-6 col-lg-12',
+        ],
+        [
+            'type' => 'select',
+            'name' => 'priority',
+            'label' => translate('Priority'),
+            'value' => $priority,
+            'options' => collect(['all', 'low', 'medium', 'high', 'urgent'])
+                ->mapWithKeys(fn ($option) => [$option => $option === 'all' ? translate('all_Priority') : translate($option)])
+                ->all(),
+            'input_class' => 'form-control border-color-c1',
+            'col_class' => 'col-xl-3 col-lg-6',
+        ],
+        [
+            'type' => 'select',
+            'name' => 'status',
+            'label' => translate('Status'),
+            'value' => $statusId,
+            'options' => ['all' => translate('all_Status')] + $aAllStatus->mapWithKeys(fn ($statusOption) => [
+                (string) $statusOption['id'] => $statusOption->getTranslatedField('name'),
+            ])->all(),
+            'input_class' => 'form-control border-color-c1',
+            'col_class' => 'col-xl-3 col-lg-6',
+        ],
+    ];
+    $toolbarSummary = [
+        [
+            'label' => translate('Status'),
+            'value' => $selectedStatusLabel,
+        ],
+    ];
+    if (!request()->has('status')) {
+        $toolbarSummary[] = [
+            'value' => translate('default_status'),
+            'muted' => true,
+        ];
+    }
+    if ($priority !== 'all') {
+        $toolbarSummary[] = [
+            'label' => translate('Priority'),
+            'value' => translate($priority),
+            'muted' => true,
+        ];
+    }
+    if (request()->filled('searchValue')) {
+        $toolbarSummary[] = [
+            'label' => translate('search'),
+            'value' => Str::limit(request('searchValue'), 28),
+            'muted' => true,
+        ];
+    }
+    $headerActions = [
+        [
+            'type' => 'export',
+            'url' => route('admin.support-ticket.export', 'complaint'),
+            'form_id' => 'crm-complaint-ticket-toolbar',
+            'label' => translate('export'),
+        ],
+    ];
+    @endphp
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt="">
@@ -12,89 +90,19 @@
             <span class="badge badge-soft-dark radius-50 fz-14">{{ $tickets->total() }}</span>
         </h2>
     </div>
-    <div class="row mt-20">
-        <div class="col-md-12">
-            <div class="card mb-3">
-                <div class="px-3 py-4 mb-3">
-                    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
-                        <div class="">
-                            <form action="{{ url()->current() }}" method="GET">
-                                <div class="input-group input-group-merge input-group-custom">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="tio-search"></i>
-                                        </div>
-                                    </div>
-                                    <input id="datatableSearch_" type="search" name="searchValue"
-                                        class="form-control"
-                                        placeholder="{{ translate('search_ticket_by_subject_or_status').'...' }}"
-                                        aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="">
-                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end ticket-filter-controls">
-                                @php
-                                $priority = request()->has('priority') ? request()->input('priority') : '';
-                                $statusId = request()->has('status') ? request()->input('status') : '36';
-                                @endphp
-
-                                <select class="form-control border-color-c1 w-160 filter-tickets" data-value="priority">
-                                    <option value="all">{{ translate('all_Priority') }}</option>
-                                    @foreach(['low','medium','high','urgent'] as $p)
-                                    <option value="{{ $p }}" {{ $priority === $p ? 'selected' : '' }}>{{ translate($p) }}</option>
-                                    @endforeach
-                                </select>
-
-                                <select class="form-control border-color-c1 w-160 filter-tickets" data-value="status">
-                                    <option value="all">{{ translate('all_Status') }}</option>
-                                    @foreach($aAllStatus as $status)
-                                    @php
-                                    // PHP 8 match expression for status badge class
-                                    $statusClass = match(strtolower($status['name'] ?? '')) {
-                                    'new' => 'badge-soft-primary',
-                                    'processing' => 'badge-soft-warning',
-                                    'resolved' => 'badge-soft-success',
-                                    'closed' => 'badge-soft-dark',
-                                    default => 'badge-soft-light',
-                                    };
-                                    @endphp
-                                    <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ translate($status['name']) }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                                <button type="button" class="btn btn--primary text-nowrap apply-ticket-filters">
-                                    {{ translate('apply') }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'crm-complaint-ticket-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.support-ticket.view', 'complaint'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
     <div class="card">
-        <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 me-auto">
-                {{translate('Inbox_list')}}
-                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $tickets->total() }}</span>
-            </h5>
-
-            <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap"
-                    href="{{ route('admin.support-ticket.export', 'complaint') }}?{{ http_build_query([
-                            'priority' => request('priority'),
-                            'status' => request('status'),
-                            'searchValue' => request('searchValue')
-                        ]) }}">
-                    <img width="14" src="{{ dynamicAsset('public/assets/back-end/img/excel.png') }}" alt="" class="excel">
-                    <span class="ps-2">{{ translate('Export') }}</span>
-                </a>
-            </div>
-
-        </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('complaint_ticket'),
+            'listHeaderTotal' => $tickets->total(),
+            'listHeaderActions' => $headerActions,
+        ])
         <div class="table-responsive datatable-custom">
             <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle w-100">
                 <thead class="thead-light text-capitalize">
@@ -160,7 +168,11 @@
                     @endphp
                     <tr>
                         <td>{{ $tickets->firstItem() + $key }}</td>
-                        <td>{{ $ticket->subject ?? translate('No Subject') }}</td>
+                        <td>
+                            <a href="{{ route('admin.support-ticket.details', $ticket->id) }}" class="crm-primary-link">
+                                {{ $ticket->subject ?? translate('No Subject') }}
+                            </a>
+                        </td>
                         <td>
                             @if($ticket->customer)
                             {{ $ticket->customer->f_name ?? '' }} {{ $ticket->customer->l_name ?? '' }}
@@ -176,46 +188,61 @@
                         $statusName = strtolower($ticket->status_details?->name);
                         @endphp
                         <td class="text-center">
-                            <a href="{{ route('admin.support-ticket.details', $ticket->id) }}"
-                                class="btn btn-sm btn-outline-success">{{ translate('View') }}</a>
-                            <a href="{{ route('admin.support-ticket.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('Chat')}}</a>
+                            <div class="crm-row-actions">
+                                <div class="crm-row-actions__primary">
+                                    <a href="{{ route('admin.support-ticket.details', $ticket->id) }}"
+                                        class="btn btn-sm btn-outline-success">{{ translate('View') }}</a>
+                                    <a href="{{ route('admin.support-ticket.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('Chat')}}</a>
+                                </div>
+                                @if(!$ticket->employee_id)
+                                <div class="crm-row-actions__chips">
+                                    <span class="crm-row-actions__chip">{{ translate('No Employee') }}</span>
+                                </div>
+                                @endif
+                                <div class="dropdown crm-row-actions__menu">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                        <i class="tio-more-horizontal"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        @if($statusName === 'new' || $statusName === 'closed')
+                                        <form action="{{ route('admin.support-ticket.status') }}" method="POST" class="statusForm crm-row-actions__form">
+                                            @csrf
+                                            <input type="hidden" name="id" value="{{ $ticket->id }}">
 
-                            @if($statusName === 'new' || $statusName === 'closed')
-                            <form action="{{ route('admin.support-ticket.status') }}" method="POST" class="d-inline statusForm">
-                                @csrf
-                                <input type="hidden" name="id" value="{{ $ticket->id }}">
+                                            @php
+                                            $statusBtnText = $statusName === 'new' ? 'Open' : 'Reopen';
+                                            @endphp
 
-                                @php
-                                $statusBtnText = $statusName === 'new' ? 'Open' : 'Reopen';
-                                @endphp
+                                            <button type="submit" class="dropdown-item">
+                                                {{ translate($statusBtnText) }}
+                                            </button>
+                                        </form>
+                                        @endif
+                                        @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_employee_update') || auth('admin')->user()->id == ($ticket->department?->head_id))
+                                        <a href="javascript:void(0)"
+                                            class="dropdown-item assign-employee-btn"
+                                            data-id="{{ $ticket->id }}"
+                                            data-department-id="{{ $ticket->department->id ?? '' }}"
+                                            data-head-id="{{ $ticket->department->head_id ?? '' }}">
+                                            {{ $ticket->employee_id ? translate('Re-Assign Employee') : translate('Assign Employee') }}
+                                        </a>
 
-                                <button type="submit" class="btn btn-sm btn-outline-primary">
-                                    {{ translate($statusBtnText) }}
-                                </button>
-                            </form>
-                            @endif
-
-                            @if(\App\Utils\Helpers::module_permission_check('crm_section', 'ticket_employee_update') || auth('admin')->user()->id == ($ticket->department?->head_id))
-                            <a href="javascript:void(0)"
-                                class="btn btn-sm btn-outline-secondary assign-employee-btn"
-                                data-id="{{ $ticket->id }}"
-                                data-department-id="{{ $ticket->department->id ?? '' }}"
-                                data-head-id="{{ $ticket->department->head_id ?? '' }}">
-                                {{ $ticket->employee_id ? translate('Re-Assign Employee') : translate('Assign Employee') }}
-                            </a>
-
-                            @if(!auth('admin')->user()?->isSuperAdmin())
-                            <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
-                            @endif
-                            @endif
-                            @if(!empty($ticket->status_details) && trim(strtolower($ticket->status_details->name)) != 'closed')
-                            <a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#showComplainFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" data-follow-up-date="{{ $ticket->follow_up_date ? \Carbon\Carbon::parse($ticket->follow_up_date)->format('Y-m-d') : '' }}" title="{{ translate('Follow-up details') }}">
-                                {{ translate('change_Status') }}
-                            </a>
-                            @endif
-                            <a href="javascript:void(0)" class="btn btn-sm btn-outline-warning escalate-btn" data-ticket-id="{{ $ticket->id }}">
-                                {{ translate('Escalate') }}
-                            </a>
+                                        @if(!auth('admin')->user()?->isSuperAdmin())
+                                        <input type="hidden" id="fixed-department-id" value="{{ auth('admin')->user()->department_id }}">
+                                        @endif
+                                        @endif
+                                        @if(!empty($ticket->status_details) && trim(strtolower($ticket->status_details->name)) != 'closed')
+                                        <a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#showComplainFollowUpModal" data-ticket-id="{{ $ticket->id }}" data-department-id="{{ $ticket->department_id }}" data-employee-id="{{ $ticket->employee_id }}" data-status-id="{{ $ticket->status }}" data-status-name="{{ $ticket->status_details?->name ?? '' }}" data-follow-up-date="{{ $ticket->follow_up_date ? \Carbon\Carbon::parse($ticket->follow_up_date)->format('Y-m-d') : '' }}" title="{{ translate('Follow-up details') }}">
+                                            {{ translate('change_Status') }}
+                                        </a>
+                                        @endif
+                                        <div class="dropdown-divider"></div>
+                                        <a href="javascript:void(0)" class="dropdown-item text-warning escalate-btn" data-ticket-id="{{ $ticket->id }}">
+                                            {{ translate('Escalate') }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
@@ -335,6 +362,15 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
+<span id="complaint-select-employee" data-text="{{ translate('Select Employee') }}"></span>
+<span id="complaint-loading" data-text="{{ translate('Loading...') }}"></span>
+<span id="complaint-department-updated" data-text="{{ translate('department_updated_successfully') }}"></span>
+<span id="complaint-employee-updated" data-text="{{ translate('ticket_assigned_successfully') }}"></span>
+<span id="complaint-follow-up-updated" data-text="{{ translate('updated successfully!') }}"></span>
+<span id="complaint-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
+<span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
+<span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
 <span id="support-ticket-ticket-id-required" data-text="{{ translate('Ticket ID is required.') }}"></span>
 <span id="support-ticket-follow-up-date-required" data-text="{{ translate('follow_up_date_required_for_in_progress') }}"></span>
 @endsection
@@ -342,30 +378,4 @@
 @push('script')
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/support-tickets.js')}}"></script>
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/complaint.js')}}"></script>
-
-<script>
-    $(document).on('click', '.escalate-btn', function() {
-        let ticketId = $(this).data('ticket-id');
-        $('#escalateTicketId').val(ticketId);
-        $('#escalateTicketModal').modal('show');
-    });
-
-    // Form submission with confirmation
-    $('#escalateTicketForm').submit(function(e) {
-        e.preventDefault();
-        let form = $(this);
-        Swal.fire({
-            title: @json(__('Are you sure?')),
-            text: @json(__('This will notify the department and owner.')),
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: @json(__('Yes, Escalate')),
-            cancelButtonText: @json(__('Cancel'))
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.off('submit').submit(); // Submit without further prevention
-            }
-        });
-    });
-</script>
 @endpush

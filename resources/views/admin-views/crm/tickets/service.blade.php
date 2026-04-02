@@ -1,6 +1,10 @@
+@php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
 @section('title', translate('service_Ticket'))
+@push('css_or_js')
+<link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/crm.css')}}">
+@endpush
 
 @section('content')
 
@@ -12,6 +16,73 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 }
 $serviceWorkflow = \App\Support\ServiceTicketWorkflow::class;
 $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
+$priority = request()->has('priority') ? request()->input('priority') : 'all';
+$statusId = request()->has('status') ? request()->input('status') : 'all';
+$selectedStatus = $aAllStatus->firstWhere('id', (int) $statusId);
+$selectedStatusLabel = $statusId === 'all'
+    ? translate('all_Status')
+    : ($selectedStatus?->getTranslatedField('name') ?? translate('all_Status'));
+$toolbarFields = [
+    [
+        'type' => 'search',
+        'name' => 'searchValue',
+        'label' => translate('search'),
+        'value' => request('searchValue'),
+        'placeholder' => translate('search_ticket_by_subject_or_status'),
+        'aria_label' => translate('search_ticket_by_subject_or_status'),
+        'col_class' => 'col-xl-6 col-lg-12',
+    ],
+    [
+        'type' => 'select',
+        'name' => 'priority',
+        'label' => translate('Priority'),
+        'value' => $priority,
+        'options' => collect(['all', 'low', 'medium', 'high', 'urgent'])
+            ->mapWithKeys(fn ($option) => [$option => $option === 'all' ? translate('all_Priority') : translate($option)])
+            ->all(),
+        'input_class' => 'form-control border-color-c1',
+        'col_class' => 'col-xl-3 col-lg-6',
+    ],
+    [
+        'type' => 'select',
+        'name' => 'status',
+        'label' => translate('Status'),
+        'value' => $statusId,
+        'options' => ['all' => translate('all_Status')] + $aAllStatus->mapWithKeys(fn ($statusOption) => [
+            (string) $statusOption['id'] => $statusOption->getTranslatedField('name'),
+        ])->all(),
+        'input_class' => 'form-control border-color-c1',
+        'col_class' => 'col-xl-3 col-lg-6',
+    ],
+];
+$toolbarSummary = [
+    [
+        'label' => translate('Status'),
+        'value' => $selectedStatusLabel,
+    ],
+];
+if ($priority !== 'all') {
+    $toolbarSummary[] = [
+        'label' => translate('Priority'),
+        'value' => translate($priority),
+        'muted' => true,
+    ];
+}
+if (request()->filled('searchValue')) {
+    $toolbarSummary[] = [
+        'label' => translate('search'),
+        'value' => Str::limit(request('searchValue'), 28),
+        'muted' => true,
+    ];
+}
+$headerActions = [
+    [
+        'type' => 'export',
+        'url' => route('admin.support-ticket.export', 'service'),
+        'form_id' => 'crm-service-ticket-toolbar',
+        'label' => translate('export'),
+    ],
+];
 @endphp
 <div dir="{{ $pageDirection }}">
 <div class="content container-fluid">
@@ -22,77 +93,19 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
             <span class="badge badge-soft-dark radius-50 fz-14">{{ $tickets->total() }}</span>
         </h2>
     </div>
-    <div class="row mt-20">
-        <div class="col-md-12">
-            <div class="card mb-3">
-                <div class="px-3 py-4 mb-3">
-                    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
-                        <div>
-                            <form action="{{ url()->current() }}" method="GET">
-                                <div class="input-group input-group-merge input-group-custom">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="tio-search"></i>
-                                        </div>
-                                    </div>
-                                    <input id="datatableSearch_" type="search" name="searchValue"
-                                        class="form-control"
-                                        placeholder="{{ translate('search_ticket_by_subject_or_status').'...' }}"
-                                        aria-label="{{ translate('search') }}" value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div>
-                            <div class="d-flex flex-wrap flex-sm-nowrap gap-3 justify-content-end ticket-filter-controls">
-                                @php
-                                $priority = request()->has('priority') ? request()->input('priority') : '';
-                                $statusId = request()->has('status') ? request()->input('status') : 'all';
-                                @endphp
-                                <select class="form-control border-color-c1 w-160 filter-tickets" data-value="priority">
-                                    <option value="all">{{ translate('all_Priority') }}</option>
-                                    @foreach(['low','medium','high','urgent'] as $p)
-                                    <option value="{{ $p }}" {{ $priority === $p ? 'selected' : '' }}>{{ translate($p) }}</option>
-                                    @endforeach
-                                </select>
-                                <select class="form-control border-color-c1 w-160 filter-tickets" data-value="status">
-                                    <option value="all">{{ translate('all_Status') }}</option>
-                                    @foreach($aAllStatus as $status)
-                                    <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : '' }}>
-                                        {{ $status->getTranslatedField('name') }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                                <button type="button" class="btn btn--primary text-nowrap apply-ticket-filters">
-                                    {{ translate('apply') }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('admin-views.crm.partials._list-toolbar', [
+        'toolbarId' => 'crm-service-ticket-toolbar',
+        'toolbarAction' => url()->current(),
+        'toolbarResetUrl' => route('admin.support-ticket.view', 'service'),
+        'toolbarFields' => $toolbarFields,
+        'toolbarSummary' => $toolbarSummary,
+    ])
     <div class="card">
-        <div class="card-header gap-3 align-items-center">
-            <h5 class="mb-0 me-auto">
-                {{translate('Service_Ticket_List')}}
-                <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $tickets->total() }}</span>
-            </h5>
-
-            <div class="dropdown">
-                <a type="button" class="btn btn-outline--primary text-nowrap"
-                    href="{{ route('admin.support-ticket.export', 'service') }}?{{ http_build_query([
-                            'priority' => request('priority'),
-                            'status' => request('status'),
-                            'searchValue' => request('searchValue')
-                        ]) }}">
-                    <img width="14" src="{{ dynamicAsset('public/assets/back-end/img/excel.png') }}" alt="" class="excel">
-                    <span class="ps-2">{{ translate('Export') }}</span>
-                </a>
-            </div>
-
-        </div>
+        @include('admin-views.crm.partials._list-card-header', [
+            'listHeaderTitle' => translate('Service_Ticket_List'),
+            'listHeaderTotal' => $tickets->total(),
+            'listHeaderActions' => $headerActions,
+        ])
         <div class="table-responsive datatable-custom">
             <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle w-100">
                 <thead class="thead-light text-capitalize">
@@ -142,7 +155,11 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                     @endphp
                     <tr>
                         <td>{{ $tickets->firstItem() + $key }}</td>
-                        <td>{{ $ticket->subject ?? translate('No Subject') }}</td>
+                        <td>
+                            <a href="{{ route('admin.support-ticket.service.singleTicket', $ticket->id) }}" class="crm-primary-link">
+                                {{ $ticket->subject ?? translate('No Subject') }}
+                            </a>
+                        </td>
                         <td>
                             @if($ticket->customer)
                             {{ $ticket->customer->f_name ?? '' }} {{ $ticket->customer->l_name ?? '' }}
@@ -156,74 +173,87 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
                         <td>{{ $service ? $service->title : translate('No Service Picked') }}</td>
                         <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d M, Y H:i') }}</span></td>
                         <td class="text-center">
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ route('admin.support-ticket.service.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('View')}}</a>
-                                <a href="{{ route('admin.support-ticket.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('Conversation')}}</a>
+                            <div class="crm-row-actions">
+                                <div class="crm-row-actions__primary">
+                                    <a href="{{ route('admin.support-ticket.service.singleTicket', $ticket->id) }}" class="btn btn-sm btn-outline-info">{{translate('View')}}</a>
 
-
-                                @if((int)$ticket->status === $serviceWorkflow::STATUS_NEW)
-                                <span id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.estimate') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-service-id="{{ $ticket->service_id }}"
-                                    data-action="estimate">{{translate('Create Estimate')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_OPEN)
-                                <span id="assign-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.assign') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-service-id="{{ $ticket->service_id }}"
-                                    data-action="assign">{{translate('Assign')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_ASSIGNED && $job)
-                                <span id="schedule-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.schedule') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-job-id="{{ $job->id ?? '' }}"
-                                    data-action="schedule">{{translate('Schedule')}}</span>
-                                <span id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-warning action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.estimate') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-service-id="{{ $ticket->service_id }}"
-                                    data-action="estimate">{{translate('Revise Estimate')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_SCHEDULED && $job)
-                                <span id="start-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.start-job') }}"
-                                    data-job-id="{{ $job->id ?? '' }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-action="start-job">{{translate('Start Job')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_IN_PROGRESS && $job)
-                                <span id="complete-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.complete-job') }}"
-                                    data-job-id="{{ $job->id ?? '' }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-action="complete-job">{{translate('Complete Job')}}</span>
-                                <span id="change-order-{{ $job->id }}" class="btn btn-sm btn-outline-warning action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.change-order') }}"
-                                    data-job-id="{{ $job->id ?? '' }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-action="change-order">{{translate('Change Order')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_COMPLETED && $job && !$qaConfirmed)
-                                <span id="qa-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.qa') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-job-id="{{ $job->id ?? '' }}"
-                                    data-action="qa">{{translate('QA Confirmation')}}</span>
-                                @elseif((int)$ticket->status === $serviceWorkflow::STATUS_COMPLETED && $job && $qaConfirmed)
-                                <span id="close-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-success action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.close') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-action="close-ticket">{{translate('Close Ticket')}}</span>
-                                @endif
-                                @if($job && $serviceWorkflow::canCancelFromStatus((int)$ticket->status))
-                                <span id="cancel-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-danger action-btn"
-                                    data-route="{{ route('admin.support-ticket.service.cancel') }}"
-                                    data-ticket-id="{{ $ticket->id }}"
-                                    data-job-id="{{ $job->id ?? '' }}"
-                                    data-action="cancel-ticket">{{translate('Cancel Job')}}</span>
-                                @endif
-
-                                <a href="javascript:void(0)" class="btn btn-sm btn-outline-warning escalate-btn" data-ticket-id="{{ $ticket->id }}">
-                                    {{ translate('Escalate') }}
-                                </a>
+                                    @if((int)$ticket->status === $serviceWorkflow::STATUS_NEW)
+                                    <button type="button" id="estimate-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
+                                        data-route="{{ route('admin.support-ticket.service.estimate') }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-service-id="{{ $ticket->service_id }}"
+                                        data-action="estimate">{{translate('Create Estimate')}}</button>
+                                    @elseif((int)$ticket->status === $serviceWorkflow::STATUS_OPEN)
+                                    <button type="button" id="assign-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
+                                        data-route="{{ route('admin.support-ticket.service.assign') }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-service-id="{{ $ticket->service_id }}"
+                                        data-action="assign">{{translate('Assign')}}</button>
+                                    @elseif((int)$ticket->status === $serviceWorkflow::STATUS_ASSIGNED && $job)
+                                    <button type="button" id="schedule-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
+                                        data-route="{{ route('admin.support-ticket.service.schedule') }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-job-id="{{ $job->id ?? '' }}"
+                                        data-action="schedule">{{translate('Schedule')}}</button>
+                                    @elseif((int)$ticket->status === $serviceWorkflow::STATUS_SCHEDULED && $job)
+                                    <button type="button" id="start-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
+                                        data-route="{{ route('admin.support-ticket.service.start-job') }}"
+                                        data-job-id="{{ $job->id ?? '' }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-action="start-job">{{translate('Start Job')}}</button>
+                                    @elseif((int)$ticket->status === $serviceWorkflow::STATUS_IN_PROGRESS && $job)
+                                    <button type="button" id="complete-job-{{ $job->id }}" class="btn btn-sm btn-outline-primary action-btn"
+                                        data-route="{{ route('admin.support-ticket.service.complete-job') }}"
+                                        data-job-id="{{ $job->id ?? '' }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-action="complete-job">{{translate('Complete Job')}}</button>
+                                    @elseif((int)$ticket->status === $serviceWorkflow::STATUS_COMPLETED && $job && !$qaConfirmed)
+                                    <button type="button" id="qa-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-primary action-btn"
+                                        data-route="{{ route('admin.support-ticket.service.qa') }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-job-id="{{ $job->id ?? '' }}"
+                                        data-action="qa">{{translate('QA Confirmation')}}</button>
+                                    @elseif((int)$ticket->status === $serviceWorkflow::STATUS_COMPLETED && $job && $qaConfirmed)
+                                    <button type="button" id="close-ticket-{{ $ticket->id }}" class="btn btn-sm btn-outline-success action-btn"
+                                        data-route="{{ route('admin.support-ticket.service.close') }}"
+                                        data-ticket-id="{{ $ticket->id }}"
+                                        data-action="close-ticket">{{translate('Close Ticket')}}</button>
+                                    @endif
+                                </div>
+                                <div class="dropdown crm-row-actions__menu">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ translate('More actions') }}">
+                                        <i class="tio-more-horizontal"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <a href="{{ route('admin.support-ticket.singleTicket', $ticket->id) }}" class="dropdown-item">{{translate('Conversation')}}</a>
+                                        @if((int)$ticket->status === $serviceWorkflow::STATUS_ASSIGNED && $job)
+                                        <button type="button" id="estimate-ticket-{{ $ticket->id }}" class="dropdown-item action-btn"
+                                            data-route="{{ route('admin.support-ticket.service.estimate') }}"
+                                            data-ticket-id="{{ $ticket->id }}"
+                                            data-service-id="{{ $ticket->service_id }}"
+                                            data-action="estimate">{{translate('Revise Estimate')}}</button>
+                                        @endif
+                                        @if((int)$ticket->status === $serviceWorkflow::STATUS_IN_PROGRESS && $job)
+                                        <button type="button" id="change-order-{{ $job->id }}" class="dropdown-item action-btn"
+                                            data-route="{{ route('admin.support-ticket.service.change-order') }}"
+                                            data-job-id="{{ $job->id ?? '' }}"
+                                            data-ticket-id="{{ $ticket->id }}"
+                                            data-action="change-order">{{translate('Change Order')}}</button>
+                                        @endif
+                                        @if($job && $serviceWorkflow::canCancelFromStatus((int)$ticket->status))
+                                        <div class="dropdown-divider"></div>
+                                        <button type="button" id="cancel-ticket-{{ $ticket->id }}" class="dropdown-item text-danger action-btn"
+                                            data-route="{{ route('admin.support-ticket.service.cancel') }}"
+                                            data-ticket-id="{{ $ticket->id }}"
+                                            data-job-id="{{ $job->id ?? '' }}"
+                                            data-action="cancel-ticket">{{translate('Cancel Job')}}</button>
+                                        @endif
+                                        <div class="dropdown-divider"></div>
+                                        <a href="javascript:void(0)" class="dropdown-item text-warning escalate-btn" data-ticket-id="{{ $ticket->id }}">
+                                            {{ translate('Escalate') }}
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -800,403 +830,33 @@ $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
     </div>
 </div>
 </div>
+<span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
+<span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
+<span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="service-ticket-are-you-sure" data-text="{{ translate('Are you sure?') }}"></span>
+<span id="service-ticket-action-cannot-be-undone" data-text="{{ translate('This action cannot be undone.') }}"></span>
+<span id="service-ticket-yes" data-text="{{ translate('Yes') }}"></span>
+<span id="service-ticket-no" data-text="{{ translate('No') }}"></span>
+<span id="service-ticket-invalid-action" data-text="{{ translate('invalid_action') }}"></span>
+<span id="service-ticket-no-job-associated" data-text="{{ translate('no_job_associated') }}"></span>
+<span id="service-ticket-part-label" data-text="{{ translate('Part') }}"></span>
+<span id="service-ticket-labor-label" data-text="{{ translate('Labor') }}"></span>
+<span id="service-ticket-item-name" data-text="{{ translate('Item Name') }}"></span>
+<span id="service-ticket-quantity" data-text="{{ translate('Quantity') }}"></span>
+<span id="service-ticket-rate" data-text="{{ translate('Rate') }}"></span>
+<span id="service-ticket-remove" data-text="{{ translate('Remove') }}"></span>
+<span id="service-ticket-force-close-title" data-text="{{ translate('Payment is not paid!') }}"></span>
+<span id="service-ticket-force-close-text" data-text="{{ translate('If you agree, you can force close this ticket.') }}"></span>
+<span id="service-ticket-force-close-confirm" data-text="{{ translate('Force Close') }}"></span>
+<span id="service-ticket-force-close-cancel" data-text="{{ translate('Cancel') }}"></span>
+<span id="service-ticket-force-close-note" data-text="{{ translate('Force closed manually without payment') }}"></span>
+<span id="service-ticket-force-close"
+    data-ticket-id="{{ session('force_close_prompt', '') }}"
+    data-route="{{ route('admin.support-ticket.service.close') }}"
+    data-csrf="{{ csrf_token() }}"></span>
 @endsection
 
 @push('script')
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/support-tickets.js')}}"></script>
-<script>
-    $(document).ready(function() {
-        $('.action-btn').click(function(e) {
-            e.preventDefault();
-            let action = $(this).data('action');
-            let route = $(this).data('route');
-            let ticketId = $(this).data('ticket-id');
-            let jobId = $(this).data('job-id');
-            let serviceId = $(this).data('service-id');
-
-            const actionsWithConfirmation = ['start-job', 'complete-job', 'close-ticket', 'cancel-ticket'];
-            if (actionsWithConfirmation.includes(action)) {
-                Swal.fire({
-                    title: '{{ translate("Are you sure?") }}',
-                    text: '{{ translate("This action cannot be undone.") }}',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: '{{ translate("Yes") }}',
-                    cancelButtonText: '{{ translate("No") }}'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        handleAction(action, route, ticketId, jobId, serviceId);
-                    }
-                });
-            } else {
-                handleAction(action, route, ticketId, jobId, serviceId);
-            }
-        });
-
-        function applyLockedService(selector, serviceId) {
-            if (!serviceId) {
-                return;
-            }
-
-            const normalizedServiceId = String(serviceId);
-            if ($(`${selector} option[value="${normalizedServiceId}"]`).length) {
-                $(selector).val(normalizedServiceId);
-            }
-        }
-
-        function handleAction(action, route, ticketId, jobId, serviceId) {
-            switch (action) {
-                case 'assign':
-                    $('#assignTicketId').val(ticketId);
-                    $('#assignTicketForm').attr('action', route);
-                    applyLockedService('#service_id', serviceId);
-                    $('#assignTicketModal').modal('show');
-                    break;
-                case 'estimate':
-                    $('#estimateTicketId').val(ticketId);
-                    $('#estimateTicketForm').attr('action', route);
-                    applyLockedService('#estimate_service_id', serviceId);
-                    applyEstimateDefaults();
-                    recalculateEstimateTotals();
-                    $('#estimateTicketModal').modal('show');
-                    break;
-                case 'schedule':
-                    if (!jobId) {
-                        toastr.error('{{ translate("no_job_associated") }}');
-                        return;
-                    }
-                    $('#scheduleTicketId').val(ticketId);
-                    $('#scheduleJobId').val(jobId);
-                    $('#scheduleTicketForm').attr('action', route);
-                    $('#scheduleTicketModal').modal('show');
-                    break;
-                case 'start-job':
-                    if (!jobId) {
-                        toastr.error('{{ translate("no_job_associated") }}');
-                        return;
-                    }
-                    $('#startTicketId').val(ticketId);
-                    $('#startJobId').val(jobId);
-                    $('#startJobForm').attr('action', route);
-                    $('#startJobModal').modal('show');
-                    break;
-                case 'complete-job':
-                    if (!jobId) {
-                        toastr.error('{{ translate("no_job_associated") }}');
-                        return;
-                    }
-                    $('#completeTicketId').val(ticketId);
-                    $('#completeJobId').val(jobId);
-                    $('#completeJobForm').attr('action', route);
-                    $('#completeJobModal').modal('show');
-                    break;
-                case 'change-order':
-                    if (!jobId) {
-                        toastr.error('{{ translate("no_job_associated") }}');
-                        return;
-                    }
-                    $('#changeOrderTicketId').val(ticketId);
-                    $('#changeOrderJobId').val(jobId);
-                    $('#changeOrderForm').attr('action', route);
-                    $('#changeOrderModal').modal('show');
-                    break;
-                case 'qa':
-                    if (!jobId) {
-                        toastr.error('{{ translate("no_job_associated") }}');
-                        return;
-                    }
-                    $('#qaTicketId').val(ticketId);
-                    $('#qaJobId').val(jobId);
-                    $('#qaTicketForm').attr('action', route);
-                    $('#qaTicketModal').modal('show');
-                    break;
-                case 'close-ticket':
-                    $('#closeTicketId').val(ticketId);
-                    $('#closeTicketForm').attr('action', route);
-                    $('#closeTicketModal').modal('show');
-                    break;
-                case 'cancel-ticket':
-                    $('#cancelTicketId').val(ticketId);
-                    $('#cancelJobId').val(jobId);
-                    $('#cancelTicketForm').attr('action', route);
-                    $('#cancelTicketModal').modal('show');
-                    break;
-                default:
-                    toastr.error('{{ translate("invalid_action") }}');
-                    break;
-            }
-        }
-
-        function applyEstimateDefaults() {
-            let option = $('#estimate_service_id option:selected');
-
-            let baseInshop = parseFloat(option.data('price-inshop')) || 0;
-            let baseMobile = parseFloat(option.data('price-mobile')) || 0;
-            let travelFee = parseFloat(option.data('travel-fee')) || 0;
-            let includedKm = parseFloat(option.data('included-km')) || 0;
-            let laborCharge = parseFloat(option.data('labour-charge')) || 0;
-            let partsCost = parseFloat(option.data('parts-cost')) || 0;
-
-            $('#base_price_inshop').val(baseInshop.toFixed(2));
-            $('#base_price_mobile').val(baseMobile.toFixed(2));
-            $('#travel_fee_per_km').val(travelFee.toFixed(2));
-            $('#included_km').val(includedKm.toFixed(2));
-            $('#labor_charge').val(laborCharge.toFixed(2));
-            $('#parts_cost').val(partsCost.toFixed(2));
-            $('#labor_charge_mobile').val(laborCharge.toFixed(2));
-            $('#parts_cost_mobile').val(partsCost.toFixed(2));
-
-            if ($('#estimate_is_mobile').val() === '1') {
-                $('.mobile-fields').show();
-                $('.inshop-fields').hide();
-            } else {
-                $('.inshop-fields').show();
-                $('.mobile-fields').hide();
-            }
-        }
-
-        function recalculateEstimateTotals() {
-            let mode = $('#estimate_is_mobile').val();
-            let baseInshop = parseFloat($('#base_price_inshop').val()) || 0;
-            let baseMobile = parseFloat($('#base_price_mobile').val()) || 0;
-            let travelFee = parseFloat($('#travel_fee_per_km').val()) || 0;
-            let includedKm = parseFloat($('#included_km').val()) || 0;
-            let extraCharge = parseFloat($('#extra_charge').val()) || 0;
-            let subtotal = 0;
-
-            if (mode === '1') {
-                let enteredKm = parseFloat($('#entered_km').val()) || 0;
-                let laborMobile = parseFloat($('#labor_charge_mobile').val()) || 0;
-                let partsMobile = parseFloat($('#parts_cost_mobile').val()) || 0;
-                let extraKm = Math.max(0, enteredKm - includedKm);
-                let travelCharge = extraKm * travelFee;
-
-                subtotal = baseMobile + laborMobile + partsMobile + travelCharge;
-                $('#subtotal_mobile').val(subtotal.toFixed(2));
-
-                // Keep submitted fields aligned with selected mode.
-                $('#labor_charge').val(laborMobile.toFixed(2));
-                $('#parts_cost').val(partsMobile.toFixed(2));
-            } else {
-                let laborInshop = parseFloat($('#labor_charge').val()) || 0;
-                let partsInshop = parseFloat($('#parts_cost').val()) || 0;
-                subtotal = baseInshop + laborInshop + partsInshop;
-                $('#subtotal_inshop').val(subtotal.toFixed(2));
-            }
-
-            let tax = 0;
-            let total = subtotal + extraCharge + tax;
-            $('#subtotal').val(subtotal.toFixed(2));
-            $('#tax').val(tax.toFixed(2));
-            $('#total').val(total.toFixed(2));
-        }
-
-        $('#estimate_service_id, #estimate_is_mobile').on('change', function() {
-            applyEstimateDefaults();
-            recalculateEstimateTotals();
-        });
-        $('#entered_km, #parts_cost, #labor_charge, #parts_cost_mobile, #labor_charge_mobile, #extra_charge').on('input', function() {
-            recalculateEstimateTotals();
-        });
-        applyEstimateDefaults();
-        recalculateEstimateTotals();
-
-
-
-        let itemIndex = 1;
-        $('#add-part-labor').click(function() {
-            let row = `
-    <div class="parts-labor-row mt-2">
-        <select name="items[${itemIndex}][item_type]" class="form-control" required>
-            <option value="part">{{translate('Part')}}</option>
-            <option value="labor">{{translate('Labor')}}</option>
-        </select>
-        <input type="text" name="items[${itemIndex}][item_name]" class="form-control my-1" placeholder="{{translate('Item Name')}}" required>
-        <input type="number" step="0.01" name="items[${itemIndex}][quantity]" class="form-control my-1" placeholder="{{translate('Quantity')}}" required>
-        <input type="number" step="0.01" name="items[${itemIndex}][rate]" class="form-control my-1" placeholder="{{translate('Rate')}}" required>
-        <button type="button" class="btn btn-sm btn-danger remove-part-labor my-1">{{translate('Remove')}}</button>
-    </div>`;
-            $('#parts-labor-container').append(row);
-            itemIndex++;
-        });
-
-        $(document).on('click', '.remove-part-labor', function() {
-            $(this).closest('.parts-labor-row').remove();
-        });
-
-        $(document).ready(function() {
-            const canvas = document.getElementById('signatureCanvas');
-            const signatureInput = document.getElementById('customer_signature');
-            const ctx = canvas.getContext('2d');
-            let drawing = false;
-
-            // Resize canvas
-            function resizeCanvas() {
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                ctx.lineWidth = 2;
-                ctx.lineCap = "round";
-                ctx.strokeStyle = "#000";
-            }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-
-            // Mouse events
-            canvas.addEventListener('mousedown', (e) => {
-                drawing = true;
-                ctx.beginPath();
-                ctx.moveTo(e.offsetX, e.offsetY);
-            });
-            canvas.addEventListener('mousemove', (e) => {
-                if (!drawing) return;
-                ctx.lineTo(e.offsetX, e.offsetY);
-                ctx.stroke();
-            });
-            canvas.addEventListener('mouseup', () => {
-                drawing = false;
-                signatureInput.value = canvas.toDataURL();
-            });
-            canvas.addEventListener('mouseleave', () => {
-                drawing = false;
-                signatureInput.value = canvas.toDataURL();
-            });
-
-            // Touch events
-            canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                drawing = true;
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                ctx.beginPath();
-                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-            });
-            canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                if (!drawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                ctx.stroke();
-            });
-            canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                drawing = false;
-                signatureInput.value = canvas.toDataURL();
-            });
-
-            // Clear signature
-            $('#clearSignature').click(function() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                signatureInput.value = '';
-            });
-        });
-
-
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const wireLanguageTabs = (tabSelector, formSelector, prefix) => {
-            const tabs = document.querySelectorAll(tabSelector);
-            if (!tabs.length) return;
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const lang = this.id.replace(prefix + '-', '').replace('-link', '');
-
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-
-                    const forms = document.querySelectorAll(formSelector);
-                    forms.forEach(form => form.classList.add('d-none'));
-
-                    const selectedForm = document.getElementById(prefix + '-' + lang + '-form');
-                    if (selectedForm) {
-                        selectedForm.classList.remove('d-none');
-                    }
-                });
-            });
-        };
-
-        wireLanguageTabs('.estimate-language-tab', '.estimate-language-form', 'esti');
-        wireLanguageTabs('.job-language-tab', '.job-language-form', 'job');
-        wireLanguageTabs('.order-language-tab', '.order-language-form', 'order');
-    });
-</script>
-@if(session('force_close_prompt'))
-<script>
-    Swal.fire({
-        title: '{{ translate('Payment is not paid!') }}',
-        text: '{{ translate('If you agree, you can force close this ticket.') }}',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: '{{ translate('Force Close') }}',
-        cancelButtonText: '{{ translate('Cancel') }}'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Submit force close form automatically
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = "{{ route('admin.support-ticket.service.close') }}";
-
-            const csrf = document.createElement('input');
-            csrf.type = 'hidden';
-            csrf.name = '_token';
-            csrf.value = '{{ csrf_token() }}';
-            form.appendChild(csrf);
-
-            const ticket = document.createElement('input');
-            ticket.type = 'hidden';
-            ticket.name = 'ticket_id';
-            ticket.value = '{{ session('force_close_prompt') }}';
-            form.appendChild(ticket);
-
-            const force = document.createElement('input');
-            force.type = 'hidden';
-            force.name = 'force_close';
-            force.value = 1;
-            form.appendChild(force);
-
-            const notes = document.createElement('input');
-            notes.type = 'hidden';
-            notes.name = 'qa_notes';
-            notes.value = '{{ translate('Force closed manually without payment') }}';
-            form.appendChild(notes);
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
-</script>
-@endif
-
-<script>
-    $(document).on('click', '.escalate-btn', function() {
-        let ticketId = $(this).data('ticket-id');
-        $('#escalateTicketId').val(ticketId);
-        $('#escalateTicketModal').modal('show');
-    });
-
-    $('#escalateTicketForm').submit(function(e) {
-        e.preventDefault();
-        let form = $(this);
-        Swal.fire({
-            title: '{{ translate('Are you sure?') }}',
-            text: '{{ translate('This will notify the department and owner.') }}',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '{{ translate('Yes, Escalate') }}',
-            cancelButtonText: '{{ translate('Cancel') }}'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.off('submit').submit();
-            }
-        });
-    });
-</script>
-
+<script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/service-ticket.js')}}"></script>
 @endpush
-

@@ -37,6 +37,10 @@ class DealOfTheDayController extends BaseController
 
     public function getListView(Request $request): View
     {
+        $searchValue = $request->query('searchValue');
+        $searchValue = is_scalar($searchValue) ? trim((string)$searchValue) : null;
+        $searchValue = $searchValue !== '' ? $searchValue : null;
+
         $products = $this->productRepo->getListWithScope(
             scope: "active",
             relations: ['brand','category','seller.shop'],
@@ -45,10 +49,10 @@ class DealOfTheDayController extends BaseController
 
         $deals = $this->dealOfTheDayRepo->getListWhere(
             orderBy: ['id'=>'desc'],
-            searchValue: $request['searchValue'],
+            searchValue: $searchValue,
             dataLimit: getWebConfig('pagination_limit')
         );
-        return view(DealOfTheDay::LIST[VIEW], compact('deals', 'products'));
+        return view(DealOfTheDay::LIST[VIEW], compact('deals', 'products', 'searchValue'));
     }
 
     public function add(ProductIDRequest $request, DealOfTheDayService $dealOfTheDayService): RedirectResponse

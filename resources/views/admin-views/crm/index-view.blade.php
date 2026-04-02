@@ -358,6 +358,7 @@
 @endsection
 
 @push('script')
+@include('admin-views.crm.partials._crm-js-text')
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/crm.js') }}"></script>
 
 <script>
@@ -384,5 +385,4 @@
     });
 </script>
 @endpush
-
 

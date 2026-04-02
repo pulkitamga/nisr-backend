@@ -9,7 +9,7 @@
                 </button>
             </div>
             <div class="modal-body pt-0">
-                <form id="updateTypeForm" action="{{ route('admin.crm.update-massage-type') }}" method="POST">
+                <form id="updateTypeForm" action="{{ route('admin.crm.update-message-type') }}" method="POST">
                     @csrf
                     <input type="hidden" name="message_id" id="message_id">
 
@@ -36,4 +36,3 @@
         </div>
     </div>
 </div>
-

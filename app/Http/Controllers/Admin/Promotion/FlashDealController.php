@@ -44,15 +44,19 @@ class FlashDealController extends BaseController
 
     public function getListView(Request $request): View
     {
+        $searchValue = $request->query('searchValue');
+        $searchValue = is_scalar($searchValue) ? trim((string)$searchValue) : null;
+        $searchValue = $searchValue !== '' ? $searchValue : null;
+
         $flashDeals = $this->flashDealRepo->getListWithRelations(
             orderBy: ['id'=>'desc'],
-            searchValue:$request['searchValue'],
+            searchValue: $searchValue,
             filters:['deal_type'=>'flash_deal'],
             withCount: ['products'=>'products'],
             dataLimit: getWebConfig('pagination_limit')
         );
         $flashDealPriority = json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'flash_deal_priority'])['value']);
-        return view(FlashDeal::LIST[VIEW], compact('flashDeals','flashDealPriority'));
+        return view(FlashDeal::LIST[VIEW], compact('flashDeals', 'flashDealPriority', 'searchValue'));
     }
 
     public function add(FlashDealAddRequest $request, FlashDealService $flashDealService): RedirectResponse

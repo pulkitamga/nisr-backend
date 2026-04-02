@@ -1,11 +1,15 @@
 "use strict";
 
-let messageAreYouSure = $("#message-are-you-sure").data("text");
-let messageYesWord = $("#message-yes-word").data("text");
-let messageNoWord = $("#message-no-word").data("text");
-let messageWantAddOrUpdateThisProduct = $(
-    "#message-want-to-add-or-update-this-request"
-).data("text");
+function getComplaintText(id, fallback = "") {
+    const node = document.getElementById(id);
+    return node?.dataset?.text?.trim() || fallback;
+}
+
+const complaintUiText = {
+    selectEmployee: getComplaintText("complaint-select-employee", "Select Employee"),
+    loading: getComplaintText("complaint-loading", "Loading..."),
+    somethingWentWrong: getComplaintText("complaint-something-went-wrong", "Something went wrong"),
+};
 
 $(document).on("ready", function () {
     $('#ticket-follow-up-status').on('change', function () {
@@ -83,15 +87,15 @@ $(document).on("ready", function () {
             data: $(this).serialize(),
             success: function (response) {
                 if (response.success) {
-                    toastr.success('Successfully assigned the department to complaint!');
+                    toastr.success(response.message || getComplaintText('complaint-department-updated', 'Updated successfully!'));
                     $('#showDepartmentsModal').modal('hide');
                     location.reload();
                 } else {
-                    toastr.error('Something went wrong. Please try again.');
+                    toastr.error(response.message || complaintUiText.somethingWentWrong);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                let errorMessage = 'Something went wrong. Please try again.';
+                let errorMessage = complaintUiText.somethingWentWrong;
                 if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
                     errorMessage = jqXHR.responseJSON.message;
                 } else if (jqXHR.statusText) {
@@ -121,15 +125,15 @@ $(document).on("ready", function () {
             data: $(this).serialize(),
             success: function (response) {
                 if (response.success) {
-                    toastr.success('Successfully assigned the employee to complaint!');
+                    toastr.success(response.message || getComplaintText('complaint-employee-updated', 'Updated successfully!'));
                     $('#showEmployeeModal').modal('hide');
                     location.reload();
                 } else {
-                    toastr.error('Something went wrong. Please try again.');
+                    toastr.error(response.message || complaintUiText.somethingWentWrong);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                let errorMessage = 'Something went wrong. Please try again.';
+                let errorMessage = complaintUiText.somethingWentWrong;
                 if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
                     errorMessage = jqXHR.responseJSON.message;
                 } else if (jqXHR.statusText) {
@@ -157,15 +161,15 @@ $(document).on("ready", function () {
             data: $(this).serialize(),
             success: function (response) {
                 if (response.success) {
-                    toastr.success('Successfully follow up updated.');
+                    toastr.success(response.message || getComplaintText('complaint-follow-up-updated', 'Updated successfully!'));
                     $('#showFollowUpModal').modal('hide');
                     location.reload();
                 } else {
-                    toastr.error('Something went wrong. Please try again.');
+                    toastr.error(response.message || complaintUiText.somethingWentWrong);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                let errorMessage = 'Something went wrong. Please try again.';
+                let errorMessage = complaintUiText.somethingWentWrong;
                 if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
                     errorMessage = jqXHR.responseJSON.message;
                 } else if (jqXHR.statusText) {
@@ -220,11 +224,11 @@ function mapEmployeeResponse(res) {
 
 function loadEmployees(deptId, headId = null) {
     if (!deptId) {
-        $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+        $("#ticket-employee-id").html(`<option value="">${complaintUiText.selectEmployee}</option>`);
         return;
     }
 
-    $("#ticket-employee-id").html('<option value="">Loading...</option>');
+    $("#ticket-employee-id").html(`<option value="">${complaintUiText.loading}</option>`);
 
     $.ajax({
         url: employeeRouteUrl,
@@ -235,13 +239,13 @@ function loadEmployees(deptId, headId = null) {
             if (headId) {
                 employees = employees.filter(emp => String(emp.id) !== String(headId));
             }
-            $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+            $("#ticket-employee-id").html(`<option value="">${complaintUiText.selectEmployee}</option>`);
             $.each(employees, function (key, emp) {
                 $("#ticket-employee-id").append(`<option value="${emp.id}">${emp.name}</option>`);
             });
         },
         error: function () {
-            $("#ticket-employee-id").html('<option value="">Select Employee</option>');
+            $("#ticket-employee-id").html(`<option value="">${complaintUiText.selectEmployee}</option>`);
         }
     });
 }

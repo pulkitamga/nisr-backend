@@ -23,14 +23,11 @@
                               class="text-start onsubmit-disable-action-button"
                               method="post">
                             @csrf
-                            @php($language = getWebConfig(name:'pnc_language'))
-                            @php($defaultLanguage = config('app.locale', 'en'))
-                            @if(!in_array($defaultLanguage, $language ?? [], true)) @php($defaultLanguage = $language[0]) @endif
                             @php
-                    $activeLanguage = $defaultLanguage;
-                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
-                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
-                @endphp
+                                $language = getConfiguredLanguageCodes();
+                                $defaultLanguage = getConfiguredDefaultLanguage();
+                                $activeLanguage = in_array(getDefaultLanguage(), $language, true) ? getDefaultLanguage() : $defaultLanguage;
+                            @endphp
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize">
@@ -112,7 +109,7 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{translate('search_by_Title')}}" aria-label="{{ translate('Search orders') }}"
-                                               value="{{ request('searchValue') }}" required>
+                                               value="{{ $searchValue ?? '' }}" required>
                                         <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                     </div>
                                 </form>
@@ -199,5 +196,3 @@
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/search-product.js')}}"></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deal.js')}}"></script>
 @endpush
-
-

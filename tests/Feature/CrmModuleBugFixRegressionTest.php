@@ -15,7 +15,9 @@ use App\Models\Deal;
 use App\Models\Departments;
 use App\Models\Escalation;
 use App\Models\InboxMessage;
+use App\Models\InboxTask;
 use App\Models\Lead;
+use App\Models\SupportTicketStatusMaster;
 use App\Models\User;
 use App\Services\Crm\EscalationService;
 use App\Services\SlaService;
@@ -23,9 +25,13 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Fluent;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ViewErrorBag;
 use Tests\TestCase;
 
 class CrmModuleBugFixRegressionTest extends TestCase
@@ -52,6 +58,15 @@ class CrmModuleBugFixRegressionTest extends TestCase
             'database.default' => 'mysql',
             'database.connections.mysql.database' => $database,
         ]);
+
+        Cache::put('pnc_language', ['en', 'ar']);
+    }
+
+    protected function tearDown(): void
+    {
+        Cache::forget('pnc_language');
+
+        parent::tearDown();
     }
 
     protected function connectionsToTransact(): array
@@ -117,6 +132,240 @@ class CrmModuleBugFixRegressionTest extends TestCase
 
         $this->assertNotContains($plainMessage->id, $messageIds);
         $this->assertSame([$percentMessage->id], $messageIds);
+    }
+
+    public function test_inbox_list_renders_default_status_selection_and_primary_subject_link(): void
+    {
+        $this->actingAs($this->createAdmin('inbox-toolbar-admin'), 'admin');
+
+        $message = $this->createInboxMessage([
+            'subject' => 'Toolbar subject',
+            'status' => 'new',
+        ]);
+
+        $view = $this->makeInboxController()->getListView(
+            Request::create('/admin/crm/inbox', 'GET', [
+                'choose_first' => 50,
+            ])
+        );
+
+        view()->share('errors', new ViewErrorBag());
+        $html = $view->render();
+
+        $this->assertStringContainsString('option value="new" selected', $html);
+        $this->assertStringContainsString(route('admin.crm.message.show', $message->id), $html);
+        $this->assertStringContainsString('Toolbar subject', $html);
+        $this->assertStringContainsString('id="crm-inbox-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString('crm-row-actions__toggle', $html);
+        $this->assertStringContainsString('addMessageModal', $html);
+        $this->assertStringContainsString('window.crmUiText', $html);
+        $this->assertStringContainsString(translate('Please select at least one message!'), $html);
+        $this->assertStringContainsString(translate('More actions'), $html);
+        $this->assertStringContainsString(translate('No Owner'), $html);
+    }
+
+    public function test_complete_task_returns_message_copy_for_wrong_inbox_message(): void
+    {
+        $admin = $this->createAdmin('inbox-task-complete-admin');
+        $this->actingAs($admin, 'admin');
+
+        $message = $this->createInboxMessage();
+        $otherMessage = $this->createInboxMessage([
+            'subject' => 'Other inbox message',
+        ]);
+
+        $task = InboxTask::create([
+            'message_id' => $otherMessage->id,
+            'employee_id' => $admin->id,
+            'department_id' => null,
+            'name' => 'Follow up',
+            'description' => 'Mismatch task',
+            'due_date' => now()->addDay(),
+            'status' => 'pending',
+        ]);
+
+        $response = $this->makeInboxController()->completeTask(
+            Request::create('/admin/crm/inbox/task/complete', 'POST'),
+            $message->id,
+            $task->id
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame(translate('Task does not belong to this message!'), $response->getData(true)['message']);
+    }
+
+    public function test_lead_list_renders_primary_subject_link(): void
+    {
+        $this->actingAs($this->createAdmin('lead-toolbar-admin'), 'admin');
+
+        $lead = $this->createLead();
+        $this->createInboxMessage([
+            'related_lead_id' => $lead->id,
+            'subject' => 'Lead record subject',
+            'status' => 'new',
+        ]);
+
+        $view = $this->makeLeadController()->getListView(
+            Request::create('/admin/crm/lead', 'GET', [
+                'choose_first' => 50,
+            ])
+        );
+
+        view()->share('errors', new ViewErrorBag());
+        $html = $view->render();
+
+        $this->assertStringContainsString(route('admin.crm.lead.show', $lead->id), $html);
+        $this->assertStringContainsString('Lead record subject', $html);
+        $this->assertStringContainsString('id="crm-lead-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString('crm-row-actions__toggle', $html);
+        $this->assertStringContainsString('window.crmUiText', $html);
+        $this->assertStringContainsString('assets/back-end/js/admin/lead.js', $html);
+        $this->assertStringContainsString('id="getUserOrdersRoute"', $html);
+        $this->assertStringContainsString(translate('Please select at least one message!'), $html);
+        $this->assertStringContainsString(translate('No Owner'), $html);
+        $this->assertStringContainsString(translate('No Department'), $html);
+        $this->assertStringContainsString(translate('No Employee'), $html);
+        $this->assertStringNotContainsString(translate('Assign before Convert'), $html);
+        $this->assertStringNotContainsString('const convertSelectPartyMessage', $html);
+        $this->assertStringNotContainsString("$(document).on(\"click\", \".disqualify-btn\"", $html);
+    }
+
+    public function test_support_ticket_list_renders_overflow_toggle_and_assignment_chip(): void
+    {
+        $admin = $this->createAdmin('support-toolbar-admin');
+
+        $this->actingAs($admin, 'admin');
+
+        $status = new SupportTicketStatusMaster();
+        $status->forceFill([
+            'id' => 1,
+            'name' => 'New',
+            'master_id' => 1,
+            'status' => 'active',
+        ]);
+
+        $ticket = new Fluent([
+            'id' => 98765,
+            'subject' => 'Support queue subject',
+            'customer' => new Fluent([
+                'f_name' => 'Support',
+                'l_name' => 'Customer',
+                'email' => 'support-customer@example.com',
+            ]),
+            'priority' => 'medium',
+            'status_details' => $status,
+            'created_at' => now(),
+            'employee_id' => null,
+            'department' => new Fluent([
+                'id' => null,
+                'head_id' => $admin->id,
+            ]),
+            'department_id' => null,
+            'status' => 1,
+            'follow_up_date' => null,
+        ]);
+
+        $tickets = new LengthAwarePaginator(
+            [$ticket],
+            1,
+            15,
+            1,
+            ['path' => '/admin/support-ticket/view/support']
+        );
+
+        view()->share('errors', new ViewErrorBag());
+        $html = view('admin-views.crm.tickets.support', [
+            'tickets' => $tickets,
+            'aAllStatus' => collect([$status]),
+            'aInProgressStatus' => collect([$status]),
+            'getDepartment' => collect(),
+            'employees' => collect(),
+            'services' => collect(),
+            'status' => 'support',
+        ])->render();
+
+        $this->assertStringContainsString(route('admin.support-ticket.details', $ticket->id), $html);
+        $this->assertStringContainsString('Support queue subject', $html);
+        $this->assertStringContainsString('id="crm-support-ticket-toolbar"', $html);
+        $this->assertStringContainsString('data-crm-export-button="true"', $html);
+        $this->assertStringContainsString('crm-row-actions__toggle', $html);
+        $this->assertStringContainsString(translate('More actions'), $html);
+        $this->assertStringContainsString(translate('No Employee'), $html);
+    }
+
+    public function test_service_ticket_list_loads_shared_service_module_without_inline_flow_script(): void
+    {
+        $admin = $this->createAdmin('service-toolbar-admin');
+
+        $this->actingAs($admin, 'admin');
+
+        $status = new SupportTicketStatusMaster();
+        $status->forceFill([
+            'id' => 2,
+            'name' => 'New',
+            'master_id' => 2,
+            'status' => 'active',
+        ]);
+
+        $service = new Fluent([
+            'id' => 5,
+            'title' => 'Oil Change',
+            'base_price_inshop' => 100,
+            'base_price_mobile' => 140,
+            'parts_cost' => 10,
+            'travel_fee_per_km' => 2,
+            'included_km_mobile' => 5,
+            'labor_hours' => 1,
+        ]);
+
+        $ticket = new Fluent([
+            'id' => 67890,
+            'subject' => 'Service queue subject',
+            'customer' => new Fluent([
+                'f_name' => 'Service',
+                'l_name' => 'Customer',
+                'email' => 'service-customer@example.com',
+            ]),
+            'priority' => 'medium',
+            'status_details' => $status,
+            'created_at' => now(),
+            'employee_id' => null,
+            'department_id' => null,
+            'status' => \App\Support\ServiceTicketWorkflow::STATUS_NEW,
+            'service' => $service,
+            'service_id' => 5,
+            'latestServiceJob' => null,
+            'relatedInboxMessage' => null,
+        ]);
+
+        $tickets = new LengthAwarePaginator(
+            [$ticket],
+            1,
+            15,
+            1,
+            ['path' => '/admin/support-ticket/view/service']
+        );
+
+        view()->share('errors', new ViewErrorBag());
+        $html = view('admin-views.crm.tickets.service', [
+            'tickets' => $tickets,
+            'aAllStatus' => collect([$status]),
+            'aInProgressStatus' => collect([$status]),
+            'getDepartment' => collect(),
+            'employees' => collect([new Fluent(['id' => 1, 'name' => 'Technician'])]),
+            'services' => collect([$service]),
+        ])->render();
+
+        $this->assertStringContainsString(route('admin.support-ticket.service.singleTicket', $ticket->id), $html);
+        $this->assertStringContainsString('Service queue subject', $html);
+        $this->assertStringContainsString('id="crm-service-ticket-toolbar"', $html);
+        $this->assertStringContainsString('assets/back-end/js/admin/service-ticket.js', $html);
+        $this->assertStringContainsString('id="service-ticket-force-close"', $html);
+        $this->assertStringContainsString('id="service-ticket-action-cannot-be-undone"', $html);
+        $this->assertStringNotContainsString("const actionsWithConfirmation = ['start-job', 'complete-job', 'close-ticket', 'cancel-ticket'];", $html);
+        $this->assertStringNotContainsString("wireLanguageTabs('.estimate-language-tab', '.estimate-language-form', 'esti');", $html);
     }
 
     public function test_unassigned_lead_disqualify_is_forbidden_for_non_superadmin(): void

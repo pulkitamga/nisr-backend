@@ -1,12 +1,10 @@
 @php
     use Carbon\Carbon;
-    use Illuminate\Support\Facades\Session;
 @endphp
 @extends('layouts.back-end.app')
 @section('title', translate('feature_Deal'))
 
 @section('content')
-    @php($direction = Session::get('direction'))
     <div class="content container-fluid">
         <div class="d-flex justify-content-between gap-2 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
@@ -25,14 +23,11 @@
                               class="text-start onsubmit-disable-action-button"
                               method="post">
                             @csrf
-                            @php($language = getWebConfig(name:'pnc_language'))
-                            @php($defaultLanguage = config('app.locale', 'en'))
-                            @if(!in_array($defaultLanguage, $language ?? [], true)) @php($defaultLanguage = $language[0]) @endif
                             @php
-                    $activeLanguage = $defaultLanguage;
-                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
-                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
-                @endphp
+                                $language = getConfiguredLanguageCodes();
+                                $defaultLanguage = getConfiguredDefaultLanguage();
+                                $activeLanguage = in_array(getDefaultLanguage(), $language, true) ? getDefaultLanguage() : $defaultLanguage;
+                            @endphp
                             <ul class="nav nav-tabs w-fit-content mb-4">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize">
@@ -104,7 +99,7 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{ translate('search_by_title') }}" aria-label="{{ translate('search') }}"
-                                               value="{{ request('searchValue') }}" required>
+                                               value="{{ $searchValue ?? '' }}" required>
                                         <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
                                     </div>
                                 </form>
@@ -113,7 +108,7 @@
                     </div>
                     <div class="table-responsive">
                         <table id="datatable"
-                               style="text-align: {{$direction === "rtl" ? 'right' : 'left' }};"
+                               style="text-align: {{ get_direction() === 'rtl' ? 'right' : 'left' }};"
                                class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
@@ -365,4 +360,3 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/deal.js') }}"></script>
 @endpush
-

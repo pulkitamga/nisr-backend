@@ -1992,15 +1992,28 @@ html[dir="rtl"] .tio-arrow-forward {
     inset-inline-start: 0;
 }
 
+.chat-contact-meta {
+    min-width: 0;
+    text-align: start;
+}
+
 .chat-list-heading {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
 .chat-list-time {
-    margin-inline-start: auto;
     white-space: nowrap;
+}
+
+.chat-phone-text {
+    direction: ltr;
+    unicode-bidi: isolate;
+    display: inline-block;
+    text-align: left;
 }
 
 /* RTL: physical positioning utilities → logical equivalents */
