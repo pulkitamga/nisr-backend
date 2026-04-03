@@ -272,7 +272,7 @@
     </div>
 
     @php
-        $dateRange = $snapshotFromDisplay->format('M d, Y') . ' - ' . $snapshotToDisplay->format('M d, Y');
+      $dateRange = $snapshotFromDisplay . ' - ' . $snapshotToDisplay;
     @endphp
 
     <!-- KPI Metrics Cards - ALL IN ONE SINGLE ROW with 7 cards -->
