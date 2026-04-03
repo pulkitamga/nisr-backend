@@ -109,7 +109,7 @@
 
                                 <!-- Filter Button -->
                                 <button type="submit" class="btn btn--primary px-5">
-                                    {{ translate('filter') }}
+                                    {{ translate('filters') }}
                                 </button>
 
                                 <!-- Reset Button -->
