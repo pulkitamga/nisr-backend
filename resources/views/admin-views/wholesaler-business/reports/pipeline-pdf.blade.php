@@ -252,8 +252,10 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('wholesale_pipeline_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
-                {{ $snapshotTo->format('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}:
+                {{ $snapshotFromDisplay }} -
+                {{ $snapshotToDisplay }}
+            </p>
         </div>
         <div class="logo-container">
             @php
@@ -270,53 +272,67 @@
     </div>
 
     @php
-        $dateRange = $snapshotFrom->format('M d, Y') . ' - ' . $snapshotTo->format('M d, Y');
+        $dateRange = $snapshotFromDisplay->format('M d, Y') . ' - ' . $snapshotToDisplay->format('M d, Y');
     @endphp
 
     <!-- KPI Metrics Cards - ALL IN ONE SINGLE ROW with 7 cards -->
     @if (isset($kpi) && !empty($kpi))
-    <div class="kpi-container">
-        <table class="kpi-table" cellpadding="0" cellspacing="0">
-            <tr>
-                <td style="width: 14.28%;">
-                    <div class="kpi-label">{{ translate('purchase_orders') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['purchase_count'] ?? 0)) }}</strong></div>
-                </td>
-                <td style="width: 14.28%;">
-                    <div class="kpi-label">{{ translate('quotations') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['quotation_count'] ?? 0)) }}</strong></div>
-                </td>
-                <td style="width: 14.28%;">
-                    <div class="kpi-label">{{ translate('confirmed_orders') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['confirmed_count'] ?? 0)) }}</strong></div>
-                </td>
-                <td style="width: 14.28%;">
-                    <div class="kpi-label">{{ translate('end_to_end') }}</div>
-                    <div class="kpi-value percentage"><strong>{{ number_format((float) ($kpi['end_to_end_rate'] ?? 0), 1) }}%</strong></div>
-                </td>
-                <td style="width: 14.28%;">
-                    <div class="kpi-label">{{ translate('po_to_quote') }}</div>
-                    <div class="kpi-value percentage"><strong>{{ number_format((float) ($kpi['purchase_to_quotation_rate'] ?? 0), 1) }}%</strong></div>
-                </td>
-                <td style="width: 14.28%;">
-                    <div class="kpi-label">{{ translate('quote_to_confirmed') }}</div>
-                    <div class="kpi-value percentage"><strong>{{ number_format((float) ($kpi['quotation_to_confirmed_rate'] ?? 0), 1) }}%</strong></div>
-                </td>
-                <td style="width: 14.28%;">
-                    <div class="kpi-label">{{ translate('cycle_time') }}</div>
-                    <div class="kpi-value small">
-                        <strong>
-                            @php
-                                $poToQuote = $kpi['avg_po_to_quote_hours'] !== null ? number_format((float) $kpi['avg_po_to_quote_hours'], 1) . 'h' : 'N/A';
-                                $quoteToConfirm = $kpi['avg_quote_to_confirm_hours'] !== null ? number_format((float) $kpi['avg_quote_to_confirm_hours'], 1) . 'h' : 'N/A';
-                            @endphp
-                            {{ $poToQuote }} / {{ $quoteToConfirm }}
-                        </strong>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
+        <div class="kpi-container">
+            <table class="kpi-table" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="width: 14.28%;">
+                        <div class="kpi-label">{{ translate('purchase_orders') }}</div>
+                        <div class="kpi-value">
+                            <strong>{{ number_format((int) ($kpi['purchase_count'] ?? 0)) }}</strong></div>
+                    </td>
+                    <td style="width: 14.28%;">
+                        <div class="kpi-label">{{ translate('quotations') }}</div>
+                        <div class="kpi-value">
+                            <strong>{{ number_format((int) ($kpi['quotation_count'] ?? 0)) }}</strong></div>
+                    </td>
+                    <td style="width: 14.28%;">
+                        <div class="kpi-label">{{ translate('confirmed_orders') }}</div>
+                        <div class="kpi-value">
+                            <strong>{{ number_format((int) ($kpi['confirmed_count'] ?? 0)) }}</strong></div>
+                    </td>
+                    <td style="width: 14.28%;">
+                        <div class="kpi-label">{{ translate('end_to_end') }}</div>
+                        <div class="kpi-value percentage">
+                            <strong>{{ number_format((float) ($kpi['end_to_end_rate'] ?? 0), 1) }}%</strong></div>
+                    </td>
+                    <td style="width: 14.28%;">
+                        <div class="kpi-label">{{ translate('po_to_quote') }}</div>
+                        <div class="kpi-value percentage">
+                            <strong>{{ number_format((float) ($kpi['purchase_to_quotation_rate'] ?? 0), 1) }}%</strong>
+                        </div>
+                    </td>
+                    <td style="width: 14.28%;">
+                        <div class="kpi-label">{{ translate('quote_to_confirmed') }}</div>
+                        <div class="kpi-value percentage">
+                            <strong>{{ number_format((float) ($kpi['quotation_to_confirmed_rate'] ?? 0), 1) }}%</strong>
+                        </div>
+                    </td>
+                    <td style="width: 14.28%;">
+                        <div class="kpi-label">{{ translate('cycle_time') }}</div>
+                        <div class="kpi-value small">
+                            <strong>
+                                @php
+                                    $poToQuote =
+                                        $kpi['avg_po_to_quote_hours'] !== null
+                                            ? number_format((float) $kpi['avg_po_to_quote_hours'], 1) . 'h'
+                                            : 'N/A';
+                                    $quoteToConfirm =
+                                        $kpi['avg_quote_to_confirm_hours'] !== null
+                                            ? number_format((float) $kpi['avg_quote_to_confirm_hours'], 1) . 'h'
+                                            : 'N/A';
+                                @endphp
+                                {{ $poToQuote }} / {{ $quoteToConfirm }}
+                            </strong>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
     @endif
 
     <!-- Charts Row: Stage Trend + Stage Snapshot -->

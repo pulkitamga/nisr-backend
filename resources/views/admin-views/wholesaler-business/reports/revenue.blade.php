@@ -93,7 +93,8 @@ session('direction') === 'rtl' ||
 
             </div>
             <span class="badge badge-light text-dark">{{ translate('updated') }}
-                {{ now()->format('M d, Y h:i A') }}</span>
+                  {{ now()->translatedFormat('d F Y h:i A') }}</span>
+                
         </div>
     </div>
 

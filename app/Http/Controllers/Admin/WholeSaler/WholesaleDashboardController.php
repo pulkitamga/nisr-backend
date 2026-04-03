@@ -202,6 +202,15 @@ class WholesaleDashboardController extends BaseController
     public function revenueReport(Request $request): View|BinaryFileResponse|Response
     {
         [$snapshotFrom, $snapshotTo] = $this->resolveReportDateRange($request);
+        $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+        if ($isRtl) {
+            $snapshotFromDisplay = $snapshotFrom->translatedFormat('d F Y');
+            $snapshotToDisplay   = $snapshotTo->translatedFormat('d F Y');
+        } else {
+            $snapshotFromDisplay = $snapshotFrom->format('d M, Y');
+            $snapshotToDisplay   = $snapshotTo->format('d M, Y');
+        }
         $filters = [
             'date_type' => (string)$request->input('date_type', 'this_year'),
             'from' => $snapshotFrom->toDateString(),
@@ -227,7 +236,7 @@ class WholesaleDashboardController extends BaseController
         $collectionRate = $totalRevenue > 0 ? ($paidRevenue / $totalRevenue) * 100 : 0;
         $fulfillmentRate = $totalOrders > 0 ? ($deliveredOrders / $totalOrders) * 100 : 0;
         $openRevenue = max(0, $totalRevenue - $paidRevenue);
-        $dateRange = $snapshotFrom->format('d M, Y') . ' - ' . $snapshotTo->format('d M, Y');
+        $dateRange = $snapshotFrom->translatedFormat('d M, Y') . ' - ' . $snapshotTo->translatedFormat('d M, Y');
         $trendRows = WholesaleConfirmOrder::query()
             ->whereBetween('created_at', [$snapshotFrom, $snapshotTo])
             ->selectRaw($trendGrouping['select'] . ' as period_key')
@@ -354,8 +363,8 @@ class WholesaleDashboardController extends BaseController
                     compact(
                         'kpi',
                         'topWholesalers',
-                        'snapshotFrom',
-                        'snapshotTo',
+                        'snapshotFromDisplay',
+                        'snapshotToDisplay',
                         'isRtl',
                         'insights',
                         'revenueTrendChartImage',
@@ -389,6 +398,17 @@ class WholesaleDashboardController extends BaseController
     {
         [$snapshotFrom, $snapshotTo] = $this->resolveReportDateRange($request);
         $dateRange = $snapshotFrom->format('d M, Y') . ' - ' . $snapshotTo->format('d M, Y');
+        $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+        $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+        if ($isRtl) {
+            $snapshotFromDisplay = $snapshotFrom->translatedFormat('d F Y');
+            $snapshotToDisplay   = $snapshotTo->translatedFormat('d F Y');
+        } else {
+            $snapshotFromDisplay = $snapshotFrom->format('d M, Y');
+            $snapshotToDisplay   = $snapshotTo->format('d M, Y');
+        }
         $filters = [
             'date_type' => (string)$request->input('date_type', 'this_year'),
             'from' => $snapshotFrom->toDateString(),
@@ -595,6 +615,8 @@ class WholesaleDashboardController extends BaseController
                         'tierRevenue',
                         'snapshotFrom',
                         'snapshotTo',
+                        'snapshotFromDisplay',
+                        'snapshotToDisplay',
                         'isRtl',
                         'insights',
                         'stageSnapshotChartImage',
@@ -624,10 +646,11 @@ class WholesaleDashboardController extends BaseController
             'insights',
             'snapshotFrom',
             'snapshotTo',
+            'snapshotFromDisplay',
+            'snapshotToDisplay',
             'filters',
             'wholesalers',
-            'tiers',
-            'dateRange'
+            'tiers'
         ));
     }
 
@@ -801,13 +824,13 @@ class WholesaleDashboardController extends BaseController
     private function formatReportPeriodLabel(string $periodKey, string $unit): string
     {
         if ($unit === 'day') {
-            return Carbon::parse($periodKey)->format('M d');
+            return Carbon::parse($periodKey)->translatedFormat('M d');
         }
         if ($unit === 'week') {
             [$year, $week] = explode('-W', $periodKey);
             return 'W' . $week . ' ' . $year;
         }
-        return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
+        return Carbon::createFromFormat('Y-m', $periodKey)->translatedFormat('M Y');
     }
 
     private function buildRevenueInsights(

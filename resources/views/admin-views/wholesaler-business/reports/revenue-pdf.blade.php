@@ -315,8 +315,7 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('wholesale_revenue_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
-                {{ $snapshotTo->format('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}:{{ $snapshotFromDisplay }} - {{ $snapshotToDisplay }}</p>
         </div>
         <div class="logo-container">
             @php
@@ -370,7 +369,7 @@
     @endif
 
     @php
-        $dateRange = $snapshotFrom->format('M d, Y') . ' - ' . $snapshotTo->format('M d, Y');
+       $dateRange = $snapshotFromDisplay . ' - ' . $snapshotToDisplay;
     @endphp
 
     <!-- First Row: Revenue Trend + Delivery Status side by side -->
