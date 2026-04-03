@@ -624,7 +624,11 @@ class WholesaleDashboardController extends BaseController
                 }
                 public function headings(): array
                 {
-                    return ['Tier', 'Orders', 'Revenue'];
+                    return [
+                        translate('tier'),
+                        translate('orders'),
+                        translate('revenue')
+                    ];
                 }
                 // Apply the Custom Header Design
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
