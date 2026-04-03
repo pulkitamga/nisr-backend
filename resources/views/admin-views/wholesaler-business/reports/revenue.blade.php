@@ -364,10 +364,7 @@
             console.log('Delivery Data:', deliveryData);
 
             // Format money function
-            const currencySymbol = '{{ session('
-                    currency_symbol ') ??
-                '
-                    $ ' }}';
+            const currencySymbol = '{{ session('currency_symbol ') ?? '$' }}';
             const fmtMoney = (value) => `${currencySymbol}${Number(value || 0).toFixed(2)}`;
 
             // Revenue Trend Chart
@@ -378,8 +375,7 @@
                     data: {
                         labels: trendData.labels,
                         datasets: [{
-                                label: '{{ translate('
-                                                            orders ') }}',
+                                label: '{{ translate('orders ') }}',
                                 data: trendData.orders || [],
                                 backgroundColor: 'rgba(15, 118, 110, 0.22)',
                                 borderColor: '#0f766e',
@@ -388,8 +384,7 @@
                                 yAxisID: 'A'
                             },
                             {
-                                label: '{{ translate('
-                                                            revenue ') }}',
+                                label: '{{ translate('revenue ') }}',
                                 data: trendData.revenue || [],
                                 borderColor: '#0f766e',
                                 backgroundColor: 'transparent',
@@ -400,8 +395,7 @@
                                 yAxisID: 'B'
                             },
                             {
-                                label: '{{ translate('
-                                                            paid_revenue ') }}',
+                                label: '{{ translate('paid_revenue ') }}',
                                 data: trendData.paid_revenue || [],
                                 borderColor: '#14b8a6',
                                 backgroundColor: 'transparent',
