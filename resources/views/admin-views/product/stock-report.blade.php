@@ -26,19 +26,24 @@
                             <div class="form-group">
                                 <label class="title-color">{{ translate('date') }}</label>
                                 <select class="form-control" name="date_type" id="date_type">
-                                    <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
+                                    <option value="this_year"
+                                        {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
                                         {{ translate('this_Year') }}
                                     </option>
-                                    <option value="this_month" {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>
+                                    <option value="this_month"
+                                        {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>
                                         {{ translate('this_Month') }}
                                     </option>
-                                    <option value="this_week" {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>
+                                    <option value="this_week"
+                                        {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>
                                         {{ translate('this_Week') }}
                                     </option>
-                                    <option value="today" {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>
+                                    <option value="today"
+                                        {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>
                                         {{ translate('today') }}
                                     </option>
-                                    <option value="custom_date" {{ ($filters['date_type'] ?? '') === 'custom_date' ? 'selected' : '' }}>
+                                    <option value="custom_date"
+                                        {{ ($filters['date_type'] ?? '') === 'custom_date' ? 'selected' : '' }}>
                                         {{ translate('custom_Date') }}
                                     </option>
                                 </select>
@@ -68,7 +73,7 @@
                                     <option value="">{{ translate('select_category') }}</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category['id'] }}"
-                                            {{ (int)($filters['category_id'] ?? 0) === (int)$category['id'] ? 'selected' : '' }}>
+                                            {{ (int) ($filters['category_id'] ?? 0) === (int) $category['id'] ? 'selected' : '' }}>
                                             {{ $category['defaultName'] }}
                                         </option>
                                     @endforeach
@@ -82,10 +87,12 @@
                                 <select class="js-select2-custom form-control" name="product_id">
                                     <option value="">{{ translate('select_product') }}</option>
                                     @foreach ($productsForFilter as $listProduct)
-                                        <option value="{{ $listProduct->id }}"
-                                            {{ (int)($filters['product_id'] ?? 0) === (int)$listProduct->id ? 'selected' : '' }}>
-                                            {{ $listProduct->name }}
-                                        </option>
+                                        @if (!empty(trim($listProduct->name)))
+                                            <option value="{{ $listProduct->id }}"
+                                                {{ (int) ($filters['product_id'] ?? 0) === (int) $listProduct->id ? 'selected' : '' }}>
+                                                {{ $listProduct->name }}
+                                            </option>
+                                        @endif
                                     @endforeach
                                 </select>
                             </div>
@@ -98,21 +105,34 @@
                             value="{{ !empty($filters['include_internal_transfer']) ? 1 : 0 }}">
 
                         <div class="col-12">
-                            <div class="d-flex gap-3 justify-content-end">
-                                @if($reportReady)
-                                    <a href="{{ route('admin.products.stock-report', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success px-4">
-                                        {{ translate('excel') }}
-                                    </a>
-                                    <a href="{{ route('admin.products.stock-report', array_merge(request()->query(), ['download' => 'pdf'])) }}" class="btn btn-outline-danger px-4">
-                                        {{ translate('PDF') }}
-                                    </a>
-                                @endif
+                            <div class="d-flex gap-3 justify-content-start">
+
+                                <!-- Filter Button -->
+                                <button type="submit" class="btn btn--primary px-5">
+                                    {{ translate('filter') }}
+                                </button>
+
+                                <!-- Reset Button -->
                                 <a href="{{ route('admin.products.stock-report') }}" class="btn btn-secondary px-5">
                                     {{ translate('reset') }}
                                 </a>
-                                <button type="submit" class="btn btn--primary px-5">
-                                    {{ translate('show_data') }}
-                                </button>
+
+                                @if ($reportReady)
+                                    <!-- Excel -->
+                                    <a href="{{ route('admin.products.stock-report', array_merge(request()->query(), ['download' => 'excel'])) }}"
+                                        class="btn btn-outline-success px-4">
+                                        <i class="tio-download-to me-1"></i>
+                                        {{ translate('excel') }}
+                                    </a>
+
+                                    <!-- PDF -->
+                                    <a href="{{ route('admin.products.stock-report', array_merge(request()->query(), ['download' => 'pdf'])) }}"
+                                        class="btn btn-outline-danger px-4">
+                                        <i class="tio-download-to me-1"></i>
+                                        {{ translate('PDF') }}
+                                    </a>
+                                @endif
+
                             </div>
                         </div>
                     </div>
@@ -121,11 +141,11 @@
         </div>
 
         @if ($reportReady)
-        <div class="card">
-            <div class="card-body">
-                @include('admin-views.product.partials._stock-report-content')
+            <div class="card">
+                <div class="card-body">
+                    @include('admin-views.product.partials._stock-report-content')
+                </div>
             </div>
-        </div>
         @else
             <div class="card">
                 <div class="card-body text-center py-4 text-muted">
