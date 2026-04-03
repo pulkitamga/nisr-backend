@@ -35,7 +35,7 @@ use App\Models\WholesalePurchaseOrder;
 use App\Models\WholesaleQuotation;
 use App\Models\User;
 use App\Enums\ViewPaths\Admin\WholeSaler;
-
+use Maatwebsite\Excel\Concerns\WithStyles;
 
 class WholesaleDashboardController extends BaseController
 {
@@ -335,9 +335,20 @@ class WholesaleDashboardController extends BaseController
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
             $rows = $topWholesalers->map(function ($row) {
-                return [(string)($row->wholeseller?->name ?? 'N/A'), (int)$row->orders_count, round((float)$row->total_revenue, 2)];
+                // Calculate collection rate for this wholesaler
+                $collection = $row->total_revenue > 0
+                    ? round(($row->paid_revenue / $row->total_revenue) * 100, 1) . '%'
+                    : '0%';
+
+                return [
+                    (string)($row->wholeseller?->name ?? 'N/A'),
+                    (string)($row->wholeseller?->wholesalerBusiness?->company_name ?? 'N/A'), // Company
+                    (int)$row->orders_count,                                               // Orders
+                    round((float)$row->total_revenue, 2),                                   // Revenue
+                    $collection                                                            // Collection
+                ];
             })->values()->all();
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -345,7 +356,26 @@ class WholesaleDashboardController extends BaseController
                 }
                 public function headings(): array
                 {
-                    return ['Wholesaler', 'Orders', 'Revenue'];
+                    return [
+                        translate('wholesaler'),
+                        translate('company'),
+                        translate('orders'),
+                        translate('revenue'),
+                        translate('collection')
+                    ];
+                }
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
+                {
+                    return [
+                        1 => [
+                            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['rgb' => '239e92'] // Your Seafoam Green
+                            ],
+                            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                        ],
+                    ];
                 }
             }, 'wholesale-revenue-report.xlsx');
         }
@@ -586,7 +616,7 @@ class WholesaleDashboardController extends BaseController
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
             $rows = $tierRevenue->map(fn($row) => [(string)$row->tier_name, (int)$row->orders_count, round((float)$row->total_revenue, 2)])->values()->all();
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -595,6 +625,28 @@ class WholesaleDashboardController extends BaseController
                 public function headings(): array
                 {
                     return ['Tier', 'Orders', 'Revenue'];
+                }
+                // Apply the Custom Header Design
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
+                {
+                    $sheet->getStyle('A1:C1')->getFill()->applyFromArray([
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => '239e92'],
+                    ]);
+
+                    return [
+                        1 => [
+                            'font' => [
+                                'bold' => true,
+                                'color' => ['rgb' => 'FFFFFF'],
+                                'size' => 12
+                            ],
+                            'alignment' => [
+                                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                            ],
+                        ],
+                    ];
                 }
             }, 'wholesale-pipeline-report.xlsx');
         }
