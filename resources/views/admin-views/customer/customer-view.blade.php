@@ -542,7 +542,7 @@
                         @if($integrationData['crm']['recent_messages']->count() > 0)
                             @foreach($integrationData['crm']['recent_messages'] as $message)
                                 <li>
-                                    <a class="line--limit-1" href="{{ route('admin.crm.massage.show', $message->id) }}">
+                                    <a class="line--limit-1" href="{{ route('admin.crm.message.show', $message->id) }}">
                                         {{ $message->subject ?: translate('no_subject') }}
                                     </a>
                                     <span class="badge badge-soft-info">{{ translate($message->status) }}</span>

@@ -189,7 +189,7 @@ class SlaService
         $type = $this->getEntityType($entity);
 
         return match ($type) {
-            'inbox_message' => route('admin.crm.massage.show', $entity->id),
+            'inbox_message' => route('admin.crm.message.show', $entity->id),
             'lead'          => route('admin.crm.lead.show', $entity->id),
             'company_deal' => route('admin.crm.deals.wholesale.view', $entity->id),
             'contact_deal' => route('admin.crm.deals.retail.view', $entity->id),
