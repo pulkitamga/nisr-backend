@@ -201,30 +201,6 @@ function buildPartLaborRow(index) {
     `;
 }
 
-function wireLanguageTabs(tabSelector, formSelector, prefix) {
-    const tabs = document.querySelectorAll(tabSelector);
-
-    if (!tabs.length) {
-        return;
-    }
-
-    tabs.forEach((tab) => {
-        tab.addEventListener('click', function () {
-            const lang = this.id.replace(prefix + '-', '').replace('-link', '');
-
-            tabs.forEach((item) => item.classList.remove('active'));
-            this.classList.add('active');
-
-            document.querySelectorAll(formSelector).forEach((form) => form.classList.add('d-none'));
-
-            const selectedForm = document.getElementById(prefix + '-' + lang + '-form');
-            if (selectedForm) {
-                selectedForm.classList.remove('d-none');
-            }
-        });
-    });
-}
-
 function initializeSignaturePad() {
     const canvas = document.getElementById('signatureCanvas');
     const signatureInput = document.getElementById('customer_signature');
@@ -422,8 +398,5 @@ $(function () {
     initializeServiceTicketEstimateCalculator();
     initializeServiceTicketItems();
     initializeSignaturePad();
-    wireLanguageTabs('.estimate-language-tab', '.estimate-language-form', 'esti');
-    wireLanguageTabs('.job-language-tab', '.job-language-form', 'job');
-    wireLanguageTabs('.order-language-tab', '.order-language-form', 'order');
     initializeForceClosePrompt();
 });

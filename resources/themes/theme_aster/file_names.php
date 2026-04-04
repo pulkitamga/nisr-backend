@@ -4,6 +4,7 @@ return [
     'home' => 'theme-views.home',
     'product_search_result' => 'theme-views.partials._search-result',
     'privacy_policy_page' => 'theme-views.pages.privacy-policy',
+    'service_policy_page' => 'theme-views.pages.service-policy',
     'refund_policy_page' => 'theme-views.pages.refund-policy',
     'return_policy_page' => 'theme-views.pages.return-policy',
     'terms_conditions_page' => 'theme-views.pages.terms-conditions',

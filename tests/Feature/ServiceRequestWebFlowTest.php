@@ -91,11 +91,13 @@ class ServiceRequestWebFlowTest extends TestCase
             ->post(route('service.request.store'), [
                 'service_id' => $service->id,
                 'service_option' => 'in_shop',
-                'vehicle_type' => 'Sedan',
+                'agree_terms' => 1,
                 'vehicle_make' => 'Toyota',
                 'vehicle_model' => 'Corolla',
                 'vehicle_year' => 2024,
                 'vehicle_mileage' => 15000,
+                'problem_description' => 'Battery warning light stays on after startup.',
+                'notes' => 'Customer can arrive after 4 PM.',
             ]);
 
         $response->assertRedirect('/service/test-service');
@@ -106,6 +108,53 @@ class ServiceRequestWebFlowTest extends TestCase
         $this->assertSame('service', $ticket->sub_type);
         $this->assertSame($service->id, (int) $ticket->service_id);
         $this->assertSame(1, InboxMessage::query()->count());
+        $inboxMessage = InboxMessage::query()->firstOrFail();
+        $this->assertSame('New Service Request For - Full Service', $inboxMessage->subject);
+        $this->assertSame('A new service request has been submitted.', $inboxMessage->body);
+        $this->assertSame('Battery warning light stays on after startup.', $inboxMessage->details['problem_description'] ?? null);
+        $this->assertSame('Customer can arrive after 4 PM.', $inboxMessage->details['notes'] ?? null);
+        $this->assertStringContainsString('Problem description: Battery warning light stays on after startup.', (string) $ticket->description);
+        $this->assertStringContainsString('Notes: Customer can arrive after 4 PM.', (string) $ticket->description);
+    }
+
+    public function test_invalid_mobile_service_request_redirects_back_with_errors_and_old_input(): void
+    {
+        $customer = User::query()->create([
+            'f_name' => 'Mona',
+            'l_name' => 'Ali',
+            'email' => 'mona@example.com',
+            'phone' => '201111111111',
+            'password' => 'secret',
+        ]);
+
+        $service = Service::query()->create([
+            'service_id' => 'SRV-500',
+            'title' => 'Full Service',
+            'base_price_inshop' => 200,
+            'base_price_mobile' => 300,
+            'included_km_mobile' => 10,
+            'travel_fee_per_km' => 10,
+            'parts_included' => ['oil filter'],
+            'call_center_flag' => false,
+        ]);
+
+        $response = $this->actingAs($customer, 'customer')
+            ->from('/service/test-service')
+            ->post(route('service.request.store'), [
+                'service_id' => $service->id,
+                'service_option' => 'mobile',
+                'agree_terms' => 1,
+                'vehicle_type' => 'Sedan',
+                'vehicle_mileage' => 15000,
+                'vin' => 'VIN-100',
+            ]);
+
+        $response->assertRedirect('/service/test-service');
+        $response->assertSessionHasErrors(['country', 'state', 'city', 'area', 'address']);
+        $response->assertSessionHasInput('service_option', 'mobile');
+        $response->assertSessionHasInput('vehicle_type', 'Sedan');
+        $response->assertSessionHasInput('vehicle_mileage', 15000);
+        $response->assertSessionHasInput('vin', 'VIN-100');
     }
 
     private function createTestSchema(): void

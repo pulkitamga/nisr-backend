@@ -192,23 +192,24 @@
                                  aria-labelledby="approvalReviewModalLabel{{ $business->wholesaler['id'] }}"
                                  aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
-                                    <div class="modal-content text-start" data-wholesaler-approval-modal="{{ $business->wholesaler['id'] }}">
-                                        <div class="modal-header">
-                                            <div>
-                                                <h5 class="modal-title mb-1" id="approvalReviewModalLabel{{ $business->wholesaler['id'] }}">
-                                                    {{ translate('Review') }}: <span class="bidi-auto">{{ $business->company_name ?? translate('N/A') }}</span>
+                                    <div class="modal-content text-start wholesale-review-modal" data-wholesaler-approval-modal="{{ $business->wholesaler['id'] }}">
+                                        <div class="modal-header wholesale-review-modal__header">
+                                            <div class="wholesale-review-modal__hero">
+                                                <p class="wholesale-review-modal__eyebrow mb-2">{{ translate('Review') }}</p>
+                                                <h5 class="modal-title wholesale-review-modal__title mb-2" id="approvalReviewModalLabel{{ $business->wholesaler['id'] }}">
+                                                    <span class="bidi-auto">{{ $business->company_name ?? translate('N/A') }}</span>
                                                 </h5>
-                                                <div class="crm-list-toolbar__summary">
-                                                    <span class="crm-list-toolbar__chip">
-                                                        <span class="crm-list-toolbar__chip-label">{{ translate('wholesaler') }}</span>
+                                                <div class="wholesale-review-modal__meta">
+                                                    <span class="wholesale-review-modal__meta-pill">
+                                                        <span class="wholesale-review-modal__meta-label">{{ translate('wholesaler') }}</span>
                                                         <span class="bidi-auto">{{ $business->wholesaler->name ?? translate('N/A') }}</span>
                                                     </span>
-                                                    <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
-                                                        <span class="crm-list-toolbar__chip-label">{{ translate('trade') }}</span>
+                                                    <span class="wholesale-review-modal__meta-pill">
+                                                        <span class="wholesale-review-modal__meta-label">{{ translate('trade') }}</span>
                                                         <span class="bidi-auto">{{ $business->trade_name ?? translate('N/A') }}</span>
                                                     </span>
-                                                    <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
-                                                        <span class="crm-list-toolbar__chip-label">{{ translate('documents') }}</span>
+                                                    <span class="wholesale-review-modal__meta-pill wholesale-review-modal__meta-pill--accent">
+                                                        <span class="wholesale-review-modal__meta-label">{{ translate('documents') }}</span>
                                                         <span>{{ $availableDocumentCount }}</span>
                                                     </span>
                                                 </div>
@@ -217,126 +218,146 @@
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
-                                        <div class="modal-body">
-                                            <div class="row g-3">
-                                                <div class="col-lg-4">
-                                                    <div class="border rounded p-3 h-100">
-                                                        <h6 class="mb-3">{{ translate('Business summary') }}</h6>
-                                                        <div class="crm-list-toolbar__summary mb-3">
-                                                            <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
-                                                                <span class="crm-list-toolbar__chip-label">{{ translate('reg._no.') }}</span>
-                                                                <span class="bidi-ltr">{{ $business->registration_number ?? translate('N/A') }}</span>
-                                                            </span>
-                                                            <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
-                                                                <span class="crm-list-toolbar__chip-label">{{ translate('tax._no.') }}</span>
-                                                                <span class="bidi-ltr">{{ $business->tax_id ?? translate('N/A') }}</span>
-                                                            </span>
-                                                            <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
-                                                                <span class="crm-list-toolbar__chip-label">{{ translate('VAT._no.') }}</span>
-                                                                <span class="bidi-ltr">{{ $business->vat_number ?? translate('N/A') }}</span>
-                                                            </span>
+                                        <div class="modal-body wholesale-review-modal__body">
+                                            <div class="row g-4">
+                                                <div class="col-xl-4">
+                                                    <section class="wholesale-review-panel wholesale-review-panel--summary h-100">
+                                                        <div class="wholesale-review-panel__header">
+                                                            <h6 class="mb-0">{{ translate('Business summary') }}</h6>
                                                         </div>
-                                                        <div class="crm-row-actions__chips justify-content-start">
-                                                            @if($business->wholesaler->tier)
-                                                                <span class="crm-row-actions__chip">{{ $tierLabel ?: $business->wholesaler->tier }}</span>
-                                                            @else
-                                                                <span class="crm-row-actions__chip">{{ translate('Pending setup') }}</span>
-                                                            @endif
-                                                            <span class="crm-row-actions__chip">{{ (float) ($business->wholesaler->wholesaler_discount ?? 0) }}%</span>
+
+                                                        <div class="wholesale-review-facts">
+                                                            <div class="wholesale-review-fact">
+                                                                <span class="wholesale-review-fact__label">{{ translate('reg._no.') }}</span>
+                                                                <span class="wholesale-review-fact__value bidi-ltr">{{ $business->registration_number ?? translate('N/A') }}</span>
+                                                            </div>
+                                                            <div class="wholesale-review-fact">
+                                                                <span class="wholesale-review-fact__label">{{ translate('tax._no.') }}</span>
+                                                                <span class="wholesale-review-fact__value bidi-ltr">{{ $business->tax_id ?? translate('N/A') }}</span>
+                                                            </div>
+                                                            <div class="wholesale-review-fact">
+                                                                <span class="wholesale-review-fact__label">{{ translate('VAT._no.') }}</span>
+                                                                <span class="wholesale-review-fact__value bidi-ltr">{{ $business->vat_number ?? translate('N/A') }}</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
+
+                                                        <div class="wholesale-review-status">
+                                                            <div class="wholesale-review-status__item">
+                                                                <span class="wholesale-review-status__label">{{ translate('tier') }}</span>
+                                                                <span class="wholesale-review-status__value">
+                                                                    {{ $business->wholesaler->tier ? ($tierLabel ?: $business->wholesaler->tier) : translate('Pending setup') }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="wholesale-review-status__item">
+                                                                <span class="wholesale-review-status__label">{{ translate('discount %') }}</span>
+                                                                <span class="wholesale-review-status__value">{{ (float) ($business->wholesaler->wholesaler_discount ?? 0) }}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </section>
                                                 </div>
-                                                <div class="col-lg-8">
-                                                    <form id="approvalApproveForm{{ $business->wholesaler['id'] }}"
-                                                          action="{{ route('admin.wholesale.business.approve-reject') }}"
-                                                          method="POST"
-                                                          class="border rounded p-3 h-100">
-                                                        @csrf
-                                                        <input type="hidden" name="id" value="{{ $business->wholesaler['id'] }}">
-                                                        <input type="hidden" name="action" value="approve">
-                                                        <h6 class="mb-3">{{ translate('Approval setup') }}</h6>
-                                                        <div class="row g-3">
-                                                            <div class="col-md-6">
-                                                                <label class="form-label" for="approval-tier-{{ $business->wholesaler['id'] }}">{{ translate('tier') }}</label>
-                                                                <select name="tier"
-                                                                        id="approval-tier-{{ $business->wholesaler['id'] }}"
-                                                                        class="form-control {{ $isActiveApprovalModal && $errors->has('tier') ? 'is-invalid' : '' }}"
-                                                                        required>
-                                                                    <option value="" disabled {{ blank($selectedTier) ? 'selected' : '' }}>
-                                                                        {{ translate('Select Tier') }}
-                                                                    </option>
-                                                                    @foreach($tiers as $tier)
-                                                                        <option value="{{ $tier->name }}" {{ (string) $selectedTier === (string) $tier->name ? 'selected' : '' }}>
-                                                                            {{ $tier->getTranslatedField('name') }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                                @if($isActiveApprovalModal && $errors->has('tier'))
-                                                                    <div class="invalid-feedback d-block">{{ $errors->first('tier') }}</div>
-                                                                @endif
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <label class="form-label" for="approval-discount-{{ $business->wholesaler['id'] }}">{{ translate('discount %') }}</label>
-                                                                <input type="number"
-                                                                       name="wholesaler_discount"
-                                                                       id="approval-discount-{{ $business->wholesaler['id'] }}"
-                                                                       class="form-control {{ $isActiveApprovalModal && $errors->has('wholesaler_discount') ? 'is-invalid' : '' }}"
-                                                                       min="0"
-                                                                       step="0.01"
-                                                                       value="{{ $selectedDiscount }}"
-                                                                       required>
-                                                                @if($isActiveApprovalModal && $errors->has('wholesaler_discount'))
-                                                                    <div class="invalid-feedback d-block">{{ $errors->first('wholesaler_discount') }}</div>
-                                                                @endif
-                                                            </div>
+                                                <div class="col-xl-8">
+                                                    <section class="wholesale-review-panel h-100">
+                                                        <div class="wholesale-review-panel__header">
+                                                            <h6 class="mb-0">{{ translate('Approval setup') }}</h6>
                                                         </div>
-                                                    </form>
+                                                        <form id="approvalApproveForm{{ $business->wholesaler['id'] }}"
+                                                              action="{{ route('admin.wholesale.business.approve-reject') }}"
+                                                              method="POST"
+                                                              class="wholesale-review-form">
+                                                            @csrf
+                                                            <input type="hidden" name="id" value="{{ $business->wholesaler['id'] }}">
+                                                            <input type="hidden" name="action" value="approve">
+
+                                                            <div class="row g-3">
+                                                                <div class="col-md-7">
+                                                                    <label class="form-label wholesale-review-form__label" for="approval-tier-{{ $business->wholesaler['id'] }}">{{ translate('tier') }}</label>
+                                                                    <select name="tier"
+                                                                            id="approval-tier-{{ $business->wholesaler['id'] }}"
+                                                                            class="form-control wholesale-review-form__control {{ $isActiveApprovalModal && $errors->has('tier') ? 'is-invalid' : '' }}"
+                                                                            required>
+                                                                        <option value="" disabled {{ blank($selectedTier) ? 'selected' : '' }}>
+                                                                            {{ translate('Select Tier') }}
+                                                                        </option>
+                                                                        @foreach($tiers as $tier)
+                                                                            <option value="{{ $tier->name }}" {{ (string) $selectedTier === (string) $tier->name ? 'selected' : '' }}>
+                                                                                {{ $tier->getTranslatedField('name') }}
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                    @if($isActiveApprovalModal && $errors->has('tier'))
+                                                                        <div class="invalid-feedback d-block">{{ $errors->first('tier') }}</div>
+                                                                    @endif
+                                                                </div>
+                                                                <div class="col-md-5">
+                                                                    <label class="form-label wholesale-review-form__label" for="approval-discount-{{ $business->wholesaler['id'] }}">{{ translate('discount %') }}</label>
+                                                                    <input type="number"
+                                                                           name="wholesaler_discount"
+                                                                           id="approval-discount-{{ $business->wholesaler['id'] }}"
+                                                                           class="form-control wholesale-review-form__control {{ $isActiveApprovalModal && $errors->has('wholesaler_discount') ? 'is-invalid' : '' }}"
+                                                                           min="0"
+                                                                           step="0.01"
+                                                                           value="{{ $selectedDiscount }}"
+                                                                           required>
+                                                                    @if($isActiveApprovalModal && $errors->has('wholesaler_discount'))
+                                                                        <div class="invalid-feedback d-block">{{ $errors->first('wholesaler_discount') }}</div>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </section>
                                                 </div>
                                             </div>
 
-                                            <div class="mt-4">
-                                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                                                    <h6 class="mb-0">{{ translate('Available documents') }}</h6>
-                                                    <div class="crm-row-actions__chips justify-content-start">
-                                                        @foreach($documentCards as $document)
-                                                            <span class="crm-row-actions__chip {{ blank($document['file']) ? 'opacity-75' : '' }}">
-                                                                {{ $document['label'] }}
-                                                            </span>
-                                                        @endforeach
+                                            <section class="wholesale-review-documents mt-4">
+                                                <div class="wholesale-review-panel__header wholesale-review-panel__header--documents">
+                                                    <div>
+                                                        <h6 class="mb-1">{{ translate('Available documents') }}</h6>
+                                                        <div class="wholesale-review-modal__meta">
+                                                            @foreach($documentCards as $document)
+                                                                <span class="wholesale-review-modal__meta-pill {{ blank($document['file']) ? 'wholesale-review-modal__meta-pill--muted' : '' }}">
+                                                                    {{ $document['label'] }}
+                                                                </span>
+                                                            @endforeach
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="row g-3">
                                                     @foreach($documentCards as $document)
                                                         <div class="col-md-4">
-                                                            <div class="border rounded p-3 h-100">
-                                                                <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                                            <article class="wholesale-document-card h-100">
+                                                                <div class="wholesale-document-card__header">
                                                                     <h6 class="mb-0">{{ $document['label'] }}</h6>
                                                                     @if(filled($document['file']))
                                                                         <a href="{{ asset($document['path'] . $document['file']) }}"
                                                                            target="_blank"
                                                                            rel="noopener noreferrer"
-                                                                           class="btn btn-outline-info btn-sm">
+                                                                           class="btn btn-outline-info btn-sm wholesale-document-card__preview">
                                                                             {{ translate('Preview') }}
                                                                         </a>
                                                                     @endif
                                                                 </div>
                                                                 @if(filled($document['file']))
-                                                                    <img src="{{ asset($document['path'] . $document['file']) }}"
-                                                                         class="img-fluid rounded border"
-                                                                         alt="{{ $document['label'] }}"
-                                                                         loading="lazy">
+                                                                    <a href="{{ asset($document['path'] . $document['file']) }}"
+                                                                       target="_blank"
+                                                                       rel="noopener noreferrer"
+                                                                       class="wholesale-document-card__image-link">
+                                                                        <img src="{{ asset($document['path'] . $document['file']) }}"
+                                                                             class="img-fluid wholesale-document-card__image"
+                                                                             alt="{{ $document['label'] }}"
+                                                                             loading="lazy">
+                                                                    </a>
                                                                 @else
-                                                                    <div class="d-flex align-items-center justify-content-center text-muted border rounded py-5">
+                                                                    <div class="wholesale-document-card__empty">
                                                                         {{ translate('No document uploaded') }}
                                                                     </div>
                                                                 @endif
-                                                            </div>
+                                                            </article>
                                                         </div>
                                                     @endforeach
                                                 </div>
-                                            </div>
+                                            </section>
                                         </div>
-                                        <div class="modal-footer justify-content-between">
+                                        <div class="modal-footer wholesale-review-modal__footer">
                                             <a href="{{ route('admin.wholesale.business.wholesaler.profile', $business->id) }}" class="btn btn-secondary">
                                                 {{ translate('view') }}
                                             </a>

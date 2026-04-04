@@ -30,7 +30,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\SupportTicketNotification;
-use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // New
 use App\Services\ServiceWorkflowNotificationService;
@@ -46,7 +45,6 @@ class ServiceTicketController extends BaseController
         private readonly SupportTicketConvRepositoryInterface $supportTicketConvRepo,
         private readonly DepartmentRepositoryInterface $departmentRepo,
         private readonly AdminRepositoryInterface $adminRepo,
-        private readonly TranslationRepositoryInterface     $translationRepo,
         private readonly AdminNotificationRepositoryInterface $notificationRepo, // New
         private readonly ServiceWorkflowNotificationService $workflowNotifier,
         private readonly EscalationService                 $escalationService,
@@ -345,13 +343,7 @@ class ServiceTicketController extends BaseController
             'subtotal' => 'required|numeric|min:0',
             'tax' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',
-            'description' => 'required|array',
-        ]);
-
-        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []));
-        if ($defaultLangIndex === false) $defaultLangIndex = 0;
-        $request->validate([
-            "description.$defaultLangIndex" => 'required|string',
+            'description' => 'required|string',
         ]);
 
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
@@ -371,7 +363,7 @@ class ServiceTicketController extends BaseController
             'updated_at' => now(),
         ]);
 
-        $estimate->description = $request->description[$defaultLangIndex];
+        $estimate->description = $request->description;
         $estimate->save();
 
         // Keep workflow moving forward, but do not regress if estimate is revised later.
@@ -401,9 +393,6 @@ class ServiceTicketController extends BaseController
             recipients: [['type' => 'customer', 'id' => $ticket->customer_id]],
             templateData: ['amount' => number_format($estimate->total, 2)]
         );
-
-        // TRANSLATION
-        $this->translationRepo->add($request, 'App\Models\ServiceEstimate', $estimate->id);
 
         Toastr::success(translate('estimate_created_successfully'));
         return redirect()->back();
@@ -582,16 +571,9 @@ class ServiceTicketController extends BaseController
             'job_id' => 'required|exists:service_jobs,id',
             'gps_coordinates' => 'nullable|string',
             'odometer_reading' => 'nullable|numeric',
-            'description' => 'required|array',
-            'lang' => 'required|array',
+            'description' => 'required|string',
             'images' => 'required|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
-        ]);
-
-        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []));
-        if ($defaultLangIndex === false) $defaultLangIndex = 0;
-        $request->validate([
-            "description.$defaultLangIndex" => 'required|string',
         ]);
 
         $ticketId = $request->input('ticket_id');
@@ -634,7 +616,7 @@ class ServiceTicketController extends BaseController
             'started_at' => now(),
             'gps_location' => $request->gps_coordinates,
             'odometer_start' => $request->odometer_reading,
-            'description' => $request->description[$defaultLangIndex],
+            'description' => $request->description,
             'attachments' => $attachments,
         ]);
 
@@ -649,8 +631,6 @@ class ServiceTicketController extends BaseController
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        $this->translationRepo->add($request, 'App\Models\ServiceJob', $job->id);
-
         $title = 'Service Started';
         $message = "Service for ticket #{$ticketId} has started.";
         $link = route('admin.support-ticket.service.singleTicket', $ticketId);
@@ -673,21 +653,14 @@ class ServiceTicketController extends BaseController
             'ticket_id' => 'required|exists:support_tickets,id',
             'job_id' => 'required|exists:service_jobs,id',
             'additional_charges' => 'required|numeric|min:0',
-            'description' => 'required|array',
-            'lang' => 'required|array',
+            'description' => 'required|string',
             'image' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-        ]);
-
-        $defaultLangIndex = array_search(getSaveLanguage(), $request->input('lang', []));
-        if ($defaultLangIndex === false) $defaultLangIndex = 0;
-        $request->validate([
-            "description.$defaultLangIndex" => 'required|string',
         ]);
 
         $ticketId = $request->input('ticket_id');
         $jobId = $request->input('job_id');
         $additionalCharges = $request->input('additional_charges');
-        $description = $request->description[$defaultLangIndex];
+        $description = $request->description;
         $ticket = $this->supportTicketRepo->getFirstWhere(['id' => $request->ticket_id]);
         $job = ServiceJob::find($jobId);
 
@@ -742,7 +715,6 @@ class ServiceTicketController extends BaseController
             templateData: ['description' => $description]
         );
 
-        $this->translationRepo->add($request, 'App\Models\ServiceChangeOrder', $changeOrder->id);
         Toastr::success(translate('change_order_created_successfully'));
         return redirect()->back();
     }

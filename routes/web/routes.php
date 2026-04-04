@@ -171,6 +171,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['maintenance_mode', 'guestC
         Route::get(Pages::REFUND_POLICY[URI], 'getRefundPolicyView')->name('refund-policy');
         Route::get(Pages::RETURN_POLICY[URI], 'getReturnPolicyView')->name('return-policy');
         Route::get(Pages::PRIVACY_POLICY[URI], 'getPrivacyPolicyView')->name('privacy-policy');
+        Route::get('service-policy', 'getServicePolicyView')->name('service-policy');
         Route::get(Pages::CANCELLATION_POLICY[URI], 'getCancellationPolicyView')->name('cancellation-policy');
         Route::get(Pages::SHIPPING_POLICY[URI], 'getShippingPolicyView')->name('shipping-policy');
         Route::get(Pages::TERMS_AND_CONDITION[URI], 'getTermsAndConditionView')->name('terms');

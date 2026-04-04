@@ -4,6 +4,7 @@ return [
     'home' => 'web-views.home',
     'product_search_result' => 'web-views.partials._search-result',
     'privacy_policy_page' => 'web-views.pages.privacy-policy',
+    'service_policy_page' => 'web-views.pages.service-policy',
     'warranty_form' => 'web-views.pages.warranty-form',
     'warranty_otp' => 'web-views.pages.warranty-otp-verify',
     'warranty_success' => 'web-views.pages.warranty-success',

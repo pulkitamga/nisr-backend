@@ -27,6 +27,7 @@ class ServiceRequestFormRequest extends FormRequest
             'service_reference' => 'nullable|string',
             'customer_id' => 'nullable|exists:users,id',
             'service_option' => 'required|string|in:in_shop,mobile',
+            'agree_terms' => 'accepted',
 
             'country' => ['nullable', 'string', Rule::requiredIf($this->input('service_option') === 'mobile')],
             'state' => ['nullable', 'string', Rule::requiredIf($this->input('service_option') === 'mobile')],
@@ -36,7 +37,7 @@ class ServiceRequestFormRequest extends FormRequest
             'latitude' => ['nullable', 'string'],
             'longitude' => ['nullable', 'string'],
 
-            'vehicle_type' => 'required|string',
+            'vehicle_type' => 'nullable|string',
             'vehicle_make' => 'nullable',
             'vehicle_model' => 'nullable',
             'vehicle_year' => 'nullable|integer',

@@ -107,7 +107,9 @@ class CareerController extends Controller
             if ($resumePath) {
                 Storage::disk('local')->delete($resumePath);
             }
-            return back()->withErrors(['career' => translate('something_went_wrong')]);
+            return back()
+                ->withInput()
+                ->withErrors(['career' => translate('something_went_wrong')]);
         }
 
      

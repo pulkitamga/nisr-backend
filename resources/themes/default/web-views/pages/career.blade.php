@@ -13,6 +13,122 @@
 
         flex-grow: 0 !important;
     }
+
+    .career-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 1.4rem;
+        border-radius: 22px;
+        background: #fff;
+        border: 1px solid #dfebe5;
+        box-shadow: 0 14px 34px rgba(18, 48, 38, 0.06);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .career-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 38px rgba(18, 48, 38, 0.1);
+        border-color: #c9ddd3;
+    }
+
+    .career-card__title {
+        color: var(--primary-clr);
+        margin-bottom: 1rem;
+    }
+
+    .career-card__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .6rem;
+        margin-bottom: 1rem;
+    }
+
+    .career-card__chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .5rem .8rem;
+        border-radius: 999px;
+        background: #f5faf7;
+        border: 1px solid #e2eee8;
+        color: #355246;
+        font-size: .8125rem;
+        line-height: 1.2;
+    }
+
+    .career-card__label {
+        font-weight: 700;
+        color: #17352b;
+    }
+
+    .career-card__block {
+        padding: .85rem 1rem;
+        border-radius: 18px;
+        background: #fbfdfc;
+        border: 1px solid #edf3ef;
+        margin-bottom: .85rem;
+    }
+
+    .career-card__block:last-of-type {
+        margin-bottom: 1.25rem;
+    }
+
+    .career-card__block-title {
+        display: block;
+        margin-bottom: .45rem;
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #6d7f77;
+    }
+
+    .career-card__block p {
+        margin-bottom: 0;
+        color: #294137;
+    }
+
+    .career-card__actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-top: auto;
+    }
+
+    .career-card__cta.btn {
+        min-width: 150px;
+        border-radius: 999px;
+    }
+
+    .career-card__link {
+        font-weight: 600;
+        color: var(--primary-clr);
+        text-decoration: none;
+    }
+
+    .career-card__link:hover,
+    .career-card__link:focus {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 767.98px) {
+        .career-card {
+            padding: 1.1rem;
+            border-radius: 18px;
+        }
+
+        .career-card__actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .career-card__cta.btn {
+            width: 100%;
+            min-width: 0;
+        }
+    }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
@@ -98,30 +214,44 @@
         <div class="row ">
             @foreach ($careerJobs as $job)
             <div class="col-12 col-md-6 col-lg-4 mb-3">
-                <div class="job-card p-4 bg-white rounded-4 shadow-sm border border-success-subtle h-100 animate__animated animate__fadeInUp transition-all position-relative ">
-                    <h3 class="h5 fw-bold text-primary mb-2">
+                <div class="career-card animate__animated animate__fadeInUp">
+                    <h3 class="h5 fw-bold career-card__title">
                         {{ getTranslatedValue($job, 'title', $job->title) }}
                     </h3>
 
-                    <p class="text-muted mb-3 small">
-                        <strong>{{ translate('Experience') }}:</strong> {{ getTranslatedValue($job, 'experience', $job->experience) }} |
-                        <strong>{{ translate('Location') }}:</strong> {{ getTranslatedValue($job, 'location', $job->location) }}
-                    </p>
+                    <div class="career-card__meta">
+                        <span class="career-card__chip">
+                            <span class="career-card__label">{{ translate('Experience') }}</span>
+                            <span>{{ getTranslatedValue($job, 'experience', $job->experience) }}</span>
+                        </span>
+                        <span class="career-card__chip">
+                            <span class="career-card__label">{{ translate('Location') }}</span>
+                            <span>{{ getTranslatedValue($job, 'location', $job->location) }}</span>
+                        </span>
+                    </div>
 
-                    <p class="small text-dark mb-2">
-                        <strong>{{ translate('Skills') }}:</strong><br>
-                        {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'skills', $job->skills)), 20, '...') }}
-                    </p>
+                    <div class="career-card__block">
+                        <span class="career-card__block-title">{{ translate('Skills') }}</span>
+                        <p class="small">
+                            {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'skills', $job->skills)), 14, '...') }}
+                        </p>
+                    </div>
 
-                    <p class="small text-dark mb-3">
-                        <strong>{{ translate('Description') }}:</strong><br>
-                        {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'job_description', $job->job_description ?? '')), 30, '...') }}
-                    </p>
+                    <div class="career-card__block">
+                        <span class="career-card__block-title">{{ translate('Description') }}</span>
+                        <p class="small">
+                            {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'job_description', $job->job_description ?? '')), 22, '...') }}
+                        </p>
+                    </div>
 
-                    <a href="{{ route('career.job.detail', ['slug' => $job->id]) }}"
-                        class="stretched-link text-decoration-none fw-bold text-primary hover-underline transition">
-                        {{ translate('Apply Now') }}
-                    </a>
+                    <div class="career-card__actions">
+                        <a href="{{ route('career.job.detail', ['slug' => $job->id]) }}" class="career-card__link">
+                            {{ translate('View Details') }}
+                        </a>
+                        <a href="{{ route('career.job.detail', ['slug' => $job->id]) }}" class="btn btn--primary career-card__cta">
+                            {{ translate('Apply Now') }}
+                        </a>
+                    </div>
                 </div>
             </div>
             @endforeach

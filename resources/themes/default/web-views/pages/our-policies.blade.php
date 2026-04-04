@@ -199,17 +199,17 @@
         @endif
 
         {{-- SERVICE POLICY --}}
-        {{-- @if(isset($service_policy['status']) && $service_policy['status'] == 1)
-        <a href="{{ route('#') }}" class="policy-card">
-        <div class="policy-icon">
-            <i class="fa fa-cogs"></i>
-        </div>
-        <div class="policy-content">
-            <h3>{{ translate('Service Policy') }}</h3>
-            <p>{{ translate('Professional service standards and quality commitment. Learn about our service terms.') }}</p>
-        </div>
+        @if(isset($service_policy['status']) && $service_policy['status'] == 1)
+        <a href="{{ route('service-policy') }}" class="policy-card">
+            <div class="policy-icon">
+                <i class="fa fa-cogs"></i>
+            </div>
+            <div class="policy-content">
+                <h3>{{ translate('Service Policy') }}</h3>
+                <p>{{ translate('Professional service standards and quality commitment. Learn about our service terms.') }}</p>
+            </div>
         </a>
-        @endif --}}
+        @endif
 
         {{-- PRIVACY POLICY --}}
         @if(isset($privacy_policy['status']) && $privacy_policy['status'] == 1)

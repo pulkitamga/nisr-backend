@@ -48,11 +48,7 @@ class ServiceRequestFormRequestTest extends TestCase
             [
                 'service_id' => 1,
                 'service_option' => 'in_shop',
-                'vehicle_type' => 'Sedan',
-                'vehicle_make' => 'Toyota',
-                'vehicle_model' => 'Corolla',
-                'vehicle_year' => 2024,
-                'vehicle_mileage' => 10000,
+                'agree_terms' => 1,
             ],
             $this->makeRequestWithInput([
                 'service_option' => 'in_shop',
@@ -61,6 +57,10 @@ class ServiceRequestFormRequestTest extends TestCase
 
         $this->assertFalse($validator->errors()->has('country'));
         $this->assertFalse($validator->errors()->has('state'));
+        $this->assertFalse($validator->errors()->has('vehicle_make'));
+        $this->assertFalse($validator->errors()->has('vehicle_model'));
+        $this->assertFalse($validator->errors()->has('vehicle_year'));
+        $this->assertFalse($validator->errors()->has('vehicle_mileage'));
     }
 
     public function test_mobile_request_requires_country(): void
@@ -69,6 +69,7 @@ class ServiceRequestFormRequestTest extends TestCase
             [
                 'service_id' => 1,
                 'service_option' => 'mobile',
+                'agree_terms' => 1,
                 'state' => 'Cairo',
                 'city' => 'Nasr City',
                 'area' => 'Zone 1',
@@ -93,7 +94,7 @@ class ServiceRequestFormRequestTest extends TestCase
             [
                 'service_id' => 1,
                 'service_option' => 'in_shop',
-                'vehicle_type' => 'Sedan',
+                'agree_terms' => 1,
                 'notes' => 'Customer prefers afternoon visit.',
             ],
             $this->makeRequestWithInput([
@@ -102,6 +103,37 @@ class ServiceRequestFormRequestTest extends TestCase
         );
 
         $this->assertFalse($validator->errors()->has('notes'));
+    }
+
+    public function test_request_does_not_require_vehicle_type(): void
+    {
+        $validator = Validator::make(
+            [
+                'service_id' => 1,
+                'service_option' => 'in_shop',
+                'agree_terms' => 1,
+            ],
+            $this->makeRequestWithInput([
+                'service_option' => 'in_shop',
+            ])->rules()
+        );
+
+        $this->assertFalse($validator->errors()->has('vehicle_type'));
+    }
+
+    public function test_request_requires_terms_acceptance(): void
+    {
+        $validator = Validator::make(
+            [
+                'service_id' => 1,
+                'service_option' => 'in_shop',
+            ],
+            $this->makeRequestWithInput([
+                'service_option' => 'in_shop',
+            ])->rules()
+        );
+
+        $this->assertTrue($validator->errors()->has('agree_terms'));
     }
 
     private function makeRequestWithInput(array $input): ServiceRequestFormRequest

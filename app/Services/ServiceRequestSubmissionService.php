@@ -29,12 +29,14 @@ class ServiceRequestSubmissionService
             $serviceRequest = $this->serviceRequestRepo->create($payload);
             $serviceRequest->loadMissing(['service', 'customer']);
 
-            $subject = 'New Service Request For - ' . ($serviceRequest->service?->title ?? 'Service');
+            $subject = translate('New Service Request For - :service', [
+                'service' => $serviceRequest->service?->title ?? translate('Service'),
+            ]);
             $details = $this->buildInboxDetails($serviceRequest);
 
             $inboxMessage = InboxMessage::create([
                 'subject' => $subject,
-                'body' => 'A new service request has been submitted.',
+                'body' => translate('A new service request has been submitted.'),
                 'contact_id' => $serviceRequest->customer_id,
                 'sender_name' => trim(($serviceRequest->customer->f_name ?? '') . ' ' . ($serviceRequest->customer->l_name ?? ''))
                     ?: ($serviceRequest->customer->name ?? 'N/A'),
@@ -75,8 +77,8 @@ class ServiceRequestSubmissionService
             $this->workflowNotifier->notify(
                 ticket: $ticket,
                 eventKey: 'ticket_created',
-                title: 'Service Ticket Created',
-                message: "Your service ticket #{$ticket->id} has been created.",
+                title: translate('Service Ticket Created'),
+                message: translate('Your service ticket #:ticket has been created.', ['ticket' => $ticket->id]),
                 link: $notificationLink,
                 recipients: [['type' => 'customer', 'id' => $ticket->customer_id]]
             );
@@ -130,21 +132,45 @@ class ServiceRequestSubmissionService
 
     private function buildTicketDescription(ServiceRequest $serviceRequest): string
     {
+        $vehicleDetails = implode(' / ', array_filter([
+            $serviceRequest->vehicle_type,
+            $serviceRequest->vehicle_make,
+            $serviceRequest->vehicle_model,
+            $serviceRequest->vehicle_year,
+        ]));
+
+        $addressDetails = implode(', ', array_filter([
+            $serviceRequest->address,
+            $serviceRequest->area,
+            $serviceRequest->city,
+            $serviceRequest->state,
+            $serviceRequest->country,
+        ]));
+
+        $coordinates = implode(', ', array_filter([
+            $serviceRequest->latitude,
+            $serviceRequest->longitude,
+        ], static fn ($value) => $value !== null && $value !== ''));
+
+        $serviceOptionLabel = $serviceRequest->service_option === 'mobile'
+            ? translate('Mobile')
+            : translate('In-shop');
+
         return implode(PHP_EOL, array_filter([
-            "Service option: {$serviceRequest->service_option}",
-            "Vehicle: {$serviceRequest->vehicle_type} / {$serviceRequest->vehicle_make} / {$serviceRequest->vehicle_model} / {$serviceRequest->vehicle_year}",
-            "Mileage: {$serviceRequest->vehicle_mileage}",
-            $serviceRequest->vin ? "VIN: {$serviceRequest->vin}" : null,
+            translate('Service option') . ': ' . $serviceOptionLabel,
+            $vehicleDetails ? translate('Vehicle') . ': ' . $vehicleDetails : null,
+            $serviceRequest->vehicle_mileage ? translate('Mileage') . ': ' . $serviceRequest->vehicle_mileage : null,
+            $serviceRequest->vin ? translate('VIN') . ': ' . $serviceRequest->vin : null,
             $serviceRequest->problem_description
-                ? "Problem description: {$serviceRequest->problem_description}"
+                ? translate('Problem description') . ': ' . $serviceRequest->problem_description
                 : null,
-            $serviceRequest->notes ? "Notes: {$serviceRequest->notes}" : null,
-            $serviceRequest->service_option === 'mobile'
-                ? "Address: {$serviceRequest->address}, {$serviceRequest->area}, {$serviceRequest->city}, {$serviceRequest->state}, {$serviceRequest->country}"
+            $serviceRequest->notes ? translate('Notes') . ': ' . $serviceRequest->notes : null,
+            $serviceRequest->service_option === 'mobile' && $addressDetails
+                ? translate('Address') . ': ' . $addressDetails
                 : null,
-            $serviceRequest->service_option === 'mobile'
-                ? "Coordinates: {$serviceRequest->latitude}, {$serviceRequest->longitude}"
+            $serviceRequest->service_option === 'mobile' && $coordinates
+                ? translate('Coordinates') . ': ' . $coordinates
                 : null,
-        ])) ?: 'Service request submitted.';
+        ])) ?: translate('Service request submitted.');
     }
 }

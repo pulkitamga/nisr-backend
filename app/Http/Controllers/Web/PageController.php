@@ -195,6 +195,21 @@ class PageController extends Controller
         return view(VIEW_FILE_NAMES['privacy_policy_page'], compact('privacyPolicy', 'pageTitleBanner', 'robotsMetaContentData'));
     }
 
+    public function getServicePolicyView(): View|RedirectResponse
+    {
+        $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'service-policy']);
+        if (!$robotsMetaContentData) {
+            $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
+        }
+
+        $servicePolicy = $this->createPolicyFromString('service_policy');
+        if (!$servicePolicy || !($servicePolicy['status'] ?? 0)) {
+            return redirect()->route('home');
+        }
+
+        return view(VIEW_FILE_NAMES['service_policy_page'], compact('servicePolicy', 'robotsMetaContentData'));
+    }
+
     public function getCancellationPolicyView(): View|RedirectResponse
     {
         $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'cancellation-policy']);
