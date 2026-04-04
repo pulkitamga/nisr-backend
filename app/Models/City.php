@@ -31,4 +31,9 @@ class City extends Model
     {
         return $this->hasMany(Area::class, 'city_id');
     }
+
+    public function getNameAttribute($value): ?string
+    {
+        return $this->getTranslatedField('name', fallback: $value);
+    }
 }

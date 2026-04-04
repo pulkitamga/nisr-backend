@@ -189,4 +189,14 @@ class Branch extends Model
 
         return $now->between($fromTime, $toTime);
     }
+
+    public function getBranchNameAttribute($value): ?string
+    {
+        return $this->getTranslatedField('branch_name', fallback: $value);
+    }
+
+    public function getBranchAddressAttribute($value): ?string
+    {
+        return $this->getTranslatedField('branch_address', fallback: $value);
+    }
 }

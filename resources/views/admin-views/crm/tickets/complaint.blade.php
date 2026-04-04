@@ -181,7 +181,7 @@
                             {{ translate('Customer Not Found') }}
                             @endif
                         </td>
-                        <td><span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span></td>
+                        <td><span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span></td>
                         <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->getTranslatedField('name') ?? $ticket->status }}</span></td>
                         <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d M, Y H:i') }}</span></td>
                         @php

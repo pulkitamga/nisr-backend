@@ -171,7 +171,7 @@
                                     <td>{{$transaction['received_by']}}</td>
                                     <td>{{$transaction['delivered_by']}}</td>
                                     <td>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction['delivery_charge']))}}</td>
-                                    <td>{{str_replace('_',' ',$transaction['payment_method'])}}</td>
+                                    <td>{{ translate($transaction['payment_method']) }}</td>
                                     <td>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction['tax']))}}</td>
                                     <td class="text-center">
                                         @if($transaction['status'] == 'disburse')
@@ -204,4 +204,3 @@
     </div>
 </div>
 @endsection
-

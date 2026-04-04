@@ -199,7 +199,7 @@
                                                     <strong class="title-name">{{$order->customer['f_name'].' '.$order->customer['l_name']}}</strong>
                                                 </a>
                                                 @if($order->customer['phone'])
-                                                    <a class="d-block title-color" href="tel:{{ $order->customer['phone'] }}">{{ $order->customer['phone'] }}</a>
+                                                    <a class="d-block title-color" href="tel:{{ formatPhoneForDisplay($order->customer['phone']) }}">{{ formatPhoneForDisplay($order->customer['phone']) }}</a>
                                                 @else
                                                     <a class="d-block title-color" href="mailto:{{ $order->customer['email'] }}">{{ $order->customer['email'] }}</a>
                                                 @endif
@@ -265,7 +265,7 @@
                                         </td>
                                     @else
                                         <td class="text-capitalize">
-                                            {{str_replace('_',' ',$order['payment_method'])}}
+                                            {{ translate($order['payment_method']) }}
                                         </td>
                                     @endif
                                     <td>
@@ -324,4 +324,3 @@
 @push('script_2')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/order.js')}}"></script>
 @endpush
-

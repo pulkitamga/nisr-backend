@@ -178,10 +178,10 @@
                         </td>
 
                         <td>
-                            {{ $ticket->sub_type ? Str::replace('_', ' ', $ticket->sub_type) : translate('No Sub-Type') }}
+                            {{ $ticket->sub_type ? translate($ticket->sub_type) : translate('No Sub-Type') }}
                         </td>
                         <td>
-                            <span class="badge {{ $priorityClass }}">{{ ucfirst($ticket->priority) }}</span>
+                            <span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span>
                         </td>
                         <td>
                             <span class="badge {{ $statusClass }}">

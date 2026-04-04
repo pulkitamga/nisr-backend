@@ -372,8 +372,18 @@ class BranchController extends BaseController
             ->paginate($this->resolveListPerPage($request))
             ->appends($request->query());
 
-        $branchList = BranchModel::orderBy('branch_name')->pluck('branch_name', 'id');
-        $productList = \App\Models\Product::where('product_type', 'physical')->orderBy('name')->pluck('name', 'id');
+        $branchList = BranchModel::query()
+            ->with('translations')
+            ->orderBy('branch_name')
+            ->get()
+            ->mapWithKeys(fn(BranchModel $branch) => [$branch->id => $branch->branch_name]);
+
+        $productList = \App\Models\Product::query()
+            ->with('translations')
+            ->where('product_type', 'physical')
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(fn(\App\Models\Product $product) => [$product->id => $product->name]);
 
         return view(
             Branch::BRANCH_STOCK_LIST[VIEW],

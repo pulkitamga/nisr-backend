@@ -23,21 +23,7 @@ class VehicleModel extends Model
 
     public function getNameAttribute($name): ?string
     {
-        if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
-            return $name;
-        }
-
-        $translation = $this->translations
-            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'name');
-
-        if ($translation) {
-            return $translation->value;
-        }
-
-        return $this->translations()
-            ->where('locale', App::getLocale())
-            ->where('key', 'name')
-            ->value('value') ?? $name;
+        return $this->getTranslatedField('name', fallback: $name);
     }
 
     protected static function boot(): void

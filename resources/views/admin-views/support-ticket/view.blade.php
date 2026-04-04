@@ -55,7 +55,7 @@
                                             data-value="status">
                                         <option value="all">{{translate('all_Status')}}</option>
                                         @foreach($aAllStatus as $status)
-                                           <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : ''}}>{{translate($status['name'])}}</option>
+                                           <option value="{{ $status['id'] }}" {{ $statusId == $status['id'] ? 'selected' : ''}}>{{ $status->getTranslatedField('name') ?? translate($status['name']) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -77,8 +77,8 @@
                                             <div
                                                 class="mb-2 fz-12 text-start">{{$ticket->customer->email??""}}</div>
                                             <div class="d-flex flex-wrap gap-2 align-items-center">
-                                                <span class="badge-soft-danger fz-12 font-weight-bold px-2 radius-50">{{translate(str_replace('_',' ',$ticket->priority))}}</span>
-                                                <span class="badge-soft-info fz-12 font-weight-bold px-2 radius-50">{{translate(str_replace('_',' ',$ticket->status_details->name ?? ''))}}</span>
+                                                <span class="badge-soft-danger fz-12 font-weight-bold px-2 radius-50">{{ translate($ticket->priority) }}</span>
+                                                <span class="badge-soft-info fz-12 font-weight-bold px-2 radius-50">{{ $ticket->status_details?->getTranslatedField('name') ?? translate(str_replace('_',' ', $ticket->status_details->name ?? '')) }}</span>
                                                 <h6 class="mb-0">{{translate(str_replace('_',' ',$ticket->type))}}</h6>
                                             </div>
                                             <div class="text-nowrap mt-2">
@@ -148,4 +148,3 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/support-tickets.js')}}"></script>
 @endpush
-

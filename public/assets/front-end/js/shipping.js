@@ -20,9 +20,253 @@ $(document).ready(function () {
     try {
         initializePhoneInput(".phone-input-with-country-picker-2", ".country-picker-phone-number-2");
     } catch (error) { }
+
+    syncCheckoutRequiredStates();
 })
 
 let messageUpdateThisAddress = $('#message-update-this-address').data('text');
+let messagePleaseFillOutThisField = $('#message-please-fill-out-this-field').data('text');
+
+const checkoutFieldSelectors = {
+    contact_person_name: '#name',
+    phone: '#phone',
+    email: '#email',
+    delivery_type: '.delivery-radio-btn',
+    pickup_branch_id: '#pickup_branch_id',
+    address_type: '#address_type',
+    country: '#country',
+    state: '#state_id',
+    state_id: '#state_id',
+    city: '#city_id',
+    city_id: '#city_id',
+    area: '#area',
+    zip: '[name="zip"]',
+    address: '#address',
+    billing_contact_person_name: '#billing_contact_person_name',
+    billing_phone: '#billing_phone',
+    billing_contact_email: '#billing_contact_email',
+    billing_address_type: '#billing_address_type',
+    billing_country: '#billing_country',
+    billing_state: '#billing_state_id',
+    billing_state_id: '#billing_state_id',
+    billing_city: '#billing_city_id',
+    billing_city_id: '#billing_city_id',
+    billing_area: '#billing_area',
+    billing_zip: '[name="billing_zip"]',
+    billing_address: '#billing_address',
+    customer_password: '#customer_password',
+    customer_confirm_password: '#customer_confirm_password'
+};
+
+function getCheckoutFieldTarget(fieldName) {
+    const selector = checkoutFieldSelectors[fieldName];
+    return selector ? $(selector).first() : $();
+}
+
+function getCheckoutFieldContainer($target) {
+    if (!$target || !$target.length) {
+        return $();
+    }
+
+    if ($target.hasClass('delivery-radio-btn')) {
+        return $target.closest('.form-group');
+    }
+
+    const $formGroup = $target.closest('.form-group');
+    return $formGroup.length ? $formGroup : $target.parent();
+}
+
+function clearCheckoutValidationState() {
+    $('.checkout-field-error').remove();
+    $('.delivery-radio-btn').removeClass('is-invalid');
+    $('#address-form .is-invalid, #billing-address-form .is-invalid, .is_check_create_account_password_group .is-invalid')
+        .removeClass('is-invalid')
+        .removeAttr('aria-invalid');
+}
+
+function setCheckoutFieldInvalid(fieldName, message) {
+    const $target = getCheckoutFieldTarget(fieldName);
+    if (!$target.length) {
+        return;
+    }
+
+    if ($target.hasClass('delivery-radio-btn')) {
+        $target.addClass('is-invalid');
+    } else {
+        $target.addClass('is-invalid').attr('aria-invalid', 'true');
+    }
+
+    const $container = getCheckoutFieldContainer($target);
+    if (!$container.length) {
+        return;
+    }
+
+    $container.find('.checkout-field-error').remove();
+    $('<div/>', {
+        class: 'invalid-feedback d-block checkout-field-error',
+        text: message
+    }).appendTo($container);
+}
+
+function clearCheckoutFieldValidationByElement(element) {
+    const $element = $(element);
+    const $container = getCheckoutFieldContainer($element);
+    $element.removeClass('is-invalid').removeAttr('aria-invalid');
+    $container.find('.checkout-field-error').remove();
+}
+
+function toggleBillingAddressVisibility(showBillingAddress) {
+    const $sameAsShipping = $('#same_as_shipping_address');
+    const $billingWrapper = $('#hide_billing_address');
+
+    if ($sameAsShipping.length) {
+        $sameAsShipping.prop('checked', !showBillingAddress);
+    }
+
+    if ($billingWrapper.length) {
+        $billingWrapper.toggle(showBillingAddress);
+    }
+}
+
+function focusCheckoutField(fieldName) {
+    const $target = getCheckoutFieldTarget(fieldName);
+    if (!$target.length) {
+        return;
+    }
+
+    if (String(fieldName).startsWith('billing_')) {
+        toggleBillingAddressVisibility(true);
+    }
+
+    if (fieldName === 'pickup_branch_id') {
+        $('#pickup_radio').prop('checked', true);
+        togglePickupBranchVisibility();
+    }
+
+    if (['address_type', 'country', 'state', 'state_id', 'city', 'city_id', 'area', 'zip', 'address'].includes(fieldName)) {
+        $('#delivery_radio').prop('checked', true);
+        togglePickupBranchVisibility();
+    }
+
+    const scrollToTarget = () => {
+        const offsetTop = Math.max(($target.offset()?.top || 0) - 140, 0);
+        $('html, body').animate({ scrollTop: offsetTop }, 250);
+        $target.trigger('focus');
+    };
+
+    window.setTimeout(scrollToTarget, 50);
+}
+
+function renderCheckoutErrors(responseData) {
+    clearCheckoutValidationState();
+
+    const fieldErrors = responseData?.field_errors ?? {};
+    const fieldNames = Object.keys(fieldErrors);
+
+    fieldNames.forEach(function (fieldName) {
+        setCheckoutFieldInvalid(fieldName, fieldErrors[fieldName]);
+    });
+
+    const focusField = responseData?.focus_field || fieldNames[0];
+    if (focusField) {
+        focusCheckoutField(focusField);
+    }
+
+    const summaryMessage = responseData?.message || responseData?.errors;
+    if (summaryMessage) {
+        toastr.error(summaryMessage, {
+            CloseButton: true,
+            ProgressBar: true
+        });
+    }
+}
+
+function setFieldRequired(selector, isRequired, indicatorField) {
+    const $elements = $(selector);
+    if ($elements.length) {
+        $elements.prop('required', !!isRequired);
+    }
+
+    if (indicatorField) {
+        $(`[data-required-indicator="${indicatorField}"]`).toggleClass('d-none', !isRequired);
+    }
+}
+
+function syncCheckoutRequiredStates() {
+    const physicalProduct = $('#physical_product').val();
+    const deliveryType = $('input[name="delivery_type"]:checked').val();
+    const isDelivery = physicalProduct === 'yes' && deliveryType !== 'pickup';
+    const isGuestShipping = $('#email').length > 0;
+    const zipRestrictionEnabled = Number($('#system-zip-restrict-status').data('value') || 0) === 1;
+    const billingVisible = $('#billing-address-form').length > 0 && $('#hide_billing_address').is(':visible');
+    const guestBilling = $('#billing_contact_email').length > 0;
+    const createAccountEnabled = $('#is_check_create_account').is(':checked');
+
+    setFieldRequired('#name', isDelivery, 'contact_person_name');
+    setFieldRequired('#phone', isDelivery, 'phone');
+    setFieldRequired('#email', isDelivery && isGuestShipping, 'email');
+    setFieldRequired('#address_type', isDelivery, 'address_type');
+    setFieldRequired('#country', isDelivery, 'country');
+    setFieldRequired('#state_id', isDelivery, 'state');
+    setFieldRequired('#city_id', isDelivery, 'city');
+    setFieldRequired('#area', isDelivery, 'area');
+    setFieldRequired('[name="zip"]', isDelivery && zipRestrictionEnabled, 'zip');
+    setFieldRequired('#address', isDelivery, 'address');
+    setFieldRequired('#pickup_branch_id', deliveryType === 'pickup', 'pickup_branch_id');
+    setFieldRequired('#latitude', false);
+    setFieldRequired('#longitude', false);
+
+    setFieldRequired('#billing_contact_person_name', billingVisible, 'billing_contact_person_name');
+    setFieldRequired('#billing_phone', billingVisible, 'billing_phone');
+    setFieldRequired('#billing_contact_email', billingVisible && guestBilling, 'billing_contact_email');
+    setFieldRequired('#billing_address_type', billingVisible, 'billing_address_type');
+    setFieldRequired('#billing_country', billingVisible, 'billing_country');
+    setFieldRequired('#billing_state_id', billingVisible, 'billing_state');
+    setFieldRequired('#billing_city_id', billingVisible, 'billing_city');
+    setFieldRequired('#billing_area', false, 'billing_area');
+    setFieldRequired('[name="billing_zip"]', false, 'billing_zip');
+    setFieldRequired('#billing_address', billingVisible, 'billing_address');
+    setFieldRequired('#billing_latitude', false);
+    setFieldRequired('#billing_longitude', false);
+    setFieldRequired('#customer_password', createAccountEnabled, 'customer_password');
+    setFieldRequired('#customer_confirm_password', createAccountEnabled, 'customer_confirm_password');
+}
+
+function getClientValidationFieldName($field) {
+    const fieldId = $field.attr('id');
+    const fieldName = $field.attr('name');
+
+    if (fieldId === 'phone') {
+        return 'phone';
+    }
+
+    if (fieldId === 'billing_phone') {
+        return 'billing_phone';
+    }
+
+    return fieldName || fieldId || null;
+}
+
+function collectClientValidationErrors(formSelector) {
+    const errors = {};
+
+    $(formSelector).find('[required]').filter(function () {
+        return $(this).is(':visible') && !$(this).is(':disabled');
+    }).each(function () {
+        const $field = $(this);
+        const fieldName = getClientValidationFieldName($field);
+
+        if (!fieldName || errors[fieldName]) {
+            return;
+        }
+
+        if (!$field.val()) {
+            errors[fieldName] = messagePleaseFillOutThisField;
+        }
+    });
+
+    return errors;
+}
 
 function normalizeApiCollection(response, key) {
     if (response && Array.isArray(response[key])) {
@@ -167,6 +411,7 @@ function shipping_method_select(get_value) {
         <input type="hidden" name="shipping_method_id" id="shipping_method_id" value="${shipping_method_id}">
         <input type="checkbox" name="update_address" id="update_address"> ${messageUpdateThisAddress}`;
     $('#save_address_label').html(update_address);
+    syncCheckoutRequiredStates();
 }
 
 $.ajaxSetup({
@@ -277,6 +522,7 @@ function billing_method_select(get_billing_value) {
         <input type="hidden" name="billing_method_id" id="billing_method_id" value="${billing_method_id}">
         <input type="checkbox" name="update_billing_address" id="update_billing_address"> ${messageUpdateThisAddress}`;
     $('#save-billing-address-label').html(update_address_billing);
+    syncCheckoutRequiredStates();
 }
 
 
@@ -573,37 +819,6 @@ function checkoutFromShipping() {
     if (physical_product === 'yes') {
         let sameAsShippingCheckbox = $('#same_as_shipping_address');
         billing_address_same_shipping = sameAsShippingCheckbox ? sameAsShippingCheckbox.is(":checked") : false;
-
-        let allAreFilled = true;
-        document.getElementById("address-form").querySelectorAll("[required]").forEach(function (i) {
-            if (!allAreFilled) return;
-            if (!i.value) allAreFilled = false;
-            if (i.type === "radio") {
-                let radioValueCheck = false;
-                document.getElementById("address-form").querySelectorAll(`[name=${i.name}]`).forEach(function (r) {
-                    if (r.checked) radioValueCheck = true;
-                });
-                allAreFilled = radioValueCheck;
-            }
-        });
-
-        let allAreFilled_shipping = true;
-
-        let billingAddressForm = $('#billing-address-form');
-        if (billing_address_same_shipping != true && billingAddressForm.length > 0) {
-
-            document.getElementById("billing-address-form").querySelectorAll("[required]").forEach(function (i) {
-                if (!allAreFilled_shipping) return;
-                if (!i.value) allAreFilled_shipping = false;
-                if (i.type === "radio") {
-                    let radioValueCheck = false;
-                    document.getElementById("billing-address-form").querySelectorAll(`[name=${i.name}]`).forEach(function (r) {
-                        if (r.checked) radioValueCheck = true;
-                    });
-                    allAreFilled_shipping = radioValueCheck;
-                }
-            });
-        }
     } else {
         billing_address_same_shipping = false;
     }
@@ -611,6 +826,26 @@ function checkoutFromShipping() {
     let isCheckCreateAccount = $('#is_check_create_account');
     let customerPassword = $('#customer_password');
     let customerConfirmPassword = $('#customer_confirm_password');
+
+    syncCheckoutRequiredStates();
+    clearCheckoutValidationState();
+
+    const shippingErrors = physical_product === 'yes' ? collectClientValidationErrors('#address-form') : {};
+    const billingErrors = billing_address_same_shipping !== true ? collectClientValidationErrors('#billing-address-form') : {};
+    const passwordErrors = isCheckCreateAccount && isCheckCreateAccount.prop("checked")
+        ? collectClientValidationErrors('.is_check_create_account_password_group')
+        : {};
+    const fieldErrors = Object.assign({}, shippingErrors, billingErrors, passwordErrors);
+    const firstField = Object.keys(fieldErrors)[0];
+
+    if (firstField) {
+        renderCheckoutErrors({
+            message: fieldErrors[firstField],
+            field_errors: fieldErrors,
+            focus_field: firstField,
+        });
+        return;
+    }
 
     $.ajaxSetup({
         headers: {
@@ -632,39 +867,14 @@ function checkoutFromShipping() {
         beforeSend: function () {
             $('#loading').show();
         },
-        success: function (data) {
-            // console.log(errors)
-            // console.log(data.errors)
-            if (data.errors) {
-                for (var i = 0; i < data.errors.length; i++) {
-                    toastr.error(data.errors[i].message, {
-                        CloseButton: true,
-                        ProgressBar: true
-                    });
-                }
-            } else {
-                location.href = $('#route-checkout-payment').data('url');
-            }
+        success: function () {
+            location.href = $('#route-checkout-payment').data('url');
         },
         complete: function () {
             $('#loading').hide();
         },
         error: function (data) {
-            if (data.errors) {
-                for (var i = 0; i < data.errors.length; i++) {
-                    toastr.error(data.errors[i].message, {
-                        CloseButton: true,
-                        ProgressBar: true
-                    });
-                }
-            } else {
-                let error_msg = data.responseJSON.errors;
-                console.log(data.responseJSON)
-                toastr.error(error_msg, {
-                    CloseButton: true,
-                    ProgressBar: true
-                });
-            }
+            renderCheckoutErrors(data.responseJSON || {});
         }
     });
 }
@@ -720,8 +930,10 @@ function togglePickupBranchVisibility() {
             label.textContent = text;
         });
     };
+    const deliverySelectorGroup = document.querySelector('.delivery-radio-btn');
 
     if (!selectedValue) {
+        deliverySelectorGroup?.classList.remove('delivery-choice--delivery', 'delivery-choice--pickup');
         pickupBranchDiv?.classList.add('d-none');
         pickupBranchAddressDiv?.classList.add('d-none');
         deliveryAddressTypeDiv?.classList.add('d-none');
@@ -742,10 +954,13 @@ function togglePickupBranchVisibility() {
             hideBillingAddress.style.display = '';
         }
         setCreateAccountLabelText(createAccountAboveInfoText);
+        syncCheckoutRequiredStates();
         return;
     }
 
     if (selectedValue === 'pickup') {
+        deliverySelectorGroup?.classList.remove('delivery-choice--delivery');
+        deliverySelectorGroup?.classList.add('delivery-choice--pickup');
         setCreateAccountLabelText(createAccountBelowInfoText);
         pickupBranchDiv?.classList.remove('d-none');
         pickupBranchAddressDiv?.classList.remove('d-none');
@@ -773,6 +988,8 @@ function togglePickupBranchVisibility() {
             saveAddressCheckbox.checked = false;
         }
     } else {
+        deliverySelectorGroup?.classList.remove('delivery-choice--pickup');
+        deliverySelectorGroup?.classList.add('delivery-choice--delivery');
         setCreateAccountLabelText(createAccountAboveInfoText);
         pickupBranchDiv?.classList.add('d-none');
         pickupBranchAddressDiv?.classList.add('d-none');
@@ -795,10 +1012,20 @@ function togglePickupBranchVisibility() {
         }
 
     }
+
+    syncCheckoutRequiredStates();
 }
 
 $(document).on('change', 'input[name="delivery_type"]', function () {
     togglePickupBranchVisibility();
+});
+
+$(document).on('change', '#same_as_shipping_address, #is_check_create_account', function () {
+    syncCheckoutRequiredStates();
+});
+
+$(document).on('input change', '#address-form input, #address-form select, #address-form textarea, #billing-address-form input, #billing-address-form select, #billing-address-form textarea, .is_check_create_account_password_group input', function () {
+    clearCheckoutFieldValidationByElement(this);
 });
 
 $(document).on('change', 'input[name="delivery_type"]', function () {

@@ -515,40 +515,12 @@ class Product extends Model
 
     public function getNameAttribute($name): string|null
     {
-        if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
-            return $name;
-        }
-
-        $translation = $this->translations
-            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'name');
-
-        if ($translation) {
-            return $translation->value;
-        }
-
-        return $this->translations()
-            ->where('locale', App::getLocale())
-            ->where('key', 'name')
-            ->value('value') ?? $name;
+        return $this->getTranslatedField('name', fallback: $name);
     }
 
     public function getDetailsAttribute($detail): string|null
     {
-        if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
-            return $detail;
-        }
-
-        $translation = $this->translations
-            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'description');
-
-        if ($translation) {
-            return $translation->value;
-        }
-
-        return $this->translations()
-            ->where('locale', App::getLocale())
-            ->where('key', 'description')
-            ->value('value') ?? $detail;
+        return $this->getTranslatedField('description', fallback: $detail);
     }
     public function getThumbnailFullUrlAttribute(): string|null|array
     {

@@ -532,7 +532,7 @@
                                     <span
                                         class="title-color"> <strong>{{$orderCount}}</strong> {{translate('orders')}}</span>
                                     <span
-                                        class="title-color break-all"><strong>{{$order->customer['phone']}}</strong></span>
+                                        class="title-color break-all"><strong>{{ formatPhoneForDisplay($order->customer['phone']) }}</strong></span>
                                     <span class="title-color break-all">{{$order->customer['email']}}</span>
                                 </div>
                             </div>
@@ -1087,4 +1087,3 @@
         defer></script>
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/vendor/order.js')}}"></script>
 @endpush
-

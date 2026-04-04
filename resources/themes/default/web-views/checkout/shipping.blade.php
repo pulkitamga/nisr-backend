@@ -15,32 +15,148 @@
 
 <style>
     .delivery-radio-btn {
-        border: .0625rem solid #e7eaf3;
-        border-radius: .3125rem;
-        padding: 15px 16px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .875rem;
+        margin-top: .75rem;
     }
 
-    .form-check-input-radio {
-        width: 20px;
-        height: 20px;
+    .delivery-radio-btn.is-invalid {
+        padding: .75rem;
+        border: 1px solid #e74c3c;
+        border-radius: 1rem;
+        background: #fff7f6;
     }
 
-    [dir="rtl"] .delivery-radio-btn-label {
-        margin-inline-end: 20px;
+    .delivery-choice {
+        position: relative;
+        display: block;
+        margin: 0;
+        cursor: pointer;
     }
 
-    .delivery-radio-btn-label {
-        font-size: 19px;
-        padding-inline-start: 12px;
+    .delivery-choice__input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
     }
 
+    .delivery-choice__content {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 100%;
+        padding: 1rem 1.125rem;
+        border: 1px solid #d9e4e8;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbfb 100%);
+        transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background-color .2s ease;
+    }
+
+    .delivery-choice__content::after {
+        content: "";
+        flex: 0 0 1.1rem;
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-top: .15rem;
+        border: 2px solid #b8c9cf;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: inset 0 0 0 3px #fff;
+        transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+    }
+
+    .delivery-choice__title {
+        display: block;
+        color: #16353d;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .delivery-choice__hint {
+        display: block;
+        margin-top: .35rem;
+        color: #607d86;
+        font-size: .82rem;
+        line-height: 1.45;
+    }
+
+    .delivery-choice__input:checked + .delivery-choice__content {
+        border-color: #1f9e97;
+        background: linear-gradient(180deg, #f4fffd 0%, #ebfbf8 100%);
+        box-shadow: 0 .75rem 1.75rem rgba(31, 158, 151, 0.14);
+        transform: translateY(-1px);
+    }
+
+    .delivery-choice__input:checked + .delivery-choice__content::after {
+        border-color: #1f9e97;
+        background: #1f9e97;
+        box-shadow: inset 0 0 0 3px #ebfbf8;
+    }
+
+    .delivery-choice__input:focus-visible + .delivery-choice__content {
+        outline: 0;
+        box-shadow: 0 0 0 .2rem rgba(31, 158, 151, 0.22);
+        border-color: #1f9e97;
+    }
 
     .delivery-type-selected-div {
-        border: 1px solid darkgrey;
-        border-radius: 8px;
-        padding: 25px;
+        border: 1px solid #dde8eb;
+        border-radius: 1rem;
+        padding: 1.5rem;
         margin-inline-start: 3px;
         margin-bottom: 1rem;
+        background: #fff;
+    }
+
+    .checkout-section-block {
+        padding: 1.1rem 1.2rem;
+        border: 1px solid #e3ecef;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfdfd 100%);
+    }
+
+    .checkout-section-block + .checkout-section-block {
+        margin-top: 1rem;
+    }
+
+    .checkout-section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: 1rem;
+    }
+
+    .checkout-section-title {
+        margin: 0;
+        color: #123740;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .checkout-section-copy {
+        margin: .3rem 0 0;
+        color: #6b848c;
+        font-size: .82rem;
+        line-height: 1.45;
+    }
+
+    @media (max-width: 575.98px) {
+        .delivery-radio-btn {
+            grid-template-columns: 1fr;
+        }
+
+        .delivery-choice__content {
+            padding: .95rem 1rem;
+        }
+
+        .checkout-section-block {
+            padding: 1rem;
+        }
     }
 </style>
 <div class="container py-4 rtl __inline-56 px-0 px-md-3 text-align-direction">
@@ -96,22 +212,29 @@
                                 <div id="accordion">
                                     <div class="">
                                         <div class="mt-3">
-                                            <div class="row">
+                                            <div class="checkout-section-block">
+                                                <div class="checkout-section-head">
+                                                    <div>
+                                                        <h5 class="checkout-section-title">{{ translate('Contact_Details') }}</h5>
+                                                        <p class="checkout-section-copy">{{ translate('Enter_the_best_details_for_delivery_updates') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
                                                 <div class="col-sm-6">
                                                     <div class="form-group">
                                                         <label>{{ translate('contact_person_name')}}
-                                                            <span class="text-danger">*</span>
+                                                            <span class="text-danger checkout-required-indicator" data-required-indicator="contact_person_name">*</span>
                                                         </label>
                                                         <input type="hidden" name="nearest_branch" id="nearest_branch" value="1">
-                                                        <input type="text" class="form-control" name="contact_person_name" {{$shippingAddresses->count()==0?'required':''}} id="name">
+                                                        <input type="text" class="form-control" name="contact_person_name" id="name">
                                                     </div>
                                                 </div>
                                                 <div class="col-sm-6">
                                                     <div class="form-group">
                                                         <label>{{ translate('phone')}}
-                                                            <span class="text-danger">*</span>
+                                                            <span class="text-danger checkout-required-indicator" data-required-indicator="phone">*</span>
                                                         </label>
-                                                        <input type="tel" class="form-control phone-input-with-country-picker-3" id="phone" {{$shippingAddresses->count()==0?'required':''}}>
+                                                        <input type="tel" class="form-control phone-input-with-country-picker-3" id="phone">
                                                         <input type="hidden" id="shipping_phone_view" class="country-picker-phone-number-3 w-50" name="phone" readonly>
                                                     </div>
                                                 </div>
@@ -121,12 +244,14 @@
                                                     <div class="form-group">
                                                         <label for="exampleInputEmail1">
                                                             {{ translate('email')}}
-                                                            <span class="text-danger">*</span>
+                                                            <span class="text-danger checkout-required-indicator" data-required-indicator="email">*</span>
                                                         </label>
-                                                        <input type="email" class="form-control" name="email" id="email" {{$shippingAddresses->count()==0?'required':''}}>
+                                                        <input type="email" class="form-control" name="email" id="email">
                                                     </div>
                                                 </div>
                                                 @endif
+                                            </div>
+                                        </div>
                                                 <!-- <div class="col-12">
                                                     <div class="form-group">
                                                         <label>{{ translate('Delivery_Type') }}</label>
@@ -158,38 +283,61 @@
 
 
 
-                                                <div class="col-12">
+                                                <div class="checkout-section-block">
+                                                    <div class="checkout-section-head">
+                                                        <div>
+                                                            <h5 class="checkout-section-title">{{ translate('Delivery_Choice') }}</h5>
+                                                            <p class="checkout-section-copy">{{ translate('Choose_the_option_that_matches_how_you_want_to_receive_this_order') }}</p>
+                                                        </div>
+                                                    </div>
+                                                <div class="col-12 px-0">
                                                     <div class="form-group">
                                                         <label>{{ translate('Delivery_Type') }}</label>
-                                                        <div class="d-flex justify-content-md-around mt-lg-1 delivery-radio-btn">
-                                                            <div class="form-control-sm {{Session::get('direction') === "rtl" ? '' : 'ps-5' }}">
-                                                                <input class="form-check-input show form-check-input-radio" type="radio"
+                                                        <div class="fs-12 text-muted mt-1">{{ translate('Choose_how_you_want_to_receive_your_order') }}</div>
+                                                        <div class="delivery-radio-btn" role="radiogroup" aria-label="{{ translate('Delivery_Type') }}">
+                                                            <label class="delivery-choice" for="delivery_radio">
+                                                                <input class="delivery-choice__input" type="radio"
                                                                     name="delivery_type"
                                                                     id="delivery_radio"
                                                                     value="delivery"
                                                                     onchange="togglePickupBranchVisibility()">
-                                                                <label class="form-check-label text-nowrap delivery-radio-btn-label" for="delivery_radio">
-                                                                    {{ translate('delivery') }}
-                                                                </label>
-                                                            </div>
+                                                                <span class="delivery-choice__content">
+                                                                    <span>
+                                                                        <span class="delivery-choice__title">{{ translate('delivery') }}</span>
+                                                                        <span class="delivery-choice__hint">{{ translate('Deliver_to_my_address') }}</span>
+                                                                    </span>
+                                                                </span>
+                                                            </label>
 
-                                                            <div class="form-control-sm {{Session::get('direction') === "rtl" ? '' : 'ps-5' }}">
-                                                                <input class="form-check-input show form-check-input-radio" type="radio"
+                                                            <label class="delivery-choice" for="pickup_radio">
+                                                                <input class="delivery-choice__input" type="radio"
                                                                     name="delivery_type"
                                                                     id="pickup_radio"
                                                                     value="pickup"
                                                                     onchange="togglePickupBranchVisibility()">
-                                                                <label class="form-check-label text-nowrap delivery-radio-btn-label" for="pickup_radio">
-                                                                    {{ translate('pickup') }}
-                                                                </label>
-                                                            </div>
+                                                                <span class="delivery-choice__content">
+                                                                    <span>
+                                                                        <span class="delivery-choice__title">{{ translate('pickup') }}</span>
+                                                                        <span class="delivery-choice__hint">{{ translate('Collect_from_branch') }}</span>
+                                                                    </span>
+                                                                </span>
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                </div>
                                                 <div class="row col-12 delivery-type-selected-div d-none" id="deliver-address-type-div">
+                                                    <div class="col-12 px-0">
+                                                        <div class="checkout-section-head mb-4">
+                                                            <div>
+                                                                <h5 class="checkout-section-title">{{ translate('Address_Details') }}</h5>
+                                                                <p class="checkout-section-copy">{{ translate('Complete_only_the_fields_needed_for_your_selected_delivery_option') }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     <div class="col-6 d-none" id="deliver-address-type">
                                                         <div class="form-group">
-                                                            <label>{{ translate('address_type')}}</label>
+                                                            <label>{{ translate('address_type')}} <span class="text-danger checkout-required-indicator" data-required-indicator="address_type">*</span></label>
                                                             <select class="form-control" name="address_type" id="address_type">
                                                                 <option value="permanent">{{ translate('permanent')}}</option>
                                                                 <option value="home">{{ translate('home')}}</option>
@@ -200,7 +348,7 @@
                                                     </div>
                                                     <div class="col-12 d-none" id="deliver-pickup-branch">
                                                         <div class="form-group">
-                                                            <label>{{ translate('Pickup_branch')}}</label>
+                                                            <label>{{ translate('Pickup_branch')}} <span class="text-danger checkout-required-indicator d-none" data-required-indicator="pickup_branch_id">*</span></label>
                                                             <select class="form-control  js-select2-custom" name="pickup_branch_id" id="pickup_branch_id">
                                                                 <option value="">{{ translate('please_select')}}</option>
                                                                 @foreach($branches as $branch)
@@ -221,8 +369,8 @@
                                                     </div>
                                                     <div class="col-6 d-none" id="deliver-country">
                                                         <div class="form-group">
-                                                            <label>{{ translate('country') }} <span class="text-danger">*</span></label>
-                                                            <select name="country" id="country" class="form-control" required>
+                                                            <label>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="country">*</span></label>
+                                                            <select name="country" id="country" class="form-control">
                                                                 <option value="">{{ translate('select_country') }}</option>
                                                                 @foreach($shippingCountries as $country)
                                                                 <option value="{{ $country['code'] }}">{{ $country['name'] }}</option>
@@ -232,8 +380,8 @@
                                                     </div>
                                                     <div class="col-6 d-none" id="deliver-state">
                                                         <div class="form-group">
-                                                            <label>{{ translate('state') }} <span class="text-danger">*</span></label>
-                                                            <select name="state_id" id="state_id" class="form-control" required>
+                                                            <label>{{ translate('state') }} <span class="text-danger checkout-required-indicator" data-required-indicator="state">*</span></label>
+                                                            <select name="state_id" id="state_id" class="form-control">
                                                                 <option value="">{{ translate('select_state') }}</option>
                                                             </select>
 
@@ -244,8 +392,8 @@
 
                                                     <div class="col-6 d-none" id="deliver-city">
                                                         <div class="form-group">
-                                                            <label>{{ translate('city') }} <span class="text-danger">*</span></label>
-                                                            <select name="city_id" id="city_id" class="form-control" required>
+                                                            <label>{{ translate('city') }} <span class="text-danger checkout-required-indicator" data-required-indicator="city">*</span></label>
+                                                            <select name="city_id" id="city_id" class="form-control">
                                                                 <option value="">{{ translate('select_city') }}</option>
                                                             </select>
                                                             <input type="hidden" name="city" id="city_name">
@@ -255,8 +403,8 @@
 
                                                     <div class="col-6 d-none" id="deliver-area">
                                                         <div class="form-group">
-                                                            <label>{{ translate('area') }} <span class="text-danger">*</span></label>
-                                                            <select name="area" id="area" class="form-control" required>
+                                                            <label>{{ translate('area') }} <span class="text-danger checkout-required-indicator" data-required-indicator="area">*</span></label>
+                                                            <select name="area" id="area" class="form-control">
                                                                 <option value="">{{ translate('select_area') }}</option>
                                                             </select>
                                                         </div>
@@ -264,12 +412,10 @@
                                                     <div class="col-6 d-none" id="deliver-zip">
                                                         <div class="form-group">
                                                             <label>{{ translate('zip_code')}}
-                                                                @if($zip_restrict_status == 1)
-                                                                <span class="text-danger">*</span>
-                                                                @endif
+                                                                <span class="text-danger checkout-required-indicator {{ $zip_restrict_status == 1 ? '' : 'd-none' }}" data-required-indicator="zip">*</span>
                                                             </label>
                                                             @if($zip_restrict_status == 1)
-                                                            <select name="zip" class="form-control selectpicker" data-live-search="true" id="select2-zip-container" required>
+                                                            <select name="zip" class="form-control selectpicker" data-live-search="true" id="select2-zip-container">
                                                                 @forelse($zip_codes as $code)
                                                                 <option value="{{ $code->zipcode }}">{{ $code->zipcode }}</option>
                                                                 @empty
@@ -284,8 +430,8 @@
                                                     </div>
                                                     <div class="col-6 d-none" id="deliver-address">
                                                         <div class="form-group mb-1">
-                                                            <label>{{ translate('address')}}<span class="text-danger">*</span></label>
-                                                            <textarea class="form-control" id="address" type="text" name="address" {{$shippingAddresses->count()==0?'required':''}}></textarea>
+                                                            <label>{{ translate('address')}}<span class="text-danger checkout-required-indicator" data-required-indicator="address">*</span></label>
+                                                            <textarea class="form-control" id="address" type="text" name="address"></textarea>
                                                             <span class="fs-14 text-danger font-semi-bold opacity-0 map-address-alert">
                                                                 {{ translate('note') }}: {{ translate('you_need_to_select_address_from_your_selected_country') }}
                                                             </span>
@@ -312,12 +458,12 @@
                                             <input type="hidden" id="latitude"
                                                 name="latitude" class="form-control d-inline"
                                                 placeholder="{{ translate('ex')}} : -94.22213"
-                                                value="{{$defaultLocation?$defaultLocation['lat']:0}}" required
+                                                value="{{$defaultLocation?$defaultLocation['lat']:0}}"
                                                 readonly>
                                             <input type="hidden"
                                                 name="longitude" class="form-control"
                                                 placeholder="{{ translate('ex')}} : 103.344322" id="longitude"
-                                                value="{{$defaultLocation?$defaultLocation['lng']:0}}" required
+                                                value="{{$defaultLocation?$defaultLocation['lng']:0}}"
                                                 readonly>
 
                                             <button type="submit" class="btn btn--primary d--none" id="address_submit"></button>
@@ -344,7 +490,7 @@
                                 <div class="d-flex gap-3 flex-wrap flex-sm-nowrap">
                                     <div class="w-100">
                                         <div class="password-toggle rtl">
-                                            <input class="form-control text-align-direction" name="customer_password" type="password" id="customer_password" placeholder="{{ translate('new_Password') }}" required>
+                                            <input class="form-control text-align-direction" name="customer_password" type="password" id="customer_password" placeholder="{{ translate('new_Password') }}">
                                             <label class="password-toggle-btn">
                                                 <input class="custom-control-input" type="checkbox">
                                                 <i class="tio-hidden password-toggle-indicator"></i>
@@ -354,7 +500,7 @@
                                     </div>
                                     <div class="w-100">
                                         <div class="password-toggle rtl">
-                                            <input class="form-control text-align-direction w-100" name="customer_confirm_password" type="password" id="customer_confirm_password" placeholder="{{ translate('confirm_Password') }}" required>
+                                            <input class="form-control text-align-direction w-100" name="customer_confirm_password" type="password" id="customer_confirm_password" placeholder="{{ translate('confirm_Password') }}">
                                             <label class="password-toggle-btn">
                                                 <input class="custom-control-input" type="checkbox">
                                                 <i class="tio-hidden password-toggle-indicator"></i>
@@ -432,21 +578,28 @@
                                     <div id="accordion">
                                         <div class="">
                                             <div class="">
+                                                <div class="checkout-section-block">
+                                                    <div class="checkout-section-head">
+                                                        <div>
+                                                            <h5 class="checkout-section-title">{{ translate('Billing_Contact_Details') }}</h5>
+                                                            <p class="checkout-section-copy">{{ translate('Use_details_for_invoices_and_billing_updates') }}</p>
+                                                        </div>
+                                                    </div>
                                                 <div class="row">
                                                     <div class="col-sm-6">
                                                         <div class="form-group">
-                                                            <label>{{ translate('contact_person_name')}}<span class="text-danger">*</span></label>
+                                                            <label>{{ translate('contact_person_name')}}<span class="text-danger checkout-required-indicator" data-required-indicator="billing_contact_person_name">*</span></label>
                                                             <input type="text" class="form-control"
-                                                                name="billing_contact_person_name" id="billing_contact_person_name" {{$billingAddresses->count()==0?'required':''}}>
+                                                                name="billing_contact_person_name" id="billing_contact_person_name">
                                                         </div>
                                                     </div>
                                                     <div class="col-sm-6">
                                                         <div class="form-group">
                                                             <label>{{ translate('phone')}}
-                                                                <span class="text-danger">*</span>
+                                                                <span class="text-danger checkout-required-indicator" data-required-indicator="billing_phone">*</span>
                                                             </label>
                                                             <input type="text" class="form-control phone-input-with-country-picker-2"
-                                                                id="billing_phone" {{ $billingAddresses->count()==0 ? 'required' : '' }}>
+                                                                id="billing_phone">
                                                             <input type="hidden" class="country-picker-phone-number-2 w-50" name="billing_phone" readonly>
                                                         </div>
                                                     </div>
@@ -455,15 +608,15 @@
                                                         <div class="form-group">
                                                             <label
                                                                 for="exampleInputEmail1">{{ translate('email')}}
-                                                                <span class="text-danger">*</span></label>
+                                                                <span class="text-danger checkout-required-indicator" data-required-indicator="billing_contact_email">*</span></label>
                                                             <input type="text" class="form-control"
-                                                                name="billing_contact_email" id="billing_contact_email" id {{$billingAddresses->count()==0?'required':''}}>
+                                                                name="billing_contact_email" id="billing_contact_email">
                                                         </div>
                                                     </div>
                                                     @endif
                                                     <div class="col-12">
                                                         <div class="form-group">
-                                                            <label>{{ translate('address_type')}}</label>
+                                                            <label>{{ translate('address_type')}} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_address_type">*</span></label>
                                                             <select class="form-control" name="billing_address_type" id="billing_address_type">
                                                                 <option value="permanent">{{ translate('permanent')}}</option>
                                                                 <option value="home">{{ translate('home')}}</option>
@@ -472,10 +625,21 @@
                                                             </select>
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </div>
+
+                                                <div class="checkout-section-block">
+                                                    <div class="checkout-section-head">
+                                                        <div>
+                                                            <h5 class="checkout-section-title">{{ translate('Billing_Address_Details') }}</h5>
+                                                            <p class="checkout-section-copy">{{ translate('Add_the_address_where_your_invoice_should_be_registered') }}</p>
+                                                        </div>
+                                                    </div>
+                                                <div class="row">
                                                     <div class="col-6">
                                                         <div class="form-group">
-                                                            <label>{{ translate('country') }} <span class="text-danger">*</span></label>
-                                                            <select name="billing_country" id="billing_country" class="form-control" required>
+                                                            <label>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_country">*</span></label>
+                                                            <select name="billing_country" id="billing_country" class="form-control">
                                                                 <option value="">{{ translate('select_country') }}</option>
                                                                 @foreach($billingCountries as $country)
                                                                 <option value="{{ $country['code'] }}">{{ $country['name'] }}</option>
@@ -486,8 +650,8 @@
 
                                                     <div class="col-6">
                                                         <div class="form-group">
-                                                            <label>{{ translate('state') }} <span class="text-danger">*</span></label>
-                                                            <select name="billing_state_id" id="billing_state_id" class="form-control" required>
+                                                            <label>{{ translate('state') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_state">*</span></label>
+                                                            <select name="billing_state_id" id="billing_state_id" class="form-control">
                                                                 <option value="">{{ translate('select_state') }}</option>
                                                             </select>
                                                             <input type="hidden" name="billing_state" id="billing_state_name">
@@ -497,8 +661,8 @@
 
                                                     <div class="col-6">
                                                         <div class="form-group">
-                                                            <label>{{ translate('city') }} <span class="text-danger">*</span></label>
-                                                            <select name="billing_city_id" id="billing_city_id" class="form-control" required>
+                                                            <label>{{ translate('city') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_city">*</span></label>
+                                                            <select name="billing_city_id" id="billing_city_id" class="form-control">
                                                                 <option value="">{{ translate('select_city') }}</option>
                                                             </select>
                                                             <input type="hidden" name="billing_city" id="billing_city_name">
@@ -509,7 +673,7 @@
                                                     <div class="col-6">
                                                         <div class="form-group">
                                                             <label>{{ translate('area') }}<!--  <span class="text-danger">*</span>--></label>
-                                                            <select name="billing_area" id="billing_area" class="form-control" required>
+                                                            <select name="billing_area" id="billing_area" class="form-control">
                                                                 <option value="">{{ translate('select_area') }}</option>
                                                             </select>
                                                         </div>
@@ -521,7 +685,7 @@
                                                         <div class="form-group">
                                                             @if($zip_restrict_status)
                                                             <label>{{ translate('zip_code') }}</label>
-                                                            <select name="billing_zip" class="form-control selectpicker" data-live-search="true" id="select_billing_zip" required>
+                                                                <select name="billing_zip" class="form-control selectpicker" data-live-search="true" id="select_billing_zip">
                                                                 @foreach($zip_codes as $code)
                                                                 <option value="{{ $code->zipcode }}">{{ $code->zipcode }}</option>
                                                                 @endforeach
@@ -535,9 +699,9 @@
 
                                                     <div class="col-6">
                                                         <div class="form-group">
-                                                            <label>{{ translate('zip_code')}}
-                                                                @if($zip_restrict_status)
-                                                                <select name="billing_zip" id="" class="form-control selectpicker" data-live-search="true" id="select_billing_zip">
+                                                            <label>{{ translate('zip_code')}}</label>
+                                                            @if($zip_restrict_status)
+                                                                <select name="billing_zip" class="form-control selectpicker" data-live-search="true" id="select_billing_zip">
                                                                     @foreach($zip_codes as $code)
                                                                     <option value="{{ $code->zipcode }}">{{ $code->zipcode }}</option>
                                                                     @endforeach
@@ -549,10 +713,18 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
 
+                                                <div class="checkout-section-block">
+                                                    <div class="checkout-section-head">
+                                                        <div>
+                                                            <h5 class="checkout-section-title">{{ translate('Street_Address') }}</h5>
+                                                            <p class="checkout-section-copy">{{ translate('Provide_the_full_billing_address_for_documents_and_invoices') }}</p>
+                                                        </div>
+                                                    </div>
                                                 <div class="form-group mb-1">
-                                                    <label>{{ translate('address')}}<span class="text-danger">*</span></label>
-                                                    <textarea class="form-control" id="billing_address" type="billing_text" name="billing_address" id="billing_address" {{$billingAddresses->count()==0?'required':''}}></textarea>
+                                                    <label>{{ translate('address')}}<span class="text-danger checkout-required-indicator" data-required-indicator="billing_address">*</span></label>
+                                                    <textarea class="form-control" id="billing_address" type="billing_text" name="billing_address" id="billing_address"></textarea>
 
                                                     <span class="fs-14 text-danger font-semi-bold opacity-0 map-address-alert">
                                                         {{ translate('note') }}: {{ translate('you_need_to_select_address_from_your_selected_country') }}
@@ -581,15 +753,16 @@
                                                 <input type="hidden" id="billing_latitude"
                                                     name="billing_latitude" class="form-control d-inline"
                                                     placeholder="{{ translate('ex')}} : -94.22213"
-                                                    value="{{$defaultLocation?$defaultLocation['lat']:0}}" required
+                                                    value="{{$defaultLocation?$defaultLocation['lat']:0}}"
                                                     readonly>
                                                 <input type="hidden"
                                                     name="billing_longitude" class="form-control"
                                                     placeholder="{{ translate('ex')}} : 103.344322" id="billing_longitude"
-                                                    value="{{$defaultLocation?$defaultLocation['lng']:0}}" required
+                                                    value="{{$defaultLocation?$defaultLocation['lng']:0}}"
                                                     readonly>
 
                                                 <button type="submit" class="btn btn--primary d--none" id="address_submit"></button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -614,7 +787,7 @@
                                 <div class="d-flex gap-3 flex-wrap flex-sm-nowrap">
                                     <div class="w-100">
                                         <div class="password-toggle rtl">
-                                            <input class="form-control text-align-direction" name="customer_password" type="password" id="customer_password" placeholder="{{ translate('new_Password')}}" required>
+                                            <input class="form-control text-align-direction" name="customer_password" type="password" id="customer_password" placeholder="{{ translate('new_Password')}}">
                                             <label class="password-toggle-btn">
                                                 <input class="custom-control-input" type="checkbox">
                                                 <i class="tio-hidden password-toggle-indicator"></i>
@@ -624,7 +797,7 @@
                                     </div>
                                     <div class="w-100">
                                         <div class="password-toggle rtl">
-                                            <input class="form-control text-align-direction" name="customer_confirm_password" type="password" id="customer_confirm_password" placeholder="{{ translate('confirm_Password')}}" required>
+                                            <input class="form-control text-align-direction" name="customer_confirm_password" type="password" id="customer_confirm_password" placeholder="{{ translate('confirm_Password')}}">
                                             <label class="password-toggle-btn">
                                                 <input class="custom-control-input" type="checkbox">
                                                 <i class="tio-hidden password-toggle-indicator"></i>
@@ -648,12 +821,14 @@
 <span id="message-update-this-address" data-text="{{ translate('Update_this_Address') }}"></span>
 <span id="message-create-account-above-info" data-text="{{ translate('Create_an_account_with_the_above_info') }}"></span>
 <span id="message-create-account-below-info" data-text="Create an account with the below info"></span>
+<span id="message-please-fill-out-this-field" data-text="{{ translate('Please_fill_out_this_field') }}"></span>
 <span id="route-fetch-area-branch" data-url="fetch-area"></span>
 <span id="route-customer-choose-shipping-address-other" data-url="{{ route('customer.choose-shipping-address-other') }}"></span>
 <span id="default-latitude-address" data-value="{{ $defaultLocation ? $defaultLocation['lat']:'26.774645719165914' }}"></span>
 <span id="default-longitude-address" data-value="{{ $defaultLocation ? $defaultLocation['lng']:'29.311165295285434' }}"></span>
 <span id="route-action-checkout-function" data-route="checkout-details"></span>
 <span id="system-country-restrict-status" data-value="{{ $country_restrict_status }}"></span>
+<span id="system-zip-restrict-status" data-value="{{ $zip_restrict_status }}"></span>
 @endsection
 
 @push('script')

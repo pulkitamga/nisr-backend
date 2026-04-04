@@ -41,25 +41,10 @@ class Service extends Model
         return $this->belongsTo(Product::class);
     }
 
-  public function getTitleAttribute($value): ?string
-{
-    if (
-        strpos(url()->current(), '/admin') ||
-        strpos(url()->current(), '/vendor') ||
-        strpos(url()->current(), '/seller')
-    ) {
-        return $value;
+    public function getTitleAttribute($value): ?string
+    {
+        return $this->getTranslatedField('title', fallback: $value);
     }
-
-    $locale = App::getLocale();
-
-    $translation = $this->translations
-        ->where('locale', $locale)
-        ->where('key', 'title')
-        ->first();
-
-    return $translation->value ?? $value;
-}
 
     protected static function boot(): void
     {

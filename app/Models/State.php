@@ -23,4 +23,9 @@ class State extends Model
     {
         return $this->hasMany(City::class);
     }
+
+    public function getNameAttribute($value): ?string
+    {
+        return $this->getTranslatedField('name', fallback: $value);
+    }
 }

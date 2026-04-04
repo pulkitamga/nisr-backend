@@ -88,11 +88,7 @@ class Category extends Model
 
     public function getNameAttribute($name): string|null
     {
-        if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
-            return $name;
-        }
-
-        return $this->translations[0]->value ?? $name;
+        return $this->getTranslatedField('name', fallback: $name);
     }
 
     public function scopePriority($query): mixed

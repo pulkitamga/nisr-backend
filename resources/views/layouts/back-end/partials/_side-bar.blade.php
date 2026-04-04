@@ -1264,10 +1264,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/all-product') || Request::is('admin/report/order') || Request::is('admin/stock/product-in-wishlist') || Request::is('admin/stock/product-stock') || Request::is('admin/products/' . Product::STOCK_LIMIT_PRODUCTS[URI] . '*') || Request::is('admin/products/' . Product::STOCK_REPORT[URI] . '*') || Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="Products">
+                                    href="javascript:" title="{{ translate('Products') }}">
                                     <i class="tio-chart-bar-4 nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        Products
+                                        {{ translate('Products') }}
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -1302,10 +1302,10 @@
                                 <li
                                     class="navbar-vertical-aside-has-menu {{ Request::is('admin/reports/unified') || Request::is('admin/branch/sales*') || Request::is('admin/stock/transfer-report*') ? 'active' : '' }}">
                                     <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                        href="javascript:" title="Branchs">
+                                        href="javascript:" title="{{ translate('Branches') }}">
                                         <i class="tio-chart-bar-1 nav-icon"></i>
                                         <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                            Branchs
+                                            {{ translate('Branches') }}
                                         </span>
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -1345,10 +1345,10 @@
                                 <li
                                     class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/sales-report*') || Request::is('admin/crm/insights-report') || Request::is('admin/report/' . CrmDealSalesReport::VIEW[URI]) || Request::is('admin/report/' . CrmAgentSalesMatrixReport::VIEW[URI]) || Request::is('admin/report/' . CrmEmployeeChannelAssignmentReport::VIEW[URI]) || Request::is('admin/crm/chart-view') || Request::is('admin/ucm/insights-report') ? 'active' : '' }}">
                                     <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                        href="javascript:" title="CRM">
+                                        href="javascript:" title="{{ translate('CRM') }}">
                                         <i class="tio-chart-pie-1 nav-icon"></i>
                                         <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                            CRM
+                                            {{ translate('CRM') }}
                                         </span>
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -1363,9 +1363,9 @@
                                             </li>
                                             <li class="nav-item {{ Request::is('admin/crm/insights-report') ? 'active' : '' }}">
                                                 <a class="nav-link" href="{{ route('admin.crm.insights-report') }}"
-                                                    title="{{ __('CRM Insights Report') }}">
+                                                    title="{{ translate('CRM Insights Report') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
-                                                    <span class="text-truncate">{{ __('CRM Insights Report') }}</span>
+                                                    <span class="text-truncate">{{ translate('CRM Insights Report') }}</span>
                                                 </a>
                                             </li>
                                             <li
@@ -1406,9 +1406,9 @@
                                             </li>
                                             <li class="nav-item {{ Request::is('admin/ucm/insights-report') ? 'active' : '' }}">
                                                 <a class="nav-link" href="{{ route('admin.ucm.insights-report') }}"
-                                                    title="{{ __('VOIP Insights Report') }}">
+                                                    title="{{ translate('VOIP Insights Report') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
-                                                    <span class="text-truncate">{{ __('VOIP Insights Report') }}</span>
+                                                    <span class="text-truncate">{{ translate('VOIP Insights Report') }}</span>
                                                 </a>
                                             </li>
                                         @endif
@@ -1420,10 +1420,10 @@
                                 <li
                                     class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/report*') || Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
                                     <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                        href="javascript:" title="Warranty">
+                                        href="javascript:" title="{{ translate('Warranty') }}">
                                         <i class="tio-chart-bar-2 nav-icon"></i>
                                         <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                            Warranty
+                                            {{ translate('Warranty') }}
                                         </span>
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -1452,9 +1452,9 @@
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/warranty/report/analytics') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.warranty.report.analytics') }}"
-                                                title="{{ __('Warranty Analytics Report') }}">
+                                                title="{{ translate('Warranty Analytics Report') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
-                                                <span class="text-truncate">{{ __('Warranty Analytics Report') }}</span>
+                                                <span class="text-truncate">{{ translate('Warranty Analytics Report') }}</span>
                                             </a>
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">

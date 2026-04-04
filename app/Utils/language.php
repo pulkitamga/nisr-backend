@@ -249,11 +249,53 @@ if (!function_exists('getTranslation')) {
     }
 }
 
+if (!function_exists('getLocalizedCountryName')) {
+    function getLocalizedCountryName(?string $countryCodeOrName): string
+    {
+        $countryCodeOrName = trim((string)$countryCodeOrName);
+        if ($countryCodeOrName === '') {
+            return '';
+        }
+
+        $activeLocale = getActiveTranslationLocale();
+        $countryCode = strtoupper($countryCodeOrName);
+
+        if (strlen($countryCode) === 2 && class_exists(\Locale::class)) {
+            $localizedName = \Locale::getDisplayRegion('-' . $countryCode, $activeLocale);
+            if (is_string($localizedName) && trim($localizedName) !== '') {
+                return $localizedName;
+            }
+        }
+
+        if (translationKeyExistsInCatalog($activeLocale, $countryCodeOrName)) {
+            return (string)getTranslateMessageValueByKey($activeLocale, $countryCodeOrName);
+        }
+
+        return $countryCodeOrName;
+    }
+}
+
 
 if (!function_exists('removeSpecialCharacters')) {
     function removeSpecialCharacters(string|null $text): string|null
     {
         return str_ireplace(['\'', '"', ',', ';', '<', '>', '?', '“', '”'], ' ', preg_replace('/\s\s+/', ' ', $text));
+    }
+}
+
+if (!function_exists('formatPhoneForDisplay')) {
+    function formatPhoneForDisplay(?string $phone): string
+    {
+        $phone = trim((string)$phone);
+        if ($phone === '') {
+            return '';
+        }
+
+        if (str_ends_with($phone, '+') && !str_starts_with($phone, '+')) {
+            return '+' . rtrim($phone, '+');
+        }
+
+        return $phone;
     }
 }
 
@@ -596,7 +638,7 @@ if (!function_exists('autoTranslator')) {
 if (!function_exists('getTranslatedValue')) {
     function getTranslatedValue($model, string $key, string $fallback = ''): string
     {
-        $locale = getDefaultLanguage();
+        $locale = getActiveTranslationLocale();
         $resolvedLocale = resolveAppLocale($locale);
         $defaultLocale = resolveAppLocale(config('app.locale', 'en'));
 

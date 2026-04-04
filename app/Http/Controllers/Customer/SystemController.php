@@ -490,9 +490,10 @@ class SystemController extends Controller
     public function getChooseShippingAddressOther(Request $request): JsonResponse
     {
         if (!$request->has('shipping') || !$request->has('billing')) {
-            return response()->json([
-                'errors' => translate('Please_fill_all_required_shipping_and_billing_information')
-            ], 403);
+            return $this->checkoutValidationError(
+                message: translate('Please_fill_all_required_shipping_and_billing_information'),
+                status: 403
+            );
         }
 
         $shipping = [];
@@ -502,9 +503,10 @@ class SystemController extends Controller
             parse_str($request['shipping'], $shipping);
             parse_str($request['billing'], $billing);
         } catch (\Exception $e) {
-            return response()->json([
-                'errors' => translate('Invalid_shipping_or_billing_data_format')
-            ], 403);
+            return $this->checkoutValidationError(
+                message: translate('Invalid_shipping_or_billing_data_format'),
+                status: 403
+            );
         }
 
         $defaultShippingValues = [
@@ -559,9 +561,10 @@ class SystemController extends Controller
         }
 
         if ($isFormEmpty) {
-            return response()->json([
-                'errors' => translate('Please_fill_all_required_fields_in_shipping_address')
-            ], 403);
+            return $this->checkoutValidationError(
+                message: translate('Please_fill_all_required_fields_in_shipping_address'),
+                status: 403
+            );
         }
 
         session()->put('nearest_branch', $shipping['nearest_branch']);
@@ -573,14 +576,20 @@ class SystemController extends Controller
             $shippingPhoneValue = preg_replace('/[^0-9]/', '', $shipping['phone']);
             $shippingPhoneLength = strlen($shippingPhoneValue);
             if ($shippingPhoneLength < 4) {
-                return response()->json([
-                    'errors' => translate('The_phone_number_must_be_at_least_4_characters')
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: translate('The_phone_number_must_be_at_least_4_characters'),
+                    fieldErrors: ['phone' => translate('The_phone_number_must_be_at_least_4_characters')],
+                    focusField: 'phone',
+                    status: 403
+                );
             }
             if ($shippingPhoneLength > 20) {
-                return response()->json([
-                    'errors' => translate('The_phone_number_may_not_be_greater_than_20_characters')
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: translate('The_phone_number_may_not_be_greater_than_20_characters'),
+                    fieldErrors: ['phone' => translate('The_phone_number_may_not_be_greater_than_20_characters')],
+                    focusField: 'phone',
+                    status: 403
+                );
             }
         }
 
@@ -588,15 +597,21 @@ class SystemController extends Controller
             $billingPhoneValue = preg_replace('/[^0-9]/', '', $billing['billing_phone']);
             $billingPhoneLength = strlen($billingPhoneValue);
             if ($billingPhoneLength < 4) {
-                return response()->json([
-                    'errors' => translate('The_phone_number_must_be_at_least_4_characters')
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: translate('The_phone_number_must_be_at_least_4_characters'),
+                    fieldErrors: ['billing_phone' => translate('The_phone_number_must_be_at_least_4_characters')],
+                    focusField: 'billing_phone',
+                    status: 403
+                );
             }
 
             if ($billingPhoneLength > 20) {
-                return response()->json([
-                    'errors' => translate('The_phone_number_may_not_be_greater_than_20_characters')
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: translate('The_phone_number_may_not_be_greater_than_20_characters'),
+                    fieldErrors: ['billing_phone' => translate('The_phone_number_may_not_be_greater_than_20_characters')],
+                    focusField: 'billing_phone',
+                    status: 403
+                );
             }
         }
 
@@ -619,20 +634,26 @@ class SystemController extends Controller
             $missingFields = [];
             foreach ($requiredFields as $field) {
                 if (empty($shipping[$field])) {
-                    $missingFields[] = str_replace('_', ' ', $field);
+                    $missingFields[] = $field;
                 }
             }
 
             if (!empty($missingFields)) {
-                return response()->json([
-                    'errors' => translate('Please_fill_the_following_fields') . ': ' . implode(', ', $missingFields)
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: $this->buildCheckoutMissingFieldsMessage($missingFields, 'Please_fill_the_following_fields'),
+                    fieldErrors: $this->buildCheckoutFieldErrors($missingFields),
+                    focusField: $missingFields[0],
+                    status: 403
+                );
             }
 
             if ($countryRestrictStatus && !self::delivery_country_exist_check($shipping['country'])) {
-                return response()->json([
-                    'errors' => translate('Delivery_unavailable_in_this_country.')
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: translate('Delivery_unavailable_in_this_country.'),
+                    fieldErrors: ['country' => translate('Delivery_unavailable_in_this_country.')],
+                    focusField: 'country',
+                    status: 403
+                );
             }
         } else if ($shipping['delivery_type'] != 'pickup') {
             $requiredFields = ['contact_person_name', 'address_type', 'address', 'city', 'state', 'country', 'phone'];
@@ -643,36 +664,48 @@ class SystemController extends Controller
             $missingFields = [];
             foreach ($requiredFields as $field) {
                 if (empty($shipping[$field])) {
-                    $missingFields[] = str_replace('_', ' ', $field);
+                    $missingFields[] = $field;
                 }
             }
 
             if (!empty($missingFields)) {
-                return response()->json([
-                    'errors' => translate('Please_fill_the_following_fields') . ': ' . implode(', ', $missingFields)
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: $this->buildCheckoutMissingFieldsMessage($missingFields, 'Please_fill_the_following_fields'),
+                    fieldErrors: $this->buildCheckoutFieldErrors($missingFields),
+                    focusField: $missingFields[0],
+                    status: 403
+                );
             }
         }
 
         if ($shipping['delivery_type'] != 'pickup') {
             $shippingRestrictionError = $this->validateShippingDeliveryLocation($shipping);
             if ($shippingRestrictionError) {
-                return response()->json([
-                    'errors' => $shippingRestrictionError
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: $shippingRestrictionError['message'],
+                    fieldErrors: [$shippingRestrictionError['field'] => $shippingRestrictionError['message']],
+                    focusField: $shippingRestrictionError['field'],
+                    status: 403
+                );
             }
 
             if ((int)$zipRestrictStatus === 1) {
                 if (empty($shipping['zip'])) {
-                    return response()->json([
-                        'errors' => translate('Please_fill_the_following_fields') . ': ' . translate('zip_code')
-                    ], 403);
+                    return $this->checkoutValidationError(
+                        message: $this->buildCheckoutMissingFieldsMessage(['zip'], 'Please_fill_the_following_fields'),
+                        fieldErrors: $this->buildCheckoutFieldErrors(['zip']),
+                        focusField: 'zip',
+                        status: 403
+                    );
                 }
 
                 if (!self::delivery_zipcode_exist_check($shipping['zip'])) {
-                    return response()->json([
-                        'errors' => translate('Delivery_unavailable_for_this_zip_code_area')
-                    ], 403);
+                    return $this->checkoutValidationError(
+                        message: translate('Delivery_unavailable_for_this_zip_code_area'),
+                        fieldErrors: ['zip' => translate('Delivery_unavailable_for_this_zip_code_area')],
+                        focusField: 'zip',
+                        status: 403
+                    );
                 }
             }
         }
@@ -746,14 +779,17 @@ class SystemController extends Controller
             $missingBillingFields = [];
             foreach ($requiredBillingFields as $field) {
                 if (empty($billing[$field])) {
-                    $missingBillingFields[] = str_replace('billing_', '', str_replace('_', ' ', $field));
+                    $missingBillingFields[] = $field;
                 }
             }
 
             if (!empty($missingBillingFields)) {
-                return response()->json([
-                    'errors' => translate('Please_fill_the_following_billing_fields') . ': ' . implode(', ', $missingBillingFields)
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: $this->buildCheckoutMissingFieldsMessage($missingBillingFields, 'Please_fill_the_following_billing_fields'),
+                    fieldErrors: $this->buildCheckoutFieldErrors($missingBillingFields),
+                    focusField: $missingBillingFields[0],
+                    status: 403
+                );
             }
             // elseif ($countryRestrictStatus && !self::delivery_country_exist_check($billing['billing_country'])) {
             //     return response()->json([
@@ -819,19 +855,22 @@ class SystemController extends Controller
             && !isset($billing['billing_method_id'])
             && $physicalProduct != 'yes'
         ) {
-            return response()->json([
-                'errors' => translate('Fill_all_required_fields_of_billing_address')
-            ], 403);
+            return $this->checkoutValidationError(
+                message: translate('Fill_all_required_fields_of_billing_address'),
+                status: 403
+            );
         } elseif ($request['billing_addresss_same_shipping'] == 'true' && !isset($billing['billing_method_id']) && $physicalProduct != 'yes') {
-            return response()->json([
-                'errors' => translate('Fill_all_required_fields_of_billing_address')
-            ], 403);
+            return $this->checkoutValidationError(
+                message: translate('Fill_all_required_fields_of_billing_address'),
+                status: 403
+            );
         }
 
         if (empty($addressId) && empty($billingAddressId)) {
-            return response()->json([
-                'errors' => translate('Please_provide_at_least_one_shipping_or_billing_address')
-            ], 403);
+            return $this->checkoutValidationError(
+                message: translate('Please_provide_at_least_one_shipping_or_billing_address'),
+                status: 403
+            );
         }
 
         session()->put('address_id', $addressId);
@@ -839,19 +878,42 @@ class SystemController extends Controller
 
         if ($request['is_check_create_account'] && $isGuestCustomer) {
             if (empty($request['customer_password']) || empty($request['customer_confirm_password'])) {
-                return response()->json([
-                    'errors' => translate('The_password_or_confirm_password_can_not_be_empty')
-                ], 403);
+                $emptyPasswordFields = [];
+                if (empty($request['customer_password'])) {
+                    $emptyPasswordFields[] = 'customer_password';
+                }
+                if (empty($request['customer_confirm_password'])) {
+                    $emptyPasswordFields[] = 'customer_confirm_password';
+                }
+
+                return $this->checkoutValidationError(
+                    message: translate('The_password_or_confirm_password_can_not_be_empty'),
+                    fieldErrors: $this->buildCheckoutFieldErrors($emptyPasswordFields),
+                    focusField: $emptyPasswordFields[0] ?? null,
+                    status: 403
+                );
             }
             if ($request['customer_password'] != $request['customer_confirm_password']) {
-                return response()->json([
-                    'errors' => translate('The_password_and_confirm_password_must_match')
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: translate('The_password_and_confirm_password_must_match'),
+                    fieldErrors: [
+                        'customer_password' => translate('The_password_and_confirm_password_must_match'),
+                        'customer_confirm_password' => translate('The_password_and_confirm_password_must_match'),
+                    ],
+                    focusField: 'customer_password',
+                    status: 403
+                );
             }
             if (strlen($request['customer_password']) < 7 || strlen($request['customer_confirm_password']) < 7) {
-                return response()->json([
-                    'errors' => translate('The_password_must_be_at_least_8_characters')
-                ], 403);
+                return $this->checkoutValidationError(
+                    message: translate('The_password_must_be_at_least_8_characters'),
+                    fieldErrors: [
+                        'customer_password' => translate('The_password_must_be_at_least_8_characters'),
+                        'customer_confirm_password' => translate('The_password_must_be_at_least_8_characters'),
+                    ],
+                    focusField: 'customer_password',
+                    status: 403
+                );
             }
             if ($request['shipping']) {
                 $newCustomerAddress = [
@@ -870,7 +932,13 @@ class SystemController extends Controller
             }
 
             if (User::where(['email' => $newCustomerAddress['email']])->orWhere(['phone' => $newCustomerAddress['phone']])->first()) {
-                return response()->json(['errors' => translate('Already_registered')], 403);
+                $duplicateField = $request['shipping'] ? 'email' : 'billing_contact_email';
+                return $this->checkoutValidationError(
+                    message: translate('Already_registered'),
+                    fieldErrors: [$duplicateField => translate('Already_registered')],
+                    focusField: $duplicateField,
+                    status: 403
+                );
             } else {
                 $newCustomerRegister = self::getRegisterNewCustomer(request: $request, address: $newCustomerAddress);
                 session()->put('newCustomerRegister', $newCustomerRegister);
@@ -899,11 +967,82 @@ class SystemController extends Controller
         ];
     }
 
-    private function validateShippingDeliveryLocation(array $shipping): ?string
+    private function checkoutValidationError(string $message, array $fieldErrors = [], ?string $focusField = null, int $status = 422): JsonResponse
+    {
+        if ($focusField === null && !empty($fieldErrors)) {
+            $focusField = array_key_first($fieldErrors);
+        }
+
+        return response()->json([
+            'message' => $message,
+            'field_errors' => $fieldErrors,
+            'focus_field' => $focusField,
+        ], $status);
+    }
+
+    private function buildCheckoutFieldErrors(array $fields, ?string $message = null): array
+    {
+        $fieldErrors = [];
+        $resolvedMessage = $message ?? translate('Please_fill_out_this_field');
+
+        foreach ($fields as $field) {
+            $fieldErrors[$field] = $resolvedMessage;
+        }
+
+        return $fieldErrors;
+    }
+
+    private function buildCheckoutMissingFieldsMessage(array $fields, string $translationKey): string
+    {
+        $labels = array_map(fn($field) => $this->translateCheckoutFieldLabel($field), $fields);
+
+        return translate($translationKey) . ': ' . implode(', ', $labels);
+    }
+
+    private function translateCheckoutFieldLabel(string $field): string
+    {
+        $fieldLabels = [
+            'contact_person_name' => 'contact_person_name',
+            'phone' => 'phone',
+            'email' => 'email',
+            'delivery_type' => 'Delivery_Type',
+            'pickup_branch_id' => 'Pickup_branch',
+            'address_type' => 'address_type',
+            'country' => 'country',
+            'state' => 'state',
+            'state_id' => 'state',
+            'city' => 'city',
+            'city_id' => 'city',
+            'area' => 'area',
+            'zip' => 'zip_code',
+            'address' => 'address',
+            'billing_contact_person_name' => 'contact_person_name',
+            'billing_phone' => 'phone',
+            'billing_contact_email' => 'email',
+            'billing_address_type' => 'address_type',
+            'billing_country' => 'country',
+            'billing_state' => 'state',
+            'billing_state_id' => 'state',
+            'billing_city' => 'city',
+            'billing_city_id' => 'city',
+            'billing_area' => 'area',
+            'billing_zip' => 'zip_code',
+            'billing_address' => 'address',
+            'customer_password' => 'new_Password',
+            'customer_confirm_password' => 'confirm_Password',
+        ];
+
+        return translate($fieldLabels[$field] ?? str_replace('_', ' ', $field));
+    }
+
+    private function validateShippingDeliveryLocation(array $shipping): ?array
     {
         $countryCode = $this->normalizeCountryCodeFromInput($shipping['country'] ?? null);
         if (!$countryCode) {
-            return translate('Please_select_a_valid_country');
+            return [
+                'field' => 'country',
+                'message' => translate('Please_select_a_valid_country'),
+            ];
         }
 
         $stateId = $this->resolveStateId(
@@ -911,7 +1050,10 @@ class SystemController extends Controller
             countryCode: $countryCode
         );
         if (!$stateId) {
-            return translate('Please_select_a_valid_state');
+            return [
+                'field' => 'state',
+                'message' => translate('Please_select_a_valid_state'),
+            ];
         }
 
         $cityId = $this->resolveCityId(
@@ -919,7 +1061,10 @@ class SystemController extends Controller
             stateId: $stateId
         );
         if (!$cityId) {
-            return translate('Please_select_a_valid_city');
+            return [
+                'field' => 'city',
+                'message' => translate('Please_select_a_valid_city'),
+            ];
         }
 
         $areaId = $this->resolveAreaId(
@@ -931,7 +1076,10 @@ class SystemController extends Controller
         if ($stateRestrictionEnabled) {
             $allowedStateIds = DeliveryState::query()->pluck('state_id')->toArray();
             if (!in_array($stateId, $allowedStateIds, true)) {
-                return translate('Delivery_unavailable_in_this_state');
+                return [
+                    'field' => 'state',
+                    'message' => translate('Delivery_unavailable_in_this_state'),
+                ];
             }
         }
 
@@ -939,19 +1087,28 @@ class SystemController extends Controller
         if ($cityRestrictionEnabled) {
             $allowedCityIds = DeliveryCity::query()->pluck('city_id')->toArray();
             if (!in_array($cityId, $allowedCityIds, true)) {
-                return translate('Delivery_unavailable_in_this_city');
+                return [
+                    'field' => 'city',
+                    'message' => translate('Delivery_unavailable_in_this_city'),
+                ];
             }
         }
 
         $areaRestrictionEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
         if ($areaRestrictionEnabled) {
             if (!$areaId) {
-                return translate('Please_select_a_valid_area');
+                return [
+                    'field' => 'area',
+                    'message' => translate('Please_select_a_valid_area'),
+                ];
             }
 
             $allowedAreaIds = DeliveryArea::query()->pluck('area_id')->toArray();
             if (!in_array($areaId, $allowedAreaIds, true)) {
-                return translate('Delivery_unavailable_in_this_area');
+                return [
+                    'field' => 'area',
+                    'message' => translate('Delivery_unavailable_in_this_area'),
+                ];
             }
         }
 

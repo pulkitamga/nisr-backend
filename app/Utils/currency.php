@@ -177,6 +177,10 @@ if (!function_exists('getCurrencySymbol')) {
         }
 
         if (filled($code)) {
+            if (strcasecmp($code, 'EGP') === 0 && getActiveTranslationLocale() === 'ar') {
+                return 'ج.م';
+            }
+
             $currency = Currency::where('code', $code)->first();
             if ($currency) {
                 return trim((string)$currency->symbol);

@@ -16,21 +16,7 @@ class VehicleYear extends Model
 
     public function getYearAttribute($year): ?string
     {
-        if (strpos(url()->current(), '/admin') || strpos(url()->current(), '/vendor') || strpos(url()->current(), '/seller')) {
-            return $year;
-        }
-
-        $translation = $this->translations
-            ->first(fn ($item) => $item->locale === App::getLocale() && $item->key === 'year');
-
-        if ($translation) {
-            return $translation->value;
-        }
-
-        return $this->translations()
-            ->where('locale', App::getLocale())
-            ->where('key', 'year')
-            ->value('value') ?? $year;
+        return $this->getTranslatedField('year', fallback: $year);
     }
 
     protected static function boot(): void

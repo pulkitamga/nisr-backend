@@ -94,7 +94,7 @@
                                                             class="title-name">{{$order->customer['f_name'].' '.$order->customer['l_name']}}</strong>
                                                     </a>
                                                     <a class="d-block title-color"
-                                                       href="tel:{{ $order->customer['phone'] }}">{{ $order->customer['phone'] }}</a>
+                                                       href="tel:{{ formatPhoneForDisplay($order->customer['phone']) }}">{{ formatPhoneForDisplay($order->customer['phone']) }}</a>
                                                 @else
                                                     <label
                                                         class="badge badge-danger fz-12">{{translate('invalid_customer_data')}}</label>
@@ -184,4 +184,3 @@
             </div>
         </div>
 @endsection
-

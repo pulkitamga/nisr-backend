@@ -81,7 +81,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                             <select id="branch_country" name="branch_country" class="form-control js-select2-custom">
                                 @foreach(COUNTRIES as $country)
                                 <option value="{{ $country['code'] }}" {{ $selectedCountry === $country['code'] ? 'selected' : '' }}>
-                                    {{ $country['name'] }}
+                                    {{ getLocalizedCountryName($country['code']) }}
                                 </option>
                                 @endforeach
                             </select>
@@ -92,8 +92,8 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                             <label class="title-color d-flex">{{ translate('state') }}</label>
                             <select id="branch_state" name="branch_state" class="form-control js-select2-custom">
                                 @foreach($states as $state)
-                                <option value="{{ $state->name }}" {{ $selectedState === $state->name ? 'selected' : '' }}>
-                                    {{ $state ->name}}
+                                <option value="{{ $state->getRawOriginal('name') }}" {{ $selectedState === $state->getRawOriginal('name') ? 'selected' : '' }}>
+                                    {{ $state->name }}
                                 </option>
                                 @endforeach
                             </select>
@@ -126,8 +126,8 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                         <div class="form-group">
                             <label class="title-color d-flex">{{ translate('Status') }}</label>
                             <select class="form-control" name="status" id="status">
-                                <option value="active" {{ $selectedStatus === 'active' ? 'selected' : '' }}>{{ __("Active") }}</option>
-                                <option value="inactive" {{ $selectedStatus === 'inactive' ? 'selected' : '' }}>{{ __("Block") }}</option>
+                                <option value="active" {{ $selectedStatus === 'active' ? 'selected' : '' }}>{{ translate('Active') }}</option>
+                                <option value="inactive" {{ $selectedStatus === 'inactive' ? 'selected' : '' }}>{{ translate('Block') }}</option>
                             </select>
                         </div>
                     </div>
@@ -146,19 +146,19 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                         <table class="table table-hover table-thead-bordered table-bordered table-nowrap table-align-middle card-table w-100">
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
-                                    <th rowspan="2" class="text-center align-middle">{{ __("No.") }}</th>
-                                    <th rowspan="2" class="text-center align-middle">{{ __("Days") }}</th>
-                                    <th colspan="2" class="text-center align-middle">{{ __("Working Hours") }}</th>
+                                    <th rowspan="2" class="text-center align-middle">{{ translate('No.') }}</th>
+                                    <th rowspan="2" class="text-center align-middle">{{ translate('Days') }}</th>
+                                    <th colspan="2" class="text-center align-middle">{{ translate('Working Hours') }}</th>
                                 </tr>
                                 <tr>
-                                    <th>{{ __("Working From") }}</th>
-                                    <th>{{ __("Working To") }}</th>
+                                    <th>{{ translate('Working From') }}</th>
+                                    <th>{{ translate('Working To') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="text-center align-middle">1</td>
-                                    <td class="text-center align-middle font-weight-bold">{{ __("Sunday") }}</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ translate('Sunday') }}</td>
                                     <td class="p-0">
                                         <input type="time" value="" name="sun_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -168,7 +168,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">2</td>
-                                    <td class="text-center align-middle font-weight-bold">{{ __("Monday") }}</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ translate('Monday') }}</td>
                                     <td class="p-0">
                                         <input type="time" value="" name="mon_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -178,7 +178,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">3</td>
-                                    <td class="text-center align-middle font-weight-bold">{{ __("Tuesday") }}</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ translate('Tuesday') }}</td>
                                     <td class="p-0">
                                         <input type="time" value="" name="tue_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -188,7 +188,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">4</td>
-                                    <td class="text-center align-middle font-weight-bold">{{ __("Wednesday") }}</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ translate('Wednesday') }}</td>
                                     <td class="p-0">
                                         <input type="time" value="" name="wed_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -198,7 +198,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">5</td>
-                                    <td class="text-center align-middle font-weight-bold">{{ __("Thursday") }}</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ translate('Thursday') }}</td>
                                     <td class="p-0">
                                         <input type="time" value="" name="thu_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -208,7 +208,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">6</td>
-                                    <td class="text-center align-middle font-weight-bold">{{ __("Friday") }}</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ translate('Friday') }}</td>
                                     <td class="p-0">
                                         <input type="time" value="" name="fri_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -218,7 +218,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                                 </tr>
                                 <tr>
                                     <td class="text-center align-middle">7</td>
-                                    <td class="text-center align-middle font-weight-bold">{{ __("Saturday") }}</td>
+                                    <td class="text-center align-middle font-weight-bold">{{ translate('Saturday') }}</td>
                                     <td class="p-0">
                                         <input type="time" value="" name="sat_branch_hours_from" class="form-control border-0" id="operating-hours-from" placeholder="{{translate('your_shop_address')}}" required>
                                     </td>
@@ -243,7 +243,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                         <div class="form-group">
                             <label class="title-color d-flex">{{translate('City')}} </label>
                             <select id="city" name="shipping_method_city" class="form-control js-select2-custom">
-                                <option value="0" {{ $selectedCityId === '' ? 'selected' : '' }} disabled="">---Select---</option>
+                                <option value="0" {{ $selectedCityId === '' ? 'selected' : '' }} disabled="">{{ translate('Select') }}</option>
                                 @foreach($aUniqueCities as $city)
                                 <option value="{{$city['city_id']}}" {{ $selectedCityId === (string)$city['city_id'] ? 'selected' : '' }}>
                                     {{$city['city_name']}}
