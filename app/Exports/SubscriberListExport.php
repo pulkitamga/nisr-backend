@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Exports;
+
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -14,12 +15,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class SubscriberListExport implements FromView, ShouldAutoSize, WithStyles,WithColumnWidths ,WithHeadings, WithEvents
+class SubscriberListExport implements FromView, ShouldAutoSize, WithStyles, WithColumnWidths, WithHeadings, WithEvents
 {
     use Exportable;
     protected $data;
 
-    public function __construct($data) {
+    public function __construct($data)
+    {
         $this->data = $data;
     }
 
@@ -39,7 +41,8 @@ class SubscriberListExport implements FromView, ShouldAutoSize, WithStyles,WithC
         ];
     }
 
-    public function styles(Worksheet $sheet) {
+    public function styles(Worksheet $sheet)
+    {
         $sheet->getStyle('A1:A3')->getFont()->setBold(true);
         $sheet->getStyle('A4:C4')->getFont()->setBold(true)->getColor()
             ->setARGB('FFFFFF');
@@ -47,11 +50,11 @@ class SubscriberListExport implements FromView, ShouldAutoSize, WithStyles,WithC
         $sheet->getStyle('A4:C4')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
         $sheet->setShowGridlines(false);
         return [
-            'A1:C'.$this->data['subscription']->count() + 4 => [
+            'A1:C' . $this->data['subscription']->count() + 4 => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -65,12 +68,12 @@ class SubscriberListExport implements FromView, ShouldAutoSize, WithStyles,WithC
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getStyle('A1:C1')
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A4:C'.$this->data['subscription']->count() + 4)
+                $event->sheet->getStyle('A4:C' . $this->data['subscription']->count() + 4)
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
@@ -79,19 +82,19 @@ class SubscriberListExport implements FromView, ShouldAutoSize, WithStyles,WithC
                     ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                     ->setVertical(Alignment::VERTICAL_CENTER);
 
-                    $event->sheet->mergeCells('A1:C1');
-                    $event->sheet->mergeCells('B2:C2');
-                    $event->sheet->mergeCells('B3:C3');
-                    $event->sheet->getRowDimension(2)->setRowHeight(60);
-                    $event->sheet->getRowDimension(3)->setRowHeight(100);
-                    $event->sheet->getDefaultRowDimension()->setRowHeight(50);
+                $event->sheet->mergeCells('A1:C1');
+                $event->sheet->mergeCells('B2:C2');
+                $event->sheet->mergeCells('B3:C3');
+                $event->sheet->getRowDimension(2)->setRowHeight(60);
+                $event->sheet->getRowDimension(3)->setRowHeight(100);
+                $event->sheet->getDefaultRowDimension()->setRowHeight(50);
             }
         ];
     }
     public function headings(): array
     {
         return [
-           '1'
+            '1'
         ];
     }
 }

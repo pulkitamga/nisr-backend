@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Exports;
+
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -16,12 +17,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithStyles,WithColumnWidths ,WithHeadings, WithEvents
+class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithStyles, WithColumnWidths, WithHeadings, WithEvents
 {
     use Exportable;
     protected $data;
 
-    public function __construct($data) {
+    public function __construct($data)
+    {
         $this->data = $data;
     }
 
@@ -41,7 +43,8 @@ class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithSty
         ];
     }
 
-    public function styles(Worksheet $sheet) {
+    public function styles(Worksheet $sheet)
+    {
         $sheet->getStyle('A1:A2')->getFont()->setBold(true);
         $sheet->getStyle('A3:k3')->getFont()->setBold(true)->getColor()
             ->setARGB('FFFFFF');
@@ -50,9 +53,9 @@ class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithSty
         $sheet->getStyle('A3:K3')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
-        $sheet->getStyle('K4:K'.$this->data['transactions']->count() + 3)->getFill()->applyFromArray([
+        $sheet->getStyle('K4:K' . $this->data['transactions']->count() + 3)->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
             'color' => ['rgb' => 'FFF9D1'],
@@ -61,7 +64,7 @@ class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithSty
         $sheet->setShowGridlines(false);
         return [
             // Define the style for cells with data
-            'A1:K'.$this->data['transactions']->count() + 3 => [
+            'A1:K' . $this->data['transactions']->count() + 3 => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -71,19 +74,20 @@ class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithSty
             ],
         ];
     }
-    public function setImage($workSheet) {
-        $this->data['transactions']->each(function($item,$index) use($workSheet) {
+    public function setImage($workSheet)
+    {
+        $this->data['transactions']->each(function ($item, $index) use ($workSheet) {
             $tempImagePath = null;
-            $filePath = 'product/thumbnail/'.$item?->orderDetails?->product?->thumbnail_full_url['key'];
-            $fileCheck = fileCheck(disk:'public',path: $filePath);
-            if($item?->orderDetails?->product?->thumbnail_full_url['path'] && !$fileCheck){
+            $filePath = 'product/thumbnail/' . $item?->orderDetails?->product?->thumbnail_full_url['key'];
+            $fileCheck = fileCheck(disk: 'public', path: $filePath);
+            if ($item?->orderDetails?->product?->thumbnail_full_url['path'] && !$fileCheck) {
                 $tempImagePath = getTemporaryImageForExport($item?->orderDetails?->product?->thumbnail_full_url['path']);
                 $imagePath = getImageForExport($item?->orderDetails?->product?->thumbnail_full_url['path']);
                 $drawing = new MemoryDrawing();
                 $drawing->setImageResource($imagePath);
-            }else{
+            } else {
                 $drawing = new Drawing();
-                $drawing->setPath(is_file(storage_path('app/public/'.$filePath)) ? storage_path('app/public/'.$filePath) : public_path('assets/back-end/img/products.png'));
+                $drawing->setPath(is_file(storage_path('app/public/' . $filePath)) ? storage_path('app/public/' . $filePath) : public_path('assets/back-end/img/products.png'));
             }
             $drawing->setName($item?->orderDetails?->product?->name ?? translate('product_not_found'));
             $drawing->setDescription($item?->orderDetails?->product?->name ?? translate('product_not_found'));
@@ -91,10 +95,10 @@ class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithSty
             $drawing->setOffsetX(100);
             $drawing->setOffsetY(25);
             $drawing->setResizeProportional(true);
-            $index+=4;
+            $index += 4;
             $drawing->setCoordinates("B$index");
             $drawing->setWorksheet($workSheet);
-            if($tempImagePath){
+            if ($tempImagePath) {
                 imagedestroy($tempImagePath);
             }
         });
@@ -102,17 +106,17 @@ class RefundTransactionReportExport implements FromView, ShouldAutoSize, WithSty
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getStyle('A1:K1') // Adjust the range as per your needs
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A3:K'.$this->data['transactions']->count() + 3) // Adjust the range as per your needs
-                ->getAlignment()
+                $event->sheet->getStyle('A3:K' . $this->data['transactions']->count() + 3) // Adjust the range as per your needs
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
                 $event->sheet->getStyle('A2:K2') // Adjust the range as per your needs
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                     ->setVertical(Alignment::VERTICAL_CENTER);
 

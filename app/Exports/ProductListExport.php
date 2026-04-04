@@ -17,12 +17,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ProductListExport implements FromView, ShouldAutoSize, WithStyles,WithColumnWidths ,WithHeadings, WithEvents
+class ProductListExport implements FromView, ShouldAutoSize, WithStyles, WithColumnWidths, WithHeadings, WithEvents
 {
     use Exportable;
     protected $data;
 
-    public function __construct($data) {
+    public function __construct($data)
+    {
         $this->data = $data;
     }
 
@@ -48,21 +49,22 @@ class ProductListExport implements FromView, ShouldAutoSize, WithStyles,WithColu
         ];
     }
 
-    public function styles(Worksheet $sheet) {
+    public function styles(Worksheet $sheet)
+    {
         $sheet->getStyle('A1:A3')->getFont()->setBold(true);
         $sheet->getStyle('A3:S3')->getFont()->setBold(true)->getColor()
-        ->setARGB('FFFFFF');
+            ->setARGB('FFFFFF');
 
         $sheet->getStyle('A3:S3')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
 
         $sheet->setShowGridlines(false);
         return [
             // Define the style for cells with data
-            'A1:S'.$this->data['products']->count() + 3 => [
+            'A1:S' . $this->data['products']->count() + 3 => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -75,19 +77,20 @@ class ProductListExport implements FromView, ShouldAutoSize, WithStyles,WithColu
             ],
         ];
     }
-    public function setImage($workSheet) {
-        $this->data['products']->each(function($item,$index) use($workSheet) {
+    public function setImage($workSheet)
+    {
+        $this->data['products']->each(function ($item, $index) use ($workSheet) {
             $tempImagePath = null;
-            $filePath = 'product/thumbnail/'.$item->thumbnail_full_url['key'];
-            $fileCheck = fileCheck(disk:'public',path: $filePath);
-            if($item->thumbnail_full_url['path'] && !$fileCheck){
+            $filePath = 'product/thumbnail/' . $item->thumbnail_full_url['key'];
+            $fileCheck = fileCheck(disk: 'public', path: $filePath);
+            if ($item->thumbnail_full_url['path'] && !$fileCheck) {
                 $tempImagePath = getTemporaryImageForExport($item->thumbnail_full_url['path']);
                 $imagePath = getImageForExport($item->thumbnail_full_url['path']);
                 $drawing = new MemoryDrawing();
                 $drawing->setImageResource($imagePath);
-            }else{
+            } else {
                 $drawing = new Drawing();
-                $drawing->setPath(is_file(storage_path('app/public/'.$filePath)) ? storage_path('app/public/'.$filePath) : public_path('assets/back-end/img/products.png'));
+                $drawing->setPath(is_file(storage_path('app/public/' . $filePath)) ? storage_path('app/public/' . $filePath) : public_path('assets/back-end/img/products.png'));
             }
             $drawing->setName($item->name);
             $drawing->setDescription($item->name);
@@ -95,10 +98,10 @@ class ProductListExport implements FromView, ShouldAutoSize, WithStyles,WithColu
             $drawing->setOffsetX(45);
             $drawing->setOffsetY(70);
             $drawing->setResizeProportional(true);
-            $index+=4;
+            $index += 4;
             $drawing->setCoordinates("B$index");
             $drawing->setWorksheet($workSheet);
-            if($tempImagePath){
+            if ($tempImagePath) {
                 imagedestroy($tempImagePath);
             }
         });
@@ -107,45 +110,45 @@ class ProductListExport implements FromView, ShouldAutoSize, WithStyles,WithColu
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
-                $event->sheet->getStyle('A1:S1') 
+            AfterSheet::class => function (AfterSheet $event) {
+                $event->sheet->getStyle('A1:S1')
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A3:S'.$this->data['products']->count() + 3) 
+                $event->sheet->getStyle('A3:S' . $this->data['products']->count() + 3)
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A2:S2') 
+                $event->sheet->getStyle('A2:S2')
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                     ->setVertical(Alignment::VERTICAL_CENTER);
 
-                    $event->sheet->mergeCells('A1:S1');
-                    $event->sheet->mergeCells('A2:B2');
-                    $event->sheet->mergeCells('C2:S2');
-                    $event->sheet->mergeCells('D2:S2');
-                    if($this->data['type'] != 'seller'){
-                        $event->sheet->mergeCells('F3:G3');
-                        $this->data['products']->each(function($item,$index) use($event) {
-                            $index+=4;
-                            $event->sheet->mergeCells("F$index:G$index");
-                        });
-                    }
-                    $event->sheet->getRowDimension(2)->setRowHeight(100);
-                    $event->sheet->getRowDimension(1)->setRowHeight(30);
-                    $event->sheet->getRowDimension(3)->setRowHeight(30);
-                    $event->sheet->getDefaultRowDimension()->setRowHeight(150);
+                $event->sheet->mergeCells('A1:S1');
+                $event->sheet->mergeCells('A2:B2');
+                $event->sheet->mergeCells('C2:S2');
+                $event->sheet->mergeCells('D2:S2');
+                if ($this->data['type'] != 'seller') {
+                    $event->sheet->mergeCells('F3:G3');
+                    $this->data['products']->each(function ($item, $index) use ($event) {
+                        $index += 4;
+                        $event->sheet->mergeCells("F$index:G$index");
+                    });
+                }
+                $event->sheet->getRowDimension(2)->setRowHeight(100);
+                $event->sheet->getRowDimension(1)->setRowHeight(30);
+                $event->sheet->getRowDimension(3)->setRowHeight(30);
+                $event->sheet->getDefaultRowDimension()->setRowHeight(150);
 
-                    $workSheet = $event->sheet->getDelegate();
-                    $this->setImage($workSheet);
+                $workSheet = $event->sheet->getDelegate();
+                $this->setImage($workSheet);
             },
         ];
     }
     public function headings(): array
     {
         return [
-           '1'
+            '1'
         ];
     }
 }

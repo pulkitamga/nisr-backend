@@ -50,7 +50,7 @@ class CustomerListExport implements FromView, ShouldAutoSize, WithStyles, WithCo
         $sheet->getStyle('A4:H4')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
         $sheet->getStyle('G5:H' . $this->data['customers']->count() + 4)->getFill()->applyFromArray([
             'fillType' => 'solid',
@@ -106,15 +106,15 @@ class CustomerListExport implements FromView, ShouldAutoSize, WithStyles, WithCo
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getStyle('A1:H1')
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
                 $event->sheet->getStyle('A4:H' . $this->data['customers']->count() + 4)
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
                 $event->sheet->getStyle('A2:H3')
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                     ->setVertical(Alignment::VERTICAL_CENTER);
 

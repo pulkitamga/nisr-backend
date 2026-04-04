@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Exports;
+
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -15,12 +16,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles,WithColumnWidths ,WithHeadings, WithEvents
+class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles, WithColumnWidths, WithHeadings, WithEvents
 {
     use Exportable;
     protected $data;
 
-    public function __construct($data) {
+    public function __construct($data)
+    {
         $this->data = $data;
     }
 
@@ -43,7 +45,8 @@ class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles,Wit
         ];
     }
 
-    public function styles(Worksheet $sheet) {
+    public function styles(Worksheet $sheet)
+    {
         $sheet->getStyle('A1:A3')->getFont()->setBold(true);
         $sheet->getStyle('A3:F3')->getFont()->setBold(true)->getColor()
             ->setARGB('FFFFFF');
@@ -51,12 +54,12 @@ class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles,Wit
         $sheet->getStyle('A3:F3')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
         $sheet->setShowGridlines(false);
         return [
             // Define the style for cells with data
-            'A1:F'.$this->data['roles']->count() + 3 => [
+            'A1:F' . $this->data['roles']->count() + 3 => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -69,28 +72,28 @@ class EmployeeRoleListExport implements FromView, ShouldAutoSize, WithStyles,Wit
 
     public function registerEvents(): array
     {
-            return [
-                AfterSheet::class => function(AfterSheet $event) {
-                    $event->sheet->getStyle('A1:F1') // Adjust the range as per your needs
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $event->sheet->getStyle('A1:F1') // Adjust the range as per your needs
                     ->getAlignment()
-                        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                        ->setVertical(Alignment::VERTICAL_CENTER);
-                    $event->sheet->getStyle('A3:F'.$this->data['roles']->count() + 3) // Adjust the range as per your needs
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                    ->setVertical(Alignment::VERTICAL_CENTER);
+                $event->sheet->getStyle('A3:F' . $this->data['roles']->count() + 3) // Adjust the range as per your needs
                     ->getAlignment()
-                        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                        ->setVertical(Alignment::VERTICAL_CENTER);
-                    $event->sheet->getStyle('A2:F2') // Adjust the range as per your needs
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                    ->setVertical(Alignment::VERTICAL_CENTER);
+                $event->sheet->getStyle('A2:F2') // Adjust the range as per your needs
                     ->getAlignment()
-                        ->setHorizontal(Alignment::HORIZONTAL_LEFT)
-                        ->setVertical(Alignment::VERTICAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+                    ->setVertical(Alignment::VERTICAL_CENTER);
 
-                    $event->sheet->mergeCells('A1:F1');
-                    $event->sheet->mergeCells('A2:B2');
-                    $event->sheet->mergeCells('C2:F2');
-                    $event->sheet->getDefaultRowDimension()->setRowHeight(30);
-                    $event->sheet->getRowDimension(2)->setRowHeight(60);
-                }
-            ];
+                $event->sheet->mergeCells('A1:F1');
+                $event->sheet->mergeCells('A2:B2');
+                $event->sheet->mergeCells('C2:F2');
+                $event->sheet->getDefaultRowDimension()->setRowHeight(30);
+                $event->sheet->getRowDimension(2)->setRowHeight(60);
+            }
+        ];
     }
     public function headings(): array
     {

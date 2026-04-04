@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Exports;
+
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -14,12 +15,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class CustomerOrderListExport implements FromView, ShouldAutoSize, WithStyles,WithColumnWidths ,WithHeadings, WithEvents
+class CustomerOrderListExport implements FromView, ShouldAutoSize, WithStyles, WithColumnWidths, WithHeadings, WithEvents
 {
     use Exportable;
     protected $data;
 
-    public function __construct($data) {
+    public function __construct($data)
+    {
         $this->data = $data;
     }
 
@@ -37,7 +39,8 @@ class CustomerOrderListExport implements FromView, ShouldAutoSize, WithStyles,Wi
         ];
     }
 
-    public function styles(Worksheet $sheet) {
+    public function styles(Worksheet $sheet)
+    {
         $sheet->getStyle('A1')->getFont()->setBold(true);
         $sheet->getStyle('A4:G4')->getFont()->setBold(true)->getColor()
             ->setARGB('FFFFFF');
@@ -45,10 +48,10 @@ class CustomerOrderListExport implements FromView, ShouldAutoSize, WithStyles,Wi
         $sheet->getStyle('A4:G4')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
 
-        $sheet->getStyle('G5:G'.$this->data['orders']->count() + 4)->getFill()->applyFromArray([
+        $sheet->getStyle('G5:G' . $this->data['orders']->count() + 4)->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
             'color' => ['rgb' => 'D6BC00'],
@@ -57,7 +60,7 @@ class CustomerOrderListExport implements FromView, ShouldAutoSize, WithStyles,Wi
         $sheet->setShowGridlines(false);
 
         return [
-            'A1:G'.$this->data['orders']->count() + 4 => [
+            'A1:G' . $this->data['orders']->count() + 4 => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -71,17 +74,17 @@ class CustomerOrderListExport implements FromView, ShouldAutoSize, WithStyles,Wi
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getStyle('A1:G1') // Adjust the range as per your needs
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A4:G'.$this->data['orders']->count() + 4) // Adjust the range as per your needs
-                ->getAlignment()
+                $event->sheet->getStyle('A4:G' . $this->data['orders']->count() + 4) // Adjust the range as per your needs
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
                 $event->sheet->getStyle('A2:G3') // Adjust the range as per your needs
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                     ->setVertical(Alignment::VERTICAL_CENTER);
 

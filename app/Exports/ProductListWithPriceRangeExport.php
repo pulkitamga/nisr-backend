@@ -32,8 +32,8 @@ class ProductListWithPriceRangeExport implements FromView, ShouldAutoSize, WithS
     public function columnWidths(): array
     {
         return [
-            'A' => 10, 
-            'B' => 30, 
+            'A' => 10,
+            'B' => 30,
             'C' => 25,
             'D' => 25,
             'E' => 20,
@@ -52,14 +52,14 @@ class ProductListWithPriceRangeExport implements FromView, ShouldAutoSize, WithS
         $sheet->getStyle('A1:H1')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
 
         // Hide gridlines
         $sheet->setShowGridlines(false);
 
         // Ensure $this->data is iterable and countable
-        $rowCount = $this->data[count($this->data) - 1]['total_rows'] ? $this->data[count($this->data) - 1]['total_rows'] + 1 : 0 ;
+        $rowCount = $this->data[count($this->data) - 1]['total_rows'] ? $this->data[count($this->data) - 1]['total_rows'] + 1 : 0;
         return [
             'A1:H' . $rowCount => [
                 'borders' => [
@@ -75,4 +75,3 @@ class ProductListWithPriceRangeExport implements FromView, ShouldAutoSize, WithS
         ];
     }
 }
- 

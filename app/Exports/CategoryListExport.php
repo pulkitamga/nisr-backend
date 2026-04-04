@@ -17,12 +17,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class CategoryListExport implements FromView, ShouldAutoSize, WithStyles,WithColumnWidths ,WithHeadings, WithEvents
+class CategoryListExport implements FromView, ShouldAutoSize, WithStyles, WithColumnWidths, WithHeadings, WithEvents
 {
     use Exportable;
     protected $data;
 
-    public function __construct($data) {
+    public function __construct($data)
+    {
         $this->data = $data;
     }
 
@@ -40,7 +41,8 @@ class CategoryListExport implements FromView, ShouldAutoSize, WithStyles,WithCol
         ];
     }
 
-    public function styles(Worksheet $sheet) {
+    public function styles(Worksheet $sheet)
+    {
         $sheet->getStyle('A1:A3')->getFont()->setBold(true);
         $sheet->getStyle('A4:E4')->getFont()->setBold(true)->getColor()
             ->setARGB('FFFFFF');
@@ -48,13 +50,13 @@ class CategoryListExport implements FromView, ShouldAutoSize, WithStyles,WithCol
         $sheet->getStyle('A4:E4')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
-            'color' => ['rgb' => '063C93'],
+            'color' => ['rgb' => '239e92'],
         ]);
 
         $sheet->setShowGridlines(false);
         return [
             // Define the style for cells with data
-            'A1:E'.$this->data['categories']->count() + 4 => [
+            'A1:E' . $this->data['categories']->count() + 4 => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -64,19 +66,20 @@ class CategoryListExport implements FromView, ShouldAutoSize, WithStyles,WithCol
             ],
         ];
     }
-    public function setImage($workSheet) {
-        $this->data['categories']->each(function($item,$index) use($workSheet) {
+    public function setImage($workSheet)
+    {
+        $this->data['categories']->each(function ($item, $index) use ($workSheet) {
             $tempImagePath = null;
-            $filePath = 'category/'.$item->icon_full_url['key'];
-            $fileCheck = fileCheck(disk:'public',path: $filePath);
-            if($item->icon_full_url['path'] && !$fileCheck){
+            $filePath = 'category/' . $item->icon_full_url['key'];
+            $fileCheck = fileCheck(disk: 'public', path: $filePath);
+            if ($item->icon_full_url['path'] && !$fileCheck) {
                 $tempImagePath = getTemporaryImageForExport($item->icon_full_url['path']);
                 $imagePath = getImageForExport($item->icon_full_url['path']);
                 $drawing = new MemoryDrawing();
                 $drawing->setImageResource($imagePath);
-            }else{
+            } else {
                 $drawing = new Drawing();
-                $drawing->setPath(is_file(storage_path('app/public/'.$filePath)) ? storage_path('app/public/'.$filePath) : public_path('assets/back-end/img/placeholder/category.png'));
+                $drawing->setPath(is_file(storage_path('app/public/' . $filePath)) ? storage_path('app/public/' . $filePath) : public_path('assets/back-end/img/placeholder/category.png'));
             }
             $drawing = new Drawing();
             $drawing->setName($item->name);
@@ -85,10 +88,10 @@ class CategoryListExport implements FromView, ShouldAutoSize, WithStyles,WithCol
             $drawing->setOffsetX(40);
             $drawing->setOffsetY(7);
             $drawing->setResizeProportional(true);
-            $index+=5;
+            $index += 5;
             $drawing->setCoordinates("B$index");
             $drawing->setWorksheet($workSheet);
-            if($tempImagePath){
+            if ($tempImagePath) {
                 imagedestroy($tempImagePath);
             }
         });
@@ -97,17 +100,17 @@ class CategoryListExport implements FromView, ShouldAutoSize, WithStyles,WithCol
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getStyle('A1:E1') // Adjust the range as per your needs
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A4:E'.$this->data['categories']->count() + 4) // Adjust the range as per your needs
-                ->getAlignment()
+                $event->sheet->getStyle('A4:E' . $this->data['categories']->count() + 4) // Adjust the range as per your needs
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
                 $event->sheet->getStyle('A2:E3') // Adjust the range as per your needs
-                ->getAlignment()
+                    ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                     ->setVertical(Alignment::VERTICAL_CENTER);
 
@@ -122,14 +125,14 @@ class CategoryListExport implements FromView, ShouldAutoSize, WithStyles,WithCol
                 $event->sheet->getRowDimension(3)->setRowHeight(30);
                 $event->sheet->getRowDimension(4)->setRowHeight(30);
                 $event->sheet->getDefaultRowDimension()->setRowHeight(50);
-                if ($this->data['title'] == 'category'){
+                if ($this->data['title'] == 'category') {
                     $workSheet = $event->sheet->getDelegate();
                     $this->setImage($workSheet);
                 }
-                if ($this->data['title'] == 'sub_category'){
+                if ($this->data['title'] == 'sub_category') {
                     $event->sheet->mergeCells('D4:E4');
-                    $this->data['categories']->each(function($item,$index) use($event) {
-                        $index+=5;
+                    $this->data['categories']->each(function ($item, $index) use ($event) {
+                        $index += 5;
                         $event->sheet->mergeCells("D$index:E$index");
                     });
                 }
