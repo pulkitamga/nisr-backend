@@ -266,13 +266,13 @@
             <div class="d-flex justify-content-end gap-2 mb-3">
                 <a id="exportExcelBtn"
                     href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
-                    class="btn btn-success">
-                    <i class="tio-file-excel"></i> {{ translate('export_excel') }}
+                    class="btn btn-outline-success">
+                    <i class="tio-download-to me-1"></i> {{ translate('excel') }}
                 </a>
                 <a id="exportPdfBtn"
                     href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
-                    class="btn btn-danger">
-                    <i class="tio-file-pdf"></i> {{ translate('export_pdf') }}
+                    class="btn btn-outline-danger">
+                    <i class="tio-download-to me-1"></i> {{ translate('pdf') }}
                 </a>
             </div>
             <div style="position: relative; height: 350px; width: 100%;">
@@ -364,8 +364,12 @@
                                 <td>{{ $claim->warranty?->user?->name ?? ($claim->warranty?->activated_by_name ?? '') }}
                                 </td>
                                 <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
-                                <td><span class="bidi-ltr d-inline-block">{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</span></td>
-                                <td><span class="bidi-ltr d-inline-block">{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</span></td>
+                                <td><span
+                                        class="bidi-ltr d-inline-block">{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</span>
+                                </td>
+                                <td><span
+                                        class="bidi-ltr d-inline-block">{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</span>
+                                </td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
                                         class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>

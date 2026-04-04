@@ -11,6 +11,9 @@ use App\Models\Product;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
@@ -800,7 +803,7 @@ class WarrantyController extends Controller
                 ];
             })->values()->all();
 
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -809,6 +812,54 @@ class WarrantyController extends Controller
                 public function headings(): array
                 {
                     return ['Claim Number', 'Serial', 'Status', 'Customer', 'Submitted At', 'Resolution Due', 'Branch'];
+                }
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
+                {
+                    return [
+                        // Row 1: Green Header with Bold White Text
+                        1 => [
+                            'font' => [
+                                'bold' => true,
+                                'color' => ['argb' => 'FFFFFFFF'],
+                            ],
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['argb' => 'FF239E92'],
+                            ],
+                        ],
+                    ];
+                }
+
+                public function registerEvents(): array
+                {
+                    return [
+                        \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
+                            // 1. Remove gridlines for a clean white background
+                            $event->sheet->getDelegate()->setShowGridlines(false);
+
+                            // 2. Calculate the data range (Columns A to G)
+                            $lastRow = count($this->rows) + 1;
+                            $range = "A1:G{$lastRow}";
+
+                            // 3. Apply Thick Black Outline and Light Inside Borders
+                            $event->sheet->getStyle($range)->applyFromArray([
+                                'borders' => [
+                                    'outline' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                                        'color' => ['argb' => 'FF000000'],
+                                    ],
+                                    'inside' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                        'color' => ['argb' => 'FFD1D5DB'],
+                                    ],
+                                ],
+                                'alignment' => [
+                                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                                ],
+                            ]);
+                        },
+                    ];
                 }
             }, 'warranty-claims-report.xlsx');
         }
@@ -993,7 +1044,7 @@ class WarrantyController extends Controller
                 ];
             })->values()->all();
 
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -1002,6 +1053,60 @@ class WarrantyController extends Controller
                 public function headings(): array
                 {
                     return ['Claim Number', 'Serial', 'Product', 'SLA Type', 'Due Date', 'Completed At', 'SLA Status', 'Claim Status'];
+                }
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
+                {
+                    $lastColumn = $sheet->getHighestColumn();
+                    // Apply green header only to the data columns in Row 1
+                    $sheet->getStyle("A1:{$lastColumn}1")->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'color' => ['argb' => 'FFFFFFFF'],
+                        ],
+                        'fill' => [
+                            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                            'startColor' => ['argb' => 'FF239E92'],
+                        ],
+                        'alignment' => [
+                            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
+                    return [];
+                }
+
+                public function registerEvents(): array
+                {
+                    return [
+                        \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
+                            // 1. Hide default gridlines for white background
+                            $event->sheet->getDelegate()->setShowGridlines(false);
+
+                            // 2. Define range based on data
+                            $lastColumn = $event->sheet->getHighestColumn();
+                            $lastRow = count($this->rows) + 1;
+                            $range = "A1:{$lastColumn}{$lastRow}";
+
+                            // 3. Apply Thick Black Outline and Light Inside Borders
+                            $event->sheet->getStyle($range)->applyFromArray([
+                                'borders' => [
+                                    'outline' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                                        'color' => ['argb' => 'FF000000'],
+                                    ],
+                                    'inside' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                        'color' => ['argb' => 'FFD1D5DB'],
+                                    ],
+                                ],
+                                'alignment' => [
+                                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                                ],
+                            ]);
+                        },
+                    ];
                 }
             }, 'warranty-sla-report.xlsx');
         }
@@ -1187,7 +1292,7 @@ class WarrantyController extends Controller
                 ];
             })->values()->all();
 
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -1196,6 +1301,54 @@ class WarrantyController extends Controller
                 public function headings(): array
                 {
                     return ['Serial', 'Product', 'Customer', 'Branch', 'Activation Method', 'Activated At', 'Status', 'Warranty End'];
+                }
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
+                {
+                    return [
+                        // Row 1: Green Header with Bold White Text
+                        1 => [
+                            'font' => [
+                                'bold' => true,
+                                'color' => ['argb' => 'FFFFFFFF'],
+                            ],
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['argb' => 'FF239E92'],
+                            ],
+                        ],
+                    ];
+                }
+
+                public function registerEvents(): array
+                {
+                    return [
+                        \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
+                            // 1. Hide Gridlines (makes background pure white)
+                            $event->sheet->getDelegate()->setShowGridlines(false);
+
+                            // 2. Calculate the data range (A to H based on headings)
+                            $lastRow = count($this->rows) + 1;
+                            $range = "A1:H{$lastRow}";
+
+                            // 3. Apply Thick Black Outside Border and Light Inside Borders
+                            $event->sheet->getStyle($range)->applyFromArray([
+                                'borders' => [
+                                    'outline' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                                        'color' => ['argb' => 'FF000000'],
+                                    ],
+                                    'inside' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                        'color' => ['argb' => 'FFD1D5DB'],
+                                    ],
+                                ],
+                                'alignment' => [
+                                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                                ],
+                            ]);
+                        },
+                    ];
                 }
             }, 'warranty-activations-report.xlsx');
         }
@@ -1551,7 +1704,7 @@ class WarrantyController extends Controller
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
             $rows = $topProducts->map(fn($row) => [(string)$row->product_name, (int)$row->claims_count])->values()->all();
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -1560,6 +1713,54 @@ class WarrantyController extends Controller
                 public function headings(): array
                 {
                     return ['Product', 'Claims'];
+                }
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
+                {
+                    return [
+                        // Row 1: Green Header (#239e92) with Bold White Text
+                        1 => [
+                            'font' => [
+                                'bold' => true,
+                                'color' => ['argb' => 'FFFFFFFF'],
+                            ],
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['argb' => 'FF239E92'],
+                            ],
+                        ],
+                    ];
+                }
+
+                public function registerEvents(): array
+                {
+                    return [
+                        \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
+                            // 1. Hide default Excel gridlines (makes the background pure white)
+                            $event->sheet->getDelegate()->setShowGridlines(false);
+
+                            // 2. Define the data range (Columns A to B based on headings)
+                            $lastRow = count($this->rows) + 1;
+                            $range = "A1:B{$lastRow}";
+
+                            // 3. Apply Thick Black Outside Border and Light Inside Borders
+                            $event->sheet->getStyle($range)->applyFromArray([
+                                'borders' => [
+                                    'outline' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                                        'color' => ['argb' => 'FF000000'], // Solid Black
+                                    ],
+                                    'inside' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                        'color' => ['argb' => 'FFD1D5DB'], // Light Gray
+                                    ],
+                                ],
+                                'alignment' => [
+                                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                                ],
+                            ]);
+                        },
+                    ];
                 }
             }, 'warranty-analytics-report.xlsx');
         }

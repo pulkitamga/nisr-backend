@@ -21,9 +21,7 @@ class InhouseProductSaleSheetExport implements FromArray, WithHeadings, ShouldAu
         private readonly array $headings,
         private readonly array $rows,
         private readonly bool $isRtl = false,
-    )
-    {
-    }
+    ) {}
 
     public function array(): array
     {
@@ -50,7 +48,7 @@ class InhouseProductSaleSheetExport implements FromArray, WithHeadings, ShouldAu
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['argb' => 'FF0B5ED7'],
+                    'startColor' => ['argb' => 'FF239E92'],
                 ],
             ],
         ];
@@ -60,15 +58,23 @@ class InhouseProductSaleSheetExport implements FromArray, WithHeadings, ShouldAu
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
+                // 1. THIS REMOVES THE GRIDLINES (Makes the page white)
+                $event->sheet->getDelegate()->setShowGridlines(false);
+
                 $lastColumn = $this->getColumnLetter(count($this->headings));
                 $lastRow = max(1, count($this->rows) + 1);
                 $range = "A1:{$lastColumn}{$lastRow}";
 
+                // 2. APPLY BLACK OUTSIDE BORDER AND LIGHT INSIDE BORDERS
                 $event->sheet->getStyle($range)->applyFromArray([
                     'borders' => [
-                        'allBorders' => [
+                        'outline' => [
+                            'borderStyle' => Border::BORDER_THICK,
+                            'color' => ['argb' => 'FF000000'], // Pure Black
+                        ],
+                        'inside' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['argb' => 'FFD1D5DB'],
+                            'color' => ['argb' => 'FFD1D5DB'], // Light Gray
                         ],
                     ],
                     'alignment' => [

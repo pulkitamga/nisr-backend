@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use App\Services\ReportPdfService;
 use Illuminate\Support\Facades\DB;
 use App\Exports\CRMAnalyticsExport;
@@ -563,7 +564,7 @@ class DashboardChartController extends Controller
                 ];
             })->values()->all();
 
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -572,6 +573,21 @@ class DashboardChartController extends Controller
                 public function headings(): array
                 {
                     return ['Owner', 'Deals', 'Total Value', 'Avg Value'];
+                }
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
+                {
+                    return [
+                        1 => [
+                            'font' => [
+                                'bold' => true,
+                                'color' => ['argb' => 'FFFFFFFF'],
+                            ],
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['argb' => 'FF239E92'],
+                            ],
+                        ],
+                    ];
                 }
             }, 'crm-insights-report.xlsx');
         }

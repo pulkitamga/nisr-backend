@@ -46,6 +46,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use App\Contracts\Repositories\AuthorRepositoryInterface;
 use App\Contracts\Repositories\BannerRepositoryInterface;
 use App\Contracts\Repositories\BranchRepositoryInterface;
@@ -196,12 +199,12 @@ class ProductController extends BaseController
             ->with('translations')
             ->whereIn('make_id', $makes)
             ->get()
-            ->unique(fn (VehicleModel $model) => $model->getRawOriginal('name'))
-            ->sortBy(fn (VehicleModel $model) => $model->getTranslatedField('name', $locale, $model->getRawOriginal('name')))
+            ->unique(fn(VehicleModel $model) => $model->getRawOriginal('name'))
+            ->sortBy(fn(VehicleModel $model) => $model->getTranslatedField('name', $locale, $model->getRawOriginal('name')))
             ->values();
 
         return response()->json([
-            'models' => $models->map(fn (VehicleModel $model) => [
+            'models' => $models->map(fn(VehicleModel $model) => [
                 'value' => $model->getRawOriginal('name'),
                 'label' => $model->getTranslatedField('name', $locale, $model->getRawOriginal('name')),
             ])->all(),
@@ -1308,354 +1311,401 @@ class ProductController extends BaseController
         return back();
     }
 
-public function getVariations(Request $request): JsonResponse
-{
-    $product = $this->productRepo->getFirstWhere(params: ['id' => $request['id']]);
-    $restockId = $request['restock_id'];
+    public function getVariations(Request $request): JsonResponse
+    {
+        $product = $this->productRepo->getFirstWhere(params: ['id' => $request['id']]);
+        $restockId = $request['restock_id'];
 
-    try {
-        $restockVariants = $this->restockProductRepo->getListWhereBetween(filters: ['product_id' => $request['id']])?->pluck('variant')->toArray() ?? [];
-    } catch (\Exception $e) {
-        \Log::error('Error in getListWhereBetween', ['message' => $e->getMessage()]);
-        $restockVariants = [];
+        try {
+            $restockVariants = $this->restockProductRepo->getListWhereBetween(filters: ['product_id' => $request['id']])?->pluck('variant')->toArray() ?? [];
+        } catch (\Exception $e) {
+            \Log::error('Error in getListWhereBetween', ['message' => $e->getMessage()]);
+            $restockVariants = [];
+        }
+
+        $branches = \App\Models\Branch::query()
+            ->select('id', 'branch_name')
+            ->orderBy('id')
+            ->get();
+
+        $selectedVariation = $request->variation; // Red / Yellow
+
+        if ($selectedVariation && !empty($product->variation)) {
+            $variations = collect(json_decode($product->variation, true))
+                ->filter(fn($v) => $v['type'] === $selectedVariation)
+                ->values()
+                ->toArray();
+
+            // override product variations
+            $product->variation = json_encode($variations);
+        }
+
+        return response()->json([
+            'view' => view(Product::GET_VARIATIONS[VIEW], compact('product', 'restockId', 'restockVariants', 'branches'))->render()
+        ]);
     }
 
-    $branches = \App\Models\Branch::query()
-        ->select('id', 'branch_name')
-        ->orderBy('id')
-        ->get();
+    public function getStockReport(Request $request): JsonResponse|View|BinaryFileResponse|Response
+    {
+        $isJsonRequest = $request->ajax() || $request->expectsJson();
 
-    $selectedVariation = $request->variation; // Red / Yellow
+        $request->validate([
+            'product_id' => ($isJsonRequest ? 'required' : 'nullable') . '|integer|exists:products,id',
+            'category_id' => 'nullable|integer|exists:categories,id',
+            'variation' => 'nullable|string',
+            'date_type' => 'nullable|in:this_year,this_month,this_week,today,custom_date',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date|after_or_equal:from',
+            'from_date' => 'nullable|date',
+            'to_date' => 'nullable|date|after_or_equal:from_date',
+            'include_internal_transfer' => 'nullable|boolean',
+        ]);
 
-    if ($selectedVariation && !empty($product->variation)) {
-        $variations = collect(json_decode($product->variation, true))
-            ->filter(fn ($v) => $v['type'] === $selectedVariation)
-            ->values()
-            ->toArray();
+        $selectedCategoryId = !empty($request->category_id) ? (int)$request->category_id : null;
+        $selectedProductId = !empty($request->product_id) ? (int)$request->product_id : null;
+        [$dateType, $fromDate, $toDate] = $this->resolveStockReportDateRange($request);
 
-        // override product variations
-        $product->variation = json_encode($variations);
-    }
-    
-    return response()->json([
-        'view' => view(Product::GET_VARIATIONS[VIEW], compact('product', 'restockId', 'restockVariants', 'branches'))->render()
-    ]);
-}
-
-public function getStockReport(Request $request): JsonResponse|View|BinaryFileResponse|Response
-{
-    $isJsonRequest = $request->ajax() || $request->expectsJson();
-
-    $request->validate([
-        'product_id' => ($isJsonRequest ? 'required' : 'nullable') . '|integer|exists:products,id',
-        'category_id' => 'nullable|integer|exists:categories,id',
-        'variation' => 'nullable|string',
-        'date_type' => 'nullable|in:this_year,this_month,this_week,today,custom_date',
-        'from' => 'nullable|date',
-        'to' => 'nullable|date|after_or_equal:from',
-        'from_date' => 'nullable|date',
-        'to_date' => 'nullable|date|after_or_equal:from_date',
-        'include_internal_transfer' => 'nullable|boolean',
-    ]);
-
-    $selectedCategoryId = !empty($request->category_id) ? (int)$request->category_id : null;
-    $selectedProductId = !empty($request->product_id) ? (int)$request->product_id : null;
-    [$dateType, $fromDate, $toDate] = $this->resolveStockReportDateRange($request);
-
-    $categories = $this->categoryRepo->getListWhere(filters: ['position' => 0], dataLimit: 'all');
-    $productsForFilter = Products::query()
-        ->select(['id', 'name', 'category_id', 'added_by'])
-        ->when($selectedCategoryId, fn($query) => $query->where('category_id', $selectedCategoryId))
-        ->orderBy('name')
-        ->get();
-
-    if ($selectedProductId && !$productsForFilter->contains('id', $selectedProductId)) {
-        $selectedProduct = Products::query()
+        $categories = $this->categoryRepo->getListWhere(filters: ['position' => 0], dataLimit: 'all');
+        $productsForFilter = Products::query()
             ->select(['id', 'name', 'category_id', 'added_by'])
-            ->where('id', $selectedProductId)
-            ->first();
+            ->when($selectedCategoryId, fn($query) => $query->where('category_id', $selectedCategoryId))
+            ->orderBy('name')
+            ->get();
 
-        if ($selectedProduct) {
-            $productsForFilter->prepend($selectedProduct);
-        }
-    }
+        if ($selectedProductId && !$productsForFilter->contains('id', $selectedProductId)) {
+            $selectedProduct = Products::query()
+                ->select(['id', 'name', 'category_id', 'added_by'])
+                ->where('id', $selectedProductId)
+                ->first();
 
-    if (!$selectedProductId) {
-        return view('admin-views.product.stock-report', [
-            'reportReady' => false,
-            'categories' => $categories,
-            'productsForFilter' => $productsForFilter,
-            'filters' => [
-                'category_id' => $selectedCategoryId,
-                'product_id' => null,
-                'variation' => null,
-                'date_type' => $dateType,
-                'from' => $fromDate,
-                'to' => $toDate,
-                'from_date' => $fromDate,
-                'to_date' => $toDate,
-                'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
-            ],
-        ]);
-    }
-
-    $product = $this->productRepo->getFirstWhere(params: ['id' => $selectedProductId]);
-    if (!$product) {
-        if ($isJsonRequest) {
-            return response()->json(['view' => ''], 404);
+            if ($selectedProduct) {
+                $productsForFilter->prepend($selectedProduct);
+            }
         }
 
-        return view('admin-views.product.stock-report', [
-            'reportReady' => false,
-            'categories' => $categories,
-            'productsForFilter' => $productsForFilter,
-            'filters' => [
-                'category_id' => $selectedCategoryId,
-                'product_id' => null,
-                'variation' => null,
-                'date_type' => $dateType,
-                'from' => $fromDate,
-                'to' => $toDate,
-                'from_date' => $fromDate,
-                'to_date' => $toDate,
-                'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
-            ],
-        ]);
-    }
-
-    $variation = $this->normalizeReportVariation((string)$request->query('variation', ''));
-    $includeInternalTransfer = (bool)$request->boolean('include_internal_transfer');
-
-    $productStockQuery = ProductStock::query()->where('product_id', (int)$product->id);
-    if ($variation !== null) {
-        $productStockQuery->where('variant', $variation);
-    } else {
-        $productStockQuery->where(function ($query) {
-            $query->whereNull('variant')->orWhere('variant', '');
-        });
-    }
-
-    $productStocks = $productStockQuery->get();
-    $stockIds = $productStocks->pluck('id')->all();
-
-    $transactionsQuery = ProductStockTransaction::query()
-        ->with(['fromBranch:id,branch_name', 'toBranch:id,branch_name'])
-        ->whereIn('product_stock_id', $stockIds)
-        ->orderByDesc('id');
-
-    if (!empty($fromDate)) {
-        $transactionsQuery->where('created_at', '>=', Carbon::parse($fromDate)->startOfDay());
-    }
-
-    if (!empty($toDate)) {
-        $transactionsQuery->where('created_at', '<=', Carbon::parse($toDate)->endOfDay());
-    }
-
-    if (!$includeInternalTransfer) {
-        $transactionsQuery->where('reason', '!=', StockReason::BRANCH_TRANSFER);
-    }
-
-    $transactions = $transactionsQuery->get();
-
-    $summary = [
-        'stock_in' => [
-            'initial_stock' => 0,
-            'manual_adjust_add' => 0,
-            'returns' => 0,
-        ],
-        'stock_out' => [
-            'sales_pos' => 0,
-            'sales_online' => 0,
-            'sales_wholesale_transfer' => 0,
-            'manual_adjust_negative' => 0,
-        ],
-        'internal_transfer' => [
-            'in' => 0,
-            'out' => 0,
-        ],
-    ];
-
-    $historyRows = [];
-    foreach ($transactions as $transaction) {
-        $classified = $this->classifyStockTransaction($transaction);
-
-        if ($classified['summaryGroup'] === 'stock_in' && isset($summary['stock_in'][$classified['summaryKey']])) {
-            $summary['stock_in'][$classified['summaryKey']] += (int)$transaction->quantity;
-        } elseif ($classified['summaryGroup'] === 'stock_out' && isset($summary['stock_out'][$classified['summaryKey']])) {
-            $summary['stock_out'][$classified['summaryKey']] += (int)$transaction->quantity;
-        } elseif ($classified['summaryGroup'] === 'internal_transfer') {
-            $transferKey = strtoupper((string)$transaction->type) === 'IN' ? 'in' : 'out';
-            $summary['internal_transfer'][$transferKey] += (int)$transaction->quantity;
+        if (!$selectedProductId) {
+            return view('admin-views.product.stock-report', [
+                'reportReady' => false,
+                'categories' => $categories,
+                'productsForFilter' => $productsForFilter,
+                'filters' => [
+                    'category_id' => $selectedCategoryId,
+                    'product_id' => null,
+                    'variation' => null,
+                    'date_type' => $dateType,
+                    'from' => $fromDate,
+                    'to' => $toDate,
+                    'from_date' => $fromDate,
+                    'to_date' => $toDate,
+                    'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
+                ],
+            ]);
         }
 
-        $historyRows[] = [
-            'date' => $transaction->created_at,
-            'type' => strtoupper((string)$transaction->type),
-            'quantity' => (int)$transaction->quantity,
-            'reason' => (string)$transaction->reason,
-            'reason_label' => $this->translateStockHistoryReason((string)$transaction->reason),
-            'category' => $classified['label'],
-            'remarks' => (string)($transaction->remarks ?? ''),
-            'remarks_label' => $this->translateStockHistoryRemarks((string)($transaction->remarks ?? '')),
-            'from_branch' => $transaction->fromBranch?->branch_name,
-            'to_branch' => $transaction->toBranch?->branch_name,
-        ];
-    }
+        $product = $this->productRepo->getFirstWhere(params: ['id' => $selectedProductId]);
+        if (!$product) {
+            if ($isJsonRequest) {
+                return response()->json(['view' => ''], 404);
+            }
 
-    $currentStock = (int)$productStocks->sum('qty');
-    if ($variation === null && $productStocks->isEmpty()) {
-        $currentStock = (int)($product->current_stock ?? 0);
-    }
+            return view('admin-views.product.stock-report', [
+                'reportReady' => false,
+                'categories' => $categories,
+                'productsForFilter' => $productsForFilter,
+                'filters' => [
+                    'category_id' => $selectedCategoryId,
+                    'product_id' => null,
+                    'variation' => null,
+                    'date_type' => $dateType,
+                    'from' => $fromDate,
+                    'to' => $toDate,
+                    'from_date' => $fromDate,
+                    'to_date' => $toDate,
+                    'include_internal_transfer' => (bool)$request->boolean('include_internal_transfer'),
+                ],
+            ]);
+        }
 
-    $baseParams = ['product_id' => (int)$product->id];
-    if ($variation !== null) {
-        $baseParams['variation'] = $variation;
-    }
-    if ($selectedCategoryId) {
-        $baseParams['category_id'] = $selectedCategoryId;
-    }
-    if (!empty($dateType)) {
-        $baseParams['date_type'] = $dateType;
-    }
-    if ($dateType === 'custom_date') {
+        $variation = $this->normalizeReportVariation((string)$request->query('variation', ''));
+        $includeInternalTransfer = (bool)$request->boolean('include_internal_transfer');
+
+        $productStockQuery = ProductStock::query()->where('product_id', (int)$product->id);
+        if ($variation !== null) {
+            $productStockQuery->where('variant', $variation);
+        } else {
+            $productStockQuery->where(function ($query) {
+                $query->whereNull('variant')->orWhere('variant', '');
+            });
+        }
+
+        $productStocks = $productStockQuery->get();
+        $stockIds = $productStocks->pluck('id')->all();
+
+        $transactionsQuery = ProductStockTransaction::query()
+            ->with(['fromBranch:id,branch_name', 'toBranch:id,branch_name'])
+            ->whereIn('product_stock_id', $stockIds)
+            ->orderByDesc('id');
+
         if (!empty($fromDate)) {
-            $baseParams['from'] = $fromDate;
+            $transactionsQuery->where('created_at', '>=', Carbon::parse($fromDate)->startOfDay());
         }
+
         if (!empty($toDate)) {
-            $baseParams['to'] = $toDate;
+            $transactionsQuery->where('created_at', '<=', Carbon::parse($toDate)->endOfDay());
         }
-    }
-    $reportBaseUrl = route('admin.products.stock-report') . '?' . http_build_query($baseParams);
 
-    $stockReportData = [
-        'product' => $product,
-        'variation' => $variation,
-        'currentStock' => $currentStock,
-        'summary' => $summary,
-        'historyRows' => $historyRows,
-        'includeInternalTransfer' => $includeInternalTransfer,
-        'reportBaseUrl' => $reportBaseUrl,
-        'categories' => $categories,
-        'productsForFilter' => $productsForFilter,
-        'filters' => [
-            'category_id' => $selectedCategoryId,
-            'product_id' => $selectedProductId,
-            'variation' => $variation,
-            'date_type' => $dateType,
-            'from' => $fromDate,
-            'to' => $toDate,
-            'from_date' => $fromDate,
-            'to_date' => $toDate,
-            'include_internal_transfer' => $includeInternalTransfer,
-        ],
-        'reportReady' => true,
-    ];
+        if (!$includeInternalTransfer) {
+            $transactionsQuery->where('reason', '!=', StockReason::BRANCH_TRANSFER);
+        }
 
-    $download = strtolower((string)$request->query('download', ''));
-    if ($download === 'excel') {
-        return $this->exportStockReportExcel($stockReportData);
-    }
-    if ($download === 'pdf') {
-        return $this->exportStockReportPdf($stockReportData);
-    }
+        $transactions = $transactionsQuery->get();
 
-    if ($request->ajax() || $request->expectsJson()) {
-        $view = view(Product::STOCK_REPORT[VIEW], $stockReportData)->render();
-        return response()->json(['view' => $view]);
-    }
-
-    return view('admin-views.product.stock-report', $stockReportData);
-}
-
-private function exportStockReportExcel(array $reportData): BinaryFileResponse
-{
-    $rows = collect($reportData['historyRows'] ?? [])->map(function (array $row) {
-        return [
-            Carbon::parse($row['date'])->format('Y-m-d H:i:s'),
-            strtoupper((string)$row['type']) === 'IN' ? translate('Stock In') : translate('Stock Out'),
-            (int)$row['quantity'],
-            (string)($row['category'] ?? ''),
-            (string)($row['reason_label'] ?? str_replace('_', ' ', (string)($row['reason'] ?? ''))),
-            (string)($row['remarks_label'] ?? ($row['remarks'] ?? '')),
-            (string)($row['from_branch'] ?? ''),
-            (string)($row['to_branch'] ?? ''),
+        $summary = [
+            'stock_in' => [
+                'initial_stock' => 0,
+                'manual_adjust_add' => 0,
+                'returns' => 0,
+            ],
+            'stock_out' => [
+                'sales_pos' => 0,
+                'sales_online' => 0,
+                'sales_wholesale_transfer' => 0,
+                'manual_adjust_negative' => 0,
+            ],
+            'internal_transfer' => [
+                'in' => 0,
+                'out' => 0,
+            ],
         ];
-    })->values()->all();
 
-    return Excel::download(new class($rows) implements FromArray, WithHeadings {
-        public function __construct(private readonly array $rows) {}
-        public function array(): array
-        {
-            return $this->rows;
+        $historyRows = [];
+        foreach ($transactions as $transaction) {
+            $classified = $this->classifyStockTransaction($transaction);
+
+            if ($classified['summaryGroup'] === 'stock_in' && isset($summary['stock_in'][$classified['summaryKey']])) {
+                $summary['stock_in'][$classified['summaryKey']] += (int)$transaction->quantity;
+            } elseif ($classified['summaryGroup'] === 'stock_out' && isset($summary['stock_out'][$classified['summaryKey']])) {
+                $summary['stock_out'][$classified['summaryKey']] += (int)$transaction->quantity;
+            } elseif ($classified['summaryGroup'] === 'internal_transfer') {
+                $transferKey = strtoupper((string)$transaction->type) === 'IN' ? 'in' : 'out';
+                $summary['internal_transfer'][$transferKey] += (int)$transaction->quantity;
+            }
+
+            $historyRows[] = [
+                'date' => $transaction->created_at,
+                'type' => strtoupper((string)$transaction->type),
+                'quantity' => (int)$transaction->quantity,
+                'reason' => (string)$transaction->reason,
+                'reason_label' => $this->translateStockHistoryReason((string)$transaction->reason),
+                'category' => $classified['label'],
+                'remarks' => (string)($transaction->remarks ?? ''),
+                'remarks_label' => $this->translateStockHistoryRemarks((string)($transaction->remarks ?? '')),
+                'from_branch' => $transaction->fromBranch?->branch_name,
+                'to_branch' => $transaction->toBranch?->branch_name,
+            ];
         }
-        public function headings(): array
-        {
-            return ['Date', 'Type', 'Quantity', 'Category', 'Reference', 'Remarks', 'From Branch', 'To Branch'];
+
+        $currentStock = (int)$productStocks->sum('qty');
+        if ($variation === null && $productStocks->isEmpty()) {
+            $currentStock = (int)($product->current_stock ?? 0);
         }
-    }, 'stock-report.xlsx');
-}
 
-private function exportStockReportPdf(array $reportData): Response
-{
-    $reportData['report_title'] = translate('product_stock_report');
-    return app(ReportPdfService::class)->download(
-        view: 'admin-views.product.stock-report-pdf',
-        data: $reportData,
-        fileName: 'stock-report.pdf',
-        orientation: 'landscape'
-    );
-}
+        $baseParams = ['product_id' => (int)$product->id];
+        if ($variation !== null) {
+            $baseParams['variation'] = $variation;
+        }
+        if ($selectedCategoryId) {
+            $baseParams['category_id'] = $selectedCategoryId;
+        }
+        if (!empty($dateType)) {
+            $baseParams['date_type'] = $dateType;
+        }
+        if ($dateType === 'custom_date') {
+            if (!empty($fromDate)) {
+                $baseParams['from'] = $fromDate;
+            }
+            if (!empty($toDate)) {
+                $baseParams['to'] = $toDate;
+            }
+        }
+        $reportBaseUrl = route('admin.products.stock-report') . '?' . http_build_query($baseParams);
 
-private function resolveStockReportDateRange(Request $request): array
-{
-    $legacyFrom = $request->input('from_date');
-    $legacyTo = $request->input('to_date');
-    $dateType = (string)$request->input('date_type', (!empty($legacyFrom) || !empty($legacyTo)) ? 'custom_date' : 'this_year');
-    $fromInput = $request->input('from', $legacyFrom);
-    $toInput = $request->input('to', $legacyTo);
+        $stockReportData = [
+            'product' => $product,
+            'variation' => $variation,
+            'currentStock' => $currentStock,
+            'summary' => $summary,
+            'historyRows' => $historyRows,
+            'includeInternalTransfer' => $includeInternalTransfer,
+            'reportBaseUrl' => $reportBaseUrl,
+            'categories' => $categories,
+            'productsForFilter' => $productsForFilter,
+            'filters' => [
+                'category_id' => $selectedCategoryId,
+                'product_id' => $selectedProductId,
+                'variation' => $variation,
+                'date_type' => $dateType,
+                'from' => $fromDate,
+                'to' => $toDate,
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
+                'include_internal_transfer' => $includeInternalTransfer,
+            ],
+            'reportReady' => true,
+        ];
 
-    switch ($dateType) {
-        case 'this_month':
-            $fromDate = now()->startOfMonth()->toDateString();
-            $toDate = now()->endOfMonth()->toDateString();
-            break;
-        case 'this_week':
-            $fromDate = now()->startOfWeek()->toDateString();
-            $toDate = now()->endOfWeek()->toDateString();
-            break;
-        case 'today':
-            $fromDate = now()->toDateString();
-            $toDate = now()->toDateString();
-            break;
-        case 'custom_date':
-            $fromDate = $fromInput ? Carbon::parse($fromInput)->toDateString() : '';
-            $toDate = $toInput ? Carbon::parse($toInput)->toDateString() : '';
-            break;
-        case 'this_year':
-        default:
-            $dateType = 'this_year';
-            $fromDate = now()->startOfYear()->toDateString();
-            $toDate = now()->endOfYear()->toDateString();
-            break;
+        $download = strtolower((string)$request->query('download', ''));
+        if ($download === 'excel') {
+
+            return $this->exportStockReportExcel($stockReportData);
+        }
+        if ($download === 'pdf') {
+            return $this->exportStockReportPdf($stockReportData);
+        }
+
+        if ($request->ajax() || $request->expectsJson()) {
+            $view = view(Product::STOCK_REPORT[VIEW], $stockReportData)->render();
+            return response()->json(['view' => $view]);
+        }
+
+        return view('admin-views.product.stock-report', $stockReportData);
     }
 
-    if (!empty($fromDate) && !empty($toDate) && Carbon::parse($fromDate)->gt(Carbon::parse($toDate))) {
-        [$fromDate, $toDate] = [$toDate, $fromDate];
+    private function exportStockReportExcel(array $reportData): BinaryFileResponse
+    {
+        $rows = collect($reportData['historyRows'] ?? [])->map(function (array $row) {
+            return [
+                Carbon::parse($row['date'])->format('Y-m-d H:i:s'),
+                strtoupper((string)$row['type']) === 'IN' ? translate('Stock In') : translate('Stock Out'),
+                (int)$row['quantity'],
+                (string)($row['category'] ?? ''),
+                (string)($row['reason_label'] ?? str_replace('_', ' ', (string)($row['reason'] ?? ''))),
+                (string)($row['remarks_label'] ?? ($row['remarks'] ?? '')),
+                (string)($row['from_branch'] ?? ''),
+                (string)($row['to_branch'] ?? ''),
+            ];
+        })->values()->all();
+
+        return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
+            public function __construct(private readonly array $rows) {}
+            public function array(): array
+            {
+                return $this->rows;
+            }
+            public function headings(): array
+            {
+                return ['Date', 'Type', 'Quantity', 'Category', 'Reference', 'Remarks', 'From Branch', 'To Branch'];
+            }
+            public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
+            {
+                return [
+                    1 => [
+                        'font' => [
+                            'bold' => true,
+                            'color' => ['argb' => 'FFFFFFFF'], // White text
+                        ],
+                        'fill' => [
+                            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                            'startColor' => ['argb' => 'FF239E92'], // Your Green/Teal color
+                        ],
+                    ],
+                ];
+            }
+            public function registerEvents(): array
+            {
+                return [
+                    \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
+                        // 1. Hide Gridlines (makes the rest of the page white)
+                        $event->sheet->getDelegate()->setShowGridlines(false);
+
+                        // 2. Calculate the data range
+                        $lastColumn = 'H'; // Based on your headings
+                        $lastRow = count($this->rows) + 1;
+                        $range = "A1:{$lastColumn}{$lastRow}";
+
+                        // 3. Apply Black Outside Border and Thin Inside Borders
+                        $event->sheet->getStyle($range)->applyFromArray([
+                            'borders' => [
+                                'outline' => [
+                                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                                    'color' => ['argb' => 'FF000000'], // Solid Black
+                                ],
+                                'inside' => [
+                                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                    'color' => ['argb' => 'FFD1D5DB'], // Light gray for inner cells
+                                ],
+                            ],
+                            'alignment' => [
+                                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                            ],
+                        ]);
+                    },
+                ];
+            }
+        }, 'stock-report.xlsx');
     }
 
-    return [$dateType, $fromDate, $toDate];
-}
-     
-public function updateQuantity(Request $request): RedirectResponse
-{
-    $product = $this->productRepo->getFirstWhere(['id' => $request->product_id]);
-    if (!$product) {
-        Toastr::error(translate('invalid_product'));
-        return back();
+    private function exportStockReportPdf(array $reportData): Response
+    {
+        $reportData['report_title'] = translate('product_stock_report');
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.product.stock-report-pdf',
+            data: $reportData,
+            fileName: 'stock-report.pdf',
+            orientation: 'landscape'
+        );
     }
 
-    return $this->updateQuantityByInventoryService($request, $product);
-}
+    private function resolveStockReportDateRange(Request $request): array
+    {
+        $legacyFrom = $request->input('from_date');
+        $legacyTo = $request->input('to_date');
+        $dateType = (string)$request->input('date_type', (!empty($legacyFrom) || !empty($legacyTo)) ? 'custom_date' : 'this_year');
+        $fromInput = $request->input('from', $legacyFrom);
+        $toInput = $request->input('to', $legacyTo);
+
+        switch ($dateType) {
+            case 'this_month':
+                $fromDate = now()->startOfMonth()->toDateString();
+                $toDate = now()->endOfMonth()->toDateString();
+                break;
+            case 'this_week':
+                $fromDate = now()->startOfWeek()->toDateString();
+                $toDate = now()->endOfWeek()->toDateString();
+                break;
+            case 'today':
+                $fromDate = now()->toDateString();
+                $toDate = now()->toDateString();
+                break;
+            case 'custom_date':
+                $fromDate = $fromInput ? Carbon::parse($fromInput)->toDateString() : '';
+                $toDate = $toInput ? Carbon::parse($toInput)->toDateString() : '';
+                break;
+            case 'this_year':
+            default:
+                $dateType = 'this_year';
+                $fromDate = now()->startOfYear()->toDateString();
+                $toDate = now()->endOfYear()->toDateString();
+                break;
+        }
+
+        if (!empty($fromDate) && !empty($toDate) && Carbon::parse($fromDate)->gt(Carbon::parse($toDate))) {
+            [$fromDate, $toDate] = [$toDate, $fromDate];
+        }
+
+        return [$dateType, $fromDate, $toDate];
+    }
+
+    public function updateQuantity(Request $request): RedirectResponse
+    {
+        $product = $this->productRepo->getFirstWhere(['id' => $request->product_id]);
+        if (!$product) {
+            Toastr::error(translate('invalid_product'));
+            return back();
+        }
+
+        return $this->updateQuantityByInventoryService($request, $product);
+    }
 
     private function updateQuantityByInventoryService(Request $request, Products $product): RedirectResponse
     {

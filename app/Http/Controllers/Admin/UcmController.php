@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\ReportPdfService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -237,7 +238,7 @@ class UcmController extends Controller
                 ];
             })->values()->all();
 
-            return Excel::download(new class($rows) implements FromArray, WithHeadings {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -246,6 +247,22 @@ class UcmController extends Controller
                 public function headings(): array
                 {
                     return ['Agent', 'Calls', 'Total Duration (min)', 'Avg Duration (min)'];
+                }
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
+                {
+                    return [
+                        // Row 1: Green Header with White Bold Text
+                        1 => [
+                            'font' => [
+                                'bold' => true,
+                                'color' => ['argb' => 'FFFFFFFF'],
+                            ],
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['argb' => 'FF239E92'],
+                            ],
+                        ],
+                    ];
                 }
             }, 'ucm-insights-report.xlsx');
         }
