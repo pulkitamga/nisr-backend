@@ -11,12 +11,53 @@ class AddressDisplayResolver
 {
     public static function resolve(object|array|null $address): array
     {
+        $country = self::resolveCountry(self::getValue($address, 'country'));
+        $state = self::resolveState(self::getValue($address, 'state'));
+        $city = self::resolveCity(self::getValue($address, 'city'));
+        $area = self::resolveArea(self::getValue($address, 'area'));
+        $zip = self::normalize(self::getValue($address, 'zip')) ?? '';
+        $addressLine = self::normalize(self::getValue($address, 'address')) ?? '';
+
         return [
-            'country' => self::resolveCountry(self::getValue($address, 'country')),
-            'state' => self::resolveState(self::getValue($address, 'state')),
-            'city' => self::resolveCity(self::getValue($address, 'city')),
-            'area' => self::resolveArea(self::getValue($address, 'area')),
+            'country' => $country,
+            'state' => $state,
+            'city' => $city,
+            'area' => $area,
+            'zip' => $zip,
+            'address' => $addressLine,
+            'formatted_address' => self::formatAddress(
+                addressLine: $addressLine,
+                area: $area,
+                city: $city,
+                state: $state,
+                country: $country,
+                zip: $zip,
+            ),
         ];
+    }
+
+    private static function formatAddress(
+        string $addressLine,
+        string $area,
+        string $city,
+        string $state,
+        string $country,
+        string $zip
+    ): string {
+        $separator = self::isRtl() ? '، ' : ', ';
+        $segments = array_values(array_filter([
+            $addressLine,
+            $area,
+            $city,
+            $state,
+            $country,
+        ], static fn (?string $value) => filled($value)));
+
+        if ($zip !== '') {
+            $segments[] = self::translateValue('zip_code') . ': ' . $zip;
+        }
+
+        return implode($separator, $segments);
     }
 
     private static function resolveCountry(?string $value): string
@@ -116,5 +157,14 @@ class AddressDisplayResolver
         }
 
         return $value;
+    }
+
+    private static function isRtl(): bool
+    {
+        if (function_exists('get_direction')) {
+            return get_direction() === 'rtl';
+        }
+
+        return app()->getLocale() === 'ar';
     }
 }

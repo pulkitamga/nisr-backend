@@ -160,13 +160,105 @@
             margin-bottom: 1rem;
         }
 
+        .order-contact-details {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .order-contact-details__row {
+            display: grid;
+            gap: 0.25rem;
+        }
+
+        .order-contact-details__label {
+            color: #677788;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .order-contact-details__value {
+            color: #1e2022;
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .order-contact-details__address {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .order-contact-details__address img {
+            flex: 0 0 auto;
+            margin-top: 0.2rem;
+        }
+
+        .order-sidebar-media {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .order-sidebar-media__body {
+            flex: 1 1 14rem;
+            min-width: 0;
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .order-sidebar-media__body h5,
+        .order-sidebar-media__body .title-color,
+        .order-sidebar-media__body .order-contact-details__value {
+            word-break: break-word;
+        }
+
         [dir="rtl"] .order-action-section__header,
-        [dir="rtl"] .order-action-summary__header {
+        [dir="rtl"] .order-action-summary__header,
+        [dir="rtl"] .order-summary-section__header,
+        [dir="rtl"] .order-detail-card .card-body > .d-flex.justify-content-between,
+        [dir="rtl"] .order-detail-card .card-body > .d-flex.align-items-center.justify-content-between {
             text-align: right;
         }
 
         [dir="rtl"] .order-summary-hero__actions {
             justify-content: flex-start;
+        }
+
+        [dir="rtl"] .order-contact-details,
+        [dir="rtl"] .order-contact-details__row,
+        [dir="rtl"] .order-contact-details__label,
+        [dir="rtl"] .order-contact-details__value,
+        [dir="rtl"] .order-sidebar-media__body,
+        [dir="rtl"] .order-sidebar-media__body h5,
+        [dir="rtl"] .order-sidebar-media__body .title-color {
+            text-align: right;
+        }
+
+        [dir="rtl"] .order-sidebar-media {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .order-contact-details__address {
+            flex-direction: row-reverse;
+            justify-content: flex-start;
+            text-align: right;
+        }
+
+        [dir="rtl"] .order-contact-details__address img {
+            margin-top: 0.2rem;
+        }
+
+        [dir="rtl"] .order-detail-card .card-body > .d-flex.gap-2.align-items-center.justify-content-between {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .order-detail-card .square-btn,
+        [dir="rtl"] .order-detail-card .billing-address-update-modal {
+            margin-right: auto;
+            margin-left: 0;
         }
 
         @media (max-width: 991.98px) {
@@ -220,6 +312,7 @@
             'failed' => translate('failed_to_Deliver'),
             default => $nextOrderStatus ? translate(str_replace('_', ' ', $nextOrderStatus)) : null,
         };
+        $isMultiVendorMode = getWebConfig(name: 'business_mode') === 'multi';
     @endphp
     <script>
         let branchWiseProductStock = @json($branchWiseProductStock);
@@ -982,20 +1075,20 @@
                                     {{ translate('customer_information') }}
                                 </h4>
                             </div>
-                            <div class="media flex-wrap gap-3">
+                            <div class="order-sidebar-media">
                                 <div class="">
                                     <img class="avatar rounded-circle avatar-70"
                                         src="{{ getStorageImages(path: $order->customer->image_full_url, type: 'backend-basic') }}"
                                         alt="{{ translate('Image') }}">
                                 </div>
-                                <div class="media-body d-flex flex-column gap-1">
-                                    <span class="title-color"><strong>{{ $order->customer['f_name'] . ' ' . $order->customer['l_name'] }}
+                                <div class="order-sidebar-media__body">
+                                    <span class="title-color"><strong dir="auto">{{ $order->customer['f_name'] . ' ' . $order->customer['l_name'] }}
                                         </strong></span>
                                     <span class="title-color"> <strong>{{ $orderCount }}</strong>
                                         {{ translate('orders') }}</span>
                                     <span
-                                        class="title-color break-all"><strong>{{ formatPhoneForDisplay($order->customer['phone']) }}</strong></span>
-                                    <span class="title-color break-all">{{ $order->customer['email'] }}</span>
+                                        class="title-color break-all"><strong class="bidi-ltr d-inline-block">{{ formatPhoneForDisplay($order->customer['phone']) }}</strong></span>
+                                    <span class="title-color break-all" dir="auto">{{ $order->customer['email'] }}</span>
                                 </div>
                             </div>
                         </div>
@@ -1018,46 +1111,47 @@
                                         </button>
                                     @endif
                                 </div>
-                                <div class="d-flex flex-column gap-2">
-                                    <div>
-                                        <span>{{ translate('name') }} :</span>
-                                        <strong>{{ $shippingAddress->contact_person_name }}</strong>
-                                        {{ $order->is_guest ? '(' . translate('guest_customer') . ')' : '' }}
+                                <div class="order-contact-details">
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('name') }}</span>
+                                        <strong class="order-contact-details__value" dir="auto">{{ $shippingAddress->contact_person_name }}</strong>
+                                        @if ($order->is_guest)
+                                            <span class="text-muted">{{ translate('guest_customer') }}</span>
+                                        @endif
                                     </div>
-                                    <div>
-                                        <span>{{ translate('contact') }} :</span>
-                                        <strong>{{ $shippingAddress->phone }}</strong>
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('contact') }}</span>
+                                        <strong class="order-contact-details__value bidi-ltr d-inline-block">{{ $shippingAddress->phone }}</strong>
                                     </div>
                                     @if ($order->is_guest && $shippingAddress->email)
-                                        <div>
-                                            <span>{{ translate('email') }} :</span>
-                                            <strong>{{ $shippingAddress->email }}</strong>
+                                        <div class="order-contact-details__row">
+                                            <span class="order-contact-details__label">{{ translate('email') }}</span>
+                                            <strong class="order-contact-details__value" dir="auto">{{ $shippingAddress->email }}</strong>
                                         </div>
                                     @endif
-                                    <div>
-                                        <span>{{ translate('country') }} :</span>
-                                        <strong>{{ $shippingAddressDisplay['country'] }}</strong>
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('country') }}</span>
+                                        <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['country'] }}</strong>
                                     </div>
-                                    <div>
-                                        <span>{{ translate('state') }} :</span>
-                                        <strong>{{ $shippingAddressDisplay['state'] }}</strong>
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('state') }}</span>
+                                        <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['state'] }}</strong>
                                     </div>
-                                    <div>
-                                        <span>{{ translate('city') }} :</span>
-                                        <strong>{{ $shippingAddressDisplay['city'] }}</strong>
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('city') }}</span>
+                                        <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['city'] }}</strong>
                                     </div>
-                                    <div>
-                                        <span>{{ translate('area') }} :</span>
-                                        <strong>{{ $shippingAddressDisplay['area'] }}</strong>
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('area') }}</span>
+                                        <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['area'] }}</strong>
                                     </div>
-                                    <div>
-                                        <span>{{ translate('zip_code') }} :</span>
-                                        <strong>{{ $shippingAddress->zip }}</strong>
-                                    </div>
-                                    <div class="d-flex align-items-start gap-2">
-                                        <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
-                                            alt="">
-                                        {{ $shippingAddress->address ?? translate('empty') }}
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('address') }}</span>
+                                        <div class="order-contact-details__address">
+                                            <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
+                                                alt="">
+                                            <span class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['formatted_address'] ?: translate('empty') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1089,46 +1183,47 @@
                                     </button>
                                 @endif
                             </div>
-                            <div class="d-flex flex-column gap-2">
-                                <div>
-                                    <span>{{ translate('name') }} :</span>
-                                    <strong>{{ $billing->contact_person_name }}</strong>
-                                    {{ $order->is_guest ? '(' . translate('guest_customer') . ')' : '' }}
+                            <div class="order-contact-details">
+                                <div class="order-contact-details__row">
+                                    <span class="order-contact-details__label">{{ translate('name') }}</span>
+                                    <strong class="order-contact-details__value" dir="auto">{{ $billing->contact_person_name }}</strong>
+                                    @if ($order->is_guest)
+                                        <span class="text-muted">{{ translate('guest_customer') }}</span>
+                                    @endif
                                 </div>
-                                <div>
-                                    <span>{{ translate('contact') }} :</span>
-                                    <strong>{{ $billing->phone }}</strong>
+                                <div class="order-contact-details__row">
+                                    <span class="order-contact-details__label">{{ translate('contact') }}</span>
+                                    <strong class="order-contact-details__value bidi-ltr d-inline-block">{{ $billing->phone }}</strong>
                                 </div>
                                 @if ($order->is_guest && $billing->email)
-                                    <div>
-                                        <span>{{ translate('email') }} :</span>
-                                        <strong>{{ $billing->email }}</strong>
+                                    <div class="order-contact-details__row">
+                                        <span class="order-contact-details__label">{{ translate('email') }}</span>
+                                        <strong class="order-contact-details__value" dir="auto">{{ $billing->email }}</strong>
                                     </div>
                                 @endif
-                                <div>
-                                    <span>{{ translate('country') }} :</span>
-                                    <strong>{{ $billingDisplay['country'] }}</strong>
+                                <div class="order-contact-details__row">
+                                    <span class="order-contact-details__label">{{ translate('country') }}</span>
+                                    <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['country'] }}</strong>
                                 </div>
-                                <div>
-                                    <span>{{ translate('state') }} :</span>
-                                    <strong>{{ $billingDisplay['state'] }}</strong>
+                                <div class="order-contact-details__row">
+                                    <span class="order-contact-details__label">{{ translate('state') }}</span>
+                                    <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['state'] }}</strong>
                                 </div>
-                                <div>
-                                    <span>{{ translate('city') }} :</span>
-                                    <strong>{{ $billingDisplay['city'] }}</strong>
+                                <div class="order-contact-details__row">
+                                    <span class="order-contact-details__label">{{ translate('city') }}</span>
+                                    <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['city'] }}</strong>
                                 </div>
-                                <div>
-                                    <span>{{ translate('area') }} :</span>
-                                    <strong>{{ $billingDisplay['area'] }}</strong>
+                                <div class="order-contact-details__row">
+                                    <span class="order-contact-details__label">{{ translate('area') }}</span>
+                                    <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['area'] }}</strong>
                                 </div>
-                                <div>
-                                    <span>{{ translate('zip_code') }} :</span>
-                                    <strong>{{ $billing->zip }}</strong>
-                                </div>
-                                <div class="d-flex align-items-start gap-2">
-                                    <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
-                                        alt="">
-                                    {{ $billing->address }}
+                                <div class="order-contact-details__row">
+                                    <span class="order-contact-details__label">{{ translate('address') }}</span>
+                                    <div class="order-contact-details__address">
+                                        <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
+                                            alt="">
+                                        <span class="order-contact-details__value" dir="auto">{{ $billingDisplay['formatted_address'] ?: translate('empty') }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1140,56 +1235,58 @@
                         </div>
                     @endif
                 </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="d-flex gap-2 mb-4">
-                            <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/shop-information.png') }}"
-                                alt="">
-                            {{ translate('shop_Information') }}
-                        </h4>
-                        <div class="media">
-                            @if ($order->seller_is == 'admin')
-                                <div class="me-3">
-                                    <img class="avatar rounded avatar-70 img-fit-contain "
-                                        src="{{ getStorageImages(path: getWebConfig(name: 'company_fav_icon'), type: 'shop') }}"
-                                        alt="">
-                                </div>
-                                <div class="media-body d-flex flex-column gap-2">
-                                    <h5>{{ $companyName }}</h5>
-                                    <span class="title-color"><strong>{{ $totalDelivered }}</strong>
-                                        {{ translate('orders_Served') }}</span>
-                                </div>
-                            @else
-                                @if (!empty($order->seller->shop))
+                @if ($isMultiVendorMode)
+                    <div class="card order-detail-card">
+                        <div class="card-body">
+                            <h4 class="d-flex gap-2 mb-4">
+                                <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/shop-information.png') }}"
+                                    alt="">
+                                {{ translate('shop_Information') }}
+                            </h4>
+                            <div class="order-sidebar-media">
+                                @if ($order->seller_is == 'admin')
                                     <div class="me-3">
-                                        <img class="avatar rounded avatar-70 img-fit"
-                                            src="{{ getStorageImages(path: $order->seller->shop->image_full_url, type: 'backend-basic') }}"
+                                        <img class="avatar rounded avatar-70 img-fit-contain"
+                                            src="{{ getStorageImages(path: getWebConfig(name: 'company_fav_icon'), type: 'shop') }}"
                                             alt="">
                                     </div>
-                                    <div class="media-body d-flex flex-column gap-2">
-                                        <h5>{{ $order->seller->shop->name }}</h5>
+                                    <div class="order-sidebar-media__body">
+                                        <h5>{{ $companyName }}</h5>
                                         <span class="title-color"><strong>{{ $totalDelivered }}</strong>
                                             {{ translate('orders_Served') }}</span>
-                                        <span class="title-color">
-                                            <strong>{{ $order->seller->shop->contact }}</strong></span>
-                                        <div class="d-flex align-items-start gap-2">
-                                            <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
-                                                class="mt-1" alt="">
-                                            {{ $order->seller->shop->address }}
-                                        </div>
                                     </div>
                                 @else
-                                    <div class="text-center p-4">
-                                        <img class="w-25"
-                                            src="{{ dynamicAsset(path: 'public/assets/back-end/img/empty-state-icon/shop-not-found.png') }}"
-                                            alt="{{ translate('image_description') }}">
-                                        <p class="mb-0">{{ translate('no_shop_found') . '!' }}</p>
-                                    </div>
+                                    @if (!empty($order->seller->shop))
+                                        <div class="me-3">
+                                            <img class="avatar rounded avatar-70 img-fit"
+                                                src="{{ getStorageImages(path: $order->seller->shop->image_full_url, type: 'backend-basic') }}"
+                                                alt="">
+                                        </div>
+                                        <div class="order-sidebar-media__body">
+                                            <h5>{{ $order->seller->shop->name }}</h5>
+                                            <span class="title-color"><strong>{{ $totalDelivered }}</strong>
+                                                {{ translate('orders_Served') }}</span>
+                                            <span class="title-color">
+                                                <strong>{{ $order->seller->shop->contact }}</strong></span>
+                                            <div class="order-contact-details__address">
+                                                <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
+                                                    alt="">
+                                                <span class="order-contact-details__value" dir="auto">{{ $order->seller->shop->address }}</span>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center p-4 w-100">
+                                            <img class="w-25"
+                                                src="{{ dynamicAsset(path: 'public/assets/back-end/img/empty-state-icon/shop-not-found.png') }}"
+                                                alt="{{ translate('image_description') }}">
+                                            <p class="mb-0">{{ translate('no_shop_found') . '!' }}</p>
+                                        </div>
+                                    @endif
                                 @endif
-                            @endif
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -1988,7 +2085,8 @@
 
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/country-picker-init.js') }}"></script>
-    <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/order.js') }}"></script>
+    <script
+        src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/order.js') }}?v={{ @filemtime(public_path('assets/back-end/js/admin/order.js')) }}"></script>
     <script>
         const getStatesURL = "{{ route('admin.address.order.get.states') }}";
         const getCitiesURL = "{{ route('admin.address.order.get.cities') }}";
