@@ -502,7 +502,7 @@
                                         </a>
                                     </li>
                                     <li
-                                        class="nav-item {{ Request::is('admin/products/' . Product::BULK_IMPORT[URI]) ? 'active' : '' }}">
+                                        class="nav-item d-none {{ Request::is('admin/products/' . Product::BULK_IMPORT[URI]) ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.products.bulk-import') }}"
                                             title="{{ translate('bulk_import') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
@@ -1185,10 +1185,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/admin-earning') || Request::is('admin/report/vendor-earning') || Request::is('admin/report/' . InhouseProductSale::VIEW[URI]) || Request::is('admin/report/vendor-report') || Request::is('admin/report/earning') || Request::is('admin/transaction/order-transaction-list') || Request::is('admin/transaction/expense-transaction-list') || Request::is('admin/report/transaction/' . App\Enums\ViewPaths\Admin\RefundTransaction::INDEX[URI]) || Request::is('admin/transaction/wallet-bonus') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="Sales">
+                                    href="javascript:" title="{{ translate('Sales') }}">
                                     <i class="tio-chart-bar-4 nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        Sales
+                                        {{ translate('Sales') }}
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -1243,10 +1243,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/report/order') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="Orders">
+                                    href="javascript:" title="{{ translate('Orders') }}">
                                     <i class="tio-shopping-cart-outlined nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        Orders
+                                        {{ translate('Orders') }}
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"

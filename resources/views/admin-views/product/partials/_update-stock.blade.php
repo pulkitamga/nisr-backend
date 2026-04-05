@@ -85,7 +85,7 @@
                     {{-- Reason (same size as SKU / Price / Stock) --}}
                     <div class="col-md-3 col-lg-3">
                         <input type="text" name="variation_reason[{{ $variation['type'] ?? $key }}]"
-                            class="form-control bg-white" placeholder="Reason"
+                            class="form-control bg-white" placeholder="{{ translate('Reason') }}"
                             value="{{ $variation['reason'] ?? '' }}">
                     </div>
 

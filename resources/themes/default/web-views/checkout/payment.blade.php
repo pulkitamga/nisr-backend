@@ -18,7 +18,7 @@
                     <span>{{ translate('payment_method')}}</span>
                 </div>
             </div>
-            <section class="col-lg-8 px-max-md-0">
+            <section class="col-md-8 col-lg-8 px-max-md-0">
                 <div class="checkout_details">
                     <div class="px-3 px-md-0">
                         @include('web-views.partials._checkout-steps',['step'=>3])
@@ -257,4 +257,3 @@
 @push('script')
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/payment.js') }}"></script>
 @endpush
-

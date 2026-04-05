@@ -164,7 +164,7 @@
         <div class="col-md-12 mb-3">
             <h3 class="font-weight-bold text-center text-lg-left">{{translate('checkout')}}</h3>
         </div>
-        <section class="col-lg-8 px-max-md-0">
+        <section class="col-md-8 col-lg-8 px-max-md-0">
             <div class="checkout_details">
                 <div class="px-3 px-md-3">
                     @include('web-views.partials._checkout-steps',['step'=>2])
@@ -820,7 +820,7 @@
 
 <span id="message-update-this-address" data-text="{{ translate('Update_this_Address') }}"></span>
 <span id="message-create-account-above-info" data-text="{{ translate('Create_an_account_with_the_above_info') }}"></span>
-<span id="message-create-account-below-info" data-text="Create an account with the below info"></span>
+<span id="message-create-account-below-info" data-text="{{ translate('Create_an_account_with_the_below_info') }}"></span>
 <span id="message-please-fill-out-this-field" data-text="{{ translate('Please_fill_out_this_field') }}"></span>
 <span id="route-fetch-area-branch" data-url="fetch-area"></span>
 <span id="route-customer-choose-shipping-address-other" data-url="{{ route('customer.choose-shipping-address-other') }}"></span>

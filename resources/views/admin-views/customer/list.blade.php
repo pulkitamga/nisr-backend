@@ -3,8 +3,50 @@
 
 @section('title', translate('customer_List'))
 
+@push('css_or_js')
+<style>
+    .customer-list-page .bidi-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+    }
+
+    .customer-list-page .customer-filter-card .btn--container {
+        display: flex;
+        gap: .75rem;
+        flex-wrap: wrap;
+    }
+
+    .customer-list-page .customer-contact {
+        text-align: start;
+    }
+
+    .customer-list-page .customer-contact a {
+        display: inline-block;
+        max-width: 100%;
+    }
+
+    .customer-list-page[dir="rtl"] .customer-filter-card .btn--container {
+        justify-content: flex-start;
+    }
+
+    .customer-list-page[dir="rtl"] .customer-search-form {
+        margin-inline-start: auto;
+    }
+
+    .customer-list-page[dir="rtl"] .customer-search-form .input-group {
+        direction: rtl;
+    }
+
+    .customer-list-page[dir="rtl"] .customer-search-form input.form-control {
+        text-align: right;
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="content container-fluid">
+@php($direction = session('direction') === 'rtl' ? 'rtl' : 'ltr')
+<div class="content container-fluid customer-list-page" dir="{{ $direction }}">
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/customer.png')}}" alt="">
@@ -12,26 +54,26 @@
             <span class="badge badge-soft-dark radius-50">{{ $totalCustomers }}</span>
         </h2>
     </div>
-    <div class="card mb-4">
+    <div class="card mb-4 customer-filter-card">
         <div class="card-body">
             <form action="{{ url()->current() }}" method="GET">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">{{ translate('Order_Date') }}</label>
+                        <label class="form-label">{{ translate('order_date') }}</label>
                         <div class="position-relative">
                             <span class="tio-calendar icon-absolute-on-right"></span>
-                            <input type="text" name="order_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{request('order_date')}}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
+                            <input type="text" name="order_date" class="js-daterangepicker-with-range form-control cursor-pointer {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}" value="{{request('order_date')}}" placeholder="{{ translate('select_date') }}" autocomplete="off" readonly>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">{{translate('Customer_Joining_Date')}}</label>
+                        <label class="form-label">{{translate('customer_joining_date')}}</label>
                         <div class="position-relative">
                             <span class="tio-calendar icon-absolute-on-right cursor-pointer"></span>
-                            <input type="text" name="customer_joining_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{request('customer_joining_date')}}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
+                            <input type="text" name="customer_joining_date" class="js-daterangepicker-with-range form-control cursor-pointer {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}" value="{{request('customer_joining_date')}}" placeholder="{{ translate('select_date') }}" autocomplete="off" readonly>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">{{translate('Customer_Status')}}</label>
+                        <label class="form-label">{{translate('customer_status')}}</label>
                         <select class="form-control js-select2-custom set-filter" name="is_active">
                             <option {{ !request()->has('is_active') ?'selected':''}} disabled>{{ translate('select_status') }}</option>
                             <option {{ request()->has('is_active') && request('is_active') == '' ?'selected':''}} value="">{{ translate('All') }}</option>
@@ -40,17 +82,17 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">{{translate('Sort_By') }}</label>
+                        <label class="form-label">{{translate('sort_by') }}</label>
                         <select class="form-control js-select2-custom" name="sort_by">
-                            <option disabled {{ is_null(request('sort_by')) ? 'selected' : '' }}>{{ translate('Select_Customer_sorting_order') }}</option>
-                            <option value="order_amount">{{ translate('Sort_By_Order_Amount') }}</option>
-                            <option value="asc" {{ request('sort_by') === 'asc' ? 'selected' : '' }}>{{translate('Sort_By_Oldest')}}</option>
-                            <option value="desc" {{ request('sort_by') === 'desc' ? 'selected' : '' }}>{{translate('Sort_By_Newest')}}</option>
+                            <option disabled {{ is_null(request('sort_by')) ? 'selected' : '' }}>{{ translate('select_customer_sorting_order') }}</option>
+                            <option value="order_amount" {{ request('sort_by') === 'order_amount' ? 'selected' : '' }}>{{ translate('sort_by_order_amount') }}</option>
+                            <option value="asc" {{ request('sort_by') === 'asc' ? 'selected' : '' }}>{{translate('sort_by_oldest')}}</option>
+                            <option value="desc" {{ request('sort_by') === 'desc' ? 'selected' : '' }}>{{translate('sort_by_newest')}}</option>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">{{translate('Choose_First')}}</label>
-                        <input type="number" class="form-control" min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('100')}}" name="choose_first">
+                        <label class="form-label">{{translate('choose_first')}}</label>
+                        <input type="number" class="form-control {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}" min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('100')}}" name="choose_first">
                     </div>
                     <div class="col-md-4">
                         <label class="d-md-block">&nbsp;</label>
@@ -67,13 +109,13 @@
         </div>
     </div>
     <div class="card">
-        <div class="card-header gap-3 align-items-center">
+        <div class="card-header gap-3 align-items-center customer-list-toolbar">
             <h5 class="mb-0 me-auto">
-                {{translate('Customer_list')}}
+                {{translate('customer_list')}}
                 <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $customers->total() }}</span>
             </h5>
 
-            <form action="{{ url()->current() }}" method="GET">
+            <form action="{{ url()->current() }}" method="GET" class="customer-search-form">
                 <input type="hidden" name="order_date" value="{{request('order_date')}}">
                 <input type="hidden" name="customer_joining_date" value="{{request('customer_joining_date')}}">
                 <input type="hidden" name="is_active" value="{{request('is_active')}}">
@@ -86,7 +128,7 @@
                         </div>
                     </div>
                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
+                        placeholder="{{ translate('search_by_name_or_email_or_phone')}}" aria-label="{{ translate('search') }}" value="{{ request('searchValue') }}">
                     <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                 </div>
             </form>
@@ -126,12 +168,14 @@
                             </a>
                         </td>
                         <td>
-                            <div class="mb-1">
+                            <div class="mb-1 customer-contact">
                                 <strong><a class="title-color hover-c1"
-                                        href="mailto:{{$customer->email}}">{{$customer->email}}</a></strong>
+                                        href="mailto:{{$customer->email}}"><span class="bidi-ltr">{{$customer->email}}</span></a></strong>
 
                             </div>
-                            <a class="title-color hover-c1" href="tel:{{$customer->phone}}">{{$customer->phone}}</a>
+                            <div class="customer-contact">
+                                <a class="title-color hover-c1" href="tel:{{$customer->phone}}"><span class="bidi-ltr">{{$customer->phone}}</span></a>
+                            </div>
 
                         </td>
                         <td>

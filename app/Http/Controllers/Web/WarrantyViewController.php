@@ -272,9 +272,7 @@ class WarrantyViewController extends Controller
             'submitted_at' => $claim->submitted_at,
             'updated_at' => $claim->updated_at,
             'serial_number' => $claim->serial_number,
-            'attachments' => collect($claim->attachments_full_url ?? [])
-                ->values()
-                ->map(fn($url, $index) => ['id' => $index + 1, 'url' => $url]),
+            'attachments' => $this->formatClaimAttachments($claim),
             'timeline_events' => $claim->timelineEvents,
             'payment' => $payment,
             'can_pay' => $isOwner && auth('customer')->check() && $payment !== null && !empty($payment->payment_link),
@@ -343,6 +341,25 @@ class WarrantyViewController extends Controller
                 'verificationCode' => $otp,
             ]));
         }
+    }
+
+    private function formatClaimAttachments(WarrantyClaim $claim)
+    {
+        return collect($claim->attachments_full_url ?? [])
+            ->map(function ($attachment, $index) {
+                $url = is_array($attachment) ? ($attachment['path'] ?? null) : $attachment;
+
+                if (!is_string($url) || $url === '') {
+                    return null;
+                }
+
+                return [
+                    'id' => $index + 1,
+                    'url' => $url,
+                ];
+            })
+            ->filter()
+            ->values();
     }
 
     private function authorizeWarrantyAccess(Request $request, string $warrantyPublicId): bool

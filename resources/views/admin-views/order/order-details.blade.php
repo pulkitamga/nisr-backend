@@ -237,22 +237,13 @@
             text-align: right;
         }
 
-        [dir="rtl"] .order-sidebar-media {
-            flex-direction: row-reverse;
-        }
-
         [dir="rtl"] .order-contact-details__address {
-            flex-direction: row-reverse;
             justify-content: flex-start;
             text-align: right;
         }
 
         [dir="rtl"] .order-contact-details__address img {
             margin-top: 0.2rem;
-        }
-
-        [dir="rtl"] .order-detail-card .card-body > .d-flex.gap-2.align-items-center.justify-content-between {
-            flex-direction: row-reverse;
         }
 
         [dir="rtl"] .order-detail-card .square-btn,

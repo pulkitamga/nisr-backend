@@ -1,7 +1,7 @@
 @php($customer = auth()->guard('customer')->user())
 
 @if(!$customer || $customer->user_type == 0)
-<aside class="col-lg-4 pt-4 pt-lg-2 px-max-md-0 order-summery-aside">
+<aside class="col-md-4 col-lg-4 pt-4 pt-md-0 pt-lg-2 px-max-md-0 order-summery-aside">
     <div class="__cart-total __cart-total_sticky" id="cart-summary">
         <div class="cart_total p-0">
             @php($cart=\App\Utils\CartManager::getCartListQuery(type: 'checked'))
@@ -177,7 +177,7 @@
     </div>
 </aside>
 
-<div class="bottom-sticky3 bg-white p-3 shadow-sm w-100 d-lg-none">
+<div class="bottom-sticky3 bg-white p-3 shadow-sm w-100 d-md-none">
     <div class="d-flex justify-content-center align-items-center fs-14 mb-2">
         <div class="product-description-label fw-semibold text-capitalize">{{translate('total_price')}} :</div>
         &nbsp; <strong class="text-base">{{ webCurrencyConverter(amount:
@@ -190,7 +190,7 @@
 
 @elseif($customer && $customer->user_type == 1)
 
-    <aside class="col-lg-4 pt-4 pt-lg-2 px-max-md-0 order-summery-aside">
+    <aside class="col-md-4 col-lg-4 pt-4 pt-md-0 pt-lg-2 px-max-md-0 order-summery-aside">
         <div class="__cart-total __cart-total_sticky">
             <div class="cart_total p-0">
                 @php($shippingMethod=getWebConfig(name: 'shipping_method'))

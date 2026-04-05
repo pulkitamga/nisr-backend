@@ -915,8 +915,8 @@ function togglePickupBranchVisibility() {
     const updateAddressCheckbox = document.getElementById('update_address');
     const saveAddressCheckbox = document.getElementById('save_address');
     const createAccountInfoLabels = document.querySelectorAll('.create-account-info-label');
-    const createAccountAboveInfoText = document.getElementById('message-create-account-above-info')?.dataset?.text || 'Create an account with the above info';
-    const createAccountBelowInfoText = document.getElementById('message-create-account-below-info')?.dataset?.text || 'Create an account with the below info';
+    const createAccountAboveInfoText = document.getElementById('message-create-account-above-info')?.dataset?.text || '';
+    const createAccountBelowInfoText = document.getElementById('message-create-account-below-info')?.dataset?.text || createAccountAboveInfoText;
     const setElementVisibility = (element, shouldShow) => {
         if (!element) return;
         if (shouldShow) {

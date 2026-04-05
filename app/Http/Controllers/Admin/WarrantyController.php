@@ -67,7 +67,7 @@ class WarrantyController extends Controller
         foreach ($rows as $index => $row) {
             $validator = Validator::make($row, [
                 'serial_number' => 'required|string|unique:warranties,serial_number',
-                'product_id' => 'nullable|integer',
+                'product_sku' => 'nullable|string|exists:products,code',
                 'warranty_months' => 'required|integer|min:1',
             ]);
 
@@ -86,13 +86,13 @@ class WarrantyController extends Controller
 
         if (!empty($errors)) {
             $csv = fopen('php://temp', 'r+');
-            fputcsv($csv, ['Row', 'Serial Number', 'Product ID', 'Warranty Months', 'Error']);
+            fputcsv($csv, ['Row', 'Serial Number', 'Product SKU', 'Warranty Months', 'Error']);
 
             foreach ($errors as $err) {
                 fputcsv($csv, [
                     $err['row'],
                     $err['data']['serial_number'] ?? '',
-                    $err['data']['product_id'] ?? '',
+                    $err['data']['product_sku'] ?? '',
                     $err['data']['warranty_months'] ?? '',
                     $err['error']
                 ]);
@@ -123,12 +123,12 @@ class WarrantyController extends Controller
             $errorCsvPath = null;
             if (count($import->errors) > 0) {
                 $csv = fopen('php://temp', 'r+');
-                fputcsv($csv, ['Serial Number', 'Product ID', 'Warranty Months', 'Error']);
+                fputcsv($csv, ['Serial Number', 'Product SKU', 'Warranty Months', 'Error']);
 
                 foreach ($import->errors as $err) {
                     fputcsv($csv, [
                         $err['row']['serial_number'] ?? '',
-                        $err['row']['product_id'] ?? '',
+                        $err['row']['product_sku'] ?? '',
                         $err['row']['warranty_months'] ?? '',
                         $err['error']
                     ]);
@@ -189,12 +189,12 @@ class WarrantyController extends Controller
         $errorCsvPath = null;
         if (count($import->errors) > 0) {
             $csv = fopen('php://temp', 'r+');
-            fputcsv($csv, ['Serial Number', 'Product ID', 'Warranty Months', 'Error']);
+            fputcsv($csv, ['Serial Number', 'Product SKU', 'Warranty Months', 'Error']);
 
             foreach ($import->errors as $err) {
                 fputcsv($csv, [
                     $err['row']['serial_number'] ?? '',
-                    $err['row']['product_id'] ?? '',
+                    $err['row']['product_sku'] ?? '',
                     $err['row']['warranty_months'] ?? '',
                     $err['error']
                 ]);

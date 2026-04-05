@@ -103,7 +103,7 @@
                 <div class="form-group">
                     <label>{{ translate('csv_file') }}</label>
                     <input type="file" name="csv_file" accept=".csv" class="form-control" required>
-                    <small>{{ translate('columns: serial_number (required), product_id (optional), warranty_months (required)') }}</small>
+                    <small>{{ translate('columns: serial_number (required), product_sku (optional), warranty_months (required)') }}</small>
                 </div>
                 <button type="submit" class="btn btn--primary">{{ translate('import') }}</button>
             </form>

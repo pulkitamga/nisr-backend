@@ -3,7 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Warranty;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -25,19 +25,23 @@ class SerialImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
     public function model(array $row): ?Warranty
     {
         try {
-            if (empty($row['serial_number'])) {
+            $serialNumber = trim((string) ($row['serial_number'] ?? ''));
+
+            if ($serialNumber === '') {
                 throw new \Exception('Serial number is missing.');
             }
 
-            $existing = Warranty::where('serial_number', $row['serial_number'])->first();
+            $existing = Warranty::where('serial_number', $serialNumber)->first();
 
             if ($existing) {
-                throw new \Exception("Duplicate serial number: {$row['serial_number']} already exists in the system.");
+                throw new \Exception("Duplicate serial number: {$serialNumber} already exists in the system.");
             }
 
+            $productId = $this->resolveProductId($row['product_sku'] ?? null);
+
             $warranty = Warranty::create([
-                'serial_number' => $row['serial_number'],
-                'product_id' => $row['product_id'] ?? null,
+                'serial_number' => $serialNumber,
+                'product_id' => $productId,
                 'warranty_months' => $row['warranty_months'] ?? null,
                 'status' => 'preactivated',
             ]);
@@ -62,9 +66,28 @@ class SerialImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
     {
         return [
             'serial_number' => 'required|string',
-            'product_id' => 'nullable|integer',
+            'product_sku' => 'nullable|string|exists:products,code',
             'warranty_months' => 'required|integer|min:1',
         ];
+    }
+
+    private function resolveProductId(mixed $productSku): ?int
+    {
+        $sku = trim((string) $productSku);
+
+        if ($sku === '') {
+            return null;
+        }
+
+        $productId = DB::table('products')
+            ->where('code', $sku)
+            ->value('id');
+
+        if (!$productId) {
+            throw new \Exception("Product SKU not found: {$sku}.");
+        }
+
+        return (int) $productId;
     }
     public function onFailure(Failure ...$failures)
     {

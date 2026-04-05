@@ -486,9 +486,7 @@ class WarrantyCustomerController extends Controller
             'submitted_at' => optional($claim->submitted_at)?->toIso8601String(),
             'updated_at' => optional($claim->updated_at)?->toIso8601String(),
             'serial_number' => $claim->serial_number,
-            'attachments' => collect($claim->attachments_full_url ?? [])
-                ->values()
-                ->map(fn($url, $index) => ['id' => $index + 1, 'url' => $url]),
+            'attachments' => $this->formatClaimAttachments($claim),
             'timeline_events' => $this->formatTimelineEvents($claim->timelineEvents),
             'payment' => $this->formatPaymentSummary($payment),
             'warranty' => $claim->warranty ? $this->formatWarrantyData($claim->warranty, false) : null,
@@ -515,6 +513,26 @@ class WarrantyCustomerController extends Controller
             'latest_event_at' => optional($latestEventAt)?->toIso8601String(),
             'updated_at' => optional($claim->updated_at)?->toIso8601String(),
         ];
+    }
+
+    private function formatClaimAttachments(WarrantyClaim $claim): array
+    {
+        return collect($claim->attachments_full_url ?? [])
+            ->map(function ($attachment, $index) {
+                $url = is_array($attachment) ? ($attachment['path'] ?? null) : $attachment;
+
+                if (!is_string($url) || $url === '') {
+                    return null;
+                }
+
+                return [
+                    'id' => $index + 1,
+                    'url' => $url,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 
     private function formatPaymentSummary(?WarrantyClaimPayment $payment): ?array

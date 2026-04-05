@@ -12,7 +12,7 @@
                     <span>{{ translate('sign_in')}}</span>
                 </div>
             </div>
-            <section class="col-lg-8">
+            <section class="col-md-8 col-lg-8">
                 <div class="checkout_details">
                     @include('web-views.partials._checkout-steps',['step'=>1])
                     <h2 class="h4 pb-3 mb-2 mt-5">{{translate('authentication')}}</h2>
@@ -316,4 +316,3 @@
     </script>
 
 @endpush
-

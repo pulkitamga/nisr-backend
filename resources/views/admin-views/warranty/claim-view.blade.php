@@ -43,11 +43,6 @@
     .claim-rtl .text-muted {
         text-align: right !important;
     }
-    .claim-rtl .claim-overview-row,
-    .claim-rtl .claim-summary-row,
-    .claim-rtl .claim-activity-header {
-        flex-direction: row-reverse !important;
-    }
     .claim-rtl .claim-overview-row > [class*="col-"],
     .claim-rtl .claim-summary-row > [class*="col-"],
     .claim-rtl .claim-overview-row p,
@@ -140,7 +135,7 @@
         </div>
 
         <div class="card-body mb-4 {{ $isRtl ? 'text-end' : 'text-start' }}">
-            <div class="row mb-4 claim-overview-row {{ $isRtl ? 'flex-row-reverse' : '' }}">
+            <div class="row mb-4 claim-overview-row">
                 <div class="col-md-6 {{ $isRtl ? 'text-end' : 'text-start' }}">
                     <h6 class="font-weight-bold">{{ translate('Warranty') }}</h6>
                     <p class="kv-row">
@@ -193,7 +188,7 @@
     </div>
     <div class="card mb-4">
         <div class="card-body mb-4">
-            <div class="row claim-summary-row {{ $isRtl ? 'flex-row-reverse' : '' }}">
+            <div class="row claim-summary-row">
                 <div class="col-md-4 mb-3 mb-md-0">
                     <div class="p-3 border rounded">
                         <div class="text-muted">{{ translate('Total Charges') }}</div>
@@ -292,7 +287,7 @@
     </div>
     <div class="card mb-4">
         <div class="card-body mb-4">
-            <div class="d-flex justify-content-between mb-4 claim-activity-header {{ $isRtl ? 'flex-row-reverse' : '' }}">
+            <div class="d-flex justify-content-between mb-4 claim-activity-header">
                 <h6 class="mt-4">{{ translate('activity_log') }}</h6>
                 <div class="mt-4 claim-actions">
                     <div class="crm-row-actions">

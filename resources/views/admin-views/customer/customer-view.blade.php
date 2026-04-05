@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('customer_Details'))
+@section('title', translate('customer_details'))
 
 @push('css_or_js')
     <style>
@@ -32,9 +32,18 @@
         .customer-view-modern .profile-card {
             display: flex;
             flex-wrap: wrap;
+            align-items: flex-start;
             gap: 1rem;
             padding: 1rem;
             background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
+            text-align: start;
+        }
+
+        .customer-view-modern .profile-body {
+            min-width: 0;
+            flex: 1 1 260px;
+            display: grid;
+            gap: .65rem;
         }
 
         .customer-view-modern .avatar {
@@ -57,10 +66,14 @@
             margin: .15rem 0 0;
             color: var(--muted);
             font-size: .82rem;
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .35rem;
         }
 
         .customer-view-modern .kv {
-            margin: .65rem 0 0;
+            margin: 0;
             display: grid;
             gap: .35rem;
         }
@@ -68,6 +81,8 @@
         .customer-view-modern .kv-row {
             display: flex;
             align-items: center;
+            justify-content: flex-start;
+            flex-wrap: wrap;
             gap: .55rem;
             color: var(--ink);
             font-size: .86rem;
@@ -77,6 +92,10 @@
             min-width: 90px;
             color: var(--muted);
             font-weight: 500;
+        }
+
+        .customer-view-modern .kv-value {
+            min-width: 0;
         }
 
         .customer-view-modern .meta-card {
@@ -157,6 +176,7 @@
             display: grid;
             gap: .9rem;
             background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            text-align: start;
         }
 
         .customer-view-modern .module-header {
@@ -237,6 +257,37 @@
             padding: .75rem;
             background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
             font-size: .82rem;
+            text-align: start;
+        }
+
+        .customer-view-modern .field-list {
+            display: grid;
+            gap: .35rem;
+        }
+
+        .customer-view-modern .field-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: .25rem .45rem;
+            color: var(--ink);
+        }
+
+        .customer-view-modern .field-label {
+            color: var(--ink);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .customer-view-modern .field-value {
+            min-width: 0;
+        }
+
+        .customer-view-modern .bidi-ltr {
+            direction: ltr;
+            unicode-bidi: isolate;
+            display: inline-block;
         }
 
         .customer-view-modern .address-card h6 {
@@ -325,23 +376,20 @@
             color: var(--muted);
         }
 
-        .customer-view-modern[dir="rtl"] .kv-row {
-            flex-direction: row-reverse;
-            justify-content: flex-end;
-        }
-
-        .customer-view-modern[dir="rtl"] .meta-list li,
-        .customer-view-modern[dir="rtl"] .module-stat-row,
-        .customer-view-modern[dir="rtl"] .module-list li {
-            flex-direction: row-reverse;
-        }
-
         .customer-view-modern[dir="rtl"] .search-wrap {
             justify-content: flex-start;
         }
 
         .customer-view-modern[dir="rtl"] .search-form {
             justify-content: flex-start;
+        }
+
+        .customer-view-modern[dir="rtl"] .search-form .input-group {
+            direction: rtl;
+        }
+
+        .customer-view-modern[dir="rtl"] .search-form .input-group .form-control {
+            text-align: right;
         }
 
         @media (max-width: 1199px) {
@@ -382,7 +430,7 @@
 
 @section('content')
     @php
-        $direction = session('direction') === 'rtl' ? 'rtl' : 'ltr';
+        $direction = get_direction();
         $crmSearchSeed = $customer['email'] ?: ($customer['phone'] ?: (string)$customer['id']);
         $crmDealSearchSeed = $customer['phone'] ?: ($customer['email'] ?: (string)$customer['id']);
         $crmViewAllUrl = route('admin.crm.index', ['searchValue' => $crmSearchSeed, 'status' => 'all']);
@@ -401,7 +449,7 @@
                     {{ translate('customer_details') }}
                 </h2>
                 <a href="{{ route('admin.customer.list') }}" class="btn btn-outline--primary btn-sm">
-                    <i class="tio-arrow-backward"></i> {{ translate('back') }}
+                    <i class="{{ $direction === 'rtl' ? 'tio-arrow-forward' : 'tio-arrow-backward' }}"></i> {{ translate('back') }}
                 </a>
             </div>
 
@@ -411,24 +459,39 @@
                          alt="{{ translate('image') }}"
                          class="avatar">
 
-                    <div class="flex-grow-1 min-w-0">
+                    <div class="profile-body">
                         <h4 class="profile-title line--limit-1" title="{{ $customer['f_name'].' '.$customer['l_name'] }}">
                             {{ $customer['f_name'].' '.$customer['l_name'] }}
                         </h4>
-                        <p class="profile-subtitle">{{ translate('customer') }} #{{ $customer['id'] }}</p>
+                        <p class="profile-subtitle">
+                            <span>{{ translate('customer') }}</span>
+                            <span class="bidi-ltr">#{{ $customer['id'] }}</span>
+                        </p>
 
                         <div class="kv">
                             <div class="kv-row">
                                 <span class="kv-key">{{ translate('contact') }}</span>
-                                <strong>{{ $customer['phone'] ?: translate('no_data_found') }}</strong>
+                                <strong class="kv-value">
+                                    @if($customer['phone'])
+                                        <span class="bidi-ltr">{{ $customer['phone'] }}</span>
+                                    @else
+                                        {{ translate('no_data_found') }}
+                                    @endif
+                                </strong>
                             </div>
                             <div class="kv-row">
                                 <span class="kv-key">{{ translate('email') }}</span>
-                                <strong class="line--limit-1">{{ $customer['email'] ?: translate('no_data_found') }}</strong>
+                                <strong class="kv-value line--limit-1">
+                                    @if($customer['email'])
+                                        <span class="bidi-ltr">{{ $customer['email'] }}</span>
+                                    @else
+                                        {{ translate('no_data_found') }}
+                                    @endif
+                                </strong>
                             </div>
                             <div class="kv-row">
                                 <span class="kv-key">{{ translate('joined_date') }}</span>
-                                <strong>{{ date('d M Y', strtotime($customer['created_at'])) }}</strong>
+                                <strong class="kv-value"><span class="bidi-ltr">{{ date('d M Y', strtotime($customer['created_at'])) }}</span></strong>
                             </div>
                         </div>
                     </div>
@@ -502,12 +565,35 @@
                     <div class="address-grid">
                         @foreach($customer->addresses as $address)
                             <div class="address-card">
-                                <h6>{{ $address['address_type'].' ( '.translate($address['is_billing'] == 0 ? 'shipping_address': 'billing_address').' )' }}</h6>
-                                <div><strong>{{ translate('name') }}:</strong> {{ $address['contact_person_name'] ?: translate('no_data_found') }}</div>
-                                <div><strong>{{ translate('phone') }}:</strong> {{ $address['phone'] ?: translate('no_data_found') }}</div>
-                                <div><strong>{{ translate('city') }}:</strong> {{ $address['city'] ?: translate('no_data_found') }}</div>
-                                <div><strong>{{ translate('area') }}:</strong> {{ $address['area'] ?: ($address['state'] ?: translate('no_data_found')) }}</div>
-                                <div><strong>{{ translate('address') }}:</strong> {{ $address['address'] ?: translate('no_data_found') }}</div>
+                                <h6>{{ translate($address['address_type']).' ( '.translate($address['is_billing'] == 0 ? 'shipping_address': 'billing_address').' )' }}</h6>
+                                <div class="field-list">
+                                    <div class="field-row">
+                                        <strong class="field-label">{{ translate('name') }}:</strong>
+                                        <span class="field-value">{{ $address['contact_person_name'] ?: translate('no_data_found') }}</span>
+                                    </div>
+                                    <div class="field-row">
+                                        <strong class="field-label">{{ translate('phone') }}:</strong>
+                                        <span class="field-value">
+                                            @if($address['phone'])
+                                                <span class="bidi-ltr">{{ $address['phone'] }}</span>
+                                            @else
+                                                {{ translate('no_data_found') }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                    <div class="field-row">
+                                        <strong class="field-label">{{ translate('city') }}:</strong>
+                                        <span class="field-value">{{ $address['city'] ?: translate('no_data_found') }}</span>
+                                    </div>
+                                    <div class="field-row">
+                                        <strong class="field-label">{{ translate('area') }}:</strong>
+                                        <span class="field-value">{{ $address['area'] ?: ($address['state'] ?: translate('no_data_found')) }}</span>
+                                    </div>
+                                    <div class="field-row">
+                                        <strong class="field-label">{{ translate('address') }}:</strong>
+                                        <span class="field-value">{{ $address['address'] ?: translate('no_data_found') }}</span>
+                                    </div>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -552,12 +638,14 @@
                             @foreach($integrationData['crm']['recent_deals'] as $deal)
                                 <li>
                                     <a class="line--limit-1" href="{{ route('admin.crm.deals.retail.view', $deal->id) }}">
-                                        #{{ $deal->id }}
+                                        <span class="bidi-ltr">#{{ $deal->id }}</span>
                                         <small class="muted d-block">
-                                            {{ $deal->updated_at ? $deal->updated_at->format('d M Y, h:i A') : '' }}
+                                            @if($deal->updated_at)
+                                                <span class="bidi-ltr">{{ $deal->updated_at->format('d M Y, h:i A') }}</span>
+                                            @endif
                                         </small>
                                     </a>
-                                    <span class="badge badge-soft-success">{{ ucfirst(str_replace('_', ' ', (string)$deal->status)) }}</span>
+                                    <span class="badge badge-soft-success">{{ translate((string) $deal->status) }}</span>
                                 </li>
                             @endforeach
                         @else
@@ -593,7 +681,7 @@
                         @forelse($integrationData['warranty']['recent_claims'] as $claim)
                             <li>
                                 <a href="{{ route('admin.warranty.claim.view', $claim->id) }}">
-                                    {{ $claim->claim_number ?: ('#'.$claim->id) }}
+                                    <span class="bidi-ltr">{{ $claim->claim_number ?: ('#'.$claim->id) }}</span>
                                 </a>
                                 <span class="badge badge-soft-warning">{{ translate($claim->status) }}</span>
                             </li>
@@ -630,9 +718,13 @@
                         @forelse($integrationData['calls']['recent_calls'] as $call)
                             <li>
                                 <span class="line--limit-1">
-                                    {{ $call->call_id ?: ('#'.$call->id) }}
+                                    <span class="bidi-ltr">{{ $call->call_id ?: ('#'.$call->id) }}</span>
                                     <small class="muted d-block">
-                                        {{ $call->call_date ? $call->call_date->format('d M Y, h:i A') : translate('no_data_found') }}
+                                        @if($call->call_date)
+                                            <span class="bidi-ltr">{{ $call->call_date->format('d M Y, h:i A') }}</span>
+                                        @else
+                                            {{ translate('no_data_found') }}
+                                        @endif
                                     </small>
                                 </span>
                                 <span class="badge badge-soft-success">{{ translate($call->status) }}</span>
@@ -661,7 +753,7 @@
                                 </div>
                                 <input type="search"
                                        name="searchValue"
-                                       class="form-control"
+                                       class="form-control {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}"
                                        placeholder="{{ translate('search_by_order_id_customer_phone_or_email') }}"
                                        aria-label="{{ translate('search_orders') }}"
                                        value="{{ $searchValue }}">
@@ -698,7 +790,7 @@
                                 <td>
                                     <a href="{{ route('admin.orders.details', ['id' => $order['id']]) }}"
                                        class="title-color hover-c1">
-                                        {{ $order['id'] }}
+                                        <span class="bidi-ltr">{{ $order['id'] }}</span>
                                     </a>
                                 </td>
                                 <td>
