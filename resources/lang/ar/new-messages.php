@@ -12638,4 +12638,9 @@ return [
 	"coverage_area" => "نطاق التغطية",
 	"Enter_coverage_area" => "أدخل نطاق التغطية",
 	"Example_authorized_dealer_service_partner_or_regional_partner" => "مثال: وكيل معتمد أو شريك خدمة أو شريك إقليمي.",
+	"card_label" => "عنوان التذييل",
+	"Enter_card_label" => "أدخل عنوان التذييل",
+	"card_note" => "ملاحظة التذييل",
+	"Enter_card_note" => "أدخل ملاحظة التذييل",
+	"Use_this_for_the_highlighted_footer_note_on_the_product_card" => "استخدم هذا للنص المميز في تذييل بطاقة المنتج.",
 ];

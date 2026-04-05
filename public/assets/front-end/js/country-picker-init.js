@@ -2,9 +2,6 @@
 
 function initializePhoneInput(selector, outputSelector) {
     const phoneInput = document.querySelector(selector);
-    if (!phoneInput) {
-        return;
-    }
     const phoneNumber = phoneInput.value;
     const countryCodeMatch = phoneNumber.replace(/[^0-9]/g, "");
     const initialCountry = countryCodeMatch
@@ -54,24 +51,10 @@ function initializePhoneInput(selector, outputSelector) {
         }
     });
 
-    $(selector).attr({
-        type: "tel",
-        inputmode: "tel",
-        autocomplete: "tel-national",
-    });
-
-    $(selector).on("keypress", function (event) {
-        if (
-            event.which &&
-            event.which !== 0 &&
-            event.which !== 8 &&
-            (event.which < 48 || event.which > 57)
-        ) {
+    $(selector).on("keyup keypress change", function (event) {
+        if (event.which < 48 || event.which > 57) {
             event.preventDefault();
         }
-    });
-
-    $(selector).on("input change", function () {
         $(outputSelector).val(
             "+" +
                 phoneInputInit.selectedCountryData.dialCode +

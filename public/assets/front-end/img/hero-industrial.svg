@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="bg2" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#0c1a2e"/>
+      <stop offset="40%" stop-color="#080f1e"/>
+      <stop offset="100%" stop-color="#050910"/>
+    </linearGradient>
+
+    <!-- Industrial surface gradient -->
+    <linearGradient id="indSurface" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a2636"/>
+      <stop offset="100%" stop-color="#0f1822"/>
+    </linearGradient>
+
+    <!-- Metal panel gradient -->
+    <linearGradient id="metalPanel" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#2d3a4a"/>
+      <stop offset="30%" stop-color="#222f3e"/>
+      <stop offset="70%" stop-color="#1c2836"/>
+      <stop offset="100%" stop-color="#162030"/>
+    </linearGradient>
+
+    <!-- Highlight panel -->
+    <linearGradient id="panelHighlight" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#fff" stop-opacity="0.03"/>
+      <stop offset="60%" stop-color="#fff" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Teal ambient -->
+    <radialGradient id="tealAmbient2" cx="0.5" cy="0.6" r="0.45">
+      <stop offset="0%" stop-color="#239e92" stop-opacity="0.1"/>
+      <stop offset="60%" stop-color="#239e92" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#239e92" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Top teal glow -->
+    <radialGradient id="topGlow" cx="0.5" cy="0" r="0.6">
+      <stop offset="0%" stop-color="#239e92" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#239e92" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Perspective grid -->
+    <linearGradient id="gridFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Copper line -->
+    <linearGradient id="copperLine2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c87941" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#c87941" stop-opacity="0.35"/>
+      <stop offset="75%" stop-color="#c87941" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#c87941" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Cylinder gradient -->
+    <linearGradient id="cylinder" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#141e2c"/>
+      <stop offset="30%" stop-color="#1e2a38"/>
+      <stop offset="50%" stop-color="#243242"/>
+      <stop offset="70%" stop-color="#1e2a38"/>
+      <stop offset="100%" stop-color="#141e2c"/>
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12"/>
+    </filter>
+
+    <!-- Subtle noise texture -->
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend in="SourceGraphic" mode="multiply" result="blend"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.03"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#bg2)"/>
+
+  <!-- Teal ambient atmosphere -->
+  <ellipse cx="960" cy="650" rx="900" ry="500" fill="url(#tealAmbient2)"/>
+  <ellipse cx="960" cy="0" rx="1200" ry="400" fill="url(#topGlow)"/>
+
+  <!-- ═══ PERSPECTIVE GRID FLOOR ═══ -->
+  <g opacity="0.6">
+    <!-- Horizontal lines (converging to vanishing point) -->
+    <line x1="0" y1="1080" x2="1920" y2="1080" stroke="#fff" stroke-opacity="0.03" stroke-width="0.5"/>
+    <line x1="0" y1="950" x2="1920" y2="950" stroke="#fff" stroke-opacity="0.025" stroke-width="0.5"/>
+    <line x1="0" y1="840" x2="1920" y2="840" stroke="#fff" stroke-opacity="0.02" stroke-width="0.5"/>
+    <line x1="0" y1="750" x2="1920" y2="750" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="0" y1="680" x2="1920" y2="680" stroke="#fff" stroke-opacity="0.01" stroke-width="0.5"/>
+
+    <!-- Vertical perspective lines -->
+    <line x1="0" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="200" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="400" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="600" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="800" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="1120" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="1320" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="1520" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="1720" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+    <line x1="1920" y1="1080" x2="960" y2="400" stroke="#fff" stroke-opacity="0.015" stroke-width="0.5"/>
+  </g>
+
+  <!-- ═══ METAL PANEL (left) ═══ -->
+  <g opacity="0.7">
+    <rect x="100" y="300" width="350" height="480" rx="6" fill="url(#metalPanel)"/>
+    <rect x="100" y="300" width="350" height="480" rx="6" fill="url(#panelHighlight)"/>
+    <!-- Panel edge highlight -->
+    <line x1="100" y1="306" x2="450" y2="306" stroke="#fff" stroke-opacity="0.06" stroke-width="0.5"/>
+    <!-- Panel content lines -->
+    <rect x="130" y="340" width="120" height="6" rx="2" fill="#fff" fill-opacity="0.08"/>
+    <rect x="130" y="358" width="200" height="3" rx="1.5" fill="#fff" fill-opacity="0.04"/>
+    <rect x="130" y="370" width="160" height="3" rx="1.5" fill="#fff" fill-opacity="0.04"/>
+    <!-- Status indicator dots -->
+    <circle cx="140" cy="420" r="4" fill="#239e92" fill-opacity="0.4"/>
+    <circle cx="160" cy="420" r="4" fill="#fff" fill-opacity="0.06"/>
+    <circle cx="180" cy="420" r="4" fill="#fff" fill-opacity="0.06"/>
+    <!-- Data readout lines -->
+    <rect x="130" y="460" width="290" height="2" rx="1" fill="#239e92" fill-opacity="0.08"/>
+    <rect x="130" y="480" width="240" height="2" rx="1" fill="#fff" fill-opacity="0.04"/>
+    <rect x="130" y="498" width="200" height="2" rx="1" fill="#fff" fill-opacity="0.04"/>
+    <rect x="130" y="516" width="260" height="2" rx="1" fill="#fff" fill-opacity="0.04"/>
+    <rect x="130" y="534" width="180" height="2" rx="1" fill="#fff" fill-opacity="0.04"/>
+    <!-- Bottom bar -->
+    <rect x="130" y="700" width="290" height="40" rx="4" fill="#0f1822" fill-opacity="0.4"/>
+    <rect x="145" y="715" width="80" height="8" rx="2" fill="#239e92" fill-opacity="0.15"/>
+  </g>
+
+  <!-- ═══ METAL PANEL (right) ═══ -->
+  <g opacity="0.5">
+    <rect x="1500" y="250" width="300" height="550" rx="6" fill="url(#metalPanel)"/>
+    <rect x="1500" y="250" width="300" height="550" rx="6" fill="url(#panelHighlight)"/>
+    <line x1="1500" y1="256" x2="1800" y2="256" stroke="#fff" stroke-opacity="0.05" stroke-width="0.5"/>
+    <!-- Gauge circles -->
+    <circle cx="1600" cy="380" r="50" fill="none" stroke="#fff" stroke-opacity="0.04" stroke-width="1"/>
+    <circle cx="1600" cy="380" r="35" fill="none" stroke="#239e92" stroke-opacity="0.08" stroke-width="0.5"/>
+    <circle cx="1700" cy="380" r="50" fill="none" stroke="#fff" stroke-opacity="0.04" stroke-width="1"/>
+    <circle cx="1700" cy="380" r="35" fill="none" stroke="#239e92" stroke-opacity="0.08" stroke-width="0.5"/>
+    <!-- Gauge needles -->
+    <line x1="1600" y1="380" x2="1625" y2="355" stroke="#c87941" stroke-opacity="0.3" stroke-width="1" stroke-linecap="round"/>
+    <line x1="1700" y1="380" x2="1680" y2="350" stroke="#c87941" stroke-opacity="0.3" stroke-width="1" stroke-linecap="round"/>
+    <!-- Data lines -->
+    <rect x="1530" y="470" width="240" height="2" rx="1" fill="#fff" fill-opacity="0.04"/>
+    <rect x="1530" y="488" width="180" height="2" rx="1" fill="#fff" fill-opacity="0.04"/>
+    <rect x="1530" y="506" width="220" height="2" rx="1" fill="#fff" fill-opacity="0.04"/>
+  </g>
+
+  <!-- ═══ CYLINDRICAL ELEMENTS ═══ -->
+  <g opacity="0.4">
+    <!-- Large cylinder -->
+    <rect x="680" y="380" width="120" height="300" rx="4" fill="url(#cylinder)"/>
+    <ellipse cx="740" cy="380" rx="60" ry="12" fill="#243242"/>
+    <ellipse cx="740" cy="380" rx="60" ry="12" fill="none" stroke="#239e92" stroke-opacity="0.12" stroke-width="0.5"/>
+    <rect x="680" y="380" width="120" height="300" rx="4" fill="none" stroke="#239e92" stroke-opacity="0.06" stroke-width="0.5"/>
+
+    <!-- Small cylinder -->
+    <rect x="860" y="480" width="60" height="180" rx="3" fill="url(#cylinder)"/>
+    <ellipse cx="890" cy="480" rx="30" ry="7" fill="#243242"/>
+    <ellipse cx="890" cy="480" rx="30" ry="7" fill="none" stroke="#239e92" stroke-opacity="0.1" stroke-width="0.5"/>
+  </g>
+
+  <!-- ═══ FLOATING GEOMETRIC ACCENTS ═══ -->
+  <!-- Diamond -->
+  <g opacity="0.12">
+    <rect x="540" y="200" width="40" height="40" rx="2" fill="none" stroke="#239e92" stroke-width="0.8" transform="rotate(45 560 220)"/>
+  </g>
+  <!-- Small square -->
+  <rect x="1200" y="150" width="20" height="20" rx="1" fill="none" stroke="#c87941" stroke-opacity="0.15" stroke-width="0.5"/>
+  <!-- Circle -->
+  <circle cx="1380" cy="200" r="15" fill="none" stroke="#239e92" stroke-opacity="0.1" stroke-width="0.5"/>
+
+  <!-- ═══ COPPER ACCENT ═══ -->
+  <rect x="470" y="120" width="1" height="840" fill="url(#copperLine2)"/>
+
+  <!-- ═══ HORIZONTAL ACCENT LINES ═══ -->
+  <line x1="200" y1="240" x2="700" y2="240" stroke="#239e92" stroke-opacity="0.04" stroke-width="0.5"/>
+  <line x1="1200" y1="850" x2="1800" y2="850" stroke="#239e92" stroke-opacity="0.03" stroke-width="0.5"/>
+
+  <!-- ═══ SMALL PARTICLES ═══ -->
+  <circle cx="300" cy="180" r="1.5" fill="#239e92" fill-opacity="0.12"/>
+  <circle cx="620" cy="120" r="1" fill="#fff" fill-opacity="0.08"/>
+  <circle cx="1100" cy="200" r="1.5" fill="#c87941" fill-opacity="0.1"/>
+  <circle cx="1300" cy="900" r="1" fill="#239e92" fill-opacity="0.08"/>
+  <circle cx="500" cy="920" r="2" fill="#fff" fill-opacity="0.05"/>
+  <circle cx="1700" cy="150" r="1" fill="#239e92" fill-opacity="0.1"/>
+  <circle cx="400" cy="700" r="1.5" fill="#c87941" fill-opacity="0.08"/>
+
+  <!-- Teal glow underneath elements -->
+  <ellipse cx="740" cy="700" rx="200" ry="80" fill="#239e92" fill-opacity="0.03" filter="url(#softGlow)"/>
+
+  <!-- Vignette -->
+  <rect width="1920" height="1080" fill="url(#bg2)" opacity="0.1"/>
+</svg>

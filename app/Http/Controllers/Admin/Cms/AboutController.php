@@ -179,6 +179,8 @@ class AboutController extends Controller
             'subheading' => 'sanitizePlainTextArray',
             'title' => 'sanitizePlainTextArray',
             'label' => 'sanitizePlainTextArray',
+            'card_label' => 'sanitizePlainTextArray',
+            'card_note' => 'sanitizePlainTextArray',
             'content' => 'sanitizeRichTextArray',
             'description' => 'sanitizeRichTextArray',
             'dealer_name' => 'sanitizePlainTextArray',
@@ -289,6 +291,8 @@ class AboutController extends Controller
             'subheading' => 'sanitizePlainTextArray',
             'title' => 'sanitizePlainTextArray',
             'label' => 'sanitizePlainTextArray',
+            'card_label' => 'sanitizePlainTextArray',
+            'card_note' => 'sanitizePlainTextArray',
             'content' => 'sanitizeRichTextArray',
             'description' => 'sanitizeRichTextArray',
             'dealer_name' => 'sanitizePlainTextArray',
@@ -323,7 +327,7 @@ class AboutController extends Controller
 
         $defaultLangIndex = getDefaultLanguageIndex($request);
 
-        $data = $request->except('_token', '_method', 'lang', 'heading', 'subheading', 'title', 'content', 'description', 'section');
+        $data = $request->except('_token', '_method', 'lang', 'heading', 'subheading', 'title', 'label', 'card_label', 'card_note', 'content', 'description', 'section');
 
         if ($defaultLangIndex !== false) {
             if ($request->has('heading')) {
@@ -337,6 +341,12 @@ class AboutController extends Controller
             }
             if ($request->has('label')) {
                 $data['label'] = $request->input('label')[$defaultLangIndex];
+            }
+            if ($request->has('card_label')) {
+                $data['card_label'] = $request->input('card_label')[$defaultLangIndex];
+            }
+            if ($request->has('card_note')) {
+                $data['card_note'] = $request->input('card_note')[$defaultLangIndex];
             }
             if ($request->has('content')) {
                 $data['content'] = $request->input('content')[$defaultLangIndex];

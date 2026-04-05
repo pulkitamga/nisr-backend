@@ -13,6 +13,6 @@ return [
         'model_placeholder', 'year_placeholder', 'apply_button_text',
         // New models added for multilanguage support
         'duration', 'vacation_note', 'tag', 'country', 'message', 'status',
-        'label', 'partner_type', 'coverage_area',
+        'label', 'partner_type', 'coverage_area', 'card_label', 'card_note',
     ],
 ];

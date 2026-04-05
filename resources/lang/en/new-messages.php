@@ -13135,4 +13135,9 @@ return [
 	"coverage_area" => "Coverage area",
 	"Enter_coverage_area" => "Enter coverage area",
 	"Example_authorized_dealer_service_partner_or_regional_partner" => "Example: authorized dealer, service partner, or regional partner.",
+	"card_label" => "Card label",
+	"Enter_card_label" => "Enter card label",
+	"card_note" => "Card note",
+	"Enter_card_note" => "Enter card note",
+	"Use_this_for_the_highlighted_footer_note_on_the_product_card" => "Use this for the highlighted footer note on the product card.",
 ];

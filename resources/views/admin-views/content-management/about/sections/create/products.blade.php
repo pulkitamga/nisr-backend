@@ -50,6 +50,19 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <textarea name="description[]" rows="5" class="form-control"></textarea>
                     </div>
 
+                    <div class="form-group">
+                        <label>{{ translate('card_label') }} ({{ strtoupper($lang) }})</label>
+                        <input type="text" name="card_label[]" class="form-control"
+                            placeholder="{{ translate('Enter_card_label') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>{{ translate('card_note') }} ({{ strtoupper($lang) }})</label>
+                        <input type="text" name="card_note[]" class="form-control"
+                            placeholder="{{ translate('Enter_card_note') }}">
+                        <small class="text-muted d-block mt-1">{{ translate('Use_this_for_the_highlighted_footer_note_on_the_product_card') }}</small>
+                    </div>
+
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
                 </div>
                 @endforeach

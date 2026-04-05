@@ -57,6 +57,17 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     <textarea name="description[]" rows="5"
                         class="form-control">{{ $lang == $defaultLanguage ? $model->description : ($translations[$lang]['description'] ?? '') }}</textarea>
 
+                    <label class="mt-3">{{ translate('card_label') }} ({{ strtoupper($lang) }})</label>
+                    <input type="text" name="card_label[]" class="form-control"
+                        value="{{ $lang == $defaultLanguage ? ($model->card_label ?? '') : ($translations[$lang]['card_label'] ?? '') }}"
+                        placeholder="{{ translate('Enter_card_label') }}">
+
+                    <label class="mt-3">{{ translate('card_note') }} ({{ strtoupper($lang) }})</label>
+                    <input type="text" name="card_note[]" class="form-control"
+                        value="{{ $lang == $defaultLanguage ? ($model->card_note ?? '') : ($translations[$lang]['card_note'] ?? '') }}"
+                        placeholder="{{ translate('Enter_card_note') }}">
+                    <small class="text-muted d-block mt-1">{{ translate('Use_this_for_the_highlighted_footer_note_on_the_product_card') }}</small>
+
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
                 </div>
                 @endforeach

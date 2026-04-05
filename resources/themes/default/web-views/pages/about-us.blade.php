@@ -638,8 +638,8 @@
                                             {{ getTranslatedValue($product, 'description', $product->description) }}
                                         </p>
                                         <div class="about-product-card__footer">
-                                            <span>{{ translate('Active_solutions') }}</span>
-                                            <strong class="text-primary">{{ translate('Built_for_reliable_growth_and_long_term_partnerships') }}</strong>
+                                            <span>{{ getTranslatedValue($product, 'card_label', $product->card_label ?? '') ?: translate('Active_solutions') }}</span>
+                                            <strong class="text-primary">{{ getTranslatedValue($product, 'card_note', $product->card_note ?? '') ?: translate('Built_for_reliable_growth_and_long_term_partnerships') }}</strong>
                                         </div>
                                     </div>
                                 </article>
