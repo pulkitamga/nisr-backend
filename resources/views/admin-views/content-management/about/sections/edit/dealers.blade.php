@@ -45,8 +45,13 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @foreach($language as $lang)
                 <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                     id="{{ $lang }}-form">
+                    <label>{{ translate('partner_type') }} ({{ strtoupper($lang) }})</label>
+                    <input type="text" name="partner_type[]" class="form-control"
+                        value="{{ $lang == $defaultLanguage ? $model->partner_type : ($translations[$lang]['partner_type'] ?? '') }}">
+                    <small class="text-muted">{{ translate('Example_authorized_dealer_service_partner_or_regional_partner') }}</small>
+
                     <!-- Description -->
-                    <label for="description">{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
+                    <label for="description" class="mt-3">{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                     <textarea name="description[]" rows="5"
                         class="form-control">{{ $lang == $defaultLanguage ? $model->description : ($translations[$lang]['description'] ?? '') }}</textarea>
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
@@ -59,6 +64,9 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                         }})</label>
                     <input type="text" name="location[]" class="form-control"
                         value="{{ $lang == $defaultLanguage ? $model->location : ($translations[$lang]['location'] ?? '')  }}">
+                    <label class="mt-3">{{ translate('coverage_area') }} ({{ strtoupper($lang) }})</label>
+                    <input type="text" name="coverage_area[]" class="form-control"
+                        value="{{ $lang == $defaultLanguage ? $model->coverage_area : ($translations[$lang]['coverage_area'] ?? '')  }}">
                 </div>
                 @endforeach
 

@@ -178,10 +178,13 @@ class AboutController extends Controller
             'heading' => 'sanitizePlainTextArray',
             'subheading' => 'sanitizePlainTextArray',
             'title' => 'sanitizePlainTextArray',
+            'label' => 'sanitizePlainTextArray',
             'content' => 'sanitizeRichTextArray',
             'description' => 'sanitizeRichTextArray',
             'dealer_name' => 'sanitizePlainTextArray',
+            'partner_type' => 'sanitizePlainTextArray',
             'location' => 'sanitizePlainTextArray',
+            'coverage_area' => 'sanitizePlainTextArray',
         ] as $field => $method) {
             if ($request->has($field)) {
                 $sanitizedInput[$field] = CmsContentSanitizer::$method($request->input($field, []));
@@ -285,10 +288,13 @@ class AboutController extends Controller
             'heading' => 'sanitizePlainTextArray',
             'subheading' => 'sanitizePlainTextArray',
             'title' => 'sanitizePlainTextArray',
+            'label' => 'sanitizePlainTextArray',
             'content' => 'sanitizeRichTextArray',
             'description' => 'sanitizeRichTextArray',
             'dealer_name' => 'sanitizePlainTextArray',
+            'partner_type' => 'sanitizePlainTextArray',
             'location' => 'sanitizePlainTextArray',
+            'coverage_area' => 'sanitizePlainTextArray',
         ] as $field => $method) {
             if ($request->has($field)) {
                 $sanitizedInput[$field] = CmsContentSanitizer::$method($request->input($field, []));
@@ -329,6 +335,9 @@ class AboutController extends Controller
             if ($request->has('title')) {
                 $data['title'] = $request->input('title')[$defaultLangIndex];
             }
+            if ($request->has('label')) {
+                $data['label'] = $request->input('label')[$defaultLangIndex];
+            }
             if ($request->has('content')) {
                 $data['content'] = $request->input('content')[$defaultLangIndex];
             }
@@ -338,8 +347,14 @@ class AboutController extends Controller
             if ($request->has('dealer_name')) {
                 $data['dealer_name'] = $request->input('dealer_name')[$defaultLangIndex];
             }
+            if ($request->has('partner_type')) {
+                $data['partner_type'] = $request->input('partner_type')[$defaultLangIndex];
+            }
             if ($request->has('location')) {
                 $data['location'] = $request->input('location')[$defaultLangIndex];
+            }
+            if ($request->has('coverage_area')) {
+                $data['coverage_area'] = $request->input('coverage_area')[$defaultLangIndex];
             }
         }
 

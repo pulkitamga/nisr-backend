@@ -41,6 +41,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <div class="form-group">
+                        <label>{{ translate('milestone_label') }} ({{ strtoupper($lang) }})</label>
+                        <input type="text" name="label[]" class="form-control"
+                            placeholder="{{ translate('Enter_milestone_label') }}">
+                        <small class="text-muted">{{ translate('Use_a_short_label_like_launch_growth_or_expansion') }}</small>
+                    </div>
+
+                    <div class="form-group">
                         <label>{{ translate('title') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="title[]" class="form-control"
                             placeholder="{{ translate('Enter Title') }}">
@@ -119,4 +126,3 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
 
 @endsection
-

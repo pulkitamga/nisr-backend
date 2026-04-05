@@ -40,6 +40,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <div class="form-group">
+                        <label>{{ translate('partner_type') }} ({{ strtoupper($lang) }})</label>
+                        <input type="text" name="partner_type[]" class="form-control"
+                            placeholder="{{ translate('Enter_partner_type') }}">
+                        <small class="text-muted">{{ translate('Example_authorized_dealer_service_partner_or_regional_partner') }}</small>
+                    </div>
+
+                    <div class="form-group">
                         <label>{{ translate('dealer_name') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="dealer_name[]" class="form-control"
                             placeholder="{{ translate('Enter Dealer Name') }}">
@@ -49,6 +56,12 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <label>{{ translate('location') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="location[]" class="form-control"
                             placeholder="{{ translate('Enter Location') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>{{ translate('coverage_area') }} ({{ strtoupper($lang) }})</label>
+                        <input type="text" name="coverage_area[]" class="form-control"
+                            placeholder="{{ translate('Enter_coverage_area') }}">
                     </div>
 
                     <div class="form-group">

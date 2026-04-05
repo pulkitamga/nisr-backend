@@ -49,8 +49,13 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @foreach($language as $lang)
                 <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                     id="{{ $lang }}-form">
+                    <label>{{ translate('milestone_label') }} ({{ strtoupper($lang) }})</label>
+                    <input type="text" name="label[]" class="form-control"
+                        value="{{ $lang == $defaultLanguage ? $model->label : ($translations[$lang]['label'] ?? '') }}">
+                    <small class="text-muted">{{ translate('Use_a_short_label_like_launch_growth_or_expansion') }}</small>
+
                     <!-- Title -->
-                    <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
+                    <label class="mt-3">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="title[]" class="form-control"
                         value="{{ $lang == $defaultLanguage ? $model->title : ($translations[$lang]['title'] ?? '') }}">
 
@@ -143,4 +148,3 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 </script>
 
 @endpush
-

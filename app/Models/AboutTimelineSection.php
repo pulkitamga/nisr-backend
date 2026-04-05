@@ -13,7 +13,7 @@ class AboutTimelineSection extends Model
 
     protected $table = 'about_timeline_sections';
 
-    protected $fillable = ['year', 'title', 'description', 'image'];
+    protected $fillable = ['year', 'label', 'title', 'description', 'image'];
 
     public function getImageUrlAttribute()
     {

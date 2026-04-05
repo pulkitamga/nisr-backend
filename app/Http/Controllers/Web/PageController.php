@@ -114,7 +114,19 @@ class PageController extends Controller
         $query = Branch::with('translations')->where('id', '!=', 1);
 
         if ($request->filled('search')) {
-            $query->where('branch_name', 'like', '%' . $request->search . '%');
+            $searchTerms = preg_split('/\s+/', trim((string)$request->search));
+            $query->where(function ($query) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $query->orWhere('branch_name', 'like', "%{$term}%")
+                        ->orWhere('branch_address', 'like', "%{$term}%")
+                        ->orWhere('branch_state', 'like', "%{$term}%")
+                        ->orWhere('phone', 'like', "%{$term}%")
+                        ->orWhereHas('translations', function ($translationQuery) use ($term) {
+                            $translationQuery->whereIn('key', ['branch_name', 'branch_address'])
+                                ->where('value', 'like', "%{$term}%");
+                        });
+                }
+            });
         }
 
         $branchesTable = $query->paginate(10);

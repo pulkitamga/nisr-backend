@@ -1524,30 +1524,30 @@ class WebController extends Controller
     {
         $recaptcha = getWebConfig(name: 'recaptcha');
         if (isset($recaptcha) && $recaptcha['status'] == 1) {
-
-            try {
-                $request->validate([
-                    'g-recaptcha-response' => [
-                        function ($attribute, $value, $fail) {
+            $request->validate([
+                'g-recaptcha-response' => [
+                    function ($attribute, $value, $fail) {
+                        try {
                             $secret_key = getWebConfig(name: 'recaptcha')['secret_key'];
-                            $response = $value;
-                            $url = 'https://www.google.com/recaptcha/api/siteverify?secret=' . $secret_key . '&response=' . $response;
+                            $url = 'https://www.google.com/recaptcha/api/siteverify?secret=' . $secret_key . '&response=' . $value;
                             $response = \file_get_contents($url);
-                            $response = json_decode($response);
-                            if (!$response->success) {
+                            $decodedResponse = json_decode($response);
+
+                            if (!$decodedResponse || empty($decodedResponse->success)) {
                                 $fail(translate('ReCAPTCHA Failed'));
                             }
-                        },
-                    ],
-                ]);
-            } catch (\Exception $exception) {
-                return back()->withErrors(translate('Captcha Failed'))->withInput($request->input());
-            }
+                        } catch (\Throwable $exception) {
+                            $fail(translate('Captcha Failed'));
+                        }
+                    },
+                ],
+            ]);
         } else {
             if (strtolower($request->default_captcha_value) != strtolower(Session('default_captcha_code'))) {
                 Session::forget('default_captcha_code');
-                Toastr::error(translate('captcha_failed'));
-                return back()->withInput($request->input());
+                return back()
+                    ->withErrors(['default_captcha_value' => translate('captcha_failed')])
+                    ->withInput($request->input());
             }
         }
 

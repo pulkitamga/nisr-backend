@@ -12,7 +12,7 @@ class AboutDealerSection extends Model
 
     protected $table = 'about_dealer_sections';
 
-    protected $fillable = ['dealer_name', 'location', 'description', 'image'];
+    protected $fillable = ['dealer_name', 'partner_type', 'location', 'coverage_area', 'description', 'image'];
 
     public function getImageUrlAttribute()
     {
