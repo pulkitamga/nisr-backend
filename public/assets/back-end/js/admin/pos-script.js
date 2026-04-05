@@ -135,6 +135,64 @@ function syncExchangeQuantityState() {
     exchangeQtyInput.prop("disabled", !exchangeEnabled || !canUseExchange);
     exchangeMinusBtn.prop("disabled", !exchangeEnabled || exchangeQty <= 1);
     exchangePlusBtn.prop("disabled", !exchangeEnabled || exchangeQty >= maxExchangeQty);
+    updateQuickViewChargePreview();
+}
+
+function getQuickViewCurrencyConfig() {
+    const config = $("#add-to-cart-form .quick-view-currency-config").first();
+
+    return {
+        position: (config.data("currency-position") || "left").toString().toLowerCase(),
+        symbol: (config.data("currency-symbol") || "").toString(),
+    };
+}
+
+function formatQuickViewCurrency(amount) {
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount)) {
+        return "";
+    }
+
+    const { position, symbol } = getQuickViewCurrencyConfig();
+    const formattedAmount = numericAmount.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    if (!symbol) {
+        return formattedAmount;
+    }
+
+    return position === "left"
+        ? `${symbol} ${formattedAmount}`
+        : `${formattedAmount} ${symbol}`;
+}
+
+function getQuickViewBaseAmount() {
+    const form = $("#add-to-cart-form");
+    const value = Number(form.data("base-amount"));
+
+    return Number.isFinite(value) ? value : 0;
+}
+
+function updateQuickViewChargePreview() {
+    const form = $("#add-to-cart-form");
+    if (!form.length) {
+        return;
+    }
+
+    const baseAmount = getQuickViewBaseAmount();
+    const installationEnabled = $("#installation-charge-checkbox").is(":checked");
+    const installationCharge = installationEnabled
+        ? Number($("#installation-charge-checkbox").data("price") || 0)
+        : 0;
+    const exchangeEnabled = $("#exchange-charge-checkbox").is(":checked");
+    const exchangeUnitCharge = Number($("#exchange-quantity").data("price") || 0);
+    const exchangeQuantity = exchangeEnabled ? parsePosInt($("#exchange-quantity").val(), 0) : 0;
+    const exchangeCharge = exchangeEnabled ? exchangeUnitCharge * exchangeQuantity : 0;
+    const totalAmount = Math.max(0, baseAmount + installationCharge - exchangeCharge);
+
+    form.find(".product-details-chosen-price-amount").html(formatQuickViewCurrency(totalAmount));
 }
 
 document.addEventListener("keydown", function (event) {
@@ -362,6 +420,9 @@ function renderSelectProduct() {
     $("#exchange-charge-checkbox").off("change").on("change", function () {
         syncExchangeQuantityState();
     });
+    $("#installation-charge-checkbox").off("change").on("change", function () {
+        updateQuickViewChargePreview();
+    });
     $("#exchange-quantity").off("input change").on("input change", function () {
         syncExchangeQuantityState();
     });
@@ -392,6 +453,7 @@ function renderSelectProduct() {
 
     syncExchangeQuantityState();
     syncVisibleQtyMinusButtonState();
+    updateQuickViewChargePreview();
 }
 
 renderSelectProduct();
@@ -1121,7 +1183,8 @@ function getVariantForAlreadyInCart(event = null) {
 
 function checkAddToCartValidity() {
     var names = {};
-    $("#add-to-cart-form input:radio").each(function () {
+    const radioInputs = $("#add-to-cart-form input:radio");
+    radioInputs.each(function () {
         names[$(this).attr("name")] = true;
     });
     var count = 0;
@@ -1129,10 +1192,7 @@ function checkAddToCartValidity() {
         count++;
     });
 
-    if ($("input:radio:checked").length - 1 == count) {
-        return true;
-    }
-    return false;
+    return radioInputs.filter(":checked").length === count;
 }
 
 function cartQuantityInitialize() {
@@ -1218,6 +1278,7 @@ function cartQuantityInitialize() {
 function updateProductDetailsTopSection(response) {
     let formSelector = ".add-to-cart-details-form";
     $(formSelector).find(".discounted-unit-price").html(response?.discounted_unit_price);
+    $(formSelector).data("base-amount", Number(response?.price_value || 0));
     $(formSelector).find(".product-details-chosen-price-amount").html(response?.price);
     $(formSelector).find(".product-total-unit-price").html(response?.discount_amount > 0 ? response?.total_unit_price : "");
 
@@ -1231,6 +1292,8 @@ function updateProductDetailsTopSection(response) {
     } else {
         $(formSelector).find(".discounted-badge-element").addClass('d-none');
     }
+
+    updateQuickViewChargePreview();
 }
 
 function getVariantPrice(type = null) {

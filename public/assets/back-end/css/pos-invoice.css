@@ -86,6 +86,16 @@
     width: 363px
 }
 
+.pos-receipt {
+    direction: ltr;
+    text-align: left;
+}
+
+.pos-receipt[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
 .line-height-1 {
     line-height: 1
 }
@@ -106,6 +116,18 @@
     width: 100%;
 }
 
+.receipt-meta-date {
+    text-align: right;
+}
+
+.receipt-cell-start {
+    text-align: left !important;
+}
+
+.receipt-cell-end {
+    text-align: right !important;
+}
+
 [dir="rtl"] .text-left {
     text-align: right !important;
 }
@@ -122,4 +144,16 @@
 [dir="rtl"] .pr--0 {
     padding-left: 0 !important;
     padding-right: initial !important;
+}
+
+[dir="rtl"] .receipt-meta-date {
+    text-align: left;
+}
+
+[dir="rtl"] .receipt-cell-start {
+    text-align: right !important;
+}
+
+[dir="rtl"] .receipt-cell-end {
+    text-align: left !important;
 }

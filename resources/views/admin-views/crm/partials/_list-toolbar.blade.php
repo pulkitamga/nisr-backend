@@ -27,12 +27,19 @@
                         $attributes = $field['attributes'] ?? [];
                         $options = $field['options'] ?? [];
                     @endphp
-                    <div class="{{ $colClass }}">
+                    @php($wrapperAttributes = $field['wrapper_attributes'] ?? [])
+                    <div class="{{ $colClass }}"
+                        @foreach($wrapperAttributes as $attribute => $attributeValue)
+                            {{ $attribute }}="{{ $attributeValue }}"
+                        @endforeach
+                    >
                         @if($label)
                             <label class="form-label">{{ $label }}</label>
                         @endif
 
-                        @if($type === 'daterange')
+                        @if($type === 'html')
+                            {!! $field['html'] ?? '' !!}
+                        @elseif($type === 'daterange')
                             <div class="position-relative">
                                 <span class="tio-calendar icon-absolute-on-right"></span>
                                 <input

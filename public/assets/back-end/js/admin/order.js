@@ -68,8 +68,9 @@ $("#customer_id_value").on('change', function () {
 
 var data_example_url = $('#js-data-example-ajax-url').data('url');
 var characterTriggerLimit = $('#character-trigger-limit').data('limit');
+var customerPlaceholderText = $('#customer_id_value').data('placeholder-default') || '';
 $('.js-data-example-ajax').select2({
-    data: [{ id: '', text: 'Select your option', disabled: true, selected: true }],
+    data: [{ id: '', text: customerPlaceholderText, disabled: true, selected: true }],
     ajax: {
         url: data_example_url,
         delay: 300, // Reduce excessive requests
@@ -88,7 +89,7 @@ $('.js-data-example-ajax').select2({
     },
     minimumInputLength: characterTriggerLimit, // Apply only when searching
     allowClear: true,
-    placeholder: "Select an option",
+    placeholder: customerPlaceholderText,
     initSelection: function (element, callback) {
         $.ajax({
             url: data_example_url,
@@ -129,10 +130,12 @@ $('.exchange-status-alert').on('click', function () {
     toastr.info($('#exchange-status-alert-message').data('message'));
 })
 
-$(".payment-status").on('click', function (e) {
-    e.preventDefault();
-    let id = $(this).data('id');
-    let value = $(this).val();
+function getOrderText(selector, fallback = '') {
+    return $(selector).data('text') || $(selector).data('message') || $(selector).data('title') || fallback;
+}
+
+function applyPaymentStatus(id, currentStatus) {
+    let value = currentStatus === 'paid' ? 'unpaid' : 'paid';
     Swal.fire({
         title: $("#payment-status-message").data('title'),
         text: $("#payment-status-message").data('message'),
@@ -142,39 +145,42 @@ $(".payment-status").on('click', function (e) {
         confirmButtonText: $("#message-status-confirm-text").data('text'),
         cancelButtonText: $("#message-status-cancel-text").data('text'),
     }).then((result) => {
-        if (value == 'paid') {
-            value = 'unpaid'
-        } else {
-            value = 'paid'
+        if (!result.value) {
+            return;
         }
-        if (result.value) {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+            }
+        });
+        $.ajax({
+            url: $("#payment-status-url").data('url'),
+            method: 'POST',
+            data: {
+                "id": id,
+                "payment_status": value
+            },
+            success: function (data) {
+                if (data.customer_status == 0) {
+                    location.reload();
+                    toastr.warning($("#message-status-warning-text").data('text'));
+                } else if (data.error) {
+                    toastr.warning(data.error);
+                } else {
+                    location.reload();
+                    toastr.success($("#message-status-success-text").data('text'));
                 }
-            });
-            $.ajax({
-                url: $("#payment-status-url").data('url'),
-                method: 'POST',
-                data: {
-                    "id": id,
-                    "payment_status": value
-                },
-                success: function (data) {
-                    if (data.customer_status == 0) {
-                        location.reload();
-                        toastr.warning($("#message-status-warning-text").data('text'));
-                    } else if (data.error) {
-                        toastr.warning(data.error);
-                    }
-                    else {
-                        location.reload();
-                        toastr.success($("#message-status-success-text").data('text'));
-                    }
-                }
-            });
-        }
-    })
+            }
+        });
+    });
+}
+
+$(document).on('click', '.payment-status, .payment-status-action', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id');
+    const currentStatus = $(this).data('status') || $(this).val();
+    applyPaymentStatus(id, currentStatus);
 });
 
 $(".exchange-status").on('click', function (e) {
@@ -199,17 +205,14 @@ $(".exchange-status").on('click', function (e) {
         }
     })
 });
-$("#order_status").on('change', function (e) {
-    const $statusSelect = $(this);
-    const previousStatus = $statusSelect.data('current-status');
-    let value = $statusSelect.val();
+function applyOrderStatus(value, $statusSelect, previousStatus) {
     const $branchSelect = $("#order_delivered_from_branch");
     const requiresDeliveredBranch = ['out_for_delivery', 'delivered'].includes(value);
 
     if (requiresDeliveredBranch && $branchSelect.length && !$branchSelect.val()) {
-        const branchRequiredMessage = $("#message-branch-required-before-delivery-status-text").data('text') || "Branch is required!";
+        const branchRequiredMessage = getOrderText("#message-branch-required-before-delivery-status-text");
         toastr.warning(branchRequiredMessage);
-        if (previousStatus) {
+        if (previousStatus && $statusSelect.length) {
             $statusSelect.val(previousStatus);
         }
         return;
@@ -260,23 +263,37 @@ $("#order_status").on('change', function (e) {
                     location.reload();
                 },
 
-                error: function (xhr, status, error) {
-                    if (previousStatus) {
+                error: function () {
+                    if (previousStatus && $statusSelect.length) {
                         $statusSelect.val(previousStatus);
                     }
-                    toastr.error("Something went wrong!");
+                    toastr.error(getOrderText("#message-order-generic-error-text"));
                 }
             });
-        } else if (previousStatus) {
+        } else if (previousStatus && $statusSelect.length) {
             $statusSelect.val(previousStatus);
         }
     });
+}
+
+$(document).on('click', '[data-order-action="apply-status"]', function () {
+    const $statusSelect = $("#order_status");
+    applyOrderStatus($statusSelect.val(), $statusSelect, $statusSelect.data('current-status'));
 });
 
+$(document).on('click', '[data-order-action="primary-next-status"]', function () {
+    const $statusSelect = $("#order_status");
+    applyOrderStatus($(this).data('status'), $statusSelect, $statusSelect.data('current-status'));
+});
 
-$("#order_delivered_from_branch").on('change', function (e) {
+function applyDeliveredBranch($branchSelect) {
     const orderBranchSelect = document.getElementById('order_delivered_from_branch');
-    let value = $(this).val();
+    let value = $branchSelect.val();
+    if (!value) {
+        toastr.warning(getOrderText("#message-branch-required-before-delivery-status-text"));
+        return;
+    }
+
     Swal.fire({
         title: $("#message-transfer-from-branch-title-text").data('text'),
         text: $("#message-transfer-from-branch-subtitle-text").data('text'),
@@ -296,7 +313,7 @@ $("#order_delivered_from_branch").on('change', function (e) {
                 url: $("#order-transfer-delivery-branch-url").data('url'),
                 method: 'POST',
                 data: {
-                    "id": $(this).data('id'),
+                    "id": $branchSelect.data('id'),
                     "branch_id": value
                 },
                 beforeSend: function () {
@@ -324,6 +341,10 @@ $("#order_delivered_from_branch").on('change', function (e) {
             });
         }
     })
+}
+
+$(document).on('click', '[data-order-action="apply-branch"]', function () {
+    applyDeliveredBranch($("#order_delivered_from_branch"));
 });
 
 $("#choose_delivery_type").on('change', function () {
@@ -342,13 +363,21 @@ $("#choose_delivery_type").on('change', function () {
 
 });
 
-$("#addDeliveryMan").on('change', function () {
-    let id = $(this).val();
+function assignDeliveryMan($deliveryManSelect) {
+    let id = $deliveryManSelect.val();
+    if (!id || id === '0') {
+        toastr.error($("#message-deliveryman-add-invalid-text").data('text'), {
+            CloseButton: true,
+            ProgressBar: true
+        });
+        return;
+    }
+
     $.ajax({
         type: "GET",
         url: $("#add-delivery-man-url").data('url') + id,
         data: {
-            'order_id': $(this).data('order-id'),
+            'order_id': $deliveryManSelect.data('order-id'),
             'delivery_man_id': id
         },
         success: function (data) {
@@ -372,6 +401,10 @@ $("#addDeliveryMan").on('change', function () {
             });
         }
     });
+}
+
+$(document).on('click', '[data-order-action="assign-delivery-man"]', function () {
+    assignDeliveryMan($("#addDeliveryMan"));
 });
 $('input[name=deliveryman_charge]').on('keyup', function (event) {
     if (event.which === 13) {
@@ -388,8 +421,16 @@ $('.deliveryman-charge-alert').on('click', function () {
     toastr.info($('#deliveryman-charge-alert-message').data('message'))
 })
 
-$("#expected_delivery_date").on('change', function () {
-    amountDateUpdate(this);
+$(document).on('click', '[data-order-action="apply-expected-date"]', function () {
+    if (!$("#expected_delivery_date").val()) {
+        toastr.error($("#message-deliveryman-charge-invalid-text").data('text'), {
+            CloseButton: true,
+            ProgressBar: true
+        });
+        return;
+    }
+
+    amountDateUpdate($("#expected_delivery_date"));
 });
 
 function amountDateUpdate(t) {

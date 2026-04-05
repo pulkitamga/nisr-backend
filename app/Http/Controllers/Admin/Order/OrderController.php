@@ -16,6 +16,7 @@ use App\Events\OrderStatusEvent;
 use App\Traits\FileManagerTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use App\Enums\ViewPaths\Admin\Order;
 use Brian2694\Toastr\Facades\Toastr;
@@ -123,7 +124,18 @@ class OrderController extends BaseController
             'seller_is' => $vendorIs,
         ];
 
-        $orders = $this->orderRepo->getListWhere(orderBy: ['id' => 'desc'], searchValue: $request['searchValue'], filters: $filters, relations: ['customer', 'seller.shop'], dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT));
+        $orders = $this->orderRepo->getListWhere(
+            orderBy: ['id' => 'desc'],
+            searchValue: $request['searchValue'],
+            filters: $filters,
+            relations: ['customer', 'seller.shop'],
+            dataLimit: $this->resolveListPerPage($request)
+        );
+
+        if ($orders instanceof LengthAwarePaginator) {
+            $orders->appends($request->query());
+        }
+
         $sellers = $this->vendorRepo->getByStatusExcept(status: 'pending', relations: ['shop']);
 
         $customer = "all";
@@ -153,6 +165,15 @@ class OrderController extends BaseController
             'customerId',
             'dateType',
         ));
+    }
+
+    private function resolveListPerPage(object $request): int
+    {
+        if (isset($request['choose_first']) && (int)$request['choose_first'] > 0) {
+            return (int)$request['choose_first'];
+        }
+
+        return (int)getWebConfig(name: WebConfigKey::PAGINATION_LIMIT);
     }
 
     public function exportList(Request $request, $status): BinaryFileResponse|RedirectResponse
@@ -423,7 +444,7 @@ class OrderController extends BaseController
             if (!$transferBranch) {
                 return response()->json([
                     'success' => 0,
-                    'message' => translate('Branch is required!'),
+                    'message' => translate('branch_is_required!'),
                 ]);
             }
         }
@@ -561,7 +582,7 @@ class OrderController extends BaseController
 
             return response()->json([
                 'success' => 0,
-                'message' => "Order already delivered. Cannot change branch."
+                'message' => translate('order_already_delivered_cannot_change_branch'),
             ]);
         }
         $selectedBranchId = $request->branch_id;
@@ -607,7 +628,7 @@ class OrderController extends BaseController
 
                 return response()->json([
                     'success' => 2,
-                    'message' => "Product out of stock for selected branch",
+                    'message' => translate('product_out_of_stock_for_selected_branch'),
                 ]);
             }
         }
@@ -686,7 +707,7 @@ class OrderController extends BaseController
 
             // Prevent duplicate shipment
             if ($order->third_party_delivery_tracking_id) {
-                Toastr::warning('Bosta shipment already created');
+                Toastr::warning(translate('bosta_shipment_already_created'));
                 return back();
             }
 
@@ -697,14 +718,13 @@ class OrderController extends BaseController
                 $trackingNumber = $bostaResponse['data']['trackingNumber'] ?? null;
 
                 if (!$trackingNumber) {
-                    Toastr::error('Bosta created shipment but tracking number missing');
+                    Toastr::error(translate('bosta_tracking_number_missing'));
                     return back();
                 }
 
                 $updateData['third_party_delivery_tracking_id'] = $trackingNumber;
             } catch (\Exception $e) {
-
-                Toastr::error('Bosta Error: ' . $e->getMessage());
+                Toastr::error(translate('bosta_error') . ': ' . $e->getMessage());
                 return back();
             }
         } else {

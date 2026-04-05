@@ -86,6 +86,9 @@
                     <input type="hidden" name="id" value="{{ $product->id }}">
                     <input type="hidden" name="branch_id" value="{{ (int)($product->selected_branch_id ?? 0) }}">
                     <input type="hidden" name="line_key" id="line-key" value="">
+                    <input type="hidden" class="quick-view-currency-config"
+                        data-currency-position="{{ getWebConfig('currency_symbol_position') }}"
+                        data-currency-symbol="{{ getCurrencySymbol() }}">
                     <div class="variant-change">
                         <div class="position-relative mb-4">
                             <!-- Color Selection -->

@@ -152,6 +152,7 @@ class CartService
 
         return [
             'price' => setCurrencySymbol(amount: usdToDefaultCurrency(amount: $price * $requestQuantity)),
+            'price_value' => usdToDefaultCurrency(amount: $price * $requestQuantity),
             'discount' => usdToDefaultCurrency($discount),
             'discount_amount' => $discount,
             'discount_type' => $discountType,
