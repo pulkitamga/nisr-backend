@@ -1,10 +1,27 @@
 @php
-    $isRtl = $isRtl ?? (app()->getLocale() === 'ar' || session('direction') === 'rtl');
-    $dateRange = ($filters['from'] ?? '-') . ' - ' . ($filters['to'] ?? '-');
+    $isRtl = $isRtl ?? app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+    $fromDate =
+        !empty($filters['from']) && $filters['from'] !== '-'
+            ? \Carbon\Carbon::parse($filters['from'])
+                ->locale(app()->getLocale())
+                ->translatedFormat('d M Y')
+            : '-';
+
+    $toDate =
+        !empty($filters['to']) && $filters['to'] !== '-'
+            ? \Carbon\Carbon::parse($filters['to'])
+                ->locale(app()->getLocale())
+                ->translatedFormat('d M Y')
+            : '-';
+
+    $dateRange = $fromDate . ' - ' . $toDate;
+
     $hasData = isset($pivotData) && count($pivotData) > 0;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('crm_sales_report') }}</title>
@@ -171,6 +188,7 @@
             font-size: 10px;
             page-break-inside: avoid;
         }
+
         tr {
             page-break-inside: avoid;
             page-break-after: auto;
@@ -266,17 +284,21 @@
         @endif
     </style>
 </head>
+
 <body>
 
     <!-- Modern Header with Logo - Green like CRM -->
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('crm_sales_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $filters['from'] ?? '-' }} - {{ $filters['to'] ?? '-' }}</p>
-            @if(!empty($filters['sale_type']) && $filters['sale_type'] != 'all')
+            <p>
+                {{ translate('report_period') }}:
+                {{ $fromDate }} - {{ $toDate }}
+            </p>
+            @if (!empty($filters['sale_type']) && $filters['sale_type'] != 'all')
                 <p style="font-size:10px; margin-top:3px;">{{ translate('sale_type') }}: {{ $filters['sale_type'] }}</p>
             @endif
-            @if(!empty($filters['agent']) && $filters['agent'] != 'all')
+            @if (!empty($filters['agent']) && $filters['agent'] != 'all')
                 <p style="font-size:10px; margin-top:3px;">{{ translate('agent') }}: {{ $filters['agent'] }}</p>
             @endif
         </div>
@@ -284,7 +306,7 @@
             @php
                 $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
             @endphp
-            @if(!empty($logo))
+            @if (!empty($logo))
                 <img src="{{ $logo }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px;">
             @elseif(file_exists($defaultLogoPath))
                 <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
@@ -299,15 +321,21 @@
             <tr>
                 <td>
                     <div class="kpi-label">{{ translate('total_sales') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((float)($statistics['total_sales'] ?? 0), 2) }}</strong></div>
+                    <div class="kpi-value">
+                        <strong>{{ number_format((float) ($statistics['total_sales'] ?? 0), 2) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('retail_sales') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((float)($statistics['retail_sales'] ?? 0), 2) }}</strong></div>
+                    <div class="kpi-value">
+                        <strong>{{ number_format((float) ($statistics['retail_sales'] ?? 0), 2) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('wholesale_sales') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((float)($statistics['wholesale_sales'] ?? 0), 2) }}</strong></div>
+                    <div class="kpi-value">
+                        <strong>{{ number_format((float) ($statistics['wholesale_sales'] ?? 0), 2) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('top_agent') }}</div>
@@ -318,7 +346,7 @@
     </div>
 
     <!-- Chart Row: Sales Trend Chart -->
-    @if(!empty($chartImage))
+    @if (!empty($chartImage))
         <div class="chart-row">
             <div class="chart-full">
                 <div class="chart-col">
@@ -344,31 +372,32 @@
             <tbody>
                 <tr>
                     <td class="text-start">{{ translate('total_sales') }}</td>
-                    <td class="text-end">{{ number_format((float)($statistics['total_sales'] ?? 0), 2) }}</td>
+                    <td class="text-end">{{ number_format((float) ($statistics['total_sales'] ?? 0), 2) }}</td>
                 </tr>
                 <tr>
                     <td class="text-start">{{ translate('retail_sales') }}</td>
-                    <td class="text-end">{{ number_format((float)($statistics['retail_sales'] ?? 0), 2) }}</td>
+                    <td class="text-end">{{ number_format((float) ($statistics['retail_sales'] ?? 0), 2) }}</td>
                 </tr>
                 <tr>
                     <td class="text-start">{{ translate('wholesale_sales') }}</td>
-                    <td class="text-end">{{ number_format((float)($statistics['wholesale_sales'] ?? 0), 2) }}</td>
+                    <td class="text-end">{{ number_format((float) ($statistics['wholesale_sales'] ?? 0), 2) }}</td>
                 </tr>
                 <tr>
                     <td class="text-start">{{ translate('retail_percentage') }}</td>
-                    <td class="text-end">{{ number_format((float)($statistics['retail_percentage'] ?? 0), 1) }}%</td>
+                    <td class="text-end">{{ number_format((float) ($statistics['retail_percentage'] ?? 0), 1) }}%</td>
                 </tr>
                 <tr>
                     <td class="text-start">{{ translate('wholesale_percentage') }}</td>
-                    <td class="text-end">{{ number_format((float)($statistics['wholesale_percentage'] ?? 0), 1) }}%</td>
+                    <td class="text-end">{{ number_format((float) ($statistics['wholesale_percentage'] ?? 0), 1) }}%
+                    </td>
                 </tr>
                 <tr>
                     <td class="text-start">{{ translate('total_orders') }}</td>
-                    <td class="text-end">{{ (int)($statistics['total_orders'] ?? 0) }}</td>
+                    <td class="text-end">{{ (int) ($statistics['total_orders'] ?? 0) }}</td>
                 </tr>
                 <tr>
                     <td class="text-start">{{ translate('total_quantity') }}</td>
-                    <td class="text-end">{{ (int)($statistics['total_quantity'] ?? 0) }}</td>
+                    <td class="text-end">{{ (int) ($statistics['total_quantity'] ?? 0) }}</td>
                 </tr>
                 <tr>
                     <td class="text-start">{{ translate('top_agent') }}</td>
@@ -383,8 +412,8 @@
         <div class="table-header">
             <h3>{{ translate('period_summary') }} ({{ $dateRange }})</h3>
         </div>
-        
-        @if($hasData)
+
+        @if ($hasData)
             <table>
                 <thead>
                     <tr>
@@ -400,20 +429,41 @@
                 </thead>
                 <tbody>
                     @forelse($pivotData as $row)
-                    <tr>
-                        <td class="text-start">{{ data_get($row, 'period', '-') }}</td>
-                        <td class="text-end">{{ number_format((float)data_get($row, 'totals.retail_sales', 0), 2) }}</td>
-                        <td class="text-end">{{ number_format((float)data_get($row, 'totals.wholesale_sales', 0), 2) }}</td>
-                        <td class="text-end">{{ number_format((float)data_get($row, 'totals.total_sales', 0), 2) }}</td>
-                        <td class="text-end">{{ (int)data_get($row, 'totals.retail_orders', 0) }}</td>
-                        <td class="text-end">{{ (int)data_get($row, 'totals.wholesale_orders', 0) }}</td>
-                        <td class="text-end">{{ (int)data_get($row, 'totals.total_orders', 0) }}</td>
-                        <td class="text-end">{{ (int)data_get($row, 'totals.total_quantity', 0) }}</td>
-                    </tr>
+                        <tr>
+                            <td class="text-start">
+                                @php
+                                    $period = data_get($row, 'period');
+                                    $formattedPeriod = '-';
+
+                                    try {
+                                        if (!empty($period) && $period !== '-') {
+                                            $formattedPeriod = \Carbon\Carbon::parse($period)
+                                                ->locale(app()->getLocale())
+                                                ->translatedFormat('d M Y');
+                                        }
+                                    } catch (\Exception $e) {
+                                        $formattedPeriod = $period;
+                                    }
+                                @endphp
+
+                                {{ $formattedPeriod }}
+                            </td>
+                            <td class="text-end">
+                                {{ number_format((float) data_get($row, 'totals.retail_sales', 0), 2) }}</td>
+                            <td class="text-end">
+                                {{ number_format((float) data_get($row, 'totals.wholesale_sales', 0), 2) }}</td>
+                            <td class="text-end">
+                                {{ number_format((float) data_get($row, 'totals.total_sales', 0), 2) }}
+                            </td>
+                            <td class="text-end">{{ (int) data_get($row, 'totals.retail_orders', 0) }}</td>
+                            <td class="text-end">{{ (int) data_get($row, 'totals.wholesale_orders', 0) }}</td>
+                            <td class="text-end">{{ (int) data_get($row, 'totals.total_orders', 0) }}</td>
+                            <td class="text-end">{{ (int) data_get($row, 'totals.total_quantity', 0) }}</td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="8" class="no-data-message">{{ translate('no_data_found') }}</td>
-                    </tr>
+                        <tr>
+                            <td colspan="8" class="no-data-message">{{ translate('no_data_found') }}</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -424,4 +474,5 @@
         @endif
     </div>
 </body>
+
 </html>
