@@ -89,6 +89,7 @@ class CrmSalesReportController extends Controller
    public function exportPdf(Request $request): Response
 {
     $data = $this->buildReportData($request);
+      \Carbon\Carbon::setLocale(app()->getLocale());
     $data['exportedAt'] = now();
      $data['report_title'] = translate('crm_sales_report');
     // IMPORTANT: Get chart image from request (sent via POST from JavaScript)
