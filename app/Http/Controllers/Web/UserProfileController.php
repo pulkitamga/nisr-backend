@@ -680,7 +680,7 @@ class UserProfileController extends Controller
                 'description' => $request['ticket_description'],
                 'attachment' => $images,
                 'status' => $ticketStatus,
-                'department_id' => 1,
+                'department_id' => $this->resolveDepartmentIdForTicketType($request->ticket_type),
             ]);
 
             $this->createConvertedInboxCaseForTicket(
@@ -744,7 +744,7 @@ class UserProfileController extends Controller
                 'subject' => 'Order #' . $order->id . ' - ' . $productName,
                 'description' => implode(PHP_EOL, $descriptionLines),
                 'customer_id' => $customer?->id,
-                'department_id' => 1,
+                'department_id' => $this->resolveDepartmentIdForTicketType($request->ticket_type),
                 'priority' => 'low',
                 'type' => $request->ticket_type,
                 'sub_type' => 'order_item_support',
@@ -770,6 +770,19 @@ class UserProfileController extends Controller
 
         Toastr::success(translate('support_ticket_created_successfully') . ' #' . $ticket->id);
         return redirect()->route('account-order-details-warranty-support', ['id' => $order->id]);
+    }
+
+    private function resolveDepartmentIdForTicketType(string $ticketType): int
+    {
+        $typeToDepartment = [
+            'support' => 32,
+            'complaint' => 26,
+            'service' => 30,
+            'retail' => 29,
+            'wholesale' => 28,
+        ];
+
+        return $typeToDepartment[$ticketType] ?? 32;
     }
 
     private function createConvertedInboxCaseForTicket(
