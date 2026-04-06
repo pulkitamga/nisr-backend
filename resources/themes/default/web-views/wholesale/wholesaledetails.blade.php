@@ -55,8 +55,8 @@
                 <input type="hidden" name="product_id" value="{{ $product->product->id }}">
                 <input type="hidden" name="seller_id" value="{{ $product->seller_id }}">
                 <input type="hidden" name="name" value="{{ $product->product->name }}">
-                <input type="hidden" name="tax" value="{{ $product->product->tax }}">
-                <input type="hidden" name="tax_model" value="{{ $product->product->tax_model }}">
+                <input type="hidden" name="tax" value="{{ $product->tax ?? 0 }}">
+                <input type="hidden" name="tax_model" value="exclude">
                 <input type="hidden" name="thumbnail" value="{{ getStorageImages(path: $product->product->thumbnail_full_url, type: 'product') }}">
         
                 @php
@@ -84,9 +84,9 @@
                                 {{ webCurrencyConverter($range->price_per_piece) }} / piece
                             </span>
                              <span class="text-nowrap fs-10">
-                        @if ($product->product->tax_model === "exclude")
+                        @if (($product->tax ?? 0) > 0)
                         ({{ translate('tax')}}
-                        : {{ webCurrencyConverter(amount: $product->product['tax'])}}
+                        : {{ webCurrencyConverter(amount: $product->tax)}}
                         )
                         @else
                         ({{ translate('tax_included')}})

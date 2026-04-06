@@ -1705,7 +1705,7 @@ return [
 	"Product_Report" => "تقرير المنتج",
 	"Product_Section" => "قسم المنتجات",
 	"Product_Statistics" => "إحصائيات المنتج",
-	"Product_Stock" => "مخزون المنتج",
+	"Product_Stocks" => "مخزون المنتجات",
 	"Product_Successfully_Returned" => "تم إرجاع المنتج بنجاح",
 	"Product_Type" => "نوع المنتج",
 	"Product_Unit_Price" => "سعر وحدة المنتج",
@@ -12660,5 +12660,7 @@ return [
 	"crm" => "إدارة علاقات العملاء",
 	"warranty_claims" => "مطالبات الضمان",
 	"search_by_order_id_customer_phone_or_email" => "ابحث برقم الطلب أو هاتف العميل أو بريده الإلكتروني",
-	"clam_report" => "تقرير البطلينوس"
+	"Claim Report" => "تقرير المطالبات",
+	"Price_per_piece" => "السعر للقطعة",
+	"Final_piece" => "السعر النهائي للقطعة",
 ];

@@ -35,6 +35,7 @@ class WholeSaleProductAddRequrest extends FormRequest
         'product_id'        => 'required|exists:products,id',
         'variation_type'    => 'nullable|string',
         'variation_key'     => 'nullable|string',
+        'tax'               => 'nullable|numeric|min:0|max:100',
 
         'min_qty'           => 'required|array|min:1',
         'min_qty.*'         => 'required|integer|min:1',

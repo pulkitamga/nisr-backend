@@ -36,9 +36,13 @@ $direction = get_direction();
         src="{{dynamicAsset(path: 'public/assets/back-end/vendor/hs-navbar-vertical-aside/hs-navbar-vertical-aside-mini-cache.js')}}"></script>
     <style>
         select {
-            background-image: url('{{dynamicAsset(path: ' public/assets/back-end/img/arrow-down.png')}}');
+            background-image: url('{{ dynamicAsset(path: 'public/assets/back-end/img/arrow-down.png') }}');
             background-size: 7px;
-            background-position: 96% center;
+            background-position: calc(100% - 12px) center;
+        }
+
+        [dir="rtl"] select {
+            background-position: 12px center;
         }
 
         .bidi-ltr {

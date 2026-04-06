@@ -19,6 +19,7 @@ class WholeSaleProducts extends Model
         'product_id',
         'variation_type',     // NEW: Size, Color, Model etc.
         'variation_key',      // NEW: color:Red|size:XL
+        'tax',                // Wholesale-specific tax percentage (always exclusive)
         'status',
     ];
 
@@ -198,7 +199,7 @@ class WholeSaleProducts extends Model
     {
         return LogOptions::defaults()
             ->useLogName('wholesale_products')
-            ->logOnly(['category_id', 'sub_category_id', 'product_id', 'variation_type', 'variation_key', 'status'])
+            ->logOnly(['category_id', 'sub_category_id', 'product_id', 'variation_type', 'variation_key', 'tax', 'status'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

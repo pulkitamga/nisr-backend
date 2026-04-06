@@ -120,7 +120,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         data-product-id="{{ $wholesale->product_id }}"
                                         data-variation-type="{{ $wholesale->variation_type }}" data-name="{{ $wholesale->product->getTranslatedField('name') }}"
                                         data-price="{{ optional($wholesale->price_list->first())->price_per_piece ?? 0 }}"
-                                        data-tax="{{ $wholesale->product->tax_model == 'exclude' ? $wholesale->product->tax : 0 }}">
+                                        data-tax="{{ $wholesale->tax ?? 0 }}">
                                         {{ $wholesale->product->getTranslatedField('name') }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
                                     </option>
                                     @endforeach

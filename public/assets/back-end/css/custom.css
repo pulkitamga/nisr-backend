@@ -1937,6 +1937,53 @@ html[dir="rtl"] [data-placement="right"] {
     /* Bootstrap tooltip JS reads data-placement; override handled via JS */
 }
 
+[dir="rtl"] .tooltip,
+[dir="rtl"] .tooltip-inner,
+[dir="rtl"] .popover,
+[dir="rtl"] .popover-body,
+[dir="rtl"] .popover-header {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .input-group-merge .input-group-prepend {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .input-group-merge .input-group-append {
+    left: 0;
+    right: auto;
+}
+
+[dir="rtl"] .input-group-merge .input-group-prepend .input-group-text {
+    padding: 0 .875rem 0 0;
+}
+
+[dir="rtl"] .input-group-merge .input-group-append .input-group-text {
+    padding: 0 0 0 .875rem;
+}
+
+[dir="rtl"] .input-group-merge .custom-select:not(:first-child),
+[dir="rtl"] .input-group-merge .form-control:not(:first-child) {
+    padding-left: .75rem;
+    padding-right: 2.625rem;
+}
+
+[dir="rtl"] .input-group-merge .custom-select:not(:last-child),
+[dir="rtl"] .input-group-merge .form-control:not(:last-child) {
+    padding-left: 2.625rem;
+    padding-right: .75rem;
+}
+
+[dir="rtl"] .position-relative > .icon-absolute-on-right ~ .form-control,
+[dir="rtl"] .position-relative > .icon-absolute-on-right ~ .form-select,
+[dir="rtl"] .position-relative > .icon-absolute-on-right ~ .custom-select {
+    padding-left: 2.25rem;
+    padding-right: 0.75rem;
+    text-align: right;
+}
+
 /* RTL tio-icons flip */
 html[dir="rtl"] .tio-chevron-left,
 html[dir="rtl"] .tio-chevron-right,

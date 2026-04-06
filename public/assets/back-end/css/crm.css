@@ -227,6 +227,46 @@
     justify-content: flex-start;
 }
 
+[dir="rtl"] .crm-list-toolbar {
+    text-align: right;
+}
+
+[dir="rtl"] .crm-list-toolbar .form-control,
+[dir="rtl"] .crm-list-toolbar .form-select,
+[dir="rtl"] .crm-list-toolbar .custom-select,
+[dir="rtl"] .crm-list-toolbar .select2-container--default .select2-selection--single,
+[dir="rtl"] .crm-list-toolbar .select2-container--default .select2-selection--multiple,
+[dir="rtl"] .crm-list-toolbar .select2-container--default .select2-selection--single .select2-selection__rendered,
+[dir="rtl"] .crm-list-toolbar .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    text-align: right;
+}
+
+[dir="rtl"] .crm-list-toolbar .position-relative .form-control {
+    padding-left: 2.25rem;
+    padding-right: 0.75rem;
+}
+
+[dir="rtl"] .crm-list-toolbar .icon-absolute-on-right {
+    inset-inline-end: 15px;
+}
+
+[dir="rtl"] .crm-list-toolbar .input-group-merge {
+    direction: rtl;
+}
+
+[dir="rtl"] .crm-list-toolbar .input-group-merge .input-group-prepend {
+    order: 2;
+}
+
+[dir="rtl"] .crm-list-toolbar .input-group-merge .input-group-text {
+    border-radius: 0 0.3125rem 0.3125rem 0;
+}
+
+[dir="rtl"] .crm-list-toolbar .input-group-merge .form-control {
+    border-radius: 0.3125rem 0 0 0.3125rem;
+    text-align: right;
+}
+
 [dir="rtl"] .crm-row-actions__menu .dropdown-menu,
 [dir="rtl"] .crm-row-actions__menu .dropdown-item {
     text-align: right;

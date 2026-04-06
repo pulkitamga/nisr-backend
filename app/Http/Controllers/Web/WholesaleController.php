@@ -812,7 +812,7 @@ class WholesaleController extends Controller
             return redirect()->back();
         }
 
-        $serverTax = is_numeric($product->tax) ? (float)$product->tax : 0;
+        $serverTax = is_numeric($wholesaleProduct->tax) ? (float)$wholesaleProduct->tax : 0;
 
         $cartGroupId = $this->getOrCreateCartGroupId($user);
 
@@ -883,7 +883,7 @@ class WholesaleController extends Controller
             'installtion_charges' => 0,
             'exchange_qty' => 0,
             'exchange_charges' => 0,
-            'tax_model' => $product->tax_model ?? 'exclude',
+            'tax_model' => 'exclude',
             'is_checked' => 1,
             'name' => $product->name,
             'thumbnail' => $product->thumbnail,

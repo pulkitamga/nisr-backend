@@ -47,6 +47,7 @@ class WholeSaleProductsService
         'product_id'        => $request->product_id,
         'variation_type'    => $variationType !== '' ? $variationType : null,
         'variation_key'     => $normalizedVariationKey,
+        'tax'               => $request->tax ?? '0',
     ];
 }
     public function addProductRangePrices(array $min_qty, int $product_id): array

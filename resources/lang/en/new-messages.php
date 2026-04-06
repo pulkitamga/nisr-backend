@@ -11115,6 +11115,7 @@ return [
 	"start_end_date" => "Start end date",
 	"Total Invoice Amount" => "Total Invoice Amount ",
 	"no_top_wholesalers" => "No top wholesalers",
+	"Final_piece" => "Final piece",
 	"Total Services Completed" => "Total Services Completed ",
 	"claim_rate" => "Claim rate",
 	"serial_no" => "Serial no",
@@ -13146,5 +13147,5 @@ return [
 	"card_note" => "Card note",
 	"Enter_card_note" => "Enter card note",
 	"Use_this_for_the_highlighted_footer_note_on_the_product_card" => "Use this for the highlighted footer note on the product card.",
-	"clam_report" => "Clam Report"
+	"Claim Report" => "Claim Report"
 ];

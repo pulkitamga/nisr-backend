@@ -209,6 +209,9 @@ class WholeSaleProductController extends BaseController
     {
         $wholesaleProduct = WholeSaleProducts::with('product')->findOrFail($request->primary_id);
 
+        $wholesaleProduct->tax = $request->tax ?? '0';
+        $wholesaleProduct->save();
+
         try {
             $priceRanges = app(WholeSaleProductsService::class)->buildValidatedPriceRanges(
                 product: $wholesaleProduct->product,

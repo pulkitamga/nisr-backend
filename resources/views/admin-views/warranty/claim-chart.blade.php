@@ -109,7 +109,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
         <div class="report-hero mb-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
-                    <h2 class="h1 mb-1 text-white">{{ translate('clam_report') }}</h2>
+                    <h2 class="h1 mb-1 text-white">{{ translate('Claim Report') }}</h2>
                     <p class="mb-0 opacity-75">
                         {{ translate('claims_analytics') }}:
                       {{ $startDate->translatedFormat('M d, Y') }} - {{ $endDate->translatedFormat('M d, Y') }}

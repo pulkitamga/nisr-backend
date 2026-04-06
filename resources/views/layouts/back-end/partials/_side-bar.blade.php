@@ -514,9 +514,9 @@
                                         class="nav-item {{ Request::is('admin/products/' . Product::STOCK_LIMIT_PRODUCTS[URI]) ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.products.stock-limit-products', ['in_house']) }}"
-                                            title="{{ translate('product_stock') }}">
+                                            title="{{ translate('product_stock_report') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('product_stock') }}</span>
+                                            <span class="text-truncate">{{ translate('product_stock_report') }}</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -1282,9 +1282,9 @@
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/products/' . Product::STOCK_REPORT[URI] . '*') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.products.stock-report') }}"
-                                            title="{{ __('product_stock') }}">
+                                            title="{{ translate('product_stock') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ __('product_stock') }}</span>
+                                            <span class="text-truncate">{{ translate('product_stock') }}</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
