@@ -21,9 +21,7 @@ class ProductStockAnalyticsSheetExport implements FromArray, WithHeadings, Shoul
         private readonly array $headings,
         private readonly array $rows,
         private readonly bool $isRtl = false,
-    )
-    {
-    }
+    ) {}
 
     public function array(): array
     {
@@ -50,7 +48,7 @@ class ProductStockAnalyticsSheetExport implements FromArray, WithHeadings, Shoul
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['argb' => 'FF0B5ED7'],
+                    'startColor' => ['argb' => 'FF239E92'],
                 ],
             ],
         ];

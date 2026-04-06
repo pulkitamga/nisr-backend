@@ -85,7 +85,7 @@
                         </button>
 
                         <button class="btn btn-outline-success" id="exportReport">
-                            <i class="tio-download-to me-1"></i>{{ translate('excelabc') }}
+                            <i class="tio-download-to me-1"></i>{{ translate('excel') }}
                         </button>
 
                         <button class="btn btn-outline-danger" id="exportPDF">
