@@ -774,15 +774,19 @@ class UserProfileController extends Controller
 
     private function resolveDepartmentIdForTicketType(string $ticketType): int
     {
-        $typeToDepartment = [
-            'support' => 32,
-            'complaint' => 26,
-            'service' => 30,
-            'retail' => 29,
-            'wholesale' => 28,
+        $typeToDepartmentName = [
+            'support' => 'Support Department',
+            'complaint' => 'Complaint Department',
+            'service' => 'Service Department',
+            'retail' => 'Retail Department',
+            'wholesale' => 'Wholesale Department',
         ];
 
-        return $typeToDepartment[$ticketType] ?? 32;
+        $departmentName = $typeToDepartmentName[$ticketType] ?? 'Support Department';
+
+        $department = Departments::where('name', $departmentName)->first();
+
+        return $department?->id ?? Departments::first()?->id ?? 1;
     }
 
     private function createConvertedInboxCaseForTicket(
