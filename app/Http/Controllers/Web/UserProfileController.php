@@ -824,7 +824,7 @@ class UserProfileController extends Controller
             'sender_name' => $contact->name,
             'sender_email' => $contact->email,
             'sender_phone' => $contact->mobile_number,
-            'pipeline' => 'web',
+            'pipeline' => 'form',
             'message_type' => $messageType,
             'status' => 'converted',
             'priority' => $ticket->priority ?: 'medium',
@@ -852,7 +852,7 @@ class UserProfileController extends Controller
             'employee_id' => null,
             'details' => [
                 'channel' => 'web',
-                'pipeline' => 'web',
+                'pipeline' => 'form',
                 'message_type' => $messageType,
                 'category' => $normalizedCategory,
                 'has_attachment' => !empty($ticket->attachment),
