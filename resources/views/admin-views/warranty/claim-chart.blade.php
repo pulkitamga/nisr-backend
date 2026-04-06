@@ -4,6 +4,19 @@
 
 @push('css_or_js')
     <style>
+         .claim-chart-page {
+        --wr-primary: #0f4c81;
+        --wr-secondary: #1d4ed8;
+        --wr-soft: rgba(29, 78, 216, 0.14);
+    }
+
+    .claim-chart-page .report-hero {
+        background: linear-gradient(135deg, var(--wr-primary) 0%, var(--wr-secondary) 100%);
+        color: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(30, 64, 175, 0.24);
+    }
         .chart-card>div:last-child {
             position: relative;
             height: 350px;
@@ -88,15 +101,24 @@
         }
     </style>
 @endpush
-
+@php
+$isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+@endphp
 @section('content')
-    <div class="content container-fluid">
-        <!-- Header -->
-        <div class="mb-4">
-            <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
-                <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/warranty.png') }}" alt="">
-                {{ translate('claims_analytics') }}
-            </h2>
+    <div class="content container-fluid claim-chart-page {{ $isRtl ? 'text-end' : '' }}" <!-- Header -->
+        <div class="report-hero mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h2 class="h1 mb-1 text-white">{{ translate('clam_report') }}</h2>
+                    <p class="mb-0 opacity-75">
+                        {{ translate('claims_analytics') }}:
+                      {{ $startDate->translatedFormat('M d, Y') }} - {{ $endDate->translatedFormat('M d, Y') }}
+                    </p>
+                </div>
+                <span class="badge badge-light text-dark">
+                    {{ translate('updated') }} {{ now()->translatedFormat('M d, Y h:i A') }}
+                </span>
+            </div>
         </div>
 
         <div class="filter-card">
@@ -191,16 +213,29 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label d-none d-md-block">&nbsp;</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn--primary flex-grow-1">
-                                <i class="tio-filter"></i> {{ translate('apply') }}
-                            </button>
-                            <a href="{{ route('admin.warranty.claim.chart') }}" class="btn btn-outline-secondary">
-                                {{ translate('reset') }}
-                            </a>
-                        </div>
+
+                    <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+
+                        <button type="submit" class="btn btn--primary">
+                            <i class="tio-filter"></i> {{ translate('filter') }}
+                        </button>
+
+                        <a href="{{ route('admin.warranty.claim.chart') }}" class="btn btn-outline-secondary">
+                            <i class="tio-refresh"></i> {{ translate('reset') }}
+                        </a>
+
+                        <a id="exportExcelBtn"
+                            href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
+                            class="btn btn-outline-success">
+                            <i class="tio-download-to"></i> {{ translate('excel') }}
+                        </a>
+
+                        <a id="exportPdfBtn"
+                            href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
+                            class="btn btn-outline-danger">
+                            <i class="tio-download-to"></i> {{ translate('pdf') }}
+                        </a>
+
                     </div>
                 </div>
             </form>
@@ -208,43 +243,43 @@
 
         <div class="row mb-4" id="summaryCards">
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-inline-start: 4px solid #3498db;">
-                    <div class="stat-number text-primary" id="card-total">{{ $cards['total'] }}</div>
+                <div class="stat-card">
+                    <div class="stat-number" id="card-total">{{ $cards['total'] }}</div>
                     <div class="stat-label">{{ translate('total_claims') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-inline-start: 4px solid #f39c12;">
-                    <div class="stat-number text-warning" id="card-new">{{ $cards['new'] }}</div>
+                <div class="stat-card">
+                    <div class="stat-number" id="card-new">{{ $cards['new'] }}</div>
                     <div class="stat-label">{{ translate('new') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-inline-start: 4px solid #2ecc71;">
-                    <div class="stat-number text-success" id="card-approved">{{ $cards['approved'] }}</div>
+                <div class="stat-card">
+                    <div class="stat-number" id="card-approved">{{ $cards['approved'] }}</div>
                     <div class="stat-label">{{ translate('approved') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-inline-start: 4px solid #e74c3c;">
-                    <div class="stat-number text-danger" id="card-rejected">{{ $cards['rejected'] }}</div>
+                <div class="stat-card">
+                    <div class="stat-number" id="card-rejected">{{ $cards['rejected'] }}</div>
                     <div class="stat-label">{{ translate('rejected') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-inline-start: 4px solid #9b59b6;">
-                    <div class="stat-number text-info" id="card-pending">{{ $cards['pending'] }}</div>
+                <div class="stat-card">
+                    <div class="stat-number" id="card-pending">{{ $cards['pending'] }}</div>
                     <div class="stat-label">{{ translate('pending') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
-                <div class="stat-card" style="border-inline-start: 4px solid #34495e;">
-                    <div class="stat-number text-dark" id="card-resolved">{{ $cards['resolved'] }}</div>
+                <div class="stat-card">
+                    <div class="stat-number" id="card-resolved">{{ $cards['resolved'] }}</div>
                     <div class="stat-label">{{ translate('resolved') }}</div>
                 </div>
             </div>
@@ -255,25 +290,12 @@
                 <h4 class="mb-0">
                     {{ translate('claims') }}
                     (<span id="dateRangeText">
-                        {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
+                        {{ $startDate->translatedFormat('d M Y') }} - {{ $endDate->translatedFormat('d M Y') }}
                     </span>)
                 </h4>
                 <span class="badge badge-soft-primary" id="dateRangeLabel">
-                    {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
+                    {{ $startDate->translatedFormat('d M Y') }} - {{ $endDate->translatedFormat('d M Y') }}
                 </span>
-            </div>
-
-            <div class="d-flex justify-content-end gap-2 mb-3">
-                <a id="exportExcelBtn"
-                    href="{{ route('admin.warranty.claim.export.excel') }}?{{ http_build_query(request()->all()) }}"
-                    class="btn btn-outline-success">
-                    <i class="tio-download-to me-1"></i> {{ translate('excel') }}
-                </a>
-                <a id="exportPdfBtn"
-                    href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
-                    class="btn btn-outline-danger">
-                    <i class="tio-download-to me-1"></i> {{ translate('pdf') }}
-                </a>
             </div>
             <div style="position: relative; height: 350px; width: 100%;">
                 <canvas id="claimsChart" style="height: 100%; width: 100%;"></canvas>
@@ -317,7 +339,7 @@
                                 $warranty = $claim->warranty;
                                 $productName = $warranty?->product?->name ?? '-';
                                 $warrantyMonths = $warranty?->warranty_months ?? '-';
-                                $endDate = $warranty?->end_date ? $warranty->end_date->format('Y-m-d') : '-';
+                                $endDate = $warranty?->end_date ? $warranty->end_date->translatedFormat('Y-m-d') : '-';
 
                                 // Corrected remaining calculation
                                 if ($warranty && $warranty->end_date) {
@@ -365,10 +387,10 @@
                                 </td>
                                 <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
                                 <td><span
-                                        class="bidi-ltr d-inline-block">{{ $claim->submitted_at?->format('Y-m-d H:i A') }}</span>
+                                        class="bidi-ltr d-inline-block">{{ $claim->submitted_at?->translatedFormat('Y-m-d H:i A') }}</span>
                                 </td>
                                 <td><span
-                                        class="bidi-ltr d-inline-block">{{ $claim->resolution_due?->format('Y-m-d H:i A') ?? '-' }}</span>
+                                        class="bidi-ltr d-inline-block">{{ $claim->resolution_due?->translatedFormat('Y-m-d H:i A') ?? '-' }}</span>
                                 </td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"

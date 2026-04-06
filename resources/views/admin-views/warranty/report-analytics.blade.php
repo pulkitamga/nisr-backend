@@ -88,12 +88,12 @@ session('direction') === 'rtl' ||
             <div>
                 <h2 class="h1 mb-1">{{ translate('warranty_analytics_report') }}</h2>
                 <p class="mb-0 opacity-75">
-                    {{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} -
-                    {{ $snapshotTo->format('M d, Y') }}
+                    {{ translate('report_period') }}: {{ $snapshotFrom->translatedFormat('M d, Y') }} -
+                    {{ $snapshotTo->translatedFormat('M d, Y') }}
                 </p>
             </div>
             <span class="badge badge-light text-dark">{{ translate('updated') }}
-                {{ now()->format('M d, Y h:i A') }}</span>
+                {{ now()->translatedFormat('M d, Y h:i A') }}</span>
         </div>
     </div>
 
@@ -242,9 +242,9 @@ session('direction') === 'rtl' ||
         <div class="col-xl-8">
             <div class="card h-100">
                 <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">{{ translate('warranty_trend_last_12_months') }}</h4>
+                    <h4 class="mb-0">{{ translate('warranty_trend') }}</h4>
                     <span class="badge-soft">
-                        {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
+                        {{ $snapshotFrom->translatedFormat('M d, Y') }} - {{ $snapshotTo->translatedFormat('M d, Y') }}
                     </span>
                 </div>
                 <div class="card-body">
@@ -257,7 +257,7 @@ session('direction') === 'rtl' ||
                 <div class="card-header border-0 d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">{{ translate('claim_status_mix') }}</h4>
                     <span class="badge-soft">
-                        {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}
+                        {{ $snapshotFrom->translatedFormat('M d, Y') }} - {{ $snapshotTo->translatedFormat('M d, Y') }}
                     </span>
                 </div>
                 <div class="card-body">

@@ -1,6 +1,6 @@
 @php
     $isRtl = $isRtl ?? (app()->getLocale() === 'ar' || session('direction') === 'rtl');
-    $dateRange = $fromDate->format('M d, Y') . ' - ' . $toDate->format('M d, Y');
+    $dateRange = $fromDate->translatedFormat('M d, Y') . ' - ' . $toDate->translatedFormat('M d, Y');
     $hasData = isset($activationRowsForPdf) && count($activationRowsForPdf) > 0;
 @endphp
 <!DOCTYPE html>
@@ -287,7 +287,7 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('activation_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $fromDate->format('M d, Y') }} - {{ $toDate->format('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $fromDate->translatedFormat('M d, Y') }} - {{ $toDate->translatedFormat('M d, Y') }}</p>
         </div>
         <div class="logo-container">
             @php
@@ -414,7 +414,7 @@
     </div>
 
     <!-- Activations Details Table -->
-    <div class="table-container">
+    <div class="table-container" style="page-break-before: always;">
         <div class="table-header">
             <h3>{{ translate('activation_details') }} ({{ $dateRange }})</h3>
         </div>
@@ -451,8 +451,8 @@
                             <td>{{ $customerName }}</td>
                             <td>{{ $warranty->branch?->branch_name ?? '-' }}</td>
                             <td>{{ translate($warranty->activation_method ?: 'unknown') }}</td>
-                            <td class="value-ltr">{{ optional($warranty->activation_date)->format('Y-m-d H:i') ?? '-' }}</td>
-                            <td class="value-ltr">{{ optional($warranty->end_date)->format('Y-m-d') ?? '-' }}</td>
+                            <td class="value-ltr">{{ optional($warranty->activation_date)->translatedFormat('Y-m-d H:i') ?? '-' }}</td>
+                            <td class="value-ltr">{{ optional($warranty->end_date)->translatedFormat('Y-m-d') ?? '-' }}</td>
                             <td>{{ ucwords(str_replace('_', ' ', $warranty->status)) }}</td>
                         </tr>
                     @endforeach

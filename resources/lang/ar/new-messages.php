@@ -12095,14 +12095,14 @@ return [
 	"warranties" => "الضمانات",
 	"closure_rate" => "معدل الإغلاق",
 	"avg_resolution" => "متوسط الحل",
-	"warranty_trend_last_12_months" => "اتجاه الضمان (آخر 12 شهرًا)",
+	"warranty_trend" => "اتجاه الضمان",
 	"activations_claims_resolved" => "التفعيلات، المطالبات، المحلولة",
 	"claim_status_mix" => "توزيع حالة المطالبات",
 	"open_claim_aging" => "تقادم المطالبات المفتوحة",
 	"backlog_risk" => "مخاطر التراكم",
 	"charge_mix" => "توزيع الرسوم",
 	"amount_by_type" => "القيمة حسب النوع",
-	"top_products_by_claim_volume_90d" => "أفضل المنتجات حسب حجم المطالبات (90 يومًا)",
+	"top_products_by_claim_volume" =>"أفضل المنتجات حسب حجم الادعاءات",
 	"charge_value" => "قيمة الرسوم",
 	"no_product_claim_records_in_this_period" => "لا توجد سجلات مطالبات للمنتج في هذه الفترة.",
 	"branch_stock_report" => "تقرير مخزون الفروع",
@@ -12659,4 +12659,5 @@ return [
 	"crm" => "إدارة علاقات العملاء",
 	"warranty_claims" => "مطالبات الضمان",
 	"search_by_order_id_customer_phone_or_email" => "ابحث برقم الطلب أو هاتف العميل أو بريده الإلكتروني",
+	"clam_report"=>"تقرير البطلينوس"
 ];

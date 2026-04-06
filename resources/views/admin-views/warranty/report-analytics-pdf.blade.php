@@ -1,6 +1,6 @@
 @php
     $isRtl = $isRtl ?? (app()->getLocale() === 'ar' || session('direction') === 'rtl');
-    $dateRange = $snapshotFrom->format('M d, Y') . ' - ' . $snapshotTo->format('M d, Y');
+    $dateRange = $snapshotFrom->translatedFormat('M d, Y') . ' - ' . $snapshotTo->translatedFormat('M d, Y');
     $hasData = isset($topProducts) && count($topProducts) > 0;
 @endphp
 <!DOCTYPE html>
@@ -264,7 +264,7 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('warranty_analytics_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $snapshotFrom->format('M d, Y') }} - {{ $snapshotTo->format('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $snapshotFrom->translatedFormat('M d, Y') }} - {{ $snapshotTo->translatedFormat('M d, Y') }}</p>
         </div>
         <div class="logo-container">
             @php
