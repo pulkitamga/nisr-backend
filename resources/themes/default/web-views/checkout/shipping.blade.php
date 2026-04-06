@@ -164,11 +164,13 @@
         <div class="col-md-12 mb-3">
             <h3 class="font-weight-bold text-center text-lg-left">{{translate('checkout')}}</h3>
         </div>
+    </div>
+    <div class="mb-2 px-3 px-md-0">
+        @include('web-views.partials._checkout-steps',['step'=>2])
+    </div>
+    <div class="row mx-max-md-0 align-items-start">
         <section class="col-md-8 col-lg-8 px-max-md-0">
             <div class="checkout_details">
-                <div class="px-3 px-md-3">
-                    @include('web-views.partials._checkout-steps',['step'=>2])
-                </div>
                 @php($defaultLocation = getWebConfig(name: 'default_location'))
 
                 @if($physical_product_view)
@@ -812,7 +814,6 @@
                 </div>
                 @endif
                 @endif
-            </div>
         </section>
         @include('web-views.partials._order-summary')
     </div>

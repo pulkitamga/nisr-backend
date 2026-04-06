@@ -13,10 +13,11 @@
             </div>
         </div>
 
-        <div class="row align-items-start">
-            <section class="col-md-8 col-lg-8">
+        @include('web-views.partials._checkout-steps', ['step' => 1])
+        <div class="row align-items-start mt-3">
+            <div class="col-md-8 col-lg-8">
+            <section>
                 <div class="checkout_details">
-                    @include('web-views.partials._checkout-steps', ['step' => 1])
 
                     <h2 class="h4 pb-3 mb-2 mt-5">{{ translate('authentication') }}</h2>
 
@@ -276,6 +277,7 @@
                     </div>
                 </div>
             </section>
+            </div>
 
             @include('web-views.partials._order-summary')
         </div>
