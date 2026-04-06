@@ -495,6 +495,23 @@ class ServiceRequestController extends Controller
             $service->getRawOriginal('title') ?? $service->title ?? ''
         );
 
+        // Resolve Arabic and English titles directly from loaded translations
+        $rawServiceTitle = $service->getRawOriginal('title') ?? '';
+        $serviceTitleAr = $rawServiceTitle;
+        $serviceTitleEn = $rawServiceTitle;
+        if ($service->relationLoaded('translations')) {
+            foreach ($service->translations as $trans) {
+                if ($trans->key === 'title') {
+                    if ($trans->locale === 'ar' && $trans->value !== null && $trans->value !== '') {
+                        $serviceTitleAr = $trans->value;
+                    }
+                    if ($trans->locale === 'en' && $trans->value !== null && $trans->value !== '') {
+                        $serviceTitleEn = $trans->value;
+                    }
+                }
+            }
+        }
+
         // Format service translations
         $serviceTranslations = [];
         if ($service->relationLoaded('translations')) {
@@ -511,19 +528,24 @@ class ServiceRequestController extends Controller
             }
         }
 
+        $cleanDescription = Str::of(strip_tags((string) $localizedProductDescription))
+            ->squish()
+            ->limit(160)
+            ->value();
+
         return [
             'product_id' => (int) $product->id,
             'slug' => $product->slug,
             'name' => getTranslatedValue($product, 'name', $product->name ?? ''),
-            'description' => Str::of(strip_tags((string) $localizedProductDescription))
-                ->squish()
-                ->limit(160)
-                ->value(),
+            'description' => $cleanDescription,
             'thumbnail_full_url' => $product->thumbnail_full_url,
             'service' => [
                 'id' => (int) $service->id,
                 'service_id' => $service->service_id,
                 'title' => $localizedServiceTitle,
+                'title_ar' => $serviceTitleAr,
+                'title_en' => $serviceTitleEn,
+                'description' => $cleanDescription,
                 'translations' => $serviceTranslations,
                 'base_price_inshop' => $service->base_price_inshop,
                 'base_price_mobile' => $service->base_price_mobile,

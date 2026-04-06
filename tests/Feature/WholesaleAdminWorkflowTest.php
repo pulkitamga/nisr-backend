@@ -93,6 +93,68 @@ class WholesaleAdminWorkflowTest extends TestCase
         $this->assertNotNull($order->fresh()->purchase_order_no);
     }
 
+    public function test_authorized_admin_can_add_wholesale_product_with_tax(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.product_add',
+        ]);
+
+        $this->createWholesaleTier('gold', 1);
+        $categoryId = $this->createCategory();
+        $subCategoryId = $this->createCategory($categoryId);
+        $productId = $this->createProduct();
+
+        $page = $this->get(route('admin.wholesale.product.add'));
+        $page->assertOk();
+        $page->assertSee('name="tax"', false);
+
+        $response = $this->post(route('admin.wholesale.product.add.store'), [
+            'category_id' => $categoryId,
+            'sub_category_id' => $subCategoryId,
+            'product_id' => $productId,
+            'variation_type' => 'Default',
+            'variation_key' => 'variant:Default',
+            'tax' => '14',
+            'tier' => ['gold'],
+            'min_qty' => [1],
+            'max_qty' => [10],
+            'unit_price' => [100],
+            'discount' => [0],
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'message' => translate('Product added to wholesale successfully!'),
+            ]);
+
+        $this->assertDatabaseHas('wholesale_products', [
+            'product_id' => $productId,
+            'tax' => '14.00',
+        ]);
+    }
+
+    public function test_authorized_admin_can_view_tax_input_on_wholesale_product_edit_page(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.product_edit',
+        ]);
+
+        $categoryId = $this->createCategory();
+        $subCategoryId = $this->createCategory($categoryId);
+        $productId = $this->createProduct();
+        $wholesaleProductId = $this->createWholesaleProduct($productId, $categoryId, $subCategoryId, [
+            'tax' => '14.00',
+        ]);
+
+        $response = $this->get(route('admin.wholesale.product.edit', ['product_id' => $wholesaleProductId]));
+
+        $response->assertOk();
+        $response->assertSee('name="tax"', false);
+        $response->assertSee('value="14.00"', false);
+    }
+
     public function test_authorized_admin_cannot_assign_duplicate_purchase_order_number(): void
     {
         $this->signInWholesaleAdmin([
@@ -681,16 +743,28 @@ class WholesaleAdminWorkflowTest extends TestCase
         ]);
     }
 
-    private function createWholesaleProduct(int $productId, int $categoryId, int $subCategoryId): int
+    private function createWholesaleTier(string $name, int $rank): int
     {
-        return (int) DB::table('wholesale_products')->insertGetId([
+        return (int) DB::table('wholesale_tiers')->insertGetId([
+            'name' => $name,
+            'rank' => $rank,
+            'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createWholesaleProduct(int $productId, int $categoryId, int $subCategoryId, array $overrides = []): int
+    {
+        return (int) DB::table('wholesale_products')->insertGetId(array_merge([
             'product_id' => $productId,
             'category_id' => $categoryId,
             'sub_category_id' => $subCategoryId,
             'variation_type' => 'Default',
             'variation_key' => 'variant:Default',
+            'tax' => '0.00',
             'status' => 1,
             'deleted_at' => null,
-        ]);
+        ], $overrides));
     }
 }

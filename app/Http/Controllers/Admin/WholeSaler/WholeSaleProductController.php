@@ -207,9 +207,20 @@ class WholeSaleProductController extends BaseController
 
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'tax' => 'nullable|numeric|min:0|max:100',
+            'tier' => 'required|array|min:1',
+            'min_qty' => 'required|array|min:1',
+            'min_qty.*' => 'required|integer|min:1',
+            'max_qty' => 'nullable|array',
+            'max_qty.*' => 'nullable|integer',
+            'discount' => 'nullable|array',
+            'discount.*' => 'nullable|numeric|min:0|max:100',
+        ]);
+
         $wholesaleProduct = WholeSaleProducts::with('product')->findOrFail($request->primary_id);
 
-        $wholesaleProduct->tax = $request->tax ?? '0';
+        $wholesaleProduct->tax = app(WholeSaleProductsService::class)->normalizeTaxValue($validated['tax'] ?? 0);
         $wholesaleProduct->save();
 
         try {

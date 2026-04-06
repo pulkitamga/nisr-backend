@@ -27,29 +27,29 @@ class WholeSaleProductsService
         session()->invalidate();
     }
 
-  public function getAddData(object $request): array
-{
-    $variationType = trim((string)($request->variation_type ?? ''));
-    $variationKey = trim((string)($request->variation_key ?? ''));
+    public function getAddData(object $request): array
+    {
+        $variationType = trim((string)($request->variation_type ?? ''));
+        $variationKey = trim((string)($request->variation_key ?? ''));
 
-    if ($variationType === '') {
-        $variationType = WholeSaleProducts::extractTypeFromVariationKey($variationKey) ?? '';
+        if ($variationType === '') {
+            $variationType = WholeSaleProducts::extractTypeFromVariationKey($variationKey) ?? '';
+        }
+
+        $normalizedVariationKey = WholeSaleProducts::normalizeVariationKey(
+            $variationType !== '' ? $variationType : null,
+            $variationKey !== '' ? $variationKey : null
+        );
+
+        return [
+            'category_id' => $request->category_id,
+            'sub_category_id' => $request->sub_category_id,
+            'product_id' => $request->product_id,
+            'variation_type' => $variationType !== '' ? $variationType : null,
+            'variation_key' => $normalizedVariationKey,
+            'tax' => $this->normalizeTaxValue($request->tax ?? 0),
+        ];
     }
-
-    $normalizedVariationKey = WholeSaleProducts::normalizeVariationKey(
-        $variationType !== '' ? $variationType : null,
-        $variationKey !== '' ? $variationKey : null
-    );
-
-    return [
-        'category_id'       => $request->category_id,
-        'sub_category_id'   => $request->sub_category_id,
-        'product_id'        => $request->product_id,
-        'variation_type'    => $variationType !== '' ? $variationType : null,
-        'variation_key'     => $normalizedVariationKey,
-        'tax'               => $request->tax ?? '0',
-    ];
-}
     public function addProductRangePrices(array $min_qty, int $product_id): array
     {
         $processPrices = [];
@@ -175,5 +175,12 @@ class WholeSaleProductsService
                 ];
             })->toArray(),
         ];
+    }
+
+    public function normalizeTaxValue(mixed $tax): string
+    {
+        $normalizedTax = is_numeric($tax) ? (float)$tax : 0.0;
+
+        return number_format(max(0, $normalizedTax), 2, '.', '');
     }
 }

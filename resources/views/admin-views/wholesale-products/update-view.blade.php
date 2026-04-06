@@ -79,6 +79,21 @@
                                         readonly id="base-unit-price">
                                 </div>
                             </div>
+                            <div class="col-sm-6 col-lg-4 col-xl-2">
+                                <div class="form-group">
+                                    <label class="title-color" for="tax">{{ translate('tax') }} (%)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        class="form-control"
+                                        name="tax"
+                                        id="tax"
+                                        value="{{ old('tax', number_format((float)($ProductData->tax ?? 0), 2, '.', '')) }}"
+                                        required>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

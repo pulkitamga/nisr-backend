@@ -88,6 +88,22 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-sm-6 col-lg-4 col-xl-3">
+                                <div class="form-group">
+                                    <label for="tax" class="title-color">{{ translate('tax') }} (%)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        class="form-control"
+                                        name="tax"
+                                        id="tax"
+                                        value="{{ old('tax', 0) }}"
+                                        placeholder="{{ translate('tax') }}"
+                                        required>
+                                </div>
+                            </div>
                             <!-- Variation Select Ke Baad Yeh Line Add Kar Do -->
 <div style="display: none;">
     <input type="hidden" name="variation_key" id="hidden-variation-key" value="">
