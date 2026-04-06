@@ -86,12 +86,12 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                 <h2 class="h1 mb-1">{{ translate('sla_report') }}</h2>
                 <p class="mb-0 opacity-75">
                     {{ translate('report_period') }}:
-                    {{ $fromDate->format('M d, Y') }} - {{ $toDate->format('M d, Y') }}
+                    {{ $fromDate->translatedFormat('M d, Y') }} - {{ $toDate->translatedFormat('M d, Y') }}
                 </p>
             </div>
-            <span class="badge badge-light text-dark">
-                {{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}
-            </span>
+          <span class="badge badge-light text-dark">
+    {{ translate('updated') }} {{ now()->translatedFormat('M d, Y h:i A') }}
+</span>
         </div>
     </div>
 

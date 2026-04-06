@@ -698,6 +698,15 @@ class WarrantyController extends Controller
     public function reportClaims(Request $request): View|BinaryFileResponse|Response
     {
         [$fromDate, $toDate] = $this->resolveAnalyticsDateRange($request);
+        $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+        if ($isRtl) {
+            $fromDateDisplay = $fromDate->translatedFormat('d F Y');
+            $toDateDisplay   = $toDate->translatedFormat('d F Y');
+        } else {
+            $fromDateDisplay = $fromDate->format('d M, Y');
+            $toDateDisplay   = $toDate->format('d M, Y');
+        }
         $filters = [
             'date_type' => (string)$request->input('date_type', 'this_year'),
             'from' => $fromDate->toDateString(),
@@ -882,6 +891,8 @@ class WarrantyController extends Controller
                         'claimsForPdf',
                         'fromDate',
                         'toDate',
+                        'fromDateDisplay',
+                        'toDateDisplay',
                         'filters',
                         'isRtl',
                         'statusChartImage',
@@ -906,7 +917,9 @@ class WarrantyController extends Controller
             'statusChartData',
             'trendChartData',
             'fromDate',
-            'toDate'
+            'toDate',
+            'fromDateDisplay',
+            'toDateDisplay'
         ));
     }
 

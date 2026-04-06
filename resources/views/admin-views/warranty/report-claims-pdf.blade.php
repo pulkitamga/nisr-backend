@@ -1,6 +1,6 @@
 @php
     $isRtl = $isRtl ?? app()->getLocale() === 'ar' || session('direction') === 'rtl';
-    $dateRange = $fromDate->format('M d, Y') . ' - ' . $toDate->format('M d, Y');
+    $dateRange = $fromDateDisplay . ' - ' . $toDateDisplay;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
@@ -305,7 +305,7 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('claims_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $fromDate->format('M d, Y') }} - {{ $toDate->format('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $fromDateDisplay }} - {{ $toDateDisplay }}</p>
         </div>
         <div class="logo-container">
             @php
@@ -405,8 +405,10 @@
                         <td>{{ $customerName }}</td>
                         <td>{{ ucwords(str_replace('_', ' ', $claim->status)) }}</td>
                         <td class="value-ltr">
-                            {{ optional($claim->submitted_at ?? $claim->created_at)->format('Y-m-d H:i') }}</td>
-                        <td class="value-ltr">{{ optional($claim->resolution_due)->format('Y-m-d H:i') ?? '-' }}</td>
+                            {{ optional($claim->submitted_at ?? $claim->created_at)->translatedFormat('d M Y H:i') }}
+                        </td>
+                        <td class="value-ltr">
+                            {{ optional($claim->resolution_due)->translatedFormat('d M Y H:i') ?? '-' }}</td>
                         <td>{{ $claim->branch?->branch_name ?? '-' }}</td>
                     </tr>
                 @empty
