@@ -89,9 +89,9 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                     {{ $fromDate->translatedFormat('M d, Y') }} - {{ $toDate->translatedFormat('M d, Y') }}
                 </p>
             </div>
-          <span class="badge badge-light text-dark">
-    {{ translate('updated') }} {{ now()->translatedFormat('M d, Y h:i A') }}
-</span>
+            <span class="badge badge-light text-dark">
+                {{ translate('updated') }} {{ now()->translatedFormat('M d, Y h:i A') }}
+            </span>
         </div>
     </div>
 
@@ -253,8 +253,8 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                         <td class="font-weight-semibold">{{ $row->claim_number }}</td>
                         <td>{{ $row->serial_number }}</td>
                         <td>{{ $row->product_name }}</td>
-                        <td>{{ \Carbon\Carbon::parse($row->due_date)->format('Y-m-d H:i') }}</td>
-                        <td>{{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->format('Y-m-d H:i') : '-' }}</td>
+                        <td>{{ \Carbon\Carbon::parse($row->due_date)->translatedFormat('Y-m-d H:i') }}</td>
+                        <td>{{ $row->completed_at ? \Carbon\Carbon::parse($row->completed_at)->translatedFormat('Y-m-d H:i') : '-' }}</td>
                         <td>
                             <span class="badge badge-soft-{{ (int) $row->is_within_sla === 1 ? 'success' : 'danger' }}">
                                 {{ (int) $row->is_within_sla === 1 ? translate('on_time') : translate('breached') }}

@@ -102,11 +102,11 @@ $activationMethods[] = $filters['activation_method'];
                 <h2 class="h1 mb-1">{{ translate('activation_report') }}</h2>
                 <p class="mb-0 opacity-75">
                     {{ translate('report_period') }}:
-                    {{ $fromDate->format('M d, Y') }} - {{ $toDate->format('M d, Y') }}
+                    {{ $fromDate->translatedFormat('M d, Y') }} - {{ $toDate->translatedFormat('M d, Y') }}
                 </p>
             </div>
             <span class="badge badge-light text-dark">
-                {{ translate('updated') }} {{ now()->format('M d, Y h:i A') }}
+                {{ translate('updated') }} {{ now()->translatedFormat('M d, Y h:i A') }}
             </span>
         </div>
     </div>
@@ -352,8 +352,8 @@ $activationMethods[] = $filters['activation_method'];
                         <td>{{ $customerName }}</td>
                         <td>{{ $warranty->branch?->branch_name ?? '-' }}</td>
                         <td>{{ translate($warranty->activation_method ?: 'unknown') }}</td>
-                        <td>{{ optional($warranty->activation_date)->format('Y-m-d H:i') ?? '-' }}</td>
-                        <td>{{ optional($warranty->end_date)->format('Y-m-d') ?? '-' }}</td>
+                        <td>{{ optional($warranty->activation_date)->translatedFormat('Y-m-d H:i') ?? '-' }}</td>
+                        <td>{{ optional($warranty->end_date)->translatedFormat('Y-m-d') ?? '-' }}</td>
                         <td>
                             <span
                                 class="badge badge-soft-{{ $statusClass }}">{{ translate($warranty->status) }}</span>

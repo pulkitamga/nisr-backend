@@ -12561,14 +12561,14 @@ return [
 	"units" => "Units",
 	"closure_rate" => "Closure rate",
 	"avg_resolution" => "Avg resolution",
-	"warranty_trend_last_12_months" => "Warranty trend (last 12 months)",
+	"warranty_trend" => "Warranty trend",
 	"activations_claims_resolved" => "Activations, claims, resolved",
 	"claim_status_mix" => "Claim status mix",
 	"open_claim_aging" => "Open claim aging",
 	"backlog_risk" => "Backlog risk",
 	"charge_mix" => "Charge mix",
 	"amount_by_type" => "Amount by type",
-	"top_products_by_claim_volume_90d" => "Top products by claim volume (90D)",
+	"top_products_by_claim_volume" => "Top products by claim volume ",
 	"charge_value" => "Charge value",
 	"no_product_claim_records_in_this_period" => "No product claim records in this period.",
 	"branch_stock_report" => "Branch stock report",
@@ -13146,4 +13146,5 @@ return [
 	"card_note" => "Card note",
 	"Enter_card_note" => "Enter card note",
 	"Use_this_for_the_highlighted_footer_note_on_the_product_card" => "Use this for the highlighted footer note on the product card.",
+	"clam_report" => "Clam Report"
 ];

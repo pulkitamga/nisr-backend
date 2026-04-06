@@ -202,7 +202,8 @@
         }
 
         .table-header {
-            background: #f8f9fa;
+            background: #0f766e;
+            color: white;
             padding: 15px 20px;
             border-bottom: 1px solid #e5e7eb;
         }
@@ -221,7 +222,10 @@
             margin-left: 10px;
         }
 
-        /* चार्ट स्टाइल */
+        .page-break {
+            page-break-before: always;
+        }
+
         .chart-container {
             margin: 30px 0;
         }
@@ -376,7 +380,8 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('warranty_claims_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $start->format('M d, Y') }} - {{ $end->format('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $start->translatedFormat('M d, Y') }} -
+                {{ $end->translatedFormat('M d, Y') }}</p>
         </div>
         <div class="logo-container">
             @php
@@ -441,7 +446,7 @@
             <div class="chart-header">
                 <h4>
                     {{ translate('claims') }}
-                    ({{ $start->format('d M Y') }} - {{ $end->format('d M Y') }})
+                    ({{ $start->translatedFormat('d M Y') }} - {{ $end->translatedFormat('d M Y') }})
                 </h4>
             </div>
             <img src="{{ $chartImage }}" class="chart-image" alt="Claims Chart" />
@@ -449,7 +454,7 @@
     @endif
 
     <!-- Claims List Table -->
-    <div class="table-container">
+    <div class="table-container page-break">
         <div class="table-header">
             <h5>{{ translate('claims_list') }} <span class="badge-soft-dark">{{ count($claims) }}</span></h5>
         </div>

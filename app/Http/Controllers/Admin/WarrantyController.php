@@ -1128,12 +1128,10 @@ class WarrantyController extends Controller
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
             $slaRowsForPdf = $slaSummaryRows->values();
 
-            // चार्ट इमेज प्राप्त करें (POST से आई हैं)
             $complianceChartImage = $request->input('compliance_chart');
             $typeChartImage = $request->input('type_chart');
             $trendChartImage = $request->input('trend_chart');
 
-            // कंपनी का लोगो और नाम (जरूरत हो तो)
             $companyName = getWebConfig('company_name') ?? 'ElNisr';
             $companyLogo = getWebConfig('company_web_logo') ?? [];
 
@@ -1923,13 +1921,13 @@ class WarrantyController extends Controller
     private function formatAnalyticsPeriodLabel(string $periodKey, string $unit): string
     {
         if ($unit === 'day') {
-            return Carbon::parse($periodKey)->format('M d');
+             return Carbon::parse($periodKey)->translatedFormat('M d');
         }
         if ($unit === 'week') {
             [$year, $week] = explode('-W', $periodKey);
             return 'W' . $week . ' ' . $year;
         }
-        return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
+        return Carbon::createFromFormat('Y-m', $periodKey)->translatedFormat('M Y');
     }
 
     public function blacklistAddView()
