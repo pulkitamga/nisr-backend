@@ -623,6 +623,7 @@
                 export_type: exportType,
                 chart_image: chartImage,
                 date_range: dateRangeText // Add date range to request
+                locale: "{{ app()->getLocale() }}"
             };
 
             if (dateType === 'custom') {

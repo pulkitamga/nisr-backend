@@ -563,16 +563,26 @@ class DashboardChartController extends Controller
                     round($avgValue, 2),
                 ];
             })->values()->all();
-
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
-                public function __construct(private readonly array $rows) {}
+            $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
+            return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles {
+                public function __construct(
+                    private readonly array $rows,
+                    private readonly string $locale
+                ) {
+                    app()->setLocale($this->locale);
+                }
                 public function array(): array
                 {
                     return $this->rows;
                 }
                 public function headings(): array
                 {
-                    return ['Owner', 'Deals', 'Total Value', 'Avg Value'];
+                    return [
+                        translate('owner'),
+                        translate('deals'),
+                        translate('total_value'),
+                        translate('avg_value'),
+                    ];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
                 {

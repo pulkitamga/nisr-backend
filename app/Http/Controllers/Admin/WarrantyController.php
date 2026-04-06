@@ -811,16 +811,29 @@ class WarrantyController extends Controller
                     $claim->branch?->branch_name ?? '-',
                 ];
             })->values()->all();
-
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
-                public function __construct(private readonly array $rows) {}
+            $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
+            return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
+                public function __construct(
+                    private readonly array $rows,
+                    private readonly string $locale
+                ) {
+                    app()->setLocale($this->locale);
+                }
                 public function array(): array
                 {
                     return $this->rows;
                 }
                 public function headings(): array
                 {
-                    return ['Claim Number', 'Serial', 'Status', 'Customer', 'Submitted At', 'Resolution Due', 'Branch'];
+                    return [
+                        translate('claim_number'),
+                        translate('serial'),
+                        translate('status'),
+                        translate('customer'),
+                        translate('submitted_at'),
+                        translate('resolution_sla'),
+                        translate('branch'),
+                    ];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
                 {
@@ -1056,16 +1069,30 @@ class WarrantyController extends Controller
                     ucwords(str_replace('_', ' ', (string)$row->status)),
                 ];
             })->values()->all();
-
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
-                public function __construct(private readonly array $rows) {}
+            $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
+            return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
+                public function __construct(
+                    private readonly array $rows,
+                    private readonly string $locale
+                ) {
+                    app()->setLocale($this->locale);
+                }
                 public function array(): array
                 {
                     return $this->rows;
                 }
                 public function headings(): array
                 {
-                    return ['Claim Number', 'Serial', 'Product', 'SLA Type', 'Due Date', 'Completed At', 'SLA Status', 'Claim Status'];
+                    return [
+                        translate('claim_number'),
+                        translate('serial'),
+                        translate('product'),
+                        translate('sla_type'),
+                        translate('due_date'),
+                        translate('completed_at'),
+                        translate('sla_type'),
+                        translate('claim_status'),
+                    ];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
                 {
@@ -1302,16 +1329,30 @@ class WarrantyController extends Controller
                     optional($warranty->end_date)->format('Y-m-d') ?? '-',
                 ];
             })->values()->all();
-
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
-                public function __construct(private readonly array $rows) {}
+            $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
+            return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
+                public function __construct(
+                    private readonly array $rows,
+                    private readonly string $locale
+                ) {
+                    app()->setLocale($this->locale);
+                }
                 public function array(): array
                 {
                     return $this->rows;
                 }
                 public function headings(): array
                 {
-                    return ['Serial', 'Product', 'Customer', 'Branch', 'Activation Method', 'Activated At', 'Status', 'Warranty End'];
+                    return [
+                        translate('serial'),
+                        translate('product'),
+                        translate('customer'),
+                        translate('branch'),
+                        translate('activation_method'),
+                        translate('activated_at'),
+                        translate('status'),
+                        translate('warranty_end'),
+                    ];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
                 {
@@ -1715,15 +1756,21 @@ class WarrantyController extends Controller
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
             $rows = $topProducts->map(fn($row) => [(string)$row->product_name, (int)$row->claims_count])->values()->all();
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
-                public function __construct(private readonly array $rows) {}
+            $currentLocale = session('locale', config('app.locale'));
+            return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
+                public function __construct(
+                    private readonly array $rows,
+                    private readonly string $locale
+                ) {
+                    app()->setLocale($this->locale);
+                }
                 public function array(): array
                 {
                     return $this->rows;
                 }
                 public function headings(): array
                 {
-                    return ['Product', 'Claims'];
+                    return [translate('Product'), translate('claims')];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
                 {
@@ -1921,7 +1968,7 @@ class WarrantyController extends Controller
     private function formatAnalyticsPeriodLabel(string $periodKey, string $unit): string
     {
         if ($unit === 'day') {
-             return Carbon::parse($periodKey)->translatedFormat('M d');
+            return Carbon::parse($periodKey)->translatedFormat('M d');
         }
         if ($unit === 'week') {
             [$year, $week] = explode('-W', $periodKey);

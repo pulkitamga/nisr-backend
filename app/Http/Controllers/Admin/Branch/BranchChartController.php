@@ -432,6 +432,7 @@ class BranchChartController extends BaseAdminController
 
             $exportType = $request->input('export_type', 'excel');
             $chartImage = $request->input('chart_image');
+            $locale = $request->input('locale', app()->getLocale());
 
             // Normalize variation type
             if ($request->variation_type) {
@@ -477,7 +478,7 @@ class BranchChartController extends BaseAdminController
             }
 
             return Excel::download(
-                new BranchStockExport($branches, $product, $request->all(), $totalStats),
+                new BranchStockExport($branches, $product, $request->all(), $totalStats, $locale),
                 $fileName . '.xlsx'
             );
         } catch (\Exception $e) {

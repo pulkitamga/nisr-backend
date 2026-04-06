@@ -237,16 +237,26 @@ class UcmController extends Controller
                     round(((float)$agent->avg_duration) / 60, 1),
                 ];
             })->values()->all();
-
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
-                public function __construct(private readonly array $rows) {}
+            $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
+            return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles {
+                public function __construct(
+                    private readonly array $rows,
+                    private readonly string $locale
+                ) {
+                    app()->setLocale($this->locale);
+                }
                 public function array(): array
                 {
                     return $this->rows;
                 }
                 public function headings(): array
                 {
-                    return ['Agent', 'Calls', 'Total Duration (min)', 'Avg Duration (min)'];
+                    return [
+                        translate('agent'),
+                        translate('calls'),
+                        translate('total_duration'),
+                        translate('avg_duration'),
+                    ];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
                 {

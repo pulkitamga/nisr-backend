@@ -20,12 +20,18 @@ class BranchStockExport implements FromArray, WithHeadings, WithTitle, ShouldAut
     protected $branchData;
     protected $product;
     protected $filters;
+    protected $locale;
+    protected $totalStats;
 
-    public function __construct(array $branchData, $product = null, $filters = [])
+    public function __construct(array $branchData, $product = null, $filters = [], $totalStats = [], $locale = 'en')
     {
         $this->branchData = $branchData;
         $this->product = $product;
         $this->filters = $filters;
+        $this->totalStats = $totalStats;
+        $this->locale = $locale;
+
+        app()->setLocale($this->locale);
     }
 
     public function array(): array
@@ -73,7 +79,11 @@ class BranchStockExport implements FromArray, WithHeadings, WithTitle, ShouldAut
 
     public function headings(): array
     {
-        $headings = ['#', 'Branch Name', 'Stock Quantity'];
+        $headings = [
+            translate('SL'),
+            translate('branch_name'),
+            translate('stock_quantity')
+        ];
 
         // Add product column if product filter is applied
         if ($this->product) {

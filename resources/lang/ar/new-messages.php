@@ -1,6 +1,7 @@
 <?php
 
 return [
+	"activated_at" => "تفعيلها في",
 	"Add_Fields" => "إضافة حقول",
 	"Add_Fund_To_Wallet" => "إضافة رصيد إلى المحفظة",
 	"Add_Fund_Transaction_Status" => "حالة معاملة إضافة الرصيد",
@@ -12102,7 +12103,7 @@ return [
 	"backlog_risk" => "مخاطر التراكم",
 	"charge_mix" => "توزيع الرسوم",
 	"amount_by_type" => "القيمة حسب النوع",
-	"top_products_by_claim_volume" =>"أفضل المنتجات حسب حجم الادعاءات",
+	"top_products_by_claim_volume" => "أفضل المنتجات حسب حجم الادعاءات",
 	"charge_value" => "قيمة الرسوم",
 	"no_product_claim_records_in_this_period" => "لا توجد سجلات مطالبات للمنتج في هذه الفترة.",
 	"branch_stock_report" => "تقرير مخزون الفروع",
@@ -12659,5 +12660,5 @@ return [
 	"crm" => "إدارة علاقات العملاء",
 	"warranty_claims" => "مطالبات الضمان",
 	"search_by_order_id_customer_phone_or_email" => "ابحث برقم الطلب أو هاتف العميل أو بريده الإلكتروني",
-	"clam_report"=>"تقرير البطلينوس"
+	"clam_report" => "تقرير البطلينوس"
 ];
