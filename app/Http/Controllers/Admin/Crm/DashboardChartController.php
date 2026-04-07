@@ -606,20 +606,34 @@ class DashboardChartController extends Controller
         $stageChart = $request->input('stage_chart');
         $statusChart = $request->input('status_chart');
         if ($download === 'pdf') {
+
             $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
 
-            // Get chart images from request (sent via POST)
+            // ⭐ IMPORTANT: set Carbon locale
+            \Carbon\Carbon::setLocale(app()->getLocale());
+
+            // Get chart images from request
             $trendChart = $request->input('trend_chart');
             $stageChart = $request->input('stage_chart');
             $statusChart = $request->input('status_chart');
 
-            // Add dynamic titles for PDF
+            // Dynamic titles with translated dates
             $chartTitle = match ($filters['date_type']) {
-                'this_year' => translate('crm_trend') . ' (' . $snapshotFrom->format('Y') . ')',
-                'this_month' => translate('crm_trend') . ' (' . $snapshotFrom->format('F Y') . ')',
-                'this_week' => translate('crm_trend') . ' (' . $snapshotFrom->format('M d') . ' - ' . $snapshotTo->format('M d, Y') . ')',
-                'today' => translate('crm_trend') . ' (' . $snapshotFrom->format('j F Y') . ')',
-                'custom_date' => translate('crm_trend') . ': ' . $snapshotFrom->format('j F Y') . ' - ' . $snapshotTo->format('j F Y'),
+                'this_year' => translate('crm_trend') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
+
+                'this_month' => translate('crm_trend') . ' (' . $snapshotFrom->translatedFormat('F Y') . ')',
+
+                'this_week' => translate('crm_trend') . ' (' .
+                    $snapshotFrom->translatedFormat('d M') . ' - ' .
+                    $snapshotTo->translatedFormat('d M Y') . ')',
+
+                'today' => translate('crm_trend') . ' (' .
+                    $snapshotFrom->translatedFormat('d F Y') . ')',
+
+                'custom_date' => translate('crm_trend') . ': ' .
+                    $snapshotFrom->translatedFormat('d F Y') . ' - ' .
+                    $snapshotTo->translatedFormat('d F Y'),
+
                 default => translate('crm_trend') . ' (' . translate('last_12_months') . ')',
             };
 
@@ -640,7 +654,6 @@ class DashboardChartController extends Controller
                         'statusChart'
                     ),
                     [
-
                         'report_title' => translate('crm_insights_report')
                     ]
                 ),
@@ -753,14 +766,17 @@ class DashboardChartController extends Controller
     private function formatInsightsPeriodLabel(string $periodKey, string $unit): string
     {
         if ($unit === 'day') {
-            return Carbon::parse($periodKey)->format('M d');
+            return Carbon::parse($periodKey)
+                ->locale(app()->getLocale())
+                ->translatedFormat('M d');
         }
         if ($unit === 'week') {
             [$year, $week] = explode('-W', $periodKey);
-            return 'W' . $week . ' ' . $year;
+            return translate('week') . ' ' . $week . ' ' . $year;
         }
 
-        return Carbon::createFromFormat('Y-m', $periodKey)->format('M Y');
+        return Carbon::createFromFormat('Y-m', $periodKey)->locale(app()->getLocale())
+            ->translatedFormat('M Y');
     }
 
     private function getAssignedCrmOwners()
