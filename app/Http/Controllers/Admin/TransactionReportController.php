@@ -153,6 +153,20 @@ class TransactionReportController extends Controller
         $transactions = $transactions->latest('updated_at')->paginate(Helpers::pagination_limit())->appends($query_param);
         $order_transaction_chart = self::order_transaction_chart_filter($request);
 
+        if (app()->getLocale() == 'ar' && isset($order_transaction_chart['order_amount'])) {
+            $translated_order_amount = [];
+            foreach ($order_transaction_chart['order_amount'] as $key => $value) {
+                try {
+                    // Attempt to translate month names (e.g., "January" -> "يناير")
+                    $translatedKey = \Carbon\Carbon::parse($key)->translatedFormat('F');
+                } catch (\Exception $e) {
+                    // Fallback to manual translation if it's a specific string like 'Total'
+                    $translatedKey = translate($key);
+                }
+                $translated_order_amount[$translatedKey] = $value;
+            }
+            $order_transaction_chart['order_amount'] = $translated_order_amount;
+        }
         $customers = User::whereNotIn('id', [0])->get();
         $sellers = Seller::where(['status' => 'approved'])->get();
 
@@ -541,34 +555,54 @@ class TransactionReportController extends Controller
         $date_type = $request['date_type'] ?? 'this_year';
 
         // --- Date range string for display ---
+        // if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
+        //     $fromDate = Carbon::parse($from)->format('d M, Y');
+        //     $toDate = Carbon::parse($to)->format('d M, Y');
+        //     $dateRange = $fromDate . ' - ' . $toDate;
+        // } else {
+        //     switch ($date_type) {
+        //         case 'this_year':
+        //             $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
+        //             $toDate = Carbon::now()->endOfYear()->format('d M, Y');
+        //             $dateRange = $fromDate . ' - ' . $toDate;
+        //             break;
+        //         case 'this_month':
+        //             $fromDate = Carbon::now()->startOfMonth()->format('d M, Y');
+        //             $toDate = Carbon::now()->endOfMonth()->format('d M, Y');
+        //             $dateRange = $fromDate . ' - ' . $toDate;
+        //             break;
+        //         case 'this_week':
+        //             $fromDate = Carbon::now()->startOfWeek()->format('d M, Y');
+        //             $toDate = Carbon::now()->endOfWeek()->format('d M, Y');
+        //             $dateRange = $fromDate . ' - ' . $toDate;
+        //             break;
+        //         case 'today':
+        //             $dateRange = Carbon::now()->format('d M, Y');
+        //             break;
+        //         default:
+        //             $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
+        //             $toDate = Carbon::now()->endOfYear()->format('d M, Y');
+        //             $dateRange = $fromDate . ' - ' . $toDate;
+        //     }
+        // }
         if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
-            $fromDate = Carbon::parse($from)->format('d M, Y');
-            $toDate = Carbon::parse($to)->format('d M, Y');
-            $dateRange = $fromDate . ' - ' . $toDate;
+            $dateRange = Carbon::parse($from)->translatedFormat('d M, Y') . ' - ' . Carbon::parse($to)->translatedFormat('d M, Y');
         } else {
             switch ($date_type) {
                 case 'this_year':
-                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfYear()->translatedFormat('d M, Y') . ' - ' . now()->endOfYear()->translatedFormat('d M, Y');
                     break;
                 case 'this_month':
-                    $fromDate = Carbon::now()->startOfMonth()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfMonth()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfMonth()->translatedFormat('d M, Y') . ' - ' . now()->endOfMonth()->translatedFormat('d M, Y');
                     break;
                 case 'this_week':
-                    $fromDate = Carbon::now()->startOfWeek()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfWeek()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfWeek()->translatedFormat('d M, Y') . ' - ' . now()->endOfWeek()->translatedFormat('d M, Y');
                     break;
                 case 'today':
-                    $dateRange = Carbon::now()->format('d M, Y');
+                    $dateRange = now()->translatedFormat('d M, Y');
                     break;
                 default:
-                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfYear()->translatedFormat('d M, Y') . ' - ' . now()->endOfYear()->translatedFormat('d M, Y');
             }
         }
 
@@ -748,13 +782,20 @@ class TransactionReportController extends Controller
             $values = array_values($order_transaction_chart['order_amount']);
             $chartImageOrder = '';
             if (!empty($order_transaction_chart['order_amount'])) {
-                $labels = array_keys($order_transaction_chart['order_amount']);
+                // $labels = array_keys($order_transaction_chart['order_amount']);
+                $rawLabels = array_keys($order_transaction_chart['order_amount']);
                 $values = array_values($order_transaction_chart['order_amount']);
-
+                $translatedLabels = collect($rawLabels)->map(function ($label) {
+                    try {
+                        return Carbon::parse($label)->translatedFormat('M'); // 'M' for Jan, Feb...
+                    } catch (\Exception $e) {
+                        return translate($label);
+                    }
+                })->toArray();
                 $chartImageOrder = $this->generateChartImage([
-                    'type' => 'line', // ✅ FIXED
+                    'type' => 'line', // 
                     'data' => [
-                        'labels' => $labels,
+                        'labels' => $translatedLabels,
                         'datasets' => [
                             [
                                 'label' => 'Order Amount',
@@ -1271,6 +1312,20 @@ class TransactionReportController extends Controller
 
         $expense_transaction_chart = self::expense_transaction_chart_filter($request);
 
+        if (app()->getLocale() == 'ar' && isset($expense_transaction_chart['discount_amount'])) {
+            $translated_discount_amount = [];
+            foreach ($expense_transaction_chart['discount_amount'] as $key => $value) {
+                try {
+                    // Translates month names like "January" or "Jan" to Arabic
+                    $translatedKey = \Carbon\Carbon::parse($key)->translatedFormat('F');
+                } catch (\Exception $e) {
+                    $translatedKey = translate($key);
+                }
+                $translated_discount_amount[$translatedKey] = $value;
+            }
+            $expense_transaction_chart['discount_amount'] = $translated_discount_amount;
+        }
+
         $expense_calculate_query = Order::with(['orderTransaction', 'coupon'])
             ->where([
                 'order_type' => 'default_type',
@@ -1335,25 +1390,23 @@ class TransactionReportController extends Controller
         $expense_transactions_table = $expense_transactions_table->latest('updated_at')->paginate(Helpers::pagination_limit())->appends($query_param);
 
         if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
-            $fromDate = Carbon::parse($from)->format('d M, Y');
-            $toDate = Carbon::parse($to)->format('d M, Y');
-            $dateRange = $fromDate . ' - ' . $toDate;
+            $dateRange = Carbon::parse($from)->translatedFormat('d M, Y') . ' - ' . Carbon::parse($to)->translatedFormat('d M, Y');
         } else {
             switch ($date_type) {
                 case 'this_year':
-                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                    $dateRange = now()->startOfYear()->translatedFormat('d M, Y') . ' - ' . now()->endOfYear()->translatedFormat('d M, Y');
                     break;
                 case 'this_month':
-                    $dateRange = now()->startOfMonth()->format('d M, Y') . ' - ' . now()->endOfMonth()->format('d M, Y');
+                    $dateRange = now()->startOfMonth()->translatedFormat('d M, Y') . ' - ' . now()->endOfMonth()->translatedFormat('d M, Y');
                     break;
                 case 'this_week':
-                    $dateRange = now()->startOfWeek()->format('d M, Y') . ' - ' . now()->endOfWeek()->format('d M, Y');
+                    $dateRange = now()->startOfWeek()->translatedFormat('d M, Y') . ' - ' . now()->endOfWeek()->translatedFormat('d M, Y');
                     break;
                 case 'today':
-                    $dateRange = now()->format('d M, Y');
+                    $dateRange = now()->translatedFormat('d M, Y');
                     break;
                 default:
-                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                    $dateRange = now()->startOfYear()->translatedFormat('d M, Y') . ' - ' . now()->endOfYear()->translatedFormat('d M, Y');
             }
         }
         $updatedAt = now()->format('M d, Y h:i A');
@@ -1506,33 +1559,23 @@ class TransactionReportController extends Controller
 
         // --- Date range string ---
         if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
-            $fromDate = Carbon::parse($from)->format('d M, Y');
-            $toDate = Carbon::parse($to)->format('d M, Y');
-            $dateRange = $fromDate . ' - ' . $toDate;
+            $dateRange = Carbon::parse($from)->translatedFormat('d M, Y') . ' - ' . Carbon::parse($to)->translatedFormat('d M, Y');
         } else {
             switch ($date_type) {
                 case 'this_year':
-                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfYear()->translatedFormat('d M, Y') . ' - ' . now()->endOfYear()->translatedFormat('d M, Y');
                     break;
                 case 'this_month':
-                    $fromDate = Carbon::now()->startOfMonth()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfMonth()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfMonth()->translatedFormat('d M, Y') . ' - ' . now()->endOfMonth()->translatedFormat('d M, Y');
                     break;
                 case 'this_week':
-                    $fromDate = Carbon::now()->startOfWeek()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfWeek()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfWeek()->translatedFormat('d M, Y') . ' - ' . now()->endOfWeek()->translatedFormat('d M, Y');
                     break;
                 case 'today':
-                    $dateRange = Carbon::now()->format('d M, Y');
+                    $dateRange = now()->translatedFormat('d M, Y');
                     break;
                 default:
-                    $fromDate = Carbon::now()->startOfYear()->format('d M, Y');
-                    $toDate = Carbon::now()->endOfYear()->format('d M, Y');
-                    $dateRange = $fromDate . ' - ' . $toDate;
+                    $dateRange = now()->startOfYear()->translatedFormat('d M, Y') . ' - ' . now()->endOfYear()->translatedFormat('d M, Y');
             }
         }
 
@@ -1562,6 +1605,20 @@ class TransactionReportController extends Controller
 
         // Chart data
         $expense_transaction_chart = self::expense_transaction_chart_filter($request);
+
+        $translatedLabels = [];
+        $values = [];
+        if (!empty($expense_transaction_chart['discount_amount'])) {
+            foreach ($expense_transaction_chart['discount_amount'] as $label => $value) {
+                try {
+                    // Translates month names to Arabic (e.g., Jan -> يناير)
+                    $translatedLabels[] = Carbon::parse($label)->translatedFormat('M');
+                } catch (\Exception $e) {
+                    $translatedLabels[] = translate($label);
+                }
+                $values[] = $value;
+            }
+        }
 
         $total_expense = 0;
         $free_delivery = 0;
@@ -1594,10 +1651,10 @@ class TransactionReportController extends Controller
                 $chartImageExpense = $this->generateChartImage([
                     'type' => 'line', // ✅ FIXED
                     'data' => [
-                        'labels' => $labels,
+                        'labels' => $translatedLabels,
                         'datasets' => [
                             [
-                                'label' => 'Expense Amount',
+                                'label' => translate('Expense Amount'),
                                 'data' => $values,
                                 'borderColor' => '#FF6B6B', // ✅ important for line
                                 'backgroundColor' => 'transparent', // optional

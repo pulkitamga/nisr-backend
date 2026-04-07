@@ -121,7 +121,7 @@ class InhouseProductSaleController extends BaseController
             'options' => [
                 'responsive' => true,
                 'maintainAspectRatio' => false
-            ]
+            ],
         ];
 
         if ($config['type'] == 'donut') {
@@ -149,30 +149,30 @@ class InhouseProductSaleController extends BaseController
         return 'data:image/png;base64,' . base64_encode($imageData);
     }
     public function exportPdf(Request $request): Response
-{
-    $data = $this->buildReportData($request);
+    {
+        $data = $this->buildReportData($request);
 
-    $data['exportedAt'] = now();
-     $data['report_title'] = translate('inhouse_product_sale_report');
-    // ✅ FIX: map all charts into one array
-    $data['chartImages'] = [
-        'trend' => $request->trend_chart,
-        'channel' => $request->channel_chart,
-        'branch_type' => $request->branch_type_chart,
-        'product_type' => $request->product_type_chart,
-        'branch_product' => $request->branch_product_chart,
-        'state' => $request->state_chart,
-        'city' => $request->city_chart,
-        'area' => $request->area_chart,
-    ];
+        $data['exportedAt'] = now();
+        $data['report_title'] = translate('inhouse_product_sale_report');
+        // ✅ FIX: map all charts into one array
+        $data['chartImages'] = [
+            'trend' => $request->trend_chart,
+            'channel' => $request->channel_chart,
+            'branch_type' => $request->branch_type_chart,
+            'product_type' => $request->product_type_chart,
+            'branch_product' => $request->branch_product_chart,
+            'state' => $request->state_chart,
+            'city' => $request->city_chart,
+            'area' => $request->area_chart,
+        ];
 
-    return app(ReportPdfService::class)->download(
-        view: InhouseProductSale::EXPORT_PDF[VIEW],
-        data: $data,
-        fileName: 'inhouse-product-sale-report.pdf',
-        orientation: 'landscape'
-    );
-}
+        return app(ReportPdfService::class)->download(
+            view: InhouseProductSale::EXPORT_PDF[VIEW],
+            data: $data,
+            fileName: 'inhouse-product-sale-report.pdf',
+            orientation: 'landscape'
+        );
+    }
 
     private function buildReportData(Request $request): array
     {
@@ -309,8 +309,20 @@ class InhouseProductSaleController extends BaseController
             stateFilters: $stateFilters,
             cityFilters: $cityFilters,
             areaFilters: $areaFilters,
-            includeWholesale: !$locationFiltersApplied
+            includeWholesale: !$locationFiltersApplied,
+
         );
+        if (app()->getLocale() == 'ar') {
+            $trend['labels'] = collect($trend['labels'])->map(function ($label) {
+                try {
+                    // This attempts to parse the label (e.g., "January") 
+                    // and return the Arabic version (e.g., "يناير")
+                    return \Carbon\Carbon::parse($label)->translatedFormat('F');
+                } catch (\Exception $e) {
+                    return $label; // Fallback if it's not a valid date string
+                }
+            })->all();
+        }
 
         $retailStateRows = $this->getRetailLocationRows(
             dimension: 'state',

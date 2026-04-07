@@ -12663,4 +12663,14 @@ return [
 	"Claim Report" => "تقرير المطالبات",
 	"Price_per_piece" => "السعر للقطعة",
 	"Final_piece" => "السعر النهائي للقطعة",
+	"expense_summary" => "ملخص النفقات",
+	"order_trend" => "اتجاه النظام",
+	"payment_distribution" => "توزيع الدفع",
+	"expense_trend" => "اتجاه النفقات",
+	"transaction_details" => "تفاصيل المعاملة",
+	"coupon_Discount_Amount" => "قيمة خصم القسيمة",
+	"free_Shipping_Over_Order_Amount_Discount" => "الشحن المجاني عند تجاوز قيمة الطلب المحددة",
+	"coupon_Discount_Amount" => "مبلغ الخصم من القسيمة",
+	"free_delivery_bearer" => "حامل التوصيل المجاني",
+	"coupon_discount_bearer" => "حامل قسيمة الخصم"
 ];
