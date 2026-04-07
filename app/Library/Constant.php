@@ -1187,6 +1187,7 @@ const CACHE_FOR_HOME_PAGE_TOP_RATED_PRODUCT_LIST = 'cache_for_home_page_top_rate
 const CACHE_FOR_HOME_PAGE_BEST_SELL_PRODUCT_LIST = 'cache_for_home_page_best_sell_product_list';
 const CACHE_FOR_IN_HOUSE_SHIPPING_TYPE = 'cache_for_in_house_shipping_type';
 const CACHE_FOR_FEATURED_DEAL_PRODUCTS_LIST = 'cache_for_Featured_deals_products_list';
+const CACHE_DELIVERY_RESTRICTION_SETUP = 'cache_delivery_restriction_setup';
 
 const DEFAULT_STOCK = 50;
 const DEPARTMENT_HEAD_ROLE_ID = 8;

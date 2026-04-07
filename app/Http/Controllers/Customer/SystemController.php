@@ -625,8 +625,27 @@ class SystemController extends Controller
         $addressId = !empty($shipping['shipping_method_id']) ? $shipping['shipping_method_id'] : 0;
 
         // Step 7: Validate required fields when delivery_type is not pickup
-        if ($shipping['delivery_type'] != 'pickup' && isset($shipping['shipping_method_id'])) {
-            $requiredFields = ['contact_person_name', 'address_type', 'address', 'city', 'state', 'area', 'country', 'phone'];
+        if ($shipping['delivery_type'] != 'pickup') {
+            $requiredFields = ['contact_person_name', 'address_type', 'address', 'phone'];
+
+            $countryRestrictionEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
+            $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
+            $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+            $areaRestrictionEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
+
+            if ($countryRestrictionEnabled) {
+                $requiredFields[] = 'country';
+            }
+            if ($stateRestrictionEnabled) {
+                $requiredFields[] = 'state';
+            }
+            if ($cityRestrictionEnabled) {
+                $requiredFields[] = 'city';
+            }
+            if ($areaRestrictionEnabled) {
+                $requiredFields[] = 'area';
+            }
+
             if ($isGuestCustomer) {
                 $requiredFields[] = 'email';
             }
@@ -647,7 +666,7 @@ class SystemController extends Controller
                 );
             }
 
-            if ($countryRestrictStatus && !self::delivery_country_exist_check($shipping['country'])) {
+            if ($countryRestrictionEnabled && !self::delivery_country_exist_check($shipping['country'])) {
                 return $this->checkoutValidationError(
                     message: translate('Delivery_unavailable_in_this_country.'),
                     fieldErrors: ['country' => translate('Delivery_unavailable_in_this_country.')],
@@ -655,27 +674,12 @@ class SystemController extends Controller
                     status: 403
                 );
             }
-        } else if ($shipping['delivery_type'] != 'pickup') {
-            $requiredFields = ['contact_person_name', 'address_type', 'address', 'city', 'state', 'country', 'phone'];
-            if ($isGuestCustomer) {
-                $requiredFields[] = 'email';
-            }
+        }
 
-            $missingFields = [];
-            foreach ($requiredFields as $field) {
-                if (empty($shipping[$field])) {
-                    $missingFields[] = $field;
-                }
-            }
-
-            if (!empty($missingFields)) {
-                return $this->checkoutValidationError(
-                    message: $this->buildCheckoutMissingFieldsMessage($missingFields, 'Please_fill_the_following_fields'),
-                    fieldErrors: $this->buildCheckoutFieldErrors($missingFields),
-                    focusField: $missingFields[0],
-                    status: 403
-                );
-            }
+        // Auto-resolve country when single-country mode
+        $deliveryCountries = \App\Models\DeliveryCountryCode::all();
+        if ($deliveryCountries->count() === 1 && empty($shipping['country'])) {
+            $shipping['country'] = $deliveryCountries->first()->country_code;
         }
 
         if ($shipping['delivery_type'] != 'pickup') {
@@ -1037,43 +1041,34 @@ class SystemController extends Controller
 
     private function validateShippingDeliveryLocation(array $shipping): ?array
     {
+        $countryRestrictionEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
+        $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
+        $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+        $areaRestrictionEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
+
+        // Country: always resolve if provided
         $countryCode = $this->normalizeCountryCodeFromInput($shipping['country'] ?? null);
-        if (!$countryCode) {
+        if ($countryRestrictionEnabled && !$countryCode) {
             return [
                 'field' => 'country',
                 'message' => translate('Please_select_a_valid_country'),
             ];
         }
 
-        $stateId = $this->resolveStateId(
-            stateIdOrName: $shipping['state_id'] ?? ($shipping['state'] ?? null),
-            countryCode: $countryCode
-        );
-        if (!$stateId) {
-            return [
-                'field' => 'state',
-                'message' => translate('Please_select_a_valid_state'),
-            ];
-        }
+        // State: only resolve and validate if state restriction is enabled
+        $stateId = null;
+        if ($stateRestrictionEnabled && $countryCode) {
+            $stateId = $this->resolveStateId(
+                stateIdOrName: $shipping['state_id'] ?? ($shipping['state'] ?? null),
+                countryCode: $countryCode
+            );
+            if (!$stateId) {
+                return [
+                    'field' => 'state',
+                    'message' => translate('Please_select_a_valid_state'),
+                ];
+            }
 
-        $cityId = $this->resolveCityId(
-            cityIdOrName: $shipping['city_id'] ?? ($shipping['city'] ?? null),
-            stateId: $stateId
-        );
-        if (!$cityId) {
-            return [
-                'field' => 'city',
-                'message' => translate('Please_select_a_valid_city'),
-            ];
-        }
-
-        $areaId = $this->resolveAreaId(
-            areaIdOrName: $shipping['area'] ?? null,
-            cityId: $cityId
-        );
-
-        $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
-        if ($stateRestrictionEnabled) {
             $allowedStateIds = DeliveryState::query()->pluck('state_id')->toArray();
             if (!in_array($stateId, $allowedStateIds, true)) {
                 return [
@@ -1083,8 +1078,20 @@ class SystemController extends Controller
             }
         }
 
-        $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+        // City: only resolve and validate if city restriction is enabled
+        $cityId = null;
         if ($cityRestrictionEnabled) {
+            $cityId = $this->resolveCityId(
+                cityIdOrName: $shipping['city_id'] ?? ($shipping['city'] ?? null),
+                stateId: $stateId
+            );
+            if (!$cityId) {
+                return [
+                    'field' => 'city',
+                    'message' => translate('Please_select_a_valid_city'),
+                ];
+            }
+
             $allowedCityIds = DeliveryCity::query()->pluck('city_id')->toArray();
             if (!in_array($cityId, $allowedCityIds, true)) {
                 return [
@@ -1094,8 +1101,12 @@ class SystemController extends Controller
             }
         }
 
-        $areaRestrictionEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
+        // Area: only resolve and validate if area restriction is enabled
         if ($areaRestrictionEnabled) {
+            $areaId = $this->resolveAreaId(
+                areaIdOrName: $shipping['area'] ?? null,
+                cityId: $cityId
+            );
             if (!$areaId) {
                 return [
                     'field' => 'area',

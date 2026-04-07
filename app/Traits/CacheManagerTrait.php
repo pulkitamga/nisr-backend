@@ -8,6 +8,7 @@ use App\Models\BusinessSetting;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Coupon;
+use App\Models\DeliveryCountryCode;
 use App\Models\Currency;
 use App\Models\HelpTopic;
 use App\Models\BusinessPage;
@@ -502,6 +503,55 @@ trait CacheManagerTrait
     {
         return Cache::remember(CACHE_FOR_ANALYTIC_SCRIPT_ACTIVE_LIST, CACHE_FOR_3_HOURS, function () {
             return AnalyticScript::where(['is_active' => 1])->get();
+        });
+    }
+
+    public function cacheDeliveryRestrictionSetup(): array
+    {
+        return Cache::remember(CACHE_DELIVERY_RESTRICTION_SETUP, CACHE_FOR_3_HOURS, function () {
+            $deliveryCountries = DeliveryCountryCode::all();
+            $singleCountryMode = $deliveryCountries->count() === 1;
+            $defaultCountryCode = $singleCountryMode ? $deliveryCountries->first()->country_code : null;
+
+            // Read raw restriction flags
+            $countryEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
+            $stateEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
+            $cityEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+            $areaEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
+            $zipEnabled = (int)getWebConfig(name: 'delivery_zip_code_area_restriction') === 1;
+
+            // When shipping method is area_wise, force country/state/city/area ON
+            // because shipping cost calculation requires all four levels
+            $shippingType = $this->cacheInHouseShippingType();
+            if ($shippingType === 'area_wise') {
+                $countryEnabled = true;
+                $stateEnabled = true;
+                $cityEnabled = true;
+                $areaEnabled = true;
+            }
+
+            $buildField = fn(bool $on) => [
+                'enabled' => $on,
+                'required' => $on,
+                'visible' => $on,
+            ];
+
+            return [
+                'delivery_country_restriction' => $countryEnabled ? 1 : 0,
+                'delivery_state_restriction' => $stateEnabled ? 1 : 0,
+                'delivery_city_restriction' => $cityEnabled ? 1 : 0,
+                'delivery_area_restriction' => $areaEnabled ? 1 : 0,
+                'delivery_zip_code_area_restriction' => $zipEnabled ? 1 : 0,
+                'single_country_mode' => $singleCountryMode,
+                'default_country_code' => $defaultCountryCode,
+                'setup' => [
+                    'country' => $buildField($countryEnabled),
+                    'state' => $buildField($stateEnabled),
+                    'city' => $buildField($cityEnabled),
+                    'area' => $buildField($areaEnabled),
+                    'zip' => $buildField($zipEnabled),
+                ],
+            ];
         });
     }
 

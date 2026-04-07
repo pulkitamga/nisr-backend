@@ -240,14 +240,27 @@ class UserProfileController extends Controller
 
     public function address_store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $countryRestrictionEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
+        $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
+        $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+
+        $validationRules = [
             'name' => 'required',
             'phone' => 'required|max:20',
-            'country' => 'required',
-            'state' => 'required',
-            'city' => 'required',
             'address' => 'required',
-        ]);
+        ];
+
+        if ($countryRestrictionEnabled) {
+            $validationRules['country'] = 'required';
+        }
+        if ($stateRestrictionEnabled) {
+            $validationRules['state'] = 'required';
+        }
+        if ($cityRestrictionEnabled) {
+            $validationRules['city'] = 'required';
+        }
+
+        $request->validate($validationRules);
 
         $numericPhoneValue = preg_replace('/[^0-9]/', '', $request['phone']);
         $numericLength = strlen($numericPhoneValue);
@@ -323,15 +336,31 @@ class UserProfileController extends Controller
     public function address_update(Request $request)
     {
 
-        $request->validate([
+        $countryRestrictionEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
+        $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
+        $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+        $areaRestrictionEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
+
+        $validationRules = [
             'name' => 'required',
             'phone' => 'required|max:20',
-            'country' => 'required',
-            'state' => 'required',
-            'city' => 'required',
-            'area' => 'required',
             'address' => 'required',
-        ]);
+        ];
+
+        if ($countryRestrictionEnabled) {
+            $validationRules['country'] = 'required';
+        }
+        if ($stateRestrictionEnabled) {
+            $validationRules['state'] = 'required';
+        }
+        if ($cityRestrictionEnabled) {
+            $validationRules['city'] = 'required';
+        }
+        if ($areaRestrictionEnabled) {
+            $validationRules['area'] = 'required';
+        }
+
+        $request->validate($validationRules);
 
         $numericPhoneValue = preg_replace('/[^0-9]/', '', $request['phone']);
         $numericLength = strlen($numericPhoneValue);

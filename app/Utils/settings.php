@@ -145,6 +145,11 @@ if (!function_exists('getWebConfigCacheKeys')) {
             'stock_limit',
             'stock_validation_refactor_enabled',
             'stock_validation_refactor_mirror_mode',
+            'delivery_country_restriction',
+            'delivery_state_restriction',
+            'delivery_city_restriction',
+            'delivery_area_restriction',
+            'delivery_zip_code_area_restriction',
         ];
     }
 }

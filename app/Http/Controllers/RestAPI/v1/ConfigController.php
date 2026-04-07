@@ -113,6 +113,9 @@ class ConfigController extends Controller
         }
 
         $systemColors = getWebConfig('colors');
+
+        $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+
         return response()->json([
             'primary_color' => $systemColors['primary'],
             'secondary_color' => $systemColors['secondary'],
@@ -131,8 +134,14 @@ class ConfigController extends Controller
             'company_logo' => $companyLogo,
             'company_cover_image' => $companyShopBanner,
             'company_fav_icon' => $companyFavIcon,
-            'delivery_country_restriction' => (int)getWebConfig(name: 'delivery_country_restriction'),
-            'delivery_zip_code_area_restriction' => (int)getWebConfig(name: 'delivery_zip_code_area_restriction'),
+            'delivery_country_restriction' => $deliveryRestriction['delivery_country_restriction'],
+            'delivery_zip_code_area_restriction' => $deliveryRestriction['delivery_zip_code_area_restriction'],
+            'delivery_state_restriction' => $deliveryRestriction['delivery_state_restriction'],
+            'delivery_city_restriction' => $deliveryRestriction['delivery_city_restriction'],
+            'delivery_area_restriction' => $deliveryRestriction['delivery_area_restriction'],
+            'delivery_restriction_setup' => $deliveryRestriction['setup'],
+            'single_country_mode' => $deliveryRestriction['single_country_mode'],
+            'default_country_code' => $deliveryRestriction['default_country_code'],
             'base_urls' => [
                 'product_image_url' => ProductManager::product_image_path('product'),
                 'product_thumbnail_url' => ProductManager::product_image_path('thumbnail'),

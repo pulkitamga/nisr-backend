@@ -24,11 +24,13 @@ use App\Models\State;
 use App\Models\City;
 use App\Models\DeliveryArea;
 use App\Models\Area;
+use App\Models\ShippingType;
 
 class DeliveryRestrictionController extends BaseController
 {
     private const PARENT_REQUIRED_MESSAGE = 'Please enable the parent level first.';
     private const CHILD_REQUIRED_MESSAGE = 'Please disable the child level first.';
+    private const AREA_WISE_ENFORCED_MESSAGE = 'Cannot disable: Area Wise shipping requires all address levels (country, state, city, area) to be enabled. Change the shipping method first.';
     private const LEVEL_TO_SETTING_TYPE = [
         'country' => 'delivery_country_restriction',
         'state' => 'delivery_state_restriction',
@@ -97,6 +99,14 @@ class DeliveryRestrictionController extends BaseController
 
     private function hierarchyValidationMessage(string $level, int $targetStatus, array $statuses): ?string
     {
+        // When area_wise shipping is active, prevent disabling country/state/city/area
+        if ($targetStatus === 0 && in_array($level, ['country', 'state', 'city', 'area'])) {
+            $shippingType = ShippingType::where('seller_id', 0)->first();
+            if ($shippingType && $shippingType->shipping_type === 'area_wise') {
+                return self::AREA_WISE_ENFORCED_MESSAGE;
+            }
+        }
+
         if ($targetStatus === 1) {
             if ($level === 'state' && ($statuses['country'] ?? 0) !== 1) {
                 return self::PARENT_REQUIRED_MESSAGE;
