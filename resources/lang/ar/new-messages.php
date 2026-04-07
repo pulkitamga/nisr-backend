@@ -12669,5 +12669,6 @@ return [
 	"message_type"=>"نوع الرسالة",
 	"group_by"=>"المجموعة حسب",
 	"assigned "=>"مُكَلَّف",
+	"stock_transfer_chart"=>"مخطط نقل الأسهم"
 	
 ];

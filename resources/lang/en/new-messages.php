@@ -13154,4 +13154,5 @@ return [
 	"message_type"=>"Message type",
 	"group_by"=>"Group By",
 	"assigned" =>"Assigned",
+	"stock_transfer_chart"=>"Stock transfer chart"
 ];

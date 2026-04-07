@@ -36,7 +36,7 @@ class StockTransferReportController extends Controller
                 'from' => 'nullable|date',
                 'to' => 'nullable|date',
                 'from_branch_id' => 'nullable|exists:branches,id',
-                'to_branch_id' => 'nullable|exists:branches,id', 
+                'to_branch_id' => 'nullable|exists:branches,id',
                 'status' => 'nullable|in:pending,approved,rejected',
             ]);
 
@@ -130,8 +130,8 @@ class StockTransferReportController extends Controller
             'periodType' => $periodType,
             'filters' => [
                 'date_type' => $dateType,
-                'from' => $fromDate->toDateString(),
-                'to' => $toDate->toDateString(),
+                'from' => $fromDate->locale(app()->getLocale())->translatedFormat('j M Y'),
+                'to' => $toDate->locale(app()->getLocale())->translatedFormat('j M Y'),
                 'from_branch_id' => $fromBranchId ? (int)$fromBranchId : null,
                 'to_branch_id' => $toBranchId ? (int)$toBranchId : null,
                 'status' => $status,
