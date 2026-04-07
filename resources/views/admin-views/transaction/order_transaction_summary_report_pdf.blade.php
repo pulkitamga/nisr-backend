@@ -294,7 +294,7 @@
         <div class="header-content">
             <h2>{{ translate('expense_Transaction_Statement') }}</h2>
             <p>{{ translate('duration') }}: {{ $dateRange }}</p>
-            <p>{{ translate('generated_on') }}: {{ now()->format('d M Y, h:i A') }}</p>
+            <p>{{ translate('generated_on') }}: {{ now()->translatedFormat('d M Y, h:i A') }}</p>
         </div>
 
         <div class="logo-container">
@@ -365,34 +365,34 @@
         </table>
     </div>
 
-   <!-- CHART SECTION - TABLE BASED -->
-<table width="100%" style="margin-bottom:20px;">
-    <tr>
-        <!-- Order Trend -->
-        @if (!empty($chartImageOrder))
-        <td width="50%" style="vertical-align: top; padding-right:10px;">
-            <div class="chart-box">
-                <div class="chart-title">
-                    {{ translate('order_trend') }} <small>({{ $dateRange }})</small>
-                </div>
-                <img src="{{ $chartImageOrder }}" class="chart-image">
-            </div>
-        </td>
-        @endif
+    <!-- CHART SECTION - TABLE BASED -->
+    <table width="100%" style="margin-bottom:20px;">
+        <tr>
+            <!-- Order Trend -->
+            @if (!empty($chartImageOrder))
+                <td width="50%" style="vertical-align: top; padding-right:10px;">
+                    <div class="chart-box">
+                        <div class="chart-title">
+                            {{ translate('order_trend') }} <small>({{ $dateRange }})</small>
+                        </div>
+                        <img src="{{ $chartImageOrder }}" class="chart-image">
+                    </div>
+                </td>
+            @endif
 
-        <!-- Payment Chart -->
-        @if (!empty($chartImagePayment))
-        <td width="50%" style="vertical-align: top; padding-left:10px;">
-            <div class="chart-box">
-                <div class="chart-title">
-                    {{ translate('payment_distribution') }}
-                </div>
-                <img src="{{ $chartImagePayment }}" class="chart-image">
-            </div>
-        </td>
-        @endif
-    </tr>
-</table>
+            <!-- Payment Chart -->
+            @if (!empty($chartImagePayment))
+                <td width="50%" style="vertical-align: top; padding-left:10px;">
+                    <div class="chart-box">
+                        <div class="chart-title">
+                            {{ translate('payment_distribution') }}
+                        </div>
+                        <img src="{{ $chartImagePayment }}" class="chart-image">
+                    </div>
+                </td>
+            @endif
+        </tr>
+    </table>
 
     <!-- MAIN SUMMARY TABLE -->
     <div class="section-heading">

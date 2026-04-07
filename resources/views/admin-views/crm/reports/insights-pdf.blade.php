@@ -2,6 +2,9 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ?? false ? 'rtl' : 'ltr' }}">
 
 <head>
+    @php
+        \Carbon\Carbon::setLocale(app()->getLocale());
+    @endphp
     <meta charset="UTF-8">
     <title>{{ translate('crm_insights_report') }}</title>
     <style>
@@ -372,7 +375,8 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('crm_insights_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $snapshotFrom->translatedFormat('M d, Y') }} - {{ $snapshotTo->translatedFormat('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $snapshotFrom->translatedFormat('M d, Y') }} -
+                {{ $snapshotTo->translatedFormat('M d, Y') }}</p>
         </div>
         <div class="logo-container">
             @php
@@ -408,17 +412,20 @@
                 <td>
                     <div class="kpi-label">{{ translate('pipeline_value') }}</div>
                     <div class="kpi-value" style="font-size: 13px;">
-                        <strong>{{ number_format((float) ($kpi['total_deal_value'] ?? 0), 2) }}</strong></div>
+                        <strong>{{ number_format((float) ($kpi['total_deal_value'] ?? 0), 2) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('lead_to_deal') }}</div>
                     <div class="kpi-value">
-                        <strong>{{ number_format((float) ($kpi['lead_to_deal_rate'] ?? 0), 1) }}%</strong></div>
+                        <strong>{{ number_format((float) ($kpi['lead_to_deal_rate'] ?? 0), 1) }}%</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('win_rate') }}</div>
                     <div class="kpi-value">
-                        <strong>{{ number_format((float) ($kpi['deal_win_rate'] ?? 0), 1) }}%</strong></div>
+                        <strong>{{ number_format((float) ($kpi['deal_win_rate'] ?? 0), 1) }}%</strong>
+                    </div>
                 </td>
             </tr>
         </table>
@@ -438,7 +445,10 @@
                                 ' - ' .
                                 $snapshotTo->translatedFormat('M d, Y') .
                                 ')',
-                            'this_month' => translate('crm_trend') . ' (' . $snapshotFrom->translatedFormat('F Y') . ')',
+                            'this_month' => translate('crm_trend') .
+                                ' (' .
+                                $snapshotFrom->translatedFormat('F Y') .
+                                ')',
                             'this_year' => translate('crm_trend') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
                             'custom_date' => translate('crm_trend') .
                                 ': ' .
@@ -457,15 +467,24 @@
                 <div class="chart-stage">
                     @php
                         $stageTitle = match ($filters['date_type'] ?? 'this_year') {
-                            'today' => translate('deal_stage_mix') . ' (' . $snapshotFrom->translatedFormat('j F Y') . ')',
+                            'today' => translate('deal_stage_mix') .
+                                ' (' .
+                                $snapshotFrom->translatedFormat('j F Y') .
+                                ')',
                             'this_week' => translate('deal_stage_mix') .
                                 ' (' .
                                 $snapshotFrom->translatedFormat('M d') .
                                 ' - ' .
                                 $snapshotTo->translatedFormat('M d, Y') .
                                 ')',
-                            'this_month' => translate('deal_stage_mix') . ' (' . $snapshotFrom->translatedFormat('F Y') . ')',
-                            'this_year' => translate('deal_stage_mix') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
+                            'this_month' => translate('deal_stage_mix') .
+                                ' (' .
+                                $snapshotFrom->translatedFormat('F Y') .
+                                ')',
+                            'this_year' => translate('deal_stage_mix') .
+                                ' (' .
+                                $snapshotFrom->translatedFormat('Y') .
+                                ')',
                             'custom_date' => translate('deal_stage_mix') .
                                 ': ' .
                                 $snapshotFrom->translatedFormat('j F Y') .
@@ -486,7 +505,10 @@
         <div class="full-chart">
             @php
                 $statusTitle = match ($filters['date_type'] ?? 'this_year') {
-                    'today' => translate('message_status_distribution') . ' (' . $snapshotFrom->translatedFormat('j F Y') . ')',
+                    'today' => translate('message_status_distribution') .
+                        ' (' .
+                        $snapshotFrom->translatedFormat('j F Y') .
+                        ')',
                     'this_week' => translate('message_status_distribution') .
                         ' (' .
                         $snapshotFrom->translatedFormat('M d') .
@@ -497,7 +519,10 @@
                         ' (' .
                         $snapshotFrom->translatedFormat('F Y') .
                         ')',
-                    'this_year' => translate('message_status_distribution') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
+                    'this_year' => translate('message_status_distribution') .
+                        ' (' .
+                        $snapshotFrom->translatedFormat('Y') .
+                        ')',
                     'custom_date' => translate('message_status_distribution') .
                         ': ' .
                         $snapshotFrom->translatedFormat('j F Y') .
@@ -518,10 +543,18 @@
             @php
                 $tableDatePart = match ($filters['date_type'] ?? 'this_year') {
                     'today' => '(' . $snapshotFrom->translatedFormat('j F Y') . ')',
-                    'this_week' => '(' . $snapshotFrom->translatedFormat('M d') . ' - ' . $snapshotTo->translatedFormat('M d, Y') . ')',
+                    'this_week' => '(' .
+                        $snapshotFrom->translatedFormat('M d') .
+                        ' - ' .
+                        $snapshotTo->translatedFormat('M d, Y') .
+                        ')',
                     'this_month' => '(' . $snapshotFrom->translatedFormat('F Y') . ')',
                     'this_year' => '(' . $snapshotFrom->translatedFormat('Y') . ')',
-                    'custom_date' => '(' . $snapshotFrom->translatedFormat('j F Y') . ' - ' . $snapshotTo->translatedFormat('j F Y') . ')',
+                    'custom_date' => '(' .
+                        $snapshotFrom->translatedFormat('j F Y') .
+                        ' - ' .
+                        $snapshotTo->translatedFormat('j F Y') .
+                        ')',
                     default => '(' . translate('last_12_months') . ')',
                 };
             @endphp

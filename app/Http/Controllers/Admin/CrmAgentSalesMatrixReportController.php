@@ -47,7 +47,7 @@ class CrmAgentSalesMatrixReportController extends BaseController
     {
         $data = $this->buildReportData($request);
         $data['exportedAt'] = now();
-         $data['report_title'] = translate('crm_agent_sales_matrix_report');
+        $data['report_title'] = translate('crm_agent_sales_matrix_report');
         return app(ReportPdfService::class)->download(
             view: CrmAgentSalesMatrixReport::EXPORT_PDF[VIEW],
             data: $data,
@@ -100,8 +100,8 @@ class CrmAgentSalesMatrixReportController extends BaseController
             'employeesForMatrix' => $employeeListForMatrix,
             'filters' => [
                 'date_type' => $dateType,
-                'from' => $fromDate->toDateString(),
-                'to' => $toDate->toDateString(),
+                'from' => $fromDate->locale(app()->getLocale())->translatedFormat('d F Y'),
+                'to' => $toDate->locale(app()->getLocale())->translatedFormat('d F Y'),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
                 'period_type' => $periodStrategy['type'],

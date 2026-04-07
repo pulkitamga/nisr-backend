@@ -37,9 +37,9 @@ class OrderReportController extends Controller
 
         $chart_data = self::order_report_chart_filter($request);
 
-      
+
         $chartVal = [];
-        foreach(($chart_data['order_amount'] ?? []) as $amount) {
+        foreach (($chart_data['order_amount'] ?? []) as $amount) {
             $chartVal[] = usdToDefaultCurrency(amount: $amount);
         }
 
@@ -110,7 +110,7 @@ class OrderReportController extends Controller
         return view('admin-views.report.order-index', compact(
             'orders',
             'order_count',
-            'payment_data', 
+            'payment_data',
             'chart_data',
             'due_amount',
             'settled_amount',
@@ -178,26 +178,53 @@ class OrderReportController extends Controller
         $to = $request['to'];
         $date_type = $request['date_type'] ?? 'this_year';
 
+        $locale = app()->getLocale();
+
         if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
-            $fromDate = \Carbon\Carbon::parse($from)->format('d M, Y');
-            $toDate = \Carbon\Carbon::parse($to)->format('d M, Y');
+
+            $fromDate = \Carbon\Carbon::parse($from)
+                ->locale($locale)
+                ->translatedFormat('d M Y');
+
+            $toDate = \Carbon\Carbon::parse($to)
+                ->locale($locale)
+                ->translatedFormat('d M Y');
+
             $dateRange = $fromDate . ' - ' . $toDate;
         } else {
+
             switch ($date_type) {
+
                 case 'this_year':
-                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                    $dateRange =
+                        now()->startOfYear()->locale($locale)->translatedFormat('d M Y') .
+                        ' - ' .
+                        now()->endOfYear()->locale($locale)->translatedFormat('d M Y');
                     break;
+
                 case 'this_month':
-                    $dateRange = now()->startOfMonth()->format('d M, Y') . ' - ' . now()->endOfMonth()->format('d M, Y');
+                    $dateRange =
+                        now()->startOfMonth()->locale($locale)->translatedFormat('d M Y') .
+                        ' - ' .
+                        now()->endOfMonth()->locale($locale)->translatedFormat('d M Y');
                     break;
+
                 case 'this_week':
-                    $dateRange = now()->startOfWeek()->format('d M, Y') . ' - ' . now()->endOfWeek()->format('d M, Y');
+                    $dateRange =
+                        now()->startOfWeek()->locale($locale)->translatedFormat('d M Y') .
+                        ' - ' .
+                        now()->endOfWeek()->locale($locale)->translatedFormat('d M Y');
                     break;
+
                 case 'today':
-                    $dateRange = now()->format('d M, Y');
+                    $dateRange = now()->locale($locale)->translatedFormat('d M Y');
                     break;
+
                 default:
-                    $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                    $dateRange =
+                        now()->startOfYear()->locale($locale)->translatedFormat('d M Y') .
+                        ' - ' .
+                        now()->endOfYear()->locale($locale)->translatedFormat('d M Y');
             }
         }
 
@@ -215,59 +242,59 @@ class OrderReportController extends Controller
             $totalDeliverymanIncentive += ($order->delivery_type == 'self_delivery' && $order->delivery_man_id) ? $order->deliveryman_charge : 0;
         }
 
-      
+
         $trendChart = $request->input('trend_chart');
         $stageChart = $request->input('stage_chart');
 
-      
+
         $data = [
-        'report_title' => translate('order_report'),
-        'exportedAt' => now(),
- 
-        'orders' => $orders,
-        'total_orders' => $orders->count(),
-        'seller' => $seller,
- 
-        'company_name' => getWebConfig('company_name'),
-        'company_email' => getWebConfig('company_email'),
-        'company_phone' => getWebConfig('company_phone'),
-        'company_web_logo' => getWebConfig('company_web_logo'),
- 
-        'date_type' => $dateType,
-        'date_range' => $dateRange,
- 
-        'order_count' => $order_count,
- 
-        'cash_payment' => $cash_payment,
-        'digital_payment' => $digital_payment,
-        'wallet_payment' => $wallet_payment,
-        'offline_payment' => $offline_payment,
-        'total_payment' => $total_payment,
- 
-        'cash_percentage' => $cash_percentage,
-        'digital_percentage' => $digital_percentage,
-        'wallet_percentage' => $wallet_percentage,
-        'offline_percentage' => $offline_percentage,
- 
-        'total_order_amount' => $totalOrderAmount,
-        'total_product_discount' => $totalProductDiscount,
-        'total_coupon_discount' => $totalCouponDiscount,
-        'total_tax' => $totalTax,
-        'total_order_commission' => $totalOrderCommission,
-        'total_delivery_charge' => $totalDeliveryCharge,
-        'total_deliveryman_incentive' => $totalDeliverymanIncentive,
- 
-        'trend_chart' => $request->input('trend_chart'),
-        'stage_chart' => $request->input('stage_chart'),
-    ];
- 
-    // ================= DOWNLOAD =================
-    return app(ReportPdfService::class)->download(
-        view: 'admin-views.transaction.total_orders_report_pdf',
-       data: ['data' => $data],
-        fileName: 'order-report.pdf',
-        orientation: 'portrait'
-    );
+            'report_title' => translate('order_report'),
+            'exportedAt' => now(),
+
+            'orders' => $orders,
+            'total_orders' => $orders->count(),
+            'seller' => $seller,
+
+            'company_name' => getWebConfig('company_name'),
+            'company_email' => getWebConfig('company_email'),
+            'company_phone' => getWebConfig('company_phone'),
+            'company_web_logo' => getWebConfig('company_web_logo'),
+
+            'date_type' => $dateType,
+            'date_range' => $dateRange,
+
+            'order_count' => $order_count,
+
+            'cash_payment' => $cash_payment,
+            'digital_payment' => $digital_payment,
+            'wallet_payment' => $wallet_payment,
+            'offline_payment' => $offline_payment,
+            'total_payment' => $total_payment,
+
+            'cash_percentage' => $cash_percentage,
+            'digital_percentage' => $digital_percentage,
+            'wallet_percentage' => $wallet_percentage,
+            'offline_percentage' => $offline_percentage,
+
+            'total_order_amount' => $totalOrderAmount,
+            'total_product_discount' => $totalProductDiscount,
+            'total_coupon_discount' => $totalCouponDiscount,
+            'total_tax' => $totalTax,
+            'total_order_commission' => $totalOrderCommission,
+            'total_delivery_charge' => $totalDeliveryCharge,
+            'total_deliveryman_incentive' => $totalDeliverymanIncentive,
+
+            'trend_chart' => $request->input('trend_chart'),
+            'stage_chart' => $request->input('stage_chart'),
+        ];
+
+        // ================= DOWNLOAD =================
+        return app(ReportPdfService::class)->download(
+            view: 'admin-views.transaction.total_orders_report_pdf',
+            data: ['data' => $data],
+            fileName: 'order-report.pdf',
+            orientation: 'portrait'
+        );
     }
 
     // ================== CHART HELPER METHODS ==================

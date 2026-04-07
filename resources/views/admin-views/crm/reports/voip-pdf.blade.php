@@ -308,8 +308,8 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('voip_insights_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $snapshotFrom->translatedFormat('M d, Y') }} -
-                {{ $snapshotTo->translatedFormat('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $snapshotFrom->locale(app()->getLocale())->translatedFormat('d M Y') }} -
+{{ $snapshotTo->locale(app()->getLocale())->translatedFormat('d M Y') }}</p>
         </div>
         <div class="logo-container">
             @php
@@ -383,18 +383,18 @@
                     <div class="chart-col">
                         @php
                             $trendTitle = match ($filters['date_type'] ?? 'this_year') {
-                                'today' => translate('call_trend') . ' (' . $snapshotFrom->translatedFormat('j F Y') . ')',
+                                'today' => translate('call_trend') . ' (' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('j F Y') . ')',
                                 'this_week' => translate('call_trend') .
                                     ' (' .
-                                    $snapshotFrom->translatedFormat('M d') .
+                                    $snapshotFrom->locale(app()->getLocale())->translatedFormat('M d') .
                                     ' - ' .
                                     $snapshotTo->translatedFormat('M d, Y') .
                                     ')',
-                                'this_month' => translate('call_trend') . ' (' . $snapshotFrom->translatedFormat('F Y') . ')',
-                                'this_year' => translate('call_trend') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
+                                'this_month' => translate('call_trend') . ' (' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('F Y') . ')',
+                                'this_year' => translate('call_trend') . ' (' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('Y') . ')',
                                 'custom_date' => translate('call_trend') .
                                     ': ' .
-                                    $snapshotFrom->translatedFormat('j F Y') .
+                                    $snapshotFrom->locale(app()->getLocale())->translatedFormat('j F Y') .
                                     ' - ' .
                                     $snapshotTo->translatedFormat('j F Y'),
                                 default => translate('call_trend') . ' (' . translate('last_12_months') . ')',
@@ -411,18 +411,18 @@
                     <div class="chart-col">
                         @php
                             $statusTitle = match ($filters['date_type'] ?? 'this_year') {
-                                'today' => translate('call_status_mix') . ' (' . $snapshotFrom->translatedFormat('j F Y') . ')',
+                                'today' => translate('call_status_mix') . ' (' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('j F Y') . ')',
                                 'this_week' => translate('call_status_mix') .
                                     ' (' .
-                                    $snapshotFrom->translatedFormat('M d') .
+                                    $snapshotFrom->locale(app()->getLocale())->translatedFormat('M d') .
                                     ' - ' .
                                     $snapshotTo->translatedFormat('M d, Y') .
                                     ')',
-                                'this_month' => translate('call_status_mix') . ' (' . $snapshotFrom->translatedFormat('F Y') . ')',
-                                'this_year' => translate('call_status_mix') . ' (' . $snapshotFrom->translatedFormat('Y') . ')',
+                                'this_month' => translate('call_status_mix') . ' (' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('F Y') . ')',
+                                'this_year' => translate('call_status_mix') . ' (' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('Y') . ')',
                                 'custom_date' => translate('call_status_mix') .
                                     ': ' .
-                                    $snapshotFrom->translatedFormat('j F Y') .
+                                    $snapshotFrom->locale(app()->getLocale())->translatedFormat('j F Y') .
                                     ' - ' .
                                     $snapshotTo->translatedFormat('j F Y'),
                                 default => translate('call_status_mix') . ' (' . translate('last_12_months') . ')',
@@ -440,7 +440,7 @@
     @if (!empty($directionChart))
         <div class="full-chart">
             @php
-                $directionTitle = translate('inbound_vs_outbound') . ' - ' . $snapshotFrom->translatedFormat('M Y');
+                $directionTitle = translate('inbound_vs_outbound') . ' - ' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('M Y');
             @endphp
             <div class="chart-title">{{ $directionTitle }}</div>
             <img src="{{ $directionChart }}" style="width:100%; max-height:200px; object-fit:contain;"
@@ -453,11 +453,11 @@
         <div class="table-header">
             @php
                 $tableDatePart = match ($filters['date_type'] ?? 'this_year') {
-                    'today' => '(' . $snapshotFrom->translatedFormat('j F Y') . ')',
-                    'this_week' => '(' . $snapshotFrom->translatedFormat('M d') . ' - ' . $snapshotTo->translatedFormat('M d, Y') . ')',
-                    'this_month' => '(' . $snapshotFrom->translatedFormat('F Y') . ')',
-                    'this_year' => '(' . $snapshotFrom->translatedFormat('Y') . ')',
-                    'custom_date' => '(' . $snapshotFrom->translatedFormat('j F Y') . ' - ' . $snapshotTo->translatedFormat('j F Y') . ')',
+                    'today' => '(' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('j F Y') . ')',
+                    'this_week' => '(' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('M d') . ' - ' . $snapshotTo->translatedFormat('M d, Y') . ')',
+                    'this_month' => '(' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('F Y') . ')',
+                    'this_year' => '(' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('Y') . ')',
+                    'custom_date' => '(' . $snapshotFrom->locale(app()->getLocale())->translatedFormat('j F Y') . ' - ' . $snapshotTo->translatedFormat('j F Y') . ')',
                     default => '(' . translate('last_12_months') . ')',
                 };
             @endphp

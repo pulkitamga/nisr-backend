@@ -75,7 +75,10 @@ class UcmController extends Controller
         [$snapshotFrom, $snapshotTo] = $this->resolveDateRange($request);
         // Calculate the dynamic range label
         // Format date range for display
-        $rangeLabel = $snapshotFrom->format('d M Y') . ' - ' . $snapshotTo->format('d M Y');
+        $rangeLabel =
+            $snapshotFrom->locale(app()->getLocale())->translatedFormat('d M Y')
+            . ' - ' .
+            $snapshotTo->locale(app()->getLocale())->translatedFormat('d M Y');
         $resolvedAgentSql = $this->resolvedAgentIdSql('crm_calls');
 
         $filters = [
