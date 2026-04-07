@@ -248,7 +248,7 @@
             <div class="col-xl-8">
                 <div class="card h-100">
                     <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ translate('voip_trend_') }}({{ $rangeLabel }})</h4>
+                        <h4 class="mb-0">{{ translate('voip_trend') }}({{ $rangeLabel }})</h4>
                         <span class="badge-soft">{{ translate('volume_completion_duration') }}</span>
                     </div>
                     <div class="card-body">
