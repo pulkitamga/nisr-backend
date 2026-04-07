@@ -125,11 +125,12 @@
                     <div class="service-request-section" id="mobileAddress" style="display: none;">
                         <h6 class="service-request-section-title"><span>3</span>{{ translate('Service address') }}</h6>
                         <div class="row">
-                            <div class="form-group col-lg-12">
-                                <label>{{ translate('country') }} <span class="text-danger">*</span></label>
+                            @php($singleCountry = count($countries) === 1)
+                            <div class="form-group col-lg-12 @if($singleCountry) d-none @endif" id="address-country-wrapper" @if($singleCountry) data-single-country @endif>
+                                <label @if($singleCountry) class="d-none" @endif>{{ translate('country') }} <span class="text-danger">*</span></label>
                                 <select id="address-country" class="form-control selectpicker @error('country') is-invalid @enderror" data-live-search="true" required>
                                     @foreach($countries as $d)
-                                        <option value="{{ $d['code'] }}" data-name="{{ $d['name'] }}">{{ $d['name'] }}</option>
+                                        <option value="{{ $d['code'] }}" data-name="{{ $d['name'] }}" {{ $singleCountry ? 'selected' : '' }}>{{ $d['name'] }}</option>
                                     @endforeach
                                 </select>
                                 <input type="hidden" name="country" id="country_name" value="{{ old('country') }}">

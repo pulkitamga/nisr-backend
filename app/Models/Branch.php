@@ -148,9 +148,11 @@ class Branch extends Model
      */
     public function getShippingMethodsAreas(): string
     {
-        $areas = $this->relationLoaded('shippingAreas')
-            ? $this->shippingAreas->pluck('area')->toArray()
-            : $this->shippingAreas()->pluck('area')->toArray();
+        if (!$this->relationLoaded('shippingAreas')) {
+            $this->load('shippingAreas');
+        }
+
+        $areas = $this->shippingAreas->pluck('area')->toArray();
         return implode(', ', $areas);
     }
 
@@ -160,9 +162,11 @@ class Branch extends Model
      */
     public function getDeliveryRestriction(): string
     {
-        $areas = $this->relationLoaded('deliveryRestrictions')
-            ? $this->deliveryRestrictions->pluck('area')->toArray()
-            : $this->deliveryRestrictions()->pluck('area')->toArray();
+        if (!$this->relationLoaded('deliveryRestrictions')) {
+            $this->load('deliveryRestrictions');
+        }
+
+        $areas = $this->deliveryRestrictions->pluck('area')->toArray();
         return implode(', ', $areas);
     }
 

@@ -32,6 +32,9 @@ class RefundStatusRequest extends FormRequest
             'rejected_note' => $this->input('refund_status') == 'rejected' ? 'required': '',
             'payment_method' => $this->input('refund_status') == 'refunded' ? 'required': '',
             'inventory_action' => $this->input('refund_status') == 'refunded' ? 'nullable|in:restock,no_restock' : 'nullable',
+            'restock_branch_id' => $this->input('refund_status') == 'refunded' && $this->input('inventory_action', 'restock') !== 'no_restock'
+                ? 'required|integer|exists:branches,id'
+                : 'nullable',
         ];
     }
     public function messages(): array
@@ -40,6 +43,7 @@ class RefundStatusRequest extends FormRequest
             'approved_note.required' => translate('The_approved_note_field_is_required'),
             'rejected_note.required' => translate('The_rejected_note_field_is_required'),
             'payment_method.required' => translate('The_payment_method_field_is_required'),
+            'restock_branch_id.required' => translate('The_branch_field_is_required'),
         ];
     }
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)

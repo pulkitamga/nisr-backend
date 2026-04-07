@@ -11,6 +11,7 @@ use App\Models\ServiceInvoice;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketConv;
 use App\Models\VehicleMake;
+use App\Models\VehicleModel;
 use App\Models\VehicleYear;
 use App\Services\ServiceRequestSubmissionService;
 use App\Utils\Helpers;
@@ -334,7 +335,7 @@ class ServiceRequestController extends Controller
             'subject' => $ticket->subject,
             'status_id' => (int) $ticket->status,
             'status_key' => $this->statusKey($ticket),
-            'status_label' => $ticket->status_details?->name ?? 'Unknown',
+            'status_label' => $this->statusLabel($ticket),
             'service_option' => $details['service_option'] ?? null,
             'service_option_label' => $this->serviceOptionLabel($details['service_option'] ?? null),
             'service' => $this->formatService($ticket),
@@ -430,11 +431,27 @@ class ServiceRequestController extends Controller
 
     private function formatVehicle(array $details): array
     {
+        $makeId = $this->nullableInt($details['vehicle_make_id'] ?? null);
+        $modelId = $this->nullableInt($details['vehicle_model_id'] ?? null);
+        $yearId = $this->nullableInt($details['vehicle_year_id'] ?? null);
+
+        $make = $makeId ? VehicleMake::query()->find($makeId) : null;
+        $model = $modelId ? VehicleModel::query()->find($modelId) : null;
+        $year = $yearId ? VehicleYear::query()->find($yearId) : null;
+
         return [
             'type' => $details['vehicle_type'] ?? null,
-            'make' => $details['vehicle_make'] ?? null,
-            'model' => $details['vehicle_model'] ?? null,
-            'year' => $details['vehicle_year'] ?? null,
+            'make_id' => $makeId,
+            'make' => $details['vehicle_make'] ?? $make?->getRawOriginal('name'),
+            'make_display_name' => $details['vehicle_make'] ?? $make?->name,
+            'model_id' => $modelId,
+            'model' => $details['vehicle_model'] ?? $model?->getRawOriginal('name'),
+            'model_display_name' => $details['vehicle_model'] ?? $model?->name,
+            'year_id' => $yearId,
+            'year' => $details['vehicle_year'] ?? $year?->getRawOriginal('year'),
+            'year_display_name' => isset($details['vehicle_year'])
+                ? (string) $details['vehicle_year']
+                : ($year ? (string) $year->year : null),
             'mileage' => $details['vehicle_mileage'] ?? null,
             'vin' => $details['vin'] ?? null,
             'problem_description' => $details['problem_description'] ?? null,
@@ -489,23 +506,25 @@ class ServiceRequestController extends Controller
             'description',
             $product->details ?? ''
         );
+        $rawServiceTitle = $service->getRawOriginal('title') ?? '';
         $localizedServiceTitle = getTranslatedValue(
-            $service,
-            'title',
-            $service->getRawOriginal('title') ?? $service->title ?? ''
+            $product,
+            'service_tittle',
+            $rawServiceTitle !== '' ? $rawServiceTitle : ($service->title ?? '')
         );
 
-        // Resolve Arabic and English titles from service translations
-        $rawServiceTitle = $service->getRawOriginal('title') ?? '';
-        $serviceTitleAr = $rawServiceTitle;
-        $serviceTitleEn = $rawServiceTitle;
+        // Resolve Arabic and English titles from canonical product translations first.
+        $serviceTitleAr = $product->getTranslatedField('service_tittle', 'ar', $rawServiceTitle);
+        $serviceTitleEn = $product->getTranslatedField('service_tittle', 'en', $rawServiceTitle);
         if ($service->relationLoaded('translations')) {
             foreach ($service->translations as $trans) {
                 if ($trans->key === 'title') {
-                    if ($trans->locale === 'ar' && $trans->value !== null && $trans->value !== '') {
+                    if (($serviceTitleAr === '' || $serviceTitleAr === $rawServiceTitle) &&
+                        $trans->locale === 'ar' && $trans->value !== null && $trans->value !== '') {
                         $serviceTitleAr = $trans->value;
                     }
-                    if ($trans->locale === 'en' && $trans->value !== null && $trans->value !== '') {
+                    if (($serviceTitleEn === '' || $serviceTitleEn === $rawServiceTitle) &&
+                        $trans->locale === 'en' && $trans->value !== null && $trans->value !== '') {
                         $serviceTitleEn = $trans->value;
                     }
                 }
@@ -514,8 +533,31 @@ class ServiceRequestController extends Controller
 
         // Format service translations
         $serviceTranslations = [];
+        if ($product->relationLoaded('translations')) {
+            foreach ($product->translations as $trans) {
+                if ($trans->key !== 'service_tittle') {
+                    continue;
+                }
+
+                $serviceTranslations[] = [
+                    'translationable_type' => 'App\Models\Service',
+                    'translationable_id' => $service->id,
+                    'locale' => $trans->locale,
+                    'key' => 'title',
+                    'item_index' => $trans->item_index,
+                    'value' => $trans->value,
+                    'id' => $trans->id,
+                ];
+            }
+        }
         if ($service->relationLoaded('translations')) {
             foreach ($service->translations as $trans) {
+                if ($trans->key === 'title' &&
+                    collect($serviceTranslations)->contains(fn (array $translation): bool =>
+                        $translation['locale'] === $trans->locale && $translation['key'] === 'title')) {
+                    continue;
+                }
+
                 $serviceTranslations[] = [
                     'translationable_type' => 'App\Models\Service',
                     'translationable_id' => $service->id,
@@ -621,9 +663,32 @@ class ServiceRequestController extends Controller
     private function serviceOptionLabel(?string $option): ?string
     {
         return match ($option) {
-            'in_shop' => 'In Shop',
-            'mobile' => 'Mobile Service',
+            'in_shop' => translate('In Shop'),
+            'mobile' => translate('Mobile Service'),
             default => null,
         };
+    }
+
+    private function statusLabel(SupportTicket $ticket): string
+    {
+        $rawStatus = (string) ($ticket->status_details?->name ?? 'Unknown');
+        $normalizedStatus = Str::of($rawStatus)
+            ->trim()
+            ->lower()
+            ->replace(' ', '_')
+            ->value();
+
+        return match ($normalizedStatus) {
+            'new' => translate('New'),
+            'in_progress' => translate('In Progress'),
+            'scheduled' => translate('Scheduled'),
+            'closed' => translate('Closed'),
+            default => $ticket->status_details?->name ?? 'Unknown',
+        };
+    }
+
+    private function nullableInt(mixed $value): ?int
+    {
+        return is_numeric($value) ? (int) $value : null;
     }
 }

@@ -93,8 +93,11 @@ class ServiceRequestWorkflowTest extends TestCase
                 'service_id' => $service->id,
                 'service_option' => 'in_shop',
                 'vehicle_type' => 'Sedan',
+                'vehicle_make_id' => 10,
                 'vehicle_make' => 'Toyota',
+                'vehicle_model_id' => 20,
                 'vehicle_model' => 'Corolla',
+                'vehicle_year_id' => 30,
                 'vehicle_year' => 2023,
                 'vehicle_mileage' => 22000,
                 'vin' => 'VIN-200',
@@ -120,7 +123,9 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('Battery Check', $payload['ticket']['service']['title']);
         $this->assertSame('in_shop', $payload['ticket']['service_option']);
         $this->assertSame('In Shop', $payload['ticket']['service_option_label']);
+        $this->assertSame('New', $payload['ticket']['status_label']);
         $this->assertSame('Toyota', $payload['ticket']['vehicle']['make']);
+        $this->assertSame(10, $payload['ticket']['vehicle']['make_id']);
         $this->assertNull($payload['ticket']['location']);
         $this->assertSame(
             'Battery warning light stays on.',
@@ -213,8 +218,11 @@ class ServiceRequestWorkflowTest extends TestCase
             'latitude' => '30.0444',
             'longitude' => '31.2357',
             'vehicle_type' => 'SUV',
+            'vehicle_make_id' => 11,
             'vehicle_make' => 'Toyota',
+            'vehicle_model_id' => 21,
             'vehicle_model' => 'Fortuner',
+            'vehicle_year_id' => 31,
             'vehicle_year' => 2024,
             'vehicle_mileage' => 15000,
             'vin' => 'VIN-123',
@@ -239,6 +247,7 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('service', $inboxMessage->convert_sub_type);
         $this->assertSame($service->id, (int) ($inboxMessage->details['service_id'] ?? 0));
         $this->assertSame('mobile', $inboxMessage->details['service_option'] ?? null);
+        $this->assertSame(11, $inboxMessage->details['vehicle_make_id'] ?? null);
         $this->assertSame('VIN-123', $inboxMessage->details['vin'] ?? null);
         $this->assertSame('Street 10', $inboxMessage->details['address'] ?? null);
         $this->assertSame(
@@ -367,6 +376,11 @@ class ServiceRequestWorkflowTest extends TestCase
                 'key' => 'name',
                 'value' => 'Eco-Friendly Trade-In & Recycling',
             ]),
+            new Translation([
+                'locale' => 'ar',
+                'key' => 'service_tittle',
+                'value' => 'خدمة الصيانة الشاملة والتشخيص',
+            ]),
         ]));
 
         $service = new Service();
@@ -376,13 +390,7 @@ class ServiceRequestWorkflowTest extends TestCase
             'title' => 'Full Service',
         ], true);
 
-        $service->setRelation('translations', collect([
-            new Translation([
-                'locale' => 'ar',
-                'key' => 'title',
-                'value' => 'خدمة الصيانة الشاملة والتشخيص',
-            ]),
-        ]));
+        $service->setRelation('translations', collect());
 
         $product->setRelation('service', $service);
 
@@ -396,6 +404,8 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('خدمة الصيانة الشاملة والتشخيص', $arabicPayload['service']['title']);
         $this->assertSame('خدمة الصيانة الشاملة والتشخيص', $arabicPayload['service']['title_ar']);
         $this->assertSame('Full Service', $arabicPayload['service']['title_en']);
+        $this->assertSame('خدمة الصيانة الشاملة والتشخيص', $arabicPayload['service']['translations'][0]['value']);
+        $this->assertSame('title', $arabicPayload['service']['translations'][0]['key']);
         $this->assertNotSame('Eco-Friendly Trade-In & Recycling', $arabicPayload['service']['title']);
         $this->assertNotSame('الاسم الخاص بالمنتج', $arabicPayload['service']['title_ar']);
 
@@ -465,6 +475,7 @@ class ServiceRequestWorkflowTest extends TestCase
                 'service_request_id' => 44,
                 'service_id' => $service->id,
                 'service_option' => 'mobile',
+                'vehicle_make_id' => 55,
                 'country' => 'Egypt',
                 'state' => 'Cairo',
                 'city' => 'Nasr City',
@@ -474,7 +485,9 @@ class ServiceRequestWorkflowTest extends TestCase
                 'longitude' => '31.2400',
                 'vehicle_type' => 'SUV',
                 'vehicle_make' => 'Toyota',
+                'vehicle_model_id' => 66,
                 'vehicle_model' => 'Prado',
+                'vehicle_year_id' => 77,
                 'vehicle_year' => 2024,
                 'vehicle_mileage' => 12000,
                 'vin' => 'VIN-300',
@@ -504,7 +517,9 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame($ticket->id, $payload['id']);
         $this->assertSame('Brake Inspection', $payload['service']['title']);
         $this->assertSame('mobile', $payload['service_option']);
+        $this->assertSame('New', $payload['status_label']);
         $this->assertSame('SUV', $payload['vehicle']['type']);
+        $this->assertSame(55, $payload['vehicle']['make_id']);
         $this->assertSame(
             'Brakes squeal at low speed.',
             $payload['vehicle']['problem_description']

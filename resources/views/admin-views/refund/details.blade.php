@@ -400,6 +400,17 @@
                                 <option value="no_restock">{{ translate('no_restock') }}</option>
                             </select>
                         </div>
+                        <div class="form-group" id="restock-branch-group">
+                            <label class="input-label" for="restock_branch_id">{{ translate('branch') }}</label>
+                            <select class="form-control" name="restock_branch_id" id="restock_branch_id">
+                                <option value="">{{ translate('select_branch') }}</option>
+                                @foreach ($branches as $branch)
+                                    <option value="{{ $branch->id }}" {{ (int)$branch->id === (int)$defaultRestockBranchId ? 'selected' : '' }}>
+                                        {{ $branch->getTranslatedField('branch_name') ?? $branch->branch_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label class="input-label d-flex" for="">{{translate('payment_info')}}
                                 <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
@@ -423,4 +434,27 @@
 @endsection
 @push('script_2')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/refund.js')}}"></script>
+    <script>
+        (function () {
+            const inventoryAction = document.getElementById('inventory_action');
+            const restockBranchGroup = document.getElementById('restock-branch-group');
+            const restockBranchSelect = document.getElementById('restock_branch_id');
+
+            if (!inventoryAction || !restockBranchGroup || !restockBranchSelect) {
+                return;
+            }
+
+            const syncRestockBranchVisibility = () => {
+                const shouldShow = inventoryAction.value !== 'no_restock';
+                restockBranchGroup.style.display = shouldShow ? '' : 'none';
+                restockBranchSelect.required = shouldShow;
+                if (!shouldShow) {
+                    restockBranchSelect.value = '';
+                }
+            };
+
+            inventoryAction.addEventListener('change', syncRestockBranchVisibility);
+            syncRestockBranchVisibility();
+        })();
+    </script>
 @endpush

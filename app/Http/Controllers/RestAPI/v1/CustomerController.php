@@ -396,7 +396,7 @@ class CustomerController extends Controller
             'address' => $request->address,
             'state' => $request->state,
             'city' => $request->city,
-            'area' => $request->area,
+            'area' => $this->resolveAreaNameFromInput($request->area),
             'zip' => $request->zip,
             'country' => $request->country,
             'phone' => $request->phone,
@@ -513,7 +513,7 @@ class CustomerController extends Controller
             'address' => $request->address,
             'state' => $request->state,
             'city' => $request->city,
-            'area' => $request->area,
+            'area' => $this->resolveAreaNameFromInput($request->area),
             'zip' => $request->zip,
             'country' => $request->country,
             'phone' => $request->phone,
@@ -1268,5 +1268,19 @@ class CustomerController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Successfully change'], 200);
+    }
+
+    private function resolveAreaNameFromInput(?string $areaInput): ?string
+    {
+        if ($areaInput === null || $areaInput === '') {
+            return $areaInput;
+        }
+
+        if (ctype_digit($areaInput)) {
+            $area = Area::with('translations')->find((int) $areaInput);
+            return $area ? $area->getRawOriginal('name') : $areaInput;
+        }
+
+        return $areaInput;
     }
 }

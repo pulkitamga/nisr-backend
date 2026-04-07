@@ -32,7 +32,7 @@ class ServiceRequestSubmissionService
             $subject = translate('New Service Request For - :service', [
                 'service' => $serviceRequest->service?->title ?? translate('Service'),
             ]);
-            $details = $this->buildInboxDetails($serviceRequest);
+            $details = $this->buildInboxDetails($serviceRequest, $validated);
 
             $inboxMessage = InboxMessage::create([
                 'subject' => $subject,
@@ -106,7 +106,7 @@ class ServiceRequestSubmissionService
         );
     }
 
-    private function buildInboxDetails(ServiceRequest $serviceRequest): array
+    private function buildInboxDetails(ServiceRequest $serviceRequest, array $validated): array
     {
         return [
             'service_request_id' => $serviceRequest->id,
@@ -120,8 +120,11 @@ class ServiceRequestSubmissionService
             'latitude' => $serviceRequest->latitude,
             'longitude' => $serviceRequest->longitude,
             'vehicle_type' => $serviceRequest->vehicle_type,
+            'vehicle_make_id' => $validated['vehicle_make_id'] ?? null,
             'vehicle_make' => $serviceRequest->vehicle_make,
+            'vehicle_model_id' => $validated['vehicle_model_id'] ?? null,
             'vehicle_model' => $serviceRequest->vehicle_model,
+            'vehicle_year_id' => $validated['vehicle_year_id'] ?? null,
             'vehicle_year' => $serviceRequest->vehicle_year,
             'vehicle_mileage' => $serviceRequest->vehicle_mileage,
             'vin' => $serviceRequest->vin,

@@ -218,8 +218,10 @@ class OrderController extends Controller
         }
         $order->order_status = $request->order_status;
 
-        if ($request->order_status == 'delivered' && $order['seller_id'] != null) {
-            OrderManager::wallet_manage_on_order_status_change($order, 'seller');
+        if ($request->order_status == 'delivered') {
+            if ($order['seller_id'] != null) {
+                OrderManager::wallet_manage_on_order_status_change($order, 'seller');
+            }
             OrderDetail::where('order_id', $order->id)->update(
                 ['delivery_status'=>'delivered']
             );

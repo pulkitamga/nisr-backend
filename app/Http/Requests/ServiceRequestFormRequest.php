@@ -38,8 +38,11 @@ class ServiceRequestFormRequest extends FormRequest
             'longitude' => ['nullable', 'string'],
 
             'vehicle_type' => 'nullable|string',
+            'vehicle_make_id' => 'nullable|integer',
             'vehicle_make' => 'nullable',
+            'vehicle_model_id' => 'nullable|integer',
             'vehicle_model' => 'nullable',
+            'vehicle_year_id' => 'nullable|integer',
             'vehicle_year' => 'nullable|integer',
             'vehicle_mileage' => 'nullable|integer',
             'vin' => 'nullable|string',

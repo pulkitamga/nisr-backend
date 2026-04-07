@@ -18,6 +18,7 @@ use App\Events\RefundEvent;
 use App\Exports\RefundRequestExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\RefundStatusRequest;
+use App\Models\Branch;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
@@ -88,6 +89,17 @@ class RefundController extends BaseController
 
         $walletStatus = getWebConfig(name: 'wallet_status');
         $walletAddRefund = getWebConfig(name: 'wallet_add_refund');
+        $branches = Branch::query()
+            ->where('status', 'active')
+            ->orderBy('branch_name')
+            ->get(['id', 'branch_name']);
+        $defaultRestockBranchId = (int)($order->transfer_from_branch ?? 0);
+        if ($defaultRestockBranchId <= 0) {
+            $defaultRestockBranchId = (int)($order->pickup_from_branch ?? 0);
+        }
+        if ($defaultRestockBranchId <= 0) {
+            $defaultRestockBranchId = 1;
+        }
 
         return view(
             RefundRequest::DETAILS[VIEW],
@@ -99,7 +111,9 @@ class RefundController extends BaseController
                 'couponDiscount',
                 'refundAmount',
                 'walletStatus',
-                'walletAddRefund'
+                'walletAddRefund',
+                'branches',
+                'defaultRestockBranchId'
             )
         );
     }
@@ -157,7 +171,12 @@ class RefundController extends BaseController
                     }
 
                     if ($this->shouldRestockOnRefund($request)) {
-                        $stockReconcile = $this->reconcileStockOnRefund(order: $order, orderDetails: $orderDetails, refundId: (int)$refund['id']);
+                        $stockReconcile = $this->reconcileStockOnRefund(
+                            order: $order,
+                            orderDetails: $orderDetails,
+                            refundId: (int)$refund['id'],
+                            branchIdOverride: (int)$request->input('restock_branch_id', 0)
+                        );
                         if (!($stockReconcile['status'] ?? false)) {
                             throw new \RuntimeException($stockReconcile['message'] ?? 'Stock reconciliation failed', 409);
                         }
@@ -235,7 +254,7 @@ class RefundController extends BaseController
         return max(0, (float)($subtotal - $couponDiscount));
     }
 
-    private function reconcileStockOnRefund(Order $order, OrderDetail $orderDetails, int $refundId): array
+    private function reconcileStockOnRefund(Order $order, OrderDetail $orderDetails, int $refundId, int $branchIdOverride = 0): array
     {
         if ((int)$orderDetails->qty <= 0 || (int)$orderDetails->is_stock_decreased === 0) {
             return ['status' => true];
@@ -246,7 +265,7 @@ class RefundController extends BaseController
             return ['status' => true];
         }
 
-        $branchId = (int)($order->transfer_from_branch ?? 0);
+        $branchId = $branchIdOverride > 0 ? $branchIdOverride : (int)($order->transfer_from_branch ?? 0);
         if ($branchId <= 0) {
             $branchId = (int)($order->pickup_from_branch ?? 0);
         }

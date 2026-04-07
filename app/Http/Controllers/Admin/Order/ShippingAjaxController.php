@@ -41,15 +41,33 @@ class ShippingAjaxController extends Controller
 
     public function getAreas(Request $request)
     {
-        $areas = ShippingMethodArea::where('city_id', $request->city_id)
-            ->pluck('area')->unique();
+        $areaNames = ShippingMethodArea::where('city_id', $request->city_id)
+            ->pluck('area')
+            ->unique()
+            ->filter()
+            ->values();
+
+        $areas = $areaNames->map(function ($areaName) {
+            if (ctype_digit((string) $areaName)) {
+                $area = Area::with('translations')->find((int) $areaName);
+                return $area ? $area->name : $areaName;
+            }
+            $area = Area::with('translations')
+                ->whereRaw('LOWER(name) = ?', [strtolower($areaName)])
+                ->first();
+            return $area ? $area->name : $areaName;
+        });
+
         return response()->json($areas);
     }
 
        public function getBillingAreas(Request $request)
     {
         $areas = Area::where('city_id', $request->city_id)
-            ->pluck('name')->unique();
+            ->get()
+            ->map(fn($area) => ['id' => $area->id, 'name' => $area->name])
+            ->unique('name')
+            ->values();
         return response()->json($areas);
     }
 }

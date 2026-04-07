@@ -56,9 +56,13 @@
                                 </ul>
                             </div>
                         </div>
+                        @php
+                            $addressCountries = $country_restrict_status ? $delivery_countries : COUNTRIES;
+                            $singleAddressCountry = count($addressCountries) === 1;
+                        @endphp
                         <div class="form-row">
-                            <div class="form-group col-md-12">
-                                <label for="country">{{ translate('country') }}</label>
+                            <div class="form-group col-md-12 @if($singleAddressCountry) d-none @endif" id="country-wrapper" @if($singleAddressCountry) data-single-country @endif>
+                                <label for="country" @if($singleAddressCountry) class="d-none" @endif>{{ translate('country') }}</label>
                                 <input type="hidden" name="country" id="country_name" value="{{ $shippingAddress->country }}">
 
                                 <select name="country_id" class="form-control selectpicker" data-live-search="true" id="country" required>
@@ -110,9 +114,10 @@
 
                             <div class="form-group col-md-6">
                                 <label for="area">{{ translate('area') }}</label>
-                                <select name="area" class="form-control" id="area" required>
+                                <select name="area_id" class="form-control" id="area" required>
                                     <option value="">{{ translate('select_area') }}</option>
                                 </select>
+                                <input type="hidden" name="area" id="area_name" value="{{ $shippingAddress->area }}">
                             </div>
 
                             <div class="form-group col-md-6">
@@ -353,6 +358,10 @@
                 $('#area').append(`<option value="${area}" ${selected}>${area}</option>`);
             });
         });
+    });
+
+    $('#area').change(function () {
+        $('#area_name').val($(this).find('option:selected').text());
     });
 
     // 🟡 Trigger country change manually to populate everything on page load

@@ -357,8 +357,8 @@ class BranchController extends BaseController
         $success = 1;
         $iCityId = $request->input('iCityId');
         $aCitiesArea = ShippingMethodArea::where('city_id', $iCityId)
-            ->select('id', 'area as name')
-            ->get();
+            ->get()
+            ->map(fn($item) => ['id' => $item->id, 'name' => $item->area]);
 
         return response()->json([
             'success' => $success,

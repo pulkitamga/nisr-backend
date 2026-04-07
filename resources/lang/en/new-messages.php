@@ -13155,4 +13155,7 @@ return [
 	"group_by"=>"Group By",
 	"assigned" =>"Assigned",
 	"stock_transfer_chart"=>"Stock transfer chart"
+	"Shop_by_category" => "Shop by category",
+	"Open_the_relevant_catalog_and_compare_options_faster" => "Open the relevant catalog and compare options faster.",
+	"Claim Report" => "Claim Report"
 ];

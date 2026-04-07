@@ -998,7 +998,9 @@ function togglePickupBranchVisibility() {
         deliveryAddressTypeDiv?.classList.remove('d-none');
         stateAddressDiv?.classList.remove('d-none');
         areaAddressDiv?.classList.remove('d-none');
-        cAddressDiv?.classList.remove('d-none');
+        if (!cAddressDiv?.hasAttribute('data-single-country')) {
+            cAddressDiv?.classList.remove('d-none');
+        }
         locationMap?.classList.remove('d-none');
         locationMapArea?.classList.remove('d-none');
         addressType?.classList.remove('d-none');

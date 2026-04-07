@@ -21,8 +21,13 @@ class Area extends Model
         'name', 'city_id'
     ];
 
-     public function city()
+    public function city()
     {
-        return $this->belongsTo(City::class , 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function getNameAttribute($value): ?string
+    {
+        return $this->getTranslatedField('name', fallback: $value);
     }
 }

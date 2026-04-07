@@ -2215,7 +2215,7 @@ class WebController extends Controller
                 return response()->json([
                     'success' => true,
                     'branch' => $branchData,
-                    'area' => $area->area,
+                    'area' => $this->resolveAreaName($area->area),
                     'cost' => $area->cost,
                     'duration' => $area->duration,
                 ]);
@@ -2226,6 +2226,20 @@ class WebController extends Controller
             'success' => false,
             'message' => 'No shipping area found for the given coordinates.',
         ], 404);
+    }
+
+    private function resolveAreaName(string $areaNameOrId): string
+    {
+        if (ctype_digit($areaNameOrId)) {
+            $area = \App\Models\Area::with('translations')->find((int) $areaNameOrId);
+            return $area ? $area->name : $areaNameOrId;
+        }
+
+        $area = \App\Models\Area::with('translations')
+            ->whereRaw('LOWER(name) = ?', [strtolower($areaNameOrId)])
+            ->first();
+
+        return $area ? $area->name : $areaNameOrId;
     }
 
     private function isPointInPolygon($latitude, $longitude, $polygon)

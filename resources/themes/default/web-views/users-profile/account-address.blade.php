@@ -80,7 +80,8 @@
                                         <input type="hidden" class="country-picker-phone-number w-50" name="phone" readonly>
                                     </div>
                                 </div>
-                                <div class="form-row">
+                                @php($singleCountry = count($countries) === 1)
+                                <div class="form-row @if($singleCountry) d-none @endif" id="address-country-wrapper" @if($singleCountry) data-single-country @endif>
                                     <div class="form-group col-md-12">
                                         <label for="address-city">
                                             {{translate('country')}}
@@ -89,7 +90,7 @@
                                         <select name="country_id" id="address-country" class="form-control selectpicker"
                                             data-live-search="true">
                                             @foreach($countries as $d)
-                                            <option value="{{ $d['code'] }}" data-name="{{ $d['name'] }}">{{ $d['name'] }}</option>
+                                            <option value="{{ $d['code'] }}" data-name="{{ $d['name'] }}" {{ $singleCountry ? 'selected' : '' }}>{{ $d['name'] }}</option>
                                             @endforeach
                                         </select>
                                         <input type="hidden" name="country" id="country_name">
@@ -545,6 +546,11 @@ const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
             let selected = $(this).find('option:selected');
             $('#area_name').val(selected.data('name') ?? selected.val());
         });
+
+        // Auto-trigger for single-country: load states on page load
+        if ($('#address-country option').length === 1) {
+            $('#address-country').trigger('change');
+        }
     });
 </script>
 

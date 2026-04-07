@@ -182,8 +182,10 @@ class DeliveryManController extends Controller
             event(new OrderStatusEvent(key: 'canceled', type: 'delivery_man', order: $order));
         }
 
-        if ($request['status'] == 'delivered' && $order['seller_id'] != null) {
-            OrderManager::wallet_manage_on_order_status_change($order, 'delivery man');
+        if ($request['status'] == 'delivered') {
+            if ($order['seller_id'] != null) {
+                OrderManager::wallet_manage_on_order_status_change($order, 'delivery man');
+            }
             OrderDetail::where('order_id', $order->id)->update(
                 ['delivery_status' => 'delivered']
             );

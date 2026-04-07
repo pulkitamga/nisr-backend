@@ -69,4 +69,22 @@ class ShippingMethodArea extends Model
     {
         return $this->belongsTo(City::class,'city_id');
     }
+
+    public function getAreaAttribute($value): ?string
+    {
+        if (empty($value)) {
+            return $value;
+        }
+
+        if (ctype_digit($value)) {
+            $area = Area::with('translations')->find((int) $value);
+            return $area ? $area->name : $value;
+        }
+
+        $area = Area::with('translations')
+            ->whereRaw('LOWER(name) = ?', [strtolower($value)])
+            ->first();
+
+        return $area ? $area->name : $value;
+    }
 }

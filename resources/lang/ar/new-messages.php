@@ -12656,6 +12656,8 @@ return [
 	"card_note" => "ملاحظة التذييل",
 	"Enter_card_note" => "أدخل ملاحظة التذييل",
 	"Use_this_for_the_highlighted_footer_note_on_the_product_card" => "استخدم هذا للنص المميز في تذييل بطاقة المنتج.",
+	"Shop_by_category" => "تسوّق حسب الفئة",
+	"Open_the_relevant_catalog_and_compare_options_faster" => "افتح الكتالوج المناسب وقارن الخيارات بشكل أسرع.",
 	"customer_overview" => "نظرة عامة على العميل",
 	"crm" => "إدارة علاقات العملاء",
 	"warranty_claims" => "مطالبات الضمان",

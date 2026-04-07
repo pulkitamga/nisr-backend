@@ -38,5 +38,21 @@ class DeliveryArea extends Model
     return $this->belongsTo(Area::class, 'area_id', 'id');
 }
 
+    public function getAreaAttribute($value): ?string
+    {
+        if ($this->areaInfo) {
+            return $this->areaInfo->name;
+        }
+
+        if (empty($value)) {
+            return $value;
+        }
+
+        $area = Area::with('translations')
+            ->whereRaw('LOWER(name) = ?', [strtolower($value)])
+            ->first();
+
+        return $area ? $area->name : $value;
+    }
 
 }

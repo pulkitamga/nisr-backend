@@ -369,13 +369,16 @@
                                                             <textarea class="form-control" id="nearest_branch_textarea" rows="4" cols="50" readonly></textarea>
                                                         </div>
                                                     </div>
-                                                    <div class="col-6 d-none" id="deliver-country">
+                                                    @php($singleShippingCountry = count($shippingCountries) === 1)
+                                                    <div class="col-6 d-none @if($singleShippingCountry) single-country-hidden @endif" id="deliver-country" @if($singleShippingCountry) data-single-country @endif>
                                                         <div class="form-group">
-                                                            <label>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="country">*</span></label>
+                                                            <label @if($singleShippingCountry) class="d-none" @endif>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="country">*</span></label>
                                                             <select name="country" id="country" class="form-control">
+                                                                @if(!$singleShippingCountry)
                                                                 <option value="">{{ translate('select_country') }}</option>
-                                                                @foreach($shippingCountries as $country)
-                                                                <option value="{{ $country['code'] }}">{{ $country['name'] }}</option>
+                                                                @endif
+                                                                @foreach($shippingCountries as $sc)
+                                                                <option value="{{ $sc['code'] }}" {{ $loop->first && $singleShippingCountry ? 'selected' : '' }}>{{ $sc['name'] }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
@@ -406,9 +409,10 @@
                                                     <div class="col-6 d-none" id="deliver-area">
                                                         <div class="form-group">
                                                             <label>{{ translate('area') }} <span class="text-danger checkout-required-indicator" data-required-indicator="area">*</span></label>
-                                                            <select name="area" id="area" class="form-control">
+                                                            <select name="area_id" id="area" class="form-control">
                                                                 <option value="">{{ translate('select_area') }}</option>
                                                             </select>
+                                                            <input type="hidden" name="area" id="area_name">
                                                         </div>
                                                     </div>
                                                     <div class="col-6 d-none" id="deliver-zip">
@@ -638,13 +642,16 @@
                                                         </div>
                                                     </div>
                                                 <div class="row">
-                                                    <div class="col-6">
+                                                    @php($singleBillingCountry = count($billingCountries) === 1)
+                                                    <div class="col-6 @if($singleBillingCountry) d-none single-country-hidden @endif" id="billing-country-wrapper" @if($singleBillingCountry) data-single-country @endif>
                                                         <div class="form-group">
-                                                            <label>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_country">*</span></label>
+                                                            <label @if($singleBillingCountry) class="d-none" @endif>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_country">*</span></label>
                                                             <select name="billing_country" id="billing_country" class="form-control">
+                                                                @if(!$singleBillingCountry)
                                                                 <option value="">{{ translate('select_country') }}</option>
-                                                                @foreach($billingCountries as $country)
-                                                                <option value="{{ $country['code'] }}">{{ $country['name'] }}</option>
+                                                                @endif
+                                                                @foreach($billingCountries as $bc)
+                                                                <option value="{{ $bc['code'] }}" {{ $loop->first && $singleBillingCountry ? 'selected' : '' }}>{{ $bc['name'] }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
@@ -675,9 +682,10 @@
                                                     <div class="col-6">
                                                         <div class="form-group">
                                                             <label>{{ translate('area') }}<!--  <span class="text-danger">*</span>--></label>
-                                                            <select name="billing_area" id="billing_area" class="form-control">
+                                                            <select name="billing_area_id" id="billing_area" class="form-control">
                                                                 <option value="">{{ translate('select_area') }}</option>
                                                             </select>
+                                                            <input type="hidden" name="billing_area" id="billing_area_name">
                                                         </div>
                                                     </div>
 
@@ -1035,6 +1043,9 @@
         $(document).on('change', '#city_id', function() {
             $('#city_name').val($(this).find('option:selected').text());
         });
+        $(document).on('change', '#area', function() {
+            $('#area_name').val($(this).find('option:selected').text());
+        });
 
         // Billing
         $(document).on('change', '#billing_state_id', function() {
@@ -1043,10 +1054,7 @@
         $(document).on('change', '#billing_city_id', function() {
             $('#billing_city_name').val($(this).find('option:selected').text());
         });
-
-        // ADDED: Billing Area Name storage (Important!)
         $(document).on('change', '#billing_area', function() {
-            // If you have a hidden input for billing area name, update it here
             $('#billing_area_name').val($(this).find('option:selected').text());
         });
     });

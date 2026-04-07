@@ -86,59 +86,16 @@ class HomeController extends Controller
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $brands = $this->cachePriorityWiseBrandList();
-        $homeCategories = $this->cacheHomeCategoriesList();
-        $topRatedProducts = $this->cacheTopRatedProductList();
-        $latestProductsList = $this->cacheHomePageLatestProductList();
-        $bestSellProduct = $this->cacheBestSellProductList();
-        $recommendedProduct = $this->cacheHomePageRandomSingleProductItem();
-        $bannerTypeMainBanner = $this->cacheBannerForTypeMainBanner();
-        $bannerTypeMainSectionBanner = $this->cacheBannerTable(bannerType: 'Main Section Banner');
-        $topVendorsList = ProductManager::getPriorityWiseTopVendorQuery($this->cacheHomePageTopVendorsList());
-        $bannerTypeFooterBanner = $this->cacheBannerTable(bannerType: 'Footer Banner', dataLimit: 10);
-        $clearanceSaleProducts = $this->cacheHomePageClearanceSaleProducts();
-
         $categories = CategoryManager::getCategoriesWithCountingAndPriorityWiseSorting();
-        $userId = Auth::guard('customer')->user() ? Auth::guard('customer')->id() : 0;
-        $flashDeal = ProductManager::getPriorityWiseFlashDealsProductsQuery(userId: $userId);
-        $current_date = date('Y-m-d H:i:s');
-
-        $bestSellProduct = $bestSellProduct->count() == 0 ? $latestProductsList : $bestSellProduct;
-        $topRatedProducts = $topRatedProducts->count() == 0 ? $bestSellProduct : $topRatedProducts;
-        $vehicleData = $this->vehicleService->getVehicleData();
         $helpTopics = $this->helpTopicRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             filters: ['type' => 'default', 'status' => '1'],
             dataLimit: 'all'
         );
-        $featuredProductsList = ProductManager::getPriorityWiseFeaturedProductsQuery(query: $this->product->active()->with(['clearanceSale' => function ($query) {
-            return $query->active();
-        }]), dataLimit: 12);
-
-        $newArrivalProducts = ProductManager::getPriorityWiseNewArrivalProductsQuery(query: $this->product->active()->with(['clearanceSale' => function ($query) {
-            return $query->active();
-        }]), dataLimit: 8);
         $products = Product::where('show_cms', 1)
             ->where('product_type', 'physical')
             ->where('status', 1)
             ->get();
-
-        $dealOfTheDay = DealOfTheDay::with(['product' => function ($query) {
-            return $query->active()->with(['clearanceSale' => function ($query) {
-                return $query->active();
-            }]);
-        }])
-            ->join('products', 'products.id', '=', 'deal_of_the_days.product_id')
-            ->select('deal_of_the_days.*', 'products.unit_price')
-            ->where('products.status', 1)
-            ->where('deal_of_the_days.status', 1)
-            ->first();
-
-        // 👇👇 Add wholesale product check here
-        $wholesaleProducts = null;
-        if (auth('customer')->check() && auth('customer')->user()?->user_type == 1) {
-            $wholesaleProducts = WholeSaleProducts::with(['product', 'price_list'])->get();
-        }
 
         $makes = VehicleMake::orderBy('name')->get();
         $models = VehicleModel::orderBy('name')->get();
@@ -310,29 +267,11 @@ class HomeController extends Controller
         return view(
             VIEW_FILE_NAMES['home'],
             compact(
-                'flashDeal',
-                'featuredProductsList',
-                'topRatedProducts',
-                'bestSellProduct',
-                'latestProductsList',
                 'categories',
-                'brands',
-                'dealOfTheDay',
-                'topVendorsList',
-                'homeCategories',
-                'bannerTypeMainBanner',
-                'bannerTypeMainSectionBanner',
-                'current_date',
-                'recommendedProduct',
-                'bannerTypeFooterBanner',
-                'newArrivalProducts',
-                'clearanceSaleProducts',
-                'wholesaleProducts',
                 'robotsMetaContentData',
                 'sectionData',
                 'products',
                 'latestPosts',
-                'vehicleData',
                 'helpTopics',
                 'years',
                 'models',
