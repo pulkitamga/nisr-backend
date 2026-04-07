@@ -6,10 +6,12 @@ use App\Contracts\Repositories\ServiceRequestRepositoryInterface;
 use App\Http\Controllers\RestAPI\v1\ServiceRequestController;
 use App\Http\Requests\ServiceRequestFormRequest;
 use App\Models\InboxMessage;
+use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketConv;
+use App\Models\Translation;
 use App\Models\User;
 use App\Models\VehicleMake;
 use App\Models\VehicleYear;
@@ -342,6 +344,68 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('Toyota', $payload['makes'][0]['name']);
         $this->assertSame('Corolla', $payload['makes'][0]['models'][0]['name']);
         $this->assertSame(2025, $payload['years'][0]['year']);
+    }
+
+    public function test_catalog_service_titles_prefer_service_title_not_product_name_for_mobile_contract(): void
+    {
+        $product = new Product();
+        $product->setRawAttributes([
+            'id' => 400072,
+            'name' => 'Eco-Friendly Trade-In & Recycling',
+            'slug' => 'eco-friendly-trade-in-recycling',
+            'details' => '<p>Product description.</p>',
+        ], true);
+
+        $product->setRelation('translations', collect([
+            new Translation([
+                'locale' => 'ar',
+                'key' => 'name',
+                'value' => 'الاسم الخاص بالمنتج',
+            ]),
+            new Translation([
+                'locale' => 'en',
+                'key' => 'name',
+                'value' => 'Eco-Friendly Trade-In & Recycling',
+            ]),
+        ]));
+
+        $service = new Service();
+        $service->setRawAttributes([
+            'id' => 88,
+            'service_id' => 'SRV-400072',
+            'title' => 'Full Service',
+        ], true);
+
+        $service->setRelation('translations', collect([
+            new Translation([
+                'locale' => 'ar',
+                'key' => 'title',
+                'value' => 'خدمة الصيانة الشاملة والتشخيص',
+            ]),
+        ]));
+
+        $product->setRelation('service', $service);
+
+        $controller = $this->makeController();
+        $method = new \ReflectionMethod($controller, 'formatCatalogProduct');
+        $method->setAccessible(true);
+
+        app()->setLocale('ar');
+        $arabicPayload = $method->invoke($controller, $product);
+
+        $this->assertSame('خدمة الصيانة الشاملة والتشخيص', $arabicPayload['service']['title']);
+        $this->assertSame('خدمة الصيانة الشاملة والتشخيص', $arabicPayload['service']['title_ar']);
+        $this->assertSame('Full Service', $arabicPayload['service']['title_en']);
+        $this->assertNotSame('Eco-Friendly Trade-In & Recycling', $arabicPayload['service']['title']);
+        $this->assertNotSame('الاسم الخاص بالمنتج', $arabicPayload['service']['title_ar']);
+
+        app()->setLocale('en');
+        $englishPayload = $method->invoke($controller, $product);
+
+        $this->assertSame('Full Service', $englishPayload['service']['title']);
+        $this->assertSame('خدمة الصيانة الشاملة والتشخيص', $englishPayload['service']['title_ar']);
+        $this->assertSame('Full Service', $englishPayload['service']['title_en']);
+        $this->assertNotSame('Eco-Friendly Trade-In & Recycling', $englishPayload['service']['title']);
     }
 
     public function test_show_returns_formatted_service_request_details(): void

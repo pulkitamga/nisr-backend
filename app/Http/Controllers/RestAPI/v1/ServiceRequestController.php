@@ -495,7 +495,7 @@ class ServiceRequestController extends Controller
             $service->getRawOriginal('title') ?? $service->title ?? ''
         );
 
-        // Resolve Arabic and English titles directly from loaded translations
+        // Resolve Arabic and English titles from service translations
         $rawServiceTitle = $service->getRawOriginal('title') ?? '';
         $serviceTitleAr = $rawServiceTitle;
         $serviceTitleEn = $rawServiceTitle;
@@ -542,7 +542,7 @@ class ServiceRequestController extends Controller
             'service' => [
                 'id' => (int) $service->id,
                 'service_id' => $service->service_id,
-                'title' => $localizedServiceTitle,
+                'title' => $localizedServiceTitle ?: $rawServiceTitle,
                 'title_ar' => $serviceTitleAr,
                 'title_en' => $serviceTitleEn,
                 'description' => $cleanDescription,

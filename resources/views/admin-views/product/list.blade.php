@@ -192,7 +192,7 @@
     Str::limit(
         $product->product_type === 'physical'
             ? ($product->name ?? '')
-            : ($product->service->title ?? ''),
+            : $product->getTranslatedField('service_tittle', getDefaultLanguage(), $product->service->title ?? ''),
         20
     ) 
 }}

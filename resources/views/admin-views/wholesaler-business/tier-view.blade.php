@@ -137,136 +137,6 @@
                                 </td>
                             </tr>
 
-                            <div class="modal fade wholesale-tier-modal"
-                                 id="editTierModal-{{ $tier->id }}"
-                                 tabindex="-1"
-                                 aria-labelledby="editTierModalLabel-{{ $tier->id }}"
-                                 aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                    <form action="{{ route('admin.wholesale.business.wholesaler.tier.update', $tier->id) }}"
-                                          method="POST"
-                                          class="modal-content wholesale-review-modal wholesale-tier-modal__content">
-                                        @csrf
-                                        @method('PUT')
-
-                                        <div class="modal-header wholesale-tier-modal__header">
-                                            <div class="wholesale-review-modal__hero">
-                                                <p class="wholesale-review-modal__eyebrow mb-2">{{ translate('Edit') }}</p>
-                                                <h5 class="modal-title wholesale-review-modal__title mb-2" id="editTierModalLabel-{{ $tier->id }}">{{ translate('Tier Name') }}</h5>
-                                                <div class="wholesale-review-modal__meta">
-                                                    <span class="wholesale-review-modal__meta-pill">
-                                                        <span class="wholesale-review-modal__meta-label">{{ translate('Tier_ID') }}</span>
-                                                        <span>#{{ $tier->id }}</span>
-                                                    </span>
-                                                    <span class="wholesale-review-modal__meta-pill">
-                                                        <span class="wholesale-review-modal__meta-label">{{ translate('Rank') }}</span>
-                                                        <span>{{ $tier->rank }}</span>
-                                                    </span>
-                                                    <span class="wholesale-review-modal__meta-pill {{ $tier->is_active ? 'wholesale-review-modal__meta-pill--accent' : 'wholesale-review-modal__meta-pill--muted' }}">
-                                                        <span class="wholesale-review-modal__meta-label">{{ translate('Status') }}</span>
-                                                        <span>{{ $tier->is_active ? translate('Active') : translate('Inactive') }}</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
-                                                &times;
-                                            </button>
-                                        </div>
-
-                                        <div class="modal-body wholesale-tier-modal__body">
-                                            <div class="row g-4">
-                                                <div class="col-xl-4">
-                                                    <section class="wholesale-review-panel wholesale-review-panel--summary h-100">
-                                                        <div class="wholesale-review-panel__header">
-                                                            <h6 class="mb-0">{{ translate('Status') }}</h6>
-                                                        </div>
-
-                                                        <div class="wholesale-review-facts">
-                                                            <div class="wholesale-review-fact">
-                                                                <span class="wholesale-review-fact__label">{{ translate('Tier_ID') }}</span>
-                                                                <span class="wholesale-review-fact__value">#{{ $tier->id }}</span>
-                                                            </div>
-                                                            <div class="wholesale-review-fact">
-                                                                <span class="wholesale-review-fact__label">{{ translate('Rank') }}</span>
-                                                                <span class="wholesale-review-fact__value">{{ $tier->rank }}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="wholesale-review-status wholesale-tier-modal__status-grid">
-                                                            <div class="wholesale-review-status__item">
-                                                                <span class="wholesale-review-status__label">{{ translate('Status') }}</span>
-                                                                <span class="wholesale-review-status__value">{{ $tier->is_active ? translate('Active') : translate('Inactive') }}</span>
-                                                            </div>
-                                                        </div>
-                                                    </section>
-                                                </div>
-
-                                                <div class="col-xl-8">
-                                                    <section class="wholesale-review-panel h-100">
-                                                        <div class="wholesale-review-panel__header">
-                                                            <h6 class="mb-0">{{ translate('Edit Tier') }}</h6>
-                                                        </div>
-
-                                                        <div class="row g-3">
-                                                            <div class="col-md-5">
-                                                                <label class="form-label wholesale-review-form__label">{{ translate('Rank') }}</label>
-                                                                <input type="number"
-                                                                       min="1"
-                                                                       step="1"
-                                                                       name="rank"
-                                                                       class="form-control wholesale-review-form__control"
-                                                                       value="{{ old('rank', $tier->rank) }}"
-                                                                       required>
-                                                                <small class="wholesale-tier-modal__hint">
-                                                                    {{ translate('Use the arrows to increase or decrease the integer') }}
-                                                                </small>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="wholesale-tier-lang mt-4" data-tier-language-group>
-                                                            <ul class="nav nav-tabs wholesale-tier-lang__tabs" role="tablist">
-                                                                @foreach($language as $lang)
-                                                                    <li class="nav-item text-capitalize" role="presentation">
-                                                                        <button type="button"
-                                                                                class="nav-link wholesale-tier-lang__tab {{ $lang === $activeLanguage ? 'active' : '' }}"
-                                                                                data-tier-lang-tab="{{ $lang }}">
-                                                                            {{ getLanguageName($lang) . ' (' . strtoupper($lang) . ')' }}
-                                                                        </button>
-                                                                    </li>
-                                                                @endforeach
-                                                            </ul>
-
-                                                            <div class="wholesale-tier-lang__panes">
-                                                                @foreach($language as $lang)
-                                                                    <div class="wholesale-tier-lang__pane {{ $lang !== $activeLanguage ? 'd-none' : '' }}"
-                                                                         data-tier-lang-pane="{{ $lang }}">
-                                                                        <label class="form-label wholesale-review-form__label">
-                                                                            {{ translate('Tier Name') }} ({{ strtoupper($lang) }})
-                                                                        </label>
-                                                                        <input type="text"
-                                                                               name="name[]"
-                                                                               class="form-control wholesale-review-form__control"
-                                                                               value="{{ $lang === $defaultLanguage ? $tier->name : ($tier->getTranslation('name', $lang) ?? '') }}"
-                                                                               {{ $lang === $defaultLanguage ? 'required' : '' }}>
-                                                                        <input type="hidden" name="lang[]" value="{{ $lang }}">
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                        </div>
-                                                    </section>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="modal-footer wholesale-tier-modal__footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                {{ translate('Cancel') }}
-                                            </button>
-                                            <button class="btn btn--primary">{{ translate('Update') }}</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
                         @empty
                             <tr>
                                 <td colspan="6" class="text-center text-muted py-4">
@@ -286,6 +156,97 @@
         </div>
     </div>
 </div>
+
+@foreach($tiers as $tier)
+    <div class="modal fade wholesale-tier-modal"
+         id="editTierModal-{{ $tier->id }}"
+         tabindex="-1"
+         aria-labelledby="editTierModalLabel-{{ $tier->id }}"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <form action="{{ route('admin.wholesale.business.wholesaler.tier.update', $tier->id) }}"
+                  method="POST"
+                  class="modal-content wholesale-tier-modal__content">
+                @csrf
+                @method('PUT')
+
+                <div class="modal-header wholesale-tier-modal__header">
+                    <div>
+                        <h5 class="modal-title mb-1" id="editTierModalLabel-{{ $tier->id }}">{{ translate('Edit Tier') }}</h5>
+                        <div class="crm-list-toolbar__summary">
+                            <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
+                                <span class="crm-list-toolbar__chip-label">{{ translate('Tier_ID') }}</span>
+                                <span>#{{ $tier->id }}</span>
+                            </span>
+                            <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
+                                <span class="crm-list-toolbar__chip-label">{{ translate('Status') }}</span>
+                                <span>{{ $tier->is_active ? translate('Active') : translate('Inactive') }}</span>
+                            </span>
+                        </div>
+                    </div>
+                    <button type="button" class="close custom-close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
+                        &times;
+                    </button>
+                </div>
+
+                <div class="modal-body wholesale-tier-modal__body">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label wholesale-tier-modal__label">{{ translate('Rank') }}</label>
+                            <input type="number"
+                                   min="1"
+                                   step="1"
+                                   name="rank"
+                                   class="form-control wholesale-tier-modal__control"
+                                   value="{{ old('rank', $tier->rank) }}"
+                                   required>
+                            <small class="wholesale-tier-modal__hint">
+                                {{ translate('Use the arrows to increase or decrease the integer') }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="wholesale-tier-lang mt-4" data-tier-language-group>
+                        <ul class="nav nav-tabs wholesale-tier-lang__tabs" role="tablist">
+                            @foreach($language as $lang)
+                                <li class="nav-item text-capitalize" role="presentation">
+                                    <button type="button"
+                                            class="nav-link wholesale-tier-lang__tab {{ $lang === $activeLanguage ? 'active' : '' }}"
+                                            data-tier-lang-tab="{{ $lang }}">
+                                        {{ getLanguageName($lang) . ' (' . strtoupper($lang) . ')' }}
+                                    </button>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        <div class="wholesale-tier-lang__panes">
+                            @foreach($language as $lang)
+                                <div class="wholesale-tier-lang__pane {{ $lang !== $activeLanguage ? 'd-none' : '' }}"
+                                     data-tier-lang-pane="{{ $lang }}">
+                                    <label class="form-label wholesale-tier-modal__label">
+                                        {{ translate('Tier Name') }} ({{ strtoupper($lang) }})
+                                    </label>
+                                    <input type="text"
+                                           name="name[]"
+                                           class="form-control wholesale-tier-modal__control"
+                                           placeholder="{{ translate('Enter tier name') }}"
+                                           value="{{ $lang === $defaultLanguage ? $tier->name : ($tier->getTranslation('name', $lang) ?? '') }}"
+                                           {{ $lang === $defaultLanguage ? 'required' : '' }}>
+                                </div>
+                                <input type="hidden" name="lang[]" value="{{ $lang }}">
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer wholesale-tier-modal__footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button class="btn btn--primary">{{ translate('Update') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endforeach
 
 <div class="modal fade wholesale-tier-modal" id="addTierModal" tabindex="-1" aria-labelledby="addTierModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">

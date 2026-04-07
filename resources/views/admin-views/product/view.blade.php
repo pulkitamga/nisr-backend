@@ -2,6 +2,47 @@
 
 @section('title', translate('product_Preview'))
 
+@push('css_or_style')
+<style>
+    .service-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .service-info-column {
+        display: grid;
+        gap: 16px;
+        min-width: 0;
+    }
+
+    .service-info-item {
+        min-width: 0;
+    }
+
+    .service-info-key {
+        color: #1f3b64;
+        display: block;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .service-info-value {
+        color: #334257;
+        display: block;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    @media (max-width: 767.98px) {
+        .service-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 @php
 $includedParts = is_array($product->service->parts_included ?? null)
@@ -261,9 +302,25 @@ $brandSetting = getWebConfig(name: 'product_brand');
                         </div>
                         <div class="d-block mt-2">
                             @foreach($languages as $language)
-                            <div class="{{ $language != 'en'? 'd-none':''}} lang-form" id="{{ $language}}-form">
+                            <div class="{{ $language != $activeLanguage ? 'd-none' : ''}} lang-form {{ $language }}-form" id="{{ $language}}-form">
                                 <div class="d-flex">
-                                    <h2 class="mb-2 pb-1 text-gulf-blue">{{ $product->getTranslatedField('name', $language) }}</h2>
+                                    <h2 class="mb-2 pb-1 text-gulf-blue">
+                                        @if($product->product_type === 'services')
+                                            {{ $product->getTranslatedField(
+                                                'service_tittle',
+                                                $language,
+                                                isset($product->service)
+                                                    ? $product->service->getTranslatedField(
+                                                        'title',
+                                                        $language,
+                                                        $product->service->getRawOriginal('title') ?? ''
+                                                    )
+                                                    : ''
+                                            ) }}
+                                        @else
+                                            {{ $product->getTranslatedField('name', $language) }}
+                                        @endif
+                                    </h2>
                                     <a class="btn btn-outline--primary btn-sm square-btn mx-2 w-auto h-25"
                                         title="{{ translate('edit') }}"
                                         href="{{ route('admin.products.update', [$product['id']]) }}">
@@ -611,136 +668,119 @@ $brandSetting = getWebConfig(name: 'product_brand');
                     <h5 class="card-title text-capitalize">{{translate('services_information')}}</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row gy-3 flex-grow-1">
-                        <div class="col-sm-6 col-xl-6">
-                            <div class="pair-list">
-                                <div>
-                                    <span class="key text-nowrap">{{ translate('title') }}</span>
-                                    <span>:</span>
-                                    <span class="value">
-                                        {{isset($product->service) ? $product->service->title :
-                                    translate('title_not_found') }}
+                    @foreach($languages as $language)
+                    <div class="{{ $language != $activeLanguage ? 'd-none' : '' }} lang-form {{ $language }}-form">
+                        <div class="service-info-grid">
+                            <div class="service-info-column">
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('title') }}</span>
+                                    <span class="service-info-value bidi-auto">
+                                        {{ isset($product->service)
+                                            ? $product->getTranslatedField(
+                                                'service_tittle',
+                                                $language,
+                                                $product->service->getRawOriginal('title') ?? translate('title_not_found')
+                                            )
+                                            : translate('title_not_found') }}
                                     </span>
                                 </div>
 
-                                <div>
-                                    <span class="key text-nowrap">{{ translate('service_id') }}</span>
-                                    <span>:</span>
-                                    <span class="value">
-                                        {{isset($product->service) ? $product->service->service_id :
-                                    translate('service_id_found') }}
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('service_id') }}</span>
+                                    <span class="service-info-value bidi-auto">
+                                        {{ isset($product->service) ? $product->service->service_id : translate('service_id_found') }}
                                     </span>
                                 </div>
 
-
-                                <div>
-                                    <span class="key text-nowrap">{{ translate('included_km_mobile') }}</span>
-                                    <span>:</span>
-                                    <span class="value">
-                                        {{isset($product->service) ? $product->service->included_km_mobile  :
-                                    translate('price_not_found') }}
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('included_km_mobile') }}</span>
+                                    <span class="service-info-value">
+                                        {{ isset($product->service) ? $product->service->included_km_mobile : translate('km_not_found') }}
+                                        @if(isset($product->service) && !is_null($product->service->included_km_mobile))
+                                            {{ ' ' . translate('km') }}
+                                        @endif
                                     </span>
-                                    <span class="key text-nowrap">{{ translate('km') }}</span>
-
                                 </div>
 
-                              <div>
-    <span class="key text-nowrap">{{ translate('base_price_mobile') }}</span>
-    <span>:</span>
-    <span class="value">
-        @if(isset($product->service) && !is_null($product->service->base_price_mobile))
-            {{ setCurrencySymbol(
-                amount: usdToDefaultCurrency(amount: $product->service->base_price_mobile),
-                currencyCode: getCurrencyCode()
-            ) }}
-        @else
-            {{ translate('price_not_found') }}
-        @endif
-    </span>
-</div>
-
-                               <div>
-    <span class="key text-nowrap">{{ translate('base_price_InShop') }}</span>
-    <span>:</span>
-    <span class="value">
-        @if(isset($product->service) && !is_null($product->service->base_price_inshop))
-            {{ setCurrencySymbol(
-                amount: usdToDefaultCurrency(amount: $product->service->base_price_inshop),
-                currencyCode: getCurrencyCode()
-            ) }}
-        @else
-            {{ translate('price_not_found') }}
-        @endif
-    </span>
-</div>
-
-
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('base_price_mobile') }}</span>
+                                    <span class="service-info-value">
+                                        @if(isset($product->service) && !is_null($product->service->base_price_mobile))
+                                            {{ setCurrencySymbol(
+                                                amount: usdToDefaultCurrency(amount: $product->service->base_price_mobile),
+                                                currencyCode: getCurrencyCode()
+                                            ) }}
+                                        @else
+                                            {{ translate('price_not_found') }}
+                                        @endif
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 col-xl-6">
 
-                            <div class="pair-list">
-                                <div>
-                                    <span class="key text-nowrap">{{ translate('included_km_mobile') }}</span>
-                                    <span>:</span>
-                                    <span class="value">
-                                        {{isset($product->service) ? $product->service->included_km_mobile :
-                                    translate('km_not_found') }}
+                            <div class="service-info-column">
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('base_price_InShop') }}</span>
+                                    <span class="service-info-value">
+                                        @if(isset($product->service) && !is_null($product->service->base_price_inshop))
+                                            {{ setCurrencySymbol(
+                                                amount: usdToDefaultCurrency(amount: $product->service->base_price_inshop),
+                                                currencyCode: getCurrencyCode()
+                                            ) }}
+                                        @else
+                                            {{ translate('price_not_found') }}
+                                        @endif
                                     </span>
                                 </div>
 
-                              <div>
-    <span class="key text-nowrap">{{ translate('travel_fee_per_km') }}</span>
-    <span>:</span>
-    <span class="value">
-        @if(isset($product->service) && !is_null($product->service->travel_fee_per_km))
-            {{ setCurrencySymbol(
-                amount: usdToDefaultCurrency(amount: $product->service->travel_fee_per_km),
-                currencyCode: getCurrencyCode()
-            ) }}
-        @else
-            {{ translate('fee_not_found') }}
-        @endif
-    </span>
-</div>
-
-                                <div>
-                                    <span class="key text-nowrap">{{ translate('labor_hours') }}</span>
-                                    <span>:</span>
-                                    <span class="value">
-                                        {{isset($product->service) ? $product->service->labor_hours :
-                                    translate('hours_not_found') }}
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('travel_fee_per_km') }}</span>
+                                    <span class="service-info-value">
+                                        @if(isset($product->service) && !is_null($product->service->travel_fee_per_km))
+                                            {{ setCurrencySymbol(
+                                                amount: usdToDefaultCurrency(amount: $product->service->travel_fee_per_km),
+                                                currencyCode: getCurrencyCode()
+                                            ) }}
+                                        @else
+                                            {{ translate('fee_not_found') }}
+                                        @endif
                                     </span>
                                 </div>
-                                @if(!empty($includedParts))
-                                <div>
-                                    <span class="key text-nowrap">{{ translate('parts_included') }}</span>
-                                    <span>:</span>
-                                    <span class="value">
-                                        {{ implode(', ', $includedParts) }}
+
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('labor_hours') }}</span>
+                                    <span class="service-info-value">
+                                        {{ isset($product->service) ? $product->service->labor_hours : translate('hours_not_found') }}
                                     </span>
                                 </div>
-                                @endif
-                              <div>
-    <span class="key text-nowrap">{{ translate('parts_cost') }}</span>
-    <span>:</span>
-    <span class="value">
-        @if(isset($product->service) && !is_null($product->service->parts_cost))
-            {{ setCurrencySymbol(
-                amount: usdToDefaultCurrency(amount: $product->service->parts_cost),
-                currencyCode: getCurrencyCode()
-            ) }}
-        @else
-            {{ translate('parts_cost_not_found') }}
-        @endif
-    </span>
-</div>
 
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('parts_included') }}</span>
+                                    <span class="service-info-value bidi-auto">
+                                        {{ $product->getTranslatedField(
+                                            'parts_included',
+                                            $language,
+                                            implode(', ', $includedParts)
+                                        ) }}
+                                    </span>
+                                </div>
 
+                                <div class="service-info-item">
+                                    <span class="service-info-key">{{ translate('parts_cost') }}</span>
+                                    <span class="service-info-value">
+                                        @if(isset($product->service) && !is_null($product->service->parts_cost))
+                                            {{ setCurrencySymbol(
+                                                amount: usdToDefaultCurrency(amount: $product->service->parts_cost),
+                                                currencyCode: getCurrencyCode()
+                                            ) }}
+                                        @else
+                                            {{ translate('parts_cost_not_found') }}
+                                        @endif
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
-
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -1148,6 +1188,3 @@ $brandSetting = getWebConfig(name: 'product_brand');
 @push('script')
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-view.js') }}"></script>
 @endpush
-
-
-

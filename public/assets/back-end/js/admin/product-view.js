@@ -6,7 +6,7 @@ $(".lang-link").click(function (e) {
     $(this).addClass('active');
     let formId = this.id;
     let lang = formId.split("-")[0];
-    $("#" + lang + "-form").removeClass('d-none');
+    $("." + lang + "-form").removeClass('d-none');
 });
 
 $('textarea[name=denied_note]').on('keyup', function() {
