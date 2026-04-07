@@ -196,8 +196,8 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ])->values(),
             'filters' => [
                 'date_type' => $dateType,
-                'from' => $fromDate->toDateString(),
-                'to' => $toDate->toDateString(),
+                'from' => $fromDate->locale(app()->getLocale())->translatedFormat('d F Y'),
+                'to' => $toDate->locale(app()->getLocale())->translatedFormat('d F Y'),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
                 'channels' => $channels,
@@ -799,17 +799,17 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
         if (!empty($selectedChannels)) {
             return $this->sortChannelsForDisplay(
                 collect($selectedChannels)
-                ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
-                ->values()
-                ->all()
+                    ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
+                    ->values()
+                    ->all()
             );
         }
 
         return $this->sortChannelsForDisplay(
             collect($availableChannels)
-            ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
-            ->values()
-            ->all()
+                ->filter(fn(string $channel) => in_array($channel, $channelsInRows, true))
+                ->values()
+                ->all()
         );
     }
 
@@ -841,8 +841,8 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             'channel' => empty($channels)
                 ? translate('all')
                 : collect($this->sortChannelsForDisplay($channels))
-                    ->map(fn(string $channel) => (string)($channelLabels[$channel] ?? $this->getChannelLabel($channel)))
-                    ->implode(', '),
+                ->map(fn(string $channel) => (string)($channelLabels[$channel] ?? $this->getChannelLabel($channel)))
+                ->implode(', '),
         ];
     }
 

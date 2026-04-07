@@ -255,7 +255,12 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('CRM Analytics Report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $filters['from'] ?? '-' }} - {{ $filters['to'] ?? '-' }}</p>
+            <p>
+                {{ translate('report_period') }}:
+                {{ !empty($filters['from'])? \Carbon\Carbon::parse($filters['from'])->locale(app()->getLocale())->translatedFormat('d F Y'): '-' }}
+                -
+                {{ !empty($filters['to'])? \Carbon\Carbon::parse($filters['to'])->locale(app()->getLocale())->translatedFormat('d F Y'): '-' }}
+            </p>
         </div>
         <div class="logo-container">
             @php

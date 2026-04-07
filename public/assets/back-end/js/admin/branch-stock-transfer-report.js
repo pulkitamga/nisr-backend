@@ -150,11 +150,26 @@
     };
 
     const updateReportPeriod = (filters) => {
-        if (!filters) {
+
+        if (!filters || !filters.from || !filters.to) {
+            document.getElementById('chart-period').textContent = '-';
+            document.getElementById('transfer-period').textContent = '-';
             return;
         }
 
-        const period = `${formatDate(filters.from)} ${text.to || 'to'} ${formatDate(filters.to)}`;
+        const from = new Date(filters.from);
+        const to = new Date(filters.to);
+
+        const fromText = isNaN(from)
+            ? filters.from
+            : from.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        const toText = isNaN(to)
+            ? filters.to
+            : to.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        const period = `${fromText} ${text.to || 'to'} ${toText}`;
+
         document.getElementById('chart-period').textContent = period;
         document.getElementById('transfer-period').textContent = period;
     };

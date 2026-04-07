@@ -23,29 +23,51 @@
 
 @php
     // Date range calculation
+    $locale = app()->getLocale();
+
     if ($date_type == 'custom_date' && !empty($from) && !empty($to)) {
-        $fromDate = \Carbon\Carbon::parse($from)->format('d M, Y');
-        $toDate = \Carbon\Carbon::parse($to)->format('d M, Y');
+        $fromDate = \Carbon\Carbon::parse($from)->locale($locale)->translatedFormat('d M Y');
+
+        $toDate = \Carbon\Carbon::parse($to)->locale($locale)->translatedFormat('d M Y');
+
         $dateRange = $fromDate . ' - ' . $toDate;
     } else {
         switch ($date_type) {
             case 'this_year':
-                $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                $dateRange =
+                    now()->startOfYear()->locale($locale)->translatedFormat('d M Y') .
+                    ' - ' .
+                    now()->endOfYear()->locale($locale)->translatedFormat('d M Y');
                 break;
+
             case 'this_month':
-                $dateRange = now()->startOfMonth()->format('d M, Y') . ' - ' . now()->endOfMonth()->format('d M, Y');
+                $dateRange =
+                    now()->startOfMonth()->locale($locale)->translatedFormat('d M Y') .
+                    ' - ' .
+                    now()->endOfMonth()->locale($locale)->translatedFormat('d M Y');
                 break;
+
             case 'this_week':
-                $dateRange = now()->startOfWeek()->format('d M, Y') . ' - ' . now()->endOfWeek()->format('d M, Y');
+                $dateRange =
+                    now()->startOfWeek()->locale($locale)->translatedFormat('d M Y') .
+                    ' - ' .
+                    now()->endOfWeek()->locale($locale)->translatedFormat('d M Y');
                 break;
+
             case 'today':
-                $dateRange = now()->format('d M, Y');
+                $dateRange = now()->locale($locale)->translatedFormat('d M Y');
                 break;
+
             default:
-                $dateRange = now()->startOfYear()->format('d M, Y') . ' - ' . now()->endOfYear()->format('d M, Y');
+                $dateRange =
+                    now()->startOfYear()->locale($locale)->translatedFormat('d M Y') .
+                    ' - ' .
+                    now()->endOfYear()->locale($locale)->translatedFormat('d M Y');
         }
     }
-    $updatedAt = now()->format('M d, Y h:i A');
+   $updatedAt = now()
+    ->locale($locale)
+    ->translatedFormat('d M Y h:i A');
 @endphp
 
 @section('content')
@@ -217,7 +239,7 @@
             <!-- Center chart (order statistics) with ID for capture -->
             <div id="order-statistics-chart" class="center-chart-area">
                 @include('layouts.back-end._apexcharts', [
-                    'title' => 'order_Statistics (' . $dateRange . ')',
+                    'title' => translate('order_Statistics') . ' (' . $dateRange . ')',
                     'statisticsValue' => $chartVal,
                     'label' => array_keys($chart_data['order_amount']),
                     'statisticsTitle' => 'total_settled_amount',

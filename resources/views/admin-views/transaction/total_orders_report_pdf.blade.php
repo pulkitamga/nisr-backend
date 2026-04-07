@@ -187,6 +187,17 @@
             border-radius: 6px;
             overflow: hidden;
             margin-top: 15px;
+          page-break-inside: auto;
+        }
+      
+
+        table {
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
 
         .table-header {
@@ -402,7 +413,8 @@
                 <td>
                     <div class="kpi-label">{{ translate('total_orders') }}</div>
                     <div class="kpi-value">
-                        <strong>{{ number_format((int) ($data['order_count']['total_order'] ?? 0)) }}</strong></div>
+                        <strong>{{ number_format((int) ($data['order_count']['total_order'] ?? 0)) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('completed') }}</div>
@@ -413,12 +425,14 @@
                 <td>
                     <div class="kpi-label">{{ translate('ongoing') }}</div>
                     <div class="kpi-value">
-                        <strong>{{ number_format((int) ($data['order_count']['ongoing_order'] ?? 0)) }}</strong></div>
+                        <strong>{{ number_format((int) ($data['order_count']['ongoing_order'] ?? 0)) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('canceled') }}</div>
                     <div class="kpi-value">
-                        <strong>{{ number_format((int) ($data['order_count']['canceled_order'] ?? 0)) }}</strong></div>
+                        <strong>{{ number_format((int) ($data['order_count']['canceled_order'] ?? 0)) }}</strong>
+                    </div>
                 </td>
             </tr>
         </table>
@@ -441,21 +455,24 @@
                         <td>
                             <div class="kpi-label">{{ translate('avg_order_value') }}</div>
                             <div class="kpi-value">
-                                <strong>{{ number_format((float) ($data['avg_order_value'] ?? 0), 2) }}</strong></div>
+                                <strong>{{ number_format((float) ($data['avg_order_value'] ?? 0), 2) }}</strong>
+                            </div>
                         </td>
                     @endif
                     @if (isset($data['total_tax']))
                         <td>
                             <div class="kpi-label">{{ translate('total_tax') }}</div>
                             <div class="kpi-value">
-                                <strong>{{ number_format((float) ($data['total_tax'] ?? 0), 2) }}</strong></div>
+                                <strong>{{ number_format((float) ($data['total_tax'] ?? 0), 2) }}</strong>
+                            </div>
                         </td>
                     @endif
                     @if (isset($data['total_discount']))
                         <td>
                             <div class="kpi-label">{{ translate('total_discount') }}</div>
                             <div class="kpi-value">
-                                <strong>{{ number_format((float) ($data['total_discount'] ?? 0), 2) }}</strong></div>
+                                <strong>{{ number_format((float) ($data['total_discount'] ?? 0), 2) }}</strong>
+                            </div>
                         </td>
                     @endif
                 </tr>
@@ -485,9 +502,9 @@
             @endif
         </div>
     @endif
-  
+
     <!-- Orders Details Table -->
-    <div class="table-container">
+    <div class="table-container" style="page-break-before: always;">
         <div class="table-header">
             <h3>{{ translate('order_details') }} {{ $dateRange }}</h3>
         </div>
