@@ -152,7 +152,7 @@
                     </button>
 
                     <button onclick="exportExcel()" class="btn btn-outline-success">
-                        <i class="tio-download-to"></i> Excel
+                        <i class="tio-download-to"></i> {{translate('excel')}}
                     </button>
 
                     <button onclick="exportFullPDF()" class="btn btn-outline-danger">
@@ -170,8 +170,6 @@
 
     {{-- SUMMARY --}}
     <div class="row g-2 mb-3" id="summaryStats"></div>
-
-
 
     {{-- MAIN CHART --}}
     <div class="crm-card mb-3">
@@ -216,7 +214,7 @@
                     <th>{{translate('converted')}}</th>
                     <th>{{translate('ignored')}}</th>
                     <th>{{translate('spam')}}</th>
-                    <th>{{translate('assigned_%')}}</th>
+                    <th>{{ translate('assigned') }}%</th>
                 </tr>
                 </thead>
 
@@ -345,42 +343,42 @@ $('#summaryStats').html(`
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">Total</div>
+<div class="crm-stat-title">{{translate('total')}}</div>
 <div class="crm-stat-value">${summary.total||0}</div>
 </div>
 </div>
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">Assigned</div>
+<div class="crm-stat-title">{{translate('assigned')}}</div>
 <div class="crm-stat-value">${summary.assigned||0}</div>
 </div>
 </div>
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">Pending</div>
+<div class="crm-stat-title">{{translate('pending') }}</div>
 <div class="crm-stat-value">${summary.pending||0}</div>
 </div>
 </div>
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">Converted</div>
+<div class="crm-stat-title">{{translate('converted')}}</div>
 <div class="crm-stat-value">${summary.converted||0}</div>
 </div>
 </div>
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">Ignored</div>
+<div class="crm-stat-title">{{translate('ignored')}}</div>
 <div class="crm-stat-value">${summary.ignored||0}</div>
 </div>
 </div>
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">Spam</div>
+<div class="crm-stat-title">{{translate('spam')}}</div>
 <div class="crm-stat-value">${summary.spam||0}</div>
 </div>
 </div>

@@ -54,12 +54,17 @@ class CrmDealSalesReportController extends BaseController
     public function exportPdf(Request $request)
     {
         $data = $this->buildReportData($request);
-        $data['exportedAt'] = now();
-        $data['report_title'] = translate('crm_sales_report');
-        // Get chart images from request (sent via POST/GET from frontend)
-        $data['employeeChart'] = $request->input('employee_chart');
-        $data['statusChart'] = $request->input('status_chart');
-        $data['retailWholesaleChart'] = $request->input('retail_wholesale_chart');
+
+        $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+        $data = array_merge($data, [
+            'exportedAt' => now(),
+            'report_title' => translate('crm_sales_report'),
+            'isRtl' => $isRtl,
+            'employeeChart' => $request->input('employee_chart'),
+            'statusChart' => $request->input('status_chart'),
+            'retailWholesaleChart' => $request->input('retail_wholesale_chart'),
+        ]);
 
         return app(\App\Services\ReportPdfService::class)->download(
             view: CrmDealSalesReport::EXPORT_PDF[VIEW],
@@ -125,7 +130,12 @@ class CrmDealSalesReportController extends BaseController
 
         $chartRows = $rows->sortByDesc('total_deals')->take(12)->values();
 
-        $periodLabel = $fromDate->format('d F, Y') . ' - ' . $toDate->format('d F, Y');
+        $locale = app()->getLocale();
+
+        $periodLabel =
+            $fromDate->locale($locale)->translatedFormat('d F, Y') .
+            ' - ' .
+            $toDate->locale($locale)->translatedFormat('d F, Y');
 
         $rangeDays = $fromDate->diffInDays($toDate) + 1;
         $rangeShort = $rangeDays . 'D';
@@ -189,8 +199,13 @@ class CrmDealSalesReportController extends BaseController
             'departments' => $departments,
             'employees' => $employees,
             'filters' => [
-                'from' => $fromDate->toDateString(),
-                'to' => $toDate->toDateString(),
+                'from' => $fromDate
+                    ->locale(app()->getLocale())
+                    ->translatedFormat('d M Y'),
+
+                'to' => $toDate
+                    ->locale(app()->getLocale())
+                    ->translatedFormat('d M Y'),
                 'date_type' => $request->input('date_type', 'this_year'),
                 'department_ids' => $departmentIds,
                 'employee_ids' => $employeeIds,
