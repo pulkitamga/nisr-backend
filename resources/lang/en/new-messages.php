@@ -6550,7 +6550,7 @@ return [
 	"refund_request_list" => "Refund request list",
 	"refund_request_message" => "Refund request message",
 	"refund_request_status_changed_by_admin" => "Refund request status changed by admin",
-	"refund_request_time_limit" => "Refund request time limit",
+	"refund_request_time_limit" => "The refund request period for this item has expired.",
 	"refund_requested_date" => "Refund requested date",
 	"refund_requested_successful!!" => "Refund requested successful!!",
 	"refund_requests" => "Refund requests",

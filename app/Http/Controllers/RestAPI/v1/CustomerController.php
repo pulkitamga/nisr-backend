@@ -11,6 +11,7 @@ use App\Models\DeliveryZipCode;
 use App\Models\GuestUser;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\OrderStatusHistory;
 use App\Models\Review;
 use App\Models\ShippingAddress;
 use App\Models\State;
@@ -613,6 +614,14 @@ class CustomerController extends Controller
         $order = $detailsList->first()?->order;
         $customerId = $user == 'offline' ? null : $user->id;
         $deliveredDays = $order ? Carbon::parse($order->updated_at)->diffInDays(now()) : null;
+        $refundStartedAt = null;
+        if ($order) {
+            $refundStartedAt = OrderStatusHistory::query()
+                ->where('order_id', $order->id)
+                ->where('status', 'delivered')
+                ->latest('id')
+                ->value('created_at');
+        }
         $productIds = $detailsList->pluck('product_id')->filter()->unique()->values()->toArray();
         $warrantiesByProduct = [];
         if ($customerId && ! empty($productIds)) {
@@ -689,6 +698,7 @@ class CustomerController extends Controller
             $totalExcludedTax,
             $taxBreakdown,
             $order,
+            $refundStartedAt,
             $orderDetailWarrantyMap
 
         ) {
@@ -713,6 +723,9 @@ class CustomerController extends Controller
                 $reviewData = ($reviews[0]['order_id'] == null ? $reviews[0] : null);
             }
             $query['reviewData'] = $reviewData;
+            $query['refund_started_at'] = $refundStartedAt
+                ?? $query->updated_at
+                ?? $query->created_at;
 
             // Add tax information to the order object
             if ($query->order) {

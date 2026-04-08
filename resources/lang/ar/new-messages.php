@@ -6552,7 +6552,7 @@ return [
 	"refund_request_list" => "قائمة طلبات الاسترداد",
 	"refund_request_message" => "رسالة طلب الاسترداد",
 	"refund_request_status_changed_by_admin" => "تم تغيير حالة طلب الاسترداد بواسطة المسؤول",
-	"refund_request_time_limit" => "حد وقت طلب الاسترداد",
+	"refund_request_time_limit" => "انتهت المهلة المسموح بها لتقديم طلب استرداد لهذا المنتج.",
 	"refund_requested_date" => "تاريخ طلب الاسترداد",
 	"refund_requested_successful!!" => "تم تقديم طلب الاسترداد بنجاح!!",
 	"refund_requests" => "طلبات الاسترداد",
