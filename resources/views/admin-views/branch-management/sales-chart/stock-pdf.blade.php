@@ -383,13 +383,28 @@
 </head>
 
 <body>
+    @php
+        $start = !empty($startDateFormatted)
+            ? \Carbon\Carbon::parse($startDateFormatted)
+                ->locale(app()->getLocale())
+                ->translatedFormat('d M Y')
+            : '';
+
+        $end = !empty($endDateFormatted)
+            ? \Carbon\Carbon::parse($endDateFormatted)
+                ->locale(app()->getLocale())
+                ->translatedFormat('d M Y')
+            : '';
+    @endphp
+
+    <span dir="{{ get_direction() }}">{{ $start }} - {{ $end }}</span>
 
     <!-- Modern Header with Logo -->
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('branch_stock_report') }}</h2>
             <p>
-                <span dir="{{ get_direction() }}">{{ $startDateFormatted ?? '' }} - {{ $endDateFormatted ?? '' }}</span>
+                <span dir="{{ get_direction() }}">{{ $start }} - {{ $end }}</span>
             </p>
         </div>
         <div class="logo-container">
@@ -427,10 +442,10 @@
     <div class="filter-summary">
         <strong>{{ translate('filters_applied') }}:</strong>
         <span dir="{{ get_direction() }}">
-            @if (!empty($startDateFormatted) && !empty($endDateFormatted))
-                {{ $startDateFormatted }} - {{ $endDateFormatted }}
+            @if ($start && $end)
+                {{ $start }} - {{ $end }}
             @else
-                {{ $dateRange ?? 'All Time' }}
+                {{ $dateRange ?? translate('all_time') }}
             @endif
         </span>
         @if (isset($product))
@@ -485,8 +500,8 @@
         @if ($hasChart && !empty($chartImage))
             <div class="chart-container">
                 <div class="chart-header">
-                    <h4>{{ translate('branch_stock_chart') }}({{ $startDateFormatted ?? '' }} -
-                        {{ $endDateFormatted ?? '' }})</h4>
+                    <h4>{{ translate('branch_stock_chart') }}({{ $start ?? '' }} -
+                        {{ $end ?? '' }})</h4>
 
                 </div>
                 <img src="{{ $chartImage }}" class="chart-image" alt="{{ translate('branch_stock_chart') }}" />
@@ -495,7 +510,7 @@
             <div class="chart-container">
                 <div class="chart-header">
                     <h4>{{ translate('branch_stock_chart') }}</h4>
-                    <span class="badge-soft">{{ $startDateFormatted ?? '' }} - {{ $endDateFormatted ?? '' }}</span>
+                    <span class="badge-soft">{{ $start ?? '' }} - {{ $end ?? '' }}</span>
                 </div>
                 <div class="no-chart">
                     <strong>{{ translate('chart_data_not_available') }}</strong>
@@ -508,8 +523,8 @@
         <div class="table-container">
             <div class="table-header">
                 <h5>
-                    {{ translate('branch_stock_details') }} ({{ $startDateFormatted ?? '' }} -
-                    {{ $endDateFormatted ?? '' }})
+                    {{ translate('branch_stock_details') }} ({{ $start ?? '' }} -
+                    {{ $end ?? '' }})
                 </h5>
             </div>
             <table>
@@ -532,7 +547,9 @@
                         @php
                             $totalStockCalc += $branch['current_stock'] ?? 0;
                             $lastUpdated = isset($branch['last_updated'])
-                                ? \Carbon\Carbon::parse($branch['last_updated'])->format('M d, Y H:i')
+                                ? \Carbon\Carbon::parse($branch['last_updated'])
+                                    ->locale(app()->getLocale())
+                                    ->translatedFormat('d M Y H:i')
                                 : translate('na_symbol');
                             $stockIn = $branch['total_in'] ?? 0;
                             $stockOut = $branch['total_out'] ?? 0;

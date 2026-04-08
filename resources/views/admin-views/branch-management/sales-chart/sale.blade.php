@@ -528,67 +528,62 @@
             exportReport('pdf');
         });
         branchStockI18n // Helper function to get formatted date range
-        function getDateRangeText(dateType, fromDate, toDate) {
+        function formatDateLocalized(date) {
             const months = branchStockI18n.months;
+
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+
+            return `${day} ${month} ${year}`;
+        }
+
+        function getDateRangeText(dateType, fromDate, toDate) {
             const now = new Date();
 
-            // If no date type selected (empty string), default to current year
-            if (!dateType || dateType === '') {
-                const year = now.getFullYear();
-                return `01 Jan ${year} - 31 Dec ${year}`;
-            }
-
             switch (dateType) {
+
                 case 'day':
-                    return now.toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                        })
-                        .replace(/ /g, ' ');
+                    return formatDateLocalized(now);
 
                 case 'week': {
                     const start = new Date(now);
-                    start.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+                    start.setDate(now.getDate() - now.getDay());
+
                     const end = new Date(start);
                     end.setDate(start.getDate() + 6);
 
-                    const formatDate = (date) => {
-                        const day = date.getDate().toString().padStart(2, '0');
-                        const month = months[date.getMonth()];
-                        const year = date.getFullYear();
-                        return `${day} ${month} ${year}`;
-                    };
-                    return `${formatDate(start)} - ${formatDate(end)}`;
+                    return `${formatDateLocalized(start)} - ${formatDateLocalized(end)}`;
                 }
 
                 case 'month': {
-                    const year = now.getFullYear();
-                    const month = months[now.getMonth()];
-                    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
-                    return `01 ${month} ${year} - ${lastDay.toString().padStart(2, '0')} ${month} ${year}`;
+                    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+                    return `${formatDateLocalized(start)} - ${formatDateLocalized(end)}`;
                 }
 
                 case 'year': {
-                    const year = now.getFullYear();
-                    return `01 Jan ${year} - 31 Dec ${year}`;
+                    const start = new Date(now.getFullYear(), 0, 1);
+                    const end = new Date(now.getFullYear(), 11, 31);
+
+                    return `${formatDateLocalized(start)} - ${formatDateLocalized(end)}`;
                 }
 
                 case 'custom':
                     if (fromDate && toDate) {
-                        const formatCustom = (dateStr) => {
-                            const date = new Date(dateStr);
-                            const day = date.getDate().toString().padStart(2, '0');
-                            const month = months[date.getMonth()];
-                            const year = date.getFullYear();
-                            return `${day} ${month} ${year}`;
-                        };
-                        return `${formatCustom(fromDate)} - ${formatCustom(toDate)}`;
+                        const start = new Date(fromDate);
+                        const end = new Date(toDate);
+
+                        return `${formatDateLocalized(start)} - ${formatDateLocalized(end)}`;
                     }
                     return 'All Time';
 
                 default:
-                    return 'All Time';
+                    const start = new Date(now.getFullYear(), 0, 1);
+                    const end = new Date(now.getFullYear(), 11, 31);
+
+                    return `${formatDateLocalized(start)} - ${formatDateLocalized(end)}`;
             }
         }
 

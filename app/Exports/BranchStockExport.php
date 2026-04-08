@@ -40,38 +40,31 @@ class BranchStockExport implements FromArray, WithHeadings, WithTitle, ShouldAut
         $serialNumber = 1;
 
         foreach ($this->branchData as $branch) {
-            $row = [
-                $serialNumber++, // Add serial number
-                $branch['branch_name'],
-                $branch['current_stock'],
+
+            $stockIn = $branch['total_in'] ?? 0;
+            $stockOut = $branch['total_out'] ?? 0;
+
+            $exportArray[] = [
+                $serialNumber++,
+                $branch['branch_name'] ?? '',
+                $this->product ? $this->product->name : translate('all_products'),
+                $branch['current_stock'] ?? 0,
+                "In: {$stockIn}\nOut: {$stockOut}",
+                $branch['last_updated']
+                    ? \Carbon\Carbon::parse($branch['last_updated'])->format('M d, Y h:i A')
+                    : '',
             ];
-
-            // Add product name if product filter is applied
-            if ($this->product) {
-                $row[] = $this->product->name;
-            }
-
-            // Add variation if variation filter is applied
-            if (!empty($this->filters['variation_type'])) {
-                $row[] = $this->filters['variation_type'];
-            }
-
-            $exportArray[] = $row;
         }
 
-        // Add total row
         if (count($this->branchData) > 0) {
-            $totalRow = ['Total', '', array_sum(array_column($this->branchData, 'current_stock'))];
-
-            // Add empty cells for product and variation columns if they exist
-            if ($this->product) {
-                $totalRow[] = '';
-            }
-            if (!empty($this->filters['variation_type'])) {
-                $totalRow[] = '';
-            }
-
-            $exportArray[] = $totalRow;
+            $exportArray[] = [
+                translate('total'),
+                '',
+                '',
+                array_sum(array_column($this->branchData, 'current_stock')),
+                '',
+                ''
+            ];
         }
 
         return $exportArray;
@@ -80,9 +73,14 @@ class BranchStockExport implements FromArray, WithHeadings, WithTitle, ShouldAut
     public function headings(): array
     {
         $headings = [
+
             translate('SL'),
             translate('branch_name'),
-            translate('stock_quantity')
+            translate('product_name'),
+            translate('current_stock'),
+            translate('stock_in_out'),
+            translate('last_updated'),
+
         ];
 
         // Add product column if product filter is applied
