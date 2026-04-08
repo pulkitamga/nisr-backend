@@ -759,27 +759,15 @@ class OrderManager
             $billing_address_id = isset($req['billing_address_id']) ? $req['billing_address_id'] : null;
         }
 
-        $seller_data = Cart::where(['cart_group_id' => $cart_group_id])->first();
+        $cart_group_items = CartManager::get_cart_for_api(request: $req, groupId: $cart_group_id, type: 'checked');
+        $seller_data = $cart_group_items->first() ?? Cart::where(['cart_group_id' => $cart_group_id])->first();
         $shipping_method = CartShipping::where(['cart_group_id' => $cart_group_id])->first();
         if (isset($shipping_method)) {
             $shipping_method_id = $shipping_method->shipping_method_id;
         } else {
             $shipping_method_id = 0;
         }
-
-        $shipping_model = getWebConfig(name: 'shipping_method');
-        if ($shipping_model == 'inhouse_shipping') {
-            $admin_shipping = ShippingType::where('seller_id', 0)->first();
-            $shipping_type = isset($admin_shipping) == true ? $admin_shipping->shipping_type : 'order_wise';
-        } else {
-            if ($seller_data->seller_is == 'admin') {
-                $admin_shipping = ShippingType::where('seller_id', 0)->first();
-                $shipping_type = isset($admin_shipping) == true ? $admin_shipping->shipping_type : 'order_wise';
-            } else {
-                $seller_shipping = ShippingType::where('seller_id', $seller_data->seller_id)->first();
-                $shipping_type = isset($seller_shipping) == true ? $seller_shipping->shipping_type : 'order_wise';
-            }
-        }
+        $shipping_type = (string)($cart_group_items->first()?->shipping_type ?? $seller_data?->shipping_type ?? 'order_wise');
 
         $totalInstallationCharge = 0;
         $totalExchangeCharge = 0;
@@ -1098,23 +1086,13 @@ class OrderManager
         $cart_group_id = $data['cart_group_id'];
         $admin_commission = (float)str_replace(",", "", Helpers::sales_commission_before_order($cart_group_id, $discount));
         $user = Helpers::getCustomerInformation($req);
-        $seller_data = Cart::where(['cart_group_id' => $cart_group_id])->first();
+        $cart_group_items = $req
+            ? CartManager::get_cart_for_api(request: $req, groupId: $cart_group_id, type: 'checked')
+            : CartManager::getCartListQuery(groupId: $cart_group_id, type: 'checked');
+        $seller_data = $cart_group_items->first() ?? Cart::where(['cart_group_id' => $cart_group_id])->first();
         $shipping_method = CartShipping::where(['cart_group_id' => $cart_group_id])->first();
         $shipping_method_id = isset($shipping_method) ? $shipping_method->shipping_method_id : 0;
-        $shipping_model = getWebConfig(name: 'shipping_method');
-
-        if ($shipping_model == 'inhouse_shipping') {
-            $admin_shipping = ShippingType::where('seller_id', 0)->first();
-            $shipping_type = isset($admin_shipping) ? $admin_shipping->shipping_type : 'order_wise';
-        } else {
-            if ($seller_data->seller_is == 'admin') {
-                $admin_shipping = ShippingType::where('seller_id', 0)->first();
-                $shipping_type = isset($admin_shipping) ? $admin_shipping->shipping_type : 'order_wise';
-            } else {
-                $seller_shipping = ShippingType::where('seller_id', $seller_data->seller_id)->first();
-                $shipping_type = isset($seller_shipping) ? $seller_shipping->shipping_type : 'order_wise';
-            }
-        }
+        $shipping_type = (string)($cart_group_items->first()?->shipping_type ?? $seller_data?->shipping_type ?? 'order_wise');
 
         $order_data = [
             'order_id' => $order_id,

@@ -363,8 +363,12 @@ class WarrantyViewController extends Controller
             'claim_number' => $claim->claim_number,
             'status_key' => $claim->status,
             'status' => $this->claimStatusLabel($claim->status),
+            'status_label' => $this->claimStatusLabel($claim->status),
             'grouped_status_key' => $groupedStatusKey,
             'grouped_status' => $this->groupClaimStatus($claim->status),
+            'customer_meaning' => method_exists($this, 'claimStatusMeaning')
+                ? $this->claimStatusMeaning($claim->status)
+                : null,
             'latest_event_at' => optional($latestEventAt)?->toIso8601String(),
             'updated_at' => optional($claim->updated_at)?->toIso8601String(),
         ];

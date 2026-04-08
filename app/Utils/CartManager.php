@@ -25,6 +25,24 @@ use Illuminate\Support\Str;
 
 class CartManager
 {
+    private static function resolveShippingTypeForProduct(Product $product): string
+    {
+        $shippingMethod = getWebConfig(name: 'shipping_method');
+
+        if ($shippingMethod == 'inhouse_shipping') {
+            $adminShipping = ShippingType::where('seller_id', 0)->first();
+            return isset($adminShipping) ? $adminShipping->shipping_type : 'order_wise';
+        }
+
+        if ($product->added_by == 'admin') {
+            $adminShipping = ShippingType::where('seller_id', 0)->first();
+            return isset($adminShipping) ? $adminShipping->shipping_type : 'order_wise';
+        }
+
+        $sellerShipping = ShippingType::where('seller_id', $product->user_id)->first();
+        return isset($sellerShipping) ? $sellerShipping->shipping_type : 'order_wise';
+    }
+
     public static function resolveCartOwnerContext($request = null): array
     {
         $user = Helpers::getCustomerInformation($request);
@@ -138,12 +156,13 @@ class CartManager
             tax: $product['tax'],
             tax_type: 'percent'
         );
-        $shippingType = (string) ($cart->shipping_type ?? '');
+        $shippingType = self::resolveShippingTypeForProduct($product);
         if ($product->product_type !== 'physical') {
             $shippingCost = 0;
         } elseif ($shippingType === 'area_wise') {
-            // Preserve resolved area-wise delivery costs already selected for this cart group.
-            $shippingCost = max(0, (float) ($cart->shipping_cost ?? 0));
+            $shippingCost = $cart->shipping_type === 'area_wise'
+                ? max(0, (float) ($cart->shipping_cost ?? 0))
+                : 0;
         } elseif ($shippingType === 'order_wise') {
             $shippingCost = 0;
         } else {
@@ -153,11 +172,13 @@ class CartManager
         $hasChanged = (float) $cart->price !== (float) $price
             || (float) $cart->discount !== (float) $discount
             || (float) $cart->tax !== (float) $tax
+            || (string) ($cart->shipping_type ?? '') !== $shippingType
             || (float) $cart->shipping_cost !== (float) $shippingCost;
 
         $cart->price = $price;
         $cart->discount = $discount;
         $cart->tax = $tax;
+        $cart->shipping_type = $shippingType;
         $cart->shipping_cost = $shippingCost;
         $cart->setRelation('product', $product);
 
@@ -346,47 +367,28 @@ class CartManager
             return 0;
         }
 
-        $cost = 0;
+        $cartItems = self::get_cart_for_api(
+            request: $request,
+            groupId: $groupId,
+            type: $type
+        )->where('product_type', 'physical');
 
-        $cartShippingCost = Cart::where(['product_type' => 'physical'])
-            ->whereHas('product', function ($query) {
-                return $query->active();
-            })->when(($groupId == null && $type != 'checked'), function ($query) use ($request) {
-                return $query->whereIn('cart_group_id', CartManager::get_cart_group_ids(request: $request));
-            })
-            ->when(($groupId == null && $type == 'checked'), function ($query) use ($request) {
-                return $query->whereIn('cart_group_id', CartManager::get_cart_group_ids(request: $request, type: 'checked'));
-            })
-            ->when($groupId != null, function ($query) use ($groupId) {
-                return $query->where(['cart_group_id' => $groupId]);
-            })
-            ->when($type == 'checked', function ($query) {
-                return $query->where(['is_checked' => 1]);
-            })->sum('shipping_cost');
-
-        $orderWiseShippingCostData = CartShipping::whereHas('cart', function ($query) use ($type) {
-            return $query->where(['product_type' => 'physical'])->whereHas('product', function ($query) {
-                return $query->active();
-            })->when($type == 'checked', function ($query) {
-                return $query->where(['is_checked' => 1]);
-            });
-        })->when(($groupId == null && $type != 'checked'), function ($query) use ($request) {
-            return $query->whereIn('cart_group_id', CartManager::get_cart_group_ids(request: $request));
-        })
-            ->when(($groupId == null && $type == 'checked'), function ($query) use ($request) {
-                return $query->whereIn('cart_group_id', CartManager::get_cart_group_ids(request: $request, type: 'checked'));
-            })
-            ->when(($groupId != null), function ($query) use ($groupId) {
-                return $query->where('cart_group_id', $groupId);
-            });
-
-        if ($groupId == null) {
-            $orderWiseShippingCost = $orderWiseShippingCostData->sum('shipping_cost');
-        } else {
-            $data = $orderWiseShippingCostData->first();
-            $orderWiseShippingCost = isset($data) ? $data->shipping_cost : 0;
+        if ($cartItems->isEmpty()) {
+            return 0;
         }
-        return ($orderWiseShippingCost + $cartShippingCost);
+
+        return (float) $cartItems->groupBy('cart_group_id')->sum(function ($cartGroupItems) {
+            $shippingType = (string) ($cartGroupItems->first()->shipping_type ?? 'order_wise');
+
+            if ($shippingType === 'order_wise') {
+                $cartShipping = CartShipping::where('cart_group_id', $cartGroupItems->first()->cart_group_id)->first();
+                return (float) ($cartShipping->shipping_cost ?? 0);
+            }
+
+            return (float) $cartGroupItems->sum(function ($cartItem) {
+                return (float) ($cartItem->shipping_cost ?? 0);
+            });
+        });
     }
 
     private static function isPickupDeliveryType($request = null): bool

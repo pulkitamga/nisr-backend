@@ -234,9 +234,6 @@ class CartController extends Controller
 
     public function updateShippingCost(Request $request)
     {
-        $adminShipping = \App\Models\ShippingType::where('seller_id', 0)->first();
-        $shippingType = $adminShipping ? $adminShipping->shipping_type : 'order_wise';
-
         $cartList = CartManager::get_cart_for_api($request, type: 'checked');
         if ($cartList->isEmpty()) {
             return response()->json([
@@ -244,6 +241,8 @@ class CartController extends Controller
                 'message' => 'No checked cart items found'
             ], 200);
         }
+
+        $shippingType = (string)($cartList->first()->shipping_type ?? 'order_wise');
 
         $deliveryType = strtolower(trim((string)$request->input('delivery_type', 'delivery')));
 
