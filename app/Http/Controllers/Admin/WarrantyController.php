@@ -800,8 +800,11 @@ class WarrantyController extends Controller
 
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
-            $rows = $detailQuery->get()->map(function (WarrantyClaim $claim) {
-                return [
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+            $rows = $detailQuery->get()->map(function (WarrantyClaim $claim) use ($isRtl) {
+
+                $data = [
                     (string)$claim->claim_number,
                     (string)$claim->serial_number,
                     ucwords(str_replace('_', ' ', (string)$claim->status)),
@@ -810,6 +813,8 @@ class WarrantyController extends Controller
                     optional($claim->resolution_due)->format('Y-m-d H:i:s') ?? '-',
                     $claim->branch?->branch_name ?? '-',
                 ];
+
+                return $isRtl ? array_reverse($data) : $data;
             })->values()->all();
             $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
             return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
@@ -856,14 +861,20 @@ class WarrantyController extends Controller
                 {
                     return [
                         \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
-                            // 1. Remove gridlines for a clean white background
+
+                            // ✅ Make Excel RTL if Arabic
+                            if (app()->getLocale() === 'ar' || session('direction') === 'rtl') {
+                                $event->sheet->getDelegate()->setRightToLeft(true);
+                            }
+
+                            // Remove gridlines
                             $event->sheet->getDelegate()->setShowGridlines(false);
 
-                            // 2. Calculate the data range (Columns A to G)
+                            // Calculate range
                             $lastRow = count($this->rows) + 1;
                             $range = "A1:G{$lastRow}";
 
-                            // 3. Apply Thick Black Outline and Light Inside Borders
+                            // Apply borders and alignment
                             $event->sheet->getStyle($range)->applyFromArray([
                                 'borders' => [
                                     'outline' => [
@@ -1054,21 +1065,24 @@ class WarrantyController extends Controller
 
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
-            $rows = $slaSummaryRows->map(function ($row) {
+            $rows = $slaSummaryRows->values()->map(function ($row, $index) {
+
                 $slaLabel = $row->sla_type_key === 'response'
                     ? translate('first_response_sla')
                     : translate('resolution_sla');
+
                 return [
-                    (string)$row->claim_number,
-                    (string)$row->serial_number,
-                    (string)$row->product_name,
-                    $slaLabel,
-                    Carbon::parse((string)$row->due_date)->format('Y-m-d H:i:s'),
+                    ucwords(str_replace('_', ' ', (string)$row->status)), // claim_status
+                    ((int)$row->is_within_sla === 1) ? translate('on_time') : translate('breached'), // status
                     $row->completed_at ? Carbon::parse((string)$row->completed_at)->format('Y-m-d H:i:s') : '-',
-                    ((int)$row->is_within_sla === 1) ? translate('on_time') : translate('breached'),
-                    ucwords(str_replace('_', ' ', (string)$row->status)),
+                    Carbon::parse((string)$row->due_date)->format('Y-m-d H:i:s'),
+                    (string)$row->product_name,
+                    (string)$row->serial_number,
+                    (string)$row->claim_number,
+                    $slaLabel,
+                    $index + 1, // #
                 ];
-            })->values()->all();
+            })->all();
             $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
             return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
                 public function __construct(
@@ -1084,13 +1098,13 @@ class WarrantyController extends Controller
                 public function headings(): array
                 {
                     return [
+                        translate('sla_type'),
                         translate('claim_number'),
                         translate('serial'),
                         translate('product'),
-                        translate('sla_type'),
                         translate('due_date'),
                         translate('completed_at'),
-                        translate('sla_type'),
+                        translate('status'),
                         translate('claim_status'),
                     ];
                 }
@@ -1121,6 +1135,9 @@ class WarrantyController extends Controller
                     return [
                         \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
                             // 1. Hide default gridlines for white background
+                            $event->sheet->getDelegate()->setRightToLeft(true);
+
+                            // Hide gridlines
                             $event->sheet->getDelegate()->setShowGridlines(false);
 
                             // 2. Define range based on data
@@ -1317,47 +1334,70 @@ class WarrantyController extends Controller
 
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
-            $rows = $detailQuery->get()->map(function (Warranty $warranty) {
+            $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
+            $isRtl = $currentLocale === 'ar' || session('direction') === 'rtl';
+
+            $dataRows = $detailQuery->get()->map(function (Warranty $warranty) {
                 return [
                     (string)$warranty->serial_number,
                     $warranty->product?->name ?? '-',
                     $this->resolveWarrantyCustomerName($warranty),
                     $warranty->branch?->branch_name ?? '-',
-                    $this->resolveActivationMethodLabel((string)$warranty->activation_method),
+                    translate($this->resolveActivationMethodLabel((string)$warranty->activation_method)),
                     optional($warranty->activation_date)->format('Y-m-d H:i:s') ?? '-',
-                    ucwords(str_replace('_', ' ', (string)$warranty->status)),
                     optional($warranty->end_date)->format('Y-m-d') ?? '-',
+                    translate(ucwords(str_replace('_', ' ', (string)$warranty->status))),
                 ];
             })->values()->all();
-            $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
-            return Excel::download(new class($rows, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
+
+            // Define headings in correct order
+            $headings = [
+                translate('serial'),
+                translate('product'),
+                translate('customer'),
+                translate('branch'),
+                translate('activation_method'),
+                translate('activated_at'),
+                translate('warranty_end'),
+                translate('status'),
+            ];
+
+            // Reverse for RTL
+            if ($isRtl) {
+                $headings = array_reverse($headings);
+                $dataRows = array_map(function ($row) {
+                    return array_reverse($row);
+                }, $dataRows);
+            }
+
+            return Excel::download(new class($dataRows, $headings, $isRtl, $currentLocale) implements FromArray, WithHeadings, WithStyles, WithEvents, ShouldAutoSize {
                 public function __construct(
                     private readonly array $rows,
+                    private readonly array $headings,
+                    private readonly bool $isRtl,
                     private readonly string $locale
                 ) {
                     app()->setLocale($this->locale);
                 }
+
                 public function array(): array
                 {
                     return $this->rows;
                 }
+
                 public function headings(): array
                 {
-                    return [
-                        translate('serial'),
-                        translate('product'),
-                        translate('customer'),
-                        translate('branch'),
-                        translate('activation_method'),
-                        translate('activated_at'),
-                        translate('status'),
-                        translate('warranty_end'),
-                    ];
+                    return $this->headings;
                 }
+
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
                 {
+                    // Set RTL direction for the sheet
+                    if ($this->isRtl) {
+                        $sheet->setRightToLeft(true);
+                    }
+
                     return [
-                        // Row 1: Green Header with Bold White Text
                         1 => [
                             'font' => [
                                 'bold' => true,
@@ -1375,15 +1415,13 @@ class WarrantyController extends Controller
                 {
                     return [
                         \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
-                            // 1. Hide Gridlines (makes background pure white)
-                            $event->sheet->getDelegate()->setShowGridlines(false);
+                            $sheet = $event->sheet->getDelegate();
+                            $sheet->setShowGridlines(false);
 
-                            // 2. Calculate the data range (A to H based on headings)
                             $lastRow = count($this->rows) + 1;
                             $range = "A1:H{$lastRow}";
 
-                            // 3. Apply Thick Black Outside Border and Light Inside Borders
-                            $event->sheet->getStyle($range)->applyFromArray([
+                            $sheet->getStyle($range)->applyFromArray([
                                 'borders' => [
                                     'outline' => [
                                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
@@ -1399,6 +1437,11 @@ class WarrantyController extends Controller
                                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                                 ],
                             ]);
+
+                            // Auto-size all columns
+                            foreach (range('A', 'H') as $column) {
+                                $sheet->getColumnDimension($column)->setAutoSize(true);
+                            }
                         },
                     ];
                 }
