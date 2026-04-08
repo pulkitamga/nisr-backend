@@ -622,7 +622,7 @@
                 date_type: dateType,
                 export_type: exportType,
                 chart_image: chartImage,
-                date_range: dateRangeText // Add date range to request
+                date_range: dateRangeText,
                 locale: "{{ app()->getLocale() }}"
             };
 
