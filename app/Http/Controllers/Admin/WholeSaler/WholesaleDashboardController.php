@@ -334,21 +334,23 @@ class WholesaleDashboardController extends BaseController
 
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
-            $rows = $topWholesalers->map(function ($row) {
-                // Calculate collection rate for this wholesaler
+            $rows = $topWholesalers->map(function ($row) use ($isRtl) {
+
                 $collection = $row->total_revenue > 0
                     ? round(($row->paid_revenue / $row->total_revenue) * 100, 1) . '%'
                     : '0%';
 
-                return [
+                $data = [
                     (string)($row->wholeseller?->name ?? 'N/A'),
-                    (string)($row->wholeseller?->wholesalerBusiness?->company_name ?? 'N/A'), // Company
-                    (int)$row->orders_count,                                               // Orders
-                    round((float)$row->total_revenue, 2),                                   // Revenue
-                    $collection                                                            // Collection
+                    (string)($row->wholeseller?->wholesalerBusiness?->company_name ?? 'N/A'),
+                    (int)$row->orders_count,
+                    round((float)$row->total_revenue, 2),
+                    $collection
                 ];
+
+                return $isRtl ? array_reverse($data) : $data;
             })->values()->all();
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
+            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles, \Maatwebsite\Excel\Concerns\ShouldAutoSize {
                 public function __construct(private readonly array $rows) {}
                 public function array(): array
                 {
@@ -356,12 +358,24 @@ class WholesaleDashboardController extends BaseController
                 }
                 public function headings(): array
                 {
+                    $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+                    if ($isRtl) {
+                        return [
+                            translate('collection'),
+                            translate('revenue'),
+                            translate('orders'),
+                            translate('company'),
+                            translate('wholesaler'),
+                        ];
+                    }
+
                     return [
                         translate('wholesaler'),
                         translate('company'),
                         translate('orders'),
                         translate('revenue'),
-                        translate('collection')
+                        translate('collection'),
                     ];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
@@ -615,27 +629,63 @@ class WholesaleDashboardController extends BaseController
 
         $download = (string)$request->input('download', '');
         if ($download === 'excel') {
-            $rows = $tierRevenue->map(fn($row) => [(string)$row->tier_name, (int)$row->orders_count, round((float)$row->total_revenue, 2)])->values()->all();
-            return Excel::download(new class($rows) implements FromArray, WithHeadings, WithStyles {
-                public function __construct(private readonly array $rows) {}
+
+            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+
+            $rows = $tierRevenue->map(function ($row) use ($isRtl) {
+
+                $data = [
+                    (string)$row->tier_name,
+                    (int)$row->orders_count,
+                    round((float)$row->total_revenue, 2)
+                ];
+
+                return $isRtl ? array_reverse($data) : $data;
+            })->values()->all();
+
+            return Excel::download(new class($rows, $isRtl) implements
+                FromArray,
+                WithHeadings,
+                WithStyles,
+                \Maatwebsite\Excel\Concerns\ShouldAutoSize
+            {
+
+                public function __construct(
+                    private readonly array $rows,
+                    private readonly bool $isRtl
+                ) {}
+
                 public function array(): array
                 {
                     return $this->rows;
                 }
+
                 public function headings(): array
                 {
+                    if ($this->isRtl) {
+                        return [
+                            translate('revenue'),
+                            translate('orders'),
+                            translate('tier'),
+                        ];
+                    }
+
                     return [
                         translate('tier'),
                         translate('orders'),
-                        translate('revenue')
+                        translate('revenue'),
                     ];
                 }
-                // Apply the Custom Header Design
+
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
                 {
+                    if ($this->isRtl) {
+                        $sheet->setRightToLeft(true);
+                    }
+
                     $sheet->getStyle('A1:C1')->getFill()->applyFromArray([
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => '239e92'],
+                        'startColor' => ['rgb' => '239e92']
                     ]);
 
                     return [
