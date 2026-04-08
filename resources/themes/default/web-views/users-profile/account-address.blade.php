@@ -11,6 +11,13 @@
 
 @section('content')
 @include('layouts.front-end.partials._store-header')
+@php($shippingRestrictionSetup = $deliveryRestriction['setup'] ?? [])
+@php($singleCountryMode = (bool)($deliveryRestriction['single_country_mode'] ?? false))
+@php($showCountryField = (bool)($shippingRestrictionSetup['country']['visible'] ?? false) && !$singleCountryMode)
+@php($showStateField = (bool)($shippingRestrictionSetup['state']['visible'] ?? false) && ($showCountryField || $singleCountryMode))
+@php($showCityField = (bool)($shippingRestrictionSetup['city']['visible'] ?? false) && $showStateField)
+@php($showAreaField = (bool)($shippingRestrictionSetup['area']['visible'] ?? false) && $showCityField)
+@php($showZipField = (bool)($shippingRestrictionSetup['zip']['visible'] ?? false))
 
 <div class="__account-address">
     <div class="modal fade rtl text-align-direction" id="exampleModal" tabindex="-1" role="dialog"
@@ -80,8 +87,7 @@
                                         <input type="hidden" class="country-picker-phone-number w-50" name="phone" readonly>
                                     </div>
                                 </div>
-                                @php($singleCountry = count($countries) === 1)
-                                <div class="form-row @if($singleCountry) d-none @endif" id="address-country-wrapper" @if($singleCountry) data-single-country @endif>
+                                <div class="form-row @if(!$showCountryField) d-none @endif" id="address-country-wrapper" @if($singleCountryMode) data-single-country @endif>
                                     <div class="form-group col-md-12">
                                         <label for="address-city">
                                             {{translate('country')}}
@@ -90,7 +96,7 @@
                                         <select name="country_id" id="address-country" class="form-control selectpicker"
                                             data-live-search="true">
                                             @foreach($countries as $d)
-                                            <option value="{{ $d['code'] }}" data-name="{{ $d['name'] }}" {{ $singleCountry ? 'selected' : '' }}>{{ $d['name'] }}</option>
+                                            <option value="{{ $d['code'] }}" data-name="{{ $d['name'] }}" {{ $singleCountryMode && ($loop->first || ($deliveryRestriction['default_country_code'] ?? null) === $d['code']) ? 'selected' : '' }}>{{ $d['name'] }}</option>
                                             @endforeach
                                         </select>
                                         <input type="hidden" name="country" id="country_name">
@@ -98,6 +104,7 @@
                                     </div>
                                 </div>
                                 <div class="form-row">
+                                    @if($showStateField)
                                     <div class="form-group col-md-6">
                                         <label for="address-state">{{translate('state')}} <span class="text-danger">*</span></label>
                                         <select name="state_id" id="address-state" class="form-control" required>
@@ -105,7 +112,9 @@
                                         </select>
                                         <input type="hidden" name="state" id="state_name">
                                     </div>
+                                    @endif
 
+                                    @if($showCityField)
                                     <div class="form-group col-md-6">
                                         <label for="address-city">{{translate('city')}} <span class="text-danger">*</span></label>
                                         <select name="city_id" id="address-city" class="form-control" required>
@@ -113,7 +122,9 @@
                                         </select>
                                         <input type="hidden" name="city" id="city_name">
                                     </div>
+                                    @endif
 
+                                    @if($showAreaField)
                                     <div class="form-group col-md-6">
                                         <label for="address-area">{{translate('area')}} <span class="text-danger">*</span></label>
                                         <select name="area_id" id="address-area" class="form-control" required>
@@ -121,7 +132,9 @@
                                         </select>
                                         <input type="hidden" name="area" id="area_name">
                                     </div>
+                                    @endif
 
+                                    @if($showZipField)
                                     <div class="form-group col-md-6">
                                         <label for="zip">
                                             {{translate(key: 'zip_code')}}
@@ -138,6 +151,7 @@
                                         <input class="form-control" type="text" id="zip" name="zip">
                                         @endif
                                     </div>
+                                    @endif
                                 </div>
 
 
@@ -276,6 +290,7 @@
                                             {{$shippingAddress['phone']}}
                                         </span>
                                     </div>
+                                    @if($showStateField)
                                     <div>
                                         <span class="font-nameA">
                                             <span class="fw-semibold min-w-60px">
@@ -285,6 +300,8 @@
                                             {{$shippingAddress['state'] ?? ''}}
                                         </span>
                                     </div>
+                                    @endif
+                                    @if($showCityField)
                                     <div>
                                         <span class="font-nameA">
                                             <span class="fw-semibold min-w-60px">
@@ -294,6 +311,8 @@
                                             {{$shippingAddress['city'] ?? ''}}
                                         </span>
                                     </div>
+                                    @endif
+                                    @if($showAreaField)
                                     <div>
                                         <span class="font-nameA">
                                             <span class="fw-semibold min-w-60px">
@@ -303,8 +322,8 @@
                                             {{$shippingAddress['area'] ?? ''}}
                                         </span>
                                     </div>
-
-
+                                    @endif
+                                    @if($showZipField)
                                     <div>
                                         <span class="font-nameA">
                                             <span class="fw-semibold min-w-60px">
@@ -314,6 +333,7 @@
                                             {{$shippingAddress['zip']}}
                                         </span>
                                     </div>
+                                    @endif
                                     <div>
                                         <span class="font-nameA">
                                             <span class="fw-semibold min-w-60px">
@@ -344,6 +364,11 @@
     </div>
 </div>
 <span id="system-country-restrict-status" data-value="{{ $country_restrict_status }}"></span>
+<span id="account-delivery-restriction-setup"
+      data-single-country-mode="{{ $singleCountryMode ? 1 : 0 }}"
+      data-state-visible="{{ $showStateField ? 1 : 0 }}"
+      data-city-visible="{{ $showCityField ? 1 : 0 }}"
+      data-area-visible="{{ $showAreaField ? 1 : 0 }}"></span>
 @endsection
 
 @push('script')
@@ -494,18 +519,36 @@ const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
 <script>
     $(document).ready(function() {
+        const restrictionSetupElement = document.getElementById('account-delivery-restriction-setup');
+        const singleCountryMode = Number(restrictionSetupElement?.dataset?.singleCountryMode || 0) === 1;
+        const stateVisible = Number(restrictionSetupElement?.dataset?.stateVisible || 0) === 1;
+        const cityVisible = Number(restrictionSetupElement?.dataset?.cityVisible || 0) === 1;
+        const areaVisible = Number(restrictionSetupElement?.dataset?.areaVisible || 0) === 1;
+
+        function clearSelect(selectSelector, hiddenSelector, placeholder) {
+            const $select = $(selectSelector);
+            if ($select.length) {
+                $select.empty().append(`<option value="">${placeholder}</option>`);
+            }
+            $(hiddenSelector).val('');
+        }
+
         $('#address-country').change(function() {
             let selected = $(this).find('option:selected');
             $('#country_name').val(selected.data('name')); // set hidden input value
 
             let country = $(this).val();
-            $.get("{{ route('get.states') }}", {
+            if (!stateVisible) {
+                return;
+            }
+
+            $.get("{{ route('checkout.get.states') }}", {
                 country: country
             }, function(data) {
-                $('#address-state').empty().append('<option value="">Select State</option>');
-                $('#address-city').empty().append('<option value="">Select City</option>');
-                $('#address-area').empty().append('<option value="">Select Area</option>');
-                $.each(data, function(key, state) {
+                clearSelect('#address-state', '#state_name', '{{ translate('select_state') }}');
+                clearSelect('#address-city', '#city_name', '{{ translate('select_city') }}');
+                clearSelect('#address-area', '#area_name', '{{ translate('select_area') }}');
+                $.each(data.states ?? [], function(key, state) {
                     $('#address-state').append(`<option value="${state.id}" data-name="${state.name}">${state.name}</option>`);
                 });
             });
@@ -515,13 +558,17 @@ const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
             let selected = $(this).find('option:selected');
             $('#state_name').val(selected.data('name'));
 
+            if (!cityVisible) {
+                return;
+            }
+
             let state_id = $(this).val();
-            $.get("{{ route('get.cities') }}", {
+            $.get("{{ route('checkout.get.cities') }}", {
                 state_id: state_id
             }, function(data) {
-                $('#address-city').empty().append('<option value="">Select City</option>');
-                $('#address-area').empty().append('<option value="">Select Area</option>');
-                $.each(data, function(key, city) {
+                clearSelect('#address-city', '#city_name', '{{ translate('select_city') }}');
+                clearSelect('#address-area', '#area_name', '{{ translate('select_area') }}');
+                $.each(data.cities ?? [], function(key, city) {
                     $('#address-city').append(`<option value="${city.id}" data-name="${city.name}">${city.name}</option>`);
                 });
             });
@@ -531,13 +578,17 @@ const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
             let selected = $(this).find('option:selected');
             $('#city_name').val(selected.data('name'));
 
+            if (!areaVisible) {
+                return;
+            }
+
             let city_id = $(this).val();
-            $.get("{{ route('get.billing.areas') }}", {
+            $.get("{{ route('checkout.get.areas') }}", {
                 city_id: city_id
             }, function(data) {
-                $('#address-area').empty().append('<option value="">Select Area</option>');
-                $.each(data, function(key, area) {
-                    $('#address-area').append(`<option value="${area}" data-name="${area}">${area}</option>`);
+                clearSelect('#address-area', '#area_name', '{{ translate('select_area') }}');
+                $.each(data.areas ?? [], function(key, area) {
+                    $('#address-area').append(`<option value="${area.id}" data-name="${area.name}">${area.name}</option>`);
                 });
             });
         });
@@ -548,7 +599,7 @@ const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
         });
 
         // Auto-trigger for single-country: load states on page load
-        if ($('#address-country option').length === 1) {
+        if (singleCountryMode || $('#address-country option').length === 1) {
             $('#address-country').trigger('change');
         }
     });

@@ -11,6 +11,13 @@
 
 @section('content')
 @include('layouts.front-end.partials._store-header')
+@php($shippingRestrictionSetup = $deliveryRestriction['setup'] ?? [])
+@php($singleCountryMode = (bool)($deliveryRestriction['single_country_mode'] ?? false))
+@php($showCountryField = (bool)($shippingRestrictionSetup['country']['visible'] ?? false) && !$singleCountryMode)
+@php($showStateField = (bool)($shippingRestrictionSetup['state']['visible'] ?? false) && ($showCountryField || $singleCountryMode))
+@php($showCityField = (bool)($shippingRestrictionSetup['city']['visible'] ?? false) && $showStateField)
+@php($showAreaField = (bool)($shippingRestrictionSetup['area']['visible'] ?? false) && $showCityField)
+@php($showZipField = (bool)($shippingRestrictionSetup['zip']['visible'] ?? false))
 
 <div class="container py-4 rtl __account-address text-align-direction">
 
@@ -56,29 +63,17 @@
                                 </ul>
                             </div>
                         </div>
-                        @php
-                            $addressCountries = $country_restrict_status ? $delivery_countries : COUNTRIES;
-                            $singleAddressCountry = count($addressCountries) === 1;
-                        @endphp
                         <div class="form-row">
-                            <div class="form-group col-md-12 @if($singleAddressCountry) d-none @endif" id="country-wrapper" @if($singleAddressCountry) data-single-country @endif>
-                                <label for="country" @if($singleAddressCountry) class="d-none" @endif>{{ translate('country') }}</label>
+                            <div class="form-group col-md-12 @if(!$showCountryField) d-none @endif" id="country-wrapper" @if($singleCountryMode) data-single-country @endif>
+                                <label for="country" @if(!$showCountryField) class="d-none" @endif>{{ translate('country') }}</label>
                                 <input type="hidden" name="country" id="country_name" value="{{ $shippingAddress->country }}">
 
                                 <select name="country_id" class="form-control selectpicker" data-live-search="true" id="country" required>
-                                    @if($country_restrict_status)
                                     @foreach($delivery_countries as $country)
-                                    <option value="{{ $country['code'] }}" {{ $country['name'] == $shippingAddress->country ? 'selected' : '' }}>
+                                    <option value="{{ $country['code'] }}" {{ ($country['name'] == $shippingAddress->country || ($singleCountryMode && ($deliveryRestriction['default_country_code'] ?? null) === $country['code'])) ? 'selected' : '' }}>
                                         {{ $country['name'] }}
                                     </option>
                                     @endforeach
-                                    @else
-                                    @foreach(COUNTRIES as $country)
-                                    <option value="{{ $country['code'] }}" {{ $shippingAddress->country == $country['name'] ? 'selected' : '' }}>
-                                        {{ $country['name'] }}
-                                    </option>
-                                    @endforeach
-                                    @endif
                                 </select>
                             </div>
                         </div>
@@ -96,6 +91,7 @@
                                 <input class="form-control phone-input-with-country-picker" type="text" id="own_phone" value="+{{$shippingAddress->phone}}" required="required">
                                 <input type="hidden" class="country-picker-phone-number w-50" name="phone" value="{{ $shippingAddress->phone }}" readonly>
                             </div>
+                            @if($showStateField)
                             <div class="form-group col-md-6">
                                 <label for="state_id">{{ translate('state') }}</label>
                                 <select name="state_id" class="form-control" id="state_id" required>
@@ -103,7 +99,9 @@
                                 </select>
                                 <input type="hidden" name="state" id="state_name" value="{{ $shippingAddress->state }}">
                             </div>
+                            @endif
 
+                            @if($showCityField)
                             <div class="form-group col-md-6">
                                 <label for="city_id">{{ translate('city') }}</label>
                                 <select name="city_id" class="form-control" id="city_id" required>
@@ -111,7 +109,9 @@
                                 </select>
                                 <input type="hidden" name="city" id="city_name" value="{{ $shippingAddress->city }}">
                             </div>
+                            @endif
 
+                            @if($showAreaField)
                             <div class="form-group col-md-6">
                                 <label for="area">{{ translate('area') }}</label>
                                 <select name="area_id" class="form-control" id="area" required>
@@ -119,7 +119,9 @@
                                 </select>
                                 <input type="hidden" name="area" id="area_name" value="{{ $shippingAddress->area }}">
                             </div>
+                            @endif
 
+                            @if($showZipField)
                             <div class="form-group col-md-6">
                                 <label for="zip_code">{{translate('zip_code')}}</label>
                                 @if($zip_restrict_status)
@@ -132,6 +134,7 @@
                                 <input class="form-control" type="text" id="zip_code" name="zip" value="{{$shippingAddress->zip}}" >
                                 @endif
                             </div>
+                            @endif
                         </div>
                         <div class="form-row">
                             <div class=" col-md-12">
@@ -173,13 +176,18 @@
     </div>
 </div>
 <span id="system-country-restrict-status" data-value="{{ $country_restrict_status }}"></span>
+<span id="account-edit-delivery-restriction-setup"
+      data-single-country-mode="{{ $singleCountryMode ? 1 : 0 }}"
+      data-state-visible="{{ $showStateField ? 1 : 0 }}"
+      data-city-visible="{{ $showCityField ? 1 : 0 }}"
+      data-area-visible="{{ $showAreaField ? 1 : 0 }}"></span>
 @endsection
 
 @push('script')
 <script>
-    let getStatesURL = "{{ route('get.states') }}";
-    let getCitiesURL = "{{ route('get.cities') }}";
-    let getAreasURL = "{{ route('get.billing.areas') }}";
+    let getStatesURL = "{{ route('checkout.get.states') }}";
+    let getCitiesURL = "{{ route('checkout.get.cities') }}";
+    let getAreasURL = "{{ route('checkout.get.areas') }}";
 </script>
 <script>
     'use strict'
@@ -304,69 +312,100 @@
 
     <script>
         $(document).ready(function () {
-    let preSelectedState = $('#state_name').val();
-    let preSelectedCity = $('#city_name').val();
-    let preSelectedArea = "{{ $shippingAddress->area }}";
+            const restrictionSetupElement = document.getElementById('account-edit-delivery-restriction-setup');
+            const singleCountryMode = Number(restrictionSetupElement?.dataset?.singleCountryMode || 0) === 1;
+            const stateVisible = Number(restrictionSetupElement?.dataset?.stateVisible || 0) === 1;
+            const cityVisible = Number(restrictionSetupElement?.dataset?.cityVisible || 0) === 1;
+            const areaVisible = Number(restrictionSetupElement?.dataset?.areaVisible || 0) === 1;
+            let preSelectedState = $('#state_name').val();
+            let preSelectedCity = $('#city_name').val();
+            let preSelectedArea = "{{ $shippingAddress->area }}";
 
-    // on country change
-    $('#country').change(function () {
-          let selectedCountryName = $(this).find('option:selected').text().trim();
-    $('#country_name').val(selectedCountryName);
-        const countryCode = $(this).val();
-        $('#state_id').empty().append('<option value="">{{ __('Select State') }}</option>');
-        $('#city_id').empty().append('<option value="">{{ __('Select City') }}</option>');
-        $('#area').empty().append('<option value="">{{ __('Select Area') }}</option>');
+            function clearSelect(selectSelector, hiddenSelector, placeholder) {
+                const $select = $(selectSelector);
+                if ($select.length) {
+                    $select.empty().append(`<option value="">${placeholder}</option>`);
+                }
+                $(hiddenSelector).val('');
+            }
 
-        $.get(getStatesURL, { country: countryCode }, function (states) {
-            $.each(states, function (i, state) {
-                const selected = state.name.toLowerCase() === preSelectedState.toLowerCase() ? 'selected' : '';
-                $('#state_id').append(`<option value="${state.id}" data-name="${state.name}" ${selected}>${state.name}</option>`);
+            $('#country').change(function () {
+                let selectedCountryName = $(this).find('option:selected').text().trim();
+                $('#country_name').val(selectedCountryName);
+
+                if (!stateVisible) {
+                    return;
+                }
+
+                const countryCode = $(this).val();
+                clearSelect('#state_id', '#state_name', '{{ translate('select_state') }}');
+                clearSelect('#city_id', '#city_name', '{{ translate('select_city') }}');
+                clearSelect('#area', '#area_name', '{{ translate('select_area') }}');
+
+                $.get(getStatesURL, { country: countryCode }, function (response) {
+                    $.each(response.states ?? [], function (i, state) {
+                        const selected = state.name.toLowerCase() === preSelectedState.toLowerCase() ? 'selected' : '';
+                        $('#state_id').append(`<option value="${state.id}" data-name="${state.name}" ${selected}>${state.name}</option>`);
+                    });
+
+                    if (cityVisible) {
+                        $('#state_id').trigger('change');
+                    }
+                });
             });
 
-            $('#state_id').trigger('change');
-        });
-    });
+            $('#state_id').change(function () {
+                const selected = $(this).find(':selected');
+                $('#state_name').val(selected.data('name'));
 
-    $('#state_id').change(function () {
-        const selected = $(this).find(':selected');
-        $('#state_name').val(selected.data('name'));
+                if (!cityVisible) {
+                    return;
+                }
 
-        const stateId = $(this).val();
-        $('#city_id').empty().append('<option value="">{{ __('Select City') }}</option>');
-        $('#area').empty().append('<option value="">{{ __('Select Area') }}</option>');
+                const stateId = $(this).val();
+                clearSelect('#city_id', '#city_name', '{{ translate('select_city') }}');
+                clearSelect('#area', '#area_name', '{{ translate('select_area') }}');
 
-        $.get(getCitiesURL, { state_id: stateId }, function (cities) {
-            $.each(cities, function (i, city) {
-                const selected = city.name.toLowerCase() === preSelectedCity.toLowerCase() ? 'selected' : '';
-                $('#city_id').append(`<option value="${city.id}" data-name="${city.name}" ${selected}>${city.name}</option>`);
+                $.get(getCitiesURL, { state_id: stateId }, function (response) {
+                    $.each(response.cities ?? [], function (i, city) {
+                        const selected = city.name.toLowerCase() === preSelectedCity.toLowerCase() ? 'selected' : '';
+                        $('#city_id').append(`<option value="${city.id}" data-name="${city.name}" ${selected}>${city.name}</option>`);
+                    });
+
+                    if (areaVisible) {
+                        $('#city_id').trigger('change');
+                    }
+                });
             });
 
-            $('#city_id').trigger('change');
-        });
-    });
+            $('#city_id').change(function () {
+                const selected = $(this).find(':selected');
+                $('#city_name').val(selected.data('name'));
 
-    $('#city_id').change(function () {
-        const selected = $(this).find(':selected');
-        $('#city_name').val(selected.data('name'));
+                if (!areaVisible) {
+                    return;
+                }
 
-        const cityId = $(this).val();
-        $('#area').empty().append('<option value="">{{ __('Select Area') }}</option>');
+                const cityId = $(this).val();
+                clearSelect('#area', '#area_name', '{{ translate('select_area') }}');
 
-        $.get(getAreasURL, { city_id: cityId }, function (areas) {
-            $.each(areas, function (i, area) {
-                const selected = area.toLowerCase() === preSelectedArea.toLowerCase() ? 'selected' : '';
-                $('#area').append(`<option value="${area}" ${selected}>${area}</option>`);
+                $.get(getAreasURL, { city_id: cityId }, function (response) {
+                    $.each(response.areas ?? [], function (i, area) {
+                        const selected = area.name.toLowerCase() === preSelectedArea.toLowerCase() ? 'selected' : '';
+                        $('#area').append(`<option value="${area.id}" data-name="${area.name}" ${selected}>${area.name}</option>`);
+                    });
+                });
             });
+
+            $('#area').change(function () {
+                const selected = $(this).find('option:selected');
+                $('#area_name').val(selected.data('name') ?? selected.text());
+            });
+
+            if (singleCountryMode || $('#country').val()) {
+                $('#country').trigger('change');
+            }
         });
-    });
-
-    $('#area').change(function () {
-        $('#area_name').val($(this).find('option:selected').text());
-    });
-
-    // 🟡 Trigger country change manually to populate everything on page load
-    $('#country').trigger('change');
-});
 
     </script>
 @endif

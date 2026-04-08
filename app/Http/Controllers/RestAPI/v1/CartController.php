@@ -235,14 +235,7 @@ class CartController extends Controller
     public function updateShippingCost(Request $request)
     {
         $adminShipping = \App\Models\ShippingType::where('seller_id', 0)->first();
-        $shippingType = $adminShipping ? $adminShipping->shipping_type : null;
-
-        if ($shippingType !== 'area_wise') {
-            return response()->json([
-                'status' => 0,
-                'message' => 'method is not an area wise'
-            ], 200);
-        }
+        $shippingType = $adminShipping ? $adminShipping->shipping_type : 'order_wise';
 
         $cartList = CartManager::get_cart_for_api($request, type: 'checked');
         if ($cartList->isEmpty()) {
@@ -253,43 +246,108 @@ class CartController extends Controller
         }
 
         $deliveryType = strtolower(trim((string)$request->input('delivery_type', 'delivery')));
-        $areaInput = $request->input('area', $request->input('area_name'));
-        $stateInput = $request->input('state', $request->input('state_name'));
-        $cityInput = $request->input('city', $request->input('city_name'));
-        $areaValue = strtolower(trim((string)$areaInput));
 
-        if ($deliveryType === 'pickup' || $areaValue === 'pickup') {
+        // Handle pickup — zero cost for all methods
+        if ($deliveryType === 'pickup') {
             foreach ($cartList as $cartItem) {
                 $cartItem->shipping_cost = 0;
                 $cartItem->save();
             }
-
             return response()->json([
                 'status' => 1,
                 'shipping_cost' => 0,
+                'shipping_type' => $shippingType,
                 'is_pickup_delivery' => true,
-                'is_area_wise_shipping_pending' => false,
-                'is_area_wise_shipping_resolved' => true,
                 'message' => 'Pickup selected. No delivery cost applied.'
             ], 200);
         }
 
-        if (
-            !$request->country
-            || (!$stateInput && !$request->input('state_id'))
-            || (!$cityInput && !$request->input('city_id'))
-            || !$areaInput
-        ) {
-            foreach ($cartList as $cartItem) {
-                $cartItem->shipping_cost = 0;
+        // ---------- ORDER-WISE ----------
+        if ($shippingType === 'order_wise') {
+            $shippingMethod = \App\Models\ShippingMethod::where(['creator_id' => 1, 'creator_type' => 'admin', 'status' => 1])->first();
+            $totalCost = $shippingMethod ? (float)$shippingMethod->cost : 0;
+
+            // Apply flat cost to first item, zero out others
+            foreach ($cartList as $key => $cartItem) {
+                $cartItem->shipping_cost = ($key === 0) ? $totalCost : 0;
                 $cartItem->save();
             }
 
             return response()->json([
                 'status' => 1,
+                'shipping_cost' => $totalCost,
+                'shipping_type' => $shippingType,
+            ], 200);
+        }
+
+        // ---------- CATEGORY-WISE ----------
+        if ($shippingType === 'category_wise') {
+            $totalCost = 0;
+            foreach ($cartList as $cartItem) {
+                $product = Product::find($cartItem->product_id);
+                if ($product) {
+                    $catCost = \App\Models\CategoryShippingCost::where(['seller_id' => 0, 'category_id' => $product->category_id])->first();
+                    $itemCost = $catCost ? (float)$catCost->cost : 0;
+                    $qty = $cartItem->quantity ?? 1;
+                    $multiply = ($catCost && $catCost->multiply_qty != 0);
+                    $finalItemCost = $multiply ? ($itemCost * $qty) : $itemCost;
+                    $cartItem->shipping_cost = $finalItemCost;
+                    $cartItem->save();
+                    $totalCost += $finalItemCost;
+                } else {
+                    $cartItem->shipping_cost = 0;
+                    $cartItem->save();
+                }
+            }
+
+            return response()->json([
+                'status' => 1,
+                'shipping_cost' => $totalCost,
+                'shipping_type' => $shippingType,
+            ], 200);
+        }
+
+        // ---------- PRODUCT-WISE ----------
+        if ($shippingType === 'product_wise') {
+            $totalCost = 0;
+            foreach ($cartList as $cartItem) {
+                $product = Product::find($cartItem->product_id);
+                if ($product) {
+                    $qty = $cartItem->quantity ?? 1;
+                    $itemCost = (float)$product->shipping_cost;
+                    $multiply = $product->multiply_qty != 0;
+                    $finalItemCost = $multiply ? ($itemCost * $qty) : $itemCost;
+                    $cartItem->shipping_cost = $finalItemCost;
+                    $cartItem->save();
+                    $totalCost += $finalItemCost;
+                } else {
+                    $cartItem->shipping_cost = 0;
+                    $cartItem->save();
+                }
+            }
+
+            return response()->json([
+                'status' => 1,
+                'shipping_cost' => $totalCost,
+                'shipping_type' => $shippingType,
+            ], 200);
+        }
+
+        // ---------- AREA-WISE (default) ----------
+        $areaInput = $request->input('area', $request->input('area_name'));
+        $stateInput = $request->input('state', $request->input('state_name'));
+        $cityInput = $request->input('city', $request->input('city_name'));
+
+        if (!$request->country || (!$stateInput && !$request->input('state_id')) || (!$cityInput && !$request->input('city_id')) || !$areaInput) {
+            foreach ($cartList as $cartItem) {
+                $cartItem->shipping_cost = 0;
+                $cartItem->save();
+            }
+            return response()->json([
+                'status' => 1,
                 'shipping_cost' => 0,
+                'shipping_type' => $shippingType,
                 'is_area_wise_shipping_pending' => true,
-                'is_area_wise_shipping_resolved' => false,
                 'shipping_notice' => translate('shipping_cost_determined_later_by_location'),
                 'message' => 'Country, state, city and area are required for area-wise delivery'
             ], 200);
@@ -297,63 +355,44 @@ class CartController extends Controller
 
         $countryName = trim($request->country);
         $countryCode = null;
-
         foreach (COUNTRIES as $c) {
             if (strcasecmp($c['name'], $countryName) === 0) {
                 $countryCode = $c['code'];
                 break;
             }
         }
-
         if (!$countryCode) {
             return response()->json(['status' => 0, 'message' => 'Invalid country name'], 200);
         }
 
-
-        //  Normalize request values (trim + lowercase)
         $stateName = trim(strtolower((string)$stateInput));
         $cityName  = trim(strtolower((string)$cityInput));
         $areaName  = trim(strtolower((string)$areaInput));
 
-        //  Get state_id safely
         $stateId = (int)$request->input('state_id', 0);
         if ($stateId <= 0) {
-            $state = State::whereRaw('LOWER(TRIM(name)) = ?', [$stateName])
-                ->where('country', $countryCode)
-                ->first();
+            $state = State::whereRaw('LOWER(TRIM(name)) = ?', [$stateName])->where('country', $countryCode)->first();
             $stateId = (int)($state?->id ?? 0);
         } else {
             $state = State::where('id', $stateId)->where('country', $countryCode)->first();
             $stateId = (int)($state?->id ?? 0);
         }
-
         if (!$stateId) {
-            return response()->json([
-                'status' => 0,
-                'message' => 'This state does not exist in ' . $countryName
-            ], 200);
+            return response()->json(['status' => 0, 'message' => 'This state does not exist in ' . $countryName], 200);
         }
 
-        //  Get city_id safely (must belong to state)
         $cityId = (int)$request->input('city_id', 0);
         if ($cityId <= 0) {
-            $city = City::whereRaw('LOWER(TRIM(name)) = ?', [$cityName])
-                ->where('state_id', $stateId)
-                ->first();
+            $city = City::whereRaw('LOWER(TRIM(name)) = ?', [$cityName])->where('state_id', $stateId)->first();
             $cityId = (int)($city?->id ?? 0);
         } else {
             $city = City::where('id', $cityId)->where('state_id', $stateId)->first();
             $cityId = (int)($city?->id ?? 0);
         }
-
         if (!$cityId) {
-            return response()->json([
-                'status' => 0,
-                'message' => 'Invalid city'
-            ], 200);
+            return response()->json(['status' => 0, 'message' => 'Invalid city'], 200);
         }
 
-        //  Find shipping area
         $shippingArea = ShippingMethodArea::where('country', $countryCode)
             ->where('state_id', $stateId)
             ->where('city_id', $cityId)
@@ -363,35 +402,28 @@ class CartController extends Controller
             ->first();
 
         if ($shippingArea) {
-            /*
-             * Apply flat cost to first item, zero out others.
-             */
             $totalShippingCost = (float)$shippingArea->cost;
-
             foreach ($cartList as $key => $cartItem) {
                 $cartItem->shipping_cost = ($key === 0) ? $totalShippingCost : 0;
                 $cartItem->save();
             }
-        } else {
-            foreach ($cartList as $cartItem) {
-                $cartItem->shipping_cost = 0;
-                $cartItem->save();
-            }
-
             return response()->json([
                 'status' => 1,
-                'shipping_cost' => 0,
-                'is_area_wise_shipping_pending' => true,
-                'is_area_wise_shipping_resolved' => false,
-                'shipping_notice' => translate('shipping_cost_determined_later_by_location'),
+                'shipping_cost' => $totalShippingCost,
+                'shipping_type' => $shippingType,
             ], 200);
         }
 
+        foreach ($cartList as $cartItem) {
+            $cartItem->shipping_cost = 0;
+            $cartItem->save();
+        }
         return response()->json([
-            'status'         => 1,
-            'shipping_cost'  => $totalShippingCost,
-            'is_area_wise_shipping_pending' => false,
-            'is_area_wise_shipping_resolved' => true,
+            'status' => 1,
+            'shipping_cost' => 0,
+            'shipping_type' => $shippingType,
+            'is_area_wise_shipping_pending' => true,
+            'shipping_notice' => translate('shipping_cost_determined_later_by_location'),
         ], 200);
     }
 

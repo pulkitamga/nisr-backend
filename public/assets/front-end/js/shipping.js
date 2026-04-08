@@ -58,6 +58,44 @@ const checkoutFieldSelectors = {
     customer_confirm_password: '#customer_confirm_password'
 };
 
+function getShippingRestrictionSetup() {
+    const setupElement = document.getElementById('system-delivery-restriction-setup');
+
+    return {
+        countryVisible: Number(setupElement?.dataset?.countryVisible || 0) === 1,
+        stateVisible: Number(setupElement?.dataset?.stateVisible || 0) === 1,
+        cityVisible: Number(setupElement?.dataset?.cityVisible || 0) === 1,
+        areaVisible: Number(setupElement?.dataset?.areaVisible || 0) === 1,
+        zipVisible: Number(setupElement?.dataset?.zipVisible || 0) === 1,
+        singleCountryMode: Number(setupElement?.dataset?.singleCountryMode || 0) === 1
+    };
+}
+
+function clearShippingLocationField(fieldName) {
+    switch (fieldName) {
+        case 'state':
+            $('#state_id').val('').html('<option value="">Select State</option>');
+            $('#state_name').val('');
+            break;
+        case 'city':
+            $('#city_id').val('').html('<option value="">Select City</option>');
+            $('#city_name').val('');
+            break;
+        case 'area':
+            $('#area').val('').html('<option value="">Select Area</option>');
+            $('#area_name').val('');
+            break;
+        case 'zip':
+            $('[name="zip"]').val('');
+            break;
+        case 'country':
+            if (!getShippingRestrictionSetup().singleCountryMode) {
+                $('#country').val('');
+            }
+            break;
+    }
+}
+
 function getCheckoutFieldTarget(fieldName) {
     const selector = checkoutFieldSelectors[fieldName];
     return selector ? $(selector).first() : $();
@@ -196,8 +234,8 @@ function syncCheckoutRequiredStates() {
     const physicalProduct = $('#physical_product').val();
     const deliveryType = $('input[name="delivery_type"]:checked').val();
     const isDelivery = physicalProduct === 'yes' && deliveryType !== 'pickup';
+    const shippingRestriction = getShippingRestrictionSetup();
     const isGuestShipping = $('#email').length > 0;
-    const zipRestrictionEnabled = Number($('#system-zip-restrict-status').data('value') || 0) === 1;
     const billingVisible = $('#billing-address-form').length > 0 && $('#hide_billing_address').is(':visible');
     const guestBilling = $('#billing_contact_email').length > 0;
     const createAccountEnabled = $('#is_check_create_account').is(':checked');
@@ -206,11 +244,11 @@ function syncCheckoutRequiredStates() {
     setFieldRequired('#phone', isDelivery, 'phone');
     setFieldRequired('#email', isDelivery && isGuestShipping, 'email');
     setFieldRequired('#address_type', isDelivery, 'address_type');
-    setFieldRequired('#country', isDelivery, 'country');
-    setFieldRequired('#state_id', isDelivery, 'state');
-    setFieldRequired('#city_id', isDelivery, 'city');
-    setFieldRequired('#area', isDelivery, 'area');
-    setFieldRequired('[name="zip"]', isDelivery && zipRestrictionEnabled, 'zip');
+    setFieldRequired('#country', isDelivery && shippingRestriction.countryVisible && !shippingRestriction.singleCountryMode, 'country');
+    setFieldRequired('#state_id', isDelivery && shippingRestriction.stateVisible, 'state');
+    setFieldRequired('#city_id', isDelivery && shippingRestriction.cityVisible, 'city');
+    setFieldRequired('#area', isDelivery && shippingRestriction.areaVisible, 'area');
+    setFieldRequired('[name="zip"]', isDelivery && shippingRestriction.zipVisible, 'zip');
     setFieldRequired('#address', isDelivery, 'address');
     setFieldRequired('#pickup_branch_id', deliveryType === 'pickup', 'pickup_branch_id');
     setFieldRequired('#latitude', false);
@@ -894,6 +932,7 @@ function mapsShopping() {
 
 function togglePickupBranchVisibility() {
     const selectedValue = document.querySelector('input[name="delivery_type"]:checked')?.value;
+    const shippingRestriction = getShippingRestrictionSetup();
 
     const pickupBranchDiv = document.getElementById('deliver-pickup-branch');
     const pickupBranchAddressDiv = document.getElementById('deliver-pickup-branch-address');
@@ -925,6 +964,23 @@ function togglePickupBranchVisibility() {
             element.style.setProperty('display', 'none', 'important');
         }
     };
+    const setShippingFieldVisibility = (element, shouldShow, fieldName) => {
+        if (!element) {
+            return;
+        }
+
+        if (shouldShow) {
+            element.classList.remove('d-none');
+            element.style.removeProperty('display');
+            return;
+        }
+
+        element.classList.add('d-none');
+        element.style.setProperty('display', 'none', 'important');
+        if (fieldName) {
+            clearShippingLocationField(fieldName);
+        }
+    };
     const setCreateAccountLabelText = (text) => {
         createAccountInfoLabels.forEach((label) => {
             label.textContent = text;
@@ -943,6 +999,7 @@ function togglePickupBranchVisibility() {
         stateAddressDiv?.classList.add('d-none');
         areaAddressDiv?.classList.add('d-none');
         cAddressDiv?.classList.add('d-none');
+        zipAddressDiv?.classList.add('d-none');
         locationMap?.classList.add('d-none');
         locationMapArea?.classList.add('d-none');
         setElementVisibility(sameAsShippingAddressWrapper, false);
@@ -967,10 +1024,11 @@ function togglePickupBranchVisibility() {
         deliveryAddressTypeDiv?.classList.remove('d-none');
         addressAddressDiv?.classList.add('d-none');
         addressType?.classList.add('d-none');
-        cityAddressDiv?.classList.add('d-none');
-        stateAddressDiv?.classList.add('d-none');
-        areaAddressDiv?.classList.add('d-none');
-        cAddressDiv?.classList.add('d-none');
+        setShippingFieldVisibility(cityAddressDiv, false, 'city');
+        setShippingFieldVisibility(stateAddressDiv, false, 'state');
+        setShippingFieldVisibility(areaAddressDiv, false, 'area');
+        setShippingFieldVisibility(cAddressDiv, false, 'country');
+        setShippingFieldVisibility(zipAddressDiv, false, 'zip');
         locationMap?.classList.add('d-none');
         locationMapArea?.classList.add('d-none');
         setElementVisibility(sameAsShippingAddressWrapper, false);
@@ -994,13 +1052,12 @@ function togglePickupBranchVisibility() {
         pickupBranchDiv?.classList.add('d-none');
         pickupBranchAddressDiv?.classList.add('d-none');
         addressAddressDiv?.classList.remove('d-none');
-        cityAddressDiv?.classList.remove('d-none');
+        setShippingFieldVisibility(cityAddressDiv, shippingRestriction.cityVisible, 'city');
         deliveryAddressTypeDiv?.classList.remove('d-none');
-        stateAddressDiv?.classList.remove('d-none');
-        areaAddressDiv?.classList.remove('d-none');
-        if (!cAddressDiv?.hasAttribute('data-single-country')) {
-            cAddressDiv?.classList.remove('d-none');
-        }
+        setShippingFieldVisibility(stateAddressDiv, shippingRestriction.stateVisible, 'state');
+        setShippingFieldVisibility(areaAddressDiv, shippingRestriction.areaVisible, 'area');
+        setShippingFieldVisibility(zipAddressDiv, shippingRestriction.zipVisible, 'zip');
+        setShippingFieldVisibility(cAddressDiv, shippingRestriction.countryVisible && !shippingRestriction.singleCountryMode, 'country');
         locationMap?.classList.remove('d-none');
         locationMapArea?.classList.remove('d-none');
         addressType?.classList.remove('d-none');
@@ -1052,6 +1109,13 @@ $(document).on('change', 'input[name="delivery_type"]', function () {
 
 $(document).ready(function () {
     togglePickupBranchVisibility();
+    const shippingRestriction = getShippingRestrictionSetup();
+
+    if (shippingRestriction.stateVisible && (shippingRestriction.singleCountryMode || $('#country option').filter(function () {
+        return String($(this).val() || '').trim() !== '';
+    }).length === 1)) {
+        $('#country').trigger('change');
+    }
 
 
     $('#country').change(function () {

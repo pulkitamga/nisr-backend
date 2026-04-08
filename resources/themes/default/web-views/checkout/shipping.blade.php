@@ -12,6 +12,13 @@
 @php($cart=\App\Utils\CartManager::getCartListQuery(type: 'checked'))
 
 @php($billingInputByCustomer=getWebConfig(name: 'billing_input_by_customer'))
+@php($shippingRestrictionSetup = $delivery_restriction_setup['setup'] ?? [])
+@php($singleShippingCountryMode = (bool)($delivery_restriction_setup['single_country_mode'] ?? false))
+@php($shippingCountryVisible = (bool)($shippingRestrictionSetup['country']['visible'] ?? false))
+@php($shippingStateVisible = (bool)($shippingRestrictionSetup['state']['visible'] ?? false) && ($shippingCountryVisible || $singleShippingCountryMode))
+@php($shippingCityVisible = (bool)($shippingRestrictionSetup['city']['visible'] ?? false) && $shippingStateVisible)
+@php($shippingAreaVisible = (bool)($shippingRestrictionSetup['area']['visible'] ?? false) && $shippingCityVisible)
+@php($shippingZipVisible = (bool)($shippingRestrictionSetup['zip']['visible'] ?? false))
 
 <style>
     .delivery-radio-btn {
@@ -369,21 +376,20 @@
                                                             <textarea class="form-control" id="nearest_branch_textarea" rows="4" cols="50" readonly></textarea>
                                                         </div>
                                                     </div>
-                                                    @php($singleShippingCountry = count($shippingCountries) === 1)
-                                                    <div class="col-6 d-none @if($singleShippingCountry) single-country-hidden @endif" id="deliver-country" @if($singleShippingCountry) data-single-country @endif>
+                                                    <div class="col-6 d-none @if(!$shippingCountryVisible || $singleShippingCountryMode) single-country-hidden @endif" id="deliver-country" @if($singleShippingCountryMode) data-single-country @endif data-field-enabled="{{ $shippingCountryVisible ? 1 : 0 }}">
                                                         <div class="form-group">
-                                                            <label @if($singleShippingCountry) class="d-none" @endif>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="country">*</span></label>
+                                                            <label @if(!$shippingCountryVisible || $singleShippingCountryMode) class="d-none" @endif>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="country">*</span></label>
                                                             <select name="country" id="country" class="form-control">
-                                                                @if(!$singleShippingCountry)
+                                                                @if(!$singleShippingCountryMode)
                                                                 <option value="">{{ translate('select_country') }}</option>
                                                                 @endif
                                                                 @foreach($shippingCountries as $sc)
-                                                                <option value="{{ $sc['code'] }}" {{ $loop->first && $singleShippingCountry ? 'selected' : '' }}>{{ $sc['name'] }}</option>
+                                                                <option value="{{ $sc['code'] }}" {{ $loop->first && $singleShippingCountryMode ? 'selected' : '' }}>{{ $sc['name'] }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div class="col-6 d-none" id="deliver-state">
+                                                    <div class="col-6 d-none" id="deliver-state" data-field-enabled="{{ $shippingStateVisible ? 1 : 0 }}">
                                                         <div class="form-group">
                                                             <label>{{ translate('state') }} <span class="text-danger checkout-required-indicator" data-required-indicator="state">*</span></label>
                                                             <select name="state_id" id="state_id" class="form-control">
@@ -395,7 +401,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-6 d-none" id="deliver-city">
+                                                    <div class="col-6 d-none" id="deliver-city" data-field-enabled="{{ $shippingCityVisible ? 1 : 0 }}">
                                                         <div class="form-group">
                                                             <label>{{ translate('city') }} <span class="text-danger checkout-required-indicator" data-required-indicator="city">*</span></label>
                                                             <select name="city_id" id="city_id" class="form-control">
@@ -406,7 +412,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-6 d-none" id="deliver-area">
+                                                    <div class="col-6 d-none" id="deliver-area" data-field-enabled="{{ $shippingAreaVisible ? 1 : 0 }}">
                                                         <div class="form-group">
                                                             <label>{{ translate('area') }} <span class="text-danger checkout-required-indicator" data-required-indicator="area">*</span></label>
                                                             <select name="area_id" id="area" class="form-control">
@@ -415,7 +421,7 @@
                                                             <input type="hidden" name="area" id="area_name">
                                                         </div>
                                                     </div>
-                                                    <div class="col-6 d-none" id="deliver-zip">
+                                                    <div class="col-6 d-none" id="deliver-zip" data-field-enabled="{{ $shippingZipVisible ? 1 : 0 }}">
                                                         <div class="form-group">
                                                             <label>{{ translate('zip_code')}}
                                                                 <span class="text-danger checkout-required-indicator {{ $zip_restrict_status == 1 ? '' : 'd-none' }}" data-required-indicator="zip">*</span>
@@ -838,6 +844,13 @@
 <span id="route-action-checkout-function" data-route="checkout-details"></span>
 <span id="system-country-restrict-status" data-value="{{ $country_restrict_status }}"></span>
 <span id="system-zip-restrict-status" data-value="{{ $zip_restrict_status }}"></span>
+<span id="system-delivery-restriction-setup"
+      data-country-visible="{{ $shippingCountryVisible ? 1 : 0 }}"
+      data-state-visible="{{ $shippingStateVisible ? 1 : 0 }}"
+      data-city-visible="{{ $shippingCityVisible ? 1 : 0 }}"
+      data-area-visible="{{ $shippingAreaVisible ? 1 : 0 }}"
+      data-zip-visible="{{ $shippingZipVisible ? 1 : 0 }}"
+      data-single-country-mode="{{ $singleShippingCountryMode ? 1 : 0 }}"></span>
 @endsection
 
 @push('script')

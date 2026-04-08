@@ -33,6 +33,7 @@ use App\Models\Warranty;
 use App\Models\Wishlist;
 use App\Models\SupportTicketDepartmentEmployee;
 use App\Models\SupportTicketNotification;
+use App\Traits\CacheManagerTrait;
 use App\Traits\CommonTrait;
 use App\Models\User;
 use App\Models\WholeSalerBusiness;
@@ -51,7 +52,7 @@ use App\Support\ServiceTicketWorkflow;
 
 class UserProfileController extends Controller
 {
-    use CommonTrait, PdfGenerator;
+    use CommonTrait, PdfGenerator, CacheManagerTrait;
 
     public function __construct(
         private Order                                         $order,
@@ -114,15 +115,16 @@ class UserProfileController extends Controller
 
     public function account_address_add()
     {
-        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
-        $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+        $country_restrict_status = $deliveryRestriction['delivery_country_restriction'];
+        $zip_restrict_status = $deliveryRestriction['delivery_zip_code_area_restriction'];
         $default_location = getWebConfig(name: 'default_location');
 
-        $countries = $country_restrict_status ? $this->get_delivery_country_array() : COUNTRIES;
+        $countries = $this->getAddressCountryOptions($deliveryRestriction);
 
         $zip_codes = $zip_restrict_status ? DeliveryZipCode::all() : 0;
 
-        return view(VIEW_FILE_NAMES['account_address_add'], compact('countries', 'zip_restrict_status', 'zip_codes', 'default_location'));
+        return view(VIEW_FILE_NAMES['account_address_add'], compact('countries', 'zip_restrict_status', 'zip_codes', 'default_location', 'deliveryRestriction'));
     }
 
     // Add these methods to your controller (assuming it's the same controller handling user_account, e.g., CustomerController)
@@ -217,10 +219,11 @@ class UserProfileController extends Controller
 
     public function account_address(): View|RedirectResponse
     {
-        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
-        $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+        $country_restrict_status = $deliveryRestriction['delivery_country_restriction'];
+        $zip_restrict_status = $deliveryRestriction['delivery_zip_code_area_restriction'];
 
-        $countries = $country_restrict_status ? $this->get_delivery_country_array() : COUNTRIES;
+        $countries = $this->getAddressCountryOptions($deliveryRestriction);
         $zip_codes = $zip_restrict_status ? DeliveryZipCode::all() : 0;
 
         $countriesName = [];
@@ -232,7 +235,7 @@ class UserProfileController extends Controller
 
         if (auth('customer')->check()) {
             $shippingAddresses = ShippingAddress::where('customer_id', auth('customer')->id())->latest()->get();
-            return view('web-views.users-profile.account-address', compact('shippingAddresses', 'country_restrict_status', 'zip_restrict_status', 'countries', 'zip_codes', 'countriesName', 'countriesCode'));
+            return view('web-views.users-profile.account-address', compact('shippingAddresses', 'country_restrict_status', 'zip_restrict_status', 'countries', 'zip_codes', 'countriesName', 'countriesCode', 'deliveryRestriction'));
         } else {
             return redirect()->route('home');
         }
@@ -240,9 +243,11 @@ class UserProfileController extends Controller
 
     public function address_store(Request $request): RedirectResponse
     {
-        $countryRestrictionEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
-        $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
-        $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+        $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+        $countryRestrictionEnabled = (int)$deliveryRestriction['delivery_country_restriction'] === 1;
+        $stateRestrictionEnabled = (int)$deliveryRestriction['delivery_state_restriction'] === 1;
+        $cityRestrictionEnabled = (int)$deliveryRestriction['delivery_city_restriction'] === 1;
+        $areaRestrictionEnabled = (int)$deliveryRestriction['delivery_area_restriction'] === 1;
 
         $validationRules = [
             'name' => 'required',
@@ -259,6 +264,9 @@ class UserProfileController extends Controller
         if ($cityRestrictionEnabled) {
             $validationRules['city'] = 'required';
         }
+        if ($areaRestrictionEnabled) {
+            $validationRules['area'] = 'required';
+        }
 
         $request->validate($validationRules);
 
@@ -271,12 +279,16 @@ class UserProfileController extends Controller
             ]);
         }
 
-        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
+        $country = $this->resolveCustomerAddressCountry($request, $deliveryRestriction);
+        $state = $stateRestrictionEnabled ? $request['state'] : null;
+        $city = $cityRestrictionEnabled ? $request['city'] : null;
+        $area = $areaRestrictionEnabled ? $request['area'] : null;
+        $zip = ((int)$deliveryRestriction['delivery_zip_code_area_restriction'] === 1) ? ($request['zip'] ?? null) : null;
 
-        $country_exist = $country_restrict_status ? self::delivery_country_exist_check($request->country) : true;
+        $country_exist = ($countryRestrictionEnabled || $deliveryRestriction['single_country_mode']) ? self::delivery_country_exist_check($country) : true;
 
         if (!$country_exist) {
-            Toastr::error('Delivery unavailable in this country!');
+            Toastr::error(translate('Delivery_unavailable_in_this_country!'));
             return back();
         }
 
@@ -285,11 +297,11 @@ class UserProfileController extends Controller
             'contact_person_name' => $request['name'],
             'address_type' => $request['addressAs'],
             'address' => $request['address'],
-            'city' => $request['city'],
-            'area' => $request['area'],
-            'state' => $request['state'],
-            'zip' => $request['zip'] ?? null,
-            'country' => $request['country'],
+            'city' => $city,
+            'area' => $area,
+            'state' => $state,
+            'zip' => $zip,
+            'country' => $country,
             'phone' => $request['phone'],
             'is_billing' => $request['is_billing'],
             'latitude' => $request['latitude'],
@@ -312,10 +324,11 @@ class UserProfileController extends Controller
     public function address_edit(Request $request, $id)
     {
         $shippingAddress = ShippingAddress::where('customer_id', auth('customer')->id())->find($id);
-        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
-        $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+        $country_restrict_status = $deliveryRestriction['delivery_country_restriction'];
+        $zip_restrict_status = $deliveryRestriction['delivery_zip_code_area_restriction'];
 
-        $delivery_countries = $country_restrict_status ? self::get_delivery_country_array() : COUNTRIES;
+        $delivery_countries = $this->getAddressCountryOptions($deliveryRestriction);
         $delivery_zipcodes = $zip_restrict_status ? DeliveryZipCode::all() : 0;
 
         $countriesName = [];
@@ -326,7 +339,7 @@ class UserProfileController extends Controller
         }
 
         if (isset($shippingAddress)) {
-            return view(VIEW_FILE_NAMES['account_address_edit'], compact('shippingAddress', 'country_restrict_status', 'zip_restrict_status', 'delivery_countries', 'delivery_zipcodes', 'countriesName', 'countriesCode'));
+            return view(VIEW_FILE_NAMES['account_address_edit'], compact('shippingAddress', 'country_restrict_status', 'zip_restrict_status', 'delivery_countries', 'delivery_zipcodes', 'countriesName', 'countriesCode', 'deliveryRestriction'));
         } else {
             Toastr::warning(translate('access_denied'));
             return back();
@@ -335,11 +348,11 @@ class UserProfileController extends Controller
 
     public function address_update(Request $request)
     {
-
-        $countryRestrictionEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
-        $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
-        $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
-        $areaRestrictionEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
+        $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+        $countryRestrictionEnabled = (int)$deliveryRestriction['delivery_country_restriction'] === 1;
+        $stateRestrictionEnabled = (int)$deliveryRestriction['delivery_state_restriction'] === 1;
+        $cityRestrictionEnabled = (int)$deliveryRestriction['delivery_city_restriction'] === 1;
+        $areaRestrictionEnabled = (int)$deliveryRestriction['delivery_area_restriction'] === 1;
 
         $validationRules = [
             'name' => 'required',
@@ -373,11 +386,15 @@ class UserProfileController extends Controller
             ]);
         }
 
-        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
+        $country = $this->resolveCustomerAddressCountry($request, $deliveryRestriction);
+        $state = $stateRestrictionEnabled ? $request['state'] : null;
+        $city = $cityRestrictionEnabled ? $request['city'] : null;
+        $area = $areaRestrictionEnabled ? $request['area'] : null;
+        $zip = ((int)$deliveryRestriction['delivery_zip_code_area_restriction'] === 1) ? ($request['zip'] ?? null) : null;
 
-        $country_exist = self::delivery_country_exist_check($request->country);
+        $country_exist = ($countryRestrictionEnabled || $deliveryRestriction['single_country_mode']) ? self::delivery_country_exist_check($country) : true;
 
-        if ($country_restrict_status && !$country_exist) {
+        if (!$country_exist) {
             Toastr::error(translate('Delivery_unavailable_in_this_country!'));
             return back();
         }
@@ -386,11 +403,11 @@ class UserProfileController extends Controller
             'contact_person_name' => $request->name,
             'address_type' => $request->addressAs,
             'address' => $request->address,
-            'zip' => $request->zip,
-            'country' => $request->country,
-            'state' => $request->state,
-            'city' => $request->city,
-            'area' => $request->area,
+            'zip' => $zip,
+            'country' => $country,
+            'state' => $state,
+            'city' => $city,
+            'area' => $area,
             'phone' => $request->phone,
             'is_billing' => $request->is_billing,
             'latitude' => $request->latitude,
@@ -405,6 +422,32 @@ class UserProfileController extends Controller
             Toastr::error(translate('Insufficient_permission!'));
         }
         return theme_root_path() == 'default' ? redirect()->route('account-address') : redirect()->route('user-profile');
+    }
+
+    private function getAddressCountryOptions(array $deliveryRestriction): array
+    {
+        if (!empty($deliveryRestriction['single_country_mode'])) {
+            return $this->get_delivery_country_array();
+        }
+
+        return !empty($deliveryRestriction['delivery_country_restriction'])
+            ? $this->get_delivery_country_array()
+            : COUNTRIES;
+    }
+
+    private function resolveCustomerAddressCountry(Request $request, array $deliveryRestriction): ?string
+    {
+        if (!empty($deliveryRestriction['single_country_mode']) && !empty($deliveryRestriction['default_country_code'])) {
+            foreach ($this->get_delivery_country_array() as $country) {
+                if (($country['code'] ?? null) === $deliveryRestriction['default_country_code']) {
+                    return $country['name'] ?? $country['code'];
+                }
+            }
+
+            return $deliveryRestriction['default_country_code'];
+        }
+
+        return $request->country;
     }
 
     public function address_delete(Request $request)

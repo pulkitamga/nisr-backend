@@ -609,14 +609,17 @@ class WebController extends Controller
         }
 
         // --- Configs ---
-        $countryRestrictStatus = getWebConfig(name: 'delivery_country_restriction');
-        $zipRestrictStatus = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+        $countryRestrictStatus = $deliveryRestriction['delivery_country_restriction'];
+        $zipRestrictStatus = $deliveryRestriction['delivery_zip_code_area_restriction'];
         $allCountries = COUNTRIES;
 
         // --- Shipping Countries ---
         $countriesWithStates = array_map('strtoupper', State::distinct()->pluck('country')->toArray());
         $allowedDeliveryCountryCodes = array_map('strtoupper', DeliveryCountryCode::pluck('country_code')->toArray());
-        if ((int)$countryRestrictStatus === 1) {
+        if (!empty($deliveryRestriction['single_country_mode']) && !empty($deliveryRestriction['default_country_code'])) {
+            $shippingCountryCodes = [strtoupper((string)$deliveryRestriction['default_country_code'])];
+        } elseif ((int)$countryRestrictStatus === 1) {
             $shippingCountryCodes = array_values(array_intersect($countriesWithStates, $allowedDeliveryCountryCodes));
         } else {
             $shippingCountryCodes = $countriesWithStates;
@@ -688,6 +691,7 @@ class WebController extends Controller
             'zip_codes' => $zipCodes,
             'country_restrict_status' => $countryRestrictStatus,
             'zip_restrict_status' => $zipRestrictStatus,
+            'delivery_restriction_setup' => $deliveryRestriction,
             'shippingCountries' => $shippingCountries,
             'billingCountries' => $billingCountries,
             'shippingCountriesName' => $shippingCountryNames,

@@ -325,18 +325,21 @@ class CustomerController extends Controller
 
     public function add_new_address(Request $request)
     {
-        $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
-        $zipRule = ($zip_restrict_status == 1) ? 'required' : 'nullable';
+        $countryRestrictionEnabled = (int)getWebConfig(name: 'delivery_country_restriction') === 1;
+        $stateRestrictionEnabled = (int)getWebConfig(name: 'delivery_state_restriction') === 1;
+        $cityRestrictionEnabled = (int)getWebConfig(name: 'delivery_city_restriction') === 1;
+        $areaRestrictionEnabled = (int)getWebConfig(name: 'delivery_area_restriction') === 1;
+        $zipRestrictionEnabled = (int)getWebConfig(name: 'delivery_zip_code_area_restriction') === 1;
 
         $validator = Validator::make($request->all(), [
             'contact_person_name' => 'required',
             'address_type' => 'required',
             'address' => 'required',
-            'state' => 'required',
-            'city' => 'required',
-            'area' => 'required',
-            'zip' => $zipRule,
-            'country' => 'required',
+            'state' => $stateRestrictionEnabled ? 'required' : 'nullable',
+            'city' => $cityRestrictionEnabled ? 'required' : 'nullable',
+            'area' => $areaRestrictionEnabled ? 'required' : 'nullable',
+            'zip' => $zipRestrictionEnabled ? 'required' : 'nullable',
+            'country' => $countryRestrictionEnabled ? 'required' : 'nullable',
             'phone' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
@@ -347,43 +350,22 @@ class CustomerController extends Controller
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
-        // $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
-
-        // if ($country_restrict_status && !self::delivery_country_exist_check($request->input('country'))) {
-        //     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
-        // } elseif ($zip_restrict_status && !self::delivery_zipcode_exist_check($request->input('zip'))) {
-        //     return response()->json(['message' => translate('Delivery_unavailable_for_this_zip_code_area')], 403);
-        // }
-        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
         $isBilling = (int) $request->input('is_billing');
 
-        // Run restriction ONLY if it is NOT billing address
+        // Run restriction checks ONLY if it is NOT billing address
         if ($isBilling !== 1) {
-
-            if (
-                $country_restrict_status
-                && ! self::delivery_country_exist_check($request->country)
-            ) {
-
+            if ($countryRestrictionEnabled && !self::delivery_country_exist_check($request->country)) {
                 return response()->json([
                     'message' => translate('Delivery_unavailable_for_this_country'),
                 ], 403);
             }
 
-            if (
-                $zip_restrict_status
-                && ! self::delivery_zipcode_exist_check($request->zip)
-            ) {
-
+            if ($zipRestrictionEnabled && !self::delivery_zipcode_exist_check($request->zip)) {
                 return response()->json([
                     'message' => translate('Delivery_unavailable_for_this_zip_code_area'),
                 ], 403);
             }
         }
-
-        // if ($country_restrict_status && self::delivery_country_exist_check($request->input('country'))) {
-        //     return response()->json(['message' => translate('Delivery_unavailable_for_this_country')], 403);
-        // }
 
         $user = Helpers::getCustomerInformation($request);
 
