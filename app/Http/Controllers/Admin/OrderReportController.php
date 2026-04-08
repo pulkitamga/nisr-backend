@@ -37,7 +37,19 @@ class OrderReportController extends Controller
 
         $chart_data = self::order_report_chart_filter($request);
 
-
+        if (app()->getLocale() == 'ar' && isset($chart_data['order_amount'])) {
+            $translated_order_amount = [];
+            foreach ($chart_data['order_amount'] as $key => $value) {
+                try {
+                    // This converts "Jan" to "يناير" automatically
+                    $translatedKey = \Carbon\Carbon::parse($key)->translatedFormat('M');
+                } catch (\Exception $e) {
+                    $translatedKey = translate($key);
+                }
+                $translated_order_amount[$translatedKey] = $value;
+            }
+            $chart_data['order_amount'] = $translated_order_amount;
+        }
         $chartVal = [];
         foreach (($chart_data['order_amount'] ?? []) as $amount) {
             $chartVal[] = usdToDefaultCurrency(amount: $amount);

@@ -12681,6 +12681,14 @@ return [
 	"message_type" => "نوع الرسالة",
 	"group_by" => "المجموعة حسب",
 	"assigned " => "مُكَلَّف",
-	"stock_transfer_chart" => "مخطط نقل الأسهم"
-
+	"stock_transfer_chart" => "مخطط نقل الأسهم",
+	"total_revenue" => "إجمالي الإيرادات",
+	"payment_statistics" => "إحصائيات الدفع",
+	"PDF" => "قوات الدفاع الشعبي",
+	"branch_product_chart" => "مخطط منتج الفرع",
+	"stock_movement_trend" => "اتجاه حركة الأسهم",
+	"top_products_chart" => "أعلى المنتجات الرسم البياني",
+	"net_movement" => "حركة صافية",
+	"stock_summary_details" => "تفاصيل ملخص الأسهم",
+	"stock_transfer_details" => "تفاصيل نقل المخزون",
 ];

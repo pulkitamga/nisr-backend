@@ -27,7 +27,21 @@ class ProductReportController extends Controller
         $sellers = Seller::where(['status' => 'approved'])->get();
 
         $chart_data = self::all_product_chart_filter($request);
-
+        if (app()->getLocale() == 'ar' && isset($chart_data['total_product'])) {
+            $translated_total_product = [];
+            foreach ($chart_data['total_product'] as $key => $value) {
+                try {
+                    // This converts English month names/keys to Arabic
+                    // Use 'M' for short (Jan) or 'F' for full (January)
+                    $translatedKey = \Carbon\Carbon::parse($key)->translatedFormat('F');
+                } catch (\Exception $e) {
+                    // Fallback to standard translate helper if it's not a date string
+                    $translatedKey = translate($key);
+                }
+                $translated_total_product[$translatedKey] = $value;
+            }
+            $chart_data['total_product'] = $translated_total_product;
+        }
         $product_query = Product::with([
             'reviews',
             'orderDetails' => function ($query) {
