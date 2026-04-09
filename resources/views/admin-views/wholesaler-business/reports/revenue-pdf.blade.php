@@ -44,7 +44,7 @@
 
         .header-content h2 {
             margin: 0 0 5px 0;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .header-content p {
@@ -369,7 +369,7 @@
     @endif
 
     @php
-       $dateRange = $snapshotFromDisplay . ' - ' . $snapshotToDisplay;
+        $dateRange = $snapshotFromDisplay . ' - ' . $snapshotToDisplay;
     @endphp
 
     <!-- First Row: Revenue Trend + Delivery Status side by side -->

@@ -48,7 +48,7 @@
 
         .header-content h2 {
             margin: 0 0 5px 0;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .header-content p {
@@ -187,9 +187,9 @@
             border-radius: 6px;
             overflow: hidden;
             margin-top: 15px;
-          page-break-inside: auto;
+            page-break-inside: auto;
         }
-      
+
 
         table {
             page-break-inside: auto;

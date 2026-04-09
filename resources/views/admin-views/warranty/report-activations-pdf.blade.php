@@ -1,10 +1,11 @@
 @php
-    $isRtl = $isRtl ?? (app()->getLocale() === 'ar' || session('direction') === 'rtl');
+    $isRtl = $isRtl ?? app()->getLocale() === 'ar' || session('direction') === 'rtl';
     $dateRange = $fromDate->translatedFormat('M d, Y') . ' - ' . $toDate->translatedFormat('M d, Y');
     $hasData = isset($activationRowsForPdf) && count($activationRowsForPdf) > 0;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+
 <head>
     <meta charset="UTF-8">
     <title>{{ translate('activation_report') }}</title>
@@ -47,7 +48,7 @@
 
         .header-content h2 {
             margin: 0 0 5px 0;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .header-content p {
@@ -172,11 +173,13 @@
         .chart-container {
             margin: 20px 0;
         }
+
         .chart-title {
             font-size: 14px;
             font-weight: bold;
             margin-bottom: 10px;
         }
+
         .bar-chart {
             display: flex;
             align-items: flex-end;
@@ -184,20 +187,24 @@
             gap: 8px;
             margin-top: 10px;
         }
+
         .bar-wrapper {
             flex: 1;
             text-align: center;
         }
+
         .bar {
             background-color: #0177CD;
             border-radius: 4px 4px 0 0;
             width: 100%;
             min-height: 2px;
         }
+
         .bar-label {
             margin-top: 5px;
             font-size: 9px;
         }
+
         .bar-value {
             font-size: 8px;
         }
@@ -281,19 +288,21 @@
         @endif
     </style>
 </head>
+
 <body>
 
     <!-- Modern Header with Logo - Green like CRM -->
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('activation_report') }}</h2>
-            <p>{{ translate('report_period') }}: {{ $fromDate->translatedFormat('M d, Y') }} - {{ $toDate->translatedFormat('M d, Y') }}</p>
+            <p>{{ translate('report_period') }}: {{ $fromDate->translatedFormat('M d, Y') }} -
+                {{ $toDate->translatedFormat('M d, Y') }}</p>
         </div>
         <div class="logo-container">
             @php
                 $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
             @endphp
-            @if(!empty($logo))
+            @if (!empty($logo))
                 <img src="{{ $logo }}" alt="{{ translate('logo') }}" style="max-width:100px; max-height:50px;">
             @elseif(file_exists($defaultLogoPath))
                 <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
@@ -308,21 +317,24 @@
             <tr>
                 <td>
                     <div class="kpi-label">{{ translate('total_activations') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((int)($kpi['total_activations'] ?? 0)) }}</strong></div>
+                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['total_activations'] ?? 0)) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('activation_rate') }}</div>
-                    <div class="kpi-value percentage"><strong>{{ number_format((float)($kpi['activation_rate'] ?? 0), 1) }}%</strong></div>
+                    <div class="kpi-value percentage">
+                        <strong>{{ number_format((float) ($kpi['activation_rate'] ?? 0), 1) }}%</strong></div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('active_warranties') }}</div>
-                    <div class="kpi-value"><strong>{{ number_format((int)($kpi['active_warranties'] ?? 0)) }}</strong></div>
+                    <div class="kpi-value"><strong>{{ number_format((int) ($kpi['active_warranties'] ?? 0)) }}</strong>
+                    </div>
                 </td>
                 <td>
                     <div class="kpi-label">{{ translate('avg_warranty_months') }}</div>
                     <div class="kpi-value"><strong>
-                        {{ ($kpi['avg_warranty_months'] ?? null) !== null ? number_format((float)$kpi['avg_warranty_months'], 1) : translate('na') }}
-                    </strong></div>
+                            {{ ($kpi['avg_warranty_months'] ?? null) !== null ? number_format((float) $kpi['avg_warranty_months'], 1) : translate('na') }}
+                        </strong></div>
                 </td>
             </tr>
 
@@ -330,9 +342,9 @@
     </div>
 
     <!-- Chart Row: Activation Trend + Method Distribution side by side -->
-    @if(!empty($trendChartImage) || !empty($methodChartImage))
+    @if (!empty($trendChartImage) || !empty($methodChartImage))
         <div class="chart-row">
-            @if(!empty($trendChartImage))
+            @if (!empty($trendChartImage))
                 <div class="chart-trend">
                     <div class="chart-col" style="margin-right: 10px;">
                         <div class="chart-title">{{ translate('activations_trend') }} ({{ $dateRange }})</div>
@@ -341,7 +353,7 @@
                 </div>
             @endif
 
-            @if(!empty($methodChartImage))
+            @if (!empty($methodChartImage))
                 <div class="chart-stage">
                     <div class="chart-col">
                         <div class="chart-title">{{ translate('activations_by_method') }} ({{ $dateRange }})</div>
@@ -355,7 +367,7 @@
     <!-- Row with TWO tables side by side: Method Breakdown and Top Products -->
     <div class="chart-row" style="margin-bottom: 20px;">
         <!-- Method Breakdown Table (left side) -->
-        @if(!empty($methodBreakdown) && count($methodBreakdown) > 0)
+        @if (!empty($methodBreakdown) && count($methodBreakdown) > 0)
             <div class="chart-trend">
                 <div class="table-container" style="margin-top: 0; margin-right: 10px;">
                     <div class="table-header">
@@ -370,11 +382,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($methodBreakdown as $row)
+                            @foreach ($methodBreakdown as $row)
                                 <tr>
                                     <td>{{ $row['label'] }}</td>
-                                    <td class="text-center">{{ number_format((int)$row['count']) }}</td>
-                                    <td class="text-center">{{ number_format((float)$row['percentage'], 1) }}%</td>
+                                    <td class="text-center">{{ number_format((int) $row['count']) }}</td>
+                                    <td class="text-center">{{ number_format((float) $row['percentage'], 1) }}%</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -384,7 +396,7 @@
         @endif
 
         <!-- Top Products Table (right side) -->
-        @if(!empty($topProducts) && count($topProducts) > 0)
+        @if (!empty($topProducts) && count($topProducts) > 0)
             <div class="chart-stage">
                 <div class="table-container" style="margin-top: 0;">
                     <div class="table-header">
@@ -399,11 +411,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($topProducts as $product)
+                            @foreach ($topProducts as $product)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $product->product_name }}</td>
-                                    <td class="text-center">{{ number_format((int)$product->total) }}</td>
+                                    <td class="text-center">{{ number_format((int) $product->total) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -418,8 +430,8 @@
         <div class="table-header">
             <h3>{{ translate('activation_details') }} ({{ $dateRange }})</h3>
         </div>
-        
-        @if($hasData)
+
+        @if ($hasData)
             <table>
                 <thead>
                     <tr>
@@ -435,10 +447,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($activationRowsForPdf as $warranty)
+                    @foreach ($activationRowsForPdf as $warranty)
                         @php
                             $customerName = trim(
-                                ((string)($warranty->user?->f_name ?? '')) . ' ' . ((string)($warranty->user?->l_name ?? ''))
+                                ((string) ($warranty->user?->f_name ?? '')) .
+                                    ' ' .
+                                    ((string) ($warranty->user?->l_name ?? '')),
                             );
                             if ($customerName === '') {
                                 $customerName = $warranty->activated_by_name ?? '-';
@@ -451,8 +465,10 @@
                             <td>{{ $customerName }}</td>
                             <td>{{ $warranty->branch?->branch_name ?? '-' }}</td>
                             <td>{{ translate($warranty->activation_method ?: 'unknown') }}</td>
-                            <td class="value-ltr">{{ optional($warranty->activation_date)->translatedFormat('Y-m-d H:i') ?? '-' }}</td>
-                            <td class="value-ltr">{{ optional($warranty->end_date)->translatedFormat('Y-m-d') ?? '-' }}</td>
+                            <td class="value-ltr">
+                                {{ optional($warranty->activation_date)->translatedFormat('Y-m-d H:i') ?? '-' }}</td>
+                            <td class="value-ltr">{{ optional($warranty->end_date)->translatedFormat('Y-m-d') ?? '-' }}
+                            </td>
                             <td>{{ ucwords(str_replace('_', ' ', $warranty->status)) }}</td>
                         </tr>
                     @endforeach
@@ -465,7 +481,7 @@
         @endif
     </div>
 
-     <!-- FOOTER -->
+    <!-- FOOTER -->
     <div style="
 border-top:1px dashed #d1d5db;
 margin-top:20px;
@@ -473,26 +489,27 @@ padding-top:8px;
 font-size:9px;
 color:#6b7280;
 ">
- 
+
         <table width="100%">
 
-        </thead>
-        <tbody>
-            @forelse($methodBreakdown as $row)
-                <tr>
-                    <td>{{ $row['label'] }}</td>
-                    <td>{{ number_format((int)$row['count']) }}</td>
-                    <td>{{ number_format((float)$row['percentage'], 1) }}%</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="3">{{ translate('no_data_found') }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($methodBreakdown as $row)
+                    <tr>
+                        <td>{{ $row['label'] }}</td>
+                        <td>{{ number_format((int) $row['count']) }}</td>
+                        <td>{{ number_format((float) $row['percentage'], 1) }}%</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3">{{ translate('no_data_found') }}</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
 
- 
+
     </div>
 </body>
+
 </html>

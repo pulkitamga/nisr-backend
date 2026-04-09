@@ -43,7 +43,7 @@
 
         .header-content h2 {
             margin: 0 0 5px 0;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .header-content p {
@@ -272,7 +272,7 @@
     </div>
 
     @php
-      $dateRange = $snapshotFromDisplay . ' - ' . $snapshotToDisplay;
+        $dateRange = $snapshotFromDisplay . ' - ' . $snapshotToDisplay;
     @endphp
 
     <!-- KPI Metrics Cards - ALL IN ONE SINGLE ROW with 7 cards -->
@@ -283,22 +283,26 @@
                     <td style="width: 14.28%;">
                         <div class="kpi-label">{{ translate('purchase_orders') }}</div>
                         <div class="kpi-value">
-                            <strong>{{ number_format((int) ($kpi['purchase_count'] ?? 0)) }}</strong></div>
+                            <strong>{{ number_format((int) ($kpi['purchase_count'] ?? 0)) }}</strong>
+                        </div>
                     </td>
                     <td style="width: 14.28%;">
                         <div class="kpi-label">{{ translate('quotations') }}</div>
                         <div class="kpi-value">
-                            <strong>{{ number_format((int) ($kpi['quotation_count'] ?? 0)) }}</strong></div>
+                            <strong>{{ number_format((int) ($kpi['quotation_count'] ?? 0)) }}</strong>
+                        </div>
                     </td>
                     <td style="width: 14.28%;">
                         <div class="kpi-label">{{ translate('confirmed_orders') }}</div>
                         <div class="kpi-value">
-                            <strong>{{ number_format((int) ($kpi['confirmed_count'] ?? 0)) }}</strong></div>
+                            <strong>{{ number_format((int) ($kpi['confirmed_count'] ?? 0)) }}</strong>
+                        </div>
                     </td>
                     <td style="width: 14.28%;">
                         <div class="kpi-label">{{ translate('end_to_end') }}</div>
                         <div class="kpi-value percentage">
-                            <strong>{{ number_format((float) ($kpi['end_to_end_rate'] ?? 0), 1) }}%</strong></div>
+                            <strong>{{ number_format((float) ($kpi['end_to_end_rate'] ?? 0), 1) }}%</strong>
+                        </div>
                     </td>
                     <td style="width: 14.28%;">
                         <div class="kpi-label">{{ translate('po_to_quote') }}</div>
