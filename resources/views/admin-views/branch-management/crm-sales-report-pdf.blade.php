@@ -295,12 +295,6 @@
                 {{ translate('report_period') }}:
                 {{ $fromDate }} - {{ $toDate }}
             </p>
-            @if (!empty($filters['sale_type']) && $filters['sale_type'] != 'all')
-                <p style="font-size:10px; margin-top:3px;">{{ translate('sale_type') }}: {{ $filters['sale_type'] }}</p>
-            @endif
-            @if (!empty($filters['agent']) && $filters['agent'] != 'all')
-                <p style="font-size:10px; margin-top:3px;">{{ translate('agent') }}: {{ $filters['agent'] }}</p>
-            @endif
         </div>
         <div class="logo-container">
             @php
@@ -314,6 +308,7 @@
             @endif
         </div>
     </div>
+
 
     <!-- KPI Metrics Cards -->
     <div class="kpi-container">

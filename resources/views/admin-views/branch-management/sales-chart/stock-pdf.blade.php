@@ -54,7 +54,7 @@
 
         .header-content h2 {
             margin: 0 0 5px 0;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .header-content p {
@@ -87,7 +87,7 @@
         /* KPI Container */
         .kpi-wrapper {
             background: #f3f6fb;
-            padding: 7px;
+            padding: 10px;
             border-radius: 10px;
             margin-bottom: 20px;
             width: 100%;
@@ -103,8 +103,8 @@
         .kpi-table td {
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            border-radius: 12px !important;
-            padding: 12px 8px;
+            border-radius: 10px !important;
+            padding: 11px;
             vertical-align: top;
             height: 70px;
         }
@@ -113,8 +113,7 @@
             color: #5f6672;
             font-size: 9px;
             text-transform: uppercase;
-            font-weight: 600;
-            margin: 0 0 6px 0;
+            margin: 0 0 3px 0;
             text-align: center;
         }
 
@@ -396,8 +395,6 @@
                 ->translatedFormat('d M Y')
             : '';
     @endphp
-
-    <span dir="{{ get_direction() }}">{{ $start }} - {{ $end }}</span>
 
     <!-- Modern Header with Logo -->
     <div class="report-header clearfix">

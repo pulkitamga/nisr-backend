@@ -58,9 +58,11 @@
                         <select class="form-control" id="productFilter">
                             <option value="">{{ translate('all_products') }}</option>
                             @foreach ($products as $product)
-                                <option value="{{ $product->id }}" data-variations="{{ $product->variation }}">
-                                    {{ $product->name }}
-                                </option>
+                                @if (!empty(trim($product->name)))
+                                    <option value="{{ $product->id }}" data-variations='@json($product->variation)'>
+                                        {{ $product->name }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>

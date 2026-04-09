@@ -19,9 +19,9 @@
         .report-header {
             background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%);
             color: white;
-            padding: 12px 15px;
+            padding: 15px 20px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             overflow: hidden;
         }
 
@@ -37,19 +37,19 @@
         }
 
         .logo-container img {
-            max-width: 80px;
+            max-width: 100px;
             max-height: 50px;
             object-fit: contain;
         }
 
         .header-content h2 {
             margin: 0 0 5px 0;
-            font-size: 16px;
+            font-size: 18px;
         }
 
         .header-content p {
             margin: 0;
-            font-size: 10px;
+            font-size: 11px;
             opacity: 0.9;
         }
 
@@ -63,8 +63,8 @@
         .kpi-container {
             background: #f3f6fb;
             padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .kpi-table {
@@ -76,8 +76,8 @@
         .kpi-table td {
             background: #fff;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 8px;
+            border-radius: 10px;
+            padding: 11px;
             text-align: center;
         }
 

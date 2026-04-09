@@ -85,20 +85,20 @@
         .kpi-table td {
             background: #fff;
             border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 10px;
+            padding: 11px;
             text-align: center;
         }
 
         .kpi-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #6b7280;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .kpi-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #111827;
         }
@@ -292,7 +292,7 @@
     <!-- HEADER with Logo - SAME as Order Transaction report -->
     <div class="report-header clearfix">
         <div class="header-content">
-            <h2>{{ translate('expense_Transaction_Statement') }}</h2>
+            <h2>{{ translate('expense_summary') }}</h2>
             <p>{{ translate('duration') }}: {{ $dateRange }}</p>
             <p>{{ translate('generated_on') }}: {{ now()->translatedFormat('d M Y, h:i A') }}</p>
         </div>
