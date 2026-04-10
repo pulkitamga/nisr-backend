@@ -661,6 +661,13 @@
                     speed: 700,
                 };
 
+                if (shouldLoopHero) {
+                    heroConfig.autoplay = {
+                        delay: 4000,
+                        disableOnInteraction: false,
+                    };
+                }
+
                 if (heroPagination) {
                     heroConfig.pagination = {
                         el: heroPagination,
@@ -726,6 +733,10 @@
                 contentWrapper.innerHTML = filteredRecords.map((record) => record.content).join('');
 
                 const shouldLoop = filteredRecords.length > 1;
+                const autoplayConfig = shouldLoop ? {
+                    delay: 4000,
+                    disableOnInteraction: false,
+                } : false;
 
                 contentSwiper = new Swiper(contentSlider, {
                     slidesPerView: 1,
@@ -734,12 +745,14 @@
                     allowTouchMove: false,
                     loop: shouldLoop,
                     autoHeight: true,
+                    autoplay: autoplayConfig,
                 });
 
                 mediaSwiper = new Swiper(mediaSlider, {
                     slidesPerView: 1,
                     loop: shouldLoop,
                     speed: 700,
+                    autoplay: autoplayConfig,
                     pagination: {
                         el: '.nisr-story-slider__pagination',
                         clickable: true,

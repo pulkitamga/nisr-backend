@@ -113,7 +113,7 @@ return [
     'Are you sure?' => 'هل أنت متأكد؟',
     'Yes, delete it!' => 'نعم، احذفه!',
     'Confirm Deletion' => 'تأكيد الحذف',
-    'Product' => 'منتج',
+    'Product' => 'المنتجات',
     'Category' => 'الفئة',
     'Free Delivery' => 'توصيل مجاني',
     'Sales' => 'المبيعات',
