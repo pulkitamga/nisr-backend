@@ -17,8 +17,10 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 
 <div class="content container-fluid ">
     <div class="card">
-        <div class="page-header">
-            <h1 class="page-title">{{ translate('edit_blog') }}</h1>
+        <div class="card-header">
+            <div class="cms-admin-heading mb-0">
+                <h1 class="cms-admin-heading__title h3">{{ translate('edit_blog') }}</h1>
+            </div>
         </div>
 
         <form action="{{ route('admin.content-management.blog.update', $blog->id) }}" method="POST"
@@ -92,24 +94,12 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @endif
             </div>
 
-            <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
-            <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('cancel')
-                }}</a>
+            <div class="d-flex gap-2 flex-wrap mt-4">
+                <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('cancel') }}</a>
+                <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+            </div>
         </form>
     </div>
 </div>
-
-<script>
-    // Language Tab Switching
-    document.querySelectorAll('.form-system-language-tab').forEach(tab => {
-        tab.addEventListener('click', function () {
-            const lang = this.id.replace('-link', '');
-            document.querySelectorAll('.form-system-language-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            document.querySelectorAll('.form-system-language-form').forEach(f => f.classList.add('d-none'));
-            document.getElementById(lang + '-form').classList.remove('d-none');
-        });
-    });
-</script>
 
 @endsection

@@ -120,6 +120,7 @@ class AppServiceProvider extends ServiceProvider
                         'fav_icon' => getWebConfig(name: 'company_fav_icon'),
                         'email' => getWebConfig(name: 'company_email'),
                         'about' => Helpers::get_settings($web, 'about_us'),
+                        'footer_description' => getWebConfig(name: 'footer_description_text'),
                         'footer_logo' => getWebConfig(name: 'company_footer_logo'),
                         'copyright_text' => getWebConfig(name: 'company_copyright_text'),
                         'decimal_point_settings' => !empty(getWebConfig(name: 'decimal_point_settings')) ? getWebConfig(name: 'decimal_point_settings') : 0,

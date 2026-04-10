@@ -14,6 +14,7 @@ use App\Utils\ImageManager;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -115,18 +116,114 @@ class HomeController extends Controller
         }
     }
 
+    private function validateRequiredLocalizedCardFields(Request $request, array $fieldMessages): void
+    {
+        $defaultLanguage = getConfiguredDefaultLanguage();
+        $cards = $request->input('cards', []);
+        $errors = [];
+
+        foreach ($cards as $index => $card) {
+            foreach ($fieldMessages as $field => $options) {
+                $value = data_get($card, $field . '.' . $defaultLanguage, '');
+                $isBlank = ($options['rich_text'] ?? false)
+                    ? richTextToPlainText($value) === ''
+                    : trim((string) ($value ?? '')) === '';
+
+                if ($isBlank) {
+                    $errors["cards.$index.$field.$defaultLanguage"] = [translate($options['message'])];
+                }
+            }
+        }
+
+        if ($errors !== []) {
+            throw \Illuminate\Validation\ValidationException::withMessages($errors);
+        }
+    }
+
+    private function updateArraySectionTranslations(HomePageSection $section, array $payload, int $index): void
+    {
+        if (!isset($payload['lang']) || !is_array($payload['lang']) || $payload['lang'] === []) {
+            return;
+        }
+
+        $payload['index'] = $index;
+
+        $this->translationRepo->updateArrayBasedSectionTranslations(
+            request: new Request($payload),
+            model: HomePageSection::class,
+            id: $section->id
+        );
+    }
+
+    private function baseCorporateSectionSkeleton(): array
+    {
+        return [
+            'section' => [
+                'label' => '',
+                'title' => '',
+                'description' => '',
+                'cards' => [],
+            ],
+        ];
+    }
+
+    private function normalizeCmsRedirectLink(?string $value): string
+    {
+        $normalizedValue = trim((string) $value);
+
+        if ($normalizedValue === '') {
+            return '';
+        }
+
+        if (Str::startsWith($normalizedValue, ['http://', 'https://', '#', '/', 'www.'])) {
+            return $normalizedValue;
+        }
+
+        return '/' . ltrim($normalizedValue, '/');
+    }
+
     public function index(Request $request)
     {
 
         $sections = HomePageSection::all();
 
-        $typeList = $sections->pluck('name', 'type')->toArray();
+        $orderedVisibleTypes = [
+            'main_banner',
+            'trusted_by',
+            'products',
+            'categories',
+            'flagship_battery_families',
+            'core_capabilities',
+            'find_perfect_match',
+            'closed_loop_lifecycle',
+            'blog',
+            'client_review',
+            'faq',
+            'next_step',
+        ];
 
-        $defaultType = 'main_banner';
+        $visibleSectionMap = $sections
+            ->whereIn('type', $orderedVisibleTypes)
+            ->keyBy('type');
 
-        $currentType = $request->get('section', $defaultType);
+        $typeList = [];
+        foreach ($orderedVisibleTypes as $type) {
+            if ($visibleSectionMap->has($type)) {
+                $typeList[$type] = $visibleSectionMap[$type]->name;
+            }
+        }
+
+        $defaultType = array_key_first($typeList) ?? 'main_banner';
+        $fallbackSection = isset($typeList[$defaultType]) ? $visibleSectionMap->get($defaultType) : $sections->first();
+
+        $requestedType = $request->get('section', $defaultType);
+        $currentType = array_key_exists($requestedType, $typeList) ? $requestedType : $defaultType;
 
         $currentSection = $sections->where('type', $currentType)->first();
+        if (!$currentSection && $fallbackSection) {
+            $currentSection = $fallbackSection;
+            $currentType = $fallbackSection->type;
+        }
 
         $jsonData = $currentSection ? json_decode($currentSection->value, true) : [];
 
@@ -166,6 +263,11 @@ class HomeController extends Controller
             'jsonData',
             'translations'
         ));
+    }
+
+    public function edit()
+    {
+        return redirect()->route('admin.content-management.home');
     }
 
 
@@ -679,6 +781,358 @@ class HomeController extends Controller
         );
 
         return redirect()->back()->with('success', 'Find Perfect Match section updated successfully.');
+    }
+
+    public function updateFlagshipBatteryFamilies(Request $request)
+    {
+        $request->validate([
+            'lang' => 'required|array|min:1',
+            'label' => 'required|array',
+            'title' => 'required|array',
+            'description' => 'nullable|array',
+            'cards' => 'required|array|min:1',
+            'cards.*.tag' => 'nullable|array',
+            'cards.*.title' => 'required|array',
+            'cards.*.description' => 'required|array',
+            'cards.*.note' => 'nullable|array',
+            'cards.*.image_alt' => 'nullable|array',
+            'cards.*.image' => 'nullable|image|max:2048',
+            'cards.*.existing_image' => 'nullable|string',
+            'cards.*.redirect_link' => [
+                'nullable',
+                'string',
+                'max:500',
+                function ($attribute, $value, $fail) {
+                    $normalizedValue = $this->normalizeCmsRedirectLink($value);
+
+                    if ($normalizedValue !== '' && CmsContentSanitizer::sanitizeLink($normalizedValue) === '') {
+                        $fail(translate('invalid_URL'));
+                    }
+                },
+            ],
+        ]);
+
+        $this->validateRequiredCmsEnglishFields($request, [
+            'label' => ['message' => 'The_title_in_english_is_required'],
+            'title' => ['message' => 'The_title_in_english_is_required'],
+        ]);
+        $this->validateRequiredLocalizedCardFields($request, [
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required'],
+        ]);
+
+        $section = HomePageSection::firstOrCreate(
+            ['type' => 'flagship_battery_families'],
+            [
+                'name' => 'Flagship Battery Families',
+                'value' => json_encode($this->baseCorporateSectionSkeleton(), JSON_UNESCAPED_UNICODE),
+                'is_active' => 1,
+            ]
+        );
+
+        $languages = array_values($request->input('lang', []));
+        $defaultLangIndex = getDefaultLanguageIndex($request);
+        $defaultLocale = $languages[$defaultLangIndex] ?? getConfiguredDefaultLanguage();
+        $existingData = json_decode($section->value ?? '', true) ?: $this->baseCorporateSectionSkeleton();
+
+        $data = [
+            'section' => [
+                'label' => CmsContentSanitizer::sanitizePlainText($request->input('label.' . $defaultLangIndex, '')),
+                'title' => CmsContentSanitizer::sanitizePlainText($request->input('title.' . $defaultLangIndex, '')),
+                'description' => CmsContentSanitizer::sanitizePlainText($request->input('description.' . $defaultLangIndex, '')),
+                'cards' => [],
+            ],
+        ];
+
+        foreach ($request->input('cards', []) as $index => $cardInput) {
+            $existingCard = $existingData['section']['cards'][$index] ?? [];
+            $imagePath = $cardInput['existing_image'] ?? ($existingCard['image'] ?? '');
+
+            if ($request->hasFile("cards.$index.image")) {
+                $this->deleteImageIfExists($imagePath);
+                $imagePath = $this->storeOptimizedImage(
+                    image: $request->file("cards.$index.image"),
+                    directory: 'uploads/home/flagship-families'
+                );
+            }
+
+            $data['section']['cards'][$index] = [
+                'tag' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "tag.$defaultLocale", '')),
+                'title' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "title.$defaultLocale", '')),
+                'description' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "description.$defaultLocale", '')),
+                'note' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "note.$defaultLocale", '')),
+                'image' => $imagePath,
+                'image_alt' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "image_alt.$defaultLocale", '')),
+                'redirect_link' => CmsContentSanitizer::sanitizeLink($this->normalizeCmsRedirectLink($cardInput['redirect_link'] ?? '')),
+            ];
+        }
+
+        $section->value = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $section->save();
+
+        $this->updateArraySectionTranslations($section, [
+            'lang' => $languages,
+            'label' => CmsContentSanitizer::sanitizePlainTextArray($request->input('label', [])),
+            'title' => CmsContentSanitizer::sanitizePlainTextArray($request->input('title', [])),
+            'description' => CmsContentSanitizer::sanitizePlainTextArray($request->input('description', [])),
+        ], -1);
+
+        foreach ($request->input('cards', []) as $index => $cardInput) {
+            $cardPayload = ['lang' => $languages];
+            foreach (['tag', 'title', 'description', 'note', 'image_alt'] as $field) {
+                $cardPayload[$field] = [];
+                foreach ($languages as $locale) {
+                    $cardPayload[$field][] = CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "$field.$locale", ''));
+                }
+            }
+
+            $this->updateArraySectionTranslations($section, $cardPayload, (int) $index);
+        }
+
+        return redirect()->back()->with('success', translate('Section updated successfully!'));
+    }
+
+    public function updateCoreCapabilities(Request $request)
+    {
+        $request->validate([
+            'lang' => 'required|array|min:1',
+            'label' => 'required|array',
+            'title' => 'required|array',
+            'description' => 'required|array',
+            'cards' => 'required|array|min:1',
+            'cards.*.title' => 'required|array',
+            'cards.*.description' => 'required|array',
+        ]);
+
+        $this->validateRequiredCmsEnglishFields($request, [
+            'label' => ['message' => 'The_title_in_english_is_required'],
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required'],
+        ]);
+        $this->validateRequiredLocalizedCardFields($request, [
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required'],
+        ]);
+
+        $section = HomePageSection::firstOrCreate(
+            ['type' => 'core_capabilities'],
+            [
+                'name' => 'Core Capabilities',
+                'value' => json_encode($this->baseCorporateSectionSkeleton(), JSON_UNESCAPED_UNICODE),
+                'is_active' => 1,
+            ]
+        );
+
+        $languages = array_values($request->input('lang', []));
+        $defaultLangIndex = getDefaultLanguageIndex($request);
+        $defaultLocale = $languages[$defaultLangIndex] ?? getConfiguredDefaultLanguage();
+
+        $data = [
+            'section' => [
+                'label' => CmsContentSanitizer::sanitizePlainText($request->input('label.' . $defaultLangIndex, '')),
+                'title' => CmsContentSanitizer::sanitizePlainText($request->input('title.' . $defaultLangIndex, '')),
+                'description' => CmsContentSanitizer::sanitizePlainText($request->input('description.' . $defaultLangIndex, '')),
+                'cards' => [],
+            ],
+        ];
+
+        foreach ($request->input('cards', []) as $index => $cardInput) {
+            $data['section']['cards'][$index] = [
+                'title' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "title.$defaultLocale", '')),
+                'description' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "description.$defaultLocale", '')),
+            ];
+        }
+
+        $section->value = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $section->save();
+
+        $this->updateArraySectionTranslations($section, [
+            'lang' => $languages,
+            'label' => CmsContentSanitizer::sanitizePlainTextArray($request->input('label', [])),
+            'title' => CmsContentSanitizer::sanitizePlainTextArray($request->input('title', [])),
+            'description' => CmsContentSanitizer::sanitizePlainTextArray($request->input('description', [])),
+        ], -1);
+
+        foreach ($request->input('cards', []) as $index => $cardInput) {
+            $cardPayload = ['lang' => $languages];
+            foreach (['title', 'description'] as $field) {
+                $cardPayload[$field] = [];
+                foreach ($languages as $locale) {
+                    $cardPayload[$field][] = CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "$field.$locale", ''));
+                }
+            }
+
+            $this->updateArraySectionTranslations($section, $cardPayload, (int) $index);
+        }
+
+        return redirect()->back()->with('success', translate('Section updated successfully!'));
+    }
+
+    public function updateClosedLoopLifecycle(Request $request)
+    {
+        $request->validate([
+            'lang' => 'required|array|min:1',
+            'label' => 'required|array',
+            'title' => 'required|array',
+            'description' => 'required|array',
+            'value' => 'required|array',
+            'cards' => 'required|array|min:1',
+            'cards.*.title' => 'required|array',
+            'cards.*.description' => 'required|array',
+            'cards.*.label' => 'required|array',
+            'cards.*.note' => 'required|array',
+        ]);
+
+        $this->validateRequiredCmsEnglishFields($request, [
+            'label' => ['message' => 'The_title_in_english_is_required'],
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required'],
+            'value' => ['message' => 'The_title_in_english_is_required'],
+        ]);
+        $this->validateRequiredLocalizedCardFields($request, [
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required'],
+            'label' => ['message' => 'The_title_in_english_is_required'],
+            'note' => ['message' => 'The_description_in_english_is_required'],
+        ]);
+
+        $section = HomePageSection::firstOrCreate(
+            ['type' => 'closed_loop_lifecycle'],
+            [
+                'name' => 'Closed Loop Lifecycle',
+                'value' => json_encode($this->baseCorporateSectionSkeleton(), JSON_UNESCAPED_UNICODE),
+                'is_active' => 1,
+            ]
+        );
+
+        $languages = array_values($request->input('lang', []));
+        $defaultLangIndex = getDefaultLanguageIndex($request);
+        $defaultLocale = $languages[$defaultLangIndex] ?? getConfiguredDefaultLanguage();
+
+        $data = [
+            'section' => [
+                'label' => CmsContentSanitizer::sanitizePlainText($request->input('label.' . $defaultLangIndex, '')),
+                'title' => CmsContentSanitizer::sanitizePlainText($request->input('title.' . $defaultLangIndex, '')),
+                'description' => CmsContentSanitizer::sanitizePlainText($request->input('description.' . $defaultLangIndex, '')),
+                'value' => CmsContentSanitizer::sanitizePlainText($request->input('value.' . $defaultLangIndex, '')),
+                'cards' => [],
+            ],
+        ];
+
+        foreach ($request->input('cards', []) as $index => $cardInput) {
+            $data['section']['cards'][$index] = [
+                'title' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "title.$defaultLocale", '')),
+                'description' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "description.$defaultLocale", '')),
+                'label' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "label.$defaultLocale", '')),
+                'note' => CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "note.$defaultLocale", '')),
+            ];
+        }
+
+        $section->value = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $section->save();
+
+        $this->updateArraySectionTranslations($section, [
+            'lang' => $languages,
+            'label' => CmsContentSanitizer::sanitizePlainTextArray($request->input('label', [])),
+            'title' => CmsContentSanitizer::sanitizePlainTextArray($request->input('title', [])),
+            'description' => CmsContentSanitizer::sanitizePlainTextArray($request->input('description', [])),
+            'value' => CmsContentSanitizer::sanitizePlainTextArray($request->input('value', [])),
+        ], -1);
+
+        foreach ($request->input('cards', []) as $index => $cardInput) {
+            $cardPayload = ['lang' => $languages];
+            foreach (['title', 'description', 'label', 'note'] as $field) {
+                $cardPayload[$field] = [];
+                foreach ($languages as $locale) {
+                    $cardPayload[$field][] = CmsContentSanitizer::sanitizePlainText(data_get($cardInput, "$field.$locale", ''));
+                }
+            }
+
+            $this->updateArraySectionTranslations($section, $cardPayload, (int) $index);
+        }
+
+        return redirect()->back()->with('success', translate('Section updated successfully!'));
+    }
+
+    public function updateNextStep(Request $request)
+    {
+        $request->validate([
+            'lang' => 'required|array|min:1',
+            'label' => 'required|array',
+            'title' => 'required|array',
+            'description' => 'required|array',
+            'button_text' => 'required|array',
+            'note' => 'required|array',
+            'button_link' => 'required|string|max:500',
+            'secondary_button_link' => 'required|string|max:500',
+            'image_alt' => 'nullable|array',
+            'image' => 'nullable|image|max:2048',
+            'existing_image' => 'nullable|string',
+        ]);
+
+        $request->merge([
+            'button_link' => CmsContentSanitizer::sanitizeLink($request->input('button_link')),
+            'secondary_button_link' => CmsContentSanitizer::sanitizeLink($request->input('secondary_button_link')),
+        ]);
+
+        $this->validateRequiredCmsEnglishFields($request, [
+            'label' => ['message' => 'The_title_in_english_is_required'],
+            'title' => ['message' => 'The_title_in_english_is_required'],
+            'description' => ['message' => 'The_description_in_english_is_required'],
+            'button_text' => ['message' => 'The_title_in_english_is_required'],
+            'note' => ['message' => 'The_title_in_english_is_required'],
+        ]);
+
+        $section = HomePageSection::firstOrCreate(
+            ['type' => 'next_step'],
+            [
+                'name' => 'Next Step',
+                'value' => json_encode($this->baseCorporateSectionSkeleton(), JSON_UNESCAPED_UNICODE),
+                'is_active' => 1,
+            ]
+        );
+
+        $languages = array_values($request->input('lang', []));
+        $defaultLangIndex = getDefaultLanguageIndex($request);
+        $existingData = json_decode($section->value ?? '', true) ?: $this->baseCorporateSectionSkeleton();
+        $imagePath = $request->input('existing_image', $existingData['section']['image'] ?? '');
+
+        if ($request->hasFile('image')) {
+            $this->deleteImageIfExists($imagePath);
+            $imagePath = $this->storeOptimizedImage(
+                image: $request->file('image'),
+                directory: 'uploads/home/next-step'
+            );
+        }
+
+        $data = [
+            'section' => [
+                'label' => CmsContentSanitizer::sanitizePlainText($request->input('label.' . $defaultLangIndex, '')),
+                'title' => CmsContentSanitizer::sanitizePlainText($request->input('title.' . $defaultLangIndex, '')),
+                'description' => CmsContentSanitizer::sanitizePlainText($request->input('description.' . $defaultLangIndex, '')),
+                'button_text' => CmsContentSanitizer::sanitizePlainText($request->input('button_text.' . $defaultLangIndex, '')),
+                'button_link' => $request->input('button_link'),
+                'note' => CmsContentSanitizer::sanitizePlainText($request->input('note.' . $defaultLangIndex, '')),
+                'secondary_button_link' => $request->input('secondary_button_link'),
+                'image' => $imagePath,
+                'image_alt' => CmsContentSanitizer::sanitizePlainText($request->input('image_alt.' . $defaultLangIndex, '')),
+            ],
+        ];
+
+        $section->value = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $section->save();
+
+        $this->updateArraySectionTranslations($section, [
+            'lang' => $languages,
+            'label' => CmsContentSanitizer::sanitizePlainTextArray($request->input('label', [])),
+            'title' => CmsContentSanitizer::sanitizePlainTextArray($request->input('title', [])),
+            'description' => CmsContentSanitizer::sanitizePlainTextArray($request->input('description', [])),
+            'button_text' => CmsContentSanitizer::sanitizePlainTextArray($request->input('button_text', [])),
+            'note' => CmsContentSanitizer::sanitizePlainTextArray($request->input('note', [])),
+            'image_alt' => CmsContentSanitizer::sanitizePlainTextArray($request->input('image_alt', [])),
+        ], -1);
+
+        return redirect()->back()->with('success', translate('Section updated successfully!'));
     }
 
 

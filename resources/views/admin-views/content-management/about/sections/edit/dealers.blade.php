@@ -2,6 +2,10 @@
 
 @section('title', translate('Edit Dealer Section'))
 
+@push('css_or_js')
+<link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
+@endpush
+
 @php
 $language = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = getConfiguredDefaultLanguage();
@@ -28,6 +32,23 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 @csrf
                 @method('PUT')
 
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-body">
+                        <h4 class="mb-2">{{ translate('Quick_filters') }}</h4>
+                        <p class="text-muted mb-3">{{ translate('Enable_the_values_you_want_to_appear_as_quick_filters_on_the_about_page') }}</p>
+                        <div class="d-flex flex-wrap gap-4">
+                            <label class="d-flex align-items-center gap-2 mb-0">
+                                <input type="checkbox" name="show_partner_type_filter" value="1" {{ old('show_partner_type_filter', $model->show_partner_type_filter) ? 'checked' : '' }}>
+                                <span>{{ translate('Show_partner_type_in_quick_filters') }}</span>
+                            </label>
+                            <label class="d-flex align-items-center gap-2 mb-0">
+                                <input type="checkbox" name="show_location_filter" value="1" {{ old('show_location_filter', $model->show_location_filter) ? 'checked' : '' }}>
+                                <span>{{ translate('Show_location_in_quick_filters') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 @php
                     $activeLanguage = $errors->any() ? $defaultLanguage : (in_array(getDefaultLanguage(), $language ?? $languages ?? [], true) ? getDefaultLanguage() : $defaultLanguage);
                 @endphp
@@ -53,7 +74,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     <!-- Description -->
                     <label for="description" class="mt-3">{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                     <textarea name="description[]" rows="5"
-                        class="form-control">{{ $lang == $defaultLanguage ? $model->description : ($translations[$lang]['description'] ?? '') }}</textarea>
+                        class="form-control summernote">{!! $lang == $defaultLanguage ? ($model->description ?? '') : ($translations[$lang]['description'] ?? '') !!}</textarea>
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
 
                     <label class="mt-3">{{ translate('Dealer Name') }} ({{ strtoupper($lang)
@@ -78,7 +99,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                     <input type="hidden" name="remove_image" id="remove_image" value="0">
                     @endif
                     <div id="image-preview" class="mt-2 position-relative d-inline-block" style="{{ $model->image ? '' : 'display:none;' }}">
-                        <img id="preview_img" src="{{ $model->image ? Storage::url($model->image) : '' }}" style="width: 100px;">
+                        <img id="preview_img" src="{{ $model->image ? Storage::url($model->image) : '' }}" style="width: 75px;">
                         <button type="button" id="remove_btn" class="btn btn-sm btn-danger position-absolute" style="top: -5px; inset-inline-end: -5px; padding: 0 5px; line-height: 1.2; font-size: 12px; border-radius: 50%;">&times;</button>
                     </div>
                 </div>
@@ -93,9 +114,28 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 @endsection
 
 @push('script')
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.js') }}"></script>
 <script>
     // Language tab switcher
     $(document).ready(function() {
+        $('.summernote').each(function () {
+            const $editor = $(this);
+            if ($editor.next('.note-editor').length) {
+                return;
+            }
+
+            $editor.summernote({
+                height: 220,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link']],
+                    ['view', ['codeview']]
+                ]
+            });
+        });
+
         $('.form-system-language-tab').on('click', function() {
             let lang = $(this).attr('id').replace('-link', '');
             $('.form-system-language-tab').removeClass('active');

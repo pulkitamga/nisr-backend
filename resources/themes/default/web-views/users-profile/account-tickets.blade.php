@@ -149,7 +149,7 @@
                                         </td>
                                         <td>
                                             <span class="text-secondary-50 fs-12 font-semibold">
-                                                {{Carbon\Carbon::createFromFormat('Y-m-d H:i:s',$ticket['created_at'])->format('Y-m-d h:i A')}}
+                                                {!! formatDateTimeForDisplay($ticket['created_at'], 'Y-m-d h:i A') !!}
                                             </span>
                                         </td>
                                         <td><span class="fs-13 font-semibold">{{translate($ticket['type'])}}</span></td>
@@ -219,7 +219,7 @@
                 </div>
                 <div class="d-flex gap-2 fs-12 font-semibold">
                     <div class="text-muted">{{translate('submission_date')}} :</div>
-                    <div>{{Carbon\Carbon::createFromFormat('Y-m-d H:i:s',$ticket['created_at'])->format('Y-m-d h:i A')}}</div>
+                    <div>{!! formatDateTimeForDisplay($ticket['created_at'], 'Y-m-d h:i A') !!}</div>
                 </div>
                 <div class="d-flex gap-2 fs-13 font-semibold">
                     <div class="text-muted">{{translate('type')}} :</div>

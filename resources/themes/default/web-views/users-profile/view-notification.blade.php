@@ -34,17 +34,14 @@
                                 <div class="d-flex justify-content-between pt-2">
                                     <span class="key fw-bold" style="min-width: 150px;">{{ translate('occur') }}</span>
                                     <span class="value">
-                                        <?php
-                                        use Carbon\Carbon;
-                                        if (!empty($SupportnotificationData->created_at)) {
-                                            $createdAt = Carbon::parse($SupportnotificationData->created_at);
-                                            echo ($createdAt->diffInDays(Carbon::now()) < 7)
-                                                ? $createdAt->format('D h:i A')
-                                                : $createdAt->format('d M Y h:i A');
-                                        } else {
-                                            echo "N/A";
-                                        }
-                                        ?>
+                                        @if(!empty($SupportnotificationData->created_at))
+                                            @php($createdAt = Carbon::parse($SupportnotificationData->created_at))
+                                            {!! $createdAt->diffInDays(Carbon::now()) < 7
+                                                ? formatDateTimeForDisplay($createdAt, 'D h:i A')
+                                                : formatDateTimeForDisplay($createdAt, 'd M Y h:i A') !!}
+                                        @else
+                                            {{ translate('not_available') }}
+                                        @endif
                                     </span>
                                 </div>
                             </div>

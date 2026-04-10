@@ -1,7 +1,7 @@
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
     <div class="d-flex align-items-center flex-wrap gap-2 justify-content-between flex-grow-1 d-lg-block">
         <h5 class="">{{translate('order').'#'}}{{$order['id']}} </h5>
-        <p class="fs-12">{{date('d M, Y h:i A',strtotime($order->created_at))}}</p>
+        <p class="fs-12">{!! formatDateTimeForDisplay($order->created_at) !!}</p>
     </div>
     <div class="">
         <div class="d-none d-lg-flex gap-3 justify-content-end">

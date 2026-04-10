@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Admin\Cms;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class ReturnPolicyController extends Controller
 {
     public function index()
     {
         return view('admin-views.content-management.return-policy.index');
+    }
+
+    public function edit(): RedirectResponse
+    {
+        return redirect()->route('admin.content-management.return-policy');
     }
 }

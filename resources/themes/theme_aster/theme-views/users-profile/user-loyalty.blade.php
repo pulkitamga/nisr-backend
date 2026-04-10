@@ -100,7 +100,7 @@
                                             <h6 class="text-muted">{{ucwords(translate($item['transaction_type']))}}</h6>
                                         </div>
                                         <div class="text-end">
-                                            <div class="text-muted mb-1">{{date('d M, Y H:i A',strtotime($item['created_at']))}} </div>
+                                            <div class="text-muted mb-1">{!! formatDateTimeForDisplay($item['created_at'], 'd M, Y H:i A') !!} </div>
                                             @if($item['debit'] != 0)
                                                 <p class="text-danger fs-12">{{translate('debit')}}</p>
                                             @else

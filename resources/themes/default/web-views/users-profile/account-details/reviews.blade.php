@@ -73,7 +73,7 @@
                                                 {{translate('my_review')}}
                                             </h6>
                                             <div class="text-muted fs-12">
-                                                {{ date('M d , Y h:i A',strtotime($order_details->reviewData?->updated_at))}}
+                                                {!! formatDateTimeForDisplay($order_details->reviewData?->updated_at, 'M d , Y h:i A') !!}
                                             </div>
                                         </div>
                                         <p class="fs-12">{{ $order_details->reviewData?->comment ?? ''}}</p>
@@ -106,7 +106,7 @@
                                                         </h6>
                                                     </div>
                                                     <span class="opacity-50 fs-12">
-                                                        {{ isset($order_details->reviewData->reply->created_at) ? $order_details->reviewData->reply->created_at->format('M-d-Y') : '' }}
+                                                        {!! isset($order_details->reviewData->reply->created_at) ? formatDateTimeForDisplay($order_details->reviewData->reply->created_at, 'M-d-Y') : '' !!}
                                                     </span>
                                                 </div>
                                                 <p class="fs-14">
@@ -203,4 +203,3 @@
     </script>
 
 @endpush
-

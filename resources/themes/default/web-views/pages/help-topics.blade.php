@@ -1,99 +1,67 @@
 @extends('layouts.front-end.app')
 
-@section('title',translate('FAQ'))
+@section('title', translate('FAQ'))
+
+@push('css_or_js')
+    @include('web-views.partials._premium-page-styles')
+@endpush
 
 @section('content')
-    <div class="__inline-60">
-        <div class="container rtl">
-            <div class="row">
-                <div class="col-md-12 sidebar_heading text-center mb-2">
-                    <h1 class="text-center pt-4 fs-24 font-semi-bold text-capitalize">{{ translate('frequently_asked_question') }}</h1>
+    @php
+        $helpCount = count($helps);
+    @endphp
+
+    <div class="nisr-page-shell">
+        <section class="container rtl text-align-direction">
+            <div class="nisr-page-hero">
+                <span class="nisr-page-eyebrow">{{ translate('FAQ') }}</span>
+                <h1 class="nisr-page-title">{{ translate('frequently_asked_questions') }}</h1>
+                <p class="nisr-page-lead">
+                    {{ translate('Find_quick_answers_about_products_warranty_and_support_before_reaching_out_to_our_team') }}
+                </p>
+                <div class="nisr-hero-actions">
+                    <span class="nisr-stat-pill">{{ $helpCount }} {{ translate('Support_answers_available') }}</span>
+                    <a href="{{ route('contacts') }}" class="nisr-link-pill">{{ translate('Contact_us') }}</a>
+                    <a href="{{ route('warranty.lookup.start') }}" class="nisr-link-pill">{{ translate('Warranty Lookup') }}</a>
                 </div>
             </div>
-            <hr>
-        </div>
+        </section>
 
-        <div class="container pb-5 mb-2 mb-md-4 mt-3 rtl">
-            <div class="row">
-
-                @php $length=count($helps); @endphp
-                @if(count($helps) > 0)
-                    @php if($length%2!=0){$first=($length+1)/2;}else{$first=$length/2;}@endphp
-                    <div class="col-lg-2"></div>
-                    <section class="col-lg-10 mt-3">
-                        <section class="container pt-4 pb-5 ">
-                            <div class="row pt-4">
-                                <div class="col-lg-12">
-                                    <ul class="list-unstyled">
-                                        @for($i=0;$i<$first;$i++)
-                                            <div id="accordion">
-                                                <div class="row mb-0 text-black">
-                                                    <div class="col-1 mt-3">
-                                                        <i class="czi-book text-muted me-2"></i>
-                                                    </div>
-                                                    <div class="col-11">
-                                                        <button class="btnF btn-link collapsed text-align-direction" data-toggle="collapse"
-                                                                data-target="#collapseTwo{{ $helps[$i]['id'] }}"
-                                                                aria-expanded="false" aria-controls="collapseTwo">
-                                                            <span class="d-flex align-items-center border-bottom pb-3 mb-3">{{ $helps[$i]['question'] }}</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div id="collapseTwo{{ $helps[$i]['id'] }}" class="collapse"
-                                                     aria-labelledby="headingTwo" data-parent="#accordion">
-                                                    <div class="card-body">
-                                                        {{ $helps[$i]['answer'] }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endfor
-                                    </ul>
-                                </div>
-
-                                <div class="col-sm-6">
-                                    <ul class="list-unstyled">
-                                        @for($i=$first; $i<$length; $i++)
-                                            <div id="accordion">
-                                                <div class="row mb-0 text-black">
-                                                    <div class="col-1 mt-3">
-                                                        <i class="czi-book text-muted me-2"></i>
-                                                    </div>
-                                                    <div class="col-11">
-                                                        <button class="btnF btn-link collapsed text-align-direction" data-toggle="collapse"
-                                                                data-target="#collapseTwo{{ $helps[$i]['id'] }}"
-                                                                aria-expanded="false" aria-controls="collapseTwo">
-                                                            <span class="d-flex align-items-center border-bottom pb-3 mb-3">{{ $helps[$i]['question'] }}</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div id="collapseTwo{{ $helps[$i]['id'] }}" class="collapse"
-                                                     aria-labelledby="headingTwo" data-parent="#accordion">
-                                                    <div class="card-body">
-                                                        {{ $helps[$i]['answer'] }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endfor
-                                    </ul>
-                                </div>
-
-                            </div>
-                        </section>
-                    </section>
-                @else
-                    <div class="col-12">
-                        <div class="d-flex justify-content-center align-items-center pt-4">
-                            <div class="d-flex flex-column justify-content-center align-items-center gap-3">
-                                <img src="{{ dynamicStorage(path: 'public/assets/front-end/img/empty-icons/empty-faqs.svg') }}"
-                                     alt="{{ translate('brand') }}" class="img-fluid" width="100">
-                                <h5 class="text-muted fs-14 font-semi-bold text-center">{{ translate('there_is_no_FAQs') }}</h5>
-                            </div>
-                        </div>
+        <section class="container pb-5 rtl text-align-direction">
+            @if($helpCount > 0)
+                <div class="nisr-surface nisr-surface--soft mb-4">
+                    <div class="nisr-surface-head mb-0">
+                        <h2 class="nisr-section-title">{{ translate('Explore_answers_or_contact_our_team_if_you_need_more_help') }}</h2>
+                        <p class="nisr-section-copy mb-0">{{ translate('We_are_here_to_help') }}</p>
                     </div>
-                @endif
-            </div>
-        </div>
+                </div>
+
+                <div class="nisr-faq-grid">
+                    @foreach($helps as $topic)
+                        <article class="nisr-faq-item">
+                            <button class="nisr-faq-trigger collapsed" type="button"
+                                    data-toggle="collapse"
+                                    data-target="#faqCollapse{{ $topic->id }}"
+                                    aria-expanded="false"
+                                    aria-controls="faqCollapse{{ $topic->id }}">
+                                <span>{{ $topic['question'] }}</span>
+                                <span class="nisr-faq-icon" aria-hidden="true">+</span>
+                            </button>
+                            <div id="faqCollapse{{ $topic->id }}" class="collapse">
+                                <div class="nisr-faq-answer">{{ $topic['answer'] }}</div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="nisr-surface nisr-empty-state">
+                    <img src="{{ dynamicStorage(path: 'public/assets/front-end/img/empty-icons/empty-faqs.svg') }}"
+                         alt="{{ translate('FAQ') }}"
+                         class="img-fluid"
+                         width="96">
+                    <h2 class="nisr-section-title">{{ translate('there_is_no_FAQs') }}</h2>
+                </div>
+            @endif
+        </section>
     </div>
 @endsection
-
-

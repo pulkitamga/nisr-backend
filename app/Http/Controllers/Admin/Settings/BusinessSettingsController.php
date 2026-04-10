@@ -78,6 +78,7 @@ class BusinessSettingsController extends BaseController
             'footer_logo' => $this->getSettings(object: $web, type: 'company_footer_logo')->value ?? '',
             'shop_address' => $this->getSettings(object: $web, type: 'shop_address')->value ?? '',
             'company_copyright_text' => $this->getSettings(object: $web, type: 'company_copyright_text')->value ?? '',
+            'footer_description_text' => $this->getSettings(object: $web, type: 'footer_description_text')->value ?? '',
             'system_default_currency' => $this->getSettings(object: $web, type: 'system_default_currency')->value ?? '',
             'currency_symbol_position' => $this->getSettings(object: $web, type: 'currency_symbol_position')->value ?? '',
             'currency_symbol_space' => $this->getSettings(object: $web, type: 'currency_symbol_space')->value ?? '0',
@@ -104,6 +105,11 @@ class BusinessSettingsController extends BaseController
         );
         $businessSetting['company_copyright_text_translations'] = $this->getLanguageWiseConfigValues(
             value: $this->getSettings(object: $web, type: 'company_copyright_text')->value ?? '',
+            languages: $languages,
+            defaultLanguage: $defaultLanguage
+        );
+        $businessSetting['footer_description_text_translations'] = $this->getLanguageWiseConfigValues(
+            value: $this->getSettings(object: $web, type: 'footer_description_text')->value ?? '',
             languages: $languages,
             defaultLanguage: $defaultLanguage
         );
@@ -146,6 +152,11 @@ class BusinessSettingsController extends BaseController
             values: $request->input('company_copyright_text', []),
             defaultLanguage: $defaultLanguage
         );
+        $footerDescriptionText = $this->prepareLanguageWiseData(
+            languages: $request->input('footer_lang', []),
+            values: $request->input('footer_description_text', []),
+            defaultLanguage: $defaultLanguage
+        );
 
         if ($request['email_verification'] == 1) {
             $request['phone_verification'] = 0;
@@ -156,6 +167,7 @@ class BusinessSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'company_email', value: $request['company_email']);
         $this->businessSettingRepo->updateOrInsert(type: 'company_phone', value: $request['company_phone']);
         $this->businessSettingRepo->updateOrInsert(type: 'company_copyright_text', value: json_encode($copyrightText));
+        $this->businessSettingRepo->updateOrInsert(type: 'footer_description_text', value: json_encode($footerDescriptionText));
         $this->businessSettingRepo->updateOrInsert(type: 'timezone', value: $request['timezone']);
         $this->businessSettingRepo->updateOrInsert(type: 'phone_verification', value: $request['phone_verification']);
         $this->businessSettingRepo->updateOrInsert(type: 'email_verification', value: $request['email_verification']);

@@ -65,15 +65,74 @@
 
     $eCommerceLogo = getWebConfig(name: 'company_web_logo');
     $contentPages = [
-        'home' => ['label' => 'Home', 'icon' => 'tio-home'],
-        'about-us' => ['label' => 'About Us', 'icon' => 'tio-info'],
-        'career' => ['label' => 'Career', 'icon' => 'tio-briefcase'],
-        'products' => ['label' => 'Products', 'icon' => 'tio-pen'],
-        'services' => ['label' => 'Services', 'icon' => 'tio-support'],
+        'home' => ['label' => 'home', 'icon' => 'tio-home-vs-1-outlined', 'match' => 'admin/content-management/home*'],
+        'about-us' => ['label' => 'about_us', 'icon' => 'tio-info-outined', 'match' => 'admin/content-management/about-us*'],
+        'career' => ['label' => 'career', 'icon' => 'tio-briefcase-outlined', 'match' => 'admin/content-management/career*'],
+        'products' => ['label' => 'products', 'icon' => 'tio-layers-outlined', 'match' => 'admin/content-management/products*'],
+        'services' => ['label' => 'services', 'icon' => 'tio-support', 'match' => 'admin/content-management/services*'],
     ];
 
     $brandSetting = getWebConfig(name: 'product_brand');
 @endphp
+
+<style>
+    .cms-sidebar-section .nav-link {
+        border-radius: 14px;
+    }
+
+    .cms-sidebar-section .cms-sidebar-group-toggle {
+        border: 1px solid rgba(93, 156, 236, 0.18);
+        background: linear-gradient(180deg, rgba(46, 101, 189, 0.28) 0%, rgba(38, 81, 149, 0.18) 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .cms-sidebar-section .cms-sidebar-group-toggle .nav-icon {
+        opacity: 0.92;
+    }
+
+    .cms-sidebar-section .cms-sidebar-group-toggle .text-truncate {
+        font-weight: 700;
+    }
+
+    .cms-sidebar-section .cms-sidebar-item .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-inline: 1rem;
+        min-height: 2.65rem;
+        color: rgba(233, 241, 255, 0.86);
+        transition: background-color .18s ease, color .18s ease, transform .18s ease;
+    }
+
+    .cms-sidebar-section .cms-sidebar-item .nav-link:hover {
+        background: rgba(74, 128, 214, 0.18);
+        color: #ffffff;
+        transform: translateX(1px);
+    }
+
+    .cms-sidebar-section .cms-sidebar-item.active .nav-link {
+        background: rgba(125, 165, 230, 0.22);
+        color: #ffffff;
+        box-shadow: inset 0 0 0 1px rgba(187, 213, 255, 0.12);
+    }
+
+    .cms-sidebar-section .cms-sidebar-item .nav-indicator-icon {
+        display: none;
+    }
+
+    .cms-sidebar-section .cms-sidebar-item__icon {
+        font-size: 1rem;
+        opacity: 0.92;
+    }
+
+    .cms-sidebar-section .cms-sidebar-item__label {
+        flex: 1 1 auto;
+    }
+
+    html[dir="rtl"] .cms-sidebar-section .cms-sidebar-item .nav-link:hover {
+        transform: translateX(-1px);
+    }
+</style>
 
 
 <div id="sidebarMain" class="d-none">
@@ -2648,7 +2707,7 @@
                                 Request::is('admin/blog*')
                                     ? 'scroll-here'
                                     : '' }}">
-                                <small class="nav-subtitle" title="">{{ __('Content Management') }}</small>
+                                <small class="nav-subtitle" title="">{{ translate('Content_Management') }}</small>
                                 <small class="tio-more-horizontal nav-subtitle-replacer"></small>
                             </li>
 
@@ -2664,8 +2723,8 @@
                                 Request::is('admin/business-settings/' . FeaturesSection::COMPANY_RELIABILITY[URI]) ||
                                 Request::is('admin/content-management*')
                                     ? 'active'
-                                    : '' }}">
-                                <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
+                                    : '' }} cms-sidebar-section">
+                                <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle cms-sidebar-group-toggle"
                                     href="javascript:" title="{{ translate('Pages_&_Media') }}">
                                     <i class="tio-pages-outlined nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
@@ -2691,7 +2750,7 @@
 
                                     {{-- Existing 4 items --}}
                                     <li
-                                        class="nav-item {{ Request::is('admin/business-settings/' . Pages::TERMS_CONDITION[URI]) ||
+                                        class="nav-item cms-sidebar-item {{ Request::is('admin/business-settings/' . Pages::TERMS_CONDITION[URI]) ||
                                         Request::is('admin/business-settings/' . Pages::VIEW[URI] . '*') ||
                                         Request::is('admin/business-settings/' . Pages::PRIVACY_POLICY[URI]) ||
                                         Request::is('admin/business-settings/' . Pages::ABOUT_US[URI]) ||
@@ -2704,65 +2763,65 @@
                                         <a class="nav-link"
                                             href="{{ route('admin.business-settings.terms-condition') }}"
                                             title="{{ translate('business_Pages') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('business_Pages') }}</span>
+                                            <i class="tio-website cms-sidebar-item__icon"></i>
+                                            <span class="text-truncate cms-sidebar-item__label">{{ translate('business_Pages') }}</span>
                                         </a>
                                     </li>
 
                                     <li
-                                        class="navbar-vertical-aside-has-menu {{ Request::is('admin/business-settings/' . SocialMedia::VIEW[URI]) ? 'active' : '' }}">
+                                        class="navbar-vertical-aside-has-menu cms-sidebar-item {{ Request::is('admin/business-settings/' . SocialMedia::VIEW[URI]) ? 'active' : '' }}">
                                         <a class="js-navbar-vertical-aside-menu-link nav-link"
                                             href="{{ route('admin.business-settings.social-media') }}"
                                             title="{{ translate('social_Media_Links') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <i class="tio-share-vs cms-sidebar-item__icon"></i>
                                             <span
-                                                class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('social_Media_Links') }}</span>
+                                                class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate cms-sidebar-item__label">{{ translate('social_Media_Links') }}</span>
                                         </a>
                                     </li>
 
                                     <li
-                                        class="navbar-vertical-aside-has-menu {{ Request::is('admin/file-manager*') ? 'active' : '' }}">
+                                        class="navbar-vertical-aside-has-menu cms-sidebar-item {{ Request::is('admin/file-manager*') ? 'active' : '' }}">
                                         <a class="js-navbar-vertical-aside-menu-link nav-link"
                                             href="{{ route('admin.file-manager.index') }}"
                                             title="{{ translate('gallery') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <i class="tio-image cms-sidebar-item__icon"></i>
                                             <span
-                                                class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('gallery') }}</span>
+                                                class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate cms-sidebar-item__label">{{ translate('gallery') }}</span>
                                         </a>
                                     </li>
                                     @if ($web_config['business_mode'] == 'multi' && $web_config['seller_registration'])
                                         <li
-                                            class="navbar-vertical-aside-has-menu {{ Request::is('admin/business-settings/vendor-registration-settings/*') ? 'active' : '' }}">
+                                            class="navbar-vertical-aside-has-menu cms-sidebar-item {{ Request::is('admin/business-settings/vendor-registration-settings/*') ? 'active' : '' }}">
                                             <a class="js-navbar-vertical-aside-menu-link nav-link"
                                                 href="{{ route('admin.business-settings.vendor-registration-settings.index') }}"
                                                 title="{{ translate('vendor_Registration') }}">
-                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <i class="tio-shop-outlined cms-sidebar-item__icon"></i>
                                                 <span
-                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('vendor_Registration') }}</span>
+                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate cms-sidebar-item__label">{{ translate('vendor_Registration') }}</span>
                                             </a>
                                         </li>
                                     @endif
                                     <li
-                                        class="navbar-vertical-aside-has-menu {{ Request::is('admin/business-settings/wholesaler-registration-settings/*') ? 'active' : '' }}">
+                                        class="navbar-vertical-aside-has-menu cms-sidebar-item {{ Request::is('admin/business-settings/wholesaler-registration-settings/*') ? 'active' : '' }}">
                                         <a class="js-navbar-vertical-aside-menu-link nav-link"
                                             href="{{ route('admin.business-settings.wholesaler-registration-settings.index') }}"
                                             title="{{ translate('wholesaler_Registration') }}">
-                                            <span class="tio-circle nav-indicator-icon"></span>
+                                            <i class="tio-truck cms-sidebar-item__icon"></i>
                                             <span
-                                                class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('wholesaler_Registration') }}</span>
+                                                class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate cms-sidebar-item__label">{{ translate('wholesaler_Registration') }}</span>
                                         </a>
                                     </li>
 
                                     {{-- New Added Pages --}}
                                     @foreach ($contentPages as $slug => $page)
                                         <li
-                                            class="navbar-vertical-aside-has-menu {{ Request::is('admin/content-management/' . $slug) ? 'active' : '' }}">
+                                            class="navbar-vertical-aside-has-menu cms-sidebar-item {{ Request::is($page['match']) ? 'active' : '' }}">
                                             <a class="js-navbar-vertical-aside-menu-link nav-link"
                                                 href="{{ route('admin.content-management.' . $slug) }}"
                                                 title="{{ translate($page['label']) }}">
-                                                <span class="tio-circle nav-indicator-icon"></span>
+                                                <i class="{{ $page['icon'] }} cms-sidebar-item__icon"></i>
                                                 <span
-                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate($page['label']) }}</span>
+                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate cms-sidebar-item__label">{{ translate($page['label']) }}</span>
                                             </a>
                                         </li>
                                     @endforeach

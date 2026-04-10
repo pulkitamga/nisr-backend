@@ -15,6 +15,46 @@
             ->groupBy('cart_group_id');
 @endphp
 <div class="container">
+    <style>
+        .cart-shipping-card {
+            border: 1px solid #bfe7e2;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #f5fcfb 0%, #ffffff 100%);
+            box-shadow: 0 8px 20px rgba(48, 146, 136, 0.08);
+        }
+
+        .cart-shipping-card__label {
+            color: #0f766e;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .cart-shipping-trigger {
+            width: 100%;
+            border: 1px solid #7fd0c7;
+            border-radius: 12px;
+            background: #fff;
+            padding: 12px 14px;
+        }
+
+        .cart-shipping-trigger__title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .cart-shipping-trigger__meta {
+            font-size: 12px;
+            color: #5f6c7b;
+        }
+
+        .cart-shipping-select {
+            min-height: 48px;
+            border: 1px solid #7fd0c7;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+    </style>
     <h4 class="text-center mb-3 text-capitalize">{{ translate('cart_list') }}</h4>
     <form action="javascript:">
         <div class="row gy-3">
@@ -119,24 +159,21 @@
                                                     @endphp
                                                     @if($physical_product && $shippingMethod=='sellerwise_shipping' && $shipping_type == 'order_wise')
                                                         @if(count($shippings) > 0)
-                                                            <div class="border bg-white rounded custom-ps-3">
-                                                                <div class="shiiping-method-btn d-flex gap-2 p-2 flex-wrap">
-                                                                    <div
-                                                                        class="flex-middle flex-nowrap fw-semibold text-dark gap-2">
-                                                                        <i class="bi bi-truck"></i>
-                                                                        {{ translate('Shipping_Method') }}:
-                                                                    </div>
+                                                            @php($selectedShipping = $shippings->firstWhere('id', data_get($choosen_shipping, 'shipping_method_id')) ?? $shippings->first())
+                                                            @php($selectedShippingCost = data_get($choosen_shipping, 'shipping_cost', data_get($selectedShipping, 'cost')))
+                                                            <div class="cart-shipping-card p-3">
+                                                                <div class="cart-shipping-card__label mb-2">{{ translate('Shipping_Method') }}</div>
+                                                                <div class="shiiping-method-btn d-flex gap-2 flex-wrap">
                                                                     <div class="dropdown">
-                                                                        <button type="button" class="border-0 bg-transparent d-flex gap-2 align-items-center dropdown-toggle text-dark p-0" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                                <?php
-                                                                                $shippings_title = translate('choose_shipping_method');
-                                                                                foreach ($shippings as $shipping) {
-                                                                                    if ($choosen_shipping['shipping_method_id'] == $shipping['id']) {
-                                                                                        $shippings_title = ucfirst($shipping['title']) . ' ( ' . $shipping['duration'] . ' ) ' . webCurrencyConverter($shipping['cost']);
-                                                                                    }
-                                                                                }
-                                                                                ?>
-                                                                            {{ $shippings_title }}
+                                                                        <button type="button" class="cart-shipping-trigger border-0 d-flex flex-column align-items-start dropdown-toggle text-dark p-0" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                            <span class="cart-shipping-trigger__title text-capitalize">
+                                                                                {{ ucfirst(data_get($selectedShipping, 'title', translate('choose_shipping_method'))) }}
+                                                                            </span>
+                                                                            @if($selectedShipping)
+                                                                                <span class="cart-shipping-trigger__meta">
+                                                                                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                                                                                </span>
+                                                                            @endif
                                                                         </button>
                                                                         <ul class="dropdown-menu dropdown-left-auto bs-dropdown-min-width--8rem">
                                                                             @foreach($shippings as $shipping)
@@ -546,15 +583,24 @@
                                 @endif
                                 <div class="row">
                                     <div class="col-12">
-                                        <select class="form-control text-dark set-shipping-onchange">
-                                            <option>{{ translate('choose_shipping_method')}}</option>
+                                        @php($selectedShipping = $shippings->firstWhere('id', data_get($choosen_shipping, 'shipping_method_id')) ?? $shippings->first())
+                                        @php($selectedShippingCost = data_get($choosen_shipping, 'shipping_cost', data_get($selectedShipping, 'cost')))
+                                        <div class="cart-shipping-card p-3">
+                                            <div class="cart-shipping-card__label mb-2">{{ translate('Shipping_Method') }}</div>
+                                            <select class="form-control text-dark set-shipping-onchange cart-shipping-select">
                                             @foreach($shippings as $shipping)
                                                 <option
                                                         value="{{$shipping['id']}}" {{$choosen_shipping['shipping_method_id']==$shipping['id']?'selected':''}}>
                                                     {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter($shipping['cost'])}}
                                                 </option>
                                             @endforeach
-                                        </select>
+                                            </select>
+                                            @if($selectedShipping)
+                                                <div class="cart-shipping-trigger__meta mt-2">
+                                                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             @endif

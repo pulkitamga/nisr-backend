@@ -32,6 +32,9 @@ $direction = get_direction();
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/admin-modern-phase1.css') }}?v={{ @filemtime(public_path('assets/back-end/css/admin-modern-phase1.css')) }}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/css/lightbox.css')}}">
     @stack('css_or_js')
+    @if(request()->routeIs('admin.content-management.*'))
+        @include('admin-views.content-management.partials._theme-style')
+    @endif
     <script
         src="{{dynamicAsset(path: 'public/assets/back-end/vendor/hs-navbar-vertical-aside/hs-navbar-vertical-aside-mini-cache.js')}}"></script>
     <style>
@@ -64,7 +67,7 @@ $direction = get_direction();
     @endif
 </head>
 
-<body class="footer-offset admin-modern-phase1">
+<body class="footer-offset admin-modern-phase1 {{ request()->routeIs('admin.content-management.*') ? 'cms-admin-theme' : '' }}">
 
     @include('layouts.back-end.partials._front-settings')
     <span class="d-none" id="placeholderImg" data-img="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img3.png')}}"></span>
@@ -170,6 +173,9 @@ $direction = get_direction();
     </script>
     @endif
     @stack('script')
+    @if(request()->routeIs('admin.content-management.*'))
+        @include('admin-views.content-management.partials._theme-script')
+    @endif
 
     @if(Helpers::module_permission_check('order_management') && env('APP_MODE') != 'dev')
     <script>

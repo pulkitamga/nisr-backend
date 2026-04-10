@@ -397,9 +397,8 @@
                                         <label for="career-gender">{{ translate('Gender') }} <span class="text-danger">*</span></label>
                                         <select id="career-gender" name="gender" class="form-control @error('gender') is-invalid @enderror" required>
                                             <option value="">{{ translate('Select_Gender') }}</option>
-                                            <option value="male" {{ old('gender') === 'male' ? 'selected' : '' }}>{{ translate('Male') }}</option>
-                                            <option value="female" {{ old('gender') === 'female' ? 'selected' : '' }}>{{ translate('Female') }}</option>
-                                            <option value="other" {{ old('gender') === 'other' ? 'selected' : '' }}>{{ translate('Other') }}</option>
+                                            <option value="Male" {{ old('gender') === 'Male' ? 'selected' : '' }}>{{ translate('Male') }}</option>
+                                            <option value="Female" {{ old('gender') === 'Female' ? 'selected' : '' }}>{{ translate('Female') }}</option>
                                         </select>
                                         @error('gender')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>

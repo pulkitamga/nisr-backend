@@ -226,6 +226,58 @@ if (!function_exists('formatTranslationFallback')) {
     }
 }
 
+if (!function_exists('formatDateTimeForDisplayText')) {
+    function formatDateTimeForDisplayText(mixed $value, string $format = 'd M, Y h:i A', ?string $locale = null): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        try {
+            if ($value instanceof \Carbon\CarbonInterface) {
+                $date = $value->copy();
+            } elseif ($value instanceof \DateTimeInterface) {
+                $date = \Carbon\Carbon::instance($value);
+            } else {
+                $date = \Carbon\Carbon::parse($value);
+            }
+
+            $resolvedLocale = function_exists('resolveAppLocale')
+                ? resolveAppLocale($locale ?? getActiveTranslationLocale())
+                : (string)($locale ?? App::getLocale());
+
+            if ($resolvedLocale !== '') {
+                $date->locale($resolvedLocale);
+            }
+
+            return $date->translatedFormat($format);
+        } catch (\Throwable) {
+            return trim((string)$value);
+        }
+    }
+}
+
+if (!function_exists('formatDateTimeForDisplay')) {
+    function formatDateTimeForDisplay(mixed $value, string $format = 'd M, Y h:i A', ?string $locale = null): \Illuminate\Support\HtmlString
+    {
+        $formatted = formatDateTimeForDisplayText($value, $format, $locale);
+        if ($formatted === '') {
+            return new \Illuminate\Support\HtmlString('');
+        }
+
+        $resolvedLocale = function_exists('resolveAppLocale')
+            ? resolveAppLocale($locale ?? getActiveTranslationLocale())
+            : (string)($locale ?? App::getLocale());
+        $baseLocale = preg_split('/[_-]/', strtolower($resolvedLocale))[0] ?? strtolower($resolvedLocale);
+        $direction = in_array($baseLocale, ['ar', 'fa', 'ur'], true) ? 'rtl' : 'ltr';
+        $textAlign = $direction === 'rtl' ? 'right' : 'left';
+
+        return new \Illuminate\Support\HtmlString(
+            '<span dir="' . $direction . '" style="unicode-bidi:isolate;display:inline-block;text-align:' . $textAlign . ';">' . e($formatted) . '</span>'
+        );
+    }
+}
+
 if (!function_exists('getDirectoriesByGivenPath')) {
     function getDirectoriesByGivenPath(string $path): array
     {

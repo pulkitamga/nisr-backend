@@ -36,7 +36,7 @@
                         {{ webCurrencyConverter(amount: $order_details->price) }}
                         </span></small>
                     </div>
-                    <div><small class="text-muted">{{ $order_details->created_at->format('d M Y, h:i a') }}</small>
+                    <div><small class="text-muted">{!! formatDateTimeForDisplay($order_details->created_at, 'd M Y, h:i a') !!}</small>
                     </div>
                 </div>
             @else

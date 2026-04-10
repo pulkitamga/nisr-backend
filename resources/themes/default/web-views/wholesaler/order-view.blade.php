@@ -53,13 +53,12 @@
                             <div class="col-md-6">
                                 <strong>{{ translate('Approved At') }}:</strong>
                                 <span>
-                                    {{ $order->approved_at ? \Carbon\Carbon::parse($order->approved_at)->format('d M Y,
-                                    h:i A') : 'Pending' }}
+                                    {!! $order->approved_at ? formatDateTimeForDisplay($order->approved_at, 'd M Y, h:i A') : e(translate('Pending')) !!}
                                 </span>
                             </div>
                             <div class="col-md-6">
                                 <strong>{{ translate('Ordered At') }}:</strong>
-                                <span>{{ $order->created_at->format('d M Y, h:i A') }}</span>
+                                <span>{!! formatDateTimeForDisplay($order->created_at, 'd M Y, h:i A') !!}</span>
                             </div>
                         </div>
                     </div>

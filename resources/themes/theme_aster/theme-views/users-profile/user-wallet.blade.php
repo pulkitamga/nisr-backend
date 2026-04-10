@@ -65,7 +65,7 @@
                                                                 class="add-fund-swiper-card position-relative z-1 w-100 border border-primary rounded-10 p-4">
                                                                 <div class="w-100 mb-2">
                                                                     <h4 class="mb-2 text-primary">{{ $bonus->title }}</h4>
-                                                                    <p class="mb-2 text-dark">{{ translate('valid_till') }} {{ date('d M, Y',strtotime($bonus->end_date_time)) }}</p>
+                                                                    <p class="mb-2 text-dark">{{ translate('valid_till') }} {!! formatDateTimeForDisplay($bonus->end_date_time, 'd M, Y') !!}</p>
                                                                 </div>
                                                                 <div>
                                                                     @if ($bonus->bonus_type == 'percentage')
@@ -181,7 +181,7 @@
                                                     </div>
                                                     <div class="text-end">
                                                         <div
-                                                            class="text-muted mb-1">{{date('d M, Y H:i A',strtotime($item['created_at']))}} </div>
+                                                            class="text-muted mb-1">{!! formatDateTimeForDisplay($item['created_at'], 'd M, Y H:i A') !!} </div>
                                                         @if($item['debit'] != 0)
                                                             <p class="text-danger fs-12">{{translate('debit')}}</p>
                                                         @else
@@ -226,7 +226,7 @@
                                                 </div>
                                                 <div class="text-end">
                                                     <div
-                                                        class="text-muted mb-1">{{date('d M, Y H:i A',strtotime($item['created_at']))}} </div>
+                                                        class="text-muted mb-1">{!! formatDateTimeForDisplay($item['created_at'], 'd M, Y H:i A') !!} </div>
                                                     @if($item['debit'] != 0)
                                                         <p class="text-danger fs-12">{{translate('Debit')}}</p>
                                                     @else

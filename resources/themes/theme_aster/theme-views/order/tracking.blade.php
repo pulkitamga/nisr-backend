@@ -54,7 +54,7 @@
                                                 <div>
                                                     <div class="state-text">{{translate('order_placed')}}</div>
                                                     <div
-                                                        class="mt-2 fs-12">{{date('d M, Y h:i A',strtotime($orderDetails->created_at))}}</div>
+                                                        class="mt-2 fs-12">{!! formatDateTimeForDisplay($orderDetails->created_at) !!}</div>
                                                 </div>
                                             </li>
 
@@ -74,7 +74,7 @@
                                                         @if(($orderDetails['order_status']=='processing') || ($orderDetails['order_status']=='processed') || ($orderDetails['order_status']=='out_for_delivery') || ($orderDetails['order_status']=='delivered'))
                                                             <div class="mt-2 fs-12">
                                                                 @if(order_status_history($orderDetails['id'],'processing'))
-                                                                    {{date('d M, Y h:i A',strtotime(order_status_history($orderDetails['id'],'processing')))}}
+                                                                    {!! formatDateTimeForDisplay(order_status_history($orderDetails['id'],'processing')) !!}
                                                                 @endif
                                                             </div>
                                                         @endif
@@ -95,7 +95,7 @@
                                                     @if(($orderDetails['order_status']=='out_for_delivery') || ($orderDetails['order_status']=='delivered'))
                                                         <div class="mt-2 fs-12">
                                                             @if(order_status_history($orderDetails['id'],'out_for_delivery'))
-                                                                {{date('d M, Y h:i A',strtotime(order_status_history($orderDetails['id'],'out_for_delivery')))}}
+                                                                {!! formatDateTimeForDisplay(order_status_history($orderDetails['id'],'out_for_delivery')) !!}
                                                             @endif
                                                         </div>
                                                     @endif
@@ -114,7 +114,7 @@
                                                     @if($orderDetails['order_status']=='delivered')
                                                         <div class="mt-2 fs-12">
                                                             @if(order_status_history($orderDetails['id'], 'delivered'))
-                                                                {{date('d M, Y h:i A',strtotime(order_status_history($orderDetails['id'], 'delivered')))}}
+                                                                {!! formatDateTimeForDisplay(order_status_history($orderDetails['id'], 'delivered')) !!}
                                                             @endif
                                                         </div>
                                                     @endif
@@ -136,7 +136,7 @@
 
                                                     @if(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']))
                                                         <div class="mt-2 fs-12">
-                                                            {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']))) }}
+                                                            {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']), 'h:i A, d M Y') !!}
                                                         </div>
                                                     @endif
                                                 </li>
@@ -157,7 +157,7 @@
 
                                                     @if(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']))
                                                         <div class="mt-2 fs-12">
-                                                            {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']))) }}
+                                                            {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']), 'h:i A, d M Y') !!}
                                                         </div>
                                                     @endif
                                                 </li>
@@ -201,13 +201,13 @@
                                         <div class="column-2">
                                             <div>{{ translate('order_Created_At') }}</div>
                                             <div
-                                                class="fw-bold">{{date('D, d M, Y ',strtotime($orderDetails['created_at']))}}</div>
+                                                class="fw-bold">{!! formatDateTimeForDisplay($orderDetails['created_at'], 'D, d M, Y') !!}</div>
                                         </div>
                                         @if($orderDetails->delivery_man_id && $orderDetails['order_status'] !="delivered" && $orderDetails['expected_delivery_date'] )
                                             <div class="column-2">
                                                 <div class="text-capitalize">{{ translate('estimated_delivery_date') }}</div>
                                                 <div class="fw-bold">
-                                                    {{date('D, d M, Y ',strtotime($orderDetails['expected_delivery_date']))}}
+                                                    {!! formatDateTimeForDisplay($orderDetails['expected_delivery_date'], 'D, d M, Y') !!}
                                                 </div>
                                             </div>
                                         @endif

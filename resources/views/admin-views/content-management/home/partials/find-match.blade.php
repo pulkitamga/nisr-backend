@@ -2,10 +2,7 @@
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = getConfiguredDefaultLanguage();
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
-    $defaultLanguage = getConfiguredDefaultLanguage();
-if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
-}
 }
 
 $isLegacyListFormat = is_array($jsonData) && array_key_exists(0, $jsonData) && is_array($jsonData[0]);
@@ -121,4 +118,3 @@ $fallback = [
         <button type="submit" class="btn btn--primary px-5">{{ translate('Update') }}</button>
     </div>
 </form>
-

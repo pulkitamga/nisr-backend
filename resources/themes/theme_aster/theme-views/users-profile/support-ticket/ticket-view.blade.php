@@ -72,7 +72,7 @@
                             <div class="inbox_msg custom-scrollbar p-3 msg-history __h-30rem">
                                 <div class="outgoing_msg">
                                     <p class="message_text">{{ support_ticket_message_html($ticket['description']) }}</p>
-                                    <span class="time_date d-flex justify-content-end"> {{ date('h:i:A | M d',strtotime($ticket['created_at'])) }}<i
+                                    <span class="time_date d-flex justify-content-end"> {{ formatDateTimeForDisplayText($ticket['created_at'], 'h:i:A | M d') }}<i
                                             class="bi px-1"></i></span>
                                 </div>
                                 @foreach($ticket->conversations as $conversation)
@@ -91,7 +91,7 @@
                                                 </div>
                                             @endif
 
-                                            <span class="time_date d-flex justify-content-end"> {{ date('h:i:A | M d',strtotime($conversation['created_at'])) }}<i
+                                            <span class="time_date d-flex justify-content-end"> {{ formatDateTimeForDisplayText($conversation['created_at'], 'h:i:A | M d') }}<i
                                                     class="bi px-1"></i></span>
                                         </div>
                                     @else
@@ -108,7 +108,7 @@
                                                     @endforeach
                                                 </div>
                                             @endif
-                                            <span class="time_date"> {{ date('h:i:A | M d',strtotime($conversation['created_at'])) }} <i
+                                            <span class="time_date"> {{ formatDateTimeForDisplayText($conversation['created_at'], 'h:i:A | M d') }} <i
                                                     class="bi px-1"></i></span>
                                         </div>
                                     @endif

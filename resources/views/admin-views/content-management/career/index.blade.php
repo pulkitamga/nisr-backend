@@ -1,31 +1,26 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('Career Page Sections'))
+@section('title', translate('career_page_sections'))
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 
 @section('content')
 
-{{-- 👇 Same switch style for section toggle --}}
-<style>
-    .nav-link.active {
-        color: #377dff;
-        border-bottom: 2px solid;
-    }
-</style>
-
 <div class="content container-fluid">
-    {{-- 🔹 Top Section Tabs --}}
-    <div class="mb-4 d-flex flex-wrap gap-3">
-        @php
-        $sections = [
-        'current_openings' => 'Current Openings',
-        'why_join_us' => 'Why Join Us',
-        'perks' => 'Perks & Benefits',
-        ];
-        $current = request('section') ?? 'current_openings';
-        @endphp
+    @php
+    $sections = [
+    'current_openings' => translate('current_openings'),
+    'why_join_us' => translate('why_join_us'),
+    'perks' => translate('perks_and_benefits'),
+    ];
+    $current = request('section') ?? 'current_openings';
+    @endphp
 
+    <div class="cms-admin-heading">
+        <h1 class="cms-admin-heading__title h3">{{ translate('career_page_sections') }}</h1>
+    </div>
+
+    <div class="mb-4 d-flex flex-wrap gap-3">
         <div class="inline-page-menu my-2">
             <ul class="list-unstyled">
                 @foreach($sections as $key => $label)
@@ -45,7 +40,7 @@
             <div class="card-header px-sm-3 py-4 flex-grow-1">
                 <div class="d-flex justify-content-between gap-3 flex-wrap align-items-center w-100">
                     <h5 class="mb-0 text-capitalize gap-2">
-                        {{ ucfirst(str_replace('_', ' ', $current)) }} Table
+                        {{ $sections[$current] ?? translate($current) }}
                         <span class="badge badge-soft-dark radius-50 fz-12">{{ $items->total() }}</span>
                     </h5>
 
@@ -229,4 +224,3 @@
     });
 </script>
 @endpush
-

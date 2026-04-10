@@ -12,7 +12,9 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 @endphp
 
 <div class="content container-fluid">
-    <h2 class="h1 text-capitalize mb-3">{{ translate('create_blog') }}</h2>
+    <div class="cms-admin-heading">
+        <h1 class="cms-admin-heading__title h3">{{ translate('create_blog') }}</h1>
+    </div>
 
     <form action="{{ route('admin.content-management.blog.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -84,24 +86,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
             </select>
         </div>
 
-        <div class="form-group mt-4">
+        <div class="form-group mt-4 d-flex gap-2 flex-wrap">
+            <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('cancel') }}</a>
             <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
         </div>
     </form>
 </div>
-
 <script>
-    // Language Tab Switching
-    document.querySelectorAll('.form-system-language-tab').forEach(tab => {
-        tab.addEventListener('click', function () {
-            const lang = this.id.replace('-link', '');
-            document.querySelectorAll('.form-system-language-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            document.querySelectorAll('.form-system-language-form').forEach(f => f.classList.add('d-none'));
-            document.getElementById(lang + '-form').classList.remove('d-none');
-        });
-    });
-
     // Image Preview Function
     function previewImage(event) {
         const input = event.target;
@@ -127,4 +118,3 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 </script>
 
 @endsection
-

@@ -463,7 +463,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                     {{ translate('Invoice')}}
                 </div>
                 <div class="font-normal">
-                    <span class="font-bold">{{ translate('invoice_Date')}}</span> : {{date('M d ,Y',strtotime($order['created_at']))}}
+                    <span class="font-bold">{{ translate('invoice_Date')}}</span> : {!! formatDateTimeForDisplay($order['created_at'], 'M d ,Y') !!}
                 </div>
             </td>
             <td style="padding:0;text-align:{{$direction === "rtl" ? 'left' : 'right'}}">
@@ -499,7 +499,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                     </div>
                     <div class="mb-1 fz-10">
                         <span class="font-bold">{{ translate('date')}}</span> : <span
-                            class="font-normal">{{date('M d, Y',strtotime($order['created_at']))}}</span>
+                            class="font-normal">{!! formatDateTimeForDisplay($order['created_at'], 'M d, Y') !!}</span>
                     </div>
                 </td>
                 <td ></td>
@@ -609,7 +609,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                     </div>
                     <div class="fz-10">
                         <span class="font-bold">{{ translate('date')}}</span> : <span
-                            class="font-normal">{{date('M d, Y',strtotime($order['created_at']))}}</span>
+                            class="font-normal">{!! formatDateTimeForDisplay($order['created_at'], 'M d, Y') !!}</span>
                     </div>
                 </td>
                 <td class="border-bottom" style="padding:23px 8px">
@@ -825,4 +825,3 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
 </div>
 </body>
 </html>
-

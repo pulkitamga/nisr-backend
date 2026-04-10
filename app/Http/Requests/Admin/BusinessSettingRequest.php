@@ -26,6 +26,10 @@ class BusinessSettingRequest extends FormRequest
             'shop_address.*' => 'nullable|string',
             'company_copyright_text' => 'required|array',
             'company_copyright_text.*' => 'nullable|string',
+            'footer_lang' => 'nullable|array',
+            'footer_lang.*' => 'nullable|string',
+            'footer_description_text' => 'nullable|array',
+            'footer_description_text.*' => 'nullable|string',
             'currency_symbol_space' => 'required|in:0,1',
             'pagination_limit' => 'numeric',
         ];

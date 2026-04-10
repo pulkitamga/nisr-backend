@@ -19,11 +19,11 @@ use App\Models\CareerJob;
 use App\Models\CareerSection;
 use App\Models\CareerBenefits;
 use App\Models\Branch;
-use App\Models\Product;
 use App\Models\CmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\CmsProduct;
+use Illuminate\Support\Collection;
 
 class PageController extends Controller
 {
@@ -46,10 +46,12 @@ class PageController extends Controller
         $products = AboutProductSection::with('translations')->where('is_active', 1)->latest()->get();
         $mission = AboutMissionSection::with('translations')->where('is_active', 1)->latest()->first();
         $timelines = AboutTimelineSection::with('translations')->where('is_active', 1)->latest()->get();
-        $dealers = AboutDealerSection::with('translations')->where('is_active', 1)->latest()->get();
+        $dealerQuery = AboutDealerSection::with('translations')->where('is_active', 1)->latest();
+        $dealerFilterSource = (clone $dealerQuery)->get();
+        $dealers = $dealerQuery->paginate(10);
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_about_us'], value: ['status' => '1']);
 
-        return view(VIEW_FILE_NAMES['about_us'], compact('aboutUs', 'pageTitleBanner', 'robotsMetaContentData', 'heroItems', 'whoWeAre', 'products', 'mission', 'timelines', 'dealers'));
+        return view(VIEW_FILE_NAMES['about_us'], compact('aboutUs', 'pageTitleBanner', 'robotsMetaContentData', 'heroItems', 'whoWeAre', 'products', 'mission', 'timelines', 'dealers', 'dealerFilterSource'));
     }
     public function getProductShowcaseView(): View
     {
@@ -58,47 +60,52 @@ class PageController extends Controller
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
 
-        $cmsData = CmsProduct::with('translations')->where('is_active', 1)->get();
-
-
-        $products = Product::where('showcase_product', 1)
-            ->where('product_type', 'physical')
-            ->where('status', 1)
+        $cmsData = CmsProduct::with([
+                'translations',
+                'showcaseItems' => fn ($query) => $query
+                    ->with('translations')
+                    ->where('is_active', 1)
+                    ->orderBy('sort_order')
+                    ->orderBy('id'),
+            ])
+            ->where('is_active', 1)
+            ->whereIn('type', ['main_banner', 'core_product_slider', 'feature_product', 'request_card_1', 'request_card_2', 'request_card_3'])
             ->get();
 
-        $featuredProducts = Product::where('showcase_product', 1)
-            ->where('status', 1)
-            ->where('product_type', 'physical')
-            ->inRandomOrder()
-            ->take(4)
-            ->get()
-            ->shuffle();
-        session(['last_featured_refresh' => now()]);
+        $heroSection = $cmsData->firstWhere('type', 'core_product_slider');
+        $heroSlides = $heroSection?->showcaseItems?->values() ?? collect();
 
+        $featureSection = $cmsData->firstWhere('type', 'feature_product');
+        $showcaseItems = $featureSection?->showcaseItems?->values() ?? collect();
 
-        return view(VIEW_FILE_NAMES['product_showcase'], compact('robotsMetaContentData', 'products', 'featuredProducts', 'cmsData'));
+        return view(VIEW_FILE_NAMES['product_showcase'], compact('robotsMetaContentData', 'heroSlides', 'showcaseItems', 'cmsData'));
     }
     public function getServicesShowcaseView(): View
     {
-        $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'product_showcase']);
+        $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'services_showcase']);
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
 
-        $cmsData = CmsService::with('translations')->where('is_active', 1)->get();
-
-        $products = Product::with('service')
-            ->where('product_type', 'services')
-            ->where('showcase_product', 1)
-            ->where('status', 1)
+        $cmsData = CmsService::with([
+                'translations',
+                'showcaseItems' => fn ($query) => $query
+                    ->with('translations')
+                    ->where('is_active', 1)
+                    ->orderBy('sort_order')
+                    ->orderBy('id'),
+            ])
+            ->where('is_active', 1)
+            ->whereIn('type', ['main_banner', 'hero_slider', 'service_showcase', 'request_card_1', 'request_card_2', 'request_card_3'])
             ->get();
-        $featuredProducts = Product::with('service')
-            ->where('showcase_product', 1)
-            ->where('product_type', 'services')
-            ->where('status', 1)
-            ->get();
 
-        return view(VIEW_FILE_NAMES['services_showcase'], compact('robotsMetaContentData', 'products', 'featuredProducts', 'cmsData'));
+        $heroSection = $cmsData->firstWhere('type', 'hero_slider');
+        $heroSlides = $heroSection?->showcaseItems?->values() ?? collect();
+
+        $showcaseSection = $cmsData->firstWhere('type', 'service_showcase');
+        $showcaseItems = $showcaseSection?->showcaseItems?->values() ?? collect();
+
+        return view(VIEW_FILE_NAMES['services_showcase'], compact('robotsMetaContentData', 'heroSlides', 'showcaseItems', 'cmsData'));
     }
 
 
@@ -131,6 +138,27 @@ class PageController extends Controller
 
         $branchesTable = $query->paginate(10);
         return view(VIEW_FILE_NAMES['contacts'], compact('recaptcha', 'robotsMetaContentData', 'branches', 'branchesTable'));
+    }
+
+    private function applyCuratedSectionSelection(Collection $items, mixed $selectedIds, int $fallbackLimit): Collection
+    {
+        $ids = collect($selectedIds)
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return $items->take($fallbackLimit)->values();
+        }
+
+        $selectedItems = $ids
+            ->map(fn ($id) => $items->firstWhere('id', $id))
+            ->filter()
+            ->values();
+
+        return $selectedItems->isNotEmpty()
+            ? $selectedItems
+            : $items->take($fallbackLimit)->values();
     }
 
     public function getHelpTopicView(): View

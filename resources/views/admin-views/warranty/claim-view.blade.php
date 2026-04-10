@@ -312,7 +312,7 @@
                         @if(!empty($secondaryActions))
                             <div class="dropdown crm-row-actions__menu">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle crm-row-actions__toggle" type="button"
-                                    id="claim-detail-actions-{{ $claim->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                    id="claim-detail-actions-{{ $claim->id }}" data-bs-toggle="dropdown" data-toggle="dropdown" aria-haspopup="true"
                                     aria-expanded="false" aria-label="{{ translate('More actions') }}">
                                     <i class="tio-more-horizontal"></i>
                                 </button>

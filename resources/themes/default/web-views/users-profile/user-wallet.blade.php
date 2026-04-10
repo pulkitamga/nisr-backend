@@ -104,7 +104,7 @@
                                                     <div class="add-fund-carousel-card z-1 w-100 border rounded-10 p-4 ms-1">
                                                             <div>
                                                                 <h4 class="mb-2 text-accent">{{ $bonus->title }}</h4>
-                                                                <p class="mb-2 text-dark">{{ translate('valid_till') }} {{ date('d M, Y',strtotime($bonus->end_date_time)) }}</p>
+                                                                <p class="mb-2 text-dark">{{ translate('valid_till') }} {!! formatDateTimeForDisplay($bonus->end_date_time, 'd M, Y') !!}</p>
                                                             </div>
                                                             <div>
                                                                 @if ($bonus->bonus_type == 'percentage')
@@ -246,7 +246,7 @@
                                                         </div>
                                                         <div class="text-end small">
                                                             <div class="text-muted mb-1 text-nowrap text-capitalize font-semibold">
-                                                                {{date('d M, Y H:i A',strtotime($item['created_at']))}}
+                                                                {!! formatDateTimeForDisplay($item['created_at'], 'd M, Y H:i A') !!}
                                                             </div>
                                                             @if($item['debit'] != 0)
                                                                 <p class="text-danger fs-12">{{ translate('debit') }}</p>
@@ -285,7 +285,7 @@
                                                         </h6>
                                                     </div>
                                                     <div class="text-end small">
-                                                        <div class="text-muted mb-1 text-nowrap text-capitalize font-semibold">{{date('d M, Y H:i A',strtotime($item['created_at']))}}</div>
+                                                        <div class="text-muted mb-1 text-nowrap text-capitalize font-semibold">{!! formatDateTimeForDisplay($item['created_at'], 'd M, Y H:i A') !!}</div>
                                                             @if($item['debit'] != 0)
                                                                 <p class="text-danger fs-12 m-0">{{ translate('debit') }}</p>
                                                             @else

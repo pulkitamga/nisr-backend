@@ -226,6 +226,11 @@ class AboutController extends Controller
             $input['image'] = 'about/' . $imageName;
         }
 
+        if ($section === 'dealers') {
+            $input['show_partner_type_filter'] = $request->boolean('show_partner_type_filter');
+            $input['show_location_filter'] = $request->boolean('show_location_filter');
+        }
+
         $model = new $modelClass;
         $model->fill($input);
         $model->save();
@@ -382,6 +387,11 @@ class AboutController extends Controller
             }
             $imageName = ImageManager::upload('about/', 'webp', $request->file('image'));
             $data['image'] = 'about/' . $imageName;
+        }
+
+        if ($section === 'dealers') {
+            $data['show_partner_type_filter'] = $request->boolean('show_partner_type_filter');
+            $data['show_location_filter'] = $request->boolean('show_location_filter');
         }
 
         $model->fill($data);

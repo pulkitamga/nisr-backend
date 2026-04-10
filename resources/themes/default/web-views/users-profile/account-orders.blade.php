@@ -78,7 +78,7 @@
                                                         {{ $order->order_details_sum_qty }} {{ translate('items') }}
                                                     </span>
                                                     <div class="text-secondary-50 fs-12 font-semibold mt-1">
-                                                        {{date('d M, Y h:i A',strtotime($order['created_at'])) }}
+                                                        {!! formatDateTimeForDisplay($order['created_at']) !!}
                                                     </div>
                                                 </div>
                                             </div>
@@ -171,7 +171,7 @@
                                             </h6>
                                             <div class="d-flex flex-column gap-1 fs-12">
                                                 <span class="fs-12 font-weight-normal">{{ $order->order_details_sum_qty }} {{ translate('items') }}</span>
-                                                <div class="fs-11 font-semibold text-secondary-50">{{date('d M, Y h:i A',strtotime($order['created_at'])) }}</div>
+                                                <div class="fs-11 font-semibold text-secondary-50">{!! formatDateTimeForDisplay($order['created_at']) !!}</div>
                                                 <div class="d-flex gap-2 align-items-center">
                                                     <div class="text-nowrap fs-11 font-semibold text-secondary-50">{{ translate('total') }} :</div>
                                                     <div class="text-dark fs-13 font-weight-bold">{{ webCurrencyConverter(amount: $order['order_amount']) }}</div>

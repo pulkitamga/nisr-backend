@@ -600,6 +600,8 @@ class WebController extends Controller
 
         $cartItems = Cart::where('customer_id', auth('customer')->id())->get();
 
+        CartManager::ensureDefaultShippingSelection($request);
+
         $response = self::checkValidationForCheckoutPages($request);
         if ($response['status'] == 0) {
             foreach ($response['message'] as $message) {
@@ -1144,6 +1146,8 @@ class WebController extends Controller
             (auth('customer')->check() && Cart::where(['customer_id' => auth('customer')->id()])->count() > 0)
             || (getWebConfig(name: 'guest_checkout') && session()->has('guest_id') && session('guest_id'))
         ) {
+            CartManager::ensureDefaultShippingSelection($request);
+
             $topRatedShops = [];
             $newSellers = [];
             $currentDate = date('Y-m-d H:i:s');
@@ -1638,6 +1642,8 @@ class WebController extends Controller
 
     public function checkValidationForCheckoutPages(Request $request): array
     {
+        CartManager::ensureDefaultShippingSelection($request, 'checked');
+
         $response['status'] = 1;
         $response['physical_product_view'] = false;
         $message = [];

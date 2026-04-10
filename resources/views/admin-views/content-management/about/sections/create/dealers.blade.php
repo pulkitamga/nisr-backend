@@ -1,6 +1,10 @@
 @extends('layouts.back-end.app')
 @section('title', translate('create_dealer_section'))
 
+@push('css_or_js')
+<link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
+@endpush
+
 @section('content')
 @php
 $language = getWebConfig(name: 'pnc_language') ?? null;
@@ -20,6 +24,23 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
             <form action="{{ route('admin.content-management.about-us.store', ['section' => 'dealers']) }}"
                 method="POST" enctype="multipart/form-data">
                 @csrf
+
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-body">
+                        <h4 class="mb-2">{{ translate('Quick_filters') }}</h4>
+                        <p class="text-muted mb-3">{{ translate('Enable_the_values_you_want_to_appear_as_quick_filters_on_the_about_page') }}</p>
+                        <div class="d-flex flex-wrap gap-4">
+                            <label class="d-flex align-items-center gap-2 mb-0">
+                                <input type="checkbox" name="show_partner_type_filter" value="1" {{ old('show_partner_type_filter') ? 'checked' : '' }}>
+                                <span>{{ translate('Show_partner_type_in_quick_filters') }}</span>
+                            </label>
+                            <label class="d-flex align-items-center gap-2 mb-0">
+                                <input type="checkbox" name="show_location_filter" value="1" {{ old('show_location_filter') ? 'checked' : '' }}>
+                                <span>{{ translate('Show_location_in_quick_filters') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
                 {{-- Language Tabs --}}
                 @php
@@ -66,8 +87,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                     <div class="form-group">
                         <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
-                        <textarea name="description[]" class="form-control" rows="4"
-                            placeholder="{{ translate('Enter Description') }}"></textarea>
+                        <textarea name="description[]" class="form-control summernote" rows="6">{!! old('description.' . $loop->index, '') !!}</textarea>
                     </div>
 
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
@@ -97,6 +117,8 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     </div>
 </div>
 
+@push('script')
+<script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.js') }}"></script>
 <script>
     // Language tab switching logic
     document.querySelectorAll('.form-system-language-tab').forEach(function(tab) {
@@ -131,5 +153,26 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
         reader.readAsDataURL(file);
     }
+
+    $(document).ready(function () {
+        $('.summernote').each(function () {
+            const $editor = $(this);
+            if ($editor.next('.note-editor').length) {
+                return;
+            }
+
+            $editor.summernote({
+                height: 220,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link']],
+                    ['view', ['codeview']]
+                ]
+            });
+        });
+    });
 </script>
+@endpush
 @endsection

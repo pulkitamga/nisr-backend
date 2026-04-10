@@ -7,9 +7,9 @@
         @if ($message->sent_by_seller || $message->sent_by_admin || $message->sent_by_delivery_man)
             <div class="incoming_msg d-flex" data-toggle="tooltip"
                  @if($message->created_at->diffInDays() > 6)
-                     title="{{ $message->created_at->format('M-d-Y H:i:s') }}"
+                     title="{{ formatDateTimeForDisplayText($message->created_at, 'M-d-Y H:i:s') }}"
                  @else
-                     title="{{ $message->created_at->format('l H:i:s') }}"
+                     title="{{ formatDateTimeForDisplayText($message->created_at, 'l H:i:s') }}"
                 @endif
             >
                 <div class="incoming_msg_img">
@@ -71,9 +71,9 @@
         @else
             <div class="outgoing_msg" data-toggle="tooltip"
                  @if($message->created_at->diffInDays() > 6)
-                     title="{{ $message->created_at->format('M-d-Y H:i:s') }}"
+                     title="{{ formatDateTimeForDisplayText($message->created_at, 'M-d-Y H:i:s') }}"
                  @else
-                     title="{{ $message->created_at->format('l H:i:s') }}"
+                     title="{{ formatDateTimeForDisplayText($message->created_at, 'l H:i:s') }}"
                 @endif
             >
                 <div class="send_msg">

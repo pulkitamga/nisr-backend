@@ -2,10 +2,7 @@
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = getConfiguredDefaultLanguage();
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
-    $defaultLanguage = getConfiguredDefaultLanguage();
-if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
-}
 }
 @endphp
 
@@ -22,15 +19,6 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     </li>
     @endforeach
 </ul>
-
-
-
-@php
-$headingTranslations = $translations[$lang]['heading'] ?? [];
-$paragraphTranslations = $translations[$lang]['paragraph'] ?? [];
-$translatedHeading = $headingTranslations ?? '';
-$translatedParagraph = $paragraphTranslations ?? '';
-@endphp
 <form action="{{ route('admin.content-management.category.update') }}" method="POST">
     @csrf
     @method('PUT')
@@ -43,13 +31,13 @@ $translatedParagraph = $paragraphTranslations ?? '';
 
             <div class="col-lg-6">
                 <label class="title-color">{{ translate('heading') }}({{ strtoupper($lang) }})</label>
-                <input type="text" name="heading[]" class="form-control" value="{{ $lang == $defaultLanguage ? $jsonData['heading'] : (is_array($translatedHeading) ? ($translatedHeading[$lang] ?? '') : $translatedHeading) }}"
+                <input type="text" name="heading[]" class="form-control" value="{{ $lang == $defaultLanguage ? ($jsonData['heading'] ?? '') : ($translations[$lang]['heading'] ?? '') }}"
                     placeholder="{{ translate('enter_heading') }}">
             </div>
 
             <div class="col-lg-6">
                 <label class="title-color">{{ translate('sub_heading') }}({{ strtoupper($lang) }})</label>
-                <input type="text" name="paragraph[]" class="form-control " value="{{ $lang == $defaultLanguage ? $jsonData['paragraph'] : (is_array($translatedParagraph) ? ($translatedParagraph[$lang] ?? '') : $translatedParagraph) }}"
+                <input type="text" name="paragraph[]" class="form-control " value="{{ $lang == $defaultLanguage ? ($jsonData['paragraph'] ?? '') : ($translations[$lang]['paragraph'] ?? '') }}"
 
                     placeholder="{{ translate('enter_paragraph') }}">
             </div>
@@ -66,4 +54,3 @@ $translatedParagraph = $paragraphTranslations ?? '';
         <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
     </div>
 </form>
-

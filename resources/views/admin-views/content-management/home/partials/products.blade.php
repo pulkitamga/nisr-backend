@@ -2,10 +2,7 @@
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = getConfiguredDefaultLanguage();
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
-    $defaultLanguage = getConfiguredDefaultLanguage();
-if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
-}
 }
 
 @endphp
@@ -26,13 +23,6 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
 @foreach($jsonData as $index => $item)
 
-
-@php
-$headingTranslations = $translations[$lang]['section_title'] ?? [];
-$paragraphTranslations = $translations[$lang]['section_paragraph'] ?? [];
-$translatedHeading = $headingTranslations ?? '';
-$translatedParagraph = $paragraphTranslations ?? '';
-@endphp
 <form action="{{ route('admin.content-management.Products.update', ['index' => $index]) }}" method="POST">
     @csrf
     @method('PUT')
@@ -45,13 +35,13 @@ $translatedParagraph = $paragraphTranslations ?? '';
 
             <div class="col-lg-6">
                 <label class="title-color">{{ translate('heading') }}({{ strtoupper($lang) }})</label>
-                <input type="text" name="section_title[]" class="form-control"  value="{{ $lang == $defaultLanguage ? $item['section_title'] : (is_array($translatedHeading) ? ($translatedHeading[$lang] ?? '') : $translatedHeading) }}"
+                <input type="text" name="section_title[]" class="form-control"  value="{{ $lang == $defaultLanguage ? ($item['section_title'] ?? '') : ($translations[$lang]['section_title'] ?? '') }}"
                     placeholder="{{ translate('enter_heading') }}">
             </div>
 
             <div class="col-lg-6">
                 <label class="title-color">{{ translate('sub_heading') }}({{ strtoupper($lang) }})</label>
-                <input type="text" name="section_paragraph[]" class="form-control "                     value="{{ $lang == $defaultLanguage ? $item['section_paragraph'] : (is_array($translatedParagraph) ? ($translatedParagraph[$lang] ?? '') : $translatedParagraph) }}"
+                <input type="text" name="section_paragraph[]" class="form-control "                     value="{{ $lang == $defaultLanguage ? ($item['section_paragraph'] ?? '') : ($translations[$lang]['section_paragraph'] ?? '') }}"
 
                     placeholder="{{ translate('enter_paragraph') }}">
             </div>

@@ -1,31 +1,25 @@
-{{-- resources/views/admin/cms/about/index.blade.php --}}
 @extends('layouts.back-end.app')
 
-@section('title', translate('About Page Sections'))
+@section('title', translate('about_page_sections'))
 
 @section('content')
 
-{{-- 👇 Same switch style --}}
-<style>
-    .nav-link.active {
-        color: #377dff;
-        border-bottom: 2px solid;
-    }
-</style>
-
 <div class="content container-fluid">
-    {{-- 🔹 Top Section Tabs --}}
     @php
     $sections = [
-    'hero' => 'Hero Section',
-    'who_we_are' => 'Who We Are',
-    'products' => 'Products',
-    'mission' => 'Mission',
-    'timeline' => 'Timeline',
-    'dealers' => 'Dealers',
+    'hero' => translate('hero_section'),
+    'who_we_are' => translate('who_we_are'),
+    'products' => translate('products'),
+    'mission' => translate('mission'),
+    'timeline' => translate('timeline'),
+    'dealers' => translate('dealers'),
     ];
     $current = request('section') ?? 'hero';
     @endphp
+
+    <div class="cms-admin-heading">
+        <h1 class="cms-admin-heading__title h3">{{ translate('about_page_sections') }}</h1>
+    </div>
 
     <div class="inline-page-menu my-2">
         <ul class="list-unstyled">
@@ -47,7 +41,7 @@
                 <div class="d-flex justify-content-between gap-3 flex-wrap align-items-center">
                     <div>
                         <h5 class="mb-0 text-capitalize gap-2">
-                            {{ ucfirst(str_replace('_', ' ', $current)) }} Table
+                            {{ $sections[$current] ?? translate($current) }}
                             <span class="badge badge-soft-dark radius-50 fz-12">{{ $items->total() }}</span>
                         </h5>
                     </div>
@@ -277,4 +271,3 @@
     }
 </script>
 @endpush
-

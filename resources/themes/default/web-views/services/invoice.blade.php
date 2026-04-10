@@ -22,7 +22,7 @@
         <div>
             <h2 class="text-2xl font-bold">{{ translate('Quotation') }}</h2>
             <p class="text-gray-500">{{ translate('Quotation') }} #: {{ $order->id }}</p>
-            <p class="text-gray-500">{{ translate('Date') }}: {{ $order->created_at->format('d M Y') }}</p>
+            <p class="text-gray-500">{{ translate('Date') }}: {!! formatDateTimeForDisplay($order->created_at, 'd M Y') !!}</p>
         </div>
         <div class="text-end">
             <h2 class="line-height-1 text-bold text-sm-left">{{ getWebConfig('company_name') }}</h2>

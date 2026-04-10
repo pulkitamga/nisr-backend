@@ -38,7 +38,7 @@
                         <h5 class="card-title">{{ $order->product->name }}</h5>
                         <p class="mb-1">{{ translate('Quantity') }}: <strong>{{ $order->product_quantity }}</strong></p>
                         <p class="mb-1">{{ translate('Price') }}: <strong>{{ webCurrencyConverter($order->base_price) }}</strong></p>
-                        <p class="mb-1">{{ translate('Order Date') }}: {{ $order->created_at->format('d M Y, h:i A') }}</p>
+                        <p class="mb-1">{{ translate('Order Date') }}: {!! formatDateTimeForDisplay($order->created_at, 'd M Y, h:i A') !!}</p>
 
                         <a href="{{ route('wholesale.invoice', ['order_id' => $order->id]) }}" class="btn btn-sm btn-primary mt-2" target="_blank">
                             {{ translate('View Quotation') }}

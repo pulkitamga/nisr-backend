@@ -9,9 +9,9 @@
                 @if($message->message)
                     <p class="message_text" data-bs-toggle="tooltip"
                        @if($message->created_at->diffInDays() > 6)
-                           data-bs-title="{{ $message->created_at->format('M-d-Y h:i a') }}"
+                           data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'M-d-Y h:i a') }}"
                        @else
-                           data-bs-title="{{ $message->created_at->format('l h:i a') }}"
+                           data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'l h:i a') }}"
                         @endif
                     >
                         {{$message->message}}
@@ -24,7 +24,7 @@
                             @if(in_array($extension,GlobalConstant::DOCUMENT_EXTENSION))
                                 @php($icon = in_array($extension,['.pdf','.doc','docx','.txt']) ? 'word-icon': 'default-icon')
                                 @php($downloadPath = $attachment['path'])
-                                <div class="d-flex gap-2 mt-2" data-bs-toggle="tooltip" data-bs-title="{{ date('h:i:A | M d',strtotime($message->created_at)) }}">
+                                <div class="d-flex gap-2 mt-2" data-bs-toggle="tooltip" data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'h:i:A | M d') }}">
                                     <a href="{{$downloadPath}}" target="_blank">
                                         <div class="uploaded-file-item gap-2"><img
                                                 src="{{dynamicAsset('public/assets/front-end/img/word-icon/'.$icon.'.png')}}"
@@ -40,7 +40,7 @@
                                 </div>
                             @else
                                 <div class="position-relative overflow-hidden rounded-16px {{$index > 3 ? 'd-none' : ''}}">
-                                    <a class="inbox-image-element custom-image-popup rounded-16px" href="{{getStorageImages(path: $attachment, type:'product') }}" data-bs-title="{{ date('h:i:A | M d',strtotime($message->created_at)) }}">
+                                    <a class="inbox-image-element custom-image-popup rounded-16px" href="{{getStorageImages(path: $attachment, type:'product') }}" data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'h:i:A | M d') }}">
                                         <img loading="lazy" src="{{ getStorageImages(path: $attachment, type:'product') }}"
                                              class="rounded" alt="{{ translate('verification') }}">
                                     </a>
@@ -62,9 +62,9 @@
                 @if($message->message)
                     <p class="message_text"  data-bs-toggle="tooltip"
                        @if($message->created_at->diffInDays() > 6)
-                           data-bs-title="{{ $message->created_at->format('M-d-Y h:i a') }}"
+                           data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'M-d-Y h:i a') }}"
                        @else
-                           data-bs-title="{{ $message->created_at->format('l h:i a') }}"
+                           data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'l h:i a') }}"
                         @endif
                     >
                         {{$message->message}}
@@ -77,7 +77,7 @@
                             @if(in_array($extension,GlobalConstant::DOCUMENT_EXTENSION))
                                 @php($icon = in_array($extension,['.pdf','.doc','docx','.txt']) ? 'word-icon': 'default-icon')
                                 @php($downloadPath =$attachment['path'])
-                                <div class="d-flex gap-2 mt-2" data-bs-toggle="tooltip" data-bs-title="{{ date('h:i:A | M d',strtotime($message->created_at)) }}">
+                                <div class="d-flex gap-2 mt-2" data-bs-toggle="tooltip" data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'h:i:A | M d') }}">
                                     <a href="{{$downloadPath}}" target="_blank">
                                         <div class="uploaded-file-item gap-2"><img
                                                 src="{{dynamicAsset('public/assets/front-end/img/word-icon/'.$icon.'.png')}}"
@@ -93,7 +93,7 @@
                                 </div>
                             @else
                                 <div class="position-relative overflow-hidden rounded-16px {{$secondIndex > 3 ? 'd-none' : ''}}">
-                                    <a class="inbox-image-element custom-image-popup rounded-16px" href="{{ getStorageImages(path: $attachment, type:'product') }}" data-bs-toggle="tooltip" data-bs-title="{{ date('h:i:A | M d',strtotime($message->created_at)) }}">
+                                    <a class="inbox-image-element custom-image-popup rounded-16px" href="{{ getStorageImages(path: $attachment, type:'product') }}" data-bs-toggle="tooltip" data-bs-title="{{ formatDateTimeForDisplayText($message->created_at, 'h:i:A | M d') }}">
                                         <img loading="lazy" src="{{ getStorageImages(path: $attachment, type:'product') }}"
                                              class="rounded" alt="{{ translate('verification') }}">
                                     </a>

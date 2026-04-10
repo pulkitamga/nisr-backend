@@ -2,10 +2,7 @@
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = getConfiguredDefaultLanguage();
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
-    $defaultLanguage = getConfiguredDefaultLanguage();
-if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
-}
 }
 @endphp
 
@@ -271,16 +268,6 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
             }
         });
 
-        // Language tab switching inside modals
-        $(document).on('click', '.form-system-language-tab', function() {
-            const lang = $(this).attr('id').replace('-link', '');
-            $(this).closest('.nav-tabs').find('.form-system-language-tab').removeClass('active');
-            $(this).closest('.modal-content').find('.form-system-language-form').addClass('d-none');
-            $(this).addClass('active');
-            $(this).closest('.modal-content').find('#' + lang + '-form').removeClass('d-none');
-        });
     });
 </script>
 @endpush
-
-

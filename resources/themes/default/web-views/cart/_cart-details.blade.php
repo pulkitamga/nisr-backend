@@ -24,6 +24,72 @@
     .d-none_exchange_qty {
         display: none !important;
     }
+
+    .checkout-shipping-card {
+        border: 1px solid #bfe7e2;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #f5fcfb 0%, #ffffff 100%);
+        box-shadow: 0 8px 20px rgba(48, 146, 136, 0.08);
+    }
+
+    .checkout-shipping-card__label {
+        color: #0f766e;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+
+    .checkout-shipping-trigger {
+        width: 100%;
+        border: 1px solid #7fd0c7;
+        border-radius: 12px;
+        background-color: #fff;
+        padding: 12px 14px;
+        text-decoration: none;
+        box-shadow: inset 0 0 0 1px rgba(127, 208, 199, 0.18);
+    }
+
+    .checkout-shipping-trigger:hover,
+    .checkout-shipping-trigger:focus {
+        text-decoration: none;
+        border-color: #30a39a;
+    }
+
+    .checkout-shipping-trigger__icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        background: rgba(48, 163, 154, 0.12);
+        color: #14958a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex: 0 0 42px;
+    }
+
+    .checkout-shipping-trigger__title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1.4;
+    }
+
+    .checkout-shipping-trigger__meta {
+        font-size: 12px;
+        color: #5f6c7b;
+        line-height: 1.4;
+    }
+
+    .checkout-shipping-select {
+        min-height: 48px;
+        border: 1px solid #7fd0c7;
+        border-radius: 12px;
+        background-color: #fff;
+        font-weight: 700;
+        color: #1f2937;
+        box-shadow: inset 0 0 0 1px rgba(127, 208, 199, 0.18);
+    }
 </style>
 <div class="row g-3 mx-max-md-0 mb-3">
     <section class="col-lg-8 px-max-md-0">
@@ -188,23 +254,25 @@
                             @if(auth('customer')->check() &&
                             auth('customer')->user()->user_type == 0 && count($shippings) > 0)
                             <div class="">
+                                @php($selectedShipping = $shippings->firstWhere('id', data_get($chosenShipping, 'shipping_method_id')) ?? $shippings->first())
+                                @php($selectedShippingCost = data_get($chosenShipping, 'shipping_cost', data_get($selectedShipping, 'cost')))
                                 <div class="dropdown">
-                                    <a class="bg-white border select-method-border rounded py-2 text-dark d-flex flex-wrap align-items-center"
+                                    <a class="checkout-shipping-trigger d-flex align-items-center gap-3"
                                         href="javascript:" data-toggle="dropdown">
-                                        <?php
-                                        $shippingTitle = translate('choose_shipping_method');
-                                        foreach ($shippings as $shipping) {
-                                            if ($chosenShipping['shipping_method_id'] == $shipping['id']) {
-                                                $shippingTitle = ucfirst($shipping['title']) . ' ( ' . $shipping['duration'] . ' ) ' . webCurrencyConverter($shipping['cost']);
-                                            }
-                                        }
-                                        ?>
-                                        <div class="flex-middle flex-nowrap fw-semibold text-dark px-2 text-capitalize">
+                                        <span class="checkout-shipping-trigger__icon">
                                             <i class="fa fa-truck"></i>
-                                            {{ translate('shipping_method') }} :
-                                        </div>
-                                        <span class="px-1 max-width-200px text-nowrap text-truncate">{{ $shippingTitle
-                                            }}</span>
+                                        </span>
+                                        <span class="d-flex flex-column min-width-0">
+                                            <span class="checkout-shipping-card__label">{{ translate('shipping_method') }}</span>
+                                            <span class="checkout-shipping-trigger__title text-capitalize text-truncate">
+                                                {{ ucfirst(data_get($selectedShipping, 'title', translate('choose_shipping_method'))) }}
+                                            </span>
+                                            @if($selectedShipping)
+                                            <span class="checkout-shipping-trigger__meta">
+                                                {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                                            </span>
+                                            @endif
+                                        </span>
                                     </a>
                                     <div class="dropdown-menu m-0 pb-0 w-100">
                                         <ul class="list-unstyled mb-0">
@@ -689,20 +757,25 @@
             @if($isPhysicalProductExist && $shippingMethod=='sellerwise_shipping' && $shipping_type == 'order_wise')
 
             @if(count($shippings) > 0)
-            <div class="d-sm-flex">
+            @php($selectedShipping = $shippings->firstWhere('id', data_get($chosenShipping, 'shipping_method_id')) ?? $shippings->first())
+            @php($selectedShippingCost = data_get($chosenShipping, 'shipping_cost', data_get($selectedShipping, 'cost')))
+            <div class="checkout-shipping-card p-3">
+                <div class="checkout-shipping-card__label mb-2">{{ translate('shipping_method') }}</div>
                 <select
-                    class="form-control fs-13 font-weight-bold text-capitalize border-aliceblue max-240px action-set-shipping-id"
+                    class="form-control fs-13 font-weight-bold text-capitalize border-aliceblue max-240px action-set-shipping-id checkout-shipping-select"
                     data-product-id="{{ $cartItem['cart_group_id'] }}">
-                    <option>{{ translate('choose_shipping_method')}}</option>
                     @foreach($shippings as $shipping)
                     <option value="{{$shipping['id']}}"
                         {{$chosenShipping['shipping_method_id']==$shipping['id']?'selected':''}}>
-                        {{ translate('shipping_method')}}
-                        : {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter(amount:
-                        $shipping['cost'])}}
+                        {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter(amount: $shipping['cost'])}}
                     </option>
                     @endforeach
                 </select>
+                @if($selectedShipping)
+                <div class="checkout-shipping-trigger__meta mt-2 text-center">
+                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                </div>
+                @endif
             </div>
             @else
             <span class="text-danger d-flex align-items-center gap-1 fs-14 font-semi-bold user-select-none"
@@ -965,17 +1038,24 @@ $shipping_type = isset($admin_shipping) == true ? $admin_shipping->shipping_type
 <div class="px-3 px-md-0 mb-3">
     <div class="row">
         <div class="col-12">
-            <select class="form-control border-aliceblue action-set-shipping-id" data-product-id="all_cart_group">
-                <option>{{ translate('choose_shipping_method')}}</option>
+            @php($selectedShipping = $shippings->firstWhere('id', data_get($chosenShipping, 'shipping_method_id')) ?? $shippings->first())
+            @php($selectedShippingCost = data_get($chosenShipping, 'shipping_cost', data_get($selectedShipping, 'cost')))
+            <div class="checkout-shipping-card p-3">
+                <div class="checkout-shipping-card__label mb-2">{{ translate('shipping_method') }}</div>
+                <select class="form-control border-aliceblue action-set-shipping-id checkout-shipping-select" data-product-id="all_cart_group">
                 @foreach($shippings as $shipping)
                 <option value="{{$shipping['id']}}"
                     {{$chosenShipping['shipping_method_id']==$shipping['id']?'selected':''}}>
-                    {{ translate('shipping_method')}}
-                    : {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter(amount:
-                    $shipping['cost'])}}
+                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter(amount: $shipping['cost'])}}
                 </option>
                 @endforeach
-            </select>
+                </select>
+                @if($selectedShipping)
+                <div class="checkout-shipping-trigger__meta mt-2">
+                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                </div>
+                @endif
+            </div>
         </div>
     </div>
 </div>

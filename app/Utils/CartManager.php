@@ -25,6 +25,24 @@ use Illuminate\Support\Str;
 
 class CartManager
 {
+    private static function resolveShippingTypeForCartItem(Cart $cart): string
+    {
+        $shippingMethod = getWebConfig(name: 'shipping_method');
+
+        if ($shippingMethod == 'inhouse_shipping') {
+            $adminShipping = ShippingType::where('seller_id', 0)->first();
+            return isset($adminShipping) ? $adminShipping->shipping_type : 'order_wise';
+        }
+
+        if ($cart->seller_is == 'admin') {
+            $adminShipping = ShippingType::where('seller_id', 0)->first();
+            return isset($adminShipping) ? $adminShipping->shipping_type : 'order_wise';
+        }
+
+        $sellerShipping = ShippingType::where('seller_id', $cart->seller_id)->first();
+        return isset($sellerShipping) ? $sellerShipping->shipping_type : 'order_wise';
+    }
+
     private static function resolveShippingTypeForProduct(Product $product): string
     {
         $shippingMethod = getWebConfig(name: 'shipping_method');
@@ -41,6 +59,61 @@ class CartManager
 
         $sellerShipping = ShippingType::where('seller_id', $product->user_id)->first();
         return isset($sellerShipping) ? $sellerShipping->shipping_type : 'order_wise';
+    }
+
+    public static function ensureDefaultShippingSelection($request = null, $type = 'checked'): void
+    {
+        $cartGroupIds = self::get_cart_group_ids(request: $request, type: $type);
+
+        foreach ($cartGroupIds as $cartGroupId) {
+            $cartGroupItems = self::getCartListQuery(groupId: $cartGroupId, type: $type);
+            if ($cartGroupItems->isEmpty()) {
+                continue;
+            }
+
+            $hasPhysicalProduct = $cartGroupItems->contains(function ($cartItem) {
+                return $cartItem->product_type === 'physical';
+            });
+
+            if (!$hasPhysicalProduct) {
+                continue;
+            }
+
+            $groupOwnerCart = $cartGroupItems->first();
+            if (!$groupOwnerCart || self::resolveShippingTypeForCartItem($groupOwnerCart) !== 'order_wise') {
+                continue;
+            }
+
+            $shippingMethods = Helpers::getShippingMethods($groupOwnerCart->seller_id, $groupOwnerCart->seller_is)
+                ->sortBy('id')
+                ->values();
+            if ($shippingMethods->isEmpty()) {
+                continue;
+            }
+
+            $cartShipping = CartShipping::where('cart_group_id', $cartGroupId)->first();
+            $selectedShippingMethod = $shippingMethods->firstWhere('id', $cartShipping?->shipping_method_id) ?? $shippingMethods->first();
+
+            if (!$selectedShippingMethod) {
+                continue;
+            }
+
+            if (
+                $cartShipping
+                && (int) $cartShipping->shipping_method_id === (int) $selectedShippingMethod->id
+                && (float) $cartShipping->shipping_cost === (float) $selectedShippingMethod->cost
+            ) {
+                continue;
+            }
+
+            CartShipping::updateOrCreate(
+                ['cart_group_id' => $cartGroupId],
+                [
+                    'shipping_method_id' => $selectedShippingMethod->id,
+                    'shipping_cost' => $selectedShippingMethod->cost,
+                ]
+            );
+        }
     }
 
     public static function resolveCartOwnerContext($request = null): array

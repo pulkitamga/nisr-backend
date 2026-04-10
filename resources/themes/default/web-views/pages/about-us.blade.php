@@ -307,68 +307,218 @@
 
     .about-dealers-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .about-dealer-filters {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1.35rem;
+        padding: 1rem 1.1rem;
+        border: 1px solid #deebea;
+        border-radius: 1.2rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbfb 100%);
+    }
+
+    .about-dealer-filters__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: .8rem;
+    }
+
+    .about-dealer-filters__title {
+        margin: 0;
+        color: #17393f;
+        font-size: .98rem;
+        font-weight: 700;
+    }
+
+    .about-dealer-filters__groups {
+        display: grid;
         gap: .85rem;
+    }
+
+    .about-dealer-filter-group {
+        display: grid;
+        gap: .55rem;
+    }
+
+    .about-dealer-filter-group__label {
+        color: #5d777c;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .about-dealer-filter-group__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+    }
+
+    .about-dealer-filter-chip {
+        appearance: none;
+        border: 1px solid #d7e7e5;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #2d4e54;
+        padding: .52rem .92rem;
+        font-size: .86rem;
+        font-weight: 600;
+        line-height: 1;
+        transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+
+    .about-dealer-filter-chip:hover,
+    .about-dealer-filter-chip:focus-visible {
+        border-color: #8fcfc9;
+        color: #14625f;
+        box-shadow: 0 0 0 .18rem rgba(18, 157, 145, 0.12);
+        outline: none;
+    }
+
+    .about-dealer-filter-chip.is-active {
+        border-color: #129d91;
+        background: #129d91;
+        color: #ffffff;
+        box-shadow: 0 .55rem 1.1rem rgba(18, 157, 145, 0.16);
+    }
+
+    .about-dealer-filter-clear {
+        width: fit-content;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #12857f;
+        font-size: .86rem;
+        font-weight: 700;
+    }
+
+    .about-dealer-filter-clear:hover,
+    .about-dealer-filter-clear:focus-visible {
+        color: #0f6c67;
+        text-decoration: underline;
+        outline: none;
+    }
+
+    .about-dealer-filter-empty {
+        display: none;
+    }
+
+    .about-dealers-pagination {
+        margin-top: 1.35rem;
+    }
+
+    .about-dealers-pagination nav {
+        display: flex;
+        justify-content: center;
     }
 
     .about-dealer-card {
         display: grid;
-        grid-template-columns: 120px minmax(0, 1fr);
+        grid-template-columns: 282px minmax(0, 1fr);
         align-items: stretch;
+        border-radius: 1.45rem;
     }
 
     .about-dealer-card img {
         height: 100%;
-        min-height: 100%;
+        min-height: 220px;
         object-fit: cover;
     }
 
     .about-dealer-card__body {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(220px, .9fr);
         gap: 1rem;
         align-items: start;
+        padding: 1.25rem 1.25rem 1.35rem;
     }
 
-    .about-dealer-directory {
+    .about-dealer-card__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .9rem 1rem;
+    }
+
+    .about-dealer-card__lead {
         display: grid;
-        gap: .55rem;
-        margin-top: .7rem;
+        gap: .45rem;
     }
 
-    .about-dealer-directory__row {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: .35rem .65rem;
-        align-items: start;
-        color: #5b7479;
-        font-size: .87rem;
-        line-height: 1.55;
-    }
-
-    .about-dealer-directory__label {
-        color: #29474d;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .about-dealer-card__footer {
-        display: grid;
-        gap: .75rem;
-        align-content: start;
-        padding-inline-start: 1rem;
-        border-inline-start: 1px solid #ecf3f2;
-    }
-
-    .about-dealer-badge {
+    .about-dealer-card__location {
         display: inline-flex;
         align-items: center;
-        gap: .35rem;
-        padding: .42rem .7rem;
+        gap: .4rem;
+        color: #47656b;
+        font-size: .92rem;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .about-dealer-card__location::before {
+        content: '';
+        width: .55rem;
+        height: .55rem;
         border-radius: 999px;
-        background: rgba(18, 157, 145, 0.09);
-        color: #12857f;
-        font-size: .8rem;
+        background: #129d91;
+        box-shadow: 0 0 0 .22rem rgba(18, 157, 145, 0.12);
+    }
+
+    .about-dealer-card__tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        justify-content: flex-start;
+    }
+
+    .about-dealer-card__stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .about-dealer-stat {
+        min-width: 0;
+        padding: .8rem .9rem;
+        border: 1px solid #e5efee;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbfb 100%);
+    }
+
+    .about-dealer-stat__label {
+        display: block;
+        margin-bottom: .3rem;
+        color: #688085;
+        font-size: .76rem;
         font-weight: 700;
+        letter-spacing: .02em;
+    }
+
+    .about-dealer-stat__value {
+        display: block;
+        color: #1f4449;
+        font-size: .92rem;
+        font-weight: 600;
+        line-height: 1.55;
+        word-break: break-word;
+    }
+
+    .about-dealer-card__description {
+        padding: .95rem 1rem;
+        border: 1px solid #e9f1f0;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba(18, 157, 145, 0.05) 0%, rgba(18, 157, 145, 0.02) 100%);
+    }
+
+    .about-dealer-card__description .about-card-text {
+        color: #567176;
+    }
+
+    .about-dealer-card__description .about-card-text:last-child {
+        margin-bottom: 0;
     }
 
     .about-timeline {
@@ -515,11 +665,12 @@
             grid-template-columns: 1fr;
         }
 
-        .about-dealer-card__footer {
-            padding-inline-start: 0;
-            padding-top: .9rem;
-            border-inline-start: 0;
-            border-top: 1px solid #ecf3f2;
+        .about-dealer-card__stats {
+            grid-template-columns: 1fr;
+        }
+
+        .about-dealer-filters__head {
+            align-items: flex-start;
         }
     }
 </style>
@@ -560,23 +711,6 @@
                         <div class="swiper-pagination"></div>
                     </div>
 
-                    <div class="about-summary-grid">
-                        <div class="about-summary-card">
-                            <span class="about-summary-card__value">{{ $products->count() }}</span>
-                            <span class="about-summary-card__label">{{ translate('Active_solutions') }}</span>
-                            <span class="about-summary-card__caption">{{ translate('Product_portfolio') }}</span>
-                        </div>
-                        <div class="about-summary-card">
-                            <span class="about-summary-card__value">{{ $timelines->count() }}</span>
-                            <span class="about-summary-card__label">{{ translate('Key_milestones') }}</span>
-                            <span class="about-summary-card__caption">{{ translate('Journey') }}</span>
-                        </div>
-                        <div class="about-summary-card">
-                            <span class="about-summary-card__value">{{ $dealers->count() }}</span>
-                            <span class="about-summary-card__label">{{ translate('Trusted_dealers') }}</span>
-                            <span class="about-summary-card__caption">{{ translate('Dealer_network') }}</span>
-                        </div>
-                    </div>
                 </section>
             @endif
 
@@ -628,19 +762,33 @@
 
                         <div class="about-products-grid mt-4">
                             @foreach($products as $product)
+                                @php
+                                    $aboutProductTitle = trim((string) getTranslatedValue($product, 'title', $product->title));
+                                    $aboutProductDescription = trim((string) getTranslatedValue($product, 'description', $product->description));
+                                    $aboutProductLabel = trim((string) getTranslatedValue($product, 'card_label', $product->card_label ?? ''));
+                                    $aboutProductNote = trim((string) getTranslatedValue($product, 'card_note', $product->card_note ?? ''));
+                                @endphp
                                 <article class="about-product-card">
                                     <img src="{{ asset('storage/' . $product->image) }}"
-                                        alt="{{ getTranslatedValue($product, 'title', $product->title) }}">
+                                        alt="{{ $aboutProductTitle }}">
                                     <div class="about-product-card__body">
                                         <span class="about-card-meta">{{ translate('Product_portfolio') }}</span>
-                                        <h3 class="about-card-title">{{ getTranslatedValue($product, 'title', $product->title) }}</h3>
-                                        <p class="about-card-text">
-                                            {{ getTranslatedValue($product, 'description', $product->description) }}
-                                        </p>
-                                        <div class="about-product-card__footer">
-                                            <span>{{ getTranslatedValue($product, 'card_label', $product->card_label ?? '') ?: translate('Active_solutions') }}</span>
-                                            <strong class="text-primary">{{ getTranslatedValue($product, 'card_note', $product->card_note ?? '') ?: translate('Built_for_reliable_growth_and_long_term_partnerships') }}</strong>
-                                        </div>
+                                        @if($aboutProductTitle !== '')
+                                            <h3 class="about-card-title">{{ $aboutProductTitle }}</h3>
+                                        @endif
+                                        @if($aboutProductDescription !== '')
+                                            <p class="about-card-text">{{ $aboutProductDescription }}</p>
+                                        @endif
+                                        @if($aboutProductLabel !== '' || $aboutProductNote !== '')
+                                            <div class="about-product-card__footer">
+                                                @if($aboutProductLabel !== '')
+                                                    <span>{{ $aboutProductLabel }}</span>
+                                                @endif
+                                                @if($aboutProductNote !== '')
+                                                    <strong class="text-primary">{{ $aboutProductNote }}</strong>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
                                 </article>
                             @endforeach
@@ -680,6 +828,22 @@
 
             <section class="about-panel">
                 <div class="about-section">
+                    @php
+                        $dealerQuickFilterSource = $dealerFilterSource ?? collect();
+                        $quickPartnerTypes = $dealerQuickFilterSource
+                            ->filter(fn ($dealer) => $dealer->show_partner_type_filter)
+                            ->map(fn ($dealer) => trim((string) getTranslatedValue($dealer, 'partner_type', $dealer->partner_type ?? '')))
+                            ->filter()
+                            ->unique()
+                            ->values();
+                        $quickLocations = $dealerQuickFilterSource
+                            ->filter(fn ($dealer) => $dealer->show_location_filter)
+                            ->map(fn ($dealer) => trim((string) getTranslatedValue($dealer, 'location', $dealer->location ?? '')))
+                            ->filter()
+                            ->unique()
+                            ->values();
+                        $hasQuickFilters = $quickPartnerTypes->isNotEmpty() || $quickLocations->isNotEmpty();
+                    @endphp
                     <span class="about-eyebrow">{{ translate('Dealer_network') }}</span>
                     <h2 class="about-title" style="font-size: clamp(1.8rem, 3vw, 2.7rem);">
                         {{ translate('our_trusted_dealers') }}
@@ -687,43 +851,113 @@
                     <p class="about-subtitle">{{ translate('Trusted_partner_locations_across_key_markets') }}</p>
 
                     @if($dealers->count())
-                        <div class="about-dealers-grid mt-4">
-                            @foreach ($dealers as $dealer)
-                                <article class="about-dealer-card">
-                                    <img src="{{ $dealer->image ? asset('storage/' . $dealer->image) : asset('images/default-dealer.jpg') }}"
-                                        alt="{{ getTranslatedValue($dealer, 'dealer_name', $dealer->dealer_name ?? '') }}">
-                                    <div class="about-dealer-card__body">
-                                        <div>
-                                            <span class="about-card-meta">{{ translate('Dealer_network') }}</span>
-                                            <h3 class="about-card-title">{{ getTranslatedValue($dealer, 'dealer_name', $dealer->dealer_name ?? '') }}</h3>
-
-                                            <div class="about-dealer-directory">
-                                                <div class="about-dealer-directory__row">
-                                                    <span class="about-dealer-directory__label">{{ translate('partner_type') }}</span>
-                                                    <span>{{ getTranslatedValue($dealer, 'partner_type', $dealer->partner_type ?? '') ?: translate('Trusted_dealers') }}</span>
-                                                </div>
-                                                <div class="about-dealer-directory__row">
-                                                    <span class="about-dealer-directory__label">{{ translate('Location') }}</span>
-                                                    <span>{{ getTranslatedValue($dealer, 'location', $dealer->location ?? '') ?: translate('not_available') }}</span>
-                                                </div>
-                                                <div class="about-dealer-directory__row">
-                                                    <span class="about-dealer-directory__label">{{ translate('coverage_area') }}</span>
-                                                    <span>{{ getTranslatedValue($dealer, 'coverage_area', $dealer->coverage_area ?? '') ?: translate('not_available') }}</span>
-                                                </div>
-                                                <div class="about-dealer-directory__row">
-                                                    <span class="about-dealer-directory__label">{{ translate('Details') }}</span>
-                                                    <span>{{ getTranslatedValue($dealer, 'description', $dealer->description ?? '') ?: translate('not_available') }}</span>
-                                                </div>
+                        @if($hasQuickFilters)
+                            <div class="about-dealer-filters" data-dealer-filters>
+                                <div class="about-dealer-filters__head">
+                                    <p class="about-dealer-filters__title">{{ translate('Quick_filters') }}</p>
+                                    <button type="button" class="about-dealer-filter-clear" data-filter-clear>{{ translate('clear') }}</button>
+                                </div>
+                                <div class="about-dealer-filters__groups">
+                                    @if($quickPartnerTypes->isNotEmpty())
+                                        <div class="about-dealer-filter-group">
+                                            <span class="about-dealer-filter-group__label">{{ translate('partner_type') }}</span>
+                                            <div class="about-dealer-filter-group__chips">
+                                                <button type="button" class="about-dealer-filter-chip is-active" data-filter-group="partner_type" data-filter-value="">
+                                                    {{ translate('all') }}
+                                                </button>
+                                                @foreach($quickPartnerTypes as $partnerType)
+                                                    <button type="button" class="about-dealer-filter-chip" data-filter-group="partner_type" data-filter-value="{{ $partnerType }}">
+                                                        {{ $partnerType }}
+                                                    </button>
+                                                @endforeach
                                             </div>
                                         </div>
-                                        <div class="about-dealer-card__footer">
-                                            <span class="about-dealer-badge">{{ translate('Trusted_dealers') }}</span>
-                                            <span class="about-card-text">{{ translate('Trusted_partner_locations_across_key_markets') }}</span>
+                                    @endif
+                                    @if($quickLocations->isNotEmpty())
+                                        <div class="about-dealer-filter-group">
+                                            <span class="about-dealer-filter-group__label">{{ translate('location') }}</span>
+                                            <div class="about-dealer-filter-group__chips">
+                                                <button type="button" class="about-dealer-filter-chip is-active" data-filter-group="location" data-filter-value="">
+                                                    {{ translate('all') }}
+                                                </button>
+                                                @foreach($quickLocations as $location)
+                                                    <button type="button" class="about-dealer-filter-chip" data-filter-group="location" data-filter-value="{{ $location }}">
+                                                        {{ $location }}
+                                                    </button>
+                                                @endforeach
+                                            </div>
                                         </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                        <div class="about-dealers-grid mt-4">
+                            @foreach ($dealers as $dealer)
+                                @php
+                                    $dealerName = trim((string) getTranslatedValue($dealer, 'dealer_name', $dealer->dealer_name ?? ''));
+                                    $dealerPartnerType = trim((string) getTranslatedValue($dealer, 'partner_type', $dealer->partner_type ?? ''));
+                                    $dealerLocation = trim((string) getTranslatedValue($dealer, 'location', $dealer->location ?? ''));
+                                    $dealerCoverageArea = trim((string) getTranslatedValue($dealer, 'coverage_area', $dealer->coverage_area ?? ''));
+                                    $dealerDescriptionHtml = (string) getTranslatedValue($dealer, 'description', $dealer->description ?? '');
+                                    $dealerDescriptionPlain = richTextToPlainText($dealerDescriptionHtml);
+                                @endphp
+                                <article class="about-dealer-card" data-dealer-card data-partner-type="{{ $dealerPartnerType }}" data-location="{{ $dealerLocation }}">
+                                    <img src="{{ $dealer->image ? asset('storage/' . $dealer->image) : asset('images/default-dealer.jpg') }}"
+                                        alt="{{ $dealerName }}">
+                                    <div class="about-dealer-card__body">
+                                        <div class="about-dealer-card__header">
+                                            <div class="about-dealer-card__lead">
+                                                <span class="about-card-meta">{{ translate('Dealer_network') }}</span>
+                                                @if($dealerName !== '')
+                                                    <h3 class="about-card-title">{{ $dealerName }}</h3>
+                                                @endif
+                                                @if($dealerLocation !== '')
+                                                    <span class="about-dealer-card__location">{{ $dealerLocation }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="about-dealer-card__tags">
+                                                <span class="about-dealer-badge">{{ translate('Trusted_dealers') }}</span>
+                                                @if($dealerPartnerType !== '')
+                                                    <span class="about-dealer-badge">{{ $dealerPartnerType }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="about-dealer-card__stats">
+                                            @if($dealerPartnerType !== '')
+                                                <div class="about-dealer-stat">
+                                                    <span class="about-dealer-stat__label">{{ translate('partner_type') }}</span>
+                                                    <span class="about-dealer-stat__value">{{ $dealerPartnerType }}</span>
+                                                </div>
+                                            @endif
+                                            @if($dealerCoverageArea !== '')
+                                                <div class="about-dealer-stat">
+                                                    <span class="about-dealer-stat__label">{{ translate('coverage_area') }}</span>
+                                                    <span class="about-dealer-stat__value">{{ $dealerCoverageArea }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        @if($dealerDescriptionPlain !== '')
+                                            <div class="about-dealer-card__description">
+                                                <span class="about-dealer-stat__label">{{ translate('Details') }}</span>
+                                                <div class="about-card-text mb-0">{!! \App\Support\CmsContentSanitizer::sanitizeRichText($dealerDescriptionHtml) !!}</div>
+                                            </div>
+                                        @endif
+
+                                        @if($dealerLocation === '' && $dealerPartnerType === '' && $dealerCoverageArea === '' && $dealerDescriptionPlain === '')
+                                            <p class="about-card-text mb-0">{{ translate('Trusted_partner_locations_across_key_markets') }}</p>
+                                        @endif
                                     </div>
                                 </article>
                             @endforeach
                         </div>
+                        <div class="about-empty about-dealer-filter-empty mt-4" data-dealer-filter-empty>{{ translate('no_matching_dealers_found') }}</div>
+                        @if(method_exists($dealers, 'links'))
+                            <div class="about-dealers-pagination">
+                                {{ $dealers->withQueryString()->links() }}
+                            </div>
+                        @endif
                     @else
                         <div class="about-empty mt-4">{{ translate('no_dealers_found') }}</div>
                     @endif
@@ -738,26 +972,88 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const heroSwiper = document.querySelector('.aboutHeroSwiper');
-        if (!heroSwiper) {
+        if (heroSwiper) {
+            new Swiper(heroSwiper, {
+                loop: true,
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false,
+                },
+                speed: 850,
+                effect: 'fade',
+                fadeEffect: {
+                    crossFade: true,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                }
+            });
+        }
+
+        const filterShell = document.querySelector('[data-dealer-filters]');
+        const dealerCards = Array.from(document.querySelectorAll('[data-dealer-card]'));
+        const emptyState = document.querySelector('[data-dealer-filter-empty]');
+
+        if (!filterShell || dealerCards.length === 0) {
             return;
         }
 
-        new Swiper(heroSwiper, {
-            loop: true,
-            autoplay: {
-                delay: 5000,
-                disableOnInteraction: false,
-            },
-            speed: 850,
-            effect: 'fade',
-            fadeEffect: {
-                crossFade: true,
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
+        const activeFilters = {
+            partner_type: '',
+            location: '',
+        };
+
+        const applyDealerFilters = () => {
+            let hasVisibleCards = false;
+
+            dealerCards.forEach((card) => {
+                const partnerType = card.dataset.partnerType || '';
+                const location = card.dataset.location || '';
+                const matchesPartnerType = !activeFilters.partner_type || partnerType === activeFilters.partner_type;
+                const matchesLocation = !activeFilters.location || location === activeFilters.location;
+
+                const isVisible = matchesPartnerType && matchesLocation;
+                card.style.display = isVisible ? '' : 'none';
+
+                if (isVisible) {
+                    hasVisibleCards = true;
+                }
+            });
+
+            if (emptyState) {
+                emptyState.style.display = hasVisibleCards ? 'none' : 'block';
             }
+        };
+
+        filterShell.querySelectorAll('[data-filter-group]').forEach((button) => {
+            button.addEventListener('click', function() {
+                const group = this.dataset.filterGroup;
+                const value = this.dataset.filterValue || '';
+
+                activeFilters[group] = value;
+
+                filterShell.querySelectorAll(`[data-filter-group="${group}"]`).forEach((chip) => {
+                    chip.classList.toggle('is-active', chip === this);
+                });
+
+                applyDealerFilters();
+            });
         });
+
+        const clearButton = filterShell.querySelector('[data-filter-clear]');
+        if (clearButton) {
+            clearButton.addEventListener('click', function() {
+                Object.keys(activeFilters).forEach((group) => {
+                    activeFilters[group] = '';
+                    filterShell.querySelectorAll(`[data-filter-group="${group}"]`).forEach((chip, index) => {
+                        chip.classList.toggle('is-active', index === 0);
+                    });
+                });
+
+                applyDealerFilters();
+            });
+        }
     });
 </script>
 @endpush

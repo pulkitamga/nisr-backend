@@ -64,7 +64,7 @@
                                     <div class="ticket-border"></div>
                                     <div class="ticket-end">
                                         <button class="ticket-welcome-btn click-to-copy-coupon" data-value="{{ $item->code }}">{{ $item->code }}</button>
-                                        <h6>{{ translate('valid_till') }} {{ $item->expire_date->format('d M, Y') }}</h6>
+                                        <h6>{{ translate('valid_till') }} {!! formatDateTimeForDisplay($item->expire_date, 'd M, Y') !!}</h6>
                                         <p class="m-0">{{ translate('available_from_minimum_purchase') }} {{ webCurrencyConverter(amount: $item->min_purchase) }}</p>
                                     </div>
                                 </div>

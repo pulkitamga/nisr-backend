@@ -179,6 +179,10 @@
 
         <div class="row">
             @foreach ($careerCards as $index => $card)
+            @php
+                $careerCardTitle = trim((string) getTranslatedValue($card, 'title', $card->title));
+                $careerCardDescription = trim((string) richTextToPlainText(getTranslatedValue($card, 'description', $card->description)));
+            @endphp
             <div class="col-12 col-sm-6 col-md-3 mb-4 mb-md-0">
                 <div class="p-4 rounded shadow h-100 transition-all animate__animated animate__zoomIn {{ $index > 0 ? 'delay-' . ($index * 100) : '' }}"
                     style="transition: transform 0.3s ease;">
@@ -187,13 +191,13 @@
                         <i class="{{ $card->icon }} fs-2 text-primary"></i>
                     </div>
 
-                    <h5 class="fw-bold mb-2">
-                        {{ getTranslatedValue($card, 'title', $card->title) }}
-                    </h5>
+                    @if($careerCardTitle !== '')
+                        <h5 class="fw-bold mb-2">{{ $careerCardTitle }}</h5>
+                    @endif
 
-                    <p class=" small">
-                        {{ richTextToPlainText(getTranslatedValue($card, 'description', $card->description)) }}
-                    </p>
+                    @if($careerCardDescription !== '')
+                        <p class="small">{{ $careerCardDescription }}</p>
+                    @endif
                 </div>
             </div>
             @endforeach
@@ -213,36 +217,49 @@
         <!-- Job Cards -->
         <div class="row ">
             @foreach ($careerJobs as $job)
+            @php
+                $careerJobTitle = trim((string) getTranslatedValue($job, 'title', $job->title));
+                $careerJobExperience = trim((string) getTranslatedValue($job, 'experience', $job->experience));
+                $careerJobLocation = trim((string) getTranslatedValue($job, 'location', $job->location));
+                $careerJobSkills = trim((string) \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'skills', $job->skills)), 14, '...'));
+                $careerJobDescription = trim((string) \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'job_description', $job->job_description ?? '')), 22, '...'));
+            @endphp
             <div class="col-12 col-md-6 col-lg-4 mb-3">
                 <div class="career-card animate__animated animate__fadeInUp">
-                    <h3 class="h5 fw-bold career-card__title">
-                        {{ getTranslatedValue($job, 'title', $job->title) }}
-                    </h3>
+                    @if($careerJobTitle !== '')
+                        <h3 class="h5 fw-bold career-card__title">{{ $careerJobTitle }}</h3>
+                    @endif
 
-                    <div class="career-card__meta">
-                        <span class="career-card__chip">
-                            <span class="career-card__label">{{ translate('Experience') }}</span>
-                            <span>{{ getTranslatedValue($job, 'experience', $job->experience) }}</span>
-                        </span>
-                        <span class="career-card__chip">
-                            <span class="career-card__label">{{ translate('Location') }}</span>
-                            <span>{{ getTranslatedValue($job, 'location', $job->location) }}</span>
-                        </span>
-                    </div>
+                    @if($careerJobExperience !== '' || $careerJobLocation !== '')
+                        <div class="career-card__meta">
+                            @if($careerJobExperience !== '')
+                                <span class="career-card__chip">
+                                    <span class="career-card__label">{{ translate('Experience') }}</span>
+                                    <span>{{ $careerJobExperience }}</span>
+                                </span>
+                            @endif
+                            @if($careerJobLocation !== '')
+                                <span class="career-card__chip">
+                                    <span class="career-card__label">{{ translate('Location') }}</span>
+                                    <span>{{ $careerJobLocation }}</span>
+                                </span>
+                            @endif
+                        </div>
+                    @endif
 
-                    <div class="career-card__block">
-                        <span class="career-card__block-title">{{ translate('Skills') }}</span>
-                        <p class="small">
-                            {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'skills', $job->skills)), 14, '...') }}
-                        </p>
-                    </div>
+                    @if($careerJobSkills !== '')
+                        <div class="career-card__block">
+                            <span class="career-card__block-title">{{ translate('Skills') }}</span>
+                            <p class="small">{{ $careerJobSkills }}</p>
+                        </div>
+                    @endif
 
-                    <div class="career-card__block">
-                        <span class="career-card__block-title">{{ translate('Description') }}</span>
-                        <p class="small">
-                            {{ \Illuminate\Support\Str::words(richTextToPlainText(getTranslatedValue($job, 'job_description', $job->job_description ?? '')), 22, '...') }}
-                        </p>
-                    </div>
+                    @if($careerJobDescription !== '')
+                        <div class="career-card__block">
+                            <span class="career-card__block-title">{{ translate('Description') }}</span>
+                            <p class="small">{{ $careerJobDescription }}</p>
+                        </div>
+                    @endif
 
                     <div class="career-card__actions">
                         <a href="{{ route('career.job.detail', ['slug' => $job->id]) }}" class="career-card__link">
@@ -271,17 +288,21 @@
 
         <div class="row">
             @foreach($careerBenefits as $index => $benefit)
+            @php
+                $careerBenefitTitle = trim((string) getTranslatedValue($benefit, 'title', $benefit->title));
+                $careerBenefitDescription = trim((string) richTextToPlainText(getTranslatedValue($benefit, 'description', $benefit->description)));
+            @endphp
             <div class="col-12 col-md-3 mb-4 mb-md-0">
                 <div
                     class="benefit-card bg-white p-4 rounded-4 shadow-sm text-center animate__animated animate__fadeInUp h-100"
                     data-index="{{ $index }}">
                     <i class="{{ $benefit->icon }} text-primary mb-3" style="font-size: 2.5rem;"></i>
-                    <h5 class="fw-semibold ">
-                        {{ getTranslatedValue($benefit, 'title', $benefit->title) }}
-                    </h5>
-                    <p class="text-muted mt-2 small">
-                        {{ richTextToPlainText(getTranslatedValue($benefit, 'description', $benefit->description)) }}
-                    </p>
+                    @if($careerBenefitTitle !== '')
+                        <h5 class="fw-semibold">{{ $careerBenefitTitle }}</h5>
+                    @endif
+                    @if($careerBenefitDescription !== '')
+                        <p class="text-muted mt-2 small">{{ $careerBenefitDescription }}</p>
+                    @endif
                 </div>
             </div>
             @endforeach

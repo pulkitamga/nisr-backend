@@ -37,16 +37,14 @@
                                     <td>{{ Str::limit($notification->title, 40, '...') }}</td>
                                     <td>{{ Str::limit($notification->message, 40, '...') }}</td>
                                     <td>
-                                        <?php
-                                        if (!empty($notification->created_at)) {
-                                            $createdAt = Carbon::parse($notification->created_at);
-                                            echo ($createdAt->diffInDays(Carbon::now()) < 7)
-                                                ? $createdAt->format('D h:i A')
-                                                : $createdAt->format('d M Y h:i A');
-                                        } else {
-                                            echo translate('not_available');
-                                        }
-                                        ?>
+                                        @if(!empty($notification->created_at))
+                                            @php($createdAt = Carbon::parse($notification->created_at))
+                                            {!! $createdAt->diffInDays(Carbon::now()) < 7
+                                                ? formatDateTimeForDisplay($createdAt, 'D h:i A')
+                                                : formatDateTimeForDisplay($createdAt, 'd M Y h:i A') !!}
+                                        @else
+                                            {{ translate('not_available') }}
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="__btn-grp-sm flex-nowrap">

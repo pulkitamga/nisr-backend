@@ -456,6 +456,48 @@
                                        placeholder="{{translate('4')}}">
                             </div>
                         </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                @php
+                    $activeLanguage = $defaultLanguage;
+                    $_la = is_array($language ?? null) ? $language : (is_array($languages ?? null) ? $languages : []);
+                    if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                @endphp
+                                <ul class="nav nav-tabs lang_tab" id="footer-description-language-tab" role="tablist">
+                                    @foreach ($languages as $lang)
+                                        <li class="nav-item">
+                                            <a class="nav-link {{ $lang == $activeLanguage ? 'active' : '' }}"
+                                               id="{{ $lang }}-footer-description-link"
+                                               data-toggle="tab"
+                                               href="#{{ $lang }}-footer-description-form"
+                                               role="tab">
+                                                {{ ucfirst(getLanguageName($lang)) . '(' . strtoupper($lang) . ')' }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <div class="tab-content" id="footer-description-language-tab-content">
+                                @foreach ($languages as $lang)
+                                    <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}"
+                                         id="{{ $lang }}-footer-description-form"
+                                         role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-8">
+                                                <div class="form-group">
+                                                    <label class="title-color d-flex">
+                                                        {{translate('footer_description_text')}} ({{ strtoupper($lang) }})
+                                                    </label>
+                                                    <textarea class="form-control" name="footer_description_text[]" rows="3"
+                                                              placeholder="{{translate('footer_description_text')}}">{{ $businessSetting['footer_description_text_translations'][$lang] ?? '' }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="footer_lang[]" value="{{ $lang }}">
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -60,7 +60,7 @@
                                             </h6>
                                            
                                             <div class="text-secondary-50 fs-12 font-semibold mt-1">
-                                                {{date('d M, Y h:i A',strtotime($order['created_at'])) }}
+                                                {!! formatDateTimeForDisplay($order['created_at']) !!}
                                             </div>
                                         </div>
                                     </div></td>

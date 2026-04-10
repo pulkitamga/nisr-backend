@@ -189,6 +189,45 @@ class HomeController extends Controller
                 }
             }
 
+            if ($section->type === 'flagship_battery_families') {
+                $data = $this->applyStructuredHomeSectionTranslations(
+                    data: $data,
+                    section: $section,
+                    locale: $locale,
+                    sectionFields: ['label', 'title', 'description'],
+                    cardFields: ['tag', 'title', 'description', 'note', 'image_alt']
+                );
+            }
+
+            if ($section->type === 'core_capabilities') {
+                $data = $this->applyStructuredHomeSectionTranslations(
+                    data: $data,
+                    section: $section,
+                    locale: $locale,
+                    sectionFields: ['label', 'title', 'description'],
+                    cardFields: ['title', 'description']
+                );
+            }
+
+            if ($section->type === 'closed_loop_lifecycle') {
+                $data = $this->applyStructuredHomeSectionTranslations(
+                    data: $data,
+                    section: $section,
+                    locale: $locale,
+                    sectionFields: ['label', 'title', 'description', 'value'],
+                    cardFields: ['title', 'description', 'label', 'note']
+                );
+            }
+
+            if ($section->type === 'next_step') {
+                $data = $this->applyStructuredHomeSectionTranslations(
+                    data: $data,
+                    section: $section,
+                    locale: $locale,
+                    sectionFields: ['label', 'title', 'description', 'button_text', 'note', 'image_alt']
+                );
+            }
+
             $globalTranslations = [];
             foreach ($section->translations as $translation) {
                 if ($translation->locale === $locale && (is_null($translation->item_index) || $translation->item_index === 0)) {
@@ -281,6 +320,42 @@ class HomeController extends Controller
 
             )
         );
+    }
+
+    private function applyStructuredHomeSectionTranslations(
+        array $data,
+        HomePageSection $section,
+        string $locale,
+        array $sectionFields,
+        array $cardFields = []
+    ): array {
+        if (!isset($data['section']) || !is_array($data['section'])) {
+            return $data;
+        }
+
+        foreach ($section->translations as $translation) {
+            if ($translation->locale !== $locale) {
+                continue;
+            }
+
+            $itemIndex = is_numeric($translation->item_index) ? (int) $translation->item_index : null;
+
+            if ($itemIndex === -1 && in_array($translation->key, $sectionFields, true)) {
+                $data['section'][$translation->key] = $translation->value;
+                continue;
+            }
+
+            if (
+                $itemIndex !== null
+                && $itemIndex >= 0
+                && in_array($translation->key, $cardFields, true)
+                && isset($data['section']['cards'][$itemIndex])
+            ) {
+                $data['section']['cards'][$itemIndex][$translation->key] = $translation->value;
+            }
+        }
+
+        return $data;
     }
 
     function getOriginalEnglishValue($key, $json, $sub = null)

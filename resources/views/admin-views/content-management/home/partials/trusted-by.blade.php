@@ -2,10 +2,7 @@
 $languages = getWebConfig(name: 'pnc_language') ?? ['en'];
 $defaultLanguage = getConfiguredDefaultLanguage();
 if (!in_array($defaultLanguage, $languages ?? [], true)) {
-    $defaultLanguage = getConfiguredDefaultLanguage();
-if (!in_array($defaultLanguage, $languages ?? [], true)) {
     $defaultLanguage = $languages[0] ?? 'en';
-}
 }
 
 @endphp
@@ -30,13 +27,6 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     @method('PUT')
 
     @foreach($languages as $lang)
-    @php
-    $headingTranslations = $translations[$lang]['heading'] ?? [];
-    $paragraphTranslations = $translations[$lang]['paragraph'] ?? [];
-    $translatedHeading = $headingTranslations ?? '';
-    $translatedParagraph = $paragraphTranslations ?? '';
-    @endphp
-
     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
         id="{{ $lang }}-form">
         <div class="row">
@@ -44,14 +34,14 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
             <div class="col-lg-6">
                 <label class="title-color d-flex">{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="heading[]" class="form-control"
-                    value="{{ $lang == $defaultLanguage ? $item['heading'] : (is_array($translatedHeading) ? ($translatedHeading[$lang] ?? '') : $translatedHeading) }}"
+                    value="{{ $lang == $defaultLanguage ? ($item['heading'] ?? '') : ($translations[$lang]['heading'] ?? '') }}"
                     placeholder="{{ translate('enter_heading') }}">
             </div>
 
             <div class="col-lg-6">
                 <label class="title-color d-flex">{{ translate('paragraph') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="paragraph[]" class="form-control"
-                    value="{{ $lang == $defaultLanguage ? $item['paragraph'] : (is_array($translatedParagraph) ? ($translatedParagraph[$lang] ?? '') : $translatedParagraph) }}"
+                    value="{{ $lang == $defaultLanguage ? ($item['paragraph'] ?? '') : ($translations[$lang]['paragraph'] ?? '') }}"
                     placeholder="{{ translate('enter_paragraph') }}">
             </div>
         </div>
@@ -72,17 +62,3 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     </div>
 </form>
 @endforeach
-
-@push('script')
-<script>
-    $(document).ready(function() {
-        $('.form-system-language-tab').on('click', function() {
-            let lang = $(this).attr('id').replace('-link', '');
-            $('.form-system-language-tab').removeClass('active');
-            $('.form-system-language-form').addClass('d-none');
-            $(this).addClass('active');
-            $('#' + lang + '-form').removeClass('d-none');
-        });
-    });
-</script>
-@endpush

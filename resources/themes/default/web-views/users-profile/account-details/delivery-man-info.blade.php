@@ -78,7 +78,7 @@
                                                     class="tio-star-half text-warning text-capitalize"></i></span> {{translate('delivery_man_review')}}
                                         </h6>
                                         <div
-                                            class="fs-12 text-muted">{{date('M d , Y h:i A', strtotime($order->deliveryManReview->updated_at))}}</div>
+                                            class="fs-12 text-muted">{!! formatDateTimeForDisplay($order->deliveryManReview->updated_at, 'M d , Y h:i A') !!}</div>
                                     </div>
                                     <p class="fs-12 text-muted">{{$order->deliveryManReview->comment}}</p>
                                 </div>
@@ -294,4 +294,3 @@
     ></span>
 
 @endsection
-

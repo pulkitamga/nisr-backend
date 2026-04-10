@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Cms;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class RefundPolicyController extends Controller
 {
@@ -11,5 +11,10 @@ class RefundPolicyController extends Controller
     {
      
         return view('admin-views.content-management.refund-policy.index');
+    }
+
+    public function edit(): RedirectResponse
+    {
+        return redirect()->route('admin.content-management.refund-policy');
     }
 }

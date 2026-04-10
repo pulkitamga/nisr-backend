@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Cms;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class CancellationPolicyController extends Controller
 {
@@ -11,5 +11,10 @@ class CancellationPolicyController extends Controller
     {
      
         return view('admin-views.content-management.cancellation-policy.index');
+    }
+
+    public function edit(): RedirectResponse
+    {
+        return redirect()->route('admin.content-management.cancellation-policy');
     }
 }

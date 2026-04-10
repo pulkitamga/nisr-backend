@@ -2,6 +2,25 @@
 
 @section('title', translate('order_Details'))
 
+@push('css_or_js')
+    <style>
+        .warranty-policy-consent.custom-control {
+            padding-left: 0;
+            padding-right: 1.75rem;
+        }
+
+        .warranty-policy-consent .custom-control-label::before,
+        .warranty-policy-consent .custom-control-label::after {
+            left: auto;
+            right: -1.75rem;
+        }
+
+        .warranty-policy-consent .custom-control-label a {
+            margin-inline-start: 0.35rem;
+        }
+    </style>
+@endpush
+
 @section('content')
 <div class="container pb-5 mb-2 mb-md-4 mt-3 rtl __inline-47 text-align-direction">
     <div class="row g-3">
@@ -721,7 +740,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="custom-control custom-checkbox">
+                        <div class="custom-control custom-checkbox warranty-policy-consent">
                             <input type="checkbox" class="custom-control-input" id="agreeTerms" name="agree_terms" required>
                             <label class="custom-control-label" for="agreeTerms">
                                 {{ translate('I have read and agree to the') }}
@@ -879,4 +898,3 @@
     });
 </script>
 @endpush
-

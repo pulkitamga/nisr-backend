@@ -34,7 +34,7 @@
 
                 <div class="text-lg-center">
                     <h5 class="mb-1">{{$customer_info->f_name}} {{$customer_info->l_name}}</h5>
-                    <p class="fw-medium">{{translate('joined')}} {{date('d M, Y',strtotime($customer_info->created_at))}}</p>
+                    <p class="fw-medium">{{translate('joined')}} {!! formatDateTimeForDisplay($customer_info->created_at, 'd M, Y') !!}</p>
                 </div>
             </div>
             <div class="profile-menu-aside">

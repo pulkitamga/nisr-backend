@@ -3487,6 +3487,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
                 Route::post('why-join-us/update', [HomeController::class, 'updateWhyJoinUs'])->name('why_join_us.update');
                 Route::put('wholesaler-section/update', [HomeController::class, 'updateWholesalerSection'])->name('wholesaler_section.update');
                 Route::put('find-perfect-match/update', [HomeController::class, 'updateFindPerfectMatch'])->name('find_perfect_match.update');
+                Route::put('flagship-battery-families/update', [HomeController::class, 'updateFlagshipBatteryFamilies'])->name('flagship_battery_families.update');
+                Route::put('core-capabilities/update', [HomeController::class, 'updateCoreCapabilities'])->name('core_capabilities.update');
+                Route::put('closed-loop-lifecycle/update', [HomeController::class, 'updateClosedLoopLifecycle'])->name('closed_loop_lifecycle.update');
+                Route::put('next-step/update', [HomeController::class, 'updateNextStep'])->name('next_step.update');
                 Route::post('/faqs/update', [HomeController::class, 'updateFaq'])->name('faqs.update');
                 Route::post('download-app/update', [HomeController::class, 'updateDownloadAppItem'])->name('download-app.update');
                 Route::put('download-app/heading/update', [HomeController::class, 'updateDownloadAppHeading'])->name('download-app.heading.update');
@@ -3536,24 +3540,15 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
             Route::middleware('permission:cms_section.read,admin')->group(function () {
                 Route::get('products', [ProductCmsController::class, 'index'])->name('products');
-                Route::get('products/edit/{id}', [ProductCmsController::class, 'edit'])->name('products.edit');
-                Route::get('products/create', [ProductCmsController::class, 'create'])->name('products.create');
-            });
-
-            // CREATE routes
-            Route::middleware('permission:cms_section.create,admin')->group(function () {
-                Route::post('products/store', [ProductCmsController::class, 'store'])->name('products.store');
             });
 
             // UPDATE routes
             Route::middleware('permission:cms_section.update,admin')->group(function () {
                 Route::put('products/update/{id}', [ProductCmsController::class, 'update'])->name('products.update');
                 Route::post('products/status', [ProductCmsController::class, 'toggleStatus'])->name('products.status');
-            });
-
-            // DELETE routes
-            Route::middleware('permission:cms_section.delete,admin')->group(function () {
-                Route::delete('products/delete/{id}', [ProductCmsController::class, 'destroy'])->name('products.destroy');
+                Route::post('products/{id}/showcase-items', [ProductCmsController::class, 'storeShowcaseItem'])->name('products.showcase-items.store');
+                Route::put('products/showcase-items/{id}', [ProductCmsController::class, 'updateShowcaseItem'])->name('products.showcase-items.update');
+                Route::delete('products/showcase-items/{id}', [ProductCmsController::class, 'destroyShowcaseItem'])->name('products.showcase-items.destroy');
             });
 
 
@@ -3572,6 +3567,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::middleware('permission:cms_section.update,admin')->group(function () {
                 Route::put('services/update/{id}', [ServiceCmsController::class, 'update'])->name('services.update');
                 Route::post('services/status', [ServiceCmsController::class, 'toggleStatus'])->name('services.status');
+                Route::post('services/{id}/showcase-items', [ServiceCmsController::class, 'storeShowcaseItem'])->name('services.showcase-items.store');
+                Route::put('services/showcase-items/{id}', [ServiceCmsController::class, 'updateShowcaseItem'])->name('services.showcase-items.update');
+                Route::delete('services/showcase-items/{id}', [ServiceCmsController::class, 'destroyShowcaseItem'])->name('services.showcase-items.destroy');
             });
 
             // DELETE routes

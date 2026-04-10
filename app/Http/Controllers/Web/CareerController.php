@@ -46,7 +46,7 @@ class CareerController extends Controller
             'last_name'     => 'required|string|max:100',
             'email'         => 'required|email|max:150',
             'phone'         => 'required|string|max:20',
-            'gender'        => 'required|in:male,female,other',
+            'gender'        => 'required|in:Male,Female',
             'country'       => 'required|string|max:100',
             'state'         => 'required|string|max:100',
             'city'          => 'required|string|max:100',

@@ -77,7 +77,7 @@
                                                                 </h6>
                                                                 <div
                                                                     class="text-dark fs-12">{{count($order->details)}} {{translate('items')}}</div>
-                                                                <p class="text-muted fs-12">{{date('d M, Y h:i A',strtotime($order['created_at']))}}</p>
+                                                                <p class="text-muted fs-12">{!! formatDateTimeForDisplay($order['created_at']) !!}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -141,7 +141,7 @@
                                                     <div
                                                         class="text-dark fs-12">{{count($order->details)}} {{translate('items')}}</div>
                                                     <div
-                                                        class="text-muted fs-12">{{date('d M, Y h:i A',strtotime($order['created_at']))}}</div>
+                                                        class="text-muted fs-12">{!! formatDateTimeForDisplay($order['created_at']) !!}</div>
                                                     <div class="d-flex gap-2 align-items-center fs-12">
                                                         <div class="text-muted">{{ translate('price').':' }}</div>
                                                         <div class="text-dark"> {{webCurrencyConverter($order['order_amount'])}}</div>

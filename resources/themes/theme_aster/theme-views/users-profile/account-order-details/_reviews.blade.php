@@ -106,7 +106,7 @@
                                                     </h6>
                                                 </div>
                                                 <span class="opacity-50 fs-12">
-                                                    {{ isset($order_details->reviewData->reply->created_at) ? $order_details->reviewData->reply->created_at->format('M-d-Y') : '' }}
+                                                    {!! isset($order_details->reviewData->reply->created_at) ? formatDateTimeForDisplay($order_details->reviewData->reply->created_at, 'M-d-Y') : '' !!}
                                                 </span>
                                             </div>
                                             <p class="fs-14">

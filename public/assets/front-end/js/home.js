@@ -5,7 +5,7 @@ setInterval(updateFlashDealProgressBar, 10000);
 
 $(document).ready(function () {
     var directionFromSession = $("#direction-from-session").data("value");
-    directionFromSession = directionFromSession === 'rtl' ? true : false;
+    var isRtl = directionFromSession === "rtl";
 
     $(".flash-deal-slider").owlCarousel({
         loop: false,
@@ -14,7 +14,7 @@ $(document).ready(function () {
         margin: 10,
         nav: true,
         navText:
-            directionFromSession === "rtl"
+            isRtl
                 ? [
                       "<i class='czi-arrow-right'></i>",
                       "<i class='czi-arrow-left'></i>",
@@ -25,8 +25,8 @@ $(document).ready(function () {
                   ],
         dots: false,
         autoplayHoverPause: true,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         responsive: {
             0: {
                 items: 1.1,
@@ -62,7 +62,7 @@ $(document).ready(function () {
         margin: 10,
         nav: true,
         navText:
-            directionFromSession === "rtl"
+            isRtl
                 ? [
                       "<i class='czi-arrow-right'></i>",
                       "<i class='czi-arrow-left'></i>",
@@ -73,8 +73,8 @@ $(document).ready(function () {
                   ],
         dots: false,
         autoplayHoverPause: true,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         responsive: {
             0: {
                 items: 1.1,
@@ -109,7 +109,7 @@ $(document).ready(function () {
         margin: 20,
         nav: true,
         navText:
-            directionFromSession === "rtl"
+            isRtl
                 ? [
                       "<i class='czi-arrow-right'></i>",
                       "<i class='czi-arrow-left'></i>",
@@ -120,8 +120,8 @@ $(document).ready(function () {
                   ],
         dots: false,
         autoplayHoverPause: true,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         responsive: {
             0: {
                 items: 1,
@@ -156,7 +156,7 @@ $(document).ready(function () {
         margin: 20,
         nav: true,
         navText:
-            directionFromSession === "rtl"
+            isRtl
                 ? [
                       "<i class='czi-arrow-right'></i>",
                       "<i class='czi-arrow-left'></i>",
@@ -167,8 +167,8 @@ $(document).ready(function () {
                   ],
         dots: false,
         autoplayHoverPause: true,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         responsive: {
             0: {
                 items: 1,
@@ -209,7 +209,7 @@ $(document).ready(function () {
             margin: 20,
             nav: true,
             navText:
-                directionFromSession === "rtl"
+                isRtl
                     ? [
                           "<i class='czi-arrow-right'></i>",
                           "<i class='czi-arrow-left'></i>",
@@ -220,8 +220,8 @@ $(document).ready(function () {
                       ],
             dots: false,
             autoplayHoverPause: true,
-            rtl: directionFromSession === "rtl",
-            ltr: directionFromSession === "ltr",
+            rtl: isRtl,
+            ltr: !isRtl,
             responsive: {
                 0: {
                     items: 1.2,
@@ -261,7 +261,7 @@ $(document).ready(function () {
         margin: 20,
         nav: true,
         navText:
-            directionFromSession === "rtl"
+            isRtl
                 ? [
                       "<i class='czi-arrow-right'></i>",
                       "<i class='czi-arrow-left'></i>",
@@ -275,9 +275,86 @@ $(document).ready(function () {
         autoplaySpeed: 1500,
         slideTransition: "linear",
         items: 1,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
     });
+
+    function initMainBannerSlider() {
+        var $slider = $(".main-banner-slider");
+
+        if (!$slider.length) {
+            return;
+        }
+
+        var $slides = $slider.find(".banner-slide");
+        var $indicators = $slider
+            .closest(".home-hero-panel")
+            .find(".carousel-indicators li");
+
+        if ($slides.length <= 1) {
+            $slides.css({
+                opacity: 1,
+                zIndex: 1,
+                pointerEvents: "auto",
+            });
+            $indicators.eq(0).addClass("active");
+            return;
+        }
+
+        var activeIndex = 0;
+        var autoplayDelay = 5000;
+        var autoplayTimer = null;
+
+        function renderSlide(nextIndex) {
+            activeIndex = nextIndex;
+
+            $slides.each(function (index) {
+                var isActive = index === activeIndex;
+
+                $(this).css({
+                    opacity: isActive ? 1 : 0,
+                    zIndex: isActive ? 1 : 0,
+                    pointerEvents: isActive ? "auto" : "none",
+                });
+
+                $(this).attr("aria-hidden", isActive ? "false" : "true");
+            });
+
+            $indicators.removeClass("active");
+            $indicators.eq(activeIndex).addClass("active");
+        }
+
+        function stopAutoplay() {
+            if (autoplayTimer) {
+                window.clearInterval(autoplayTimer);
+                autoplayTimer = null;
+            }
+        }
+
+        function startAutoplay() {
+            stopAutoplay();
+            autoplayTimer = window.setInterval(function () {
+                renderSlide((activeIndex + 1) % $slides.length);
+            }, autoplayDelay);
+        }
+
+        $indicators.on("click", function () {
+            var nextIndex = Number($(this).data("slide-to"));
+
+            if (!Number.isNaN(nextIndex)) {
+                renderSlide(nextIndex);
+                startAutoplay();
+            }
+        });
+
+        $slider.on("mouseenter focusin", stopAutoplay);
+        $slider.on("mouseleave focusout", startAutoplay);
+
+        renderSlide(activeIndex);
+        startAutoplay();
+    }
+
+    initMainBannerSlider();
 
     $(".brands-slider").owlCarousel({
         loop: false,
@@ -285,7 +362,7 @@ $(document).ready(function () {
         margin: 10,
         nav: true,
         navText:
-            directionFromSession === "rtl"
+            isRtl
                 ? [
                       "<i class='czi-arrow-right'></i>",
                       "<i class='czi-arrow-left'></i>",
@@ -295,8 +372,8 @@ $(document).ready(function () {
                       "<i class='czi-arrow-right'></i>",
                   ],
         dots: false,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         autoplayHoverPause: true,
         responsive: {
             0: {
@@ -328,8 +405,8 @@ $(document).ready(function () {
         autoplay: true,
         margin: 10,
         nav: false,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         autoplayHoverPause: true,
         items: 1,
     });
@@ -341,8 +418,8 @@ $(document).ready(function () {
         nav: false,
         dots: true,
         autoplayHoverPause: true,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         responsive: {
             0: {
                 items: 2,
@@ -381,8 +458,8 @@ $(document).ready(function () {
         nav: false,
         dots: false,
         autoplayHoverPause: true,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         responsive: {
             0: {
                 items: 3,
@@ -423,8 +500,8 @@ $(document).ready(function () {
         autoplayTimeout: 5000,
         autoplayHoverPause: true,
         smartSpeed: 600,
-        rtl: directionFromSession === "rtl",
-        ltr: directionFromSession === "ltr",
+        rtl: isRtl,
+        ltr: !isRtl,
         responsive: {
             0: {
                 items: 1.3,

@@ -1,252 +1,184 @@
 @extends('layouts.front-end.app')
 
-@section('title', translate('Our Policies'))
+@section('title', translate('our_policies'))
 
 @push('css_or_js')
-<style>
-    .policy-section {
-        min-height: 600px;
-        font-family: 'Public Sans', sans-serif;
-    }
-
-    .policy-header {
-        text-align: center;
-        margin-bottom: 50px;
-    }
-
-    .policy-title {
-        font-size: clamp(30px, 5vw, 45px);
-        font-weight: 800;
-        color: #0a1332;
-        margin-bottom: 15px;
-    }
-
-    .policy-subtitle {
-        color: #677788;
-        font-size: 18px;
-        max-width: 650px;
-        margin: 0 auto;
-        line-height: 1.6;
-    }
-
-    .policy-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        align-items: center;
-        width: 100%;
-    }
-
-    .policy-card {
-        background: #ffffff;
-        border: 1px solid #e7eaf3;
-        border-radius: 16px;
-        padding: 25px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-        transition: all 0.3s ease;
-        width: 100%;
-        max-width: 700px;
-        text-decoration: none;
-    }
-
-    .policy-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(10, 19, 50, 0.08);
-        border-color: #cbd5e0;
-    }
-
-    .policy-icon {
-        background: #f0f0f1;
-        width: 55px;
-        height: 55px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        margin-inline-end: 20px;
-        transition: all 0.3s ease;
-    }
-
-    .policy-card:hover .policy-icon {
-        background: #f2f2f2;
-        transform: scale(1.05);
-    }
-
-    .policy-icon i {
-        color: #239e92;
-        font-size: 22px;
-    }
-
-    .policy-content {
-        flex-grow: 1;
-        text-align: start;
-    }
-
-    .policy-content h3 {
-        margin: 0;
-        color: #1e2022;
-        font-size: 20px;
-        font-weight: 700;
-        transition: color 0.3s ease;
-    }
-
-    .policy-card:hover .policy-content h3 {
-        color: #0a1332;
-    }
-
-    .policy-content p {
-        margin: 5px 0 0;
-        color: #677788;
-        font-size: 15px;
-        line-height: 1.5;
-    }
-
-    @media (max-width: 576px) {
-        .policy-card {
-            padding: 20px;
+    @include('web-views.partials._premium-page-styles')
+    <style>
+        .nisr-policy-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
         }
 
-        .policy-icon {
-            width: 45px;
-            height: 45px;
-            margin-inline-end: 15px;
+        .nisr-policy-card {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+            padding: 1.25rem;
+            border: 1px solid rgba(16, 47, 58, 0.08);
+            border-radius: 1.35rem;
+            background: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
         }
 
-        .policy-icon i {
-            font-size: 18px;
+        .nisr-policy-card:hover,
+        .nisr-policy-card:focus-visible {
+            transform: translateY(-3px);
+            border-color: rgba(var(--bs-base-rgb), 0.22);
+            box-shadow: 0 1rem 2rem rgba(16, 56, 62, 0.1);
+            text-decoration: none;
         }
 
-        .policy-content h3 {
-            font-size: 18px;
+        .nisr-policy-card__icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            inline-size: 3.2rem;
+            block-size: 3.2rem;
+            border-radius: 1rem;
+            background: rgba(var(--bs-base-rgb), 0.12);
+            color: var(--nisr-accent);
+            font-size: 1.2rem;
         }
 
-        .policy-content p {
-            font-size: 14px;
+        .nisr-policy-card__title {
+            margin: 0 0 .4rem;
+            color: var(--nisr-ink);
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.35;
         }
-    }
-</style>
+
+        .nisr-policy-card__copy {
+            margin: 0;
+            color: var(--nisr-muted);
+            line-height: 1.75;
+        }
+
+        .nisr-policy-card__meta {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            margin-top: .95rem;
+            color: var(--nisr-accent);
+            font-size: .92rem;
+            font-weight: 700;
+        }
+
+        .nisr-policy-empty {
+            text-align: center;
+            padding: clamp(1.6rem, 3vw, 2.4rem);
+        }
+
+        .nisr-policy-empty .nisr-section-kicker {
+            margin-inline: auto;
+            margin-block-end: 1rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .nisr-policy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 @endpush
 
 @section('content')
-<div class="container py-5 policy-section">
-
-    {{-- Header Section --}}
-    <div class="policy-header">
-        <h1 class="policy-title">
-            {{ translate("We're Here to Help!") }}
-        </h1>
-        <p class="policy-subtitle">
-            {{ translate('Have questions or need assistance? Our team is ready to support you. Reach out and let’s make our policies work for you!') }}
-        </p>
-    </div>
-
-    {{-- Policy Cards Grid --}}
-    <div class="policy-grid">
-
-        {{-- SHIPPING POLICY --}}
-        @if(isset($shipping_policy['status']) && $shipping_policy['status'] == 1)
-        <a href="{{ route('shipping-policy') }}" class="policy-card">
-            <div class="policy-icon">
-                <i class="fa fa-truck"></i>
-            </div>
-            <div class="policy-content">
-                <h3>{{ translate('Shipping Policy') }}</h3>
-                <p>{{ translate('Fast, reliable delivery with real-time tracking. Learn about our shipping options.') }}</p>
-            </div>
-        </a>
-        @endif
-
-        {{-- RETURN POLICY --}}
-        @if(isset($return_policy['status']) && $return_policy['status'] == 1)
-        <a href="{{ route('return-policy') }}" class="policy-card">
-            <div class="policy-icon">
-                <i class="fa fa-refresh"></i>
-            </div>
-            <div class="policy-content">
-                <h3>{{ translate('Return Policy') }}</h3>
-                <p>{{ translate('Easy returns and exchanges within 30 days. Your satisfaction is guaranteed.') }}</p>
-            </div>
-        </a>
-        @endif
-
-        {{-- REFUND POLICY --}}
-        @if(isset($refund_policy['status']) && $refund_policy['status'] == 1)
-        <a href="{{ route('refund-policy') }}" class="policy-card">
-            <div class="policy-icon">
-                <i class="fa fa-money"></i>
-            </div>
-            <div class="policy-content">
-                <h3>{{ translate('Refund Policy') }}</h3>
-                <p>{{ translate('Quick refund processing to your original payment method within 5-7 business days.') }}</p>
-            </div>
-        </a>
-        @endif
-
-        {{-- CANCELLATION POLICY --}}
-        @if(isset($cancellation_policy['status']) && $cancellation_policy['status'] == 1)
-        <a href="{{ route('cancellation-policy') }}" class="policy-card">
-            <div class="policy-icon">
-                <i class="fa fa-times-circle"></i>
-            </div>
-            <div class="policy-content">
-                <h3>{{ translate('Cancellation Policy') }}</h3>
-                <p>{{ translate('Free cancellation within 24 hours of purchase. Learn about our cancellation process.') }}</p>
-            </div>
-        </a>
-        @endif
-
-        {{-- SERVICE POLICY --}}
-        @if(isset($service_policy['status']) && $service_policy['status'] == 1)
-        <a href="{{ route('service-policy') }}" class="policy-card">
-            <div class="policy-icon">
-                <i class="fa fa-cogs"></i>
-            </div>
-            <div class="policy-content">
-                <h3>{{ translate('Service Policy') }}</h3>
-                <p>{{ translate('Professional service standards and quality commitment. Learn about our service terms.') }}</p>
-            </div>
-        </a>
-        @endif
-
-        {{-- PRIVACY POLICY --}}
-        @if(isset($privacy_policy['status']) && $privacy_policy['status'] == 1)
-        <a href="{{ route('privacy-policy') }}" class="policy-card">
-            <div class="policy-icon">
-                <i class="fa fa-shield"></i>
-            </div>
-            <div class="policy-content">
-                <h3>{{ translate('Privacy Policy') }}</h3>
-                <p>{{ translate('Your data is safe with us. Learn how we protect your personal information.') }}</p>
-            </div>
-        </a>
-        @endif
-
-    </div>
-
-    {{-- Empty State - No Policies Available --}}
     @php
-    $hasAnyPolicy = (
-    (isset($shipping_policy['status']) && $shipping_policy['status'] == 1) ||
-    (isset($return_policy['status']) && $return_policy['status'] == 1) ||
-    (isset($refund_policy['status']) && $refund_policy['status'] == 1) ||
-    (isset($cancellation_policy['status']) && $cancellation_policy['status'] == 1) ||
-    (isset($service_policy['status']) && $service_policy['status'] == 1) ||
-    (isset($privacy_policy['status']) && $privacy_policy['status'] == 1)
-    );
+        $policies = [
+            [
+                'is_active' => isset($shipping_policy['status']) && $shipping_policy['status'] == 1,
+                'route' => route('shipping-policy'),
+                'title' => translate('Shipping Policy'),
+                'description' => translate('Policy_summary_shipping'),
+                'icon' => 'fa fa-truck',
+            ],
+            [
+                'is_active' => isset($return_policy['status']) && $return_policy['status'] == 1,
+                'route' => route('return-policy'),
+                'title' => translate('Return Policy'),
+                'description' => translate('Policy_summary_return'),
+                'icon' => 'fa fa-refresh',
+            ],
+            [
+                'is_active' => isset($refund_policy['status']) && $refund_policy['status'] == 1,
+                'route' => route('refund-policy'),
+                'title' => translate('Refund Policy'),
+                'description' => translate('Policy_summary_refund'),
+                'icon' => 'fa fa-money',
+            ],
+            [
+                'is_active' => isset($cancellation_policy['status']) && $cancellation_policy['status'] == 1,
+                'route' => route('cancellation-policy'),
+                'title' => translate('Cancellation Policy'),
+                'description' => translate('Policy_summary_cancellation'),
+                'icon' => 'fa fa-times-circle',
+            ],
+            [
+                'is_active' => isset($service_policy['status']) && $service_policy['status'] == 1,
+                'route' => route('service-policy'),
+                'title' => translate('Service Policy'),
+                'description' => translate('Policy_summary_service'),
+                'icon' => 'fa fa-cogs',
+            ],
+            [
+                'is_active' => isset($privacy_policy['status']) && $privacy_policy['status'] == 1,
+                'route' => route('privacy-policy'),
+                'title' => translate('Privacy Policy'),
+                'description' => translate('Policy_summary_privacy'),
+                'icon' => 'fa fa-shield',
+            ],
+        ];
+
+        $activePolicies = array_values(array_filter($policies, static fn ($policy) => $policy['is_active']));
     @endphp
 
-    @if(!$hasAnyPolicy)
-    <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 16px; margin-top: 30px;">
-        <i class="fa fa-file-text-o" style="font-size: 48px; color: #a0aec0; margin-bottom: 20px;"></i>
-        <h3 style="color: #2d3748; font-size: 22px; margin-bottom: 10px;">{{ translate('No Policies Available') }}</h3>
-        <p style="color: #718096; font-size: 16px; max-width: 500px; margin: 0 auto;">
-            {{ translate('We are currently updating our policies. Please check back soon.') }}
-        </p>
-    </div>
-    @endif
+    <div class="nisr-page-shell">
+        <div class="container">
+            <section class="nisr-page-hero">
+                <span class="nisr-page-eyebrow">{{ translate('our_policies') }}</span>
+                <h1 class="nisr-page-title">{{ translate('Policy_center') }}</h1>
+                <p class="nisr-page-lead">
+                    {{ translate('Review_shipping_returns_refunds_privacy_and_service_terms_from_one_clear_policy_hub') }}
+                </p>
+                <div class="nisr-hero-actions">
+                    <span class="nisr-stat-pill">{{ count($activePolicies) }} {{ translate('active_policies') }}</span>
+                    <a href="{{ route('contacts') }}" class="nisr-link-pill">{{ translate('Need_help_contact_us') }}</a>
+                </div>
+            </section>
 
-</div>
+            <section class="nisr-surface">
+                @if(count($activePolicies) > 0)
+                    <div class="nisr-policy-grid">
+                        @foreach($activePolicies as $policy)
+                            <a href="{{ $policy['route'] }}" class="nisr-policy-card">
+                                <div class="nisr-policy-card__icon" aria-hidden="true">
+                                    <i class="{{ $policy['icon'] }}"></i>
+                                </div>
+                                <div>
+                                    <h2 class="nisr-policy-card__title">{{ $policy['title'] }}</h2>
+                                    <p class="nisr-policy-card__copy">{{ $policy['description'] }}</p>
+                                    <span class="nisr-policy-card__meta">
+                                        {{ translate('Read More') }}
+                                        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="nisr-policy-empty">
+                        <span class="nisr-section-kicker" aria-hidden="true">
+                            <i class="fa fa-file-text-o"></i>
+                        </span>
+                        <h2 class="nisr-section-title">{{ translate('No_Policies_Available') }}</h2>
+                        <p class="nisr-section-copy mb-0">{{ translate('We_are_currently_updating_our_policies_Please_check_back_soon') }}</p>
+                    </div>
+                @endif
+            </section>
+        </div>
+    </div>
 @endsection

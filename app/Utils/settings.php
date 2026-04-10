@@ -53,7 +53,7 @@ if (!function_exists('clearWebConfigCacheKeys')) {
         $mergeArray = array_merge($arrayOfCompaniesValue, $arrayOfBanner);
 
         $config = json_decode($data['value'], true);
-        $languageWiseConfigKeys = ['company_name', 'shop_address', 'company_copyright_text'];
+        $languageWiseConfigKeys = ['company_name', 'shop_address', 'company_copyright_text', 'footer_description_text'];
         if (in_array($name, $languageWiseConfigKeys)) {
             return getLanguageWiseBusinessConfigValue($config, $data['value']);
         }
@@ -78,7 +78,7 @@ if (!function_exists('clearWebConfigCacheKeys')) {
 if (!function_exists('isLanguageSensitiveWebConfigKey')) {
     function isLanguageSensitiveWebConfigKey(string $name): bool
     {
-        return in_array($name, ['company_name', 'shop_address', 'company_copyright_text']);
+        return in_array($name, ['company_name', 'shop_address', 'company_copyright_text', 'footer_description_text']);
     }
 }
 

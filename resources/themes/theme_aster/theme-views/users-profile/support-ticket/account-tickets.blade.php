@@ -65,7 +65,7 @@
                                     <div class="d-flex flex-wrap justify-content-between gap-2 p-3">
                                         <h6 class="text-truncate width--60ch">{{ $supportTicket->subject }}</h6>
                                         <div
-                                            class="fs-12">{{date('d M, Y H:i A',strtotime($supportTicket->created_at))}}</div>
+                                            class="fs-12">{!! formatDateTimeForDisplay($supportTicket->created_at, 'd M, Y H:i A') !!}</div>
                                     </div>
                                 </div>
                             @endforeach
@@ -142,4 +142,3 @@
         </div>
     </div>
 @endsection
-

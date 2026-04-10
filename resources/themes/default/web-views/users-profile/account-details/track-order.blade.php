@@ -48,7 +48,7 @@
                                     <div class="d-flex align-items-center justify-content-sm-center gap-1 mt-2">
                                         <img src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png')}}"
                                              width="14" alt="">
-                                        <span class="text-muted fs-12">{{date('h:i A, d M Y',strtotime($orderDetails->created_at))}}</span>
+                                        <span class="text-muted fs-12">{!! formatDateTimeForDisplay($orderDetails->created_at, 'h:i A, d M Y') !!}</span>
                                     </div>
                                 </div>
                             </div>
@@ -73,7 +73,7 @@
                                                     <img src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png')}}"
                                                          width="14" alt="">
                                                     <span class="text-muted fs-12">
-                                                        {{date('h:i A, d M Y',strtotime(\App\Utils\order_status_history($orderDetails['id'],'confirmed')))}}
+                                                        {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'],'confirmed'), 'h:i A, d M Y') !!}
                                                     </span>
                                                 </div>
                                             @endif
@@ -97,7 +97,7 @@
                                                     <img src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png')}}"
                                                          width="14" alt="">
                                                     <span class="text-muted fs-12">
-                                                        {{date('h:i A, d M Y',strtotime(\App\Utils\order_status_history($orderDetails['id'],'processing')))}}
+                                                        {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'],'processing'), 'h:i A, d M Y') !!}
                                                     </span>
                                                 </div>
                                             @endif
@@ -124,7 +124,7 @@
                                                              src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png')}}"
                                                              width="20" alt="">
                                                         <span class="text-muted fs-14">
-                                                                {{date('h:i A, d M Y',strtotime(\App\Utils\order_status_history($orderDetails['id'],'out_for_delivery')))}}
+                                                                {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'],'out_for_delivery'), 'h:i A, d M Y') !!}
                                                         </span>
                                                     @endif
                                                 </div>
@@ -173,7 +173,7 @@
                                                     <img src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png')}}"
                                                          width="14" alt="">
                                                     <span class="text-muted fs-12">
-                                                        {{date('h:i A, d M Y',strtotime(\App\Utils\order_status_history($orderDetails['id'],'delivered')))}}
+                                                        {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'],'delivered'), 'h:i A, d M Y') !!}
                                                     </span>
                                                 </div>
                                             @endif
@@ -211,7 +211,7 @@
                                                     <img width="14" alt=""
                                                          src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png') }}">
                                                     <span class="text-muted fs-12">
-                                                        {{date('h:i A, d M Y',strtotime(\App\Utils\order_status_history($orderDetails['id'], 'processing')))}}
+                                                        {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'], 'processing'), 'h:i A, d M Y') !!}
                                                     </span>
                                                 </div>
                                             @endif
@@ -241,7 +241,7 @@
                                                         src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png') }}"
                                                         width="14" alt="">
                                                     <span class="text-muted fs-12">
-                                                        {{date('h:i A, d M Y',strtotime(\App\Utils\order_status_history($orderDetails['id'],'delivered')))}}
+                                                        {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'],'delivered'), 'h:i A, d M Y') !!}
                                                     </span>
                                                 </div>
                                             @endif
@@ -268,7 +268,7 @@
                                                 <img src="{{theme_asset(path: 'public/assets/front-end/img/track-order/clock.png') }}"
                                                      width="14" alt="">
                                                 <span class="text-muted fs-12">
-                                                {{ date('h:i A, d M Y', strtotime(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']))) }}
+                                                {!! formatDateTimeForDisplay(\App\Utils\order_status_history($orderDetails['id'], $orderDetails['order_status']), 'h:i A, d M Y') !!}
                                             </span>
                                             </div>
                                         @endif
