@@ -9,6 +9,8 @@
         .nisr-products-shell {
             display: grid;
             gap: 1.5rem;
+            --nisr-showcase-hero-height: clamp(16rem, 34vh, 22rem);
+            --nisr-showcase-media-height: clamp(15rem, 32vh, 20rem);
         }
 
         .nisr-header-band {
@@ -58,7 +60,7 @@
         .nisr-products-hero {
             position: relative;
             overflow: hidden;
-            min-block-size: 28rem;
+            min-block-size: var(--nisr-showcase-hero-height);
             border: 1px solid rgba(16, 47, 58, 0.08);
             border-radius: 1.6rem;
             background:
@@ -95,6 +97,7 @@
             position: absolute;
             inset: 0;
             overflow: hidden;
+            block-size: 100%;
         }
 
         .nisr-products-hero__visual img {
@@ -166,7 +169,12 @@
         }
 
         .nisr-story-slider__frame {
-            min-block-size: 28rem;
+            min-block-size: var(--nisr-showcase-media-height);
+        }
+
+        .nisr-story-slider__frame,
+        .nisr-story-slider__frame img {
+            block-size: 100%;
         }
 
         .nisr-story-slider__frame img {
@@ -362,6 +370,11 @@
         }
 
         @media (max-width: 991.98px) {
+            .nisr-products-shell {
+                --nisr-showcase-hero-height: clamp(15rem, 40vh, 19rem);
+                --nisr-showcase-media-height: clamp(14rem, 38vh, 18rem);
+            }
+
             .nisr-products-hero,
             .nisr-story-showcase,
             .nisr-support-grid {
@@ -691,6 +704,9 @@
 
             const mediaWrapper = mediaSlider.querySelector('.swiper-wrapper');
             const contentWrapper = contentSlider.querySelector('.swiper-wrapper');
+            const mediaPagination = mediaSlider.querySelector('.nisr-story-slider__pagination');
+            const mediaNext = mediaSlider.querySelector('.js-product-story-next');
+            const mediaPrev = mediaSlider.querySelector('.js-product-story-prev');
             if (!mediaWrapper || !contentWrapper) {
                 return;
             }
@@ -748,23 +764,31 @@
                     autoplay: autoplayConfig,
                 });
 
-                mediaSwiper = new Swiper(mediaSlider, {
+                const mediaSwiperConfig = {
                     slidesPerView: 1,
                     loop: shouldLoop,
                     speed: 700,
                     autoplay: autoplayConfig,
-                    pagination: {
-                        el: '.nisr-story-slider__pagination',
-                        clickable: true,
-                    },
-                    navigation: {
-                        nextEl: '.js-product-story-next',
-                        prevEl: '.js-product-story-prev',
-                    },
                     controller: {
                         control: contentSwiper,
                     },
-                });
+                };
+
+                if (mediaPagination) {
+                    mediaSwiperConfig.pagination = {
+                        el: mediaPagination,
+                        clickable: true,
+                    };
+                }
+
+                if (mediaNext && mediaPrev) {
+                    mediaSwiperConfig.navigation = {
+                        nextEl: mediaNext,
+                        prevEl: mediaPrev,
+                    };
+                }
+
+                mediaSwiper = new Swiper(mediaSlider, mediaSwiperConfig);
 
                 contentSwiper.controller.control = mediaSwiper;
             }
