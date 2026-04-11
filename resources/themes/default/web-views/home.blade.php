@@ -2376,9 +2376,9 @@ if($products->count() < 8) { $slides=$products->concat($products);
         @push('script')
 
         <script src="{{theme_asset(path: 'public/assets/front-end/js/owl.carousel.min.js')}}"></script>
+        <script src="{{ theme_asset(path: 'public/assets/front-end/js/swiper-bundle.min.js') }}"></script>
         <script src="{{ theme_asset(path: 'public/assets/front-end/js/home.js') }}"></script>
         <script src="{{ theme_asset(path: 'public/assets/front-end/js/custom-slider.js') }}"></script>
-        <script src="{{ theme_asset(path: 'public/assets/front-end/js/swiper-bundle.min.js') }}"></script>
         <script src="{{ dynamicAsset(path: 'public/assets/select2/js/select2.min.js') }}"></script>
 
         @php($serializedModels = $models->map(function ($model) {
