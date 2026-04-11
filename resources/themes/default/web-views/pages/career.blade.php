@@ -113,6 +113,105 @@
         text-decoration: underline;
     }
 
+    .career-apply-modal .modal-dialog {
+        max-width: min(900px, calc(100% - 2rem));
+        margin: 1.75rem auto;
+    }
+
+    .career-apply-modal .modal-content {
+        border: none;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 24px 48px rgba(18, 48, 38, 0.18);
+    }
+
+    .career-apply-modal .modal-header {
+        padding: 1.4rem 1.5rem;
+        border-bottom: 1px solid #eef4f0;
+        background: #fff;
+    }
+
+    .career-apply-modal .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #18392f;
+    }
+
+    .career-apply-modal .close {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        color: #527266;
+        opacity: 1;
+    }
+
+    .career-apply-form .modal-body {
+        padding: 1.5rem;
+        background: #f9fcfa;
+    }
+
+    .career-apply-form__section-title {
+        margin-bottom: 1rem;
+        font-size: .92rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: #527266;
+    }
+
+    .career-apply-form__hint {
+        margin-top: .35rem;
+        font-size: .78rem;
+        color: #6d7f77;
+    }
+
+    .career-apply-form .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .career-apply-form label {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        margin-bottom: .45rem;
+        font-weight: 600;
+        color: #1f4236;
+    }
+
+    .career-apply-form .form-control {
+        height: auto;
+        min-height: 48px;
+        border-radius: 14px;
+        border: 1px solid #dbe8e1;
+        padding: .85rem 1rem;
+        box-shadow: none;
+    }
+
+    .career-apply-form .form-control:focus {
+        border-color: #7cb5a0;
+        box-shadow: 0 0 0 .2rem rgba(20, 122, 116, 0.12);
+    }
+
+    .career-apply-form .form-control.is-invalid,
+    .career-apply-form .custom-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .career-apply-form .invalid-feedback {
+        font-size: .8rem;
+    }
+
+    .career-apply-form .alert {
+        border-radius: 16px;
+    }
+
+    .career-apply-form .modal-footer {
+        border-top: 1px solid #eef4f0;
+        padding: 1.1rem 1.5rem 1.5rem;
+        background: #fff;
+    }
+
     @media (max-width: 767.98px) {
         .career-card {
             padding: 1.1rem;
@@ -127,6 +226,16 @@
         .career-card__cta.btn {
             width: 100%;
             min-width: 0;
+        }
+
+        .career-apply-modal .modal-content {
+            border-radius: 20px;
+        }
+
+        .career-apply-modal .modal-header,
+        .career-apply-form .modal-body,
+        .career-apply-form .modal-footer {
+            padding-inline: 1rem;
         }
     }
 </style>
@@ -265,9 +374,16 @@
                         <a href="{{ route('career.job.detail', ['slug' => $job->id]) }}" class="career-card__link">
                             {{ translate('View Details') }}
                         </a>
-                        <a href="{{ route('career.job.detail', ['slug' => $job->id]) }}" class="btn btn--primary career-card__cta">
+                        <button
+                            type="button"
+                            class="btn btn--primary career-card__cta"
+                            data-toggle="modal"
+                            data-target="#careerApplyModal"
+                            data-job-id="{{ $job->id }}"
+                            data-job-title="{{ e($careerJobTitle) }}"
+                        >
                             {{ translate('Apply Now') }}
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -275,6 +391,171 @@
         </div>
     </div>
 </section>
+
+<div class="modal fade career-apply-modal" id="careerApplyModal" tabindex="-1" aria-labelledby="careerApplyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="careerApplyModalLabel">{{ translate('career_apply_modal_title') }}</h5>
+                    <div class="career-apply-form__hint mb-0" data-career-apply-job-title></div>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('career.store') }}" method="POST" enctype="multipart/form-data" class="career-apply-form">
+                <div class="modal-body">
+                    @csrf
+                    <input type="hidden" name="job_id" id="career-apply-job-id" value="{{ old('job_id') }}">
+
+                    <div class="row">
+                        @if ($errors->has('career'))
+                            <div class="col-12">
+                                <div class="alert alert-danger mb-4" role="alert">
+                                    {{ $errors->first('career') }}
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="col-12">
+                            <h6 class="career-apply-form__section-title">{{ translate('Personal_Information') }}</h6>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="career-first-name">{{ translate('First_Name') }} <span class="text-danger">*</span></label>
+                                <input id="career-first-name" type="text" name="first_name" value="{{ old('first_name') }}" class="form-control border-base @error('first_name') is-invalid @enderror" placeholder="{{ translate('First_Name') }}" required>
+                                @error('first_name')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="career-last-name">{{ translate('Last_Name') }} <span class="text-danger">*</span></label>
+                                <input id="career-last-name" type="text" name="last_name" value="{{ old('last_name') }}" class="form-control border-base @error('last_name') is-invalid @enderror" placeholder="{{ translate('Last_Name') }}" required>
+                                @error('last_name')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="career-email">{{ translate('Email') }} <span class="text-danger">*</span></label>
+                                <input id="career-email" type="email" name="email" value="{{ old('email') }}" class="form-control border-base @error('email') is-invalid @enderror" placeholder="{{ translate('Email') }}" required>
+                                @error('email')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="career-phone">{{ translate('Phone') }} <span class="text-danger">*</span></label>
+                                <input id="career-phone" type="tel" name="phone" value="{{ old('phone') }}" class="form-control border-base @error('phone') is-invalid @enderror" placeholder="{{ translate('Phone') }}" required>
+                                @error('phone')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="career-gender">{{ translate('Gender') }} <span class="text-danger">*</span></label>
+                                <select id="career-gender" name="gender" class="form-control @error('gender') is-invalid @enderror" required>
+                                    <option value="">{{ translate('Select_Gender') }}</option>
+                                    <option value="Male" {{ old('gender') === 'Male' ? 'selected' : '' }}>{{ translate('Male') }}</option>
+                                    <option value="Female" {{ old('gender') === 'Female' ? 'selected' : '' }}>{{ translate('Female') }}</option>
+                                </select>
+                                @error('gender')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-2">
+                            <h6 class="career-apply-form__section-title">{{ translate('Location_Details') }}</h6>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="career-country">{{ translate('Country') }} <span class="text-danger">*</span></label>
+                                <input id="career-country" type="text" name="country" value="{{ old('country') }}" class="form-control border-base @error('country') is-invalid @enderror" placeholder="{{ translate('Country') }}" required>
+                                @error('country')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="career-state">{{ translate('State') }} <span class="text-danger">*</span></label>
+                                <input id="career-state" type="text" name="state" value="{{ old('state') }}" class="form-control border-base @error('state') is-invalid @enderror" placeholder="{{ translate('State') }}" required>
+                                @error('state')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="career-city">{{ translate('City') }} <span class="text-danger">*</span></label>
+                                <input id="career-city" type="text" name="city" value="{{ old('city') }}" class="form-control border-base @error('city') is-invalid @enderror" placeholder="{{ translate('City') }}" required>
+                                @error('city')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="career-area">{{ translate('Area') }} <span class="text-muted">({{ translate('Optional') }})</span></label>
+                                <input id="career-area" type="text" name="area" value="{{ old('area') }}" class="form-control border-base @error('area') is-invalid @enderror" placeholder="{{ translate('Area') }}">
+                                @error('area')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-2">
+                            <h6 class="career-apply-form__section-title">{{ translate('Application_Details') }}</h6>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="career-resume">{{ translate('career_resume_label') }} <span class="text-danger">*</span></label>
+                                <input id="career-resume" type="file" name="resume" class="form-control border-base @error('resume') is-invalid @enderror" accept=".pdf,.doc,.docx" required>
+                                <div class="career-apply-form__hint">{{ translate('career_resume_hint') }}</div>
+                                @error('resume')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="career-notice-period">{{ translate('career_notice_period_label') }} <span class="text-muted">({{ translate('Optional') }})</span></label>
+                                <input id="career-notice-period" type="text" name="notice_period" value="{{ old('notice_period') }}" class="form-control border-base @error('notice_period') is-invalid @enderror" placeholder="{{ translate('career_notice_period_label') }}">
+                                <div class="career-apply-form__hint">{{ translate('career_notice_period_hint') }}</div>
+                                @error('notice_period')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="career-last-ctc">{{ translate('career_last_salary_label') }} <span class="text-muted">({{ translate('Optional') }})</span></label>
+                                <input id="career-last-ctc" type="number" name="last_ctc" value="{{ old('last_ctc') }}" class="form-control border-base @error('last_ctc') is-invalid @enderror" placeholder="{{ translate('career_last_salary_label') }}" min="0" step="0.01" inputmode="decimal">
+                                <div class="career-apply-form__hint">{{ translate('career_last_ctc_hint') }}</div>
+                                @error('last_ctc')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 
@@ -348,6 +629,47 @@
         });
     });
 </script>
+
+@push('script')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('careerApplyModal');
+        const jobIdInput = document.getElementById('career-apply-job-id');
+        const jobTitleLabel = modal ? modal.querySelector('[data-career-apply-job-title]') : null;
+
+        if (!modal || !jobIdInput) {
+            return;
+        }
+
+        modal.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+            const jobId = trigger?.getAttribute('data-job-id') || jobIdInput.value;
+            const jobTitle = trigger?.getAttribute('data-job-title') || '';
+
+            jobIdInput.value = jobId || '';
+
+            if (jobTitleLabel) {
+                jobTitleLabel.textContent = jobTitle;
+            }
+        });
+
+        @if ($errors->any() || $errors->has('career'))
+            const activeJobId = @json((string) old('job_id'));
+            const activeButton = activeJobId
+                ? document.querySelector('[data-target="#careerApplyModal"][data-job-id="' + activeJobId + '"]')
+                : null;
+
+            if (jobTitleLabel && activeButton) {
+                jobTitleLabel.textContent = activeButton.getAttribute('data-job-title') || '';
+            }
+
+            if (typeof window.$ !== 'undefined') {
+                window.$('#careerApplyModal').modal('show');
+            }
+        @endif
+    });
+</script>
+@endpush
 
 
 

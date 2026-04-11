@@ -205,6 +205,10 @@
             gap: .9rem;
         }
 
+        .nisr-story-slider__nav.is-hidden {
+            display: none;
+        }
+
         .nisr-story-slider__buttons {
             display: flex;
             gap: .6rem;
@@ -719,6 +723,7 @@
             const mediaPagination = mediaSlider.querySelector('.nisr-story-slider__pagination');
             const mediaNext = mediaSlider.querySelector('.js-product-story-next');
             const mediaPrev = mediaSlider.querySelector('.js-product-story-prev');
+            const mediaNav = mediaSlider.querySelector('.nisr-story-slider__nav');
             if (!mediaWrapper || !contentWrapper) {
                 return;
             }
@@ -740,12 +745,19 @@
             let mediaSwiper = null;
             let contentSwiper = null;
 
+            function setStoryControlsVisibility(hasMultipleSlides) {
+                if (mediaNav) {
+                    mediaNav.classList.toggle('is-hidden', !hasMultipleSlides);
+                }
+            }
+
             function buildSwipers(filterType) {
                 const filteredRecords = slideRecords.filter(function (record) {
                     return filterType === 'all' || record.type === filterType;
                 });
 
                 if (!filteredRecords.length) {
+                    setStoryControlsVisibility(false);
                     return;
                 }
 
@@ -765,14 +777,16 @@
                     delay: 4000,
                     disableOnInteraction: false,
                 } : false;
+                setStoryControlsVisibility(shouldLoop);
 
                 contentSwiper = new Swiper(contentSlider, {
                     slidesPerView: 1,
                     effect: 'fade',
                     fadeEffect: { crossFade: true },
-                    allowTouchMove: false,
+                    allowTouchMove: shouldLoop,
                     loop: shouldLoop,
                     autoHeight: true,
+                    watchOverflow: true,
                     autoplay: autoplayConfig,
                 });
 
@@ -780,6 +794,8 @@
                     slidesPerView: 1,
                     loop: shouldLoop,
                     speed: 700,
+                    allowTouchMove: shouldLoop,
+                    watchOverflow: true,
                     autoplay: autoplayConfig,
                     controller: {
                         control: contentSwiper,
