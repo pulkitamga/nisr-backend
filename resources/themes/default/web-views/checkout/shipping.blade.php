@@ -187,6 +187,10 @@
                 </div>
 
                 @php($shippingAddresses= \App\Models\ShippingAddress::where(['customer_id'=>auth('customer')->id(), 'is_guest'=>0])->get())
+                @php($loggedInCustomer = auth('customer')->user())
+                @php($prefillShippingContactName = $loggedInCustomer && $shippingAddresses->isEmpty() ? trim(($loggedInCustomer->f_name ?? '').' '.($loggedInCustomer->l_name ?? '')) : '')
+                @php($prefillShippingContactName = $prefillShippingContactName !== '' ? $prefillShippingContactName : ($loggedInCustomer && $shippingAddresses->isEmpty() ? ($loggedInCustomer->name ?? '') : ''))
+                @php($prefillShippingPhone = $loggedInCustomer && $shippingAddresses->isEmpty() ? ($loggedInCustomer->phone ?? '') : '')
                 <form method="post" class="card __card" id="address-form">
                     <div class="card-body p-0">
                         <ul class="list-group">
@@ -235,7 +239,7 @@
                                                             <span class="text-danger checkout-required-indicator" data-required-indicator="contact_person_name">*</span>
                                                         </label>
                                                         <input type="hidden" name="nearest_branch" id="nearest_branch" value="1">
-                                                        <input type="text" class="form-control" name="contact_person_name" id="name">
+                                                        <input type="text" class="form-control" name="contact_person_name" id="name" value="{{ $prefillShippingContactName }}">
                                                     </div>
                                                 </div>
                                                 <div class="col-sm-6">
@@ -243,7 +247,7 @@
                                                         <label>{{ translate('phone')}}
                                                             <span class="text-danger checkout-required-indicator" data-required-indicator="phone">*</span>
                                                         </label>
-                                                        <input type="tel" class="form-control phone-input-with-country-picker-3" id="phone">
+                                                        <input type="tel" class="form-control phone-input-with-country-picker-3" id="phone" value="{{ $prefillShippingPhone }}">
                                                         <input type="hidden" id="shipping_phone_view" class="country-picker-phone-number-3 w-50" name="phone" readonly>
                                                     </div>
                                                 </div>
@@ -534,6 +538,9 @@
                         <h4 class="mb-0 fs-18 text-capitalize">{{ translate('billing_address')}}</h4>
 
                         @php($billingAddresses=\App\Models\ShippingAddress::where(['customer_id'=>auth('customer')->id(), 'is_guest'=>'0'])->get())
+                        @php($prefillBillingContactName = $loggedInCustomer && $billingAddresses->isEmpty() ? trim(($loggedInCustomer->f_name ?? '').' '.($loggedInCustomer->l_name ?? '')) : '')
+                        @php($prefillBillingContactName = $prefillBillingContactName !== '' ? $prefillBillingContactName : ($loggedInCustomer && $billingAddresses->isEmpty() ? ($loggedInCustomer->name ?? '') : ''))
+                        @php($prefillBillingPhone = $loggedInCustomer && $billingAddresses->isEmpty() ? ($loggedInCustomer->phone ?? '') : '')
                         @if($physical_product_view)
                         <div class="form-check d-flex gap-3 align-items-center" id="same_as_shipping_address_wrapper">
                             <input type="checkbox" id="same_as_shipping_address" name="same_as_shipping_address"
@@ -602,7 +609,7 @@
                                                         <div class="form-group">
                                                             <label>{{ translate('contact_person_name')}}<span class="text-danger checkout-required-indicator" data-required-indicator="billing_contact_person_name">*</span></label>
                                                             <input type="text" class="form-control"
-                                                                name="billing_contact_person_name" id="billing_contact_person_name">
+                                                                name="billing_contact_person_name" id="billing_contact_person_name" value="{{ $prefillBillingContactName }}">
                                                         </div>
                                                     </div>
                                                     <div class="col-sm-6">
@@ -611,7 +618,7 @@
                                                                 <span class="text-danger checkout-required-indicator" data-required-indicator="billing_phone">*</span>
                                                             </label>
                                                             <input type="text" class="form-control phone-input-with-country-picker-2"
-                                                                id="billing_phone">
+                                                                id="billing_phone" value="{{ $prefillBillingPhone }}">
                                                             <input type="hidden" class="country-picker-phone-number-2 w-50" name="billing_phone" readonly>
                                                         </div>
                                                     </div>

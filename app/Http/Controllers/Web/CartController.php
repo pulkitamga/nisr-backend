@@ -327,8 +327,12 @@ class CartController extends Controller
 
 
         if (isset($cart['redirect_to']) && $cart['redirect_to'] == 'checkout') {
-            $cart['redirect_to_url'] = route('checkout-details');
-            return request()->ajax() ? response()->json($cart) : redirect()->route('checkout-details');
+            $redirectRouteName = $this->resolveBuyNowRedirectRoute($request);
+            $cart['redirect_to_url'] = route($redirectRouteName);
+
+            return request()->ajax()
+                ? response()->json($cart)
+                : redirect()->route($redirectRouteName);
         }
 
         if (!request()->ajax() && $cart['status'] == 0) {
@@ -336,6 +340,33 @@ class CartController extends Controller
             return back();
         }
         return response()->json($cart);
+    }
+
+    private function resolveBuyNowRedirectRoute(Request $request): string
+    {
+        if ((int)($request->input('buy_now', 0)) !== 1) {
+            return 'checkout-details';
+        }
+
+        $productId = (int) $request->input('id', 0);
+        if ($productId < 1) {
+            return 'checkout-details';
+        }
+
+        $product = Product::query()
+            ->select(['id', 'product_type', 'category_id', 'sub_category_id', 'sub_sub_category_id'])
+            ->find($productId);
+
+        if (!$product || $product->product_type !== 'physical') {
+            return 'checkout-details';
+        }
+
+        $resolvedExtraCharges = app(ProductExtraChargeResolverService::class)->resolveForProduct($product);
+        $hasConfigurableExtraCharges =
+            max(0, (float)($resolvedExtraCharges['installation'] ?? 0)) > 0
+            || max(0, (float)($resolvedExtraCharges['exchange'] ?? 0)) > 0;
+
+        return $hasConfigurableExtraCharges ? 'shop-cart' : 'checkout-details';
     }
 
     public function updateNavCart(): JsonResponse

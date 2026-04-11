@@ -61,7 +61,7 @@ class ChattingController extends BaseController
     {
         return match ($type) {
             'delivery-man' => $this->getChatList(relation: ['deliveryMan'], columnName: 'delivery_man_id', type: $type),
-            'vendor' => $this->getChatList(relation: ['seller'], columnName: 'seller_id', type: $type),
+            'vendor' => $this->getChatList(relation: ['shop', 'seller.shop'], columnName: 'seller_id', type: $type),
         };
     }
 
@@ -91,7 +91,7 @@ class ChattingController extends BaseController
             $requestColumn = 'seller_id';
             $requestId = $request['vendor_id'];
             $whereNotNull = ['user_id', 'seller_id', 'shop_id'];
-            $relation = ['seller'];
+            $relation = ['shop', 'seller.shop'];
             $type = 'vendor';
         }
         $this->updateAllUnseenMessageStatus(requestColumn: $requestColumn, requestId: $requestId);
@@ -156,7 +156,7 @@ class ChattingController extends BaseController
             $requestColumn = 'seller_id';
             $requestId = $vendorData['id'];
             $whereNotNull = ['user_id', 'seller_id', 'shop_id'];
-            $relation = ['seller'];
+            $relation = ['shop', 'seller.shop'];
             $type = 'vendor';
         }
         $chattingMessages = $this->getMessage(requestColumn: $requestColumn, requestId: $requestId, whereNotNull: $whereNotNull, relation: $relation);
@@ -191,12 +191,20 @@ class ChattingController extends BaseController
             )->unique('admin_id');
             $allChattingUsers = $inHouseInfo->count() > 0 ? ($allChattingUsers->merge($inHouseInfo))->sortByDesc('created_at') : $allChattingUsers;
         }
-        $allChattingUsers?->map(function ($chatting) use ($allChattingUsers, $customerId) {
-            $filterColumn = !is_null($chatting?->admin_id) ? 'admin_id' : (!is_null($chatting?->seller_id) ? 'seller_id' : 'delivery_man_id');
-            $filterId = $chatting?->admin_id ?? ($chatting?->seller_id ? $chatting->shop->id : $chatting->deliveryMan->id);
+
+        $allChattingUsers = $allChattingUsers
+            ->filter(fn($chatting) => !is_null($this->resolveChatParticipantContext($chatting)))
+            ->values();
+
+        $allChattingUsers->map(function ($chatting) use ($customerId) {
+            $chatParticipantContext = $this->resolveChatParticipantContext($chatting);
+            if (is_null($chatParticipantContext)) {
+                return;
+            }
+
             $filter = [
                 'user_id' => $customerId,
-                $filterColumn => $filterId,
+                $chatParticipantContext['column'] => $chatParticipantContext['id'],
                 'sent_by_customer' => 0,
                 'seen_by_customer' => 0,
             ];
@@ -205,19 +213,25 @@ class ChattingController extends BaseController
             )->count();
             $chatting['unseen_message_count'] = $unseenMessageCount;
         });
+
         $lastChatUser = null;
+        $lastChatContext = null;
         foreach ($allChattingUsers as $key => $value) {
-            $lastChatUser = (!is_null($value->admin_id) ? ['id' => 0] : (!is_null($value->seller_id) ? $value->shop : $value->deliveryMan));
-            if (!is_null($value->admin_id)) {
-                $columnName = 'admin_id';
-                $type = 'admin';
-                $relation = ['admin'];
+            $lastChatContext = $this->resolveChatParticipantContext($value);
+            if (is_null($lastChatContext)) {
+                continue;
             }
+
+            $lastChatUser = $lastChatContext['user'];
+            $columnName = $lastChatContext['column'];
+            $type = $lastChatContext['type'];
+            $relation = $lastChatContext['relation'];
             break;
         }
+
         if ($lastChatUser) {
-            $this->updateAllUnseenMessageStatus(requestColumn: $columnName, requestId: $lastChatUser['id']);
-            $chattingMessages = $this->getMessage(requestColumn: $columnName, requestId: $lastChatUser['id'], whereNotNull: ['user_id', $columnName], relation: $relation);
+            $this->updateAllUnseenMessageStatus(requestColumn: $columnName, requestId: $lastChatContext['id']);
+            $chattingMessages = $this->getMessage(requestColumn: $columnName, requestId: $lastChatContext['id'], whereNotNull: ['user_id', $columnName], relation: $relation);
         } else {
             $chattingMessages = [];
         }
@@ -287,5 +301,45 @@ class ChattingController extends BaseController
             params: ['user_id' => $customerId, $requestColumn => $requestId],
             data: ['sent_by_customer' => 1]
         );
+    }
+
+    private function resolveChatParticipantContext(object $chatting): ?array
+    {
+        if (!is_null($chatting->admin_id)) {
+            return [
+                'column' => 'admin_id',
+                'id' => $chatting->admin_id,
+                'type' => 'admin',
+                'relation' => ['admin'],
+                'user' => ['id' => 0],
+            ];
+        }
+
+        if (!is_null($chatting->seller_id)) {
+            $shop = $chatting->shop ?? $chatting?->seller?->shop;
+            if (is_null($shop)) {
+                return null;
+            }
+
+            return [
+                'column' => 'seller_id',
+                'id' => $chatting->seller_id,
+                'type' => 'vendor',
+                'relation' => ['shop', 'seller.shop'],
+                'user' => $shop,
+            ];
+        }
+
+        if (!is_null($chatting->delivery_man_id) && !is_null($chatting->deliveryMan)) {
+            return [
+                'column' => 'delivery_man_id',
+                'id' => $chatting->delivery_man_id,
+                'type' => 'delivery-man',
+                'relation' => ['deliveryMan'],
+                'user' => $chatting->deliveryMan,
+            ];
+        }
+
+        return null;
     }
 }

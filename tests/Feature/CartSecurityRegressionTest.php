@@ -352,6 +352,40 @@ class CartSecurityRegressionTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/^(guest|\d+)-/i', $cartGroupId);
     }
 
+    public function test_buy_now_with_configurable_physical_extra_charges_redirects_to_cart_review(): void
+    {
+        $this->setWebShippingType('product_wise');
+
+        $user = $this->createCustomer();
+        $categoryId = $this->createCategory();
+        $productId = $this->createProduct(categoryId: $categoryId);
+        $this->createExtraCharge(categoryId: $categoryId, type: 'installation', charges: 150.0);
+
+        $response = $this->actingAs($user, 'customer')->post(route('cart.add'), [
+            'id' => $productId,
+            'quantity' => 1,
+            'buy_now' => 1,
+        ]);
+
+        $response->assertRedirect(route('shop-cart'));
+    }
+
+    public function test_buy_now_without_configurable_physical_extra_charges_still_redirects_to_checkout_details(): void
+    {
+        $this->setWebShippingType('product_wise');
+
+        $user = $this->createCustomer();
+        $productId = $this->createProduct();
+
+        $response = $this->actingAs($user, 'customer')->post(route('cart.add'), [
+            'id' => $productId,
+            'quantity' => 1,
+            'buy_now' => 1,
+        ]);
+
+        $response->assertRedirect(route('checkout-details'));
+    }
+
     private function createCustomer(): User
     {
         $now = now();
@@ -383,7 +417,8 @@ class CartSecurityRegressionTest extends TestCase
         ?int $id = null,
         int $currentStock = 5,
         int $unitPrice = 100,
-        int $freeShipping = 1
+        int $freeShipping = 1,
+        int $categoryId = 0
     ): int
     {
         $now = now();
@@ -402,7 +437,10 @@ class CartSecurityRegressionTest extends TestCase
             'minimum_order_qty' => 1,
             'choice_options' => '[]',
             'variation' => '[]',
-            'category_ids' => '[]',
+            'category_id' => $categoryId,
+            'sub_category_id' => 0,
+            'sub_sub_category_id' => 0,
+            'category_ids' => $categoryId > 0 ? json_encode([['id' => (string) $categoryId, 'position' => 1]]) : '[]',
             'product_type' => 'physical',
             'free_shipping' => $freeShipping,
             'shipping_cost' => 0,
@@ -421,6 +459,36 @@ class CartSecurityRegressionTest extends TestCase
         }
 
         return (int)DB::table('products')->insertGetId($data);
+    }
+
+    private function createCategory(?string $name = null): int
+    {
+        $now = now();
+
+        return (int) DB::table('categories')->insertGetId([
+            'name' => $name ?? 'Cart Category ' . uniqid(),
+            'slug' => 'cart-category-' . uniqid(),
+            'icon' => 'test.png',
+            'icon_storage_type' => 'public',
+            'parent_id' => 0,
+            'position' => 0,
+            'home_status' => 0,
+            'priority' => 0,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+    }
+
+    private function createExtraCharge(int $categoryId, string $type, float $charges): int
+    {
+        return (int) DB::table('manage_extra_charges')->insertGetId([
+            'category_id' => $categoryId,
+            'type' => $type,
+            'charges' => $charges,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     private function createCart(array $overrides = []): int
@@ -486,6 +554,18 @@ class CartSecurityRegressionTest extends TestCase
             ['seller_id' => 0],
             [
                 'shipping_type' => 'area_wise',
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+    }
+
+    private function setWebShippingType(string $shippingType): void
+    {
+        DB::table('shipping_types')->updateOrInsert(
+            ['seller_id' => 0],
+            [
+                'shipping_type' => $shippingType,
                 'updated_at' => now(),
                 'created_at' => now(),
             ]

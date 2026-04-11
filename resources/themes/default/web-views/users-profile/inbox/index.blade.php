@@ -49,17 +49,18 @@
                                         @foreach($allChattingUsers as $key => $chatting)
                                             @php($userId = !is_null($chatting->admin_id) ? 0 : ($chatting?->seller_id ?? $chatting?->delivery_man_id) )
                                             @php($seenMessage = !is_null($chatting->admin_id) ? $chatting->sent_by_admin :  ($chatting?->seller_id ? $chatting->sent_by_seller : $chatting->sent_by_delivery_man) )
-                                            @php($userName = !is_null($chatting->admin_id) ? getWebConfig('company_name') :  ($chatting?->seller_id ? $chatting?->seller?->shop->name : $chatting?->deliveryMan?->f_name ))
+                                            @php($vendorShop = $chatting?->shop ?? $chatting?->seller?->shop)
+                                            @php($userName = !is_null($chatting->admin_id) ? getWebConfig('company_name') :  ($chatting?->seller_id ? ($vendorShop?->name ?? translate('vendor')) : ($chatting?->deliveryMan?->f_name ?? translate('deliveryman'))) )
                                             <div class="list_filter chat_list {{ $loop->iteration == 1 ? 'active' : ''}} get-ajax-message-view"
                                                  data-user-id="{{ $userId }}">
                                                 <div class="chat_people">
                                                     <div class="chat_img">
                                                         @if($chatting->delivery_man_id)
                                                             <img alt="" class="__inline-14 __rounded-10 img-profile"
-                                                                 src="{{ getStorageImages(path: $chatting?->deliveryMan->image_full_url, type: 'avatar') }}">
+                                                                 src="{{ getStorageImages(path: $chatting?->deliveryMan?->image_full_url, type: 'avatar') }}">
                                                         @elseif($chatting?->seller_id)
                                                             <img alt="" class="__inline-14 __rounded-10 img-profile"
-                                                                 src="{{ getStorageImages(path: $chatting?->seller?->shop->image_full_url, type: 'shop') }}">
+                                                                 src="{{ getStorageImages(path: $vendorShop?->image_full_url, type: 'shop') }}">
                                                         @else
                                                             <img alt="" class="__inline-14 __rounded-10 img-profile"
                                                                  src="{{ getStorageImages(path: $web_config['fav_icon'], type: 'shop') }}">
@@ -232,4 +233,3 @@
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/select-multiple-file.js')}}"></script>
     <script src="{{ theme_asset(path: 'public/assets/front-end/js/select-multiple-image-for-message.js')}}"></script>
 @endpush
-

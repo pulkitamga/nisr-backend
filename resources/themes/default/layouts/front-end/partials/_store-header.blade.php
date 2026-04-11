@@ -519,7 +519,7 @@
                                 echo "<a href='#' class='dropdown-item px-2 py-1 text-center'>{{ __('No Notifications Found') }}</a>";
                             }
                             foreach ($notifications as $notification):  ?>
-                                <a href="#" class="dropdown-item px-2 py-1">
+                                <a href="{{ route('notification.view', $notification->id) }}" class="dropdown-item px-2 py-1">
                                     <span>{{ Str::limit($notification->title, 42, '...') }}</span><br>
                                     <span style="font-size: 12px; color:#6e717a">{{ Str::limit($notification->message,
                                 48, '...') }}</span><br>

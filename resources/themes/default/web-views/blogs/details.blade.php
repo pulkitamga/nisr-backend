@@ -11,6 +11,20 @@
     @if(!isset($blogPlatform) || $blogPlatform === 'web')
         @include('web-views.partials._premium-page-styles')
     @endif
+    <style>
+        .nisr-blog-shell .nisr-page-hero .nisr-page-title {
+            max-inline-size: 18ch;
+            font-size: clamp(2rem, 3.4vw, 3.4rem);
+            line-height: 1.08;
+        }
+
+        @media (max-width: 991.98px) {
+            .nisr-blog-shell .nisr-page-hero .nisr-page-title {
+                max-inline-size: 100%;
+                font-size: clamp(1.85rem, 7vw, 2.8rem);
+            }
+        }
+    </style>
 @endpush
 
 @section('content')
