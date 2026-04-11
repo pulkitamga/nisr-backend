@@ -8,9 +8,14 @@
     <style>
         .nisr-products-shell {
             display: grid;
+            grid-template-columns: minmax(0, 1fr);
             gap: 1.5rem;
             --nisr-showcase-hero-height: clamp(14rem, 28vw, 19rem);
             --nisr-showcase-media-height: clamp(13rem, 26vw, 17rem);
+        }
+
+        .nisr-products-shell > * {
+            min-width: 0;
         }
 
         .nisr-header-band {
@@ -71,6 +76,8 @@
 
         .nisr-products-hero-slider {
             position: relative;
+            inline-size: 100%;
+            max-inline-size: 100%;
         }
 
         .nisr-products-hero-slider .swiper-slide {
@@ -159,6 +166,8 @@
         .nisr-story-slider {
             position: relative;
             overflow: hidden;
+            inline-size: 100%;
+            max-inline-size: 100%;
             block-size: var(--nisr-showcase-media-height);
             border: 1px solid rgba(16, 47, 58, 0.08);
             border-radius: 1.6rem;
@@ -236,6 +245,8 @@
         }
 
         .nisr-story-data {
+            inline-size: 100%;
+            max-inline-size: 100%;
             border: 1px solid rgba(16, 47, 58, 0.08);
             border-radius: 1.6rem;
             background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(244,249,248,.98) 100%);
