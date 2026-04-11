@@ -1,23 +1,21 @@
-@extends('layouts.front-end.app')
+@extends('theme-views.layouts.app')
 
-@section('title', translate('service_policy'))
+@section('title', translate('Service Policy').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 
 @section('content')
-@php
-    $setting = getWebConfig('service_policy');
-
-    $translatedContent = getBusinessSettingTranslation(
-        'service_policy',
-        'value',
-        $setting ?? ''
-    );
-@endphp
-<div class="container py-5 rtl text-align-direction">
-    <h2 class="text-center mb-3 headerTitle">{{ translate('service_policy') }}</h2>
-    <div class="card __card">
-        <div class="card-body text-justify">
-            {!! $translatedContent !!}
+    <main class="main-content d-flex flex-column gap-3 pb-3">
+        <div class="page-title overlay py-5 __opacity-half background-custom-fit"
+             data-bg-img = {{getStorageImages(path: imagePathProcessing(imageData: (isset($pageTitleBanner['value']) ?json_decode($pageTitleBanner['value'])?->image : null),path: 'banner'),source: theme_asset('assets/img/media/page-title-bg.png'))}}>
+            <div class="container">
+                <h1 class="absolute-white text-center text-capitalize">{{ translate('service_policy') }}</h1>
+            </div>
         </div>
-    </div>
-</div>
+        <div class="container">
+            <div class="card my-4">
+                <div class="card-body p-lg-4 text-dark page-paragraph">
+                    {!! $servicePolicy['content'] ?? '' !!}
+                </div>
+            </div>
+        </div>
+    </main>
 @endsection

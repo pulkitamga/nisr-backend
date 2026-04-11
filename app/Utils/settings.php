@@ -82,6 +82,55 @@ if (!function_exists('isLanguageSensitiveWebConfigKey')) {
     }
 }
 
+if (!function_exists('decodeBusinessPolicyConfig')) {
+    function decodeBusinessPolicyConfig(mixed $rawConfig): array
+    {
+        if (is_array($rawConfig)) {
+            return $rawConfig;
+        }
+
+        if (is_string($rawConfig)) {
+            $decoded = json_decode($rawConfig, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        if (is_object($rawConfig)) {
+            return (array) $rawConfig;
+        }
+
+        return [];
+    }
+}
+
+if (!function_exists('getBusinessPolicyConfig')) {
+    function getBusinessPolicyConfig(string $type, bool $jsonContent = true): ?array
+    {
+        $rawConfig = getWebConfig($type);
+        $setting = BusinessSetting::query()
+            ->select(['id', 'type', 'value', 'is_active'])
+            ->where('type', $type)
+            ->first();
+
+        if ($rawConfig === null && !$setting) {
+            return null;
+        }
+
+        $decodedConfig = decodeBusinessPolicyConfig($rawConfig);
+        $status = $jsonContent && array_key_exists('status', $decodedConfig)
+            ? (int) $decodedConfig['status']
+            : (int) ($setting->is_active ?? 0);
+
+        $fallbackContent = $jsonContent
+            ? (string) ($decodedConfig['content'] ?? '')
+            : (is_string($rawConfig) ? $rawConfig : (string) ($decodedConfig['content'] ?? ''));
+
+        return [
+            'status' => $status,
+            'content' => getBusinessSettingTranslation($type, 'value', $fallbackContent),
+        ];
+    }
+}
+
 if (!function_exists('getLanguageWiseBusinessConfigValue')) {
     function getLanguageWiseBusinessConfigValue(mixed $decodedValue, mixed $fallbackValue = ''): string
     {

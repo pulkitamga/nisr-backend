@@ -3,22 +3,11 @@
 @section('title',translate('refund_policy'))
 
 @section('content')
-@php
-    $setting = getWebConfig('refund-policy');
-
-    $settingValue = json_decode($setting->value ?? '{}', true);
-
-    $translatedContent = getBusinessSettingTranslation(
-        'refund-policy',
-        'value',
-        $settingValue['content'] ?? ''
-    );
-@endphp
 <div class="container py-5 rtl text-align-direction">
-    <h2 class="text-center mb-3 headerTitle">{{ translate('refund-policy') }}</h2>
+    <h2 class="text-center mb-3 headerTitle">{{ translate('Refund Policy') }}</h2>
     <div class="card __card">
         <div class="card-body text-justify">
-            {!! $translatedContent !!}
+            {!! $refundPolicy['content'] ?? '' !!}
         </div>
     </div>
 </div>

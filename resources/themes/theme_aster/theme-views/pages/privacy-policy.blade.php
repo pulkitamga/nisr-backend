@@ -13,7 +13,7 @@
         <div class="container">
             <div class="card my-4">
                 <div class="card-body p-lg-4 text-dark page-paragraph">
-                    {!! $privacyPolicy !!}
+                    {!! $privacyPolicy['content'] ?? '' !!}
                 </div>
             </div>
         </div>

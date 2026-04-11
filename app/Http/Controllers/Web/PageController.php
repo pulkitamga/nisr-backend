@@ -21,7 +21,6 @@ use App\Models\CareerBenefits;
 use App\Models\Branch;
 use App\Models\CmsService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\CmsProduct;
 use Illuminate\Support\Collection;
 
@@ -202,8 +201,8 @@ class PageController extends Controller
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $refundPolicy = getWebConfig(name: 'refund-policy');
-        if (!$refundPolicy['status']) {
+        $refundPolicy = getBusinessPolicyConfig('refund-policy');
+        if (!$refundPolicy || !($refundPolicy['status'] ?? 0)) {
             return redirect()->route('home');
         }
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_refund_policy'], value: ['status' => '1']);
@@ -216,8 +215,8 @@ class PageController extends Controller
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $returnPolicy = getWebConfig(name: 'return-policy');
-        if (!$returnPolicy['status']) {
+        $returnPolicy = getBusinessPolicyConfig('return-policy');
+        if (!$returnPolicy || !($returnPolicy['status'] ?? 0)) {
             return redirect()->route('home');
         }
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_return_policy'], value: ['status' => '1']);
@@ -230,7 +229,7 @@ class PageController extends Controller
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $privacyPolicy = getWebConfig(name: 'privacy_policy');
+        $privacyPolicy = getBusinessPolicyConfig('privacy_policy', false);
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_privacy_policy'], value: ['status' => '1']);
         return view(VIEW_FILE_NAMES['privacy_policy_page'], compact('privacyPolicy', 'pageTitleBanner', 'robotsMetaContentData'));
     }
@@ -242,12 +241,14 @@ class PageController extends Controller
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
 
-        $servicePolicy = $this->createPolicyFromString('service_policy');
+        $servicePolicy = getBusinessPolicyConfig('service_policy', false);
         if (!$servicePolicy || !($servicePolicy['status'] ?? 0)) {
             return redirect()->route('home');
         }
 
-        return view(VIEW_FILE_NAMES['service_policy_page'], compact('servicePolicy', 'robotsMetaContentData'));
+        $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_service_policy'], value: ['status' => '1']);
+
+        return view(VIEW_FILE_NAMES['service_policy_page'], compact('servicePolicy', 'pageTitleBanner', 'robotsMetaContentData'));
     }
 
     public function getCancellationPolicyView(): View|RedirectResponse
@@ -256,8 +257,8 @@ class PageController extends Controller
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $cancellationPolicy = getWebConfig(name: 'cancellation-policy');
-        if (!$cancellationPolicy['status']) {
+        $cancellationPolicy = getBusinessPolicyConfig('cancellation-policy');
+        if (!$cancellationPolicy || !($cancellationPolicy['status'] ?? 0)) {
             return redirect()->route('home');
         }
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_cancellation_policy'], value: ['status' => '1']);
@@ -270,8 +271,8 @@ class PageController extends Controller
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $shippingPolicy = getWebConfig(name: 'shipping-policy');
-        if (!$shippingPolicy['status']) {
+        $shippingPolicy = getBusinessPolicyConfig('shipping-policy');
+        if (!$shippingPolicy || !($shippingPolicy['status'] ?? 0)) {
             return redirect()->route('home');
         }
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_shipping_policy'], value: ['status' => '1']);
@@ -322,14 +323,14 @@ class PageController extends Controller
         }
 
         // JSON array policies
-        $refund_policy = getWebConfig(name: 'refund-policy');
-        $return_policy = $this->normalizePolicyStatus(getWebConfig(name: 'return-policy'));
-        $cancellation_policy = getWebConfig(name: 'cancellation-policy');
-        $shipping_policy = $this->normalizeShippingPolicy(getWebConfig(name: 'shipping-policy'));
+        $refund_policy = getBusinessPolicyConfig('refund-policy');
+        $return_policy = getBusinessPolicyConfig('return-policy');
+        $cancellation_policy = getBusinessPolicyConfig('cancellation-policy');
+        $shipping_policy = getBusinessPolicyConfig('shipping-policy');
 
         // String content policies - convert to array
-        $privacy_policy = $this->createPolicyFromString('privacy_policy');
-        $service_policy = $this->createPolicyFromString('service_policy');
+        $privacy_policy = getBusinessPolicyConfig('privacy_policy', false);
+        $service_policy = getBusinessPolicyConfig('service_policy', false);
 
         return view('web-views.pages.our-policies', compact(
             'robotsMetaContentData',
@@ -342,50 +343,4 @@ class PageController extends Controller
         ));
     }
 
-    /**
-     * Convert string status to integer
-     */
-    private function normalizePolicyStatus($policy)
-    {
-        if (isset($policy['status'])) {
-            $policy['status'] = (int) $policy['status'];
-        }
-        return $policy;
-    }
-
-    /**
-     * Special handling for shipping policy
-     */
-    private function normalizeShippingPolicy($policy)
-    {
-        if (!$policy) return null;
-
-        $record = DB::table('business_settings')
-            ->where('type', 'shipping-policy')
-            ->first();
-
-        if ($record && $record->is_active == 1 && isset($policy['status'])) {
-            $policy['status'] = 1;
-        }
-
-        return $this->normalizePolicyStatus($policy);
-    }
-
-    /**
-     * Create policy array from string content
-     */
-    private function createPolicyFromString($type)
-    {
-        $content = getWebConfig(name: $type);
-        if (empty($content)) return null;
-
-        $record = DB::table('business_settings')
-            ->where('type', $type)
-            ->first();
-
-        return [
-            'status' => $record->is_active ?? 1,
-            'content' => $content
-        ];
-    }
 }
