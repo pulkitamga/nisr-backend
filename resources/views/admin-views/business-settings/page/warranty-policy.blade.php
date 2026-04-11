@@ -32,11 +32,24 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">{{ translate('warranty_policy') }}</h5>
-                </div>
                 <form action="{{ route('admin.business-settings.update-warranty') }}" method="post">
                     @csrf
+                <div class="card-header">
+                    <h5 class="mb-0">{{ translate('warranty_policy') }}</h5>
+                    <label class="switcher show-status-text justify-content-end" for="warranty-policy-status">
+                        <input type="checkbox" class="switcher_input toggle-switch-message" value="1" name="status"
+                               id="warranty-policy-status" {{ ($warrantyPolicyPage->status ?? 0) == 1 ? 'checked' : '' }}
+                               data-modal-id="toggle-modal"
+                               data-toggle-id="warranty-policy-status"
+                               data-on-image=""
+                               data-off-image=""
+                               data-on-title="{{ translate('want_to_Turn_ON').' '.translate('warranty_policy').' '.translate('status') }}"
+                               data-off-title="{{ translate('want_to_Turn_OFF').' '.translate('warranty_policy').' '.translate('status') }}"
+                               data-on-message="<p>{{ translate('if_you_enable_this_option_warranty_policy_page_will_be_shown_in_the_user_app_and_website') }}</p>"
+                               data-off-message="<p>{{ translate('if_you_disable_this_option_warranty_policy_page_will_not_be_shown_in_the_user_app_and_website') }}</p>">
+                            <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                    </label>
+                </div>
                     <div class="card-body">
                         @php
                     $activeLanguage = $defaultLanguage;

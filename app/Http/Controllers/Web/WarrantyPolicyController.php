@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\BusinessPage;
 use App\Models\Policy;
 use Illuminate\Http\Request;
 
@@ -10,6 +11,10 @@ class WarrantyPolicyController extends Controller
 {
     public function show(Request $request)
     {
+        if (!$this->isWarrantyPolicyEnabled()) {
+            return redirect()->route('home');
+        }
+
         $locale = Policy::normalizeLocale($request->query('locale', app()->getLocale()));
 
         $policy = Policy::with('translations')
@@ -25,6 +30,10 @@ class WarrantyPolicyController extends Controller
 
     public function showVersion(Request $request, $version)
     {
+        if (!$this->isWarrantyPolicyEnabled()) {
+            return redirect()->route('home');
+        }
+
         $locale = Policy::normalizeLocale($request->query('locale', app()->getLocale()));
 
         $policy = Policy::with('translations')
@@ -39,5 +48,13 @@ class WarrantyPolicyController extends Controller
         $policyValue = $policy->getLocalizedContentHtml($locale);
 
         return view(VIEW_FILE_NAMES['warranty_policy'], compact('policy', 'isOutdated', 'policyValue'));
+    }
+
+    private function isWarrantyPolicyEnabled(): bool
+    {
+        return BusinessPage::query()
+            ->where('slug', 'warranty-policy')
+            ->where('status', 1)
+            ->exists();
     }
 }

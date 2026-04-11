@@ -272,19 +272,53 @@
     }
 
     .nisr-ft-contact {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: .85rem 1.5rem;
+        justify-content: space-between;
     }
 
     .nisr-ft-contact-item {
-        display: flex;
-        align-items: start;
+        display: inline-grid;
+        grid-auto-flow: column;
+        grid-auto-columns: max-content;
+        align-items: center;
         gap: .6rem;
         color: var(--nisr-ft-muted);
         font-size: .84rem;
         line-height: 1.5;
         transition: color .2s ease;
+        width: fit-content;
+        justify-content: start;
+    }
+
+    .nisr-ft-contact-item--email a {
+        display: inline-block;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+        direction: ltr;
+        unicode-bidi: isolate;
+        text-align: start;
+    }
+
+    .nisr-ft-contact-item--phone {
+        min-inline-size: 13ch;
+    }
+
+    .nisr-ft-contact-item--phone a {
+        display: inline-block;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+        direction: ltr;
+        unicode-bidi: isolate;
+        text-align: start;
+    }
+
+    .nisr-ft-contact-item--email {
+        min-inline-size: 26ch;
     }
 
     .nisr-ft-contact-item:hover {
@@ -295,7 +329,6 @@
     .nisr-ft-contact-item svg {
         width: .95rem;
         height: .95rem;
-        margin-top: .15rem;
         opacity: .82;
         flex-shrink: 0;
     }
@@ -389,7 +422,9 @@
         }
 
         .nisr-ft-contact {
-            grid-template-columns: 1fr;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start;
         }
     }
 
@@ -541,11 +576,11 @@
                     </div>
                     <hr class="nisr-ft-divider">
                     <div class="nisr-ft-contact">
-                        <div class="nisr-ft-contact-item">
+                        <div class="nisr-ft-contact-item nisr-ft-contact-item--phone">
                             <i class="fa fa-phone"></i>
-                            <a href="{{ 'tel:' . $web_config['phone'] }}" style="direction:ltr;display:inline-block;">{{ getWebConfig(name: 'company_phone') }}</a>
+                            <a href="{{ 'tel:' . $web_config['phone'] }}">{{ getWebConfig(name: 'company_phone') }}</a>
                         </div>
-                        <div class="nisr-ft-contact-item">
+                        <div class="nisr-ft-contact-item nisr-ft-contact-item--email">
                             <i class="fa fa-envelope"></i>
                             <a href="{{ 'mailto:' . getWebConfig(name: 'company_email') }}">{{ getWebConfig(name: 'company_email') }}</a>
                         </div>

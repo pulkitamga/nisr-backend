@@ -90,6 +90,13 @@
     @php
         $policies = [
             [
+                'is_active' => isset($terms_policy['status']) && $terms_policy['status'] == 1,
+                'route' => route('terms'),
+                'title' => translate('Terms and Conditions'),
+                'description' => translate('Policy_summary_terms'),
+                'icon' => 'fa fa-file-text-o',
+            ],
+            [
                 'is_active' => isset($shipping_policy['status']) && $shipping_policy['status'] == 1,
                 'route' => route('shipping-policy'),
                 'title' => translate('Shipping Policy'),
@@ -123,6 +130,13 @@
                 'title' => translate('Service Policy'),
                 'description' => translate('Policy_summary_service'),
                 'icon' => 'fa fa-cogs',
+            ],
+            [
+                'is_active' => isset($warranty_policy['status']) && $warranty_policy['status'] == 1,
+                'route' => route('warranty-policy'),
+                'title' => translate('Warranty Policy'),
+                'description' => translate('Policy_summary_warranty'),
+                'icon' => 'fa fa-shield',
             ],
             [
                 'is_active' => isset($privacy_policy['status']) && $privacy_policy['status'] == 1,

@@ -46,7 +46,8 @@ class PagesController extends BaseController
     public function getTermsConditionView(): View
     {
         $terms_condition = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'terms_condition'], relations: ['translations']);
-        return view(Pages::TERMS_CONDITION[VIEW], compact('terms_condition'));
+        $termsConditionPage = $this->getOrCreateBusinessPageForType('terms_condition');
+        return view(Pages::TERMS_CONDITION[VIEW], compact('terms_condition', 'termsConditionPage'));
     }
     public function getServicePolicyView(): View
     {
@@ -64,7 +65,8 @@ class PagesController extends BaseController
             ->orderByDesc('published_at')
             ->orderByDesc('created_at')
             ->first();
-        return view(Pages::WARRANTY_POLICY[VIEW], compact('warranty_policy'));
+        $warrantyPolicyPage = $this->getOrCreateBusinessPageForType('warranty_policy');
+        return view(Pages::WARRANTY_POLICY[VIEW], compact('warranty_policy', 'warrantyPolicyPage'));
     }
 
     public function updateTermsCondition(TermsConditionRequest $request): RedirectResponse
@@ -72,11 +74,15 @@ class PagesController extends BaseController
         $terms_condition = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'terms_condition']);
         $dataArray = $request->value ?? []; // safe fallback
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $status = (int) $request->get('status', 0);
 
         if ($defaultLangIndex !== false && $terms_condition && isset($dataArray[$defaultLangIndex])) {
             $this->businessSettingRepo->updateWhere(
                 params: ['type' => 'terms_condition'],
-                data: ['value' => $dataArray[$defaultLangIndex]]
+                data: [
+                    'value' => $dataArray[$defaultLangIndex],
+                    'is_active' => $status,
+                ]
             );
 
             $this->translationRepo->update(
@@ -89,6 +95,7 @@ class PagesController extends BaseController
                 request: $request,
                 type: 'terms_condition',
                 defaultLangIndex: $defaultLangIndex,
+                status: $status,
             );
 
             Toastr::success(translate('terms_condition_updated_successfully'));
@@ -104,11 +111,15 @@ class PagesController extends BaseController
 
         $dataArray = $request->value ?? []; // safe fallback
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $status = (int) $request->get('status', 0);
 
         if ($defaultLangIndex !== false && $service_policy && isset($dataArray[$defaultLangIndex])) {
             $this->businessSettingRepo->updateWhere(
                 params: ['type' => 'service_policy'],
-                data: ['value' => $dataArray[$defaultLangIndex]]
+                data: [
+                    'value' => $dataArray[$defaultLangIndex],
+                    'is_active' => $status,
+                ]
             );
             $this->translationRepo->update(
                 request: $request,
@@ -116,7 +127,7 @@ class PagesController extends BaseController
                 id: $service_policy->id
             );
 
-            $this->syncServicePolicyPage($request, $defaultLangIndex);
+            $this->syncServicePolicyPage($request, $defaultLangIndex, $status);
 
             Toastr::success(translate('service_policy_updated_successfully'));
         } else {
@@ -134,7 +145,10 @@ class PagesController extends BaseController
         $version = $data['version'] ?? '1.0';
         $defaultLangIndex = getDefaultLanguageIndex(['lang' => $data['lang']]);
         $value = $data['value'][$defaultLangIndex] ?? ($data['value'][0] ?? '');
-        $publishedAt = isset($data['published_at']) ? \Carbon\Carbon::parse($data['published_at']) : now();
+        $status = (int) $request->get('status', 0);
+        $publishedAt = $status === 1
+            ? (isset($data['published_at']) ? \Carbon\Carbon::parse($data['published_at']) : now())
+            : null;
 
         $slugBase = Str::slug("warranty-policy-{$version}");
         $slug = $slugBase;
@@ -149,7 +163,7 @@ class PagesController extends BaseController
             }
 
             $policy->update([
-                'effective_date' => $publishedAt->toDateString(),
+                'effective_date' => $publishedAt?->toDateString() ?? now()->toDateString(),
                 'content_html' => $value,
                 'content_text' => strip_tags($value),
                 'slug' => $slug,
@@ -171,7 +185,7 @@ class PagesController extends BaseController
 
             $policy = Policy::create([
                 'version' => $version,
-                'effective_date' => $publishedAt->toDateString(),
+                'effective_date' => $publishedAt?->toDateString() ?? now()->toDateString(),
                 'content_html' => $value,
                 'content_text' => strip_tags($value),
                 'slug' => $slug,
@@ -187,14 +201,23 @@ class PagesController extends BaseController
             Toastr::success(translate('warranty_policy_created_successfully'));
         }
 
+        $this->syncBusinessPage(
+            request: $request,
+            type: 'warranty_policy',
+            defaultLangIndex: $defaultLangIndex,
+            status: $status,
+        );
+
         clearWebConfigCacheKeys();
+        cacheRemoveByType(type: 'business_pages');
         return back();
     }
 
     public function getPrivacyPolicyView(): View
     {
         $privacy_policy = $this->businessSettingRepo->getFirstWhere(params: ['type' => 'privacy_policy'], relations: ['translations']);
-        return view(Pages::PRIVACY_POLICY[VIEW], compact('privacy_policy'));
+        $privacyPolicyPage = $this->getOrCreateBusinessPageForType('privacy_policy');
+        return view(Pages::PRIVACY_POLICY[VIEW], compact('privacy_policy', 'privacyPolicyPage'));
     }
 
     public function updatePrivacyPolicy(PrivacyPolicyRequest $request): RedirectResponse
@@ -203,11 +226,15 @@ class PagesController extends BaseController
 
         $dataArray = $request->value ?? [];
         $defaultLangIndex = getDefaultLanguageIndex($request);
+        $status = (int) $request->get('status', 0);
 
         if ($defaultLangIndex !== false && $privacy_policy && isset($dataArray[$defaultLangIndex])) {
             $this->businessSettingRepo->updateWhere(
                 params: ['type' => 'privacy_policy'],
-                data: ['value' => $dataArray[$defaultLangIndex]]
+                data: [
+                    'value' => $dataArray[$defaultLangIndex],
+                    'is_active' => $status,
+                ]
             );
 
             $this->translationRepo->update(
@@ -220,6 +247,7 @@ class PagesController extends BaseController
                 request: $request,
                 type: 'privacy_policy',
                 defaultLangIndex: $defaultLangIndex,
+                status: $status,
             );
 
             Toastr::success(translate('privacy_policy_updated_successfully'));
@@ -375,7 +403,7 @@ class PagesController extends BaseController
     {
         return BusinessSetting::firstOrCreate(
             ['type' => 'service_policy'],
-            ['value' => '']
+            ['value' => '', 'is_active' => 1]
         );
     }
 
@@ -392,12 +420,13 @@ class PagesController extends BaseController
         );
     }
 
-    private function syncServicePolicyPage(ServicePolicyRequest $request, int $defaultLangIndex): void
+    private function syncServicePolicyPage(ServicePolicyRequest $request, int $defaultLangIndex, int $status): void
     {
         $this->syncBusinessPage(
             request: $request,
             type: 'service_policy',
             defaultLangIndex: $defaultLangIndex,
+            status: $status,
         );
     }
 
@@ -471,6 +500,7 @@ class PagesController extends BaseController
             'terms_condition' => 'terms-and-conditions',
             'privacy_policy' => 'privacy-policy',
             'service_policy' => 'service-policy',
+            'warranty_policy' => 'warranty-policy',
             'about_us' => 'about-us',
             default => $type,
         };
@@ -482,6 +512,7 @@ class PagesController extends BaseController
             'terms_condition' => 'Terms & Conditions',
             'privacy_policy' => 'Privacy Policy',
             'service_policy' => 'Service Policy',
+            'warranty_policy' => 'Warranty Policy',
             'shipping-policy' => 'Shipping Policy',
             'return-policy' => 'Return Policy',
             'refund-policy' => 'Refund Policy',

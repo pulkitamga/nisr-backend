@@ -590,13 +590,23 @@ trait CacheManagerTrait
                 continue;
             }
 
-            $existingPage = BusinessPage::where('slug', $definition['slug'])->first();
-            if ($existingPage) {
-                continue;
-            }
-
             $description = $this->extractBusinessPageDescription(setting: $setting, definition: $definition);
             $status = $this->extractBusinessPageStatus(setting: $setting, definition: $definition);
+            $existingPage = BusinessPage::where('slug', $definition['slug'])->first();
+            if ($existingPage) {
+                $existingPage->fill([
+                    'title' => $definition['title'],
+                    'description' => $description,
+                    'status' => $status,
+                ])->save();
+
+                $this->copyBusinessPageDescriptionTranslations(
+                    page: $existingPage,
+                    setting: $setting,
+                    definition: $definition
+                );
+                continue;
+            }
 
             $page = BusinessPage::create([
                 'title' => $definition['title'],
@@ -680,6 +690,12 @@ trait CacheManagerTrait
 
     private function extractBusinessPageStatus(BusinessSetting $setting, array $definition): int
     {
+        $policy = getBusinessPolicyConfig($setting->type, (bool) ($definition['json_content'] ?? false));
+
+        if ($policy) {
+            return (int) ($policy['status'] ?? 0);
+        }
+
         if (!($definition['json_content'] ?? false)) {
             return 1;
         }

@@ -19,7 +19,9 @@ use App\Models\CareerJob;
 use App\Models\CareerSection;
 use App\Models\CareerBenefits;
 use App\Models\Branch;
+use App\Models\BusinessPage;
 use App\Models\CmsService;
+use App\Models\Policy;
 use Illuminate\Http\Request;
 use App\Models\CmsProduct;
 use Illuminate\Support\Collection;
@@ -223,13 +225,20 @@ class PageController extends Controller
         return view(VIEW_FILE_NAMES['return_policy_page'], compact('returnPolicy', 'pageTitleBanner', 'robotsMetaContentData'));
     }
 
-    public function getPrivacyPolicyView(): View
+    public function getPrivacyPolicyView(): View|RedirectResponse
     {
         $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'privacy-policy']);
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $privacyPolicy = getBusinessPolicyConfig('privacy_policy', false);
+        $privacyPolicy = $this->resolveConfigBackedPolicy(
+            slug: 'privacy-policy',
+            type: 'privacy_policy',
+            jsonContent: false,
+        );
+        if (!$privacyPolicy || !($privacyPolicy['status'] ?? 0)) {
+            return redirect()->route('home');
+        }
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_privacy_policy'], value: ['status' => '1']);
         return view(VIEW_FILE_NAMES['privacy_policy_page'], compact('privacyPolicy', 'pageTitleBanner', 'robotsMetaContentData'));
     }
@@ -241,7 +250,11 @@ class PageController extends Controller
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
 
-        $servicePolicy = getBusinessPolicyConfig('service_policy', false);
+        $servicePolicy = $this->resolveConfigBackedPolicy(
+            slug: 'service-policy',
+            type: 'service_policy',
+            jsonContent: false,
+        );
         if (!$servicePolicy || !($servicePolicy['status'] ?? 0)) {
             return redirect()->route('home');
         }
@@ -279,13 +292,17 @@ class PageController extends Controller
         return view(VIEW_FILE_NAMES['shipping_policy_page'], compact('shippingPolicy', 'pageTitleBanner', 'robotsMetaContentData'));
     }
 
-    public function getTermsAndConditionView(): View
+    public function getTermsAndConditionView(): View|RedirectResponse
     {
         $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'terms']);
         if (!$robotsMetaContentData) {
             $robotsMetaContentData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => 'default']);
         }
-        $termsCondition = getWebConfig(name: 'terms_condition');
+        $termsPolicy = $this->resolveTermsPolicy();
+        if (!$termsPolicy || !($termsPolicy['status'] ?? 0)) {
+            return redirect()->route('home');
+        }
+        $termsCondition = $termsPolicy['content'];
         $pageTitleBanner = $this->businessSettingRepo->whereJsonContains(params: ['type' => 'banner_terms_conditions'], value: ['status' => '1']);
         return view(VIEW_FILE_NAMES['terms_conditions_page'], compact('termsCondition', 'pageTitleBanner', 'robotsMetaContentData'));
     }
@@ -329,18 +346,93 @@ class PageController extends Controller
         $shipping_policy = getBusinessPolicyConfig('shipping-policy');
 
         // String content policies - convert to array
-        $privacy_policy = getBusinessPolicyConfig('privacy_policy', false);
-        $service_policy = getBusinessPolicyConfig('service_policy', false);
+        $terms_policy = $this->resolveTermsPolicy();
+        $privacy_policy = $this->resolveConfigBackedPolicy(
+            slug: 'privacy-policy',
+            type: 'privacy_policy',
+            jsonContent: false,
+        );
+        $service_policy = $this->resolveConfigBackedPolicy(
+            slug: 'service-policy',
+            type: 'service_policy',
+            jsonContent: false,
+        );
+        $warranty_policy = $this->resolveWarrantyPolicy();
 
         return view('web-views.pages.our-policies', compact(
             'robotsMetaContentData',
+            'terms_policy',
             'refund_policy',
             'return_policy',
             'cancellation_policy',
             'shipping_policy',
             'service_policy',
-            'privacy_policy'
+            'privacy_policy',
+            'warranty_policy'
         ));
+    }
+
+    private function resolveTermsPolicy(): ?array
+    {
+        if (!$this->isBusinessPageEnabled('terms-and-conditions')) {
+            return null;
+        }
+
+        $termsContent = getWebConfig(name: 'terms_condition');
+
+        if (!is_string($termsContent) || trim(strip_tags($termsContent)) === '') {
+            return null;
+        }
+
+        return [
+            'status' => 1,
+            'content' => $termsContent,
+        ];
+    }
+
+    private function resolveWarrantyPolicy(): ?array
+    {
+        if (!$this->isBusinessPageEnabled('warranty-policy')) {
+            return null;
+        }
+
+        $policy = Policy::query()
+            ->published()
+            ->orderByDesc('effective_date')
+            ->orderByDesc('published_at')
+            ->first();
+
+        if (!$policy) {
+            return null;
+        }
+
+        return [
+            'status' => 1,
+            'content' => $policy->getLocalizedContentHtml(Policy::normalizeLocale(app()->getLocale())),
+        ];
+    }
+
+    private function resolveConfigBackedPolicy(string $slug, string $type, bool $jsonContent = true): ?array
+    {
+        if (!$this->isBusinessPageEnabled($slug)) {
+            return null;
+        }
+
+        $policy = getBusinessPolicyConfig($type, $jsonContent);
+
+        if (!$policy || !($policy['status'] ?? 0)) {
+            return null;
+        }
+
+        return $policy;
+    }
+
+    private function isBusinessPageEnabled(string $slug): bool
+    {
+        return BusinessPage::query()
+            ->where('slug', $slug)
+            ->where('status', 1)
+            ->exists();
     }
 
 }

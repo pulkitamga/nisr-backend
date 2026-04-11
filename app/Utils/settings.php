@@ -116,13 +116,24 @@ if (!function_exists('getBusinessPolicyConfig')) {
         }
 
         $decodedConfig = decodeBusinessPolicyConfig($rawConfig);
+        $fallbackContent = $jsonContent
+            ? (string) ($decodedConfig['content'] ?? '')
+            : (is_string($rawConfig) ? $rawConfig : (string) ($decodedConfig['content'] ?? ''));
+
         $status = $jsonContent && array_key_exists('status', $decodedConfig)
             ? (int) $decodedConfig['status']
             : (int) ($setting->is_active ?? 0);
 
-        $fallbackContent = $jsonContent
-            ? (string) ($decodedConfig['content'] ?? '')
-            : (is_string($rawConfig) ? $rawConfig : (string) ($decodedConfig['content'] ?? ''));
+        // Shipping policy historically drifted between JSON status and the row-level activation flag.
+        // When content exists and the record is active, treat it as published so the website/app stay in sync.
+        if (
+            $type === 'shipping-policy'
+            && $status !== 1
+            && (int) ($setting->is_active ?? 0) === 1
+            && trim(strip_tags($fallbackContent)) !== ''
+        ) {
+            $status = 1;
+        }
 
         return [
             'status' => $status,
