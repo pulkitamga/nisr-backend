@@ -928,7 +928,7 @@
             bAreaReq = null;
 
         // 2. Optimized Helper Function
-        function renderOptions(selector, data, placeholder) {
+        function renderOptions(selector, data, placeholder, autoSelectSingle = false) {
             let html = `<option value="">${placeholder}</option>`;
             if (data && Array.isArray(data) && data.length > 0) {
                 data.forEach(function(item) {
@@ -939,7 +939,12 @@
             } else {
                 html = `<option value="">{{ __('No available locations') }}</option>`;
             }
-            $(selector).html(html);
+            const selectElement = $(selector);
+            selectElement.html(html);
+
+            if (autoSelectSingle && Array.isArray(data) && data.length === 1) {
+                selectElement.val(String(data[0].id)).trigger('change');
+            }
         }
 
         // --- SHIPPING SECTION ---
@@ -949,7 +954,7 @@
             stateReq = $.get(getStatesURL, {
                 country: this.value
             }, function(res) {
-                renderOptions('#state_id', res.states, "{{ __('Select State') }}");
+                renderOptions('#state_id', res.states, "{{ __('Select State') }}", true);
             });
         });
 
@@ -1031,7 +1036,7 @@
             bStateReq = $.get(getBillingStatesURL, {
                 billing_country: this.value
             }, function(res) {
-                renderOptions('#billing_state_id', res.states, "{{ __('Select State') }}");
+                renderOptions('#billing_state_id', res.states, "{{ __('Select State') }}", true);
             });
         });
 
@@ -1077,6 +1082,14 @@
         $(document).on('change', '#billing_area', function() {
             $('#billing_area_name').val($(this).find('option:selected').text());
         });
+
+        if ($('#country').val()) {
+            $('#country').trigger('change');
+        }
+
+        if ($('#billing_country').val()) {
+            $('#billing_country').trigger('change');
+        }
     });
 </script>
 
