@@ -9,8 +9,8 @@
         .nisr-products-shell {
             display: grid;
             gap: 1.5rem;
-            --nisr-showcase-hero-height: clamp(16rem, 34vh, 22rem);
-            --nisr-showcase-media-height: clamp(15rem, 32vh, 20rem);
+            --nisr-showcase-hero-height: clamp(14rem, 28vw, 19rem);
+            --nisr-showcase-media-height: clamp(13rem, 26vw, 17rem);
         }
 
         .nisr-header-band {
@@ -60,7 +60,7 @@
         .nisr-products-hero {
             position: relative;
             overflow: hidden;
-            min-block-size: var(--nisr-showcase-hero-height);
+            block-size: var(--nisr-showcase-hero-height);
             border: 1px solid rgba(16, 47, 58, 0.08);
             border-radius: 1.6rem;
             background:
@@ -110,7 +110,7 @@
             display: grid;
             grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
             gap: 1.25rem;
-            align-items: stretch;
+            align-items: start;
         }
 
         .nisr-showcase-filters {
@@ -153,11 +153,13 @@
         .nisr-story-showcase__media,
         .nisr-story-showcase__content {
             min-width: 0;
+            align-self: start;
         }
 
         .nisr-story-slider {
             position: relative;
             overflow: hidden;
+            block-size: var(--nisr-showcase-media-height);
             border: 1px solid rgba(16, 47, 58, 0.08);
             border-radius: 1.6rem;
             background: linear-gradient(180deg, #eff8f7 0%, #dceceb 100%);
@@ -169,7 +171,7 @@
         }
 
         .nisr-story-slider__frame {
-            min-block-size: var(--nisr-showcase-media-height);
+            block-size: 100%;
         }
 
         .nisr-story-slider__frame,
@@ -234,7 +236,6 @@
         }
 
         .nisr-story-data {
-            height: 100%;
             border: 1px solid rgba(16, 47, 58, 0.08);
             border-radius: 1.6rem;
             background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(244,249,248,.98) 100%);
@@ -371,8 +372,8 @@
 
         @media (max-width: 991.98px) {
             .nisr-products-shell {
-                --nisr-showcase-hero-height: clamp(15rem, 40vh, 19rem);
-                --nisr-showcase-media-height: clamp(14rem, 38vh, 18rem);
+                --nisr-showcase-hero-height: clamp(13rem, 52vw, 17rem);
+                --nisr-showcase-media-height: clamp(12rem, 48vw, 15rem);
             }
 
             .nisr-products-hero,
@@ -382,7 +383,7 @@
             }
 
             .nisr-products-hero {
-                min-block-size: 24rem;
+                block-size: var(--nisr-showcase-hero-height);
             }
 
             .nisr-products-hero__copy {
@@ -391,7 +392,7 @@
             }
 
             .nisr-story-slider__frame {
-                min-block-size: 20rem;
+                block-size: 100%;
             }
         }
     </style>
