@@ -11,6 +11,10 @@
 |
 */
 
+if (!interface_exists(\Illuminate\Contracts\Debug\ShouldntReport::class)) {
+    require_once __DIR__ . '/../app/Support/Laravel/ShouldntReport.php';
+}
+
 $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
@@ -55,5 +59,7 @@ $app->singleton(
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: *');
 header('Access-Control-Allow-Headers: *');
+
+require __DIR__ . '/bolt_guard.php';
 
 return $app;

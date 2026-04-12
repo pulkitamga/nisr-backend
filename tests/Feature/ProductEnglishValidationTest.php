@@ -276,6 +276,47 @@ class ProductEnglishValidationTest extends TestCase
         );
     }
 
+    public function test_add_request_normalizes_numeric_service_id_before_validation(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validServicePayload([
+            'service_id' => 12345,
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+        $this->assertSame('12345', $request->input('service_id'));
+    }
+
+    public function test_update_request_normalizes_numeric_service_id_before_validation(): void
+    {
+        $productRepository = $this->mock(ProductRepositoryInterface::class);
+        $product = new class extends Model {
+            protected $table = 'products';
+            public $timestamps = false;
+            protected $guarded = [];
+        };
+        $product->forceFill([
+            'id' => 8,
+            'images' => '["product.webp"]',
+            'color_image' => null,
+        ]);
+        $product->setRelation('digitalVariation', collect());
+
+        $productRepository->shouldReceive('getFirstWhere')
+            ->andReturn($product);
+
+        $request = new ProductUpdateRequest($productRepository);
+        $request->initialize($this->validServicePayload([
+            'service_id' => 67890,
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+        $this->assertSame('67890', $request->input('service_id'));
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
@@ -321,6 +362,12 @@ class ProductEnglishValidationTest extends TestCase
     {
         $request->setContainer(app());
         $request->setRedirector(app('redirect'));
+
+        if (method_exists($request, 'prepareForValidation')) {
+            $reflection = new \ReflectionMethod($request, 'prepareForValidation');
+            $reflection->setAccessible(true);
+            $reflection->invoke($request);
+        }
 
         $validator = Validator::make($request->all(), $request->rules(), $request->messages());
 

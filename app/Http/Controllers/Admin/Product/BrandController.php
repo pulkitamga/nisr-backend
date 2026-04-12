@@ -7,11 +7,13 @@ use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Contracts\Repositories\TranslationRepositoryInterface;
 use App\Enums\ExportFileNames\Admin\Brand as BrandExport;
 use App\Enums\ViewPaths\Admin\Brand;
+use App\Exports\FormattedTableExport;
 use App\Exports\BrandListExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\BrandAddRequest;
 use App\Http\Requests\Admin\BrandUpdateRequest;
 use App\Services\BrandService;
+use App\Support\LocalizedExport;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -115,12 +117,39 @@ class BrandController extends BaseController
         $brands = $this->brandRepo->getListWhere(searchValue:$request->get('searchValue'), dataLimit: 'all');
         $active = $this->brandRepo->getListWhere(filters:['status'=>1], dataLimit: 'all')->count();
         $inactive = $this->brandRepo->getListWhere(filters:['status'=>0], dataLimit: 'all')->count();
-        return Excel::download(new BrandListExport(
-            [
-                'brands'=> $brands,
-                'search' => $request['search'] ,
-                'active' => $active,
-                'inactive' => $inactive,
-            ]), BrandExport::EXPORT_XLSX) ;
+        $rows = $brands->map(function ($brand) {
+            return [
+                (string) ($brand->defaultName ?? $brand->name ?? '-'),
+                (int) ($brand->brand_all_products_count ?? 0),
+                (int) ($brand->brandAllProducts?->sum('order_details_count') ?? 0),
+                $brand->status == 1 ? translate('active') : translate('inactive'),
+            ];
+        })->values()->all();
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('name'),
+                    translate('total_Product'),
+                    translate('total_Order'),
+                    translate('status'),
+                ],
+                title: translate('brand_List'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                    ['label' => translate('active'), 'value' => (string) $active],
+                    ['label' => translate('inactive'), 'value' => (string) $inactive],
+                ],
+                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                columnWidths: ['A' => 28, 'B' => 16, 'C' => 16, 'D' => 14],
+                centerColumns: ['B', 'C', 'D'],
+                sumColumns: ['B', 'C']
+            ),
+            LocalizedExport::fileName(translate('brand_List'))
+        );
     }
 }

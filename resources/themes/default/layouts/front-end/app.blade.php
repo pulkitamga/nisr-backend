@@ -36,7 +36,7 @@
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/back-end/vendor/icon-set/style.css') }}">
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/owl.carousel.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-M3GyjB5pH4K2Upk5xFkP3b+94Ck7q1b1FhPex1+7tMnXufzFqXYKx6Hqs2xStEq6h9qX3LTDGVXrULm5mzZ8IQ=="
+        integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Heroicons (via unpkg, works in browser) -->
@@ -95,13 +95,11 @@
 
     <span id="authentication-status" data-auth="{{ auth('customer')->check() ? 'true' : 'false' }}"></span>
 
-    <div class="row">
-        <div class="col-12 loading-parent">
-            <div id="loading" class="d--none">
-                <div class="text-center">
-                    <img width="200" alt=""
-                        src="{{ getStorageImages(path: getWebConfig(name: 'loader_gif'), type: 'source', source: theme_asset(path: 'public/assets/front-end/img/loader.gif')) }}">
-                </div>
+    <div class="loading-parent">
+        <div id="loading" class="d--none">
+            <div class="text-center">
+                <img width="200" alt=""
+                    src="{{ getStorageImages(path: getWebConfig(name: 'loader_gif'), type: 'source', source: theme_asset(path: 'public/assets/front-end/img/loader.gif')) }}">
             </div>
         </div>
     </div>

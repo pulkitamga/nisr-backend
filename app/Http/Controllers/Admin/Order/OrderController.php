@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin\Order;
 use Carbon\Carbon;
 use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\WebConfigKey;
+use App\Exports\FormattedTableExport;
 use App\Exports\OrderExport;
+use App\Support\LocalizedExport;
 use App\Traits\PdfGenerator;
 use Illuminate\Http\Request;
 use App\Enums\GlobalConstant;
@@ -265,7 +267,74 @@ class OrderController extends BaseController
             'date_type' => $date_type,
             'defaultCurrencyCode' => getCurrencyCode(),
         ];
-        return Excel::download(new OrderExport($data), 'Orders.xlsx');
+        $rows = $orders->map(function ($order) {
+            $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order);
+            $extraDiscountAmount = $order?->is_shipping_free == 0 ? ($orderTotalPriceSummary['extraDiscount'] ?? 0) : 0;
+
+            return [
+                (string) $order->id,
+                optional($order->created_at)->format('Y-m-d H:i') ?? '-',
+                ucwords($order->is_guest == 0
+                    ? trim(($order?->customer?->f_name ?? translate('not_found')) . ' ' . ($order?->customer?->l_name ?? ''))
+                    : translate('guest_customer')),
+                ucwords($order?->seller_is == 'seller'
+                    ? ($order?->seller?->shop->name ?? translate('not_found'))
+                    : translate('inhouse')),
+                (int) ($orderTotalPriceSummary['totalItemQuantity'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemPrice'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $order?->total_discount ?? 0),
+                (float) usdToDefaultCurrency(amount: $orderTotalPriceSummary['couponDiscount'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $extraDiscountAmount),
+                (float) usdToDefaultCurrency(amount: $orderTotalPriceSummary['subTotal'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $orderTotalPriceSummary['taxTotal'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $orderTotalPriceSummary['shippingTotal'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount'] ?? 0),
+                translate($order->payment_status),
+                translate($order->order_status),
+            ];
+        })->values()->all();
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('Order_ID'),
+                    translate('Order_Date'),
+                    translate('Customer_Name'),
+                    translate('Store_Name'),
+                    translate('Total_Items'),
+                    translate('Item_Price'),
+                    translate('Item_Discount'),
+                    translate('Coupon_Discount'),
+                    translate('extra_Discount'),
+                    translate('Discounted_Amount'),
+                    translate('Vat/Tax'),
+                    translate('shipping'),
+                    translate('Total_Amount'),
+                    translate('Payment_Status'),
+                    translate('Order_Status'),
+                ],
+                title: translate('order_List'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('order_Status') . ': ' . ($status !== 'all' ? translate($status !== 'failed' ? $status : 'failed_to_deliver') : translate('all')),
+                    translate('order_Type') . ': ' . translate($request['filter'] == 'admin' ? 'inhouse' : ($request['filter'] == 'default_type' ? 'website_order' : ($request['filter'] ?? 'all'))),
+                    translate('date_type') . ': ' . translate(!empty($date_type) ? $date_type : 'all'),
+                    $date_type === 'custom_date' ? translate('from') . ': ' . ($from ?: '-') : null,
+                    $date_type === 'custom_date' ? translate('to') . ': ' . ($to ?: '-') : null,
+                ])),
+                columnWidths: ['A' => 12, 'B' => 18, 'C' => 24, 'D' => 24, 'E' => 12, 'F' => 14, 'G' => 14, 'H' => 16, 'I' => 16, 'J' => 18, 'K' => 14, 'L' => 14, 'M' => 16, 'N' => 16, 'O' => 16],
+                centerColumns: ['A', 'B', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'],
+                sumColumns: ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']
+            ),
+            LocalizedExport::fileName(translate('order_List'))
+        );
     }
 
     public function getView(string|int $id, DeliveryCountryCodeService $service, OrderService $orderService): View|RedirectResponse

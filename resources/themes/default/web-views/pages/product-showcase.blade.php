@@ -692,7 +692,7 @@
 
                 if (shouldLoopHero) {
                     heroConfig.autoplay = {
-                        delay: 4000,
+                        delay: 3000,
                         disableOnInteraction: false,
                     };
                 }
@@ -774,7 +774,7 @@
 
                 const shouldLoop = filteredRecords.length > 1;
                 const autoplayConfig = shouldLoop ? {
-                    delay: 4000,
+                    delay: 3000,
                     disableOnInteraction: false,
                 } : false;
                 setStoryControlsVisibility(shouldLoop);

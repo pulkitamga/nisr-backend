@@ -10,6 +10,7 @@ $(document).ready(function () {
     $(".flash-deal-slider").owlCarousel({
         loop: false,
         autoplay: true,
+        autoplayTimeout: 3000,
         center: false,
         margin: 10,
         nav: true,
@@ -58,6 +59,7 @@ $(document).ready(function () {
     $(".flash-deal-slider-mobile").owlCarousel({
         loop: true,
         autoplay: true,
+        autoplayTimeout: 3000,
         center: true,
         margin: 10,
         nav: true,
@@ -106,6 +108,7 @@ $(document).ready(function () {
     $("#featured_products_list").owlCarousel({
         loop: true,
         autoplay: true,
+        autoplayTimeout: 3000,
         margin: 20,
         nav: true,
         navText:
@@ -153,6 +156,7 @@ $(document).ready(function () {
     $(".new-arrivals-product").owlCarousel({
         loop: true,
         autoplay: true,
+        autoplayTimeout: 3000,
         margin: 20,
         nav: true,
         navText:
@@ -206,6 +210,7 @@ $(document).ready(function () {
         $(this).owlCarousel({
             loop: loopEnable,
             autoplay: true,
+            autoplayTimeout: 3000,
             margin: 20,
             nav: true,
             navText:
@@ -258,6 +263,7 @@ $(document).ready(function () {
     $(".hero-slider").owlCarousel({
         loop: true,
         autoplay: true,
+        autoplayTimeout: 3000,
         margin: 20,
         nav: true,
         navText:
@@ -302,7 +308,7 @@ $(document).ready(function () {
         }
 
         var activeIndex = 0;
-        var autoplayDelay = 5000;
+        var autoplayDelay = 3000;
         var autoplayTimer = null;
 
         function renderSlide(nextIndex) {
@@ -359,6 +365,7 @@ $(document).ready(function () {
     $(".brands-slider").owlCarousel({
         loop: false,
         autoplay: true,
+        autoplayTimeout: 3000,
         margin: 10,
         nav: true,
         navText:
@@ -403,6 +410,7 @@ $(document).ready(function () {
     $(".footer-banner-slider").owlCarousel({
         loop: true,
         autoplay: true,
+        autoplayTimeout: 3000,
         margin: 10,
         nav: false,
         rtl: isRtl,
@@ -414,6 +422,7 @@ $(document).ready(function () {
     $("#category-slider, #top-seller-slider").owlCarousel({
         loop: false,
         autoplay: true,
+        autoplayTimeout: 3000,
         margin: 20,
         nav: false,
         dots: true,
@@ -454,6 +463,7 @@ $(document).ready(function () {
     $(".categories--slider").owlCarousel({
         loop: false,
         autoplay: true,
+        autoplayTimeout: 3000,
         margin: 20,
         nav: false,
         dots: false,
@@ -497,7 +507,7 @@ $(document).ready(function () {
         dots: false,
         loop: true,
         autoplay: true,
-        autoplayTimeout: 5000,
+        autoplayTimeout: 3000,
         autoplayHoverPause: true,
         smartSpeed: 600,
         rtl: isRtl,

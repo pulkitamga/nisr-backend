@@ -18,7 +18,7 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontReport = [
-        //
+        AccessViolationException::class,
     ];
 
     /**
@@ -55,6 +55,19 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        if ($exception instanceof AccessViolationException) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => translate('access_denied')], 403);
+            }
+
+            return response()->view('errors.access-restricted', [
+                'title' => translate('access_restricted'),
+                'heading' => translate('access_restricted'),
+                'message' => translate('access_restricted_message'),
+                'footerNote' => translate('access_restricted_footer'),
+            ], 403);
+        }
+
         if ($exception instanceof UnauthorizedException) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Forbidden'], 403);

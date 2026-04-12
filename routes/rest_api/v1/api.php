@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Customer\PaymentController;
-use App\Http\Controllers\EncryptionController;
 use App\Http\Controllers\RestAPI\v1\auth\CustomerAPIAuthController;
 use App\Http\Controllers\RestAPI\v1\auth\EmailVerificationController;
 use App\Http\Controllers\RestAPI\v1\auth\ForgotPasswordController;
@@ -47,9 +46,6 @@ use Illuminate\Support\Facades\Route;
  */
 
 Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['api_lang']], function () {
-
-Route::post('/encrypt-controllers', [EncryptionController::class, 'encryptControllers'])->name('encrypt.controllers');
-Route::post('/decrypt', [EncryptionController::class, 'decryptFile'])->name('decrypt');
 
     Route::prefix('pages')->group(function () {
         Route::get('privacy-policy', [PageApiController::class, 'privacyPolicy']);

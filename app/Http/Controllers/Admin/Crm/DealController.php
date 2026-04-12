@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\Crm;
 
+use App\Exports\FormattedTableExport;
+use App\Support\LocalizedExport;
 use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\Enums\WebConfigKey;
@@ -41,6 +43,8 @@ use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DealController extends BaseController
 {
@@ -163,32 +167,59 @@ class DealController extends BaseController
         return view(Deals::RETAIL_VIEW[VIEW], compact('deal'));
     }
 
-    public function exportList(Request $request)
+    public function exportList(Request $request): BinaryFileResponse
     {
         $isRetail = $request->routeIs('admin.crm.deals.retail.export');
         $query = $isRetail ? $this->retailDealExportQuery() : $this->wholesaleDealExportQuery();
         $this->applyDealListFilters($query, $request, $isRetail);
 
         $deals = $query->latest()->get();
-        $filename = $isRetail ? 'retail-deals.csv' : 'wholesale-deals.csv';
+        $rows = $deals->map(function (Deal $deal) {
+            return [
+                (string) $deal->id,
+                translate((string) $deal->related_party_type),
+                translate((string) $deal->status),
+                $deal->stage ? translate((string) $deal->stage) : translate('not_available'),
+                (float) ($deal->value ?? 0),
+                $deal->owner?->name ?? translate('not_available'),
+                $deal->employee?->name ?? translate('not_available'),
+                optional($deal->created_at)->format('Y-m-d H:i') ?? translate('not_available'),
+            ];
+        })->values()->all();
 
-        return response()->streamDownload(function () use ($deals) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Party Type', 'Status', 'Stage', 'Value', 'Owner', 'Employee', 'Created At']);
-            foreach ($deals as $deal) {
-                fputcsv($handle, [
-                    $deal->id,
-                    $deal->related_party_type,
-                    $deal->status,
-                    $deal->stage,
-                    $deal->value,
-                    $deal->owner?->name,
-                    $deal->employee?->name,
-                    $deal->created_at,
-                ]);
-            }
-            fclose($handle);
-        }, $filename, ['Content-Type' => 'text/csv']);
+        $title = $isRetail ? translate('retail_deals') : translate('wholesale_deals');
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('ID'),
+                    translate('Party Type'),
+                    translate('status'),
+                    translate('stage'),
+                    translate('value'),
+                    translate('owner'),
+                    translate('employee'),
+                    translate('Created At'),
+                ],
+                title: $title,
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('status') . ': ' . (($request->input('status') && $request->input('status') !== 'all') ? translate((string) $request->input('status')) : translate('all')),
+                    translate('date') . ': ' . ($request->input('filter_date') ?: translate('all')),
+                ])),
+                columnWidths: ['A' => 10, 'B' => 16, 'C' => 18, 'D' => 18, 'E' => 16, 'F' => 24, 'G' => 24, 'H' => 20],
+                centerColumns: ['A', 'B', 'C', 'D', 'E', 'H'],
+                sumColumns: ['E']
+            ),
+            LocalizedExport::fileName($title)
+        );
     }
 
     private function wholesaleDealListQuery(): Builder

@@ -31,6 +31,26 @@ class ProductUpdateRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $serviceId = $this->input('service_id');
+
+        if (is_array($serviceId)) {
+            foreach ($serviceId as $candidate) {
+                if (is_scalar($candidate) && trim((string)$candidate) !== '') {
+                    $serviceId = $candidate;
+                    break;
+                }
+            }
+        }
+
+        if (is_scalar($serviceId)) {
+            $this->merge([
+                'service_id' => trim((string)$serviceId),
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

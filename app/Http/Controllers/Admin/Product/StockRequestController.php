@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Product;
 
 use Carbon\Carbon;
+use App\Exports\FormattedTableExport;
 use App\Models\Branch;
 use App\Models\Product;
 use App\Models\Warranty;
@@ -28,6 +29,7 @@ use App\Models\StockTransferProduct;
 use Brian2694\Toastr\Facades\Toastr;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\SerialTransferHistory;
+use App\Support\LocalizedExport;
 use App\Services\StockRequestService;
 use App\Services\InventoryMutationService;
 use Illuminate\Http\RedirectResponse;
@@ -69,7 +71,6 @@ use App\Contracts\Repositories\DigitalProductAuthorRepositoryInterface;
 use App\Contracts\Repositories\StockClearanceProductRepositoryInterface;
 use App\Contracts\Repositories\RestockProductCustomerRepositoryInterface;
 use App\Contracts\Repositories\DigitalProductVariationRepositoryInterface;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StockRequestController extends BaseController
 {
@@ -135,49 +136,61 @@ class StockRequestController extends BaseController
         return view(StockRequest::LIST[VIEW], compact('aStockRequests'));
     }
 
-    public function exportList(Request $request): StreamedResponse
+    public function exportList(Request $request): BinaryFileResponse
     {
         $stockRequests = $this->stockRequestListQuery($request)->get();
+        $rows = $stockRequests->map(function ($stockRequest) {
+            return [
+                $stockRequest->fromBranch?->getTranslatedField('branch_name') ?? translate('not_available'),
+                $stockRequest->transfer_date ? date('Y-m-d', strtotime($stockRequest->transfer_date)) : translate('not_available'),
+                $stockRequest->products->map(fn($product) => optional($product->product)->getTranslatedField('name') ?? translate('not_available'))->implode(', '),
+                $stockRequest->products->map(fn($product) => optional($product->category)->getTranslatedField('name') ?? translate('not_available'))->implode(', '),
+                $stockRequest->products->map(function ($product) {
+                    if (!$product->variation_type) {
+                        return translate('Default');
+                    }
 
-        return response()->streamDownload(function () use ($stockRequests) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+                    $variation = $product->variation_type;
+                    if ($product->variation_key) {
+                        $variation .= ' (' . Str::replace(':', ' : ', Str::replace('|', ' • ', $product->variation_key)) . ')';
+                    }
 
-            fputcsv($handle, [
-                translate('From Branch'),
-                translate('Request Date'),
-                translate('Products'),
-                translate('Category'),
-                translate('Variation'),
-                translate('Qty'),
-            ]);
+                    return $variation;
+                })->implode(', '),
+                (int) $stockRequest->products->sum('quantity'),
+            ];
+        })->values()->all();
 
-            foreach ($stockRequests as $stockRequest) {
-                fputcsv($handle, [
-                    $stockRequest->fromBranch?->getTranslatedField('branch_name') ?? translate('not_available'),
-                    $stockRequest->transfer_date ? date('M d, Y', strtotime($stockRequest->transfer_date)) : translate('not_available'),
-                    $stockRequest->products->map(fn($product) => optional($product->product)->getTranslatedField('name') ?? translate('not_available'))->implode(', '),
-                    $stockRequest->products->map(fn($product) => optional($product->category)->getTranslatedField('name') ?? translate('not_available'))->implode(', '),
-                    $stockRequest->products->map(function ($product) {
-                        if (!$product->variation_type) {
-                            return translate('Default');
-                        }
-
-                        $variation = $product->variation_type;
-                        if ($product->variation_key) {
-                            $variation .= ' (' . Str::replace(':', ' : ', Str::replace('|', ' • ', $product->variation_key)) . ')';
-                        }
-
-                        return $variation;
-                    })->implode(', '),
-                    $stockRequest->products->map(fn($product) => $product->quantity)->implode(', '),
-                ]);
-            }
-
-            fclose($handle);
-        }, 'stock-request-list.csv', [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('From Branch'),
+                    translate('Request Date'),
+                    translate('Products'),
+                    translate('Category'),
+                    translate('Variation'),
+                    translate('Qty'),
+                ],
+                title: translate('stock_request_list'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('date') . ': ' . ($request->input('restock_date') ?: translate('all')),
+                    translate('category') . ': ' . ($request->input('category_id') ?: translate('all')),
+                    translate('brand') . ': ' . ($request->input('brand_id') ?: translate('all')),
+                ])),
+                columnWidths: ['A' => 20, 'B' => 16, 'C' => 32, 'D' => 24, 'E' => 30, 'F' => 12],
+                centerColumns: ['B', 'F'],
+                sumColumns: ['F']
+            ),
+            LocalizedExport::fileName(translate('stock_request_list'))
+        );
     }
 
 

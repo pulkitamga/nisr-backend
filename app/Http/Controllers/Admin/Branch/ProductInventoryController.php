@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Admin\Branch;
 
+use App\Exports\FormattedTableExport;
 use App\Http\Controllers\Controller;
+use App\Support\LocalizedExport;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 
 class ProductInventoryController extends Controller
@@ -23,42 +26,49 @@ class ProductInventoryController extends Controller
         return view('admin-views.branch-management.product-inventory.inventory', compact('products'));
     }
 
-    public function exportProductInventory(Request $request): StreamedResponse
+    public function exportProductInventory(Request $request): BinaryFileResponse
     {
         $products = $this->productInventoryQuery($request)->get();
+        $rows = $products->map(function ($product) {
+            return [
+                $product->getTranslatedField('name'),
+                (string) $product->code,
+                $product->category?->getTranslatedField('name') ?? translate('not_available'),
+                $product->brand?->getTranslatedField('name') ?? translate('not_available'),
+                getUnitLabel($product->unit),
+                (int) $product->current_stock,
+                $product->status == 1 ? translate('active') : translate('inactive'),
+                $this->mapRequestStatusLabel((int) $product->request_status),
+            ];
+        })->values()->all();
 
-        return response()->streamDownload(function () use ($products) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($handle, [
-                translate('Name'),
-                translate('Code'),
-                translate('Category'),
-                translate('Brand'),
-                translate('Unit'),
-                translate('Current Stock'),
-                translate('Status'),
-                translate('Request Status'),
-            ]);
-
-            foreach ($products as $product) {
-                fputcsv($handle, [
-                    $product->getTranslatedField('name'),
-                    $product->code,
-                    $product->category?->getTranslatedField('name') ?? translate('not_available'),
-                    $product->brand?->getTranslatedField('name') ?? translate('not_available'),
-                    getUnitLabel($product->unit),
-                    (string) $product->current_stock,
-                    $product->status == 1 ? translate('active') : translate('inactive'),
-                    $this->mapRequestStatusLabel((int) $product->request_status),
-                ]);
-            }
-
-            fclose($handle);
-        }, 'branch-product-inventory.csv', [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('Name'),
+                    translate('Code'),
+                    translate('Category'),
+                    translate('Brand'),
+                    translate('Unit'),
+                    translate('Current Stock'),
+                    translate('Status'),
+                    translate('Request Status'),
+                ],
+                title: translate('branch_product_inventory'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                columnWidths: ['A' => 28, 'B' => 16, 'C' => 20, 'D' => 20, 'E' => 14, 'F' => 14, 'G' => 14, 'H' => 18],
+                centerColumns: ['F', 'G', 'H'],
+                sumColumns: ['F']
+            ),
+            LocalizedExport::fileName(translate('branch_product_inventory'))
+        );
     }
 
     private function productInventoryQuery(Request $request): Builder

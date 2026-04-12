@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\State;
+use App\Exports\FormattedTableExport;
 use App\Domain\Stock\Support\VariantMatcher;
 use App\Enums\WebConfigKey;
 use App\Support\AdminPermissionRegistry;
@@ -39,6 +40,7 @@ use App\Http\Controllers\BaseController;
 use App\Models\ManageBranchProductStock;
 use App\Events\WithdrawStatusUpdateEvent;
 use App\Exports\BranchStockHistoryExport;
+use App\Support\LocalizedExport;
 use App\Http\Requests\Admin\BranchAddRequest;
 use App\Http\Requests\Admin\ManagerAddRequest;
 use App\Http\Requests\Admin\BranchUpdateRequest;
@@ -760,42 +762,53 @@ class BranchController extends BaseController
             );
     }
 
-    private function exportBranchStockList(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    private function exportBranchStockList(Request $request): BinaryFileResponse
     {
         $stocks = $this->branchStockListQuery($request)->get();
-
-        return response()->streamDownload(function () use ($stocks) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($handle, [
-                translate('branch_name'),
-                translate('product_name'),
-                translate('variation'),
-                translate('Current_stock'),
-            ]);
-
-            foreach ($stocks as $stock) {
-                $variationLabel = translate('Default');
-                if (!empty($stock->variation_type) && $stock->variation_type !== 'No Variation') {
-                    $variationLabel = $stock->variation_type;
-                    if (!empty($stock->variation_key) && $stock->variation_key !== 'No Variation') {
-                        $variationLabel .= ' (' . Str::replace('|', ' • ', Str::replace(':', ' : ', $stock->variation_key)) . ')';
-                    }
+        $rows = $stocks->map(function ($stock) {
+            $variationLabel = translate('Default');
+            if (!empty($stock->variation_type) && $stock->variation_type !== 'No Variation') {
+                $variationLabel = $stock->variation_type;
+                if (!empty($stock->variation_key) && $stock->variation_key !== 'No Variation') {
+                    $variationLabel .= ' (' . Str::replace('|', ' • ', Str::replace(':', ' : ', $stock->variation_key)) . ')';
                 }
-
-                fputcsv($handle, [
-                    $stock->branch?->getTranslatedField('branch_name') ?? translate('not_available'),
-                    $stock->product?->getTranslatedField('name') ?? translate('not_available'),
-                    $variationLabel,
-                    (string) $stock->total_stock,
-                ]);
             }
 
-            fclose($handle);
-        }, 'branch-stock-list.csv', [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+            return [
+                $stock->branch?->getTranslatedField('branch_name') ?? translate('not_available'),
+                $stock->product?->getTranslatedField('name') ?? translate('not_available'),
+                $variationLabel,
+                (int) $stock->total_stock,
+            ];
+        })->values()->all();
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('branch_name'),
+                    translate('product_name'),
+                    translate('variation'),
+                    translate('Current_stock'),
+                ],
+                title: translate('branch_stock_list'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('branch') . ': ' . ($request->input('branch_id') ?: translate('all')),
+                    translate('product') . ': ' . ($request->input('product_id') ?: translate('all')),
+                ])),
+                columnWidths: ['A' => 24, 'B' => 30, 'C' => 26, 'D' => 14],
+                centerColumns: ['D'],
+                sumColumns: ['D']
+            ),
+            LocalizedExport::fileName(translate('branch_stock_list'))
+        );
     }
 
     public function getActiveBranchManagers(?BranchModel $branch = null): Collection

@@ -14,8 +14,6 @@ use App\Http\Controllers\Customer\Auth\RegisterController;
 use App\Http\Controllers\Customer\Auth\SocialAuthController;
 use App\Http\Controllers\Customer\PaymentController;
 use App\Http\Controllers\Customer\SystemController;
-use App\Http\Controllers\EncryptedControllerLoader;
-use App\Http\Controllers\EncryptionController;
 use App\Http\Controllers\Payment_Methods\PaymobController;
 use App\Http\Controllers\Payment_Methods\PaytabsController;
 use App\Http\Controllers\UcmWebhookController;
@@ -65,19 +63,6 @@ use VentureDrake\LaravelCrm\LaravelCrm;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-Route::get('/test-hello', function() {
-    // This will load your encrypted controller
-    return EncryptedControllerLoader::load('TestEncryptionController', 'index');
-});
-
-//  ENCRYPTION  ROUTES 
-Route::prefix('encryption')->group(function () {
-    Route::get('/simple-test', [EncryptionController::class, 'simpleEncryptTest'])->name('encryption.simple');
-    // Download encrypted files
-    Route::get('/download/{filename}', [EncryptionController::class, 'download'])->name('encryption.download');
-
-});
 
 Route::get('/login', function () {
     abort(404);

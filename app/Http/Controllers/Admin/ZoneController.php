@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use Exception;
+use App\Exports\FormattedTableExport;
+use App\Support\LocalizedExport;
 use App\Models\Zone;
 use App\Models\Incentive;
-use App\Exports\ZoneExport;
 use App\Models\Translation;
 use Illuminate\Http\Request;
 use App\CentralLogics\Helpers;
@@ -280,14 +281,40 @@ class ZoneController extends Controller
             });
         })
         ->get();
-        $data=[
-            'data' =>$collection,
-            'search' =>$request['search'] ?? null,
-        ];
-        if($type == 'csv'){
-            return Excel::download(new ZoneExport($data), 'Zone.csv');
-        }
-        return Excel::download(new ZoneExport($data), 'Zone.xlsx');
+        $rows = $collection->map(function (Zone $zone) {
+            return [
+                (string) $zone->name,
+                (string) ($zone->display_name ?? $zone->name),
+                (int) ($zone->restaurants_count ?? 0),
+                (int) ($zone->deliverymen_count ?? 0),
+                $zone->status ? translate('active') : translate('inactive'),
+            ];
+        })->values()->all();
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('name'),
+                    translate('display_name'),
+                    translate('restaurants'),
+                    translate('deliverymen'),
+                    translate('status'),
+                ],
+                title: translate('zone_list'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: translate('search') . ': ' . (trim((string) $request->input('search', '')) ?: translate('all')),
+                columnWidths: ['A' => 24, 'B' => 24, 'C' => 16, 'D' => 16, 'E' => 14],
+                centerColumns: ['C', 'D', 'E'],
+                sumColumns: ['C', 'D']
+            ),
+            LocalizedExport::fileName(translate('zone_list'))
+        );
     }
 
     public function store_incentive(Request $request, $zone_id)

@@ -15,6 +15,7 @@ use App\Http\Requests\Warranty\Admin\ReplacementCommitRequest;
 use App\Http\Requests\Warranty\Admin\ResolutionRequest;
 use App\Http\Requests\Warranty\Admin\ResumeRequest;
 use App\Http\Requests\Warranty\Admin\SubmitRequest;
+use App\Exports\WarrantyClaimListExport;
 use App\Models\WarrantyClaim;
 use App\Models\WarrantyClaimPayment;
 use App\Models\WarrantyTimelineEvent;
@@ -31,7 +32,8 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class WarrantyClaimController extends Controller
 {
@@ -87,30 +89,14 @@ class WarrantyClaimController extends Controller
     }
 
     // WarrantyClaimController.php
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request): BinaryFileResponse
     {
-        $query = WarrantyClaim::with([
-            'warranty.product',
-            'warranty.branch',
-            'warranty',
-            'technician'
-        ]);
-        $this->scopeClaimsToAccessibleBranch($query);
-
-        $this->applySubmittedAtDateFilter($query, $request->input('fhilter_date'));
-
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('searchValue')) {
-            $search = $this->sanitizeSearchTerm($request->input('searchValue'));
-            $query->where(function ($q) use ($search) {
-                $pattern = $this->likePattern($search);
-                $q->where('claim_number', 'like', $pattern)
-                    ->orWhere('serial_number', 'like', $pattern);
-            });
-        }
+        $query = $this->buildClaimsQuery($request)
+            ->with([
+                'warranty.product',
+                'warranty.distributor',
+                'technician',
+            ]);
 
         $limit = $this->sanitizeResultsLimit($request->input('choose_first'));
         if ($limit !== null) {
@@ -118,51 +104,25 @@ class WarrantyClaimController extends Controller
         }
 
         $claims = $query->get();
-        $filename = 'claims_' . now()->format('Ymd_His') . '.csv';
+        $currentLocale = session('local') ?? session('locale') ?? app()->getLocale();
+        $isRtl = get_direction() === 'rtl';
+        $pageLabel = translate('claims_list')
+            . ($request->filled('status') && $request->input('status') !== 'all'
+                ? ' ' . $this->claimStatusLabel((string) $request->input('status'))
+                : '');
 
-        return response()->streamDownload(function () use ($claims) {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, [
-                'SL',
-                'Claim #',
-                'Serial',
-                'Status',
-                'Customer',
-                'Product',
-                'Distributor',
-                'Branch',
-                'Activation Method',
-                'Submitted',
-                'SLA Due',
-                'Resolved Date',
-                'Reopen Count',
-                'Technician',
-                'SLA Result'
-            ]);
-
-            foreach ($claims as $i => $c) {
-                fputcsv($handle, [
-                    $i + 1,
-                    $c->claim_number,
-                    $c->serial_number,
-                    $this->claimStatusLabel((string) $c->status),
-                    $c->warranty->user?->name ?? $c->warranty->activated_by_name,
-                    $c->warranty->product?->name,
-                    $c->warranty->distributor_id ?? '-',
-                    $c->branch?->branch_name ?? '-',
-                    translate((string) ($c->warranty->activation_method ?: 'unknown')),
-                    $c->submitted_at?->format('Y-m-d H:i'),
-                    $c->resolution_due?->format('Y-m-d H:i') ?? '-',
-                    $c->resolved_at?->format('Y-m-d H:i') ?? '-',
-                    $c->reopen_count,
-                    $c->technician?->name ?? '-',
-                    optional($c->resolution_due)?->lt(now()) ? translate('warranty_sla_breached') : translate('warranty_sla_within')
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, ['Content-Type' => 'text/csv']);
+        return Excel::download(
+            new WarrantyClaimListExport(
+                claims: $claims,
+                locale: $currentLocale,
+                isRtl: $isRtl,
+                title: $pageLabel,
+                dateRangeLabel: $this->buildClaimExportDateRangeLabel($request),
+                filterSummary: $this->buildClaimExportFilterSummary($request),
+                exportedAt: now(),
+            ),
+            $this->buildLocalizedExportFileName($pageLabel, 'xlsx')
+        );
     }
 
     // New Claims
@@ -1670,6 +1630,50 @@ class WarrantyClaimController extends Controller
         }
 
         return min($limit, self::MAX_CLAIM_RESULTS_LIMIT);
+    }
+
+    private function buildClaimExportDateRangeLabel(Request $request): string
+    {
+        $rawDateRange = trim((string) $request->input('fhilter_date', ''));
+
+        return $rawDateRange !== '' ? $rawDateRange : translate('all');
+    }
+
+    private function buildClaimExportFilterSummary(Request $request): string
+    {
+        $summary = [
+            translate('date_range') . ': ' . $this->buildClaimExportDateRangeLabel($request),
+            translate('status') . ': ' . (
+                $request->filled('status') && $request->input('status') !== 'all'
+                    ? $this->claimStatusLabel((string) $request->input('status'))
+                    : translate('all')
+            ),
+            translate('search') . ': ' . (
+                trim((string) $request->input('searchValue', '')) !== ''
+                    ? trim((string) $request->input('searchValue'))
+                    : '-'
+            ),
+        ];
+
+        $limit = $this->sanitizeResultsLimit($request->input('choose_first'));
+        if ($limit !== null) {
+            $summary[] = translate('Rows_to_show') . ': ' . $limit;
+        }
+
+        return implode(' | ', $summary);
+    }
+
+    private function buildLocalizedExportFileName(string $baseLabel, string $extension): string
+    {
+        $safeBaseLabel = preg_replace('/[\\\\\\/:*?"<>|]+/u', '-', trim($baseLabel)) ?? 'export';
+        $safeBaseLabel = preg_replace('/\\s+/u', '-', $safeBaseLabel) ?? 'export';
+        $safeBaseLabel = trim($safeBaseLabel, '-_.');
+
+        if ($safeBaseLabel === '') {
+            $safeBaseLabel = 'export';
+        }
+
+        return $safeBaseLabel . '-' . now()->format('Ymd_His') . '.' . ltrim($extension, '.');
     }
 
     private function resolvePerPage(Request $request): int

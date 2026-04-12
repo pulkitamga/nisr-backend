@@ -84,6 +84,11 @@ class Warranty extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    public function distributor(): BelongsTo
+    {
+        return $this->belongsTo(WholeSalerBusiness::class, 'distributor_id', 'wholesaler_id');
+    }
+
     public function claims(): HasMany
     {
         return $this->hasMany(WarrantyClaim::class);

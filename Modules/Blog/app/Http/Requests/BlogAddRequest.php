@@ -32,7 +32,7 @@ class BlogAddRequest extends FormRequest
             'description' => 'required|array',
             'image' => 'required|mimes:jpeg,jpg,png,gif,webp|max:10000',
             'writer' => 'nullable|string|max:255',
-            'category_id' => 'nullable|integer|exists:blog_categories,id',
+            'blog_category' => 'nullable|integer|exists:blog_categories,id',
             'publish_date' => 'nullable|date',
         ];
         return $rules;
@@ -51,8 +51,8 @@ class BlogAddRequest extends FormRequest
             'image.max' => translate('The_image_may_not_be_greater_than_10000_kilobytes'),
             'writer.string' => translate('The_writer_must_be_a_string'),
             'writer.max' => translate('The_writer_may_not_be_greater_than_255_characters'),
-            'category_id.integer' => translate('The_category_id_must_be_an_integer'),
-            'category_id.exists' => translate('The_selected_category_id_is_invalid'),
+            'blog_category.integer' => translate('The_category_id_must_be_an_integer'),
+            'blog_category.exists' => translate('The_selected_category_id_is_invalid'),
             'publish_date.date' => translate('The_publish_date_is_not_a_valid_date'),
         ];
 

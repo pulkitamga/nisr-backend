@@ -37,6 +37,7 @@
         --home-panel-shadow: 0 1rem 2.4rem rgba(17, 56, 61, 0.055);
         --home-card-shadow: 0 .85rem 1.9rem rgba(17, 56, 61, 0.055);
         position: relative;
+        overflow: hidden;
         isolation: isolate;
         background:
             radial-gradient(circle at top left, rgba(18, 133, 127, 0.06), transparent 24%),
@@ -73,7 +74,13 @@
 
     .home-shell {
         display: grid;
+        grid-template-columns: 1fr;
         gap: clamp(1.2rem, 2.3vw, 2rem);
+        overflow: hidden;
+    }
+
+    .home-shell > * {
+        min-width: 0;
     }
 
     .home-panel {
@@ -186,9 +193,10 @@
 
     .main-banner-slider {
         min-height: clamp(25rem, 48vw, 33rem);
-        max-height: none !important;
+        max-height: 30rem;
         border-radius: 1.6rem;
         overflow: hidden;
+        position: relative;
     }
 
     .banner-slide {
@@ -340,9 +348,9 @@
     .home-product-thumb__image {
         width: 100%;
         height: 100%;
+        max-width: 100%;
         object-fit: cover;
         object-position: center center;
-        transform: scale(1.05);
         transition: transform .28s ease;
     }
 
@@ -1505,14 +1513,14 @@ $banners = array_filter($sectionData['main_banner']['data'], fn($banner) => $ban
 @if(count($banners) > 0)
 <section class="carousel-mobile">
     <div class="container">
-        <div class="home-panel home-hero-panel position-relative w-100 overflow-hidden rounded">
+        <div class="home-panel home-hero-panel position-relative w-100 overflow-hidden">
         <ol class="carousel-indicators">
             @foreach($banners as $index => $banner)
             <li data-slide-to="{{ $index }}" class="{{ $index === 0 ? 'active' : '' }}"></li>
             @endforeach
         </ol>
 
-        <div class="position-relative main-banner-slider" style="max-height: 30rem; position: relative;">
+        <div class="main-banner-slider">
             @foreach($banners as $index => $banner)
             <div class="banner-slide position-absolute top-0 start-0 w-100 h-100 transition-opacity"
                 style="background-image: url('{{ asset($banner['image']) }}'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: {{ $index === 0 ? '1' : '0' }}; transition: opacity 0.7s ease;">

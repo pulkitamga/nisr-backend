@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Branch;
 
+use App\Exports\FormattedTableExport;
 use App\Http\Controllers\Controller;
+use App\Support\LocalizedExport;
 use App\Models\StockTransfers;
 use App\Models\StockTransferProduct;
 use App\Models\StockReceived;
@@ -51,7 +53,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Models\StockRequestProduct;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 
 
@@ -286,42 +289,55 @@ class StockMovementController extends Controller
         return view('admin-views.branch-management.stock-movement.stock-received', compact('aStockTransfers'));
     }
 
-    public function exportReceivedList(Request $request): StreamedResponse
+    public function exportReceivedList(Request $request): BinaryFileResponse
     {
         $stockTransfers = $this->receivedTransfersQuery($request)->get();
-
-        return response()->streamDownload(function () use ($stockTransfers) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            fputcsv($handle, [
-                translate('To Branch'),
-                translate('Transfer Date'),
-                translate('Products'),
-                translate('Category'),
-                translate('Attribute'),
-                translate('Qty'),
-                translate('Status'),
-            ]);
-
-            foreach ($stockTransfers as $stockTransfer) {
-                foreach ($stockTransfer->products as $product) {
-                    fputcsv($handle, [
-                        $stockTransfer->toBranch?->getTranslatedField('branch_name') ?? translate('not_available'),
-                        $stockTransfer->transfer_date ? date('M d, Y', strtotime($stockTransfer->transfer_date)) : translate('not_available'),
-                        $product->product?->getTranslatedField('name') ?? translate('not_available'),
-                        $product->category?->getTranslatedField('name') ?? translate('not_available'),
-                        $product->attribute ?: translate('not_available'),
-                        (string) $product->quantity,
-                        translate($product->status),
-                    ]);
-                }
+        $rows = [];
+        foreach ($stockTransfers as $stockTransfer) {
+            foreach ($stockTransfer->products as $product) {
+                $rows[] = [
+                    $stockTransfer->toBranch?->getTranslatedField('branch_name') ?? translate('not_available'),
+                    $stockTransfer->transfer_date ? date('Y-m-d', strtotime($stockTransfer->transfer_date)) : translate('not_available'),
+                    $product->product?->getTranslatedField('name') ?? translate('not_available'),
+                    $product->category?->getTranslatedField('name') ?? translate('not_available'),
+                    $product->attribute ?: translate('not_available'),
+                    (int) $product->quantity,
+                    translate($product->status),
+                ];
             }
+        }
 
-            fclose($handle);
-        }, 'received-stock-transfer-list.csv', [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('To Branch'),
+                    translate('Transfer Date'),
+                    translate('Products'),
+                    translate('Category'),
+                    translate('Attribute'),
+                    translate('Qty'),
+                    translate('Status'),
+                ],
+                title: translate('received_stock_transfer_list'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('date') . ': ' . ($request->input('restock_date') ?: translate('all')),
+                    translate('category') . ': ' . ($request->input('category_id') ?: translate('all')),
+                    translate('brand') . ': ' . ($request->input('brand_id') ?: translate('all')),
+                ])),
+                columnWidths: ['A' => 20, 'B' => 16, 'C' => 28, 'D' => 20, 'E' => 20, 'F' => 12, 'G' => 14],
+                centerColumns: ['B', 'F', 'G'],
+                sumColumns: ['F']
+            ),
+            LocalizedExport::fileName(translate('received_stock_transfer_list'))
+        );
     }
 
     public function addStockTransferListView(Request $request): View|RedirectResponse

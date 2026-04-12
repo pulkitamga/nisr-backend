@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Core\BootCheck;
 use App\Models\FlashDealProduct;
 use App\Models\LoginSetup;
 use App\Models\StockClearanceProduct;
@@ -68,6 +69,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        app(BootCheck::class)->boot();
+
         // Store the original config('app.locale') before the Localization
         // middleware mutates it via App::setLocale(). This is the authoritative
         // save-to-main-column language — the one whose value goes into the

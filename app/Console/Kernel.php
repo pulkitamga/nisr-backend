@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\AuditMissingAdminRoles::class,
         \App\Console\Commands\InventoryReconcileCommand::class,
         \App\Console\Commands\SeedUiTranslationEntries::class,
+        \App\Console\Commands\SystemVerifyCommand::class,
     ];
 
     /**

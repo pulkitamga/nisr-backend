@@ -15,7 +15,6 @@
     >
 </span>
 
-<script src="{{ theme_asset(path: 'public/assets/front-end/vendor/firebase/firebase.min.js') }}"></script>
 <script src="{{ 'https://www.gstatic.com/firebasejs/8.3.2/firebase-app.js' }}"></script>
 <script src="{{ 'https://www.gstatic.com/firebasejs/8.3.2/firebase-auth.js' }}"></script>
 <script src="{{ 'https://www.gstatic.com/firebasejs/8.3.2/firebase-messaging.js' }}"></script>

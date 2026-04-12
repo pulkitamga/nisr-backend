@@ -161,7 +161,7 @@
                         <button type="button" id="reset"
                                 class="btn btn-secondary font-weight-semibold w-140 clear-draft">{{ translate('clear_draft') }}</button>
                         <button type="button" class="btn btn-outline-primary font-weight-semibold w-140 save-draft">{{ translate('Save_to_Draft') }}</button>
-                        <button type="button" class="btn btn--primary font-weight-semibold w-140" data-bs-toggle="modal" data-bs-target="#toggle-status-publish-modal">{{ translate('Update_Publish') }}</button>
+                        <button type="button" class="btn btn--primary font-weight-semibold w-140 publish" data-bs-toggle="modal" data-bs-target="#toggle-status-publish-modal">{{ translate('Update_Publish') }}</button>
                     </div>
                 </div>
             </div>

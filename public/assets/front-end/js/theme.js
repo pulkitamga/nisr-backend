@@ -144,6 +144,7 @@ function _defineProperty(e, t, r) {
         stuckNavbarMenuToggle: function () {
             var e = document.querySelector(".navbar-stuck-toggler"),
                 t = document.querySelector(".navbar-stuck-menu");
+            if (!e || !t) return;
             e.addEventListener("click", function (e) {
                 t.classList.toggle("show"), e.preventDefault();
                 this.classList.toggle("show");

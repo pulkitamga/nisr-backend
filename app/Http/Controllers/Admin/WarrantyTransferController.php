@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\FormattedTableExport;
 use App\Http\Controllers\Controller;
+use App\Support\LocalizedExport;
 use App\Models\SerialTransferHistory;
 use App\Models\Branch;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class WarrantyTransferController extends Controller
 {
@@ -25,7 +28,7 @@ class WarrantyTransferController extends Controller
         return view('admin-views.warranty.serial-transaction.list', compact('transactions', 'branches', 'types'));
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request): BinaryFileResponse
     {
         $query = $this->buildTransactionQuery($request);
         $limit = $this->resolveResultsLimit($request);
@@ -37,27 +40,48 @@ class WarrantyTransferController extends Controller
 
         $transactions = $query->get();
         $typeLabels = $this->transferTypeOptions();
+        $rows = $transactions->map(function ($transaction) use ($typeLabels, $notAvailableLabel) {
+            $destination = $transaction->toBranch?->branch_name
+                ?? $transaction->distributor?->company_name
+                ?? $notAvailableLabel;
 
-        return response()->streamDownload(function () use ($transactions, $typeLabels, $notAvailableLabel) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Serial', 'From', 'To', 'Type', 'Date']);
+            return [
+                (string) $transaction->serial_number,
+                $transaction->fromBranch?->branch_name ?? $notAvailableLabel,
+                $destination,
+                $typeLabels[$transaction->transfer_type] ?? $transaction->transfer_type,
+                optional($transaction->transferred_at)->format('Y-m-d H:i') ?? '-',
+            ];
+        })->values()->all();
 
-            foreach ($transactions as $transaction) {
-                $destination = $transaction->toBranch?->branch_name
-                    ?? $transaction->distributor?->company_name
-                    ?? $notAvailableLabel;
-
-                fputcsv($handle, [
-                    $transaction->serial_number,
-                    $transaction->fromBranch?->branch_name ?? $notAvailableLabel,
-                    $destination,
-                    $typeLabels[$transaction->transfer_type] ?? $transaction->transfer_type,
-                    optional($transaction->transferred_at)->format('Y-m-d H:i:s'),
-                ]);
-            }
-
-            fclose($handle);
-        }, 'warranty-serial-transactions-' . now()->format('Ymd_His') . '.csv', ['Content-Type' => 'text/csv']);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('serial'),
+                    translate('from'),
+                    translate('to'),
+                    translate('type'),
+                    translate('date'),
+                ],
+                title: translate('warranty_serial_transaction'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('search', '')) ?: translate('all')),
+                    translate('from_branch') . ': ' . ($request->input('from_branch') ?: translate('all')),
+                    translate('to_branch') . ': ' . ($request->input('to_branch') ?: translate('all')),
+                    translate('type') . ': ' . ($request->input('transfer_type') ?: translate('all')),
+                ])),
+                columnWidths: ['A' => 20, 'B' => 22, 'C' => 22, 'D' => 22, 'E' => 18],
+                centerColumns: ['E']
+            ),
+            LocalizedExport::fileName(translate('warranty_serial_transaction'))
+        );
     }
 
     public function historyModal($serial)

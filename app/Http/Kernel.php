@@ -2,10 +2,10 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\CheckLicense;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\DeliveryManAuth;
 use App\Http\Middleware\GuestMiddleware;
+use App\Http\Middleware\VerifyAccess;
 use App\Http\Middleware\SellerMiddleware;
 use App\Http\Middleware\APIGuestMiddleware;
 use App\Http\Middleware\CustomerMiddleware;
@@ -39,7 +39,6 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         DatabaseRefreshMiddleware::class,
-        // \App\Http\Middleware\CheckLicense::class,
     ];
 
     /**
@@ -96,7 +95,7 @@ class Kernel extends HttpKernel
         'seller_api_auth' => SellerApiAuthMiddleware::class,
         'guestCheck' => GuestMiddleware::class,
         'apiGuestCheck' => APIGuestMiddleware::class,
-        'license' => CheckLicense::class,
+        'access' => VerifyAccess::class,
     ];
 
 

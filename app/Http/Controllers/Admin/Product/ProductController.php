@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Product;
 
 use Carbon\Carbon;
+use App\Exports\FormattedTableExport;
 use App\Enums\StockReason;
 use App\Enums\WebConfigKey;
 use App\Models\VehicleMake;
@@ -16,6 +17,7 @@ use App\Services\ProductService;
 use App\Services\InventoryMutationService;
 use App\Services\ServiceService;
 use App\Services\ReportPdfService;
+use App\Support\LocalizedExport;
 use App\Traits\FileManagerTrait;
 use Illuminate\Http\JsonResponse;
 use App\Exports\ProductListExport;
@@ -1149,18 +1151,74 @@ class ProductController extends BaseController
         $subSubCategory = (!empty($request->sub_sub_category_id) && $request->has('sub_sub_category_id')) ? $this->categoryRepo->getFirstWhere(params: ['id' => $request['sub_sub_category_id']]) : 'all';
         $brand = (!empty($request->brand_id) && $request->has('brand_id')) ? $this->brandRepo->getFirstWhere(params: ['id' => $request->brand_id]) : 'all';
         $seller = (!empty($request->seller_id) && $request->has('seller_id')) ? $this->sellerRepo->getFirstWhere(params: ['id' => $request->seller_id]) : '';
-        $data = [
-            'products' => $products,
-            'category' => $category,
-            'sub_category' => $subCategory,
-            'sub_sub_category' => $subSubCategory,
-            'brand' => $brand,
-            'searchValue' => $request['searchValue'],
-            'type' => $request->type ?? '',
-            'seller' => $seller,
-            'status' => $request->status ?? '',
-        ];
-        return Excel::download(new ProductListExport($data), ucwords($request['type']) . '-' . 'product-list.xlsx');
+        $rows = $products->map(function ($item) {
+            $rating = $item?->rating && count($item->rating) > 0
+                ? (float) number_format($item->rating[0]->average, 2, '.', '')
+                : 0.0;
+
+            return [
+                (string) $item->name,
+                (string) $item->code,
+                trim(strip_tags(str_replace('&nbsp;', ' ', (string) $item->details))),
+                ucwords((string) ($item?->seller?->shop->name ?? translate('not_found'))),
+                (string) ($item?->category->name ?? 'N/A'),
+                (string) ($item?->subCategory->name ?? 'N/A'),
+                (string) ($item?->subSubCategory->name ?? 'N/A'),
+                (string) ($item?->brand->name ?? 'N/A'),
+                (string) ($item?->product_type ?? '-'),
+                (float) usdToDefaultCurrency(amount: $item['unit_price'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $item['tax'] ?? 0),
+                (float) usdToDefaultCurrency(amount: $item['discount'] ?? 0),
+                (string) ($item->discount_type ?? '-'),
+                $rating,
+                (int) ($item->current_stock ?? 0),
+                translate($item->status == 1 ? 'active' : 'inactive'),
+            ];
+        })->values()->all();
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('product_Name'),
+                    translate('product_SKU'),
+                    translate('description'),
+                    translate('store_Name'),
+                    translate('category_Name'),
+                    translate('sub_Category_Name'),
+                    translate('sub_Sub_Category_Name'),
+                    translate('brand'),
+                    translate('product_Type'),
+                    translate('price'),
+                    translate('tax'),
+                    translate('discount'),
+                    translate('discount_Type'),
+                    translate('rating'),
+                    translate('stock'),
+                    translate('status'),
+                ],
+                title: translate('product_list'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('category') . ': ' . ($category !== 'all' ? (string) data_get($category, 'name', $category) : translate('all')),
+                    translate('sub_Category') . ': ' . ($subCategory !== 'all' ? (string) data_get($subCategory, 'name', $subCategory) : translate('all')),
+                    translate('sub_Sub_Category') . ': ' . ($subSubCategory !== 'all' ? (string) data_get($subSubCategory, 'name', $subSubCategory) : translate('all')),
+                    translate('brand') . ': ' . ($brand !== 'all' ? (string) data_get($brand, 'defaultName', data_get($brand, 'name', $brand)) : translate('all')),
+                    translate('store') . ': ' . ($seller?->shop->name ?? translate('all')),
+                    translate('status') . ': ' . ($request->filled('status') ? ($request->status == 0 ? translate('pending') : ($request->status == 1 ? translate('approved') : translate('denied'))) : translate('all')),
+                ])),
+                columnWidths: ['A' => 28, 'B' => 18, 'C' => 40, 'D' => 24, 'E' => 20, 'F' => 20, 'G' => 20, 'H' => 18, 'I' => 16, 'J' => 14, 'K' => 14, 'L' => 14, 'M' => 14, 'N' => 12, 'O' => 12, 'P' => 14],
+                centerColumns: ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'],
+                sumColumns: ['O']
+            ),
+            LocalizedExport::fileName(translate('product_list'))
+        );
     }
 
     public function getBarcodeView(Request $request, string|int $id): View|RedirectResponse

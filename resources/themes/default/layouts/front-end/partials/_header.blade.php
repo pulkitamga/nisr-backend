@@ -207,6 +207,8 @@
         const menuClose = document.getElementById('mobile-menu-close');
         const navbarCollapse = document.getElementById('navbarCollapse');
 
+        if (!menuToggle || !menuClose || !navbarCollapse) return;
+
         // Close menu on load
         navbarCollapse.classList.remove('show');
 

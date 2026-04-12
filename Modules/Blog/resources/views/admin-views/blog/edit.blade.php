@@ -91,7 +91,7 @@
                                     </label>
                                 </div>
                                 <div class="upload-file">
-                                    <input type="file" name="image" class="upload-file__input single_file_input" accept=".webp, .jpg, .jpeg, .png, .gif" value="" required="">
+                                    <input type="file" name="image" class="upload-file__input single_file_input" accept=".webp, .jpg, .jpeg, .png, .gif" value="">
                                         <button type="button" class="remove_btn btn btn-danger btn-circle w-20 h-20 fs-8" style="opacity: 0;">
                                             <i class="fi fi-sr-cross"></i>
                                         </button>

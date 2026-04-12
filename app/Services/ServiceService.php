@@ -30,10 +30,11 @@ class ServiceService
     {
 
         $enIndex = getDefaultLanguageIndex($request);
+        $serviceId = $request->input('service_id');
 
         return [
             'product_id' => $productId,
-            'service_id' => $request->input('service_id'),
+            'service_id' => is_scalar($serviceId) ? trim((string)$serviceId) : null,
             'title' => $request['service_tittle'][$enIndex],
             'base_price_inshop' => $request->input('base_price_inshop'),
             'base_price_mobile' => $request->input('base_price_mobile'),
@@ -48,9 +49,10 @@ class ServiceService
     public function getUpdateServiceData(object $request): array
     {
         $enIndex = getDefaultLanguageIndex($request);
+        $serviceId = $request->input('service_id');
 
         $dataArray = [
-            'service_id' => $request->input('service_id'),
+            'service_id' => is_scalar($serviceId) ? trim((string)$serviceId) : null,
             'title' => $request['service_tittle'][$enIndex],
             'base_price_inshop' => $request->input('base_price_inshop'),
             'base_price_mobile' => $request->input('base_price_mobile'),

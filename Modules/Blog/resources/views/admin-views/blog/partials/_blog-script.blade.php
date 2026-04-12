@@ -1,6 +1,17 @@
 <script>
     "use strict";
     $(document).ready(function () {
+        const syncBlogEditors = () => {
+            $('.quill-editor').each(function () {
+                const quill = $(this).data('quill');
+                const $textarea = $(this).siblings('textarea');
+
+                if (quill && $textarea.length) {
+                    $textarea.val(quill.root.innerHTML);
+                }
+            });
+        };
+
         $('.save-draft').on('click', function () {
             $('#status').val(0);
             $('#is_draft').val(1);
@@ -25,6 +36,7 @@
 
         $(document).on('submit', '#blog-ajax-form', function (event) {
             event.preventDefault();
+            syncBlogEditors();
 
             const $form = $(this);
             const formData = new FormData(this);
@@ -74,6 +86,22 @@
                 },
                 error: function (xhr) {
                     toggleButtons(false);
+
+                    const response = xhr.responseJSON;
+
+                    if (Array.isArray(response?.errors)) {
+                        response.errors.forEach((err) => {
+                            toastr.error(err.message, err.error_code);
+                        });
+                        return;
+                    }
+
+                    if (response?.message) {
+                        toastr.error(response.message);
+                        return;
+                    }
+
+                    toastr.error('{{ translate('Something_went_wrong') }}');
                 },
             });
         });
@@ -130,6 +158,14 @@
 
     $(document).on('click', '.blog-section-temp-view', function (e) {
         e.preventDefault();
+        $('.quill-editor').each(function () {
+            const quill = $(this).data('quill');
+            const $textarea = $(this).siblings('textarea');
+
+            if (quill && $textarea.length) {
+                $textarea.val(quill.root.innerHTML);
+            }
+        });
         let form = document.getElementById('blog-ajax-form');
         let formData = new FormData(form);
         $.ajax({

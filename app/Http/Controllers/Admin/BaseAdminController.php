@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\BaseController;
-use App\Services\LicenseService;
+use App\Services\AccessGuard;
 
 abstract class BaseAdminController extends BaseController
 {
-    protected $licenseService;
+    protected AccessGuard $accessGuard;
 
-    public function __construct(LicenseService $licenseService)
+    public function __construct(AccessGuard $accessGuard)
     {
-        $this->licenseService = $licenseService;
+        $this->accessGuard = $accessGuard;
 
-        // Validate license on every request to protected controllers
-        $this->licenseService->validate();
+        $this->accessGuard->ensureValid();
     }
 }

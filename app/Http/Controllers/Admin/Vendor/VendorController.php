@@ -20,12 +20,14 @@ use App\Enums\ViewPaths\Admin\Vendor;
 use App\Enums\WebConfigKey;
 use App\Events\VendorRegistrationEvent;
 use App\Events\WithdrawStatusUpdateEvent;
+use App\Exports\FormattedTableExport;
 use App\Exports\VendorListExport;
 use App\Exports\VendorWithdrawRequest;
 use App\Exports\VendorOrderListExport;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Admin\VendorAddRequest;
 use App\Services\ShopService;
+use App\Support\LocalizedExport;
 use App\Services\VendorService;
 use App\Traits\CommonTrait;
 use App\Traits\EmailTemplateTrait;
@@ -180,13 +182,48 @@ class VendorController extends BaseController
 
         $active = $vendors->where('status', 'approved')->count();
         $inactive = $vendors->where('status', '!=', 'approved')->count();
-        $data = [
-            'vendors' => $vendors,
-            'search' => $request['searchValue'],
-            'active' => $active,
-            'inactive' => $inactive,
-        ];
-        return Excel::download(new VendorListExport($data), VendorExport::EXPORT_XLSX);
+        $rows = $vendors->map(function ($vendor) {
+            return [
+                ucwords((string) ($vendor?->shop->name ?? translate('not_found'))),
+                ucwords(trim($vendor->f_name . ' ' . $vendor->l_name)),
+                (string) ($vendor?->phone ?? translate('not_found')),
+                (string) $vendor->email,
+                optional($vendor->created_at)->format('Y-m-d H:i') ?? '-',
+                (int) ($vendor->product_count ?? 0),
+                (int) ($vendor->orders_count ?? 0),
+                translate($vendor->status == 'approved' ? 'active' : 'inactive'),
+            ];
+        })->values()->all();
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('store_Name'),
+                    translate('vendor_Name'),
+                    translate('phone'),
+                    translate('email'),
+                    translate('joined_At'),
+                    translate('total_Products'),
+                    translate('total_Order'),
+                    translate('status'),
+                ],
+                title: translate('vendor_List'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                    ['label' => translate('active'), 'value' => (string) $active],
+                    ['label' => translate('inactive'), 'value' => (string) $inactive],
+                ],
+                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                columnWidths: ['A' => 24, 'B' => 24, 'C' => 18, 'D' => 28, 'E' => 18, 'F' => 16, 'G' => 16, 'H' => 14],
+                centerColumns: ['E', 'F', 'G', 'H'],
+                sumColumns: ['F', 'G']
+            ),
+            LocalizedExport::fileName(translate('vendor_List'))
+        );
     }
 
     public function getOrderListView(Request $request, $seller_id): View

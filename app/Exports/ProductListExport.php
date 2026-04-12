@@ -49,6 +49,25 @@ class ProductListExport implements FromView, ShouldAutoSize, WithStyles, WithCol
         ];
     }
 
+    private function getDrawingLabel(object $item, int $index): string
+    {
+        $name = method_exists($item, 'getRawOriginal')
+            ? $item->getRawOriginal('name')
+            : ($item->name ?? null);
+
+        $name = is_scalar($name) ? trim((string)$name) : '';
+        if ($name !== '') {
+            return $name;
+        }
+
+        $code = is_scalar($item->code ?? null) ? trim((string)$item->code) : '';
+        if ($code !== '') {
+            return $code;
+        }
+
+        return 'product-' . ($index + 1);
+    }
+
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:A3')->getFont()->setBold(true);
@@ -81,19 +100,23 @@ class ProductListExport implements FromView, ShouldAutoSize, WithStyles, WithCol
     {
         $this->data['products']->each(function ($item, $index) use ($workSheet) {
             $tempImagePath = null;
-            $filePath = 'product/thumbnail/' . $item->thumbnail_full_url['key'];
+            $thumbnail = $item->thumbnail_full_url ?? [];
+            $thumbnailKey = is_array($thumbnail) ? ($thumbnail['key'] ?? null) : null;
+            $thumbnailPath = is_array($thumbnail) ? ($thumbnail['path'] ?? null) : null;
+            $filePath = $thumbnailKey ? 'product/thumbnail/' . $thumbnailKey : null;
             $fileCheck = fileCheck(disk: 'public', path: $filePath);
-            if ($item->thumbnail_full_url['path'] && !$fileCheck) {
-                $tempImagePath = getTemporaryImageForExport($item->thumbnail_full_url['path']);
-                $imagePath = getImageForExport($item->thumbnail_full_url['path']);
+            if ($thumbnailPath && !$fileCheck) {
+                $tempImagePath = getTemporaryImageForExport($thumbnailPath);
+                $imagePath = getImageForExport($thumbnailPath);
                 $drawing = new MemoryDrawing();
                 $drawing->setImageResource($imagePath);
             } else {
                 $drawing = new Drawing();
-                $drawing->setPath(is_file(storage_path('app/public/' . $filePath)) ? storage_path('app/public/' . $filePath) : public_path('assets/back-end/img/products.png'));
+                $drawing->setPath($filePath && is_file(storage_path('app/public/' . $filePath)) ? storage_path('app/public/' . $filePath) : public_path('assets/back-end/img/products.png'));
             }
-            $drawing->setName($item->name);
-            $drawing->setDescription($item->name);
+            $drawingLabel = $this->getDrawingLabel($item, $index);
+            $drawing->setName($drawingLabel);
+            $drawing->setDescription($drawingLabel);
             $drawing->setHeight(50);
             $drawing->setOffsetX(45);
             $drawing->setOffsetY(70);

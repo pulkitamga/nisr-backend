@@ -255,47 +255,47 @@ use App\Http\Controllers\SharedController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/admin/reports/unified', [BranchChartController::class, 'index'])
-    ->middleware(['admin', 'permission:report.access_branch_unified|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_branch_unified|report.read,admin'])
     ->name('admin.reports.unified');
 Route::get('/admin/reports/crm', [BranchChartController::class, 'agentCRMReport'])
-    ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.reports.crm');
 Route::get('/admin/branch/sales', [BranchChartController::class, 'index'])
-    ->middleware(['admin', 'permission:report.access_branch_sales_chart|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_branch_sales_chart|report.read,admin'])
     ->name('admin.branch.sales-chart');
 Route::post('/admin/branch/sales-chart-data', [BranchChartController::class, 'getChartData'])
-    ->middleware(['admin', 'permission:report.access_branch_sales_chart|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_branch_sales_chart|report.read,admin'])
     ->name('admin.branch.sales-chart-data');
 Route::post('/admin/branch/sales-export', [BranchChartController::class, 'export'])
-    ->middleware(['admin', 'permission:report.export_branch_sales_chart|report.export,admin'])
+    ->middleware(['admin', 'access', 'permission:report.export_branch_sales_chart|report.export,admin'])
     ->name('admin.branch.sales-export');
 
 Route::get('/admin/stock/transfer-report', [StockTransferReportController::class, 'index'])
-    ->middleware(['admin', 'permission:report.access_branch_stock_transfer|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_branch_stock_transfer|report.read,admin'])
     ->name('admin.stock.transfer-report');
 Route::post('/admin/stock/transfer-report-data', [StockTransferReportController::class, 'getTransferData'])
-    ->middleware(['admin', 'permission:report.access_branch_stock_transfer|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_branch_stock_transfer|report.read,admin'])
     ->name('admin.stock.transfer-report-data');
 Route::get('/admin/stock/transfer-report-export-excel', [StockTransferReportController::class, 'exportExcel'])
-    ->middleware(['admin', 'permission:report.export_branch_stock_transfer|report.export,admin'])
+    ->middleware(['admin', 'access', 'permission:report.export_branch_stock_transfer|report.export,admin'])
     ->name('admin.stock.transfer-report-export-excel');
 Route::get('/admin/stock/transfer-report-export-pdf', [StockTransferReportController::class, 'exportPdf'])
-    ->middleware(['admin', 'permission:report.export_branch_stock_transfer|report.export,admin'])
+    ->middleware(['admin', 'access', 'permission:report.export_branch_stock_transfer|report.export,admin'])
     ->name('admin.stock.transfer-report-export-pdf');
 Route::get('/admin/crm/sales-report', [CrmSalesReportController::class, 'index'])
-    ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.sales-report');
 Route::post('/admin/crm/sales-report-data', [CrmSalesReportController::class, 'getSalesData'])
-    ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.sales-report-data');
 Route::get('/admin/crm/sales-report-export-excel', [CrmSalesReportController::class, 'exportExcel'])
-    ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
+    ->middleware(['admin', 'access', 'permission:report.export_crm_sales_overview|report.export,admin'])
     ->name('admin.crm.sales-report-export-excel');
 Route::match(['get', 'post'], '/admin/crm/sales-report-export-pdf', [CrmSalesReportController::class, 'exportPdf'])
-    ->middleware(['admin', 'permission:report.export_crm_sales_overview|report.export,admin'])
+    ->middleware(['admin', 'access', 'permission:report.export_crm_sales_overview|report.export,admin'])
     ->name('admin.crm.sales-report-export-pdf');
 Route::match(['GET', 'POST'], '/admin/crm/insights-report', [DashboardChartController::class, 'insightsReport'])
-    ->middleware(['admin', 'permission:report.access_crm_sales_overview|report.read,admin'])
+    ->middleware(['admin', 'access', 'permission:report.access_crm_sales_overview|report.read,admin'])
     ->name('admin.crm.insights-report');
 
 //Webhook
@@ -307,9 +307,9 @@ Route::get('/admin/get-vehicle-models/{make_id}', function ($make_id) {
     return \App\Models\VehicleModel::where('make_id', $make_id)
         ->orderBy('name')
         ->get(['id', 'name']);
-})->middleware(['admin', 'permission:product_management.product_add|product_management.product_update|product_management.product_make_setup,admin']);
+})->middleware(['admin', 'access', 'permission:product_management.product_add|product_management.product_update|product_management.product_make_setup,admin']);
 Route::get('/admin/products/get-models-by-makes', [ProductController::class, 'getModelsByMakes'])
-    ->middleware(['admin', 'permission:product_management.product_add|product_management.product_update|product_management.product_make_setup,admin'])
+    ->middleware(['admin', 'access', 'permission:product_management.product_add|product_management.product_update|product_management.product_make_setup,admin'])
     ->name('admin.products.get-models-by-makes');
 
 Route::controller(SharedController::class)->group(function () {
@@ -329,7 +329,7 @@ Route::group(['prefix' => 'login'], function () {
     Route::post('/', [LoginController::class, 'login'])->name('login');
 });
 
-Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']], function () {
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin', 'access']], function () {
     Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.', 'middleware' => ['permission:dashboard.read,admin']], function () {
         Route::controller(DashboardController::class)->group(function () {
 
@@ -537,7 +537,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         });
     });
 
-    Route::middleware(['admin', 'auth:admin'])->prefix('warranty')->name('warranty.')->group(function () {
+    Route::middleware(['admin', 'auth:admin', 'access'])->prefix('warranty')->name('warranty.')->group(function () {
 
         Route::controller(WarrantyDashboardController::class)->group(function () {
             Route::get('/dashboard', 'dashboard')->name('dashboard')->middleware('permission:warranty_section.warranty_dashboard,admin');

@@ -4,6 +4,24 @@ namespace App\Services;
 
 class PrioritySetupService
 {
+    public function updateBlogCategoryPrioritySetupData($request): array
+    {
+        return [
+            'default_sorting_status' => $request->get('default_sorting_status', 0),
+            'custom_sorting_status' => $request->get('custom_sorting_status', 0),
+            'sort_by' => $request['sort_by'] ?? null,
+        ];
+    }
+
+    public function updateBlogPrioritySetupData($request): array
+    {
+        return [
+            'default_sorting_status' => $request->get('default_sorting_status', 0),
+            'custom_sorting_status' => $request->get('custom_sorting_status', 0),
+            'sort_by' => $request['sort_by'] ?? null,
+        ];
+    }
+
     public function updateBrandAndCategoryPrioritySetupData($request): array
     {
         return [

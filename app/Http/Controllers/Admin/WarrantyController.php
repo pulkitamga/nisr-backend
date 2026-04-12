@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\FormattedTableExport;
 use App\Http\Controllers\Controller;
 use App\Imports\SerialImport;
 use App\Models\Warranty;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Services\ReportPdfService;
+use App\Support\LocalizedExport;
 
 class ValidationHeading implements WithHeadingRow {}
 
@@ -281,7 +283,7 @@ class WarrantyController extends Controller
         return view('admin-views.warranty.import-history', compact('history'));
     }
 
-    public function exportImportHistory(Request $request): StreamedResponse
+    public function exportImportHistory(Request $request): BinaryFileResponse
     {
         $historyQuery = $this->buildImportHistoryQuery($request);
         $limit = $this->resolveResultsLimit($request);
@@ -290,17 +292,29 @@ class WarrantyController extends Controller
         }
 
         $history = $historyQuery->get();
+        $rows = $history->map(fn($row) => [
+            (string) $row->import_date,
+            (int) $row->count,
+        ])->values()->all();
 
-        $filename = 'warranty-import-history-' . now()->format('Ymd_His') . '.csv';
-
-        return response()->streamDownload(function () use ($history) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Date', 'Imported Serials']);
-            foreach ($history as $row) {
-                fputcsv($handle, [$row->import_date, $row->count]);
-            }
-            fclose($handle);
-        }, $filename, ['Content-Type' => 'text/csv']);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [translate('date'), translate('count')],
+                title: translate('import_history'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                columnWidths: ['A' => 18, 'B' => 14],
+                centerColumns: ['A', 'B'],
+                sumColumns: ['B']
+            ),
+            LocalizedExport::fileName(translate('import_history'))
+        );
     }
 
     // Manual Activate View
@@ -433,7 +447,7 @@ class WarrantyController extends Controller
         return view('admin-views.warranty.activation-list', compact('activations'));
     }
 
-    public function exportActivationList(Request $request): StreamedResponse
+    public function exportActivationList(Request $request): BinaryFileResponse
     {
         $query = $this->buildActivationListQuery($request);
         $limit = $this->resolveResultsLimit($request);
@@ -442,24 +456,45 @@ class WarrantyController extends Controller
         }
 
         $activations = $query->latest('id')->get();
+        $rows = $activations->map(function ($warranty) {
+            return [
+                (string) $warranty->serial_number,
+                $warranty->user?->name ?? $warranty->activated_by_name ?? '-',
+                $this->resolveActivationMethodLabel((string) $warranty->activation_method),
+                optional($warranty->start_date)->format('Y-m-d') ?? '-',
+                optional($warranty->end_date)->format('Y-m-d') ?? '-',
+                translate($warranty->statusLabel()),
+            ];
+        })->values()->all();
 
-        return response()->streamDownload(function () use ($activations) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Serial', 'Customer', 'Method', 'Start Date', 'End Date', 'Status']);
-
-            foreach ($activations as $warranty) {
-                fputcsv($handle, [
-                    $warranty->serial_number,
-                    $warranty->user?->name ?? $warranty->activated_by_name,
-                    $this->resolveActivationMethodLabel((string) $warranty->activation_method),
-                    optional($warranty->start_date)->format('Y-m-d'),
-                    optional($warranty->end_date)->format('Y-m-d'),
-                    translate($warranty->statusLabel()),
-                ]);
-            }
-
-            fclose($handle);
-        }, 'warranty-activations-' . now()->format('Ymd_His') . '.csv', ['Content-Type' => 'text/csv']);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('serial'),
+                    translate('customer'),
+                    translate('method'),
+                    translate('Start Date'),
+                    translate('End Date'),
+                    translate('status'),
+                ],
+                title: translate('activations'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('method') . ': ' . ($request->input('method') ? $this->resolveActivationMethodLabel((string) $request->input('method')) : translate('all')),
+                    $limit !== null ? translate('Rows_to_show') . ': ' . $limit : null,
+                ])),
+                columnWidths: ['A' => 18, 'B' => 24, 'C' => 22, 'D' => 16, 'E' => 16, 'F' => 16],
+                centerColumns: ['D', 'E', 'F']
+            ),
+            LocalizedExport::fileName(translate('activations'))
+        );
     }
 
     public function activationView(Warranty $warranty)
@@ -485,7 +520,7 @@ class WarrantyController extends Controller
         return view('admin-views.warranty.blacklist', compact('blacklists'));
     }
 
-    public function exportBlacklist(Request $request): StreamedResponse
+    public function exportBlacklist(Request $request): BinaryFileResponse
     {
         $query = $this->buildBlacklistQuery($request);
         $limit = $this->resolveResultsLimit($request);
@@ -494,21 +529,32 @@ class WarrantyController extends Controller
         }
 
         $blacklists = $query->latest('id')->get();
+        $rows = $blacklists->map(fn($item) => [
+            (string) $item->serial_number,
+            (string) $item->reason,
+            optional($item->blacklisted_at)->format('Y-m-d H:i') ?? '-',
+        ])->values()->all();
 
-        return response()->streamDownload(function () use ($blacklists) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Serial Number', 'Reason', 'Blacklisted At']);
-
-            foreach ($blacklists as $item) {
-                fputcsv($handle, [
-                    $item->serial_number,
-                    $item->reason,
-                    optional($item->blacklisted_at)->format('Y-m-d H:i:s'),
-                ]);
-            }
-
-            fclose($handle);
-        }, 'warranty-blacklist-' . now()->format('Ymd_His') . '.csv', ['Content-Type' => 'text/csv']);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [translate('serial'), translate('reason'), translate('blacklisted_at')],
+                title: translate('blacklist'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    $limit !== null ? translate('Rows_to_show') . ': ' . $limit : null,
+                ])),
+                columnWidths: ['A' => 20, 'B' => 38, 'C' => 18],
+                centerColumns: ['C']
+            ),
+            LocalizedExport::fileName(translate('blacklist'))
+        );
     }
 
 
@@ -643,7 +689,7 @@ class WarrantyController extends Controller
         return view('admin-views.warranty.history-details', compact('details', 'date'));
     }
 
-    public function exportHistoryDetails(Request $request, $date): StreamedResponse
+    public function exportHistoryDetails(Request $request, $date): BinaryFileResponse
     {
         $search = $request->searchValue;
 
@@ -655,22 +701,31 @@ class WarrantyController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->get();
+        $rows = $details->map(fn($warranty) => [
+            (string) $warranty->serial_number,
+            $warranty->product?->name ?? '-',
+            translate($warranty->status),
+            optional($warranty->created_at)->format('Y-m-d H:i') ?? '-',
+        ])->values()->all();
 
-        $filename = 'warranty-import-details-' . $date . '-' . now()->format('Ymd_His') . '.csv';
-
-        return response()->streamDownload(function () use ($details) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Serial Number', 'Product', 'Status', 'Created At']);
-            foreach ($details as $warranty) {
-                fputcsv($handle, [
-                    $warranty->serial_number,
-                    $warranty->product?->name ?? '-',
-                    translate($warranty->status),
-                    optional($warranty->created_at)->format('Y-m-d H:i:s'),
-                ]);
-            }
-            fclose($handle);
-        }, $filename, ['Content-Type' => 'text/csv']);
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [translate('serial'), translate('product'), translate('status'), translate('Created At')],
+                title: translate('import_history') . ' ' . (string) $date,
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('date'), 'value' => (string) $date],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                ],
+                filterSummary: translate('search') . ': ' . (trim((string) $search) ?: translate('all')),
+                columnWidths: ['A' => 18, 'B' => 28, 'C' => 16, 'D' => 18],
+                centerColumns: ['D']
+            ),
+            LocalizedExport::fileName(translate('import_history') . '-' . (string) $date)
+        );
     }
 
 
