@@ -3,7 +3,7 @@
 return [
     'product' => env('APP_GUARD_PRODUCT', 'Elnisr'),
     'file' => env('APP_GUARD_FILE', storage_path('framework/.runtime_state')),
-    'public_key' => env('APP_GUARD_PUBLIC_KEY', '5BzsUfTSHLL/6EptGnQNwEAwcXlF719tH0+9eZ2Ra40='),
+    'public_key' => env('APP_GUARD_PUBLIC_KEY', 'IdtL5ujBwXqxuSGJ0SNjFqHEiiW4XlfLH7p0p1tzm+Q='),
     'state_prefix' => env('APP_GUARD_PREFIX', 'RTS-'),
     'accepted_prefixes' => [
         env('APP_GUARD_PREFIX', 'RTS-'),

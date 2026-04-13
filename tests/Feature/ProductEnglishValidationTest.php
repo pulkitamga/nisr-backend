@@ -358,6 +358,86 @@ class ProductEnglishValidationTest extends TestCase
         $this->assertSame('SRV-ARRAY-202', $request->input('service_id'));
     }
 
+    public function test_add_request_accepts_nested_array_service_id_without_normalized_validation_data(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validServicePayload([
+            'service_id' => [['SRV-RAW-303']],
+        ]));
+
+        $validator = Validator::make($request->all(), $request->rules(), $request->messages());
+
+        foreach ($request->after() as $afterValidationHook) {
+            $validator->after($afterValidationHook);
+        }
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+    }
+
+    public function test_add_request_normalizes_all_service_scalar_fields_before_validation(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validServicePayload([
+            'service_id' => [['SRV-SCALAR-401']],
+            'base_price_inshop' => [[20]],
+            'base_price_mobile' => [[27.5]],
+            'parts_cost' => [[0]],
+            'included_km_mobile' => [[20]],
+            'travel_fee_per_km' => [[1]],
+            'labor_hours' => [[0.5]],
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+        $this->assertSame('SRV-SCALAR-401', $request->input('service_id'));
+        $this->assertSame('20', $request->input('base_price_inshop'));
+        $this->assertSame('27.5', $request->input('base_price_mobile'));
+        $this->assertSame('0', $request->input('parts_cost'));
+        $this->assertSame('20', $request->input('included_km_mobile'));
+        $this->assertSame('1', $request->input('travel_fee_per_km'));
+        $this->assertSame('0.5', $request->input('labor_hours'));
+    }
+
+    public function test_update_request_normalizes_all_service_scalar_fields_before_validation(): void
+    {
+        $productRepository = $this->mock(ProductRepositoryInterface::class);
+        $product = new class extends Model {
+            protected $table = 'products';
+            public $timestamps = false;
+            protected $guarded = [];
+        };
+        $product->forceFill([
+            'id' => 8,
+            'images' => '["product.webp"]',
+            'color_image' => null,
+        ]);
+        $product->setRelation('digitalVariation', collect());
+
+        $productRepository->shouldReceive('getFirstWhere')
+            ->andReturn($product);
+
+        $request = new ProductUpdateRequest($productRepository);
+        $request->initialize($this->validServicePayload([
+            'service_id' => [['SRV-SCALAR-402']],
+            'base_price_inshop' => [[20]],
+            'base_price_mobile' => [[27.5]],
+            'parts_cost' => [[0]],
+            'included_km_mobile' => [[20]],
+            'travel_fee_per_km' => [[1]],
+            'labor_hours' => [[0.5]],
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+        $this->assertSame('SRV-SCALAR-402', $request->input('service_id'));
+        $this->assertSame('20', $request->input('base_price_inshop'));
+        $this->assertSame('27.5', $request->input('base_price_mobile'));
+        $this->assertSame('0', $request->input('parts_cost'));
+        $this->assertSame('20', $request->input('included_km_mobile'));
+        $this->assertSame('1', $request->input('travel_fee_per_km'));
+        $this->assertSame('0.5', $request->input('labor_hours'));
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
@@ -410,7 +490,11 @@ class ProductEnglishValidationTest extends TestCase
             $reflection->invoke($request);
         }
 
-        $validator = Validator::make($request->all(), $request->rules(), $request->messages());
+        $validationData = method_exists($request, 'validationData')
+            ? $request->validationData()
+            : $request->all();
+
+        $validator = Validator::make($validationData, $request->rules(), $request->messages());
 
         foreach ($request->after() as $afterValidationHook) {
             $validator->after($afterValidationHook);

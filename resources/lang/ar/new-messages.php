@@ -4028,6 +4028,7 @@ return [
 	"deleted!" => "تم الحذف!",
 	"deleted_successfully" => "تم الحذف بنجاح",
 	"delivered" => "تم التسليم",
+	"draft" => "مسودة",
 	"delivered_By" => "تم التسليم بواسطة",
 	"delivered_by" => "تم التسليم بواسطة",
 	"delivery" => "التوصيل",
@@ -12740,7 +12741,7 @@ return [
 	"stock_transfer_chart" => "مخطط تحويل المنتجات",
 	"total_revenue" => "إجمالي الإيرادات",
 	"payment_statistics" => "إحصائيات الدفع",
-	"PDF" => "قوات الدفاع الشعبي",
+	"PDF" => "PDF",
 	"branch_product_chart" => "مخطط منتج الفرع",
 	"stock_movement_trend" => "اتجاه حركة الأسهم",
 	"top_products_chart" => "أعلى المنتجات الرسم البياني",
@@ -12955,5 +12956,9 @@ return [
 	"Agent B" => "الموظف ب",
 	"Agent C" => "الموظف ج",
 	"Agent D" => "الموظف د",
-	"Agent E" => "الموظف هـ"
+	"Agent E" => "الموظف هـ",
+	"Party Name" => "اسم الجهة",
+	"candidate_name" => "اسم المرشح",
+	"candidate_email" => "بريد المرشح الإلكتروني",
+	"talent_pool_consent" => "موافقة قائمة المواهب"
 ];

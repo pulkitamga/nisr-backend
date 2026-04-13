@@ -57,10 +57,10 @@
                             <p><strong>{{ translate('Created At') }}:</strong> <span class="bidi-ltr">{{ $deal->created_at->format('d M, Y H:i A') }}</span></p>
                             <p><strong>{{ translate('Employee') }}:</strong> <span class="bidi-auto">{{ $deal->employee->name ?? translate('N/A') }}</span></p>
                             <p><strong>{{ translate('Quotation Status') }}:</strong>
-                                <span class="text-primary bg-soft-dark font-weight-bold px-3 py-1 mb-0 fz-12 bidi-auto">{{ ucfirst($deal->quotation_status) }}</span>
+                                <span class="text-primary bg-soft-dark font-weight-bold px-3 py-1 mb-0 fz-12 bidi-auto">{{ \App\Utils\crm_status_label($deal->quotation_status) }}</span>
                             </p>
                             <p><strong>{{ translate('Status') }}:</strong>
-                                <span class="text-success bg-soft-success font-weight-bold px-3 py-1 mb-0 fz-12 bidi-auto">{{ ucfirst($deal->status) }}</span>
+                                <span class="text-success bg-soft-success font-weight-bold px-3 py-1 mb-0 fz-12 bidi-auto">{{ \App\Utils\crm_status_label($deal->status) }}</span>
                             </p>
                         </div>
                     </div>

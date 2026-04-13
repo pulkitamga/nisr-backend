@@ -193,7 +193,7 @@
                             @endphp
 
                             <span class="btn {{ $statusClass }} font-weight-bold px-3 py-1 mb-0 fz-12">
-                                {{ ucfirst($msg->status) }}
+                                {{ \App\Utils\crm_status_label($msg->status) }}
                             </span>
                         </td>
                         <td><span class="bidi-ltr d-inline-block">{{ ($msg->updated_at ?? $msg->created_at)?->format('d M, Y H:i A') }}</span></td>

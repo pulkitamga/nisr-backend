@@ -124,7 +124,7 @@ class InboxMessageController extends BaseController
                 (string) ($msg->owner?->name ?? translate('Not Assigned')),
                 (string) ($msg->department?->getTranslatedField('name') ?? translate('No Department')),
                 (string) ($msg->employee?->name ?? translate('Not Assigned')),
-                ucfirst((string) ($msg->status ?? 'new')),
+                \App\Utils\crm_status_label((string) ($msg->status ?? 'new')),
                 optional($msg->created_at)->format('Y-m-d H:i') ?? '-',
             ];
         })->values()->all();

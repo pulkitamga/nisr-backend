@@ -111,6 +111,48 @@ class CareerApplicationWebFlowTest extends TestCase
         $this->assertStringNotContainsString('job_id', $message);
     }
 
+    public function test_career_application_succeeds_when_optional_fields_are_submitted_blank(): void
+    {
+        Storage::fake('local');
+
+        $job = CareerJob::query()->create([
+            'title' => 'Sales Executive',
+            'is_active' => true,
+        ]);
+
+        $response = $this->from('/career/job/' . $job->id)
+            ->post(route('career.store.test'), [
+                'job_id' => $job->id,
+                'first_name' => 'Ahmed',
+                'last_name' => 'Ali',
+                'email' => 'blank-optional@example.com',
+                'phone' => '01223344556',
+                'gender' => 'Male',
+                'country' => 'Egypt',
+                'state' => 'Alexandria',
+                'city' => 'Alexandria',
+                'area' => '',
+                'notice_period' => '',
+                'last_ctc' => '',
+                'resume' => UploadedFile::fake()->create('resume.pdf', 200, 'application/pdf'),
+            ]);
+
+        $response->assertRedirect('/career/job/' . $job->id);
+        $response->assertSessionHasNoErrors();
+
+        $application = careerApplies::query()->firstOrFail();
+
+        $this->assertSame('', (string) $application->area);
+        $this->assertSame('', (string) $application->notice_period);
+        $this->assertSame('', (string) $application->last_ctc);
+
+        $message = InboxMessage::query()->firstOrFail();
+
+        $this->assertSame('', (string) ($message->details['area'] ?? null));
+        $this->assertSame('', (string) ($message->details['notice_period'] ?? null));
+        $this->assertSame('', (string) ($message->details['last_ctc'] ?? null));
+    }
+
     private function createTestSchema(): void
     {
         Schema::create('business_settings', function (Blueprint $table): void {

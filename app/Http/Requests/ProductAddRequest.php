@@ -26,22 +26,51 @@ class ProductAddRequest extends Request
 
     protected function prepareForValidation(): void
     {
-        $serviceId = $this->extractServiceIdValue($this->input('service_id'));
+        $normalizedPayload = $this->normalizedServiceScalarPayload();
 
-        if (is_scalar($serviceId)) {
-            $this->merge([
-                'service_id' => trim((string)$serviceId),
-            ]);
+        if ($normalizedPayload !== []) {
+            $this->merge($normalizedPayload);
         }
     }
 
-    private function extractServiceIdValue(mixed $serviceId): mixed
+    public function validationData(): array
     {
-        if (is_array($serviceId)) {
-            foreach ($serviceId as $candidate) {
-                $resolvedCandidate = $this->extractServiceIdValue($candidate);
+        return array_merge(parent::validationData(), $this->normalizedServiceScalarPayload());
+    }
 
-                if (is_scalar($resolvedCandidate) && trim((string) $resolvedCandidate) !== '') {
+    private function normalizedServiceScalarPayload(): array
+    {
+        $normalizedPayload = [];
+
+        foreach ($this->serviceScalarFieldNames() as $field) {
+            if ($this->exists($field)) {
+                $normalizedPayload[$field] = $this->extractServiceScalarValue($this->input($field));
+            }
+        }
+
+        return $normalizedPayload;
+    }
+
+    private function serviceScalarFieldNames(): array
+    {
+        return [
+            'service_id',
+            'base_price_inshop',
+            'base_price_mobile',
+            'parts_cost',
+            'included_km_mobile',
+            'travel_fee_per_km',
+            'labor_hours',
+        ];
+    }
+
+    private function extractServiceScalarValue(mixed $value): ?string
+    {
+        if (is_array($value)) {
+            foreach ($value as $candidate) {
+                $resolvedCandidate = $this->extractServiceScalarValue($candidate);
+
+                if ($resolvedCandidate !== null && $resolvedCandidate !== '') {
                     return $resolvedCandidate;
                 }
             }
@@ -49,7 +78,35 @@ class ProductAddRequest extends Request
             return null;
         }
 
-        return $serviceId;
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $normalizedValue = trim((string) $value);
+
+        return $normalizedValue !== '' ? $normalizedValue : null;
+    }
+
+    private function serviceIdRules(): array
+    {
+        return [
+            function (string $attribute, mixed $value, \Closure $fail): void {
+                if (($this->input('product_type') ?? null) !== 'services') {
+                    return;
+                }
+
+                $normalizedValue = $this->extractServiceScalarValue($value);
+
+                if ($normalizedValue === null) {
+                    $fail(trans('validation.required', ['attribute' => translate('service_id')]));
+                    return;
+                }
+
+                if (mb_strlen($normalizedValue) > 255) {
+                    $fail(trans('validation.max.string', ['attribute' => translate('service_id'), 'max' => 255]));
+                }
+            },
+        ];
     }
 
     /**
@@ -88,7 +145,7 @@ class ProductAddRequest extends Request
             'parts_included.*' => 'nullable|string',
             'service_description' => 'required_if:product_type,services|array',
             'service_description.*' => 'nullable|string',
-            'service_id' => 'required_if:product_type,services|string|max:255',
+            'service_id' => $this->serviceIdRules(),
             'base_price_inshop' => 'required_if:product_type,services|numeric|min:0',
             'base_price_mobile' => 'required_if:product_type,services|numeric|min:0',
             'parts_cost' => 'required_if:product_type,services|numeric|min:0',

@@ -17,9 +17,10 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 $priority = request()->has('priority') ? request()->input('priority') : 'all';
 $statusId = request()->has('status') ? request()->input('status') : (string) \App\Support\CareerTicketWorkflow::STATUS_NEW;
 $talentPoolFilter = request()->has('talent_pool') ? request()->input('talent_pool') : 'all';
+$selectedStatus = $statuses->firstWhere('id', (int) $statusId);
 $selectedStatusLabel = $statusId === 'all'
     ? translate('all_status')
-    : ($statuses->firstWhere('id', (int) $statusId)?->getTranslatedField('name') ?? translate('all_status'));
+    : ($selectedStatus ? \App\Utils\crm_status_label($selectedStatus->getTranslatedField('name') ?? $selectedStatus->name) : translate('all_status'));
 $toolbarFields = [
     [
         'type' => 'search',
@@ -47,7 +48,7 @@ $toolbarFields = [
         'label' => translate('status'),
         'value' => $statusId,
         'options' => ['all' => translate('all_status')] + $statuses->mapWithKeys(fn ($statusOption) => [
-            (string) $statusOption['id'] => $statusOption->getTranslatedField('name'),
+            (string) $statusOption['id'] => \App\Utils\crm_status_label($statusOption->getTranslatedField('name') ?? $statusOption->name),
         ])->all(),
         'input_class' => 'form-control border-color-c1',
         'col_class' => 'col-xl-3 col-lg-4',
@@ -154,7 +155,7 @@ $headerActions = [
                             </a>
                         </td>
                         <td>{{ optional($ticket->relatedInboxMessage)->sender_name ?? optional($ticket->relatedInboxMessage)->sender_email ?? translate('N/A') }}</td>
-                        <td>{{ $ticket->status_details?->getTranslatedField('name') ?? translate('N/A') }}</td>
+                        <td>{{ \App\Utils\crm_status_label($ticket->status_details?->getTranslatedField('name') ?? $ticket->status_details?->name ?? null, 'N/A') }}</td>
                         <td>{{ $ticket->employee->name ?? translate('Unassigned') }}</td>
                         <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d-m-Y H:i') }}</span></td>
                         @php

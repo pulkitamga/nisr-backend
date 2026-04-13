@@ -161,6 +161,27 @@ $direction = get_direction();
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/libs/bootstrap-5/bootstrap.bundle.min.js') }}"></script>
 
     {!! Toastr::message() !!}
+    @if(request()->routeIs('admin.content-management.*'))
+        @php
+            $cmsFlashToasts = collect([
+                'success' => session('success'),
+                'error' => session('error'),
+                'warning' => session('warning'),
+                'info' => session('info'),
+            ])->filter(fn ($message) => filled($message));
+        @endphp
+        @if($cmsFlashToasts->isNotEmpty())
+            <script>
+                'use strict';
+                @foreach($cmsFlashToasts as $type => $message)
+                toastr[@json($type)](@json($message), '', {
+                    closeButton: true,
+                    progressBar: true
+                });
+                @endforeach
+            </script>
+        @endif
+    @endif
     @if ($errors->any())
     <script>
         'use strict';

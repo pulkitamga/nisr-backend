@@ -380,6 +380,7 @@
                             data-target="#careerApplyModal"
                             data-job-id="{{ $job->id }}"
                             data-job-title="{{ e($careerJobTitle) }}"
+                            onclick="document.getElementById('career-apply-job-id').value = this.getAttribute('data-job-id'); var titleNode = document.querySelector('#careerApplyModal [data-career-apply-job-title]'); if (titleNode) { titleNode.textContent = this.getAttribute('data-job-title') || ''; }"
                         >
                             {{ translate('Apply Now') }}
                         </button>

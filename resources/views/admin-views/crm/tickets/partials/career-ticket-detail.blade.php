@@ -44,7 +44,7 @@
                 <div class="card-header">{{ translate('ticket_details') }}</div>
                 <div class="card-body">
                     <p><strong>{{ translate('subject') }}:</strong> <span class="bidi-auto">{{ $supportTicket->subject }}</span></p>
-                    <p><strong>{{ translate('status') }}:</strong> <span class="bidi-auto">{{ $supportTicket->status_details?->getTranslatedField('name') ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('status') }}:</strong> <span class="bidi-auto">{{ \App\Utils\crm_status_label($supportTicket->status_details?->getTranslatedField('name') ?? $supportTicket->status_details?->name ?? null, 'N/A') }}</span></p>
                     <p><strong>{{ translate('recruiter') }}:</strong> <span class="bidi-auto">{{ $supportTicket->employee->name ?? translate('Unassigned') }}</span></p>
                     <p><strong>{{ translate('created_at') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->created_at->format('d-m-Y H:i') }}</span></p>
                 </div>
@@ -126,7 +126,7 @@
                         <tbody>
                             @foreach($supportTicket->careerOffers as $offer)
                             <tr>
-                                <td>{{ $offer->status }}</td>
+                                <td>{{ \App\Utils\crm_status_label($offer->status, 'N/A') }}</td>
                                 <td>{{ $offer->start_date }}</td>
                                 <td><a href="{{ route('admin.support-ticket.career.offer.download', $offer->id) }}" target="_blank">{{ translate('view') }}</a></td>
                             </tr>

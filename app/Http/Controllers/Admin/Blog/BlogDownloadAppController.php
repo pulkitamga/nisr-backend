@@ -29,8 +29,11 @@ class BlogDownloadAppController extends Controller
 
     public function appDownloadSetup(): View
     {
-        $languages = getWebConfig(name: 'pnc_language') ?? null;
-        $defaultLanguage = $languages[0];
+        $languages = getConfiguredLanguageCodes();
+        $defaultLanguage = getConfiguredDefaultLanguage();
+        if (!in_array($defaultLanguage, $languages, true)) {
+            $defaultLanguage = $languages[0] ?? 'en';
+        }
         $web = $this->businessSettingRepo->getListWhere(dataLimit: 'all');
         $businessSetting = [
             'google_app_status' => $this->getSettings(object: $web, type: 'blog_feature_download_google_app_button_status')->value ?? '',

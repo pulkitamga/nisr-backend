@@ -21,7 +21,7 @@ $statusId = request()->has('status') ? request()->input('status') : 'all';
 $selectedStatus = $aAllStatus->firstWhere('id', (int) $statusId);
 $selectedStatusLabel = $statusId === 'all'
     ? translate('all_Status')
-    : ($selectedStatus?->getTranslatedField('name') ?? translate('all_Status'));
+    : ($selectedStatus ? \App\Utils\crm_status_label($selectedStatus->getTranslatedField('name') ?? $selectedStatus->name) : translate('all_Status'));
 $toolbarFields = [
     [
         'type' => 'search',
@@ -49,7 +49,7 @@ $toolbarFields = [
         'label' => translate('Status'),
         'value' => $statusId,
         'options' => ['all' => translate('all_Status')] + $aAllStatus->mapWithKeys(fn ($statusOption) => [
-            (string) $statusOption['id'] => $statusOption->getTranslatedField('name'),
+            (string) $statusOption['id'] => \App\Utils\crm_status_label($statusOption->getTranslatedField('name') ?? $statusOption->name),
         ])->all(),
         'input_class' => 'form-control border-color-c1',
         'col_class' => 'col-xl-3 col-lg-6',
@@ -169,7 +169,7 @@ $headerActions = [
                             @endif
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span></td>
-                        <td><span class="badge {{ $statusClass }}">{{ $ticket->status_details->getTranslatedField('name') ?? $ticket->status }}</span></td>
+                        <td><span class="badge {{ $statusClass }}">{{ \App\Utils\crm_status_label($ticket->status_details?->getTranslatedField('name') ?? $ticket->status_details?->name ?? $ticket->status, 'N/A') }}</span></td>
                         <td>{{ $service ? $service->title : translate('No Service Picked') }}</td>
                         <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d M, Y H:i') }}</span></td>
                         <td class="text-center">

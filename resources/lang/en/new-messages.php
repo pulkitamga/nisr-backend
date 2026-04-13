@@ -4026,6 +4026,7 @@ return [
 	"deleted!" => "Deleted!",
 	"deleted_successfully" => "Deleted successfully",
 	"delivered" => "delivered",
+	"draft" => "Draft",
 	"delivered_By" => "Delivered By",
 	"delivered_by" => "Delivered by",
 	"delivery" => "Delivery",
@@ -13422,5 +13423,9 @@ return [
 	"Agent B" => "Agent B",
 	"Agent C" => "Agent C",
 	"Agent D" => "Agent D",
-	"Agent E" => "Agent E"
+	"Agent E" => "Agent E",
+	"Party Name" => "Party Name",
+	"candidate_name" => "Candidate name",
+	"candidate_email" => "Candidate email",
+	"talent_pool_consent" => "Talent pool consent"
 ];

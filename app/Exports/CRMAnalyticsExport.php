@@ -46,7 +46,7 @@ class CRMAnalyticsExport implements FromArray, WithStyles, WithEvents
         $rows[] = ['Date Range', ':', ($this->filters['start_date'] ?? '-') . ' to ' . ($this->filters['end_date'] ?? '-'), '', '', '', '', '', '', ''];
         $rows[] = ['Department', ':', $this->filters['department'] ?? 'All Departments', '', '', '', '', '', '', ''];
         $rows[] = ['Pipeline', ':', ucfirst($this->filters['pipeline'] ?? 'All Pipelines'), '', '', '', '', '', '', ''];
-        $rows[] = ['Status', ':', ucfirst($this->filters['status'] ?? 'All Status'), '', '', '', '', '', '', ''];
+        $rows[] = ['Status', ':', \App\Utils\crm_status_label($this->filters['status'] ?? 'all', 'all_Status'), '', '', '', '', '', '', ''];
         $rows[] = ['Message Type', ':', ucfirst($this->filters['message_type'] ?? 'All Types'), '', '', '', '', '', '', ''];
         $rows[] = ['', '', '', '', '', '', '', '', ''];
         $rows[] = ['', '', '', '', '', '', '', '', ''];

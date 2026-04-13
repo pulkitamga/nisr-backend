@@ -22,10 +22,7 @@
             $normalized = 'open';
         }
 
-        $translated = translate($normalized);
-        return $translated !== $normalized
-            ? $translated
-            : ucfirst(str_replace('_', ' ', $normalized));
+        return \App\Utils\crm_status_label($normalized);
     };
 @endphp
 

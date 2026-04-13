@@ -26,7 +26,9 @@ use App\Models\LeadNote;
 use App\Models\LeadTask;
 use App\Models\Admin;
 use App\Models\Order;
+use App\Exports\FormattedTableExport;
 use App\Services\LeadConvertService;
+use App\Support\LocalizedExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -35,6 +37,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
 use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Validation\ValidationException;
 class LeadController extends BaseController
 {
@@ -79,7 +82,7 @@ class LeadController extends BaseController
 
 
 
-    public function exportList(Request $request)
+    public function exportList(Request $request): BinaryFileResponse
     {
         $query = $this->leadListQuery();
         $this->applyLeadListFilters($query, $request);
@@ -90,7 +93,40 @@ class LeadController extends BaseController
             $leads = $query->latest()->get();
         }
 
-        return Excel::download(new LeadsExport($leads), 'leads.xlsx');
+        $locale = LocalizedExport::locale();
+        $isRtl = LocalizedExport::isRtl();
+        $export = new LeadsExport($leads, $request);
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $export->rows(),
+                headings: $export->headings(),
+                title: $export->titleLabel(),
+                locale: $locale,
+                isRtl: $isRtl,
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) $leads->count()],
+                ],
+                filterSummary: $export->filterSummary(),
+                columnWidths: [
+                    'A' => 8,
+                    'B' => 30,
+                    'C' => 16,
+                    'D' => 24,
+                    'E' => 28,
+                    'F' => 18,
+                    'G' => 22,
+                    'H' => 22,
+                    'I' => 22,
+                    'J' => 14,
+                    'K' => 16,
+                    'L' => 18,
+                ],
+                centerColumns: ['A', 'C', 'J', 'K', 'L'],
+            ),
+            LocalizedExport::fileName($export->titleLabel())
+        );
     }
 
     private function leadListQuery(): Builder

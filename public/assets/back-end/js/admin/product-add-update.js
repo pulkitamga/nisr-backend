@@ -53,6 +53,15 @@ const serviceRequiredSelectors = [
     "input[name='travel_fee_per_km']",
     "input[name='labor_hours']",
 ];
+const serviceScalarFieldNames = [
+    "service_id",
+    "base_price_inshop",
+    "base_price_mobile",
+    "parts_cost",
+    "included_km_mobile",
+    "travel_fee_per_km",
+    "labor_hours",
+];
 
 function getProductLanguageForms() {
     return Array.from(document.querySelectorAll(".form-system-language-form"));
@@ -226,6 +235,53 @@ function validateOptionalVideoUrl() {
     }
 
     return true;
+}
+
+function extractNormalizedFormDataScalar(values) {
+    if (!Array.isArray(values)) {
+        return null;
+    }
+
+    for (const value of values) {
+        const normalizedValue = String(value ?? "").trim();
+
+        if (normalizedValue !== "") {
+            return normalizedValue;
+        }
+    }
+
+    return null;
+}
+
+function normalizeServiceScalarFormData(formData) {
+    if (!(formData instanceof FormData)) {
+        return formData;
+    }
+
+    const productType = String(formData.get("product_type") || "");
+
+    if (productType !== "services") {
+        serviceScalarFieldNames.forEach((fieldName) => {
+            if (formData.has(fieldName)) {
+                formData.delete(fieldName);
+            }
+        });
+
+        return formData;
+    }
+
+    serviceScalarFieldNames.forEach((fieldName) => {
+        const fieldValues = formData.getAll(fieldName);
+        if (!fieldValues.length) {
+            return;
+        }
+
+        const normalizedValue = extractNormalizedFormDataScalar(fieldValues);
+        formData.delete(fieldName);
+        formData.append(fieldName, normalizedValue ?? "");
+    });
+
+    return formData;
 }
 
 function setRequiredState(selectors, isRequired) {
@@ -870,6 +926,7 @@ function getProductAddRequirementsCheck() {
                 let formData = new FormData(
                     document.getElementById("product_form")
                 );
+                normalizeServiceScalarFormData(formData);
                 $.ajaxSetup({
                     headers: {
                         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(

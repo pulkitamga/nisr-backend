@@ -22,7 +22,7 @@
 @php
     $pageDirection = Session::get('direction') === 'rtl' ? 'rtl' : 'ltr';
     $localizedTicketPriority = translate($supportTicket->priority);
-    $localizedTicketStatus = $supportTicket->status_details->getTranslatedField('name') ?? $supportTicket->status;
+    $localizedTicketStatus = \App\Utils\crm_status_label($supportTicket->status_details?->getTranslatedField('name') ?? $supportTicket->status_details?->name ?? $supportTicket->status, 'N/A');
 @endphp
 <div class="content container-fluid" dir="{{ $pageDirection }}">
     <div class="mb-4">
@@ -405,7 +405,7 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $serviceJob->technician ? $serviceJob->technician->name : translate('N/A') }}</td>
-                                            <td>{{ translate($serviceJob->status) }}</td>
+                                            <td>{{ \App\Utils\crm_status_label($serviceJob->status, 'N/A') }}</td>
                                             <td>{{ $serviceJob->remarks }}</td>
 
                                             <td>

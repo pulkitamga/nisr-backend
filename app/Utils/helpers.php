@@ -1357,34 +1357,67 @@ if (!function_exists('support_ticket_message_html')) {
     }
 }
 
-if (!function_exists('support_ticket_status_label')) {
-    function support_ticket_status_label(?string $status): string
+if (!function_exists('crm_status_label')) {
+    function crm_status_label(?string $status, string $fallbackKey = 'Unknown'): string
     {
         $rawStatus = trim((string) $status);
 
         if ($rawStatus === '') {
-            return translate('Unknown');
+            return translate($fallbackKey);
         }
 
-        $normalizedStatus = Str::of($rawStatus)
-            ->replace(['-', '_'], ' ')
+        $spacedStatus = preg_replace('/(?<=\p{Ll})(?=\p{Lu})/u', ' ', $rawStatus) ?: $rawStatus;
+        $normalizedStatus = Str::of($spacedStatus)
+            ->replace(['-', '_', '/', ':'], ' ')
             ->squish();
+
+        $headlineStatus = str_replace(
+            ['Rma', 'Qa', 'Sla'],
+            ['RMA', 'QA', 'SLA'],
+            $normalizedStatus->headline()->value()
+        );
+
+        $statusAliases = match ($normalizedStatus->lower()->replace(' ', '_')->value()) {
+            'inprogress' => ['in_progress'],
+            'opened' => ['open'],
+            'reopened' => ['reopen'],
+            default => [],
+        };
 
         $translationCandidates = array_values(array_unique(array_filter([
             $rawStatus,
+            $spacedStatus,
+            $normalizedStatus->value(),
+            $headlineStatus,
             $normalizedStatus->title()->value(),
             $normalizedStatus->lower()->value(),
             $normalizedStatus->lower()->replace(' ', '_')->value(),
-        ])));
+            ...$statusAliases,
+        ], static fn ($candidate) => trim((string) $candidate) !== '')));
+
+        $activeLocale = function_exists('getActiveTranslationLocale')
+            ? getActiveTranslationLocale()
+            : app()->getLocale();
 
         foreach ($translationCandidates as $candidate) {
-            $translated = translate($candidate);
-            if ($translated !== $candidate) {
-                return $translated;
+            if (
+                function_exists('translationKeyExistsInCatalog')
+                && !translationKeyExistsInCatalog($activeLocale, $candidate)
+            ) {
+                continue;
             }
+
+            return translate($candidate);
         }
 
-        return $normalizedStatus->title()->value();
+        return $headlineStatus;
+    }
+}
+
+if (!function_exists('support_ticket_status_label')) {
+    function support_ticket_status_label(?string $status): string
+    {
+        return crm_status_label($status);
     }
 }
 

@@ -63,12 +63,14 @@
 
                     <tbody id="product_table_body">
                         @foreach ($order->items as $item)
-                        @php($linePricing = \App\Support\WholesaleLinePrice::fromValues(
-                            basePrice: $item->base_price,
-                            quantity: $item->product_quantity,
-                            tax: $item->tax,
-                            storedFinalPrice: $item->final_price
-                        ))
+                        @php
+                            $linePricing = \App\Support\WholesaleLinePrice::fromValues(
+                                basePrice: $item->base_price,
+                                quantity: $item->product_quantity,
+                                tax: $item->tax,
+                                storedFinalPrice: $item->final_price
+                            );
+                        @endphp
 
                         <tr data-product-id="{{ $item->product_id }}">
 

@@ -112,7 +112,7 @@
                         </div>
                         <div class="col-6">
                             <p><strong>{{ translate('Purchase Order No') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder->purchase_order_no ?? translate('Not Assigned') }}</span></p>
-                            <p><strong>{{ translate('Status') }}:</strong> <span class="bidi-auto">{{ $lead->purchaseOrder->status ?? translate('N/A') }}</span></p>
+                            <p><strong>{{ translate('Status') }}:</strong> <span class="bidi-auto">{{ \App\Utils\crm_status_label($lead->purchaseOrder->status ?? null, 'N/A') }}</span></p>
                             <p><strong>{{ translate('Created_At') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder?->created_at?->format('d M, Y H:i A') ?? translate('N/A') }}</span></p>
                         </div>
                     </div>

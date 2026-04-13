@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\HelpAndSupport;
 use App\Contracts\Repositories\SupportTicketConvRepositoryInterface;
 use App\Contracts\Repositories\SupportTicketRepositoryInterface;
 use App\Contracts\Repositories\DepartmentRepositoryInterface;
+use App\Exports\FormattedTableExport;
 use App\Enums\SupportTicketStatusGroup;
 use App\Enums\ViewPaths\Admin\SupportTicket;
 use App\Contracts\Repositories\AdminRepositoryInterface;
@@ -30,10 +31,12 @@ use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; // Add this
 use App\Support\CareerTicketWorkflow;
 use App\Support\ComplaintTicketWorkflow;
+use App\Support\LocalizedExport;
 use App\Support\RetailTicketWorkflow;
 use App\Support\SupportTicketLifecycle;
 use App\Support\ServiceTicketWorkflow;
 use App\Support\WholesaleTicketWorkflow;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Validation\ValidationException;
 class SupportTicketController extends BaseController
 {
@@ -148,12 +151,28 @@ class SupportTicketController extends BaseController
         return view($view, compact('tickets', 'aAllStatus', 'aInProgressStatus', 'getDepartment', 'employees', 'services', 'status'));
     }
 
-    public function export(Request $request, string $type)
+    public function export(Request $request, string $type): BinaryFileResponse
     {
-        $fileName = ucfirst($type) . '_Tickets_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
+        $export = new SupportTicketExport($request, $type);
+
         return Excel::download(
-            new SupportTicketExport($request, $type),
-            $fileName
+            new FormattedTableExport(
+                rows: $export->rows(),
+                headings: $export->headings(),
+                title: $export->titleLabel(),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($export->rows())],
+                ],
+                filterSummary: $export->filterSummary(),
+                columnWidths: $type === 'service'
+                    ? ['A' => 8, 'B' => 26, 'C' => 22, 'D' => 28, 'E' => 20, 'F' => 14, 'G' => 18, 'H' => 22, 'I' => 22, 'J' => 20, 'K' => 18]
+                    : ['A' => 8, 'B' => 26, 'C' => 22, 'D' => 28, 'E' => 20, 'F' => 14, 'G' => 18, 'H' => 22, 'I' => 20, 'J' => 18],
+                centerColumns: $type === 'service' ? ['A', 'F', 'G', 'K'] : ['A', 'F', 'G', 'J']
+            ),
+            LocalizedExport::fileName($export->titleLabel())
         );
     }
 

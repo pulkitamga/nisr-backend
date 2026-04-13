@@ -182,7 +182,7 @@
                             @endphp
 
                             <span class="btn {{ $statusClass }} font-weight-bold px-3 py-1 mb-0 fz-12">
-                                {{ ucfirst($deal->quotation_status) }}
+                                {{ \App\Utils\crm_status_label($deal->quotation_status) }}
                             </span>
                         </td>
                         <td>
@@ -198,7 +198,7 @@
                             @endphp
 
                             <span class="btn {{ $statusClass }} font-weight-bold px-3 py-1 mb-0 fz-12">
-                                {{ ucfirst($deal->status) }}
+                                {{ \App\Utils\crm_status_label($deal->status) }}
                             </span>
                         </td>
 

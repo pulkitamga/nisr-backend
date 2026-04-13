@@ -28,12 +28,15 @@ use App\Models\CareerActivity;
 use App\Models\Departments;
 use App\Models\CareerTalentPool;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\FormattedTableExport;
 use App\Exports\CareerTicketExport;
 use App\Services\Crm\EscalationService;
 use App\Contracts\Repositories\AdminNotificationRepositoryInterface; 
+use App\Support\LocalizedExport;
 use App\Support\CareerTicketWorkflow;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 class CareerTicketController extends BaseController
 {
@@ -239,12 +242,40 @@ class CareerTicketController extends BaseController
 }
 
 
-    public function export(Request $request)
+    public function export(Request $request): BinaryFileResponse
     {
-        $fileName =  'Career_Tickets_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
+        $locale = LocalizedExport::locale();
+        $isRtl = LocalizedExport::isRtl();
+        $export = new CareerTicketExport($request);
+        $rows = $export->rows();
+
         return Excel::download(
-            new CareerTicketExport($request),
-            $fileName
+            new FormattedTableExport(
+                rows: $rows,
+                headings: $export->headings(),
+                title: $export->titleLabel(),
+                locale: $locale,
+                isRtl: $isRtl,
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: $export->filterSummary(),
+                columnWidths: [
+                    'A' => 10,
+                    'B' => 30,
+                    'C' => 24,
+                    'D' => 28,
+                    'E' => 18,
+                    'F' => 22,
+                    'G' => 14,
+                    'H' => 18,
+                    'I' => 18,
+                    'J' => 18,
+                ],
+                centerColumns: ['A', 'E', 'G', 'H', 'I', 'J'],
+            ),
+            LocalizedExport::fileName($export->titleLabel())
         );
     }
 

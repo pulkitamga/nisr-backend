@@ -194,7 +194,7 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <strong>{{ translate('status') }}</strong>
-                        <span class="badge badge-soft-info">{{ $ticket->status_details->getTranslatedField('name') ?? translate('N/A') }}</span>
+                        <span class="badge badge-soft-info">{{ \App\Utils\crm_status_label($ticket->status_details?->getTranslatedField('name') ?? $ticket->status_details?->name ?? $ticket->status, 'N/A') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <strong>{{ translate('department') }}</strong>

@@ -184,7 +184,7 @@
                             };
                             @endphp
                             <span class="btn {{ $statusClass }} font-weight-bold px-3 py-1 mb-0 fz-12">
-                                {{ ucfirst(str_replace('_', ' ', $deal->order->order_status)) }}
+                                {{ \App\Utils\crm_status_label($deal->order->order_status) }}
                             </span>
                             @else
                             <span class="btn text-warning bg-soft-warning font-weight-bold px-3 py-1 mb-0 fz-12">
@@ -205,7 +205,7 @@
                             @endphp
 
                             <span class="btn {{ $statusClass }} font-weight-bold px-3 py-1 mb-0 fz-12">
-                                {{ ucfirst($deal->status) }}
+                                {{ \App\Utils\crm_status_label($deal->status) }}
                             </span>
                         </td>
 

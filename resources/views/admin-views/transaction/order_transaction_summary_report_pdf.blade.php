@@ -1,501 +1,263 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
+@php
+    $isRtl = session('direction') === 'rtl' || app()->getLocale() === 'ar';
+    $isSingleVendorMode = getWebConfig(name: 'business_mode') !== 'multi';
+    $transactionRows = collect($transactions)->filter(fn($transaction) => $transaction?->order)->values();
+    $displayStatus = $status === 'all' ? translate('all_status') : translate($status);
+    $displayCustomerInfo = $customer_info === 'all' ? translate('all_customer') : $customer_info;
+    $displaySellerInfo = $seller_info === 'all' ? translate('all') : ($seller_info === 'inhouse' ? translate('inhouse') : $seller_info);
+    $logoSrc = '';
+    $logoFile = is_array($company_web_logo ?? null) ? ($company_web_logo['key'] ?? '') : ($company_web_logo ?? '');
 
+    if (!$isSingleVendorMode && $logoFile) {
+        $logoPath = storage_path('app/public/company/' . $logoFile);
+        if (!file_exists($logoPath)) {
+            $logoPath = public_path('storage/company/' . $logoFile);
+        }
+
+        if (file_exists($logoPath)) {
+            $extension = pathinfo($logoPath, PATHINFO_EXTENSION);
+            $mime = $extension === 'svg' ? 'svg+xml' : $extension;
+            $logoSrc = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+        }
+    }
+@endphp
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
-    <title>{{ translate('Expense Transaction Statement') }}</title>
+    <title>{{ translate('order_Transaction_Statement') }}</title>
     <style>
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 10px;
-            color: #111827;
-            margin: 15px;
-            direction: {{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }};
-            text-align: {{ session('direction') ?? (app()->getLocale() === 'ar' ? 'right' : 'left') }};
-        }
-
-        /* Force page breaks */
-        .page-break {
-            page-break-before: always;
-            margin-top: 20px;
-        }
-
-        /* HEADER - Green gradient like Inhouse report */
-        .report-header {
-            background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .header-content {
-            float: left;
-            width: 70%;
-        }
-
-        .logo-container {
-            float: right;
-            width: 25%;
-            text-align: right;
-        }
-
-        .logo-container img {
-            max-width: 100px;
-            max-height: 50px;
-            object-fit: contain;
-        }
-
-        .header-content h2 {
-            margin: 0 0 5px 0;
-            font-size: 18px;
-            color: white;
-        }
-
-        .header-content p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 11px;
-            color: white;
-        }
-
-        /* Clear float */
-        .clearfix::after {
-            content: "";
-            clear: both;
-            display: table;
-        }
-
-        /* KPI CARDS */
-        .kpi-container {
-            background: #f3f6fb;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .kpi-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 8px;
-        }
-
-        .kpi-table td {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 11px;
-            text-align: center;
-        }
-
-        .kpi-label {
-            font-size: 9px;
-            color: #6b7280;
-            text-transform: uppercase;
-            margin-bottom: 3px;
-        }
-
-        .kpi-value {
-            font-size: 16px;
-            font-weight: bold;
-            color: #111827;
-        }
-
-        .kpi-meta {
-            font-size: 9px;
-            color: #4b5563;
-            margin-top: 4px;
-        }
-
-        /* INFO TABLE */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background: #f9fafb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .info-table td {
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-        }
-
-        /* CHART SECTIONS - Two column layout */
-        .charts-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .chart-box {
-            flex: 1;
-            min-width: 250px;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 15px;
-            background: #fff;
-        }
-
-        /* For RTL support */
-        @if (session('direction') === 'rtl')
-            .charts-row {
-                direction: rtl;
-            }
-        @endif
-
-        .chart-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #0f766e;
-            border-bottom: 2px solid #0f766e;
-            padding-bottom: 8px;
-        }
-
-        .chart-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto;
-            max-height: 280px;
-            object-fit: contain;
-        }
-
-        /* SUMMARY TABLE */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 8px;
-            margin-bottom: 15px;
-        }
-
-        .data-table th {
-            background: #0f766e;
-            color: white;
-            padding: 8px 6px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .data-table td {
-            padding: 6px;
-            border: 1px solid #cbd5e1;
-            text-align: center;
-        }
-
-        .data-table td:last-child,
-        .data-table th:last-child {
-            text-align: right;
-        }
-
-        .text-end {
-            text-align: right !important;
-        }
-
-        /* SECTION HEADING - Green like Inhouse report */
-        .section-heading {
-            margin-top: 25px;
-            margin-bottom: 12px;
-            font-size: 13px;
-            font-weight: bold;
-            color: #0f766e;
-            border-left: 3px solid #0f766e;
-            padding-left: 10px;
-        }
-
-        .section-heading small {
-            font-weight: normal;
-            font-size: 10px;
-            color: #6b7280;
-        }
-
-        /* DETAIL TABLE */
-        .detail-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 7px;
-            margin-top: 20px;
-        }
-
-        .detail-table th {
-            background: #0f766e;
-            color: white;
-            padding: 6px 4px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .detail-table td {
-            padding: 5px;
-            border: 1px solid #cbd5e1;
-            text-align: center;
-        }
-
-        .detail-table td:last-child,
-        .detail-table th:last-child {
-            text-align: center;
-        }
-
-        /* FOOTER */
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            color: #6b7280;
-            font-size: 8px;
-            border-top: 1px dashed #d1d5db;
-            padding-top: 8px;
-        }
-
-        /* RTL Support */
-        @if (session('direction') === 'rtl')
-            .header-content {
-                float: right;
-                text-align: right;
-            }
-
-            .logo-container {
-                float: left;
-                text-align: left;
-            }
-
-            .section-heading {
-                border-left: none;
-                border-right: 3px solid #0f766e;
-                padding-left: 0;
-                padding-right: 10px;
-                text-align: right;
-            }
-
-            .data-table td:last-child,
-            .data-table th:last-child {
-                text-align: left;
-            }
-
-            .text-end {
-                text-align: left !important;
-            }
-        @endif
+        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #111827; margin: 16px; direction: {{ $isRtl ? 'rtl' : 'ltr' }}; }
+        .header { background: linear-gradient(135deg, #0f766e 0%, #0ea5a0 100%); color: #fff; padding: 16px 20px; border-radius: 10px; margin-bottom: 18px; overflow: hidden; }
+        .header-main { float: {{ $isRtl ? 'right' : 'left' }}; width: 72%; }
+        .header-logo { float: {{ $isRtl ? 'left' : 'right' }}; width: 24%; text-align: {{ $isRtl ? 'left' : 'right' }}; }
+        .header-logo img { max-width: 100px; max-height: 52px; object-fit: contain; }
+        .clearfix::after { content: ""; display: table; clear: both; }
+        .header h2 { margin: 0 0 6px; font-size: 18px; }
+        .header p { margin: 0; font-size: 11px; opacity: .92; }
+        .meta, .summary, .details { width: 100%; border-collapse: collapse; }
+        .meta { margin-bottom: 18px; background: #f9fafb; }
+        .meta td { border: 1px solid #e5e7eb; padding: 8px 12px; }
+        .kpis { width: 100%; border-collapse: separate; border-spacing: 8px; margin-bottom: 18px; }
+        .kpis td { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; text-align: center; }
+        .kpi-label { color: #6b7280; font-size: 9px; text-transform: uppercase; margin-bottom: 4px; }
+        .kpi-value { color: #111827; font-size: 16px; font-weight: 700; }
+        .charts { width: 100%; margin-bottom: 18px; }
+        .chart-cell { vertical-align: top; width: 50%; }
+        .chart-left { padding-{{ $isRtl ? 'left' : 'right' }}: 8px; }
+        .chart-right { padding-{{ $isRtl ? 'right' : 'left' }}: 8px; }
+        .chart-box { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; background: #fff; }
+        .chart-title { color: #0f766e; font-size: 13px; font-weight: 700; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 2px solid #0f766e; }
+        .chart-box img { width: 100%; max-height: 260px; object-fit: contain; }
+        .chart-stats { margin-top: 10px; font-size: 9px; color: #374151; }
+        .chart-stats div { margin-bottom: 4px; }
+        .section-title { margin: 22px 0 10px; color: #0f766e; font-size: 13px; font-weight: 700; border-{{ $isRtl ? 'right' : 'left' }}: 3px solid #0f766e; padding-{{ $isRtl ? 'right' : 'left' }}: 10px; }
+        .section-title small { color: #6b7280; font-size: 10px; font-weight: 400; }
+        .summary th, .details th { background: #0f766e; color: #fff; padding: 8px 6px; font-weight: 600; text-align: center; }
+        .summary td, .details td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; vertical-align: top; }
+        .summary td:last-child, .summary th:last-child, .details .amount { text-align: {{ $isRtl ? 'left' : 'right' }}; }
+        .summary { font-size: 8px; margin-bottom: 18px; }
+        .details { font-size: 7px; }
+        .empty { border: 1px dashed #cbd5e1; border-radius: 10px; background: #f9fafb; color: #6b7280; text-align: center; padding: 18px; }
+        .footer { margin-top: 18px; padding-top: 8px; border-top: 1px dashed #d1d5db; color: #6b7280; font-size: 9px; }
     </style>
 </head>
-
 <body>
-
-    @php
-        $isRtl = session('direction') === 'rtl' || app()->getLocale() === 'ar';
-    @endphp
-
-    <!-- HEADER with Logo - SAME as Order Transaction report -->
-    <div class="report-header clearfix">
-        <div class="header-content">
-            <h2>{{ translate('expense_summary') }}</h2>
+    <div class="header clearfix">
+        <div class="header-main">
+            <h2>{{ translate('order_Transaction_Statement') }}</h2>
             <p>{{ translate('duration') }}: {{ $dateRange }}</p>
             <p>{{ translate('generated_on') }}: {{ now()->translatedFormat('d M Y, h:i A') }}</p>
         </div>
-
-        <div class="logo-container">
-            @php
-                $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp');
-                $logoSrc = '';
-                $logoData = $data['company_web_logo'] ?? '';
-                $filename = is_array($logoData) ? $logoData['key'] ?? '' : (is_string($logoData) ? $logoData : '');
-
-                if (!empty($filename)) {
-                    $logoPath = storage_path('app/public/company/' . $filename);
-                    if (!file_exists($logoPath)) {
-                        $logoPath = public_path('storage/company/' . $filename);
-                    }
-                    if (file_exists($logoPath)) {
-                        $imageData = file_get_contents($logoPath);
-                        if ($imageData !== false) {
-                            $extension = pathinfo($logoPath, PATHINFO_EXTENSION);
-                            $mime = $extension == 'svg' ? 'svg+xml' : $extension;
-                            $logoSrc = 'data:image/' . $mime . ';base64,' . base64_encode($imageData);
-                        }
-                    }
-                }
-            @endphp
-
-            @if ($logoSrc)
-                <img src="{{ $logoSrc }}" alt="{{ translate('logo') }}"
-                    style="max-width:100px; max-height:50px; object-fit:contain;">
-            @elseif(file_exists($defaultLogoPath))
-                <img src="data:image/webp;base64,{{ base64_encode(file_get_contents($defaultLogoPath)) }}"
-                    style="max-width:100px; max-height:50px; object-fit:contain;">
-            @endif
-        </div>
+        @if (!$isSingleVendorMode && $logoSrc)
+            <div class="header-logo">
+                <img src="{{ $logoSrc }}" alt="{{ translate('logo') }}">
+            </div>
+        @endif
     </div>
 
-    <!-- KPI CARDS -->
-    <div class="kpi-container">
-        <table class="kpi-table">
-            <tr>
-                <td>
-                    <div class="kpi-label">{{ translate('total_Expense_Amount') }}</div>
-                    <div class="kpi-value">
-                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}
-                    </div>
-                </td>
-
-                <td>
-                    <div class="kpi-label">{{ translate('free_Delivery_Amount') }}</div>
-                    <div class="kpi-value">
-                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}
-                    </div>
-                </td>
-
-                <td>
-                    <div class="kpi-label">{{ translate('coupon_Discount_Amount') }}</div>
-                    <div class="kpi-value">
-                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
-                    </div>
-                </td>
-
-                <td>
-                    <div class="kpi-label">{{ translate('free_Shipping_Over_Order_Amount_Discount') }}</div>
-                    <div class="kpi-value">
-                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- CHART SECTION - TABLE BASED -->
-    <table width="100%" style="margin-bottom:20px;">
+    <table class="meta">
         <tr>
-            <!-- Order Trend -->
+            <td><strong>{{ translate('customer_Info') }}</strong>: {{ $displayCustomerInfo }}</td>
+            <td><strong>{{ translate('status') }}</strong>: {{ $displayStatus }}</td>
+            @if (!$isSingleVendorMode)
+                <td><strong>{{ translate('vendor_Info') }}</strong>: {{ $displaySellerInfo }}</td>
+            @endif
+        </tr>
+    </table>
+
+    <table class="kpis">
+        <tr>
+            <td>
+                <div class="kpi-label">{{ translate('total_Orders') }}</div>
+                <div class="kpi-value">{{ $kpi_data['total_orders'] ?? 0 }}</div>
+            </td>
+            <td>
+                <div class="kpi-label">{{ translate('in_House_Orders') }}</div>
+                <div class="kpi-value">{{ $kpi_data['in_house_orders'] ?? 0 }}</div>
+            </td>
+            <td>
+                <div class="kpi-label">{{ translate('in_House_Products') }}</div>
+                <div class="kpi-value">{{ $kpi_data['total_in_house_products'] ?? 0 }}</div>
+            </td>
+            <td>
+                <div class="kpi-label">{{ translate('total_Stores') }}</div>
+                <div class="kpi-value">{{ $kpi_data['total_stores'] ?? 0 }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="charts">
+        <tr>
             @if (!empty($chartImageOrder))
-                <td width="50%" style="vertical-align: top; padding-right:10px;">
+                <td class="chart-cell chart-left">
                     <div class="chart-box">
-                        <div class="chart-title">
-                            {{ translate('order_trend') }} <small>({{ $dateRange }})</small>
-                        </div>
-                        <img src="{{ $chartImageOrder }}" class="chart-image">
+                        <div class="chart-title">{{ translate('order_Statistics') }}</div>
+                        <img src="{{ $chartImageOrder }}" alt="{{ translate('order_Statistics') }}">
                     </div>
                 </td>
             @endif
-
-            <!-- Payment Chart -->
             @if (!empty($chartImagePayment))
-                <td width="50%" style="vertical-align: top; padding-left:10px;">
+                <td class="chart-cell chart-right">
                     <div class="chart-box">
-                        <div class="chart-title">
-                            {{ translate('payment_distribution') }}
+                        <div class="chart-title">{{ translate('payment_statistics') }}</div>
+                        <img src="{{ $chartImagePayment }}" alt="{{ translate('payment_statistics') }}">
+                        <div class="chart-stats">
+                            <div>{{ translate('cash_payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['cash_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
+                            <div>{{ translate('digital_payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['digital_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
+                            <div>{{ translate('wallet') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['wallet_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
+                            <div>{{ translate('offline_payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['offline_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
                         </div>
-                        <img src="{{ $chartImagePayment }}" class="chart-image">
                     </div>
                 </td>
             @endif
         </tr>
     </table>
 
-    <!-- MAIN SUMMARY TABLE -->
-    <div class="section-heading">
-        {{ translate('expense_summary') }}
-        <small>({{ $dateRange }})</small>
-    </div>
-    <table class="data-table">
+    <div class="section-title">{{ translate('order_summary') }} <small>({{ $dateRange }})</small></div>
+    <table class="summary">
         <thead>
             <tr>
-                <th style="width: 10%;">{{ translate('SL') }}</th>
-                <th style="width: 60%;">{{ translate('details') }}</th>
-                <th style="width: 30%;">{{ translate('amount') }}</th>
+                <th style="width:8%;">{{ translate('SL') }}</th>
+                <th style="width:62%;">{{ translate('details') }}</th>
+                <th style="width:30%;">{{ translate('amount') }}</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>1</td>
-                <td>{{ translate('total_Expense_Amount') }}</td>
-                <td class="text-end">
-                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_expense'] ?? 0), currencyCode: getCurrencyCode()) }}
-                </td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>{{ translate('free_Delivery_Amount') }}</td>
-                <td class="text-end">
-                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_delivery'] ?? 0), currencyCode: getCurrencyCode()) }}
-                </td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>{{ translate('coupon_Discount_Amount') }}</td>
-                <td class="text-end">
-                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
-                </td>
-            </tr>
-            <tr>
-                <td>4</td>
-                <td>{{ translate('free_Shipping_Over_Order_Amount_Discount') }}</td>
-                <td class="text-end">
-                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['free_over_amount_discount'] ?? 0), currencyCode: getCurrencyCode()) }}
-                </td>
-            </tr>
+            <tr><td>1</td><td>{{ translate('total_Ordered_Product_Price') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_ordered_product_price'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>2</td><td>{{ translate('total_Product_Discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_product_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>3</td><td>{{ translate('total_Coupon_Discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>4</td><td>{{ translate('total_Discounted_Amount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_discounted_amount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>5</td><td>{{ translate('total') }} {{ translate('VAT/TAX') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_tax'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>6</td><td>{{ translate('total_Delivery_Charge') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_delivery_charge'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>7</td><td>{{ translate('total_Deliveryman_incentive') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_deliveryman_incentive'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>8</td><td>{{ translate('total_Order_Amount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_order_amount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>9</td><td>{{ translate('admin_discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>10</td><td>{{ translate('seller_discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_seller_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>11</td><td>{{ translate('admin_commission') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_commission'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>12</td><td>{{ translate('admin_net_income') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_net_income'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>13</td><td>{{ translate('seller_net_income') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_seller_net_income'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
         </tbody>
     </table>
 
-    <!-- DETAILED TRANSACTIONS TABLE -->
-    @if (!empty($expense_transactions) && count($expense_transactions) > 0)
-        <div class="section-heading">
-            {{ translate('transaction_details') }}
-            <small>({{ translate('period') }}: {{ $dateRange }})</small>
-        </div>
-        <table class="detail-table">
+    <div class="section-title">{{ translate('transaction_details') }} <small>({{ $dateRange }})</small></div>
+    @if ($transactionRows->isNotEmpty())
+        <table class="details">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>{{ translate('order_id') }}</th>
-                    <th>{{ translate('coupon_code') }}</th>
-                    <th>{{ translate('discount_type') }}</th>
-                    <th>{{ translate('discount_amount') }}</th>
-                    <th>{{ translate('free_delivery_bearer') }}</th>
-                    <th>{{ translate('coupon_discount_bearer') }}</th>
+                    <th>{{ translate('shop_name') }}</th>
+                    <th>{{ translate('customer_name') }}</th>
+                    <th class="amount">{{ translate('amount') }}</th>
+                    <th class="amount">{{ translate('admin_commission') }}</th>
+                    <th class="amount">{{ translate('admin_net_income') }}</th>
+                    <th>{{ translate('payment_method') }}</th>
+                    <th>{{ translate('payment_Status') }}</th>
+                    <th>{{ translate('status') }}</th>
                     <th>{{ translate('date') }}</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($expense_transactions as $index => $transaction)
+                @foreach ($transactionRows as $index => $transaction)
+                    @php
+                        $adminCouponDiscount = ($transaction->order->coupon_discount_bearer == 'inhouse' && $transaction->order->discount_type == 'coupon_discount') ? $transaction->order->discount_amount : 0;
+                        $adminShippingDiscount = ($transaction->order->free_delivery_bearer == 'admin' && $transaction->order->is_shipping_free) ? $transaction->order->extra_discount : 0;
+                        $adminNetIncome = 0;
+
+                        if ($transaction->seller_is == 'admin') {
+                            $adminNetIncome += $transaction->order_amount + $transaction->tax;
+                        }
+                        if (isset($transaction->order->deliveryMan) && $transaction->order->deliveryMan->seller_id == 0) {
+                            $adminNetIncome += $transaction->delivery_charge;
+                        }
+                        $adminNetIncome += $transaction->admin_commission;
+
+                        if ($transaction->order->delivery_type == 'self_delivery' && ($transaction->order->shipping_responsibility == 'inhouse_shipping' || $transaction->order->seller_is == 'admin') && $transaction->order->delivery_man_id) {
+                            $adminNetIncome -= $transaction->order->deliveryman_charge;
+                        }
+
+                        if ($transaction->seller_is == 'seller') {
+                            if ($transaction->order->shipping_responsibility == 'inhouse_shipping') {
+                                $adminNetIncome -= $transaction->order->coupon_discount_bearer == 'inhouse' ? $adminCouponDiscount : 0;
+                                $adminNetIncome += ($transaction->order->coupon_discount_bearer == 'seller' && isset($transaction->order->coupon) && $transaction->order->coupon->coupon_type == 'free_delivery') ? $transaction->order->discount_amount : 0;
+                                $adminNetIncome += $transaction->order->free_delivery_bearer == 'seller' ? $transaction->order->extra_discount : 0;
+                            } elseif ($transaction->order->shipping_responsibility == 'sellerwise_shipping') {
+                                $adminNetIncome -= $transaction->order->coupon_discount_bearer == 'inhouse' ? $adminCouponDiscount : 0;
+                                $adminNetIncome -= $transaction->order->free_delivery_bearer == 'admin' ? $adminShippingDiscount : 0;
+                            }
+                        }
+                    @endphp
                     <tr>
                         <td>{{ $index + 1 }}</td>
-                        <td>{{ $transaction->order_id ?? '-' }}</td>
-                        <td>{{ $transaction->coupon_code ?? '-' }}</td>
-                        <td>{{ $transaction->discount_type ?? '-' }}</td>
-                        <td class="text-end">
-                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->discount_amount ?? 0), currencyCode: getCurrencyCode()) }}
+                        <td>{{ $transaction->order_id }}</td>
+                        <td>
+                            @if ($transaction->seller_is == 'admin')
+                                {{ translate('inhouse') }}
+                            @elseif(isset($transaction->seller?->shop?->name))
+                                {{ $transaction->seller->shop->name }}
+                            @else
+                                {{ translate('not_found') }}
+                            @endif
                         </td>
-                        <td>{{ $transaction->free_delivery_bearer ?? '-' }}</td>
-                        <td>{{ $transaction->coupon_discount_bearer ?? '-' }}</td>
-                        <td>{{ $transaction->created_at ? $transaction->created_at->format('d M Y') : '-' }}</td>
+                        <td>
+                            @if (!$transaction->order->is_guest && isset($transaction->customer))
+                                {{ $transaction->customer->f_name }} {{ $transaction->customer->l_name }}
+                            @elseif($transaction->order->is_guest)
+                                {{ translate('guest_customer') }}
+                            @else
+                                {{ translate('not_found') }}
+                            @endif
+                        </td>
+                        <td class="amount">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->order->order_amount ?? 0), currencyCode: getCurrencyCode()) }}</td>
+                        <td class="amount">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->admin_commission ?? 0), currencyCode: getCurrencyCode()) }}</td>
+                        <td class="amount">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $adminNetIncome), currencyCode: getCurrencyCode()) }}</td>
+                        <td>{{ translate($transaction->order->payment_method ?? 'not_found') }}</td>
+                        <td>{{ translate($transaction->order->payment_status ?? 'not_found') }}</td>
+                        <td>{{ translate($transaction->status ?? 'not_found') }}</td>
+                        <td>{{ $transaction->updated_at?->translatedFormat('d M Y') ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+    @else
+        <div class="empty">{{ translate('no_data_found') }}</div>
     @endif
 
-    <!-- FOOTER - Green themed like Order Transaction report -->
-    <div style="border-top:1px dashed #d1d5db;margin-top:20px;padding-top:8px;font-size:9px;color:#6b7280;">
+    <div class="footer">
         <table width="100%">
             <tr>
-                <td width="20%" style="text-align:left; color:#0f766e;">
-                    Page {PAGENO}
-                </td>
+                <td width="20%" style="text-align:{{ $isRtl ? 'right' : 'left' }}; color:#0f766e;">Page {PAGENO}</td>
                 <td width="60%" style="text-align:center;">
-                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }} |
-                    {{ translate('expense_transaction_statement') }}<br>
-                    {{ translate('generated_by') }}: <span
-                        style="color:#0f766e;">{{ ucfirst(auth()->user()->name ?? 'system') }}</span><br>
-                    <span style="color:#0f766e;">{{ config('app.name') }}</span>
+                    {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }}<br>
+                    {{ translate('order_Transaction_Statement') }}
+                    @if (!$isSingleVendorMode)
+                        <br>{{ translate('phone') }}: {{ $company_phone }} | {{ translate('email') }}: {{ $company_email }}
+                    @endif
                 </td>
                 <td width="20%"></td>
             </tr>
         </table>
     </div>
-
 </body>
-
 </html>

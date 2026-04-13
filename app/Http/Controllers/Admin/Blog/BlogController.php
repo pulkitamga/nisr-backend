@@ -61,8 +61,8 @@ class BlogController extends Controller
 
         $categories = $this->blogCategory->with('translations')->get();
         $searchValue = $request['searchValue'];
-        $languages = getWebConfig(name: 'pnc_language') ?? null;
-        $defaultLanguage = $languages[0];
+        $languages = $this->getAdminLanguages();
+        $defaultLanguage = $this->getAdminDefaultLanguage($languages);
 
         $titleData = getWebConfig(name: 'blog_feature_title') ?? [];
         $subTitleData = getWebConfig(name: 'blog_feature_sub_title') ?? [];
@@ -105,8 +105,8 @@ class BlogController extends Controller
             ->with('translations')
             ->orderBy('updated_at', 'desc')
             ->paginate(getWebConfig(name: 'pagination_limit'));
-        $languages = getWebConfig(name: 'pnc_language') ?? null;
-        $defaultLanguage = $languages[0];
+        $languages = $this->getAdminLanguages();
+        $defaultLanguage = $this->getAdminDefaultLanguage($languages);
 
 
         return view('blog::admin-views.blog.create', compact('categories', 'languages', 'defaultLanguage'));
@@ -117,10 +117,10 @@ class BlogController extends Controller
         $imagePath = $request['image'] ? $this->upload(dir: 'blog/image/', format: 'webp', image: $request['image']) : null;
         $storage = config('filesystems.disks.default') ?? 'public';
         $data = [
-            'title' => $request['title']['en'],
+            'title' => $this->getPrimaryLocalizedRequestValue($request, 'title'),
             'slug' => $this->getSlug($request),
             'readable_id' => $this->getBlogReadableId(),
-            "description" => $request['description']['en'] ?? "",
+            "description" => $this->getPrimaryLocalizedRequestValue($request, 'description'),
             "category_id" => $request['blog_category'],
             "writer" => $request['writer'],
             "publish_date" => $request['publish_date'] ?? now(),
@@ -187,8 +187,8 @@ class BlogController extends Controller
     public function getDraftData(object|array $request): bool|string
     {
         return json_encode($request['is_draft'] ? [
-            'title' => $request['title']['en'],
-            "description" => $request['description']['en'],
+            'title' => $this->getPrimaryLocalizedRequestValue($request, 'title'),
+            "description" => $this->getPrimaryLocalizedRequestValue($request, 'description'),
             "category_id" => $request['blog_category'],
             "writer" => $request['writer'],
             "publish_date" => $request['publish_date'] ?? now(),
@@ -197,8 +197,8 @@ class BlogController extends Controller
 
     public function getUpdateView(Request $request): View
     {
-        $languages = getWebConfig(name: 'pnc_language') ?? null;
-        $defaultLanguage = $languages[0];
+        $languages = $this->getAdminLanguages();
+        $defaultLanguage = $this->getAdminDefaultLanguage($languages);
         $blog = $this->blog->withoutGlobalScopes()->where('id', $request['id'])->with('translations', 'seoInfo')->first();
         $categories = $this->blogCategory->withoutGlobalScopes()
             ->with('translations')
@@ -320,9 +320,9 @@ class BlogController extends Controller
         }
 
         return [
-            'title' => $request->input('title.en'),
-            'slug' => $request->input('title.en') != $blog->title ? $this->getSlug($request) : $blog->slug,
-            'description' => $request->input('description.en'),
+            'title' => $this->getPrimaryLocalizedRequestValue($request, 'title'),
+            'slug' => $this->getPrimaryLocalizedRequestValue($request, 'title') != $blog->title ? $this->getSlug($request) : $blog->slug,
+            'description' => $this->getPrimaryLocalizedRequestValue($request, 'description'),
             'category_id' => $request->blog_category,
             'writer' => $request->writer,
             'publish_date' => $request->publish_date ?? now(),
@@ -361,8 +361,8 @@ class BlogController extends Controller
 
     public function draftEdit($blogId): View
     {
-        $languages = getWebConfig(name: 'pnc_language') ?? null;
-        $defaultLanguage = $languages[0];
+        $languages = $this->getAdminLanguages();
+        $defaultLanguage = $this->getAdminDefaultLanguage($languages);
         $blog = $this->blog->withoutGlobalScopes()->where('id', $blogId)->with('translations')->first();
         $categories = $this->blogCategory->withoutGlobalScopes()
             ->with('translations')
@@ -387,6 +387,51 @@ class BlogController extends Controller
 
     public function getSlug(object $request): string
     {
-        return Str::slug($request['title'][getDefaultLanguageIndex($request)], '-') . '-' . Str::random(6);
+        return Str::slug($this->getPrimaryLocalizedRequestValue($request, 'title'), '-') . '-' . Str::random(6);
+    }
+
+    private function getAdminLanguages(): array
+    {
+        return getConfiguredLanguageCodes();
+    }
+
+    private function getAdminDefaultLanguage(array $languages): string
+    {
+        $defaultLanguage = getConfiguredDefaultLanguage();
+
+        return in_array($defaultLanguage, $languages, true)
+            ? $defaultLanguage
+            : ($languages[0] ?? 'en');
+    }
+
+    private function getPrimaryLocalizedRequestValue(object|array $request, string $field): string
+    {
+        $fieldValues = is_array($request)
+            ? ($request[$field] ?? [])
+            : $request->input($field, []);
+
+        if (!is_array($fieldValues)) {
+            return is_scalar($fieldValues) ? trim((string) $fieldValues) : '';
+        }
+
+        $preferredLocales = array_values(array_unique(array_filter([
+            getConfiguredDefaultLanguage(),
+            ...getConfiguredLanguageCodes(),
+            is_string(array_key_first($fieldValues)) ? array_key_first($fieldValues) : null,
+        ])));
+
+        foreach ($preferredLocales as $locale) {
+            if (array_key_exists($locale, $fieldValues) && is_scalar($fieldValues[$locale])) {
+                return trim((string) $fieldValues[$locale]);
+            }
+        }
+
+        foreach ($fieldValues as $value) {
+            if (is_scalar($value) && trim((string) $value) !== '') {
+                return trim((string) $value);
+            }
+        }
+
+        return '';
     }
 }

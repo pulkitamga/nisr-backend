@@ -21,7 +21,7 @@
                 <td>{{ $task->name }}</td>
                 <td class="text-truncate white-space-initial">{{ $task->description ?? translate('N/A') }}</td>
                 <td>{{ $task->due_date }}</td>
-                <td>{{ ucfirst($task->status) }}</td>
+                <td>{{ \App\Utils\crm_status_label($task->status) }}</td>
                 <td>{{ $task->employee->name ?? translate('Unassigned') }}</td>
                 <td>{{ $task->department?->getTranslatedField('name') ?? translate('Unassigned') }}</td>
                 <td>
@@ -53,5 +53,4 @@
 @empty
 @include('layouts.back-end._empty-state',['text'=>'no_record_found'],['image'=>'default'])
 @endforelse
-
 
