@@ -147,12 +147,14 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                             <tbody id="product_table_body" class="bg-white divide-y divide-gray-200">
                                 @foreach ($order->items as $item)
 
-                                @php($linePricing = \App\Support\WholesaleLinePrice::fromValues(
-                                    basePrice: $item->base_price,
-                                    quantity: $item->product_quantity,
-                                    tax: $item->tax,
-                                    storedFinalPrice: $item->final_price
-                                ))
+                                @php
+                                    $linePricing = \App\Support\WholesaleLinePrice::fromValues(
+                                        basePrice: $item->base_price,
+                                        quantity: $item->product_quantity,
+                                        tax: $item->tax,
+                                        storedFinalPrice: $item->final_price
+                                    );
+                                @endphp
                                 <tr data-product-id="{{ $item->product_id }}" data-variation-type="{{ $item->product_variation_type }}">
                                     <td class="px-4 py-2">
                                         {{ $item->product->getTranslatedField('name') }} ({{ $item->product_variation_type ?? translate('No Variation') }})

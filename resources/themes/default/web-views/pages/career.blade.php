@@ -635,13 +635,13 @@
         const modal = document.getElementById('careerApplyModal');
         const jobIdInput = document.getElementById('career-apply-job-id');
         const jobTitleLabel = modal ? modal.querySelector('[data-career-apply-job-title]') : null;
+        const applyButtons = document.querySelectorAll('[data-target="#careerApplyModal"][data-job-id]');
 
         if (!modal || !jobIdInput) {
             return;
         }
 
-        modal.addEventListener('show.bs.modal', function (event) {
-            const trigger = event.relatedTarget;
+        const syncActiveJob = function (trigger) {
             const jobId = trigger?.getAttribute('data-job-id') || jobIdInput.value;
             const jobTitle = trigger?.getAttribute('data-job-title') || '';
 
@@ -650,7 +650,19 @@
             if (jobTitleLabel) {
                 jobTitleLabel.textContent = jobTitle;
             }
+        };
+
+        applyButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                syncActiveJob(button);
+            });
         });
+
+        if (typeof window.$ !== 'undefined') {
+            window.$(modal).on('show.bs.modal', function (event) {
+                syncActiveJob(event.relatedTarget);
+            });
+        }
 
         @if ($errors->any() || $errors->has('career'))
             const activeJobId = @json((string) old('job_id'));
@@ -658,8 +670,8 @@
                 ? document.querySelector('[data-target="#careerApplyModal"][data-job-id="' + activeJobId + '"]')
                 : null;
 
-            if (jobTitleLabel && activeButton) {
-                jobTitleLabel.textContent = activeButton.getAttribute('data-job-title') || '';
+            if (activeButton) {
+                syncActiveJob(activeButton);
             }
 
             if (typeof window.$ !== 'undefined') {

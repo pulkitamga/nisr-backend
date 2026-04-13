@@ -87,6 +87,30 @@ class CareerApplicationWebFlowTest extends TestCase
         $this->assertSame('Male', $inboxMessage->details['gender'] ?? null);
     }
 
+    public function test_career_application_validation_uses_human_readable_job_attribute(): void
+    {
+        $response = $this->from('/career')
+            ->post(route('career.store.test'), [
+                'first_name' => 'Ahmed',
+                'last_name' => 'Ali',
+                'email' => 'ahmed@example.com',
+                'phone' => '01223344556',
+                'gender' => 'Male',
+                'country' => 'Egypt',
+                'state' => 'Alexandria',
+                'city' => 'Alexandria',
+                'resume' => UploadedFile::fake()->create('resume.pdf', 200, 'application/pdf'),
+            ]);
+
+        $response->assertRedirect('/career');
+        $response->assertSessionHasErrors('job_id');
+
+        $message = session('errors')->first('job_id');
+
+        $this->assertStringContainsString('job', strtolower($message));
+        $this->assertStringNotContainsString('job_id', $message);
+    }
+
     private function createTestSchema(): void
     {
         Schema::create('business_settings', function (Blueprint $table): void {
