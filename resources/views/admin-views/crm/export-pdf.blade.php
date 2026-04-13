@@ -1,5 +1,6 @@
+@php($isRtl = get_direction() === 'rtl')
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -10,8 +11,8 @@
             font-size: 10px;
             color: #111827;
             margin: 15px;
-            direction: {{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }};
-            text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }};
+            direction: {{ $isRtl ? 'rtl' : 'ltr' }};
+            text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
         .badge .full-chart {
@@ -235,7 +236,7 @@
         }
 
         /* RTL Support */
-        @if (app()->getLocale() == 'ar')
+        @if ($isRtl)
             .header-content {
                 float: right;
                 text-align: right;
@@ -405,7 +406,7 @@
     <div class="footer">
         <table class="footer-table">
             <tr>
-                <td width="20%" style="text-align:{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; color:red;">
+                <td width="20%" style="text-align:{{ $isRtl ? 'right' : 'left' }}; color:red;">
                     {{ translate('page') }} {PAGENO}
                 </td>
                 <td width="60%" style="text-align:center;">

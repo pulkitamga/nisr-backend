@@ -27,8 +27,15 @@ class CustomerTransactionsExport implements FromView, ShouldAutoSize, WithStyles
 
     public function view(): View
     {
+        $reportTitle = match ((string) ($this->data['type'] ?? '')) {
+            'loyalty' => translate('customer_loyalty_point_report'),
+            'wallet' => translate('wallet transactions'),
+            default => translate('transactions'),
+        };
+
         return view('file-exports.customer-transactions', [
             'data' => $this->data,
+            'reportTitle' => $reportTitle,
         ]);
     }
 

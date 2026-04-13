@@ -1,8 +1,13 @@
+@php
+    $locale = app()->getLocale();
+    $reportTitle = $reportTitle ?? translate('transactions');
+@endphp
+
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
     <table>
         <thead>
             <tr>
-                <th style="font-size:18px">{{translate($data['type'].'_'.'Transactions')}}</th>
+                <th style="font-size:18px">{{ $reportTitle }}</th>
             </tr>
             <tr>
                 <th>{{translate('search_Criteria').' '.'-'}}</th>
@@ -11,12 +16,12 @@
 
                     {{translate('customer').' '.'-'.' '.ucwords($data['customer'] == 'all_customers' ? translate('all_customers') : $data['customer']['f_name'].' '.$data['customer']['l_name'])}}
                     <br>
-                    {{translate('transaction_Type').' '.'-'.' '.!empty($data['transaction_type']) ?  translate($data['transaction_type']) : translate('all')}}
+                    {{ translate('transaction_Type').' '.'-'.' '.(!empty($data['transaction_type']) ? translate($data['transaction_type']) : translate('all')) }}
                     <br>
 
-                        {{translate('from').' '.'-'.' '. ($data['from'] ? date('d M, Y',strtotime($data['from'])) : '') }}
+                        {{ translate('from').' '.'-'.' '.($data['from'] ? formatDateTimeForDisplayText($data['from'], 'd M, Y', $locale) : '') }}
                     <br>
-                        {{translate('to').' '.'-'.' '.($data['to'] ? date('d M, Y',strtotime($data['to'])) : '') }}
+                        {{ translate('to').' '.'-'.' '.($data['to'] ? formatDateTimeForDisplayText($data['to'], 'd M, Y', $locale) : '') }}
                     <br>
                 </th>
             </tr>
@@ -60,7 +65,7 @@
                     @endif
                     <td> {{translate($item->transaction_type)}}</td>
                     <td>{{translate(str_replace('_',' ',$item->reference)) }}</td>
-                    <td>{{date('d M, Y',strtotime($item->created_at))}}</td>
+                    <td>{{ formatDateTimeForDisplayText($item->created_at, 'd M, Y', $locale) }}</td>
                 </tr>
             @endforeach
         </thead>

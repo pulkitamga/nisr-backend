@@ -55,9 +55,9 @@
                                         </small>
                                     </div>
                                     <div>
-                                        <small class="text-muted">
-                                            {{ $order_details->created_at->format('d M Y, h:i a') }}
-                                        </small>
+                                            <small class="text-muted">
+                                                {!! formatDateTimeForDisplay($order_details->created_at, 'd M Y, h:i A') !!}
+                                            </small>
                                     </div>
                                 </div>
                             @else

@@ -26,7 +26,7 @@
                             <li class="align-items-center">
                                 <span class="left text-capitalize">{{translate('refund_requested_date')}}</span>
                                 <span>:</span>
-                                <span class="right">{{date('d M Y, h:s:A',strtotime($refund['created_at']))}}</span>
+                                <span class="right">{!! formatDateTimeForDisplay($refund['created_at'], 'd M Y, h:i A') !!}</span>
                             </li>
                             <li class="align-items-center">
                                 <span class="left">{{translate('refund_status')}}</span> <span>:</span> <span class="right">
@@ -294,7 +294,7 @@
                                         <td class="text-capitalize">
                                             {{$status->change_by == 'seller' ? 'vendor' : $status->change_by}}
                                         </td>
-                                        <td>{{date('d M Y, h:s:A',strtotime($status['created_at']))}}</td>
+                                        <td>{!! formatDateTimeForDisplay($status['created_at'], 'd M Y, h:i A') !!}</td>
                                         <td class="text-capitalize">
                                             {{translate($status->status)}}
                                         </td>

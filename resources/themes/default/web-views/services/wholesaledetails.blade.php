@@ -1,6 +1,6 @@
 @extends('layouts.front-end.app')
 
-@section('title', $product['name'])
+@section('title', $product->product->getServiceTitle(app()->getLocale(), $product->product['name']))
 
 @push('css_or_js')
 @include(VIEW_FILE_NAMES['product_seo_meta_content_partials'], ['metaContentData' => $product?->seoInfo, 'productDetails' => $product])
@@ -48,7 +48,7 @@
         </div>
         <!-- ✅ Right: Product Details -->
         <div class="col-md-9">
-            <h2 class="fw-bold mb-2">{{ $product->product->name }}</h2>
+            <h2 class="fw-bold mb-2">{{ $product->product->getServiceTitle(app()->getLocale(), $product->product->name) }}</h2>
             <p class="text-muted mb-4">{{ $product->product->description }}</p>
             @if(auth()->guard('customer')->check() && auth()->guard('customer')->user()->user_type == 1)
             <form action="{{ route('web.addwholesale') }}" method="POST">

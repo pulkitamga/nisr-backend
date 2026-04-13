@@ -63,12 +63,12 @@
 
                     <tbody id="product_table_body">
                         @foreach ($order->items as $item)
-                        @php
-                        $baseTotal = $item->base_price * $item->product_quantity;
-                        $taxPercent = floatval(str_replace('%', '', $item->tax));
-                        $taxAmount = ($baseTotal * $taxPercent) / 100;
-                        $finalPrice = $baseTotal + $taxAmount;
-                        @endphp
+                        @php($linePricing = \App\Support\WholesaleLinePrice::fromValues(
+                            basePrice: $item->base_price,
+                            quantity: $item->product_quantity,
+                            tax: $item->tax,
+                            storedFinalPrice: $item->final_price
+                        ))
 
                         <tr data-product-id="{{ $item->product_id }}">
 
@@ -88,13 +88,14 @@
 
                             <td>
                                 <input type="text" name="products[{{ $item->product_id }}][tax]"
-                                    value="{{ $item->tax }}%"
+                                    value="{{ $linePricing['display_tax'] }}"
+                                    data-tax-mode="{{ $linePricing['tax_mode'] }}"
                                     class="form-control form-control-sm w-auto admin-tax">
                             </td>
 
                             <td>
                                 <input type="number" name="products[{{ $item->product_id }}][final_price]"
-                                    value="{{ number_format($finalPrice, 2, '.', '') }}" step="0.01"
+                                    value="{{ number_format($linePricing['final_price'], 2, '.', '') }}" step="0.01"
                                     class="form-control form-control-sm w-auto admin-final">
                             </td>
 

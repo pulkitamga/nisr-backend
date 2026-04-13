@@ -172,7 +172,7 @@ $activationMethods[] = $filters['activation_method'];
                         <a href="{{ route('admin.warranty.report.activations', array_merge(request()->query(), ['download' => 'excel'])) }}"
                             class="btn btn-outline-success"> <i class="tio-download-to me-1"></i> {{ translate('excel') }}</a>
                         <a href="{{ route('admin.warranty.report.activations', array_merge(request()->query(), ['download' => 'pdf'])) }}"
-                            class="btn btn-outline-danger"> <i class="tio-download-to me-1"></i> {{ translate('PDF') }}</a>
+                            class="btn btn-outline-danger"> <i class="tio-download-to me-1"></i> PDF</a>
                     </div>
                 </div>
             </form>

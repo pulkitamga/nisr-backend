@@ -485,7 +485,7 @@
                                     </label>
                                     <textarea name="service_tittle[]" rows="2" class="form-control"
                                         placeholder="{{ translate('e.g. Synthetic Oil Change – up to 5 L') }}">
-                                {{ $product->getTranslatedField('service_tittle', $language, $product->service->title ?? '') }}
+                                {{ $product->getServiceTitle($language) }}
                             </textarea>
                                     <small class="text-muted">{{ translate('service_main_title') }}</small>
                                 </div>

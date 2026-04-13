@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 @section('title', translate('crm_employee_channel_assignment_report'))
-@php($isRtl = Session::get('direction') === 'rtl')
+@php($isRtl = get_direction() === 'rtl')
 
 @push('css_or_js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -84,7 +84,7 @@
 
 @section('content')
     @php($dateRange = $filters['from'] . ' - ' . $filters['to'])
-    <div class="content container-fluid {{ $isRtl ? 'text-end' : 'text-start' }}">
+    <div class="content container-fluid {{ $isRtl ? 'text-end' : 'text-start' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/customer.png') }}" alt="">

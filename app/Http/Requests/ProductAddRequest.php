@@ -26,22 +26,30 @@ class ProductAddRequest extends Request
 
     protected function prepareForValidation(): void
     {
-        $serviceId = $this->input('service_id');
-
-        if (is_array($serviceId)) {
-            foreach ($serviceId as $candidate) {
-                if (is_scalar($candidate) && trim((string)$candidate) !== '') {
-                    $serviceId = $candidate;
-                    break;
-                }
-            }
-        }
+        $serviceId = $this->extractServiceIdValue($this->input('service_id'));
 
         if (is_scalar($serviceId)) {
             $this->merge([
                 'service_id' => trim((string)$serviceId),
             ]);
         }
+    }
+
+    private function extractServiceIdValue(mixed $serviceId): mixed
+    {
+        if (is_array($serviceId)) {
+            foreach ($serviceId as $candidate) {
+                $resolvedCandidate = $this->extractServiceIdValue($candidate);
+
+                if (is_scalar($resolvedCandidate) && trim((string) $resolvedCandidate) !== '') {
+                    return $resolvedCandidate;
+                }
+            }
+
+            return null;
+        }
+
+        return $serviceId;
     }
 
     /**

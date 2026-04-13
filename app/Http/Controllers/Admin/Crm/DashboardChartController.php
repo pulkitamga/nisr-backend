@@ -607,7 +607,7 @@ class DashboardChartController extends Controller
         $statusChart = $request->input('status_chart');
         if ($download === 'pdf') {
 
-            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            $isRtl = \App\Support\LocalizedExport::isRtl();
 
             // ⭐ IMPORTANT: set Carbon locale
             \Carbon\Carbon::setLocale(app()->getLocale());

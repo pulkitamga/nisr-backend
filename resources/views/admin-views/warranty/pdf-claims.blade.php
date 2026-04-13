@@ -1,3 +1,5 @@
+@php use function App\Utils\warranty_claim_status_label; @endphp
+
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 
@@ -521,7 +523,7 @@
                         <td>{!! $remaining !!}</td>
                         <td>
                             <span class="badge {{ $badgeClass }}">
-                                {{ ucwords(str_replace('_', ' ', $claim->status)) }}
+                                {{ warranty_claim_status_label($claim->status) }}
                             </span>
                         </td>
                         <td>{{ $claim->warranty?->user?->name ?? ($claim->warranty?->activated_by_name ?? '') }}</td>

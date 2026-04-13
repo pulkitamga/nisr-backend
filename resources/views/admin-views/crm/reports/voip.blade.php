@@ -77,9 +77,7 @@
 
 @section('content')
     @php
-        $isRtl =
-            session('direction') === 'rtl' ||
-            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl = get_direction() === 'rtl';
     @endphp
     <div class="content container-fluid voip-report-page {{ $isRtl ? 'text-end' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
         <div class="report-hero mb-3">

@@ -69,6 +69,7 @@
                         <select class="form-control" id="transfer-status" name="status">
                             <option value="">{{ translate('all') }}</option>
                             <option value="pending">{{ translate('pending') }}</option>
+                            <option value="transferred">{{ translate('transferred') }}</option>
                             <option value="approved">{{ translate('approved') }}</option>
                             <option value="rejected">{{ translate('rejected') }}</option>
                         </select>
@@ -105,8 +106,8 @@
             <div class="col-md-2">
                 <div class="card h-100">
                     <div class="card-body">
-                        <small class="text-muted d-block">{{ translate('pending') }}</small>
-                        <h4 class="mb-0" id="stat-pending">0</h4>
+                        <small class="text-muted d-block">{{ translate('transferred') }}</small>
+                        <h4 class="mb-0" id="stat-transferred">0</h4>
                     </div>
                 </div>
             </div>

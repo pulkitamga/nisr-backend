@@ -1,5 +1,5 @@
 @php
-    $isRtl = $isRtl ?? app()->getLocale() === 'ar' || session('direction') === 'rtl';
+    $isRtl = $isRtl ?? get_direction() === 'rtl';
 
     $fromDate =
         !empty($filters['from']) && $filters['from'] !== '-'
@@ -102,7 +102,7 @@
             padding: 12px 10px;
             vertical-align: top;
             height: 55px;
-            text-align: left;
+            text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
         .kpi-label {
@@ -119,7 +119,7 @@
             font-weight: 700;
             color: #0f172a;
             margin: 0;
-            text-align: left;
+            text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
         .kpi-value.percentage {

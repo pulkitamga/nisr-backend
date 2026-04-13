@@ -12,6 +12,7 @@
             'failedToLoad' => translate('failed_to_load_report_data'),
             'noData' => translate('no_data_found'),
             'pending' => translate('pending'),
+            'transferred' => translate('transferred'),
             'approved' => translate('approved'),
             'rejected' => translate('rejected'),
             'from' => translate('from'),

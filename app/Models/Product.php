@@ -276,6 +276,28 @@ class Product extends Model
         ];
     }
 
+    public function getServiceTitle(?string $locale = null, ?string $fallback = null): ?string
+    {
+        $this->loadMissing('translations', 'service.translations');
+
+        $service = $this->service;
+        $serviceFallback = $service?->getRawOriginal('title')
+            ?? $service?->title
+            ?? $fallback;
+
+        $translatedTitle = $this->getTranslatedField('service_tittle', $locale, null);
+
+        if ($translatedTitle !== null && $translatedTitle !== '') {
+            return $translatedTitle;
+        }
+
+        if ($service) {
+            return $service->getTranslatedField('title', $locale, $serviceFallback);
+        }
+
+        return $fallback;
+    }
+
 
     public function service()
     {

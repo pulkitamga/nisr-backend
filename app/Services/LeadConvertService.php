@@ -47,7 +47,7 @@ class LeadConvertService
                     ->lockForUpdate()
                     ->first();
 
-                if ($existingDeal) {
+                if ($existingDeal && !$this->allowsConcurrentOpenDeals($lockedLead, (string) $data['party_type'])) {
                     Log::warning('Blocked: Deal already exists and is open', [
                         'existing_deal_id' => $existingDeal->id,
                     ] + $logContext);
@@ -164,5 +164,10 @@ class LeadConvertService
         if (!$partyExists) {
             throw new Exception('The selected party could not be found for conversion.');
         }
+    }
+
+    private function allowsConcurrentOpenDeals(Lead $lead, string $partyType): bool
+    {
+        return $partyType === 'company' && !empty($lead->po_id);
     }
 }

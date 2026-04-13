@@ -289,9 +289,9 @@
                 </td>
 
                 <td>
-                    <div class="kpi-label">{{ translate('pending') }}</div>
+                    <div class="kpi-label">{{ translate('transferred') }}</div>
                     <div class="kpi-value">
-                        {{ (int) ($statistics['pending_transfers'] ?? 0) }}
+                        {{ (int) ($statistics['transferred_transfers'] ?? 0) }}
                     </div>
                 </td>
 

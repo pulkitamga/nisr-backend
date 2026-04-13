@@ -692,6 +692,7 @@ class WholesaleAdminWorkflowTest extends TestCase
         ], $overrides));
     }
 
+
     private function createCategory(int $parentId = 0): int
     {
         return (int) DB::table('categories')->insertGetId([

@@ -77,9 +77,7 @@
 
 @section('content')
     @php
-        $isRtl =
-            session('direction') === 'rtl' ||
-            (function_exists('getWebConfig') && getWebConfig(name: 'site_direction') === 'rtl');
+        $isRtl = get_direction() === 'rtl';
         \Carbon\Carbon::setLocale(app()->getLocale());
     @endphp
     <div class="content container-fluid crm-insights-page {{ $isRtl ? 'text-end' : '' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">

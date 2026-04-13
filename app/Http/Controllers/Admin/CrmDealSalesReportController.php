@@ -55,7 +55,7 @@ class CrmDealSalesReportController extends BaseController
     {
         $data = $this->buildReportData($request);
 
-        $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+        $isRtl = \App\Support\LocalizedExport::isRtl();
 
         $data = array_merge($data, [
             'exportedAt' => now(),

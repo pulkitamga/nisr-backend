@@ -645,8 +645,9 @@ class UserProfileController extends Controller
         }
 
         $delivered_count = $this->order->where(['order_status' => 'delivered', 'delivery_man_id' => $order->delivery_man_id, 'delivery_type' => 'self_delivery'])->count();
+        $canChatWithDeliveryMan = $order->order_status !== 'delivered';
 
-        return view(VIEW_FILE_NAMES['delivery_man_info'], compact('delivered_count', 'order'));
+        return view(VIEW_FILE_NAMES['delivery_man_info'], compact('delivered_count', 'order', 'canChatWithDeliveryMan'));
     }
 
     public function getAccountOrderDetailsReviewsView(Request $request): View|RedirectResponse
@@ -1425,6 +1426,18 @@ class UserProfileController extends Controller
             ->where('order_details_id', $order_details->id)->first();
         $product = $this->product->find($order_details->product_id);
         $order = $this->order->find($order_details->order_id);
+
+        if (!$refund) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'status' => 0,
+                    'message' => translate('refund_request_not_found'),
+                ]);
+            }
+
+            Toastr::error(translate('refund_request_not_found'));
+            return redirect()->back();
+        }
 
         if (request()->ajax()) {
             if ($product) {

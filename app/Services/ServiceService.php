@@ -16,6 +16,29 @@ use Illuminate\Http\Request;
 
 class ServiceService
 {
+    private function normalizeServiceIdValue(mixed $serviceId): ?string
+    {
+        if (is_array($serviceId)) {
+            foreach ($serviceId as $candidate) {
+                $resolvedCandidate = $this->normalizeServiceIdValue($candidate);
+
+                if ($resolvedCandidate !== null && $resolvedCandidate !== '') {
+                    return $resolvedCandidate;
+                }
+            }
+
+            return null;
+        }
+
+        if (!is_scalar($serviceId)) {
+            return null;
+        }
+
+        $normalizedValue = trim((string) $serviceId);
+
+        return $normalizedValue !== '' ? $normalizedValue : null;
+    }
+
     private function normalizeIncludedParts(?string $partsIncluded): string
     {
         $parts = array_values(array_filter(
@@ -30,11 +53,10 @@ class ServiceService
     {
 
         $enIndex = getDefaultLanguageIndex($request);
-        $serviceId = $request->input('service_id');
 
         return [
             'product_id' => $productId,
-            'service_id' => is_scalar($serviceId) ? trim((string)$serviceId) : null,
+            'service_id' => $this->normalizeServiceIdValue($request->input('service_id')),
             'title' => $request['service_tittle'][$enIndex],
             'base_price_inshop' => $request->input('base_price_inshop'),
             'base_price_mobile' => $request->input('base_price_mobile'),
@@ -49,10 +71,9 @@ class ServiceService
     public function getUpdateServiceData(object $request): array
     {
         $enIndex = getDefaultLanguageIndex($request);
-        $serviceId = $request->input('service_id');
 
         $dataArray = [
-            'service_id' => is_scalar($serviceId) ? trim((string)$serviceId) : null,
+            'service_id' => $this->normalizeServiceIdValue($request->input('service_id')),
             'title' => $request['service_tittle'][$enIndex],
             'base_price_inshop' => $request->input('base_price_inshop'),
             'base_price_mobile' => $request->input('base_price_mobile'),

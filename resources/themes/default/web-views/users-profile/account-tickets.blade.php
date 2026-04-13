@@ -1,3 +1,5 @@
+@php use function App\Utils\support_ticket_status_label; @endphp
+
 @extends('layouts.front-end.app')
 
 @section('title', translate('My_Support_Tickets'))
@@ -155,10 +157,11 @@
                                         <td><span class="fs-13 font-semibold">{{translate($ticket['type'])}}</span></td>
                                         <td>
                                             @php
-                                            $statusName = $ticket->status_details ? $ticket->status_details->name : 'unknown';
+                                            $rawStatusName = $ticket->status_details ? $ticket->status_details->name : 'unknown';
+                                            $statusName = support_ticket_status_label($rawStatusName);
                                             @endphp
-                                            <span class="badge __badge rounded-full {{$statusName == 'Open' ? 'badge-warning': 'badge-danger'}}">
-                                                {{ translate($statusName) }}
+                                            <span class="badge __badge rounded-full {{$rawStatusName == 'Open' ? 'badge-warning': 'badge-danger'}}">
+                                                {{ $statusName }}
                                             </span>
                                         </td>
                                         <td>

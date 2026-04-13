@@ -9,6 +9,8 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
+use function App\Utils\support_ticket_status_label;
+
 class SupportTicketExport implements FromCollection, WithHeadings, WithTitle
 {
     protected $request;
@@ -77,7 +79,7 @@ class SupportTicketExport implements FromCollection, WithHeadings, WithTitle
                 'Customer Email' => $ticket->customer->email ?? 'N/A',
                 'Ticket Type' => $ticket->sub_type ? str_replace('_', ' ', $ticket->sub_type) : 'No Sub-Type',
                 'Priority' => ucfirst($ticket->priority),
-                'Status' => $ticket->status_details->name ?? $ticket->status,
+                'Status' => support_ticket_status_label($ticket->status_details->name ?? $ticket->status),
                 'Department' => $ticket->department->name ?? 'N/A',
                 'Assigned Employee' => $ticket->employee->name ?? 'N/A',
                 'Created At' => $ticket->created_at->format('d M, Y H:i'),

@@ -233,7 +233,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                         <a id="exportPdfBtn"
                             href="{{ route('admin.warranty.claim.export.pdf') }}?{{ http_build_query(request()->all()) }}"
                             class="btn btn-outline-danger">
-                            <i class="tio-download-to"></i> {{ translate('pdf') }}
+                            <i class="tio-download-to"></i> PDF
                         </a>
 
                     </div>

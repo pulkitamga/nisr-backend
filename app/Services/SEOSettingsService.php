@@ -15,7 +15,7 @@ class SEOSettingsService
             "home" => ['title' => 'home', 'route' => route('home')],
             "store" => ['title' => 'store', 'route' => route('store')],
             "services" => ['title' => 'services', 'route' => route('services')],
-            "blog" => ['title' => 'blog', 'route' => route('blog')],
+            "blog" => ['title' => 'blog', 'route' => route('frontend.blog.index')],
             "career" => ['title' => 'career', 'route' => route('career')],
             "brands" => ['title' => 'all_Brands', 'route' => route('brands')],
             "categories" => ['title' => 'all_Categories', 'route' => route('categories')],

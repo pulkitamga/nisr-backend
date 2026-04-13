@@ -317,6 +317,47 @@ class ProductEnglishValidationTest extends TestCase
         $this->assertSame('67890', $request->input('service_id'));
     }
 
+    public function test_add_request_normalizes_nested_array_service_id_before_validation(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validServicePayload([
+            'service_id' => [['SRV-ARRAY-101']],
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+        $this->assertSame('SRV-ARRAY-101', $request->input('service_id'));
+    }
+
+    public function test_update_request_normalizes_nested_array_service_id_before_validation(): void
+    {
+        $productRepository = $this->mock(ProductRepositoryInterface::class);
+        $product = new class extends Model {
+            protected $table = 'products';
+            public $timestamps = false;
+            protected $guarded = [];
+        };
+        $product->forceFill([
+            'id' => 8,
+            'images' => '["product.webp"]',
+            'color_image' => null,
+        ]);
+        $product->setRelation('digitalVariation', collect());
+
+        $productRepository->shouldReceive('getFirstWhere')
+            ->andReturn($product);
+
+        $request = new ProductUpdateRequest($productRepository);
+        $request->initialize($this->validServicePayload([
+            'service_id' => [['SRV-ARRAY-202']],
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+        $this->assertSame('SRV-ARRAY-202', $request->input('service_id'));
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([

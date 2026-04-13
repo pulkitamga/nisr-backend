@@ -24,7 +24,7 @@ class StockTransferReportExport implements WithMultipleSheets
         $summaryHeadings = [translate('metric'), translate('value')];
         $summaryRows = [
             [translate('total_transfers'), (int)($statistics['total_transfers'] ?? 0)],
-            [translate('pending'), (int)($statistics['pending_transfers'] ?? 0)],
+            [translate('transferred'), (int)($statistics['transferred_transfers'] ?? 0)],
             [translate('approved'), (int)($statistics['approved_transfers'] ?? 0)],
             [translate('rejected'), (int)($statistics['rejected_transfers'] ?? 0)],
             [translate('total_quantity'), (int)($statistics['total_quantity'] ?? 0)],
@@ -108,4 +108,3 @@ class StockTransferReportExport implements WithMultipleSheets
         return '-';
     }
 }
-

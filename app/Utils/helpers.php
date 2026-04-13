@@ -1356,3 +1356,58 @@ if (!function_exists('support_ticket_message_html')) {
         return new HtmlString($html);
     }
 }
+
+if (!function_exists('support_ticket_status_label')) {
+    function support_ticket_status_label(?string $status): string
+    {
+        $rawStatus = trim((string) $status);
+
+        if ($rawStatus === '') {
+            return translate('Unknown');
+        }
+
+        $normalizedStatus = Str::of($rawStatus)
+            ->replace(['-', '_'], ' ')
+            ->squish();
+
+        $translationCandidates = array_values(array_unique(array_filter([
+            $rawStatus,
+            $normalizedStatus->title()->value(),
+            $normalizedStatus->lower()->value(),
+            $normalizedStatus->lower()->replace(' ', '_')->value(),
+        ])));
+
+        foreach ($translationCandidates as $candidate) {
+            $translated = translate($candidate);
+            if ($translated !== $candidate) {
+                return $translated;
+            }
+        }
+
+        return $normalizedStatus->title()->value();
+    }
+}
+
+if (!function_exists('warranty_claim_status_label')) {
+    function warranty_claim_status_label(?string $status): string
+    {
+        $normalizedStatus = Str::of((string) $status)
+            ->trim()
+            ->lower()
+            ->replace(['-', ' '], '_')
+            ->squish()
+            ->replace(' ', '_')
+            ->value();
+
+        if ($normalizedStatus === '') {
+            return translate('Unknown');
+        }
+
+        $translationKey = 'warranty_claim_status_' . $normalizedStatus;
+        $translated = translate($translationKey);
+
+        return $translated === $translationKey
+            ? Str::of($normalizedStatus)->replace('_', ' ')->title()->value()
+            : $translated;
+    }
+}

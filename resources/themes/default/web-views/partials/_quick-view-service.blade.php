@@ -2,6 +2,7 @@
     $overallRating = getOverallRating($product->reviews);
     $rating = getRating($product->reviews);
     $productReviews = \App\Utils\ProductManager::get_product_review($product->id);
+    $serviceTitle = $product->getServiceTitle(app()->getLocale(), $product->name);
 @endphp
 
 <div class="modal-header rtl">
@@ -9,7 +10,7 @@
         <h4 class="modal-title product-title">
             <a class="product-title2" href="{{route('product',$product->slug)}}" data-toggle="tooltip"
                data-placement="right"
-               title="{{ translate('Go to product page') }}">{{$product['name']}}
+               title="{{ translate('Go to product page') }}">{{ $serviceTitle }}
                 <i class="czi-arrow-{{ Session::get('direction') === "rtl" ? 'left' : 'right' }} ms-2 font-size-lg me-0"></i>
             </a>
         </h4>
@@ -126,7 +127,7 @@
 
         <div class="col-lg-7 col-md-8 col-12 mt-md-0 mt-sm-3 web-direction">
             <div class="details __h-100 product-cart-option-container">
-                <a href="{{route('product',$product->slug)}}" class="h3 mb-2 product-title">{{$product->name}}</a>
+                <a href="{{route('product',$product->slug)}}" class="h3 mb-2 product-title">{{ $serviceTitle }}</a>
 
                 <div class="d-flex flex-wrap align-items-center mb-2 pro">
                     <div class="star-rating me-2">
@@ -470,7 +471,6 @@
 
 <script type="text/javascript" async="async"
         src="https://platform-api.sharethis.com/js/sharethis.js#property=5f55f75bde227f0012147049&product=sticky-share-buttons"></script>
-
 
 
 

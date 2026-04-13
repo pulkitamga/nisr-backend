@@ -147,12 +147,12 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                             <tbody id="product_table_body" class="bg-white divide-y divide-gray-200">
                                 @foreach ($order->items as $item)
 
-                                @php
-                                $baseTotal = $item->base_price * $item->product_quantity;
-                                $taxPercent = floatval(str_replace('%', '', $item->tax));
-                                $taxAmount = ($baseTotal * $taxPercent) / 100;
-                                $finalPrice = $baseTotal + $taxAmount;
-                                @endphp
+                                @php($linePricing = \App\Support\WholesaleLinePrice::fromValues(
+                                    basePrice: $item->base_price,
+                                    quantity: $item->product_quantity,
+                                    tax: $item->tax,
+                                    storedFinalPrice: $item->final_price
+                                ))
                                 <tr data-product-id="{{ $item->product_id }}" data-variation-type="{{ $item->product_variation_type }}">
                                     <td class="px-4 py-2">
                                         {{ $item->product->getTranslatedField('name') }} ({{ $item->product_variation_type ?? translate('No Variation') }})
@@ -162,6 +162,8 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         <input type="number"
                                             name="products[{{ $item->product_id }}][{{ $item->product_variation_type }}][approved_quantity]"
                                             value="{{ $item->product_quantity }}"
+                                            min="1"
+                                            step="1"
                                             class="admin-qty border px-2 py-1 rounded w-24">
                                     </td>
 
@@ -169,20 +171,25 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         <input type="number"
                                             name="products[{{ $item->product_id }}][{{ $item->product_variation_type }}][price]"
                                             value="{{ $item->base_price }}"
+                                            min="0"
+                                            step="0.01"
                                             class="admin-price border px-2 py-1 rounded w-24">
                                     </td>
 
                                     <td class="px-4 py-2">
                                         <input type="text"
                                             name="products[{{ $item->product_id }}][{{ $item->product_variation_type }}][tax]"
-                                            value="{{ $item->tax }}"
+                                            value="{{ $linePricing['display_tax'] }}"
+                                            data-tax-mode="{{ $linePricing['tax_mode'] }}"
                                             class="admin-tax border px-2 py-1 rounded w-24">
                                     </td>
 
                                     <td class="px-4 py-2">
                                         <input type="number"
                                             name="products[{{ $item->product_id }}][{{ $item->product_variation_type }}][final_price]"
-                                            value="{{ number_format($finalPrice, 2, '.', '') }}"
+                                            value="{{ number_format($linePricing['final_price'], 2, '.', '') }}"
+                                            min="0"
+                                            step="0.01"
                                             class="admin-final border px-2 py-1 rounded w-24">
                                     </td>
 

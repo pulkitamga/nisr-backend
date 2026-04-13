@@ -12,7 +12,7 @@
 */
 
 if (!interface_exists(\Illuminate\Contracts\Debug\ShouldntReport::class)) {
-    require_once __DIR__ . '/../app/Support/Laravel/ShouldntReport.php';
+    require_once __DIR__ . '/polyfills/ShouldntReport.php';
 }
 
 $app = new Illuminate\Foundation\Application(

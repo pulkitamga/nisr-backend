@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin\Crm;
 
+use App\Exports\FormattedTableExport;
 use App\Models\InboxMessage;
 use App\Http\Controllers\BaseController;
 use App\Enums\WebConfigKey;
+use App\Support\LocalizedExport;
 use App\Traits\PaginatorTrait;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
@@ -34,6 +36,7 @@ use App\Exports\InboxMessagesExport;
 use Carbon\Carbon;
 use App\Services\SlaService;
 use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -100,14 +103,67 @@ class InboxMessageController extends BaseController
     }
 
 
-    public function exportList(Request $request)
+    public function exportList(Request $request): BinaryFileResponse
     {
         $query = $this->inboxListQuery();
         $this->applyInboxListFilters($query, $request);
 
         $messages = $query->get();
 
-        return Excel::download(new InboxMessagesExport($messages), 'inbox_messages.xlsx');
+        $rows = $messages->map(function ($msg, $index) {
+            $phone = trim((string) ($msg->sender_phone ?? ''));
+
+            return [
+                (string) ($index + 1),
+                (string) ($msg->subject ?? translate('No Subject')),
+                trim(ucfirst((string) $msg->pipeline) . ' - ' . (string) $msg->message_type),
+                (string) ($msg->source_id ?? 'N/A'),
+                (string) ($msg->sender_name ?? translate('Unassigned')),
+                (string) ($msg->sender_email ?? '-'),
+                $phone !== '' ? '="' . str_replace('"', '""', $phone) . '"' : '-',
+                (string) ($msg->owner?->name ?? translate('Not Assigned')),
+                (string) ($msg->department?->getTranslatedField('name') ?? translate('No Department')),
+                (string) ($msg->employee?->name ?? translate('Not Assigned')),
+                ucfirst((string) ($msg->status ?? 'new')),
+                optional($msg->created_at)->format('Y-m-d H:i') ?? '-',
+            ];
+        })->values()->all();
+
+        return Excel::download(
+            new FormattedTableExport(
+                rows: $rows,
+                headings: [
+                    translate('SL'),
+                    translate('Subject'),
+                    translate('Pipeline'),
+                    translate('Source'),
+                    translate('Name'),
+                    translate('Email'),
+                    translate('Phone'),
+                    translate('Owner'),
+                    translate('Department'),
+                    translate('Employee'),
+                    translate('Status'),
+                    translate('Received At'),
+                ],
+                title: translate('inbox_messages'),
+                locale: LocalizedExport::locale(),
+                isRtl: LocalizedExport::isRtl(),
+                metaPairs: [
+                    ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
+                    ['label' => translate('count'), 'value' => (string) count($rows)],
+                ],
+                filterSummary: implode(' | ', array_filter([
+                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('Status') . ': ' . (($request->input('status') && $request->input('status') !== 'all') ? translate((string) $request->input('status')) : translate('all')),
+                    translate('Pipeline') . ': ' . ($request->input('Channel') ?: translate('all')),
+                    translate('date') . ': ' . ($request->input('filter_date') ?: translate('all')),
+                ])),
+                columnWidths: ['A' => 8, 'B' => 28, 'C' => 20, 'D' => 16, 'E' => 20, 'F' => 28, 'G' => 18, 'H' => 20, 'I' => 18, 'J' => 20, 'K' => 14, 'L' => 18],
+                centerColumns: ['A', 'G', 'K', 'L']
+            ),
+            LocalizedExport::fileName(translate('inbox_messages'))
+        );
     }
 
     private function inboxListQuery(): Builder

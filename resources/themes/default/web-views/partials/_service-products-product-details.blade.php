@@ -1,6 +1,6 @@
 @if(isset($product))
 @php($overallRating = getOverallRating($product->reviews))
-@php($serviceTitle = $product->translations->firstWhere('key', 'service_tittle')->value ?? $product->service->title)
+@php($serviceTitle = $product->getServiceTitle(app()->getLocale(), $product->name))
 <div class="flash_deal_product rtl cursor-pointer mb-2 get-view-by-onclick"
     data-link="{{ route('service',$product->slug) }}">
    

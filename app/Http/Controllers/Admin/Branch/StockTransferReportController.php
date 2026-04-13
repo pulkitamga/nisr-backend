@@ -21,6 +21,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class StockTransferReportController extends Controller
 {
+    private const REPORT_STATUSES = ['pending', 'transferred', 'approved', 'rejected'];
+
     public function index(): View
     {
         $branches = Branch::where('status', 'active')->orderBy('branch_name')->get();
@@ -37,7 +39,7 @@ class StockTransferReportController extends Controller
                 'to' => 'nullable|date',
                 'from_branch_id' => 'nullable|exists:branches,id',
                 'to_branch_id' => 'nullable|exists:branches,id',
-                'status' => 'nullable|in:pending,approved,rejected',
+                'status' => 'nullable|in:pending,transferred,approved,rejected',
             ]);
 
             if ($validator->fails()) {
@@ -243,9 +245,9 @@ class StockTransferReportController extends Controller
         [$keys, $labels] = $this->buildPeriodBuckets($fromDate, $toDate, $periodType);
         $keyIndex = array_flip($keys);
 
-        $statuses = ['pending', 'approved', 'rejected'];
         $statusSeries = [
             'pending' => array_fill(0, count($keys), 0),
+            'transferred' => array_fill(0, count($keys), 0),
             'approved' => array_fill(0, count($keys), 0),
             'rejected' => array_fill(0, count($keys), 0),
         ];
@@ -258,24 +260,30 @@ class StockTransferReportController extends Controller
                 continue;
             }
 
-            $statusValues = collect($transfer->products ?? [])
-                ->pluck('status')
-                ->filter()
-                ->map(fn($value) => strtolower((string)$value))
-                ->unique();
-
-            foreach ($statuses as $status) {
-                if ($statusValues->contains($status)) {
-                    $statusSeries[$status][$position] += 1;
+            foreach (($transfer->products ?? []) as $product) {
+                $status = $this->normalizeStatus($product->status ?? null);
+                if (!array_key_exists($status, $statusSeries)) {
+                    continue;
                 }
+
+                $statusSeries[$status][$position] += (int) ($product->quantity ?? 0);
             }
         }
 
         $colors = [
             'pending' => '#f39c12',
+            'transferred' => '#2563eb',
             'approved' => '#2ecc71',
             'rejected' => '#e74c3c',
         ];
+
+        $statuses = collect(self::REPORT_STATUSES)
+            ->filter(fn(string $status) => array_sum($statusSeries[$status] ?? []) > 0)
+            ->values();
+
+        if ($statuses->isEmpty()) {
+            $statuses = collect(['transferred']);
+        }
 
         return [
             'labels' => $labels,
@@ -297,6 +305,7 @@ class StockTransferReportController extends Controller
         $stats = [
             'total_transfers' => (int)$transfers->count(),
             'pending_transfers' => 0,
+            'transferred_transfers' => 0,
             'approved_transfers' => 0,
             'rejected_transfers' => 0,
             'total_quantity' => 0,
@@ -309,12 +318,17 @@ class StockTransferReportController extends Controller
 
         foreach ($transfers as $transfer) {
             foreach (($transfer->products ?? []) as $product) {
-                $status = strtolower((string)($product->status ?? ''));
+                $status = $this->normalizeStatus($product->status ?? null);
+                $quantity = (int)($product->quantity ?? 0);
+
+                $stats['total_quantity'] += $quantity;
+
                 if ($status === 'pending') {
                     $stats['pending_transfers']++;
+                } elseif ($status === 'transferred') {
+                    $stats['transferred_transfers']++;
                 } elseif ($status === 'approved') {
                     $stats['approved_transfers']++;
-                    $stats['total_quantity'] += (int)($product->quantity ?? 0);
                 } elseif ($status === 'rejected') {
                     $stats['rejected_transfers']++;
                 }
@@ -352,5 +366,10 @@ class StockTransferReportController extends Controller
         }
 
         return $stats;
+    }
+
+    private function normalizeStatus(?string $status): string
+    {
+        return strtolower(trim((string) $status));
     }
 }

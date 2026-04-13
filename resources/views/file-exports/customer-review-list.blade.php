@@ -31,7 +31,7 @@
                 <td> {{translate('SL')}}	</td>
                 <td> {{translate('product_Name')}}	</td>
                 <td> {{translate('customer_Name')}}	</td>
-                @if(isset($data['data-from']) && $data['data-from'] == 'admin')
+                @if($showStoreColumn)
                 <td> {{translate('store_Name')}}	</td>
                 @endif
                 <td> {{translate('item_Price')}}	</td>
@@ -43,7 +43,7 @@
                     <td > {{++$key}}	</td>
                     <td> {{$item?->product?->name ?? translate('product_not_found')}}	</td>
                     <td>{{ucwords(($item->customer?->f_name ?? translate('customer_not_found')).' '.$item->customer?->l_name)}}</td>
-                    @if(isset($data['data-from']) && $data['data-from'] == 'admin')
+                    @if($showStoreColumn)
                     <td> {{ucwords($item?->product?->seller?->shop->name ?? translate('store_not_found'))}}	</td>
                     @endif
                     <td> {{$item?->product ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $item?->product->unit_price ?? 0)) : translate('not_found')}}</td>

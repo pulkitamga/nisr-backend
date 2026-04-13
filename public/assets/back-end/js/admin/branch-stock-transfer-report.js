@@ -76,7 +76,7 @@
 
     const renderStats = (stats) => {
         document.getElementById('stat-total-transfers').textContent = toInt(stats.total_transfers).toLocaleString();
-        document.getElementById('stat-pending').textContent = toInt(stats.pending_transfers).toLocaleString();
+        document.getElementById('stat-transferred').textContent = toInt(stats.transferred_transfers).toLocaleString();
         document.getElementById('stat-approved').textContent = toInt(stats.approved_transfers).toLocaleString();
         document.getElementById('stat-rejected').textContent = toInt(stats.rejected_transfers).toLocaleString();
         document.getElementById('stat-total-qty').textContent = toInt(stats.total_quantity).toLocaleString();

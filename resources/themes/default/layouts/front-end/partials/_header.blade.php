@@ -86,7 +86,7 @@
                             <a class="nav-link font-semibold" href="{{route('store')}}">{{ translate('Store') }}</a>
                         </li>
                         <li class="nav-item dropdown {{request()->is('/our-products') ? 'active' : ''}}">
-                            <a class="nav-link font-semibold" href="{{route('showcase-products')}}">{{ translate('Product') }}</a>
+                            <a class="nav-link font-semibold" href="{{route('showcase-products')}}">{{ translate('Products') }}</a>
                         </li>
                         @if(getWebConfig('services') == 1)
                         <li class="nav-item dropdown {{request()->is('/our-services') ? 'active' : ''}}">
@@ -120,7 +120,7 @@
                             <a class="nav-link font-semibold dropdown-toggle navbar-top" href="{{route('store')}}">{{ translate('Store')}}</a>
                         </li>
                         <li class="nav-item dropdown d-none d-md-block {{request()->is('our-products') ? 'active' : ''}}">
-                            <a class="nav-link font-semibold dropdown-toggle navbar-top" href="{{route('showcase-products')}}">{{ translate('Product')}}</a>
+                            <a class="nav-link font-semibold dropdown-toggle navbar-top" href="{{route('showcase-products')}}">{{ translate('Products')}}</a>
                         </li>
                         @if(getWebConfig('services') == 1)
                         <li class="nav-item dropdown d-none d-md-block {{request()->is('our-services') ? 'active' : ''}}">

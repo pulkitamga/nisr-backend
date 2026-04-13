@@ -18,6 +18,8 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
+use function App\Utils\warranty_claim_status_label;
+
 class WarrantyClaimListExport implements FromCollection, WithMapping, WithHeadings, WithEvents, WithCustomStartCell, WithColumnWidths, ShouldAutoSize
 {
     private int $rowNumber = 0;
@@ -277,12 +279,7 @@ class WarrantyClaimListExport implements FromCollection, WithMapping, WithHeadin
 
     private function translateClaimStatus(string $status): string
     {
-        $translationKey = 'warranty_claim_status_' . $status;
-        $translated = translate($translationKey);
-
-        return $translated === $translationKey
-            ? ucwords(str_replace('_', ' ', $status))
-            : $translated;
+        return warranty_claim_status_label($status);
     }
 
     private function resolveCustomerName(WarrantyClaim $claim): string

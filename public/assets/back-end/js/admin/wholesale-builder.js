@@ -86,6 +86,39 @@
         return Number.isFinite(parsed) ? parsed : 0;
     }
 
+    function parseTaxDetails(input) {
+        const raw = String(input?.value ?? '').trim();
+        if (raw.endsWith('%')) {
+            if (input) {
+                input.dataset.taxMode = 'percent';
+            }
+
+            return {
+                value: parseNumber(raw),
+                mode: 'percent',
+            };
+        }
+
+        const inferredMode = input?.dataset.taxMode === 'amount' ? 'amount' : 'percent';
+        return {
+            value: parseNumber(raw),
+            mode: inferredMode,
+        };
+    }
+
+    function calculateLineTotals(quantity, unitPrice, taxValue, taxMode) {
+        const baseTotal = quantity * unitPrice;
+        const taxAmount = taxMode === 'percent'
+            ? baseTotal * (taxValue / 100)
+            : taxValue;
+
+        return {
+            baseTotal,
+            taxAmount,
+            finalTotal: baseTotal + taxAmount,
+        };
+    }
+
     function setText(id, value) {
         const element = document.getElementById(id);
         if (element) {
@@ -106,6 +139,20 @@
         }
 
         return Array.from(tableBody.querySelectorAll('tr[data-product-id]'));
+    }
+
+    function ensureEditableProductRows(scope) {
+        const root = scope || tableBody || form;
+        if (!root) {
+            return;
+        }
+
+        root.querySelectorAll('.admin-qty, .admin-price, .admin-tax, .admin-final').forEach((input) => {
+            input.disabled = false;
+            input.readOnly = false;
+            input.removeAttribute('disabled');
+            input.removeAttribute('readonly');
+        });
     }
 
     function removeEmptyState() {
@@ -180,13 +227,13 @@
 
         const qty = parseNumber(row.querySelector('.admin-qty')?.value);
         const price = parseNumber(row.querySelector('.admin-price')?.value);
-        const tax = parseNumber(row.querySelector('.admin-tax')?.value);
+        const taxInput = row.querySelector('.admin-tax');
+        const taxDetails = parseTaxDetails(taxInput);
         const finalInput = row.querySelector('.admin-final');
 
         if (finalInput) {
-            const baseTotal = qty * price;
-            const taxAmount = baseTotal * (tax / 100);
-            finalInput.value = (baseTotal + taxAmount).toFixed(2);
+            const totals = calculateLineTotals(qty, price, taxDetails.value, taxDetails.mode);
+            finalInput.value = totals.finalTotal.toFixed(2);
         }
 
         updateFinalPrice();
@@ -363,7 +410,7 @@
             </td>
             <td class="px-4 py-2"><input type="number" name="products[${escapeHtml(productId)}][approved_quantity]" value="1" class="admin-qty border px-2 py-1 rounded-md w-24"></td>
             <td class="px-4 py-2"><input type="number" name="products[${escapeHtml(productId)}][price]" value="${basePrice.toFixed(2)}" class="admin-price border px-2 py-1 rounded-md w-24"></td>
-            <td class="px-4 py-2"><input type="text" name="products[${escapeHtml(productId)}][tax]" value="${escapeHtml(String(tax))}%" class="admin-tax border px-2 py-1 rounded-md w-24"></td>
+            <td class="px-4 py-2"><input type="text" name="products[${escapeHtml(productId)}][tax]" value="${escapeHtml(String(tax))}%" data-tax-mode="percent" class="admin-tax border px-2 py-1 rounded-md w-24"></td>
             <td class="px-4 py-2"><input type="number" step="0.01" name="products[${escapeHtml(productId)}][final_price]" value="${basePrice.toFixed(2)}" class="admin-final border px-2 py-1 rounded-md w-24"></td>
             <td class="px-4 py-2"><button type="button" class="remove-btn js-remove-product text-red-600 hover:underline">${escapeHtml(text.remove)}</button></td>
         `;
@@ -374,7 +421,7 @@
             <td class="px-4 py-2">${escapeHtml(productName)}</td>
             <td class="px-4 py-2"><input type="number" name="products[${escapeHtml(productId)}][${escapeHtml(variationType)}][approved_quantity]" value="1" class="admin-qty border px-2 py-1 rounded-md w-24"></td>
             <td class="px-4 py-2"><input type="number" name="products[${escapeHtml(productId)}][${escapeHtml(variationType)}][price]" value="${basePrice.toFixed(2)}" class="admin-price border px-2 py-1 rounded-md w-24"></td>
-            <td class="px-4 py-2"><input type="text" name="products[${escapeHtml(productId)}][${escapeHtml(variationType)}][tax]" value="${escapeHtml(String(tax))}%" class="admin-tax border px-2 py-1 rounded-md w-24"></td>
+            <td class="px-4 py-2"><input type="text" name="products[${escapeHtml(productId)}][${escapeHtml(variationType)}][tax]" value="${escapeHtml(String(tax))}%" data-tax-mode="percent" class="admin-tax border px-2 py-1 rounded-md w-24"></td>
             <td class="px-4 py-2"><input type="number" step="0.01" name="products[${escapeHtml(productId)}][${escapeHtml(variationType)}][final_price]" value="${basePrice.toFixed(2)}" class="admin-final border px-2 py-1 rounded-md w-24"></td>
             <td class="px-4 py-2"><button type="button" class="remove-btn js-remove-product text-red-600 hover:underline">${escapeHtml(text.remove)}</button></td>
         `;
@@ -416,6 +463,7 @@
             : buildOrderRow(productId, variationType, productName, basePrice, tax);
 
         tableBody.appendChild(row);
+        ensureEditableProductRows(row);
         recalculateRow(row);
 
         if ($ && $.fn.select2 && $(productSelect).data('select2')) {
@@ -646,6 +694,7 @@
     initProductSearch();
     syncWholesalerSelection();
     ensureEmptyState();
+    ensureEditableProductRows();
     updateFinalPrice();
     updateBuilderSummary();
 })(window, document, window.jQuery);

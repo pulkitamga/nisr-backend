@@ -65,6 +65,7 @@ class WarrantyClaimListExportTest extends TestCase
 
         $this->assertSame('الموزع', $export->headings()[6]);
         $this->assertSame('نتيجة اتفاقية مستوى الخدمة', $export->headings()[14]);
+        $this->assertSame('تم الإنجاز', $export->map($claim)[3]);
     }
 
     private function makeClaimFixture(): WarrantyClaim

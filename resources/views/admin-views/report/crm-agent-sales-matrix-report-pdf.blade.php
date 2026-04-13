@@ -1,6 +1,6 @@
+@php($isRtl = get_direction() === 'rtl')
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    dir="{{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
             font-family: DejaVu Sans, sans-serif;
             font-size: 10px;
             color: #1f2937;
-            text-align: {{ (session('direction')==='rtl' || app()->getLocale()==='ar') ? 'right': 'left' }};
+            text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
         .report-header {
@@ -65,7 +65,7 @@
             padding: 12px 10px;
             vertical-align: top;
             height: 55px;
-            text-align: left;
+            text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
         .kpi-label {
@@ -82,7 +82,7 @@
             font-weight: 700;
             color: #0f172a;
             margin: 0;
-            text-align: left;
+            text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
         .meta {
@@ -116,7 +116,7 @@
         }
 
         .left {
-            text-align: {{ (session('direction')==='rtl' || app()->getLocale()==='ar') ? 'right': 'left' }};
+            text-align: {{ $isRtl ? 'right' : 'left' }};
         }
 
         .header-table td {
@@ -162,7 +162,7 @@
             font-weight: 700;
         }
 
-        @if (session('direction') === 'rtl' || app()->getLocale() === 'ar')
+        @if ($isRtl)
             .group-separator {
                 border-right: 0 !important;
                 border-left: 2px solid #334155 !important;
@@ -179,7 +179,7 @@
         <table class="header-table" style="width: 100%; border: none; border-collapse: collapse;">
             <tr>
                 <td class="header-content"
-                    style="text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }}; vertical-align: middle; border: none; background: none;">
+                    style="text-align: {{ $isRtl ? 'right' : 'left' }}; vertical-align: middle; border: none; background: none;">
                     <h2
                         style="color: #ffffff; font-size: 24px; margin: 0 0 2px 0; font-weight: bold; font-family: DejaVu Sans, sans-serif;">
                         {{ translate('crm_agent_sales_matrix_report') }}
@@ -190,7 +190,7 @@
                     </p>
                 </td>
                 <td
-                    style="text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'left' : 'right' }}; width: 25%; vertical-align: middle; border: none; background: none;">
+                    style="text-align: {{ $isRtl ? 'left' : 'right' }}; width: 25%; vertical-align: middle; border: none; background: none;">
                     @php $defaultLogoPath = public_path('storage/company/2025-07-08-686cba44bf91a.webp'); @endphp
                     @if (!empty($logo))
                         <img src="{{ $logo }}" style="max-height: 55px; max-width: 130px;">
@@ -301,7 +301,7 @@
     <div class="summary-container">
         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: none;">
             <tr>
-                <td width="33.33%" style="padding-right: 10px; vertical-align: top; border: none;">
+                <td width="33.33%" style="{{ $isRtl ? 'padding-left: 10px;' : 'padding-right: 10px;' }} vertical-align: top; border: none;">
                     <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
                         <div style="background-color: #f8fafc; padding: 8px 10px; font-weight: 700; font-size: 11px; border-bottom: 1px solid #e5e7eb;">
                             {{ translate('batteries_by_agent') }}
@@ -309,7 +309,7 @@
                         <table style="width: 100%; border-collapse: collapse; margin: 0;">
                             <thead>
                                 <tr>
-                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};">{{ translate('employee') }}</th>
+                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: {{ $isRtl ? 'right' : 'left' }};">{{ translate('employee') }}</th>
                                     <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('retail') }}</th>
                                     <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('wholesale') }}</th>
                                     <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('total') }}</th>
@@ -318,7 +318,7 @@
                             <tbody>
                                 @forelse($summary['per_employee'] as $item)
                                     <tr>
-                                        <td style="padding: 5px; font-size: 9px; text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }};">{{ $item->employee_name }}</td>
+                                        <td style="padding: 5px; font-size: 9px; text-align: {{ $isRtl ? 'right' : 'left' }};">{{ $item->employee_name }}</td>
                                         <td style="padding: 5px; font-size: 9px; text-align: center;">{{ $item->retail_batteries }}</td>
                                         <td style="padding: 5px; font-size: 9px; text-align: center;">{{ $item->wholesale_batteries }}</td>
                                         <td style="padding: 5px; font-size: 9px; text-align: center; font-weight: 700;">{{ $item->total_batteries }}</td>
@@ -333,7 +333,7 @@
                     </div>
                 </td>
                 
-                <td width="33.33%" style="padding-right: 10px; vertical-align: top; border: none;">
+                <td width="33.33%" style="{{ $isRtl ? 'padding-left: 10px;' : 'padding-right: 10px;' }} vertical-align: top; border: none;">
                     <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
                         <div style="background-color: #f8fafc; padding: 8px 10px; font-weight: 700; font-size: 11px; border-bottom: 1px solid #e5e7eb;">
                             {{ translate('battery_totals_by_type') }}
@@ -398,7 +398,7 @@
             style="border-collapse: collapse; border: none;">
             <tr>
                 <td width="20%"
-                    style="text-align: {{ session('direction') === 'rtl' || app()->getLocale() === 'ar' ? 'right' : 'left' }}; color: #6b7280; border: none; padding: 2px;">
+                    style="text-align: {{ $isRtl ? 'right' : 'left' }}; color: #6b7280; border: none; padding: 2px;">
                     Page {PAGENO}
                 </td>
                 <td width="60%" style="text-align: center; border: none; padding: 2px;">

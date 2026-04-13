@@ -1,4 +1,7 @@
-@php use function App\Utils\support_ticket_message_html; @endphp
+@php
+use function App\Utils\support_ticket_message_html;
+use function App\Utils\support_ticket_status_label;
+@endphp
 @extends('layouts.front-end.app')
 
 @section('title', translate('support_Ticket'))
@@ -38,8 +41,9 @@
                                             <div>{{translate('status')}}:</div>
                                             @if($ticket->status_details)
                                             @php
-                                            $statusName = ucwords($ticket->status_details->name);
-                                            $statusClass = match(strtolower($statusName)) {
+                                            $rawStatusName = (string) $ticket->status_details->name;
+                                            $statusName = support_ticket_status_label($rawStatusName);
+                                            $statusClass = match(strtolower($rawStatusName)) {
                                             'open' => 'text-primary',
                                             'assigned' => 'text-info',
                                             'in progress' => 'text-warning',

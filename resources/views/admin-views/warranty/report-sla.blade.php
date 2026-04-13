@@ -129,7 +129,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                         <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
                         <a href="{{ route('admin.warranty.report.sla') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
                         <a href="{{ route('admin.warranty.report.sla', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success"> <i class="tio-download-to me-1"></i> {{ translate('excel') }}</a>
-                        <a href="#" class="btn btn-outline-danger" id="pdf-download-btn"> <i class="tio-download-to me-1"></i> {{ translate('PDF') }}</a>
+                        <a href="#" class="btn btn-outline-danger" id="pdf-download-btn"> <i class="tio-download-to me-1"></i> PDF</a>
                     </div>
                 </div>
             </form>

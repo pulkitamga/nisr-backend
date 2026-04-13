@@ -181,7 +181,7 @@
                                 class="btn btn-outline-success"> <i class="tio-download-to me-1"></i>
                                 {{ translate('excel') }}</a>
                             <button type="button" id="export-claims-pdf" class="btn btn-outline-danger">
-                                <i class="tio-download-to me-1"></i> {{ translate('PDF') }}
+                                <i class="tio-download-to me-1"></i> PDF
                             </button>
                         </div>
                     </div>

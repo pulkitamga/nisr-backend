@@ -206,6 +206,7 @@ class BranchController extends BaseController
             $productId = $request->product_id;
             $branchId = (int)$request->branch_id;
             $variationType = $request->variation_type; // Pass this from JS
+            $variationKey = $request->variation_key;
             $variantMatcher = app(VariantMatcher::class);
 
             if ($branchId <= 0) {
@@ -220,28 +221,59 @@ class BranchController extends BaseController
                 return redirect()->route('admin.branch.branch-stock-list');
             }
 
-            // Replicate the logic from fGetBranchesStockList
-            $history = \App\Models\StockRequestProduct::where('product_id', $productId)
-                ->whereIn('status', ['transferred', 'pending', 'approved'])
-                ->where(function ($q) use ($branchId) {
-                    $q->where('received_from_branch', $branchId)
-                        ->orWhereHas('stockRequest', function ($sr) use ($branchId) {
-                            $sr->where('from_branch_id', $branchId);
-                        });
-                })
-                ->with('stockRequest')
-                ->latest()
-                ->get()
-                ->filter(function ($row) use ($variationType, $variantMatcher) {
-                    if ($variationType === 'No Variation' || empty($variationType) || $variationType === 'null') {
-                        return $variantMatcher->isDefault($row->variation_type);
-                    }
+            $stock = $this->findBranchStockSummary(
+                branchId: $branchId,
+                productId: (int) $productId,
+                variationType: (string) ($variationType ?? 'No Variation'),
+                variationKey: (string) ($variationKey ?? 'No Variation'),
+            );
 
-                    return $variantMatcher->matches($variationType, $row->variation_type);
-                })
-                ->values();
+            if (!$stock) {
+                Toastr::error(translate('No transfer history found'));
 
-            return Excel::download(new \App\Exports\BranchStockHistoryExport(['history' => $history]), 'stock-history.xlsx');
+                return redirect()->route('admin.branch.branch-stock-list');
+            }
+
+            $historyRows = $this->getUnifiedStockHistory($stock)
+                ->map(fn(array $item) => $this->formatStockHistoryItem($item))
+                ->map(fn(array $item) => [
+                    (string) ($item['date'] ?? '-'),
+                    (string) ($item['type_label'] ?? '-'),
+                    (string) ($item['quantity_label'] ?? '-'),
+                    (string) ($item['reference'] ?? '-'),
+                    (string) ($item['description'] ?? '-'),
+                    (string) ($item['status_label'] ?? '-'),
+                ])
+                ->values()
+                ->all();
+
+            return Excel::download(
+                new FormattedTableExport(
+                    rows: $historyRows,
+                    headings: [
+                        translate('Date'),
+                        translate('Type'),
+                        translate('Quantity'),
+                        translate('Reference'),
+                        translate('Description'),
+                        translate('Status'),
+                    ],
+                    title: translate('Stock Transfer History'),
+                    locale: LocalizedExport::locale(),
+                    isRtl: LocalizedExport::isRtl(),
+                    metaPairs: [
+                        ['label' => translate('Branch'), 'value' => $stock->branch?->getTranslatedField('branch_name') ?? translate('not_available')],
+                        ['label' => translate('Product'), 'value' => $stock->product?->getTranslatedField('name') ?? translate('not_available')],
+                        ['label' => translate('Variation'), 'value' => $this->formatVariationLabel($stock->variation_type, $stock->variation_key)],
+                        ['label' => translate('Current Stock'), 'value' => (string) ((int) $stock->total_stock)],
+                        ['label' => translate('count'), 'value' => (string) count($historyRows)],
+                    ],
+                    filterSummary: translate('product') . ': ' . ($stock->product?->getTranslatedField('name') ?? translate('not_available')),
+                    columnWidths: ['A' => 20, 'B' => 18, 'C' => 14, 'D' => 34, 'E' => 36, 'F' => 14],
+                    centerColumns: ['A', 'B', 'C', 'F']
+                ),
+                LocalizedExport::fileName(translate('Stock Transfer History'))
+            );
         }
 
         if ($request->input('export_scope') === 'branch_stock') {
@@ -434,6 +466,7 @@ class BranchController extends BaseController
                 'product_id' => $stock->product_id,
                 'branch_id' => $stock->branch_id,
                 'variation_type' => $stock->variation_type,
+                'variation_key' => $stock->variation_key,
             ]),
         ]);
     }

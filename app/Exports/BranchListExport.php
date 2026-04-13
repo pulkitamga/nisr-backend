@@ -44,10 +44,10 @@ class BranchListExport implements FromView, ShouldAutoSize, WithStyles, WithColu
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:A3')->getFont()->setBold(true);
-        $sheet->getStyle('A4:J4')->getFont()->setBold(true)->getColor()
+        $sheet->getStyle('A3:J3')->getFont()->setBold(true)->getColor()
             ->setARGB('FFFFFF');
 
-        $sheet->getStyle('A4:J4')->getFill()->applyFromArray([
+        $sheet->getStyle('A3:J3')->getFill()->applyFromArray([
             'fillType' => 'solid',
             'rotation' => 0,
             'color' => ['rgb' => '239e92'],

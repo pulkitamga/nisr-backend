@@ -282,7 +282,7 @@ class UcmController extends Controller
 
         if ($download === 'pdf') {
 
-            $isRtl = app()->getLocale() === 'ar' || session('direction') === 'rtl';
+            $isRtl = \App\Support\LocalizedExport::isRtl();
 
             // ✅ Get chart images from request
             $trendChart = $request->input('trend_chart');

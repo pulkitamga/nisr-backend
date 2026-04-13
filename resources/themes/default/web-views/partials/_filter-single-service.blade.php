@@ -1,5 +1,5 @@
 @php($overallRating = getOverallRating($product->reviews))
-@php($serviceTitle = $product->translations->firstWhere('key', 'service_tittle')->value ?? $product->service->title)
+@php($serviceTitle = $product->getServiceTitle(app()->getLocale(), $product->name))
 
 <div class="product-single-hover style--card h-100">
     <div class="overflow-hidden position-relative">

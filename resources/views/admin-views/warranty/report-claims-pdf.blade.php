@@ -1,3 +1,5 @@
+@php use function App\Utils\warranty_claim_status_label; @endphp
+
 @php
     $isRtl = $isRtl ?? app()->getLocale() === 'ar' || session('direction') === 'rtl';
     $dateRange = $fromDateDisplay . ' - ' . $toDateDisplay;
@@ -403,7 +405,7 @@
                         <td class="value-ltr">{{ $claim->serial_number }}</td>
                         <td>{{ $claim->warranty?->product?->name ?? '-' }}</td>
                         <td>{{ $customerName }}</td>
-                        <td>{{ ucwords(str_replace('_', ' ', $claim->status)) }}</td>
+                        <td>{{ warranty_claim_status_label($claim->status) }}</td>
                         <td class="value-ltr">
                             {{ optional($claim->submitted_at ?? $claim->created_at)->translatedFormat('d M Y H:i') }}
                         </td>

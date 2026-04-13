@@ -45,15 +45,17 @@
                                         </div>
 
                                         <div class="d-flex justify-content-end flex-wrap gap-3 gap-sm-3">
-                                            <button type="button" class="btn btn-soft-info text-capitalize px-2 px-md-4"
-                                                    data-toggle="modal"
-                                                    data-target="#chatting_modal">
-                                                <img
-                                                    src="{{theme_asset(path: 'public/assets/front-end/img/seller-info-chat.png')}}"
-                                                    alt="">
-                                                <span
-                                                    class="d-none d-md-inline-block">{{translate('chat_with_delivery_man')}}</span>
-                                            </button>
+                                            @if($canChatWithDeliveryMan)
+                                                <button type="button" class="btn btn-soft-info text-capitalize px-2 px-md-4"
+                                                        data-toggle="modal"
+                                                        data-target="#chatting_modal">
+                                                    <img
+                                                        src="{{theme_asset(path: 'public/assets/front-end/img/seller-info-chat.png')}}"
+                                                        alt="">
+                                                    <span
+                                                        class="d-none d-md-inline-block">{{translate('chat_with_delivery_man')}}</span>
+                                                </button>
+                                            @endif
                                             @if($order->payment_status == 'paid' && $order->order_type == 'default_type' && $order->order_status=='delivered' && $order->delivery_man_id)
                                                 <button type="button" class="btn btn-sm btn-warning px-2 px-md-4"
                                                         data-toggle="modal"
@@ -241,7 +243,7 @@
         </div>
     </div>
 
-    @isset($order->deliveryMan->id)
+    @if($canChatWithDeliveryMan && isset($order->deliveryMan->id))
         <div class="modal fade" id="chatting_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
              aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -280,7 +282,7 @@
                 </div>
             </div>
         </div>
-    @endisset
+    @endif
 
     <span id="message-ratingContent"
           data-poor="{{ translate('poor') }}"

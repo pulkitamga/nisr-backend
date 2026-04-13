@@ -1,6 +1,6 @@
     @extends('layouts.front-end.app')
 
-    @section('title', $product['name'])
+    @section('title', $product->getServiceTitle(app()->getLocale(), $product['name']))
 
     @push('css_or_js')
     @include(VIEW_FILE_NAMES['product_seo_meta_content_partials'], ['metaContentData' => $product?->seoInfo, 'productDetails' => $product])
@@ -131,7 +131,7 @@
                                 ->where('locale', $locale)
                                 ->filter(fn($t) => in_array($t->key, ['service_tittle', 'parts_included']));
 
-                            $serviceTitle = optional($serviceTranslations->firstWhere('key', 'service_tittle'))->value ?? $product->service->title;
+                            $serviceTitle = $product->getServiceTitle($locale, $product['name']);
 
                             $partsIncluded = optional($serviceTranslations->firstWhere('key', 'parts_included'))->value;
 

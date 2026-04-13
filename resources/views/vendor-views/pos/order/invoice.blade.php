@@ -17,7 +17,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
         </div>
         <div class="col-6">
             <h5 class="">
-                {{ date('d/M/Y h:i a', strtotime($order['created_at'])) }}
+                {!! formatDateTimeForDisplay($order['created_at'], 'd M Y, h:i A') !!}
             </h5>
         </div>
         @if($order->customer)
