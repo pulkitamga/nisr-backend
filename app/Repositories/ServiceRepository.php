@@ -31,7 +31,7 @@ class ServiceRepository implements ServiceRepositoryInterface
     {
         cacheRemoveByType(type: 'products');
         return $this->service
-            ->where('product_id', $id)
+            ->where('id', $id)
             ->update($data);
     }
 }

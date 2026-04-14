@@ -1,3 +1,5 @@
+@php($questionMark = app()->getLocale() === 'ar' ? '؟' : '?')
+
 <span id="call-demo-message" data-text="{{translate("this_option_is_disabled_for_demo").'!'}}"></span>
 <span id="get-update-status-message"
       data-text="{{translate("status_updated_successfully")}}"
@@ -6,10 +8,10 @@
 <span id="get-update-success-message" data-text="{{translate("updated_successfully")}}"></span>
 <span id="get-extension-text-message" data-text="{{translate("extension")}}"></span>
 <span id="get-deleted-message" data-text="{{translate("deleted_successfully")}}"></span>
-<span id="get-confirm-and-cancel-button-text" data-sure ="{{translate('are_you_sure').'?'}}"
+<span id="get-confirm-and-cancel-button-text" data-sure ="{{translate('are_you_sure').$questionMark}}"
       data-delete-text="{{translate('once_deleted_you_will_not_be_able_to_recover_this').'!'}}"
       data-confirm="{{translate('yes')}}" data-cancel="{{translate('no')}}"></span>
-<span id="get-confirm-and-cancel-button-text-for-delete" data-sure ="{{translate('are_you_sure_you_want_to_delete_this').'?'}}"
+<span id="get-confirm-and-cancel-button-text-for-delete" data-sure ="{{translate('are_you_sure_you_want_to_delete_this').$questionMark}}"
       data-text="{{translate('you_will_not_be_able_to_revert_this').'!'}}"
       data-confirm="{{translate('yes_delete_it')}}" data-cancel="{{translate('cancel')}}"></span>
 <span id="get-copy-to-clipboard" data-success="{{translate('copied_to_the_clipboard')}}"></span>
@@ -28,7 +30,7 @@
       data-on-size-err="{{ translate('file_size_too_big')}}">
 </span>
 
-<span id="get-logout-text" data-title="{{translate('do_you_want_to_sign_out').'?'}}"
+<span id="get-logout-text" data-title="{{translate('do_you_want_to_sign_out').$questionMark}}"
       data-confirm="{{translate('yes')}}" data-cancel="{{translate('no')}}"
       data-deny="{{translate('do_not_Logout')}}"></span>
 <span id="get-select-product-text" data-text="{{translate('select_product')}}"></span>

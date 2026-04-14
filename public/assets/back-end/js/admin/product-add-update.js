@@ -27,6 +27,7 @@ let messageProductDescriptionInEnglishRequired = $(
     "#message-product-description-in-english-required"
 ).data("text");
 let messageValidVideoUrl = $("#message-valid-video-url").data("text");
+let messageSomethingWentWrong = $("#message-something-went-wrong").data("text");
 let getSystemCurrencyCode = $("#system-currency-code").data("value");
 let isProductFormSubmitting = false;
 const physicalOnlyRequiredSelectors = [
@@ -338,6 +339,70 @@ function openProductLanguageTabFromErrors(errors) {
             continue;
         }
     }
+}
+
+function normalizeAjaxErrors(payload, fallbackResponseText = "") {
+    if (Array.isArray(payload?.errors)) {
+        return payload.errors;
+    }
+
+    if (payload?.errors && typeof payload.errors === "object") {
+        return Object.entries(payload.errors).flatMap(([errorCode, messages]) => {
+            const normalizedMessages = Array.isArray(messages)
+                ? messages
+                : [messages];
+
+            return normalizedMessages
+                .filter((message) => String(message || "").trim() !== "")
+                .map((message) => ({
+                    error_code: errorCode,
+                    message: String(message),
+                }));
+        });
+    }
+
+    if (String(payload?.message || "").trim() !== "") {
+        return [
+            {
+                error_code: "server",
+                message: String(payload.message),
+            },
+        ];
+    }
+
+    if (
+        typeof fallbackResponseText === "string" &&
+        fallbackResponseText.trim() !== "" &&
+        !fallbackResponseText.trim().startsWith("<")
+    ) {
+        return [
+            {
+                error_code: "server",
+                message: fallbackResponseText.trim(),
+            },
+        ];
+    }
+
+    return [
+        {
+            error_code: "server",
+            message: String(messageSomethingWentWrong || "").trim(),
+        },
+    ].filter((error) => error.message !== "");
+}
+
+function handleProductAjaxFailure(jqXHR) {
+    const normalizedErrors = normalizeAjaxErrors(
+        jqXHR?.responseJSON || null,
+        jqXHR?.responseText || ""
+    );
+
+    if (!normalizedErrors.length) {
+        return;
+    }
+
+    openProductLanguageTabFromErrors(normalizedErrors);
+    normalizedErrors.forEach((error) => showValidationToast(error.message));
 }
 
 function bindImageFallbackOnError() {
@@ -970,7 +1035,7 @@ function getProductAddRequirementsCheck() {
                         $("#loading").fadeOut();
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        $("#loading").fadeOut();
+                        handleProductAjaxFailure(jqXHR);
                     },
                 });
             }

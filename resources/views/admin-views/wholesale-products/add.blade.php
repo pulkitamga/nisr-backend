@@ -124,35 +124,35 @@
                                     class="table table-hover table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                                     <thead class="thead-light thead-50 text-capitalize">
                                         <tr>
-                                            <th class="text-center">{{ __('SL') }}</th>
-                                            <th>{{ __('Tier') }}</th>
-                                            <th>{{ __('Min. Quantity') }}</th>
-                                            <th>{{ __('Max. Quantity') }}</th>
-                                            <th>{{ __('Unit Price') }}</th>
-                                            <th>{{ __('Discount (%)') }}</th>
-                                            <th>{{ __('Final piece') }}</th>
+                                            <th class="text-center">{{ translate('SL') }}</th>
+                                            <th>{{ translate('Tier') }}</th>
+                                            <th>{{ translate('Min_Quantity') }}</th>
+                                            <th>{{ translate('Max_Quantity') }}</th>
+                                            <th>{{ translate('Unit_Price') }}</th>
+                                            <th>{{ translate('Discount (%)') }}</th>
+                                            <th>{{ translate('Final_piece') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="range-rows">
                                         @foreach($defaultTiers as $index => $tier)
                                         <tr class="range-row" data-row-id="{{ $index }}">
                                             <td class="text-center">{{ $index + 1 }}</td>
-                                            <td>
+                                             <td>
                                                 <input type="hidden" name="tier[]" value="{{ $tier->name }}">
                                                 <input type="text" class="form-control" value="{{ $tier->getTranslatedField('name') }}"
                                                     disabled>
                                             </td>
                                             <td><input type="number" class="form-control" name="min_qty[]"
-                                                    placeholder="{{ __('Min qty') }}"></td>
+                                                    placeholder="{{ translate('Min_Quantity') }}"></td>
                                             <td><input type="number" class="form-control" name="max_qty[]"
-                                                    placeholder="{{ __('Max qty') }}"></td>
+                                                    placeholder="{{ translate('Max_Quantity') }}"></td>
                                             <td><input type="text" class="form-control unit-price" name="unit_price[]"
-                                                    placeholder="{{ __('Unit Price') }}" readonly data-row="{{ $index }}"></td>
+                                                    placeholder="{{ translate('Unit_Price') }}" readonly data-row="{{ $index }}"></td>
                                             <td><input type="number" step="0.01" class="form-control discount-input"
-                                                    name="discount[]" placeholder="{{ __('Discount') }}" data-row="{{ $index }}">
+                                                    name="discount[]" placeholder="{{ translate('Discount (%)') }}" data-row="{{ $index }}">
                                             </td>
                                             <td><input type="text" class="form-control final-price" name="final_price[]"
-                                                    placeholder="{{ __('Final Price') }}" data-row="{{ $index }}"></td>
+                                                    placeholder="{{ translate('Final Price') }}" data-row="{{ $index }}"></td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -170,7 +170,7 @@
                                     <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
                                     <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-product-form"
                                         data-redirect-route="{{route('admin.wholesale.product.list')}}"
-                                        data-message="{{translate('want_to_add_this_product').'?'}}">{{translate('submit')}}</button>
+                                        data-message="{{translate('want_to_add_this_product')}}">{{translate('submit')}}</button>
                                 </div>
                             </div>
                         </div>
@@ -183,9 +183,23 @@
 </div>
 <span id="route-admin-products-search-category_wise"
     data-url="{{ route('admin.stock-request.search-product') }}"></span>
+<span id="message-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
 
 <script>
     window.remainingTiers = @json($remainingTiers);
+    window.wholesaleProductI18n = {
+        noTierAvailable: @json(translate('No tier available!')),
+        allTiersAdded: @json(translate('There are no more tiers to add.')),
+        ok: @json(translate('OK')),
+        selectTier: @json(translate('select_tier')),
+        minQtyPlaceholder: @json(translate('Min_Quantity')),
+        maxQtyPlaceholder: @json(translate('Max_Quantity')),
+        unitPrice: @json(translate('Unit_Price')),
+        discountPercent: @json(translate('Discount (%)')),
+        finalPrice: @json(translate('Final Price')),
+        remove: @json(translate('Remove')),
+        noTierAvailableInline: @json(translate('No Tier Available')),
+    };
 </script>
 
 @endsection
@@ -198,7 +212,7 @@ $(document).ready(function() {
     $('.product-select').on('change', function() {
     const productId = $(this).val();
     if (!productId) {
-        $('.variation-select').html('<option value="" selected disabled>{{ __('Select Variation') }}</option>').prop('disabled', true);
+        $('.variation-select').html('<option value="" selected disabled>{{ translate('select_variation') }}</option>').prop('disabled', true);
         $('.unit-price').val('');
         currentUnitPrice = 0;
         $('#hidden-variation-key').val('');
@@ -207,7 +221,7 @@ $(document).ready(function() {
 
     $.get(`/admin/wholesale/product/get-variations/${productId}`, function(res) {
         const $variationSelect = $('.variation-select');
-        $variationSelect.empty().append('<option value="" selected disabled>{{ __('Select Variation') }}</option>');
+        $variationSelect.empty().append('<option value="" selected disabled>{{ translate('select_variation') }}</option>');
 
         const variations = res.variations || [];
 
@@ -231,7 +245,7 @@ $(document).ready(function() {
             currentUnitPrice = res.unit_price || 0;
             $('.unit-price').val(currentUnitPrice.toFixed(2));
             $('#hidden-variation-key').val(''); // No variation
-            $variationSelect.append('<option value="" selected>{{ __('No variation available') }}</option>').prop('disabled', true);
+            $variationSelect.append('<option value="" selected>{{ translate('no_variation_available') }}</option>').prop('disabled', true);
         }
 
         updateFinalPrices();

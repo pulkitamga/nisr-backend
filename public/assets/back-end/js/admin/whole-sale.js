@@ -1,5 +1,19 @@
 'use strict';
 
+const wholesaleProductI18n = window.wholesaleProductI18n || {
+    noTierAvailable: 'No tier available!',
+    allTiersAdded: 'There are no more tiers to add.',
+    ok: 'OK',
+    selectTier: 'Select Tier',
+    minQtyPlaceholder: 'Min Quantity',
+    maxQtyPlaceholder: 'Max Quantity',
+    unitPrice: 'Unit Price',
+    discountPercent: 'Discount (%)',
+    finalPrice: 'Final Price',
+    remove: 'Remove',
+    noTierAvailableInline: 'No Tier Available',
+};
+
     $(".action-get-onchange").on("change", function () {
         let getUrlPrefix = $(this).data("url-prefix") + $(this).val();
         let id = $(this).data("element-id");
@@ -14,10 +28,10 @@ let row_count = parseInt($('tbody tr[data-row-id]').last().data('row-id')) || 0;
 $('#add-price-range').on('click', function () {
     if (!window.remainingTiers || window.remainingTiers.length === 0) {
         Swal.fire({
-        title: 'No tier available!',
-        text: 'You have already added all available tiers.',
+        title: wholesaleProductI18n.noTierAvailable,
+        text: wholesaleProductI18n.allTiersAdded,
         icon: 'info',
-        confirmButtonText: 'OK'
+        confirmButtonText: wholesaleProductI18n.ok
     });
     return;
     }
@@ -36,27 +50,27 @@ const newRow = `
         <td class="text-center row-number">${row_count}</td>
         <td>
             <div class="tier-select-wrapper position-relative">
-                <input type="text" class="form-control tier-input" placeholder="Select Tier" data-row-id="${row_count}">
+                <input type="text" class="form-control tier-input" placeholder="${wholesaleProductI18n.selectTier}" data-row-id="${row_count}">
                 <div class="tier-dropdown d-none border mt-1 bg-white" style="position: absolute; z-index: 999; max-height: 150px; overflow-y: auto; width: 100%;"></div>
             </div>
         </td>
         <td>
-            <input type="number" class="form-control" name="min_qty[]" placeholder="Enter min. qty" value="${minQtyValue}">
+            <input type="number" class="form-control" name="min_qty[]" placeholder="${wholesaleProductI18n.minQtyPlaceholder}" value="${minQtyValue}">
         </td>
         <td>
-            <input type="number" class="form-control" name="max_qty[]" placeholder="Enter max. qty">
+            <input type="number" class="form-control" name="max_qty[]" placeholder="${wholesaleProductI18n.maxQtyPlaceholder}">
         </td>
         <td>
-            <input type="text" class="form-control unit-price" name="unit_price[]" placeholder="Unit Price" data-row="${row_count}">
+            <input type="text" class="form-control unit-price" name="unit_price[]" placeholder="${wholesaleProductI18n.unitPrice}" data-row="${row_count}">
         </td>
         <td>
-            <input type="number" step="0.01" class="form-control discount-input" name="discount[]" placeholder="Discount (%)" data-row="${row_count}">
+            <input type="number" step="0.01" class="form-control discount-input" name="discount[]" placeholder="${wholesaleProductI18n.discountPercent}" data-row="${row_count}">
         </td>
         <td>
-            <input type="text" class="form-control final-price" name="final_price[]" placeholder="Final Price" data-row="${row_count}">
+            <input type="text" class="form-control final-price" name="final_price[]" placeholder="${wholesaleProductI18n.finalPrice}" data-row="${row_count}">
         </td>
         <td class="text-center">
-            <button type="button" class="btn btn-danger remove-row-btn" data-row-id="${row_count}">Remove</button>
+            <button type="button" class="btn btn-danger remove-row-btn" data-row-id="${row_count}">${wholesaleProductI18n.remove}</button>
         </td>
     </tr>
 `;
@@ -71,7 +85,7 @@ $(document).on('click', '.tier-input', function () {
     dropdown.empty().removeClass('d-none');
 
     if (!window.remainingTiers || window.remainingTiers.length === 0) {
-        dropdown.html('<div class="px-2 py-1 text-muted">No Tier Available</div>');
+        dropdown.html(`<div class="px-2 py-1 text-muted">${wholesaleProductI18n.noTierAvailableInline}</div>`);
         return;
     }
 
@@ -164,11 +178,6 @@ $(document).on('click', function (e) {
     $(document).on("click", ".remove-product-btn", function () {
         $(this).closest("tr").remove();
         updateRowNumbers(); // Update row numbering after removing a row
-    });
-
-    // Event listener for adding rows
-    $(document).on("click", "#add-price-range", function () {
-        addProductRow();
     });
 
     function UpdateMinQty(){

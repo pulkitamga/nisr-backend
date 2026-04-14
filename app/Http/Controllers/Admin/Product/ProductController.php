@@ -23,6 +23,7 @@ use Illuminate\Http\JsonResponse;
 use App\Exports\ProductListExport;
 use App\Models\Product as Products;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Services\VehicleMakeService;
@@ -77,6 +78,7 @@ use App\Contracts\Repositories\StockClearanceProductRepositoryInterface;
 use App\Contracts\Repositories\RestockProductCustomerRepositoryInterface;
 use App\Contracts\Repositories\DigitalProductVariationRepositoryInterface;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 
 class ProductController extends BaseController
@@ -378,132 +380,132 @@ class ProductController extends BaseController
     {
         Log::info('Product Add Request:', ['request' => $request->all()]);
 
-        // 1️⃣ Create the main product
-        $dataArray = $service->getAddProductData(request: $request, addedBy: 'admin');
-        $savedProduct = $this->productRepo->add(data: $dataArray);
-
-        // 2️⃣ Add related tags, translations, authors, publishing houses
-        $this->productRepo->addRelatedTags(request: $request, product: $savedProduct);
-        $this->translationRepo->add(request: $request, model: 'App\Models\Product', id: $savedProduct->id);
-        $this->updateProductAuthorAndPublishingHouse(request: $request, product: $savedProduct);
-
-        // 3️⃣ Service products
-        if ($request->product_type === 'services') {
-            $serviceData = $this->serviceService->getServiceData($request, $savedProduct->id);
-            $this->serviceRepo->add($serviceData);
-        }
-
-        // 4️⃣ Digital product variations
-        $digitalFileArray = $service->getAddProductDigitalVariationData(request: $request, product: $savedProduct);
-        foreach ($digitalFileArray as $digitalFile) {
-            $this->digitalProductVariationRepo->add(data: $digitalFile);
-        }
-
-        // 5️⃣ SEO
-        $this->productSeoRepo->add(data: $service->getProductSEOData(request: $request, product: $savedProduct, action: 'add'));
-
-        // 6️⃣ Handle stock for branch and product stock
-        if ($savedProduct->product_type === 'physical' && $request->filled('branch_id')) {
-
-            $branchId  = $request->branch_id;
-            $productId = $savedProduct->id;
-
-            $variations = json_decode($savedProduct->variation, true) ?? [];
-
-            // CASE 1: Product WITHOUT variations
-            if (empty($variations)) {
-                $qty = (int) ($request->current_stock ?? 0);
-                $sku = $request->sku ?? $savedProduct->code ?? 'SKU-' . strtoupper(Str::random(10));
-
-                // Insert into ProductStock
-                $productStock = ProductStock::create([
-                    'product_id' => $productId,
-                    'variant'    => null,
-                    'sku'        => $sku,
-                    'price'      => $savedProduct->unit_price,
-                    'qty'        => $qty,
-                ]);
-
-                // Log the initial stock
-                ProductStockTransaction::logStockIn(
-                    $productStock,
-                    $qty,
-                    StockReason::INITIAL_STOCK,
-                    'Initial stock added on product creation',
-                    $branchId
-                );
-
-                // Insert/Update Branch Stock
-                ManageBranchProductStock::updateOrCreate(
-                    [
-                        'branch_id'     => $branchId,
-                        'product_id'    => $productId,
-                        'variation_key' => null,
-                    ],
-                    [
-                        'current_stock' => $qty,
-                    ]
-                );
+        try {
+            if ($request->product_type === 'services') {
+                $this->assertUniqueServiceId($request->input('service_id'));
             }
 
-            // CASE 2: Product WITH variations
-            else {
-                foreach ($variations as $variation) {
+            $responseData = DB::transaction(function () use ($request, $service) {
+                $dataArray = $service->getAddProductData(request: $request, addedBy: 'admin');
+                $savedProduct = $this->productRepo->add(data: $dataArray);
 
-                    $qty = (int) ($variation['qty'] ?? 0);
-                    if ($qty <= 0) continue;
+                $this->productRepo->addRelatedTags(request: $request, product: $savedProduct);
+                $this->translationRepo->add(request: $request, model: 'App\Models\Product', id: $savedProduct->id);
+                $this->updateProductAuthorAndPublishingHouse(request: $request, product: $savedProduct);
 
-                    $type  = $variation['type']; // e.g., YellowGreen-Left
-                    $sku   = $variation['sku'] ?? ($savedProduct->code ?? 'SKU-' . strtoupper(Str::random(10)));
-                    $price = $variation['price'] ?? $savedProduct->unit_price;
-
-                    // Insert into ProductStock
-                    $productStock = ProductStock::create([
-                        'product_id' => $productId,
-                        'variant'    => $type,
-                        'sku'        => $sku,
-                        'price'      => $price,
-                        'qty'        => $qty,
-                    ]);
-
-                    // Log the initial stock
-                    ProductStockTransaction::logStockIn(
-                        $productStock,
-                        $qty,
-                        StockReason::INITIAL_STOCK,
-                        'Initial stock added on product creation',
-                        $branchId
-                    );
-                    // Insert/Update Branch Stock
-                    ManageBranchProductStock::updateOrCreate(
-                        [
-                            'branch_id'     => $branchId,
-                            'product_id'    => $productId,
-                            'variation_key' => $type,
-                        ],
-                        [
-                            'variation_type' => $type,
-                            'attributes'     => $type,
-                            'current_stock'  => $qty,
-                        ]
-                    );
+                if ($request->product_type === 'services') {
+                    $serviceData = $this->serviceService->getServiceData($request, $savedProduct->id);
+                    $this->serviceRepo->add($serviceData);
                 }
+
+                $digitalFileArray = $service->getAddProductDigitalVariationData(request: $request, product: $savedProduct);
+                foreach ($digitalFileArray as $digitalFile) {
+                    $this->digitalProductVariationRepo->add(data: $digitalFile);
+                }
+
+                $this->productSeoRepo->add(data: $service->getProductSEOData(request: $request, product: $savedProduct, action: 'add'));
+
+                if ($savedProduct->product_type === 'physical' && $request->filled('branch_id')) {
+                    $branchId  = $request->branch_id;
+                    $productId = $savedProduct->id;
+
+                    $variations = json_decode($savedProduct->variation, true) ?? [];
+
+                    if (empty($variations)) {
+                        $qty = (int) ($request->current_stock ?? 0);
+                        $sku = $request->sku ?? $savedProduct->code ?? 'SKU-' . strtoupper(Str::random(10));
+
+                        $productStock = ProductStock::create([
+                            'product_id' => $productId,
+                            'variant'    => null,
+                            'sku'        => $sku,
+                            'price'      => $savedProduct->unit_price,
+                            'qty'        => $qty,
+                        ]);
+
+                        ProductStockTransaction::logStockIn(
+                            $productStock,
+                            $qty,
+                            StockReason::INITIAL_STOCK,
+                            'Initial stock added on product creation',
+                            $branchId
+                        );
+
+                        ManageBranchProductStock::updateOrCreate(
+                            [
+                                'branch_id'     => $branchId,
+                                'product_id'    => $productId,
+                                'variation_key' => null,
+                            ],
+                            [
+                                'current_stock' => $qty,
+                            ]
+                        );
+                    } else {
+                        foreach ($variations as $variation) {
+                            $qty = (int) ($variation['qty'] ?? 0);
+                            if ($qty <= 0) {
+                                continue;
+                            }
+
+                            $type  = $variation['type'];
+                            $sku   = $variation['sku'] ?? ($savedProduct->code ?? 'SKU-' . strtoupper(Str::random(10)));
+                            $price = $variation['price'] ?? $savedProduct->unit_price;
+
+                            $productStock = ProductStock::create([
+                                'product_id' => $productId,
+                                'variant'    => $type,
+                                'sku'        => $sku,
+                                'price'      => $price,
+                                'qty'        => $qty,
+                            ]);
+
+                            ProductStockTransaction::logStockIn(
+                                $productStock,
+                                $qty,
+                                StockReason::INITIAL_STOCK,
+                                'Initial stock added on product creation',
+                                $branchId
+                            );
+
+                            ManageBranchProductStock::updateOrCreate(
+                                [
+                                    'branch_id'     => $branchId,
+                                    'product_id'    => $productId,
+                                    'variation_key' => $type,
+                                ],
+                                [
+                                    'variation_type' => $type,
+                                    'attributes'     => $type,
+                                    'current_stock'  => $qty,
+                                ]
+                            );
+                        }
+                    }
+                }
+
+                return [
+                    'message' => translate('product_added_successfully'),
+                    'redirect_url' => route('admin.products.list', ['in_house']),
+                ];
+            });
+        } catch (ValidationException $exception) {
+            return $this->handleProductValidationFailure($request, $exception);
+        } catch (Throwable $exception) {
+            if ($convertedException = $this->resolvePersistenceValidationException($exception)) {
+                return $this->handleProductValidationFailure($request, $convertedException);
             }
+
+            return $this->handleProductPersistenceFailure($request, $exception, 'add');
         }
 
-        $successMessage = translate('product_added_successfully');
-        $redirectUrl = route('admin.products.list', ['in_house']);
-
-        Toastr::success($successMessage);
+        Toastr::success($responseData['message']);
 
         if ($request->ajax() || $request->expectsJson()) {
-            return response()->json([
-                'message' => $successMessage,
-                'redirect_url' => $redirectUrl,
-            ]);
+            return response()->json($responseData);
         }
 
-        return redirect()->to($redirectUrl);
+        return redirect()->to($responseData['redirect_url']);
     }
     // public function add(ProductAddRequest $request, ProductService $service): JsonResponse|RedirectResponse
     // {
@@ -756,61 +758,172 @@ class ProductController extends BaseController
 
     public function update(ProductUpdateRequest $request, ProductService $service, string|int $id): JsonResponse|RedirectResponse
     {
-        $product = $this->productRepo->getFirstWhereWithoutGlobalScope(
-            params: ['id' => $id],
-            relations: ['digitalVariation', 'seoInfo']
-        );
+        try {
+            $existingService = null;
 
-        $dataArray = $service->getUpdateProductData(request: $request, product: $product, updateBy: 'admin');
-        $serviceArray =  $this->serviceService->getUpdateServiceData(request: $request);
-
-        $this->updateProductAuthorAndPublishingHouse(request: $request, product: $product);
-
-        $this->productRepo->update(id: $id, data: $dataArray);
-        if ($request->product_type === 'services') {
-
-            $serviceExists = $this->serviceRepo->getFirstWhere(['product_id' => $id]);
-
-            if ($serviceExists) {
-                $this->serviceRepo->update(id: $serviceExists->id, data: $serviceArray);
-            } else {
-                $serviceArray['product_id'] = $id;
-                $this->serviceRepo->add($serviceArray);
+            if ($request->product_type === 'services') {
+                $existingService = $this->serviceRepo->getFirstWhere(['product_id' => $id]);
+                $this->assertUniqueServiceId($request->input('service_id'), $existingService?->id);
             }
 
-            ProductStockTransaction::deleteForProduct((int)$id);
-            ProductStock::where('product_id', $id)->delete();
-            ManageBranchProductStock::where('product_id', $id)->delete();
+            $responseData = DB::transaction(function () use ($request, $service, $id) {
+                $product = $this->productRepo->getFirstWhereWithoutGlobalScope(
+                    params: ['id' => $id],
+                    relations: ['digitalVariation', 'seoInfo']
+                );
+
+                $dataArray = $service->getUpdateProductData(request: $request, product: $product, updateBy: 'admin');
+                $serviceArray =  $this->serviceService->getUpdateServiceData(request: $request);
+
+                $this->updateProductAuthorAndPublishingHouse(request: $request, product: $product);
+
+                $this->productRepo->update(id: $id, data: $dataArray);
+                if ($request->product_type === 'services') {
+                    $serviceExists = $this->serviceRepo->getFirstWhere(['product_id' => $id]);
+
+                    if ($serviceExists) {
+                        $this->serviceRepo->update(id: $serviceExists->id, data: $serviceArray);
+                    } else {
+                        $serviceArray['product_id'] = $id;
+                        $this->serviceRepo->add($serviceArray);
+                    }
+
+                    ProductStockTransaction::deleteForProduct((int)$id);
+                    ProductStock::where('product_id', $id)->delete();
+                    ManageBranchProductStock::where('product_id', $id)->delete();
+                }
+
+                $this->productRepo->addRelatedTags(request: $request, product: $product);
+                $this->translationRepo->update(request: $request, model: 'App\Models\Product', id: $id);
+
+                self::getDigitalProductUpdateProcess($request, $product);
+
+                $this->productSeoRepo->updateOrInsert(
+                    params: ['product_id' => $product['id']],
+                    data: $service->getProductSEOData(request: $request, product: $product, action: 'update')
+                );
+
+                $updatedProduct = $this->productRepo->getFirstWhere(params: ['id' => $product['id']]);
+
+                $this->updateRestockRequestListAndNotify(product: $product, updatedProduct: $updatedProduct);
+                $this->updateStockClearanceProduct(product: $updatedProduct);
+
+                return [
+                    'message' => translate('product_updated_successfully'),
+                    'redirect_url' => route(Product::VIEW[ROUTE], ['addedBy' => $product['added_by'], 'id' => $product['id']]),
+                ];
+            });
+        } catch (ValidationException $exception) {
+            return $this->handleProductValidationFailure($request, $exception);
+        } catch (Throwable $exception) {
+            if ($convertedException = $this->resolvePersistenceValidationException($exception)) {
+                return $this->handleProductValidationFailure($request, $convertedException);
+            }
+
+            return $this->handleProductPersistenceFailure($request, $exception, 'update');
         }
 
-        $this->productRepo->addRelatedTags(request: $request, product: $product);
-        $this->translationRepo->update(request: $request, model: 'App\Models\Product', id: $id);
-
-        self::getDigitalProductUpdateProcess($request, $product);
-
-        $this->productSeoRepo->updateOrInsert(
-            params: ['product_id' => $product['id']],
-            data: $service->getProductSEOData(request: $request, product: $product, action: 'update')
-        );
-
-        $updatedProduct = $this->productRepo->getFirstWhere(params: ['id' => $product['id']]);
-
-        $this->updateRestockRequestListAndNotify(product: $product, updatedProduct: $updatedProduct);
-        $this->updateStockClearanceProduct(product: $updatedProduct);
-
-        $successMessage = translate('product_updated_successfully');
-        $redirectUrl = route(Product::VIEW[ROUTE], ['addedBy' => $product['added_by'], 'id' => $product['id']]);
-
-        Toastr::success($successMessage);
+        Toastr::success($responseData['message']);
 
         if ($request->ajax() || $request->expectsJson()) {
-            return response()->json([
-                'message' => $successMessage,
-                'redirect_url' => $redirectUrl,
+            return response()->json($responseData);
+        }
+
+        return redirect()->to($responseData['redirect_url']);
+    }
+
+    private function assertUniqueServiceId(mixed $serviceId, int|string|null $ignoreServiceRowId = null): void
+    {
+        if (!is_scalar($serviceId)) {
+            return;
+        }
+
+        $normalizedServiceId = trim((string) $serviceId);
+        if ($normalizedServiceId === '') {
+            return;
+        }
+
+        $existingService = $this->serviceRepo->getFirstWhere(['service_id' => $normalizedServiceId]);
+        if (!$existingService) {
+            return;
+        }
+
+        if ($ignoreServiceRowId !== null && (string) $existingService->id === (string) $ignoreServiceRowId) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'service_id' => trans('validation.unique', ['attribute' => translate('service_id')]),
+        ]);
+    }
+
+    private function resolvePersistenceValidationException(Throwable $exception): ?ValidationException
+    {
+        $exceptionMessage = $exception->getMessage();
+
+        if (
+            str_contains($exceptionMessage, 'services_service_id_unique')
+            || (str_contains($exceptionMessage, 'Duplicate entry') && str_contains($exceptionMessage, 'service_id'))
+        ) {
+            return ValidationException::withMessages([
+                'service_id' => trans('validation.unique', ['attribute' => translate('service_id')]),
             ]);
         }
 
-        return redirect()->to($redirectUrl);
+        return null;
+    }
+
+    private function handleProductValidationFailure(Request $request, ValidationException $exception): JsonResponse|RedirectResponse
+    {
+        $errors = collect($exception->errors())
+            ->flatMap(function (array $messages, string $field) {
+                return collect($messages)->map(fn(string $message) => [
+                    'error_code' => $field,
+                    'message' => $message,
+                ]);
+            })
+            ->values()
+            ->all();
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'errors' => $errors,
+            ], 422);
+        }
+
+        Toastr::error($errors[0]['message'] ?? translate('something_went_wrong'));
+
+        return redirect()->back()->withInput();
+    }
+
+    private function handleProductPersistenceFailure(Request $request, Throwable $exception, string $action): JsonResponse|RedirectResponse
+    {
+        Log::error('Product persistence failed', [
+            'action' => $action,
+            'product_id' => $request->route('id'),
+            'product_type' => $request->input('product_type'),
+            'category_id' => $request->input('category_id'),
+            'service_id' => $request->input('service_id'),
+            'code' => $request->input('code'),
+            'exception' => $exception,
+        ]);
+
+        $errorMessage = translate('something_went_wrong');
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'errors' => [
+                    [
+                        'error_code' => 'server',
+                        'message' => $errorMessage,
+                    ],
+                ],
+            ], 500);
+        }
+
+        Toastr::error($errorMessage);
+
+        return redirect()->back()->withInput();
     }
 
 

@@ -76,10 +76,7 @@ class WholeSaleProductController extends BaseController
 
         $dataArray = $service->getAddData(request: $request);
         $product = Product::query()->findOrFail($dataArray['product_id']);
-        $existsQuery = WholeSaleProducts::where([
-            'product_id' => $dataArray['product_id'],
-            'status'     => 0
-        ]);
+        $existsQuery = WholeSaleProducts::query()->where('product_id', $dataArray['product_id']);
 
         $variationType = trim((string)($dataArray['variation_type'] ?? ''));
         $variationKey = trim((string)($dataArray['variation_key'] ?? ''));
@@ -112,7 +109,7 @@ class WholeSaleProductController extends BaseController
 
         if ($existsQuery->exists()) {
             return response()->json([
-                'error' => translate('This product with selected variation already exists in wholesale stock!')
+                'error' => translate('wholesale_product_variation_already_exists')
             ], 422);
         }
 
@@ -142,7 +139,7 @@ class WholeSaleProductController extends BaseController
         }
 
         return response()->json([
-            'message' => translate('Product added to wholesale successfully!')
+            'message' => translate('wholesale_product_added_successfully')
         ]);
     }
 
@@ -314,7 +311,7 @@ class WholeSaleProductController extends BaseController
         $product->status = !$product->status;
         $product->save();
 
-        return response()->json(['message' => 'status updated successfully.']);
+        return response()->json(['message' => translate('status_updated_successfully')]);
     }
 
     public function getVariationsWithPrice($id)

@@ -1452,9 +1452,47 @@ $(".reset-button").on("click", function () {
 });
 
 $(".form-submit").on("click", function () {
+    const triggerButton = $(this);
     let getText = $("#get-confirm-and-cancel-button-text");
     let targetUrl = $(this).data("redirect-route");
     const getFormId = $(this).data("form-id");
+    const showRequestErrors = function (response, fallbackMessage = null) {
+        if (Array.isArray(response?.errors) && response.errors.length > 0) {
+            response.errors.forEach(function (error) {
+                toastr.error(error.message || error, {
+                    CloseButton: true,
+                    ProgressBar: true,
+                });
+            });
+
+            return true;
+        }
+
+        if (response?.errors && typeof response.errors === "object") {
+            Object.values(response.errors)
+                .flat()
+                .forEach(function (error) {
+                    toastr.error(error, {
+                        CloseButton: true,
+                        ProgressBar: true,
+                    });
+                });
+
+            return true;
+        }
+
+        if (response?.error || fallbackMessage) {
+            toastr.error(response.error || fallbackMessage, {
+                CloseButton: true,
+                ProgressBar: true,
+            });
+
+            return true;
+        }
+
+        return false;
+    };
+
     Swal.fire({
         title: getText.data("sure"),
         text: $(this).data("message"),
@@ -1467,6 +1505,12 @@ $(".form-submit").on("click", function () {
         reverseButtons: true,
     }).then((result) => {
         if (result.value) {
+            if (triggerButton.prop("disabled")) {
+                return;
+            }
+
+            triggerButton.prop("disabled", true);
+
             let formData = new FormData(document.getElementById(getFormId));
             $.ajaxSetup({
                 headers: {
@@ -1484,23 +1528,11 @@ $(".form-submit").on("click", function () {
                     $("#loading").fadeIn();
                 },
                 success: function (data) {
-                    if (data.errors) {
-                        for (
-                            let index = 0;
-                            index < data.errors.length;
-                            index++
-                        ) {
-                            toastr.error(data.errors[index].message, {
-                                CloseButton: true,
-                                ProgressBar: true,
-                            });
-                        }
-                    } else if (data.error) {
-                        toastr.error(data.error, {
-                            CloseButton: true,
-                            ProgressBar: true,
-                        });
-                    } else {
+                    if (showRequestErrors(data)) {
+                        return;
+                    }
+
+                    if (data.message) {
                         toastr.success(data.message);
                         if (targetUrl) {
                             location.href = targetUrl;
@@ -1509,7 +1541,20 @@ $(".form-submit").on("click", function () {
                         }
                     }
                 },
+                error: function (xhr) {
+                    if (
+                        showRequestErrors(
+                            xhr.responseJSON || {},
+                            xhr.responseJSON?.message ||
+                                $("#message-something-went-wrong").data("text") ||
+                                "Something went wrong."
+                        )
+                    ) {
+                        return;
+                    }
+                },
                 complete: function () {
+                    triggerButton.prop("disabled", false);
                     $("#loading").fadeOut();
                 },
             });

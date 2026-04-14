@@ -1542,6 +1542,7 @@
     <span id="message-product-description-in-english-required"
         data-text="{{ translate('The_description_in_english_is_required') }}"></span>
     <span id="message-valid-video-url" data-text="{{ translate('please_enter_a_valid_video_url') }}"></span>
+    <span id="message-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
     <span id="message-discount-will-not-larger-then-variant-price"
         data-text="{{ translate('the_discount_price_will_not_larger_then_Variant_Price') }}"></span>
     <span id="system-currency-code" data-value="{{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}"></span>

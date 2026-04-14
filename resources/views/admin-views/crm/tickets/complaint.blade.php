@@ -121,6 +121,7 @@
                     @foreach($tickets as $key => $ticket)
                     @php
                     $priorityClass = '';
+                    $statusName = strtolower(trim((string) ($ticket->status_details?->name ?? '')));
                     $statusClass = '';
 
                     switch(strtolower($ticket->priority)) {
@@ -131,32 +132,33 @@
                     default: $priorityClass='badge-soft-dark'; break;
                     }
 
-                    switch ($ticket->status ?? 0) {
-                    case 36: // new
+                    switch ($statusName) {
+                    case 'new':
                     $statusClass = 'badge-soft-primary';
                     break;
 
-                    case 37: // open
+                    case 'open':
                     $statusClass = 'badge-soft-info';
                     break;
 
-                    case 38: // assigned
+                    case 'assigned':
                     $statusClass = 'badge-soft-success';
                     break;
 
-                    case 39: // triage
-                    $statusClass = 'badge-soft-secondary';
-                    break;
-
-                    case 40: // inprogress
+                    case 'in progress':
+                    case 'in_progress':
                     $statusClass = 'badge-soft-warning';
                     break;
 
-                    case 41: // resolved
+                    case 'waiting':
+                    $statusClass = 'badge-soft-secondary';
+                    break;
+
+                    case 'resolved':
                     $statusClass = 'badge-soft-success';
                     break;
 
-                    case 42: // closed
+                    case 'closed':
                     $statusClass = 'badge-soft-dark';
                     break;
 
@@ -184,9 +186,6 @@
                         <td><span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span></td>
                         <td><span class="badge {{ $statusClass }}">{{ \App\Utils\crm_status_label($ticket->status_details?->getTranslatedField('name') ?? $ticket->status_details?->name ?? $ticket->status, 'N/A') }}</span></td>
                         <td><span class="bidi-ltr d-inline-block">{{ $ticket->created_at->format('d M, Y H:i') }}</span></td>
-                        @php
-                        $statusName = strtolower($ticket->status_details?->name);
-                        @endphp
                         <td class="text-center">
                             <div class="crm-row-actions">
                                 <div class="crm-row-actions__primary">

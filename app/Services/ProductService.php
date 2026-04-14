@@ -74,6 +74,61 @@ class ProductService
         }
     }
 
+    private function extractProvidedProductCode(mixed $value): ?string
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $normalizedValue = trim((string) $value);
+
+        return $normalizedValue !== '' ? $normalizedValue : null;
+    }
+
+    private function sanitizeProductCodeSeed(mixed $value): string
+    {
+        if (!is_scalar($value)) {
+            return '';
+        }
+
+        return strtoupper(substr(
+            preg_replace('/[^A-Za-z0-9]/', '', trim((string) $value)) ?? '',
+            0,
+            12
+        ));
+    }
+
+    private function resolveProductCode(object $request, ?string $existingCode = null): ?string
+    {
+        $providedCode = $this->extractProvidedProductCode($request['code'] ?? null);
+        if ($providedCode !== null) {
+            return $providedCode;
+        }
+
+        $persistedCode = $this->extractProvidedProductCode($existingCode);
+        if ($persistedCode !== null) {
+            return $persistedCode;
+        }
+
+        if (($request['product_type'] ?? null) !== 'services') {
+            return null;
+        }
+
+        $seed = $this->sanitizeProductCodeSeed($request->input('service_id'));
+        if ($seed === '') {
+            $defaultLangIndex = $this->getDefaultLangIndex($request);
+            $seed = $this->sanitizeProductCodeSeed($request['name'][$defaultLangIndex] ?? null);
+        }
+
+        if ($seed === '') {
+            $seed = 'SRV';
+        }
+
+        $randomSuffix = strtoupper(Str::random(max(6, 20 - strlen($seed))));
+
+        return substr($seed . $randomSuffix, 0, 20);
+    }
+
     public function getProcessedImages(object $request): array
     {
         $colorImageSerial = [];
@@ -478,7 +533,7 @@ class ProductService
             'added_by' => $addedBy,
             'user_id' => $addedBy == 'admin' ? auth('admin')->id() : auth('seller')->id(),
             'name' => $request['name'][$langIndex],
-            'code' => $request['code'],
+            'code' => $this->resolveProductCode($request),
             'slug' => $this->getSlug($request),
             'category_ids' => json_encode($this->getCategoriesArray(request: $request)),
             'branch_id' => $request['branch_id'],
@@ -590,7 +645,7 @@ class ProductService
             Reason : for product branch */
         $dataArray = [
             'name' => $request['name'][$langIndex],
-            'code' => $request['code'],
+            'code' => $this->resolveProductCode($request, $product['code'] ?? null),
             'product_type' => $request['product_type'],
             'category_ids' => json_encode($this->getCategoriesArray(request: $request)),
             'branch_id' => $request['branch_id'],

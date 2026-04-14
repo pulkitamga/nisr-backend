@@ -125,13 +125,129 @@ class WholesaleAdminWorkflowTest extends TestCase
 
         $response->assertOk()
             ->assertJson([
-                'message' => translate('Product added to wholesale successfully!'),
+                'message' => translate('wholesale_product_added_successfully'),
             ]);
 
         $this->assertDatabaseHas('wholesale_products', [
             'product_id' => $productId,
             'tax' => '14.00',
         ]);
+    }
+
+    public function test_duplicate_wholesale_product_add_returns_json_error(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.product_add',
+        ]);
+
+        $this->createWholesaleTier('gold', 1);
+        $categoryId = $this->createCategory();
+        $subCategoryId = $this->createCategory($categoryId);
+        $productId = $this->createProduct();
+
+        $this->createWholesaleProduct($productId, $categoryId, $subCategoryId, [
+            'status' => 0,
+            'variation_type' => 'Default',
+            'variation_key' => 'variant:Default',
+        ]);
+
+        $response = $this->post(route('admin.wholesale.product.add.store'), [
+            'category_id' => $categoryId,
+            'sub_category_id' => $subCategoryId,
+            'product_id' => $productId,
+            'variation_type' => 'Default',
+            'variation_key' => 'variant:Default',
+            'tax' => '14',
+            'tier' => ['gold'],
+            'min_qty' => [1],
+            'max_qty' => [10],
+            'unit_price' => [100],
+            'discount' => [0],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJson([
+                'error' => translate('wholesale_product_variation_already_exists'),
+            ]);
+    }
+
+    public function test_authorized_admin_can_update_wholesale_product_tax_and_ranges(): void
+    {
+        $this->signInWholesaleAdmin([
+            'wholesaler_section.access',
+            'wholesaler_section.product_edit',
+        ]);
+
+        $this->createWholesaleTier('gold', 1);
+        $this->createWholesaleTier('silver', 2);
+        $categoryId = $this->createCategory();
+        $subCategoryId = $this->createCategory($categoryId);
+        $productId = $this->createProduct();
+        $wholesaleProductId = $this->createWholesaleProduct($productId, $categoryId, $subCategoryId, [
+            'tax' => '14.00',
+        ]);
+
+        DB::table('wholesale_price_ranges')->insert([
+            'wholesale_id' => $wholesaleProductId,
+            'tier' => 'gold',
+            'min_qty' => 1,
+            'max_qty' => 5,
+            'price_per_piece' => 100,
+            'discount' => 0,
+            'status' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->from(route('admin.wholesale.product.edit', ['product_id' => $wholesaleProductId]))
+            ->post(route('admin.wholesale.product.update', $wholesaleProductId), [
+                'primary_id' => $wholesaleProductId,
+                'tax' => '7.5',
+                'tier' => ['gold', 'silver'],
+                'min_qty' => [1, 11],
+                'max_qty' => [10, 20],
+                'discount' => [10, 20],
+            ]);
+
+        $response->assertRedirect(route('admin.wholesale.product.edit', ['product_id' => $wholesaleProductId]));
+
+        $this->assertDatabaseHas('wholesale_products', [
+            'id' => $wholesaleProductId,
+            'tax' => '7.50',
+        ]);
+
+        $this->assertDatabaseHas('wholesale_price_ranges', [
+            'wholesale_id' => $wholesaleProductId,
+            'tier' => 'gold',
+            'min_qty' => 1,
+            'max_qty' => 10,
+            'price_per_piece' => 90,
+            'discount' => 10,
+            'status' => 0,
+        ]);
+
+        $this->assertDatabaseHas('wholesale_price_ranges', [
+            'wholesale_id' => $wholesaleProductId,
+            'tier' => 'silver',
+            'min_qty' => 11,
+            'max_qty' => 20,
+            'price_per_piece' => 80,
+            'discount' => 20,
+            'status' => 0,
+        ]);
+
+        $softDeletedRange = DB::table('wholesale_price_ranges')
+            ->where('wholesale_id', $wholesaleProductId)
+            ->where('tier', 'gold')
+            ->where('min_qty', 1)
+            ->where('max_qty', 5)
+            ->where('price_per_piece', 100)
+            ->where('discount', 0)
+            ->first();
+
+        $this->assertNotNull($softDeletedRange);
+        $this->assertNotNull($softDeletedRange->deleted_at);
     }
 
     public function test_authorized_admin_can_view_tax_input_on_wholesale_product_edit_page(): void
