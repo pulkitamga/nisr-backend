@@ -154,7 +154,7 @@ class ProductAddRequest extends Request
             'labor_hours' => 'required_if:product_type,services|numeric|min:0',
         ];
 
-        if (!isset($this['existing_thumbnail'])) {
+        if (!isset($this['existing_thumbnail']) && ($this['product_type'] ?? '') !== 'services') {
             $rules['image'] = 'required';
         }
 
@@ -185,7 +185,7 @@ class ProductAddRequest extends Request
     {
         return [
             function (Validator $validator) {
-                if (!$this->has('colors_active') && !$this->file('images') && !$this->has('existing_images')) {
+                if (($this['product_type'] ?? '') !== 'services' && !$this->has('colors_active') && !$this->file('images') && !$this->has('existing_images')) {
                     $validator->errors()->add(
                         'images',
                         translate('product_images_is_required') . '!'

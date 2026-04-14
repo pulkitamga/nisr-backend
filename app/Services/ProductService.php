@@ -53,11 +53,25 @@ class ProductService
         }
 
         $serviceDescription = $request->input('service_description');
-        if (!is_array($serviceDescription) || !method_exists($request, 'merge')) {
+        $serviceTitle = $request->input('service_tittle');
+
+        if (!method_exists($request, 'merge')) {
             return;
         }
 
-        $request->merge(['description' => $serviceDescription]);
+        $mergeData = [];
+
+        if (is_array($serviceDescription)) {
+            $mergeData['description'] = $serviceDescription;
+        }
+
+        if (is_array($serviceTitle)) {
+            $mergeData['name'] = $serviceTitle;
+        }
+
+        if ($mergeData !== []) {
+            $request->merge($mergeData);
+        }
     }
 
     public function getProcessedImages(object $request): array

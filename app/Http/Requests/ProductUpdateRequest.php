@@ -187,7 +187,7 @@ class ProductUpdateRequest extends FormRequest
                 $product = $this->productRepo->getFirstWhere(params: ['id' => $this->route('id')], relations: ['digitalVariation']);
                 $productImages = json_decode($product['images']);
 
-                if (!$this->has('colors_active') && !$this->file('images') && empty($productImages)) {
+                if (($this['product_type'] ?? '') !== 'services' && !$this->has('colors_active') && !$this->file('images') && empty($productImages)) {
                     $validator->errors()->add(
                         'images',
                         translate('product_images_is_required') . '!'
