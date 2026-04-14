@@ -10418,6 +10418,7 @@ return [
 	"The_selected_category_id_is_invalid" => "The selected category id is invalid",
 	"The_publish_date_is_not_a_valid_date" => "The publish date is not a valid date",
 	"The_title_in_english_is_required" => "The title in english is required",
+	"The_duration_in_english_is_required" => "The duration in english is required",
 	"The_description_in_english_is_required" => "The description in english is required",
 	"The_question_in_english_is_required" => "The question in english is required",
 	"The_answer_in_english_is_required" => "The answer in english is required",

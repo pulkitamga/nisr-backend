@@ -10066,6 +10066,7 @@ return [
 	"The_selected_category_id_is_invalid" => "معرف الفئة المحدد غير صالح",
 	"The_publish_date_is_not_a_valid_date" => "تاريخ النشر غير صالح",
 	"The_title_in_english_is_required" => "العنوان باللغة الإنجليزية مطلوب",
+	"The_duration_in_english_is_required" => "المدة باللغة الإنجليزية مطلوبة",
 	"The_description_in_english_is_required" => "الوصف باللغة الإنجليزية مطلوب",
 	"The_question_in_english_is_required" => "السؤال باللغة الإنجليزية مطلوب",
 	"The_answer_in_english_is_required" => "الإجابة باللغة الإنجليزية مطلوبة",

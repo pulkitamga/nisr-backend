@@ -175,7 +175,7 @@
                                     @forelse($cities as $key => $city)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $city->state->getTranslatedField('name') }}</td>
+                                            <td>{{ $city->state?->getTranslatedField('name') ?? '-' }}</td>
                                             <td>{{ $city->getTranslatedField('name') }}</td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
@@ -265,7 +265,7 @@
                                     @forelse($areas as $key => $area)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $area->city->getTranslatedField('name') ?? '-' }}</td>
+                                            <td>{{ $area->city?->getTranslatedField('name') ?? '-' }}</td>
                                             <td>{{ $area->getTranslatedField('name') }}</td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">

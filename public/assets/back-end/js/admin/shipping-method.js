@@ -9,6 +9,26 @@ $(document).ready(function () {
     if(iStateId != 0){
         fFetchStatesCities(iStateId, iCityId)
     }
+
+    const shippingMethodCreateForm = document.getElementById('shipping-method-create-form');
+    if (shippingMethodCreateForm) {
+        const multilingualRequiredFields = shippingMethodCreateForm.querySelectorAll(
+            '.form-system-language-form input[required], .form-system-language-form textarea[required], .form-system-language-form select[required]'
+        );
+
+        multilingualRequiredFields.forEach((field) => {
+            field.addEventListener('invalid', () => {
+                const languageForm = field.closest('.form-system-language-form');
+                if (!languageForm || !languageForm.classList.contains('d-none')) {
+                    return;
+                }
+
+                const language = languageForm.dataset.language;
+                const languageTab = shippingMethodCreateForm.querySelector(`.form-system-language-tab[data-language="${language}"]`);
+                languageTab?.click();
+            }, true);
+        });
+    }
 });
 function shippingType(shippingTypeValue){
     if (shippingTypeValue === 'category_wise') {

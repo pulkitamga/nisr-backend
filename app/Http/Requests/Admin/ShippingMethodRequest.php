@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests\Admin;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Traits\ValidatesEnglishMultilingualInput;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShippingMethodRequest extends FormRequest
 {
+    use ValidatesEnglishMultilingualInput;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -17,10 +19,15 @@ class ShippingMethodRequest extends FormRequest
 
     public function rules():array
     {
+        $englishTitleKey = $this->getEnglishFieldKey('title');
+        $englishDurationKey = $this->getEnglishFieldKey('duration');
+
         return [
-            'title' => 'required|max:200',
-            'duration' => 'required',
-            'cost' => 'numeric'
+            'title' => 'required|array',
+            'duration' => 'required|array',
+            'cost' => 'numeric',
+            $englishTitleKey => 'required|string|max:200',
+            $englishDurationKey => 'required|string',
         ];
     }
     /**
@@ -32,7 +39,9 @@ class ShippingMethodRequest extends FormRequest
         return [
             'title.required'=>translate('the_title_field_is_required'),
             'duration.required'=>translate('the_duration_field_is_required'),
-            'cost.numeric'=>translate('the_cost_must_be_a_number')
+            'cost.numeric'=>translate('the_cost_must_be_a_number'),
+            $this->getEnglishFieldKey('title') . '.required' => translate('The_title_in_english_is_required'),
+            $this->getEnglishFieldKey('duration') . '.required' => translate('The_duration_in_english_is_required'),
         ];
     }
 }

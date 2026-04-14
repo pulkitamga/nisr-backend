@@ -6,6 +6,7 @@ use App\Http\Requests\Admin\BrandAddRequest;
 use App\Http\Requests\Admin\BranchAddRequest;
 use App\Http\Requests\Admin\CategoryAddRequest;
 use App\Http\Requests\Admin\HelpTopicAddRequest;
+use App\Http\Requests\Admin\ShippingMethodRequest;
 use App\Http\Requests\Admin\SubCategoryAddRequest;
 use App\Http\Requests\Admin\WholesalerRegistrationReasonRequest;
 use App\Services\BranchService;
@@ -198,6 +199,28 @@ class AdminEnglishMultilingualValidationTest extends TestCase
         $this->assertSame(
             translate('The_title_in_english_is_required'),
             $validator->errors()->first('title.1')
+        );
+    }
+
+    public function test_shipping_method_request_requires_english_title_and_duration_even_when_english_is_second(): void
+    {
+        $request = ShippingMethodRequest::create('/admin/business-settings/shipping-method/index', 'POST', [
+            'lang' => ['ar', 'en'],
+            'title' => ['شحن', ''],
+            'duration' => ['2-3 أيام', ''],
+            'cost' => '90',
+        ]);
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            translate('The_title_in_english_is_required'),
+            $validator->errors()->first('title.1')
+        );
+        $this->assertSame(
+            translate('The_duration_in_english_is_required'),
+            $validator->errors()->first('duration.1')
         );
     }
 

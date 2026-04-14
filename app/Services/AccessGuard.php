@@ -288,15 +288,37 @@ class AccessGuard
         $command = $this->currentConsoleCommand();
         $mode = $this->app->runningInConsole() ? 'console' : 'http';
         $host = $mode === 'http' ? $this->normalizeHost((string) $this->request->getHost()) : $this->resolveConsoleHost();
-        $ip = $mode === 'http' ? $this->normalizeIp((string) $this->request->ip()) : $this->resolveConsoleIp($host);
+        $requestIp = $mode === 'http' ? $this->normalizeIp((string) $this->request->ip()) : null;
+        $ip = $mode === 'http' ? $this->resolveHttpIp() : $this->resolveConsoleIp($host);
 
         return [
             'mode' => $mode,
             'command' => $command,
             'host' => $host,
             'ip' => $ip,
+            'request_ip' => $requestIp,
             'path' => $mode === 'http' ? $this->request->path() : null,
         ];
+    }
+
+    private function resolveHttpIp(): string
+    {
+        $candidates = [
+            (string) $this->config->get('access.runtime_ip', ''),
+            (string) env('APP_RUNTIME_IP', ''),
+            (string) $this->request->server('SERVER_ADDR', ''),
+            (string) $this->request->server('LOCAL_ADDR', ''),
+        ];
+
+        foreach ($candidates as $candidate) {
+            $ip = $this->normalizeIp($candidate);
+
+            if ($ip !== '') {
+                return $ip;
+            }
+        }
+
+        return $this->normalizeIp((string) $this->request->ip());
     }
 
     private function resolveConsoleHost(): string
@@ -580,6 +602,7 @@ class AccessGuard
             'command' => $context['command'] ?? null,
             'host' => $context['host'] ?? null,
             'ip' => $context['ip'] ?? null,
+            'request_ip' => $context['request_ip'] ?? null,
             'path' => $context['path'] ?? null,
         ], static fn ($value) => $value !== null && $value !== ''));
 

@@ -233,7 +233,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form action="{{route('admin.business-settings.shipping-method.index')}}" method="post">
+                <form action="{{route('admin.business-settings.shipping-method.index')}}" method="post" id="shipping-method-create-form">
                     @csrf
                     <div class="row">
                         <div class="col-xl-4 col-md-6">
@@ -245,27 +245,32 @@
                             <ul class="nav nav-tabs w-fit-content mb-2">
                                 @foreach($language as $lang)
                                     <li class="nav-item text-capitalize">
-                                        <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}" id="{{$lang}}-link">
+                                        <span class="nav-link form-system-language-tab cursor-pointer {{ $lang == $activeLanguage ? 'active' : '' }}"
+                                            id="{{$lang}}-shipping-method-link" data-language="{{$lang}}">
                                             {{ucfirst(getLanguageName($lang)).'('.strtoupper($lang).')'}}
                                         </span>
                                     </li>
                                 @endforeach
                             </ul>
                             @foreach($language as $lang)
-                                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
-                                    <label class="title-color d-flex">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form"
+                                    id="shipping-method-title-{{$lang}}-form" data-language="{{$lang}}">
+                                    <label class="title-color d-flex" for="shipping-method-title-{{$lang}}">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
                                     <input type="text" name="title[]" class="form-control"
-                                        placeholder="{{translate('title')}}" required>
+                                        id="shipping-method-title-{{$lang}}"
+                                        placeholder="{{translate('title')}}" {{ $lang === getSaveLanguage() ? 'required' : '' }}>
                                 </div>
                                 <input type="hidden" name="lang[]" value="{{$lang}}">
                             @endforeach
                         </div>
                         <div class="col-xl-4 col-md-6">
                             @foreach($language as $lang)
-                                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
-                                    <label class="title-color d-flex">{{ translate('duration') }} ({{ strtoupper($lang) }})</label>
+                                <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form"
+                                    id="shipping-method-duration-{{$lang}}-form" data-language="{{$lang}}">
+                                    <label class="title-color d-flex" for="shipping-method-duration-{{$lang}}">{{ translate('duration') }} ({{ strtoupper($lang) }})</label>
                                     <input type="text" name="duration[]" class="form-control"
-                                        placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}" required>
+                                        id="shipping-method-duration-{{$lang}}"
+                                        placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}" {{ $lang === getSaveLanguage() ? 'required' : '' }}>
                                 </div>
                             @endforeach
                         </div>

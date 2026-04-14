@@ -94,6 +94,24 @@ class AccessGuardTest extends TestCase
         $this->assertTrue(app(AccessGuard::class)->validate());
     }
 
+    public function test_it_prefers_configured_runtime_ip_over_request_ip_for_http_validation(): void
+    {
+        config()->set('access.runtime_ip', '203.0.113.10');
+
+        file_put_contents($this->stateFile, $this->issueState([
+            'v' => 1,
+            'p' => 'alnisr-test',
+            'hosts' => ['example.com'],
+            'ips' => ['203.0.113.10'],
+            'nbf' => time() - 60,
+            'exp' => time() + 3600,
+        ]));
+
+        $this->bindRequest('https://example.com/admin', '198.51.100.25');
+
+        $this->assertTrue(app(AccessGuard::class)->validate());
+    }
+
     public function test_it_rejects_build_or_customer_marker_mismatch_when_build_meta_exists(): void
     {
         file_put_contents($this->buildMetaFile, <<<PHP
