@@ -41,7 +41,7 @@ class ConfigController extends Controller
             $languageArray[] = [
                 'code' => $language,
                 'name' => getLanguageName($language),
-                'country_code' => $languageItem['country_code'] ?? $language,
+                'country_code' => getLanguageCountryCode(is_array($languageItem) ? $languageItem : ['code' => $language]),
             ];
         }
 
@@ -115,6 +115,10 @@ class ConfigController extends Controller
         $systemColors = getWebConfig('colors');
 
         $deliveryRestriction = $this->cacheDeliveryRestrictionSetup();
+        $businessMode = getWebConfig(name: 'business_mode');
+        if (!in_array($businessMode, ['single', 'multi', 'single_vendor', 'multi_vendor'], true)) {
+            $businessMode = 'single';
+        }
 
         return response()->json([
             'primary_color' => $systemColors['primary'],
@@ -175,7 +179,7 @@ class ConfigController extends Controller
             'shipping_policy' => getBusinessPolicyConfig('shipping-policy'),
             'currency_list' => $this->cacheCurrencyTable(),
             'currency_symbol_position' => getWebConfig(name: 'currency_symbol_position') ?? 'right',
-            'business_mode' => getWebConfig(name: 'business_mode'),
+            'business_mode' => $businessMode,
             'language' => $languageArray,
             'colors' => $this->cacheColorsList(),
             'unit' => Helpers::units(),

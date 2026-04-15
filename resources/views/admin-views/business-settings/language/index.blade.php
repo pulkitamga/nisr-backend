@@ -64,7 +64,7 @@
                                     <td>{{$data['name']}} ({{$data['direction']??'ltr'}})
                                     </td>
                                     <td>{{strtoupper($data['code'])}}</td>
-                                    <td>{{strtoupper($data['country_code'] ?? $data['code'])}}</td>
+                                    <td>{{strtoupper(getLanguageCountryCode($data))}}</td>
                                     <td>
                                         @if (array_key_exists('default', $data) && $data['default'])
                                             <label class="switcher mx-auto" id="default-language-status-alert"
@@ -265,7 +265,7 @@
                                             <select class="form-control select-country w-100" name="country_code">
                                                 @foreach(File::files(base_path('public/assets/front-end/img/flags')) as $path)
                                                     <option value="{{ pathinfo($path)['filename'] }}"
-                                                            {{ strtolower($data['country_code'] ?? $data['code']) == strtolower(pathinfo($path)['filename']) ? 'selected' : '' }}
+                                                            {{ getLanguageCountryCode($data) == strtolower(pathinfo($path)['filename']) ? 'selected' : '' }}
                                                             title="{{ dynamicAsset(path: 'public/assets/front-end/img/flags/'.strtolower(pathinfo($path)['filename']).'.png') }}">
                                                         {{ strtoupper(pathinfo($path)['filename']) }}
                                                     </option>
@@ -306,4 +306,3 @@
 @push('script')
     <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/business-setting/language.js')}}"></script>
 @endpush
-

@@ -3,13 +3,14 @@ importScripts('https://www.gstatic.com/firebasejs/8.3.2/firebase-messaging.js');
 importScripts('https://www.gstatic.com/firebasejs/8.3.2/firebase-auth.js');
 
 firebase.initializeApp({
-    apiKey: "AIzaSyDtOpInxjGIj2cb9QMjb2atPY9BVVxTHcU",
-    authDomain: "buiobites.firebaseapp.com",
-    projectId: "buiobites",
-    storageBucket: "buiobites.firebasestorage.app",
-    messagingSenderId: "1039474110878",
-    appId: "1:1039474110878:web:282cf8e806c29509e2a68f",
-    measurementId: "G-9RKBHLSSMS"
+    apiKey: "AIzaSyAb8UDuBj-90yKfQfayLSSTK90xqYzPPPo",
+    authDomain: "elnisr-7dfb0.firebaseapp.com",
+    databaseURL: "https://elnisr-7dfb0-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "elnisr-7dfb0",
+    storageBucket: "elnisr-7dfb0.firebasestorage.app",
+    messagingSenderId: "786488962854",
+    appId: "1:786488962854:web:83afe734c6ec8a14b91be7",
+    measurementId: "G-MNLG9BRV5N"
 });
 
 const messaging = firebase.messaging();

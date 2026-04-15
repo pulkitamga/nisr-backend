@@ -45,9 +45,75 @@ class ShippingAjaxControllerTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('states', function (Blueprint $table) {
+            $table->id();
+            $table->string('country')->nullable();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('cities', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('state_id');
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Route::middleware('web')
+            ->get('/get-states', [ShippingAjaxController::class, 'getStates'])
+            ->name('get.states');
+        Route::middleware('web')
+            ->get('/get-cities', [ShippingAjaxController::class, 'getCities'])
+            ->name('get.cities');
         Route::middleware('web')
             ->get('/get-areas', [ShippingAjaxController::class, 'getAreas'])
             ->name('get.areas');
+    }
+
+    public function test_get_states_returns_all_states_from_business_settings_for_the_selected_country(): void
+    {
+        DB::table('states')->insert([
+            ['id' => 10, 'country' => 'EG', 'name' => 'Alexandria'],
+            ['id' => 11, 'country' => 'EG', 'name' => 'Greater Cairo'],
+            ['id' => 12, 'country' => 'SA', 'name' => 'Riyadh'],
+        ]);
+
+        $response = $this->getJson(route('get.states', ['country' => 'EG']));
+
+        $response->assertOk()
+            ->assertJson([
+                'states' => [
+                    ['id' => 10, 'name' => 'Alexandria'],
+                    ['id' => 11, 'name' => 'Greater Cairo'],
+                ],
+            ])
+            ->assertJsonMissing([
+                'id' => 12,
+                'name' => 'Riyadh',
+            ]);
+    }
+
+    public function test_get_cities_returns_all_cities_from_business_settings_for_the_selected_state(): void
+    {
+        DB::table('cities')->insert([
+            ['id' => 20, 'state_id' => 10, 'name' => 'Alexandria'],
+            ['id' => 21, 'state_id' => 10, 'name' => 'Borg El Arab'],
+            ['id' => 22, 'state_id' => 11, 'name' => '6th of October'],
+        ]);
+
+        $response = $this->getJson(route('get.cities', ['state_id' => 10]));
+
+        $response->assertOk()
+            ->assertJson([
+                'cities' => [
+                    ['id' => 20, 'name' => 'Alexandria'],
+                    ['id' => 21, 'name' => 'Borg El Arab'],
+                ],
+            ])
+            ->assertJsonMissing([
+                'id' => 22,
+                'name' => '6th of October',
+            ]);
     }
 
     public function test_get_areas_returns_all_admin_defined_areas_for_the_selected_city(): void

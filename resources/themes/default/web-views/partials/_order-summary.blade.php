@@ -146,7 +146,7 @@
                 </span>
             </div>
         </div>
-        @php($company_reliability = getWebConfig(name: 'company_reliability'))
+        @php($company_reliability = getCompanyReliabilityWithTranslations(function_exists('getActiveTranslationLocale') ? getActiveTranslationLocale() : getDefaultLanguage()))
         @if($company_reliability != null)
         <div class="pt-5">
             <div class="footer-slider owl-theme owl-carousel">
@@ -155,7 +155,7 @@
                 <div class="">
                     <img class="order-summery-footer-image" alt=""
                         src="{{ getStorageImages(path: imagePathProcessing(imageData: $value['image'],path:'company-reliability'), type: 'source', source: theme_asset(path: 'public/assets/front-end/img').'/'.$value['item'].'.png') }}">
-                    <div class="deal-title">{{translate($value['title'])}}</div>
+                    <div class="deal-title">{{ $value['title'] }}</div>
                 </div>
                 @endif
                 @endforeach

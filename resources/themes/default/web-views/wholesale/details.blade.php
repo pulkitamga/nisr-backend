@@ -491,7 +491,7 @@
                 </div>
             </div>
             <div class="col-lg-3">
-                @php($companyReliability = getWebConfig('company_reliability'))
+                @php($companyReliability = getCompanyReliabilityWithTranslations(function_exists('getActiveTranslationLocale') ? getActiveTranslationLocale() : getDefaultLanguage()))
                 @if($companyReliability != null)
                 <div class="product-details-shipping-details">
                     @foreach ($companyReliability as $key=>$value)
@@ -501,7 +501,7 @@
                             <img class="float-end me-2 __img-20"
                                 src="{{ getStorageImages(path: imagePathProcessing(imageData: $value['image'],path: 'company-reliability'), type: 'source', source: 'public/assets/front-end/img'.'/'.$value['item'].'.png') }}"
                                 alt="">
-                            <span>{{translate($value['title'])}}</span>
+                            <span>{{ $value['title'] }}</span>
                         </div>
                     </div>
                     @endif

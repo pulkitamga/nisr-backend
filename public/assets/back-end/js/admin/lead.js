@@ -149,11 +149,12 @@ function initializeLeadAssignments() {
     $(document).on('click.leadModule', '.assign-owner-btn', function () {
         const ticketId = $(this).data('id');
         const ownerId = $(this).data('owner-id') || $(this).closest('tr').data('owner-id') || '';
+        const departmentId = $(this).data('department-id') || '';
         const $form = $('#updateTicketOwnerForm');
 
         $form.find('#owner_ticket_id').val(ticketId);
         $form.find('#owner-employee-id').empty().append(`<option value="">${leadUiText.selectSupervisor}</option>`);
-        loadOwners('', ownerId);
+        loadOwners(departmentId, ownerId);
 
         $('#showOwnerModal').modal('show');
     });

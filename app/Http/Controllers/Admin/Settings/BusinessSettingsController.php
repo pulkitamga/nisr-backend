@@ -82,7 +82,7 @@ class BusinessSettingsController extends BaseController
             'system_default_currency' => $this->getSettings(object: $web, type: 'system_default_currency')->value ?? '',
             'currency_symbol_position' => $this->getSettings(object: $web, type: 'currency_symbol_position')->value ?? '',
             'currency_symbol_space' => $this->getSettings(object: $web, type: 'currency_symbol_space')->value ?? '0',
-            'business_mode' => $this->getSettings(object: $web, type: 'business_mode')->value ?? '',
+            'business_mode' => getWebConfig(name: 'business_mode') ?? 'single',
             'email_verification' => $this->getSettings(object: $web, type: 'email_verification')->value ?? '',
             'otp_verification' => $this->getSettings(object: $web, type: 'otp_verification')->value ?? '',
             'guest_checkout' => $this->getSettings(object: $web, type: 'guest_checkout')->value ?? '',
@@ -173,9 +173,14 @@ class BusinessSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'email_verification', value: $request['email_verification']);
         $this->businessSettingRepo->updateOrInsert(type: 'decimal_point_settings', value: $request['decimal_point_settings'] ?? 0);
         $this->businessSettingRepo->updateOrInsert(type: 'shop_address', value: json_encode($shopAddress));
+        $businessMode = strtolower(trim((string)$request->input('business_mode', 'single')));
+        if (!in_array($businessMode, ['single', 'multi'], true)) {
+            $businessMode = 'single';
+        }
+
         $this->businessSettingRepo->updateOrInsert(type: 'currency_symbol_position', value: $request['currency_symbol_position']);
         $this->businessSettingRepo->updateOrInsert(type: 'currency_symbol_space', value: $request->get('currency_symbol_space', 0));
-        $this->businessSettingRepo->updateOrInsert(type: 'business_mode', value: $request['business_mode']);
+        $this->businessSettingRepo->updateOrInsert(type: 'business_mode', value: $businessMode);
         $this->businessSettingRepo->updateOrInsert(type: 'country_code', value: $request['country_code']);
 
         $this->businessSettingRepo->updateWhere(params: ['type' => 'system_default_currency'], data: ['value' => $request['currency_id']]);

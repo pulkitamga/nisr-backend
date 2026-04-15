@@ -357,11 +357,12 @@ $(document).on('click', '.mark-spam-btn', function () {
 $(document).on('click', '.assign-owner-btn', function () {
     let ticketId = $(this).data('id');
     let ownerId = $(this).data('owner-id') || $(this).closest('tr').data('owner-id') || '';
+    let departmentId = $(this).data('department-id') || '';
     let form = $('#updateTicketOwnerForm');
 
     form.find('#owner_ticket_id').val(ticketId);
     form.find('#owner-employee-id').empty().append(`<option value="">${crmUiText.selectSupervisor}</option>`);
-    loadOwners('', ownerId);
+    loadOwners(departmentId, ownerId);
 
     $('#showOwnerModal').modal('show');
 });

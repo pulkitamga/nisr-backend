@@ -384,19 +384,6 @@
         white-space: nowrap;
     }
 
-    .home-badge {
-        position: absolute;
-        top: .85rem;
-        inset-inline-start: .85rem;
-        padding: .35rem .6rem;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.86);
-        color: var(--home-accent);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        font-size: .72rem;
-        font-weight: 700;
-    }
-
     .home-icon-button {
         position: absolute;
         top: .85rem;
@@ -486,11 +473,6 @@
         align-items: baseline;
         gap: .5rem;
         margin-top: .85rem;
-    }
-
-    .home-price-line del {
-        color: #97aab0;
-        font-size: .88rem;
     }
 
     .home-price-current {
@@ -1615,19 +1597,12 @@ if($products->count() < 8) { $slides=$products->concat($products);
                     @php
                     $overallRating = getOverallRating($product->reviews);
                     $reviewCount = count($product->reviews);
-                    $hasDiscount = getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0;
                     $isInStock = $product->product_type !== 'physical' || $product->current_stock > 0;
                     @endphp
                     <div class="swiper-slide swiper-home">
                         <article class="home-product-card product-single-hover h-100">
                             <div class="relative">
                                 <div class="inline_product home-product-thumb relative">
-                                    @if($hasDiscount)
-                                    <span class="home-badge">
-                                        -{{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
-                                    </span>
-                                    @endif
-
                                     <a href="{{ route('product', $product->slug) }}" class="home-product-thumb__media">
                                         <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}"
                                             alt="{{ $product->name }}" class="home-product-thumb__image" />
@@ -1677,11 +1652,6 @@ if($products->count() < 8) { $slides=$products->concat($products);
 
                                     <div class="home-product-footer">
                                         <div class="home-price-line mt-0">
-                                            @if($hasDiscount)
-                                            <del>
-                                                {{ webCurrencyConverter(amount: $product->unit_price) }}
-                                            </del>
-                                            @endif
                                             <span class="home-price-current">
                                                 {{ getProductPriceByType(product: $product, type: 'discounted_unit_price',
                                             result: 'string') }}
@@ -2371,7 +2341,7 @@ if($products->count() < 8) { $slides=$products->concat($products);
 
 
 
-        @php($companyReliability = getWebConfig(name: 'company_reliability'))
+        @php($companyReliability = getCompanyReliabilityWithTranslations(function_exists('getActiveTranslationLocale') ? getActiveTranslationLocale() : getDefaultLanguage()))
         @if($companyReliability != null)
         <!-- @include('web-views.partials._company-reliability') -->
         @endif

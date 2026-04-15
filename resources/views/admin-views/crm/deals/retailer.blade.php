@@ -245,6 +245,7 @@
                                             class="dropdown-item assign-owner-btn"
                                             data-id="{{ $deal->id }}"
                                             data-owner-id="{{ $deal->owner_id ?? '' }}"
+                                            data-department-id="{{ $deal->department_id ?? '' }}"
                                             data-bs-toggle="false"
                                             data-bs-target="none">
                                             {{ translate('Assign Owner') }}

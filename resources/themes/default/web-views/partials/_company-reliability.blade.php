@@ -1,5 +1,5 @@
 @php
-$locale = getDefaultLanguage();
+$locale = function_exists('getActiveTranslationLocale') ? getActiveTranslationLocale() : getDefaultLanguage();
 $companyReliability = getCompanyReliabilityWithTranslations($locale);
 @endphp
 

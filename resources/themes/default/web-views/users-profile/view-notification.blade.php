@@ -35,8 +35,8 @@
                                     <span class="key fw-bold" style="min-width: 150px;">{{ translate('occur') }}</span>
                                     <span class="value">
                                         @if(!empty($SupportnotificationData->created_at))
-                                            @php($createdAt = Carbon::parse($SupportnotificationData->created_at))
-                                            {!! $createdAt->diffInDays(Carbon::now()) < 7
+                                            @php($createdAt = \Carbon\Carbon::parse($SupportnotificationData->created_at))
+                                            {!! $createdAt->diffInDays(\Carbon\Carbon::now()) < 7
                                                 ? formatDateTimeForDisplay($createdAt, 'D h:i A')
                                                 : formatDateTimeForDisplay($createdAt, 'd M Y h:i A') !!}
                                         @else

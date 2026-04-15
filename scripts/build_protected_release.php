@@ -22,6 +22,7 @@ final class ProtectedReleaseBuilder
         '.superpowers',
         '.vscode',
         'build',
+        'deployment',
         'docs',
         'output',
         'phpBolt',

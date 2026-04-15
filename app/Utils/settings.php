@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Cache;
 if (!function_exists('getWebConfig')) {
     function getWebConfig($name): string|object|array|null
     {
-       
         $config = null;
         if (in_array($name, getWebConfigCacheKeys()) && !isLanguageSensitiveWebConfigKey($name) && Cache::has($name)) {
             $config = Cache::get($name);
@@ -22,6 +21,16 @@ if (!function_exists('getWebConfig')) {
             });
             $data = $settings?->firstWhere('type', $name);
             $config = isset($data) ? setWebConfigCache($name, $data) : $config;
+        }
+
+        if ($name === 'business_mode') {
+            $normalizedBusinessMode = strtolower(trim((string)$config));
+            if (!in_array($normalizedBusinessMode, ['single', 'multi'], true)) {
+                $config = 'single';
+                if (in_array($name, getWebConfigCacheKeys(), true)) {
+                    Cache::put($name, $config, now()->addMinutes(30));
+                }
+            }
         }
 
         return $config;
@@ -151,16 +160,28 @@ if (!function_exists('getLanguageWiseBusinessConfigValue')) {
         }
 
         if (is_array($languageWiseValue) && !array_is_list($languageWiseValue)) {
-            $currentLanguage = getDefaultLanguage();
-            if (!empty($languageWiseValue[$currentLanguage])) {
-                return $languageWiseValue[$currentLanguage];
-            }
+            $currentLanguage = function_exists('getActiveTranslationLocale')
+                ? getActiveTranslationLocale()
+                : getDefaultLanguage();
+            $defaultLanguage = function_exists('getConfiguredDefaultLanguage')
+                ? getConfiguredDefaultLanguage()
+                : (
+                    function_exists('getConfiguredLanguageCodes')
+                        ? (getConfiguredLanguageCodes()[0] ?? 'en')
+                        : (getWebConfig('pnc_language')[0] ?? 'en')
+                );
 
-            $defaultLanguage = function_exists('getConfiguredLanguageCodes')
-                ? (getConfiguredLanguageCodes()[0] ?? 'en')
-                : (getWebConfig('pnc_language')[0] ?? 'en');
-            if (!empty($languageWiseValue[$defaultLanguage])) {
-                return $languageWiseValue[$defaultLanguage];
+            $languageCandidates = array_values(array_unique(array_filter([
+                $currentLanguage,
+                preg_split('/[_-]/', strtolower((string)$currentLanguage))[0] ?? '',
+                $defaultLanguage,
+                preg_split('/[_-]/', strtolower((string)$defaultLanguage))[0] ?? '',
+            ])));
+
+            foreach ($languageCandidates as $languageCandidate) {
+                if (!empty($languageWiseValue[$languageCandidate])) {
+                    return $languageWiseValue[$languageCandidate];
+                }
             }
 
             foreach ($languageWiseValue as $value) {
@@ -494,7 +515,7 @@ if (!function_exists('getCompanyReliabilityWithTranslations')) {
             ->keyBy('item_index');
 
         foreach ($items as $index => &$item) {
-            if ($locale !== config('app.locale') && isset($translations[$index])) {
+            if (isset($translations[$index])) {
                 $item['title'] = $translations[$index]->value;
             }
         }

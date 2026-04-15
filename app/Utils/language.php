@@ -668,12 +668,34 @@ if (!function_exists('resolveAppLocale')) {
     }
 }
 
+if (!function_exists('getLanguageCountryCode')) {
+    function getLanguageCountryCode(array $languageData): string
+    {
+        $languageCode = strtolower(trim((string)($languageData['code'] ?? '')));
+        $languageBaseCode = preg_split('/[_-]/', $languageCode)[0] ?? $languageCode;
+        $countryCode = strtolower(trim((string)($languageData['country_code'] ?? '')));
+
+        $fallbackCountryCode = match ($languageBaseCode) {
+            'ar' => 'eg',
+            default => $languageBaseCode !== '' ? $languageBaseCode : 'en',
+        };
+
+        if ($countryCode === '') {
+            return $fallbackCountryCode;
+        }
+
+        if ($countryCode === $languageBaseCode && $fallbackCountryCode !== $languageBaseCode) {
+            return $fallbackCountryCode;
+        }
+
+        return $countryCode;
+    }
+}
+
 if (!function_exists('getLanguageFlagCode')) {
     function getLanguageFlagCode(array $languageData): string
     {
-        $flagCode = $languageData['country_code'] ?? $languageData['code'] ?? 'en';
-
-        return strtolower(trim((string) $flagCode));
+        return getLanguageCountryCode($languageData);
     }
 }
 

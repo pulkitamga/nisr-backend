@@ -15,7 +15,7 @@ class LanguageService
             'name' => $data['name'],
             'direction' => $data['direction'] ?? 'ltr',
             'code' => strtolower($data['code']),
-            'country_code' => strtolower($data['country_code'] ?? $data['code']),
+            'country_code' => getLanguageCountryCode($data),
             'status' => $data['status'],
             'default' => (array_key_exists('default', $data) ? $data['default'] : ($data['code'] == 'en')),
         ];
@@ -26,7 +26,10 @@ class LanguageService
         $languageArray = [];
         $codes = [];
         $newCode = strtolower($request['code']);
-        $newCountryCode = strtolower($request['country_code']);
+        $newCountryCode = getLanguageCountryCode([
+            'code' => $newCode,
+            'country_code' => $request['country_code'],
+        ]);
 
         foreach (json_decode($language['value'], true) as $data) {
             $normalized = $this->normalizeLanguageItem($data);
@@ -121,7 +124,10 @@ class LanguageService
         $codes = [];
         $oldCode = strtolower($request['old_code'] ?? $request['code']);
         $newCode = strtolower($request['code']);
-        $newCountryCode = strtolower($request['country_code']);
+        $newCountryCode = getLanguageCountryCode([
+            'code' => $newCode,
+            'country_code' => $request['country_code'],
+        ]);
 
         if ($oldCode !== $newCode) {
             $oldPath = base_path('resources/lang/' . $oldCode);
@@ -170,7 +176,7 @@ class LanguageService
                     'name' => $data['name'],
                     'direction' => $data['direction'] ?? 'ltr',
                     'code' => strtolower($data['code']),
-                    'country_code' => strtolower($data['country_code'] ?? $data['code']),
+                    'country_code' => getLanguageCountryCode($data),
                     'status' => ($del_default && $data['code'] == 'en') ? 1 : $data['status'],
                     'default' => ($del_default && $data['code'] == 'en') ? true : (array_key_exists('default', $data) ? $data['default'] : $data['code'] == 'en'),
                 ];

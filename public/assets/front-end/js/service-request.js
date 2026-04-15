@@ -16,7 +16,6 @@
     const makeSelect = document.getElementById('makeSelect');
     const modelSelect = document.getElementById('modelSelect');
     const modelOptions = document.getElementById('vehicle-model-options');
-    let syncLocationFieldsBeforeSubmit = null;
 
     function withJquery(callback) {
         if (typeof window.jQuery === 'undefined') {
@@ -124,10 +123,6 @@
                     return;
                 }
 
-                if (typeof syncLocationFieldsBeforeSubmit === 'function') {
-                    syncLocationFieldsBeforeSubmit();
-                }
-
                 setTimeout(() => {
                     if (typeof serviceRequestForm.requestSubmit === 'function') {
                         serviceRequestForm.requestSubmit();
@@ -172,27 +167,27 @@
 
     function initLocationSelectors() {
         withJquery(($) => {
-            const locationSelects = {
+            const locationFields = {
                 country: $('#address-country'),
                 state: $('#address-state'),
                 city: $('#address-city'),
                 area: $('#address-area'),
             };
-            const manualLocationFields = {
-                state: $('#address-state-manual'),
-                city: $('#address-city-manual'),
-                area: $('#address-area-manual'),
+            const locationOptionLists = {
+                state: $('#service-state-options'),
+                city: $('#service-city-options'),
+                area: $('#service-area-options'),
             };
 
-            if (!locationSelects.country.length) {
+            if (!locationFields.country.length) {
                 return;
             }
 
-            const hiddenLocationFields = {
-                country: $('#country_name'),
-                state: $('#state_name'),
-                city: $('#city_name'),
-                area: $('#area_name'),
+            const hiddenCountryField = $('#country_name');
+            const optionCache = {
+                states: [],
+                cities: [],
+                areas: [],
             };
 
             function normalizeLocationName(value) {
@@ -215,72 +210,62 @@
                 return [];
             }
 
-            function populateSelect($select, items, placeholder, valueResolver, labelResolver) {
-                $select.empty().append(`<option value="">${placeholder}</option>`);
+            function populateDatalist($datalist, items, labelResolver) {
+                $datalist.empty();
 
                 items.forEach((item) => {
-                    const optionValue = String(valueResolver(item) ?? '');
                     const optionLabel = stringifyOptionLabel(labelResolver(item));
-                    $select.append(`<option value="${optionValue}" data-name="${optionLabel}">${optionLabel}</option>`);
-                });
-            }
-
-            function setHiddenField($select, $hiddenField) {
-                $hiddenField.val($select.find('option:selected').data('name') || '');
-            }
-
-            function setLocationValue(key) {
-                const manualValue = String(manualLocationFields[key]?.val() || '').trim();
-                const selectedName = String(locationSelects[key]?.find('option:selected').data('name') || '').trim();
-                hiddenLocationFields[key].val(manualValue || selectedName);
-            }
-
-            function syncManualField(key, forceManualValue = '') {
-                if (!manualLocationFields[key]?.length) {
-                    return;
-                }
-
-                const selectedName = String(locationSelects[key]?.find('option:selected').data('name') || '').trim();
-                const manualValue = String(forceManualValue || manualLocationFields[key].val() || '').trim();
-
-                if (manualValue && normalizeLocationName(manualValue) === normalizeLocationName(selectedName)) {
-                    manualLocationFields[key].val('');
-                }
-
-                setLocationValue(key);
-            }
-
-            function findMatchingOptionValue($select, candidates) {
-                const normalizedCandidates = candidates
-                    .filter(Boolean)
-                    .map((candidate) => normalizeLocationName(candidate));
-
-                if (!normalizedCandidates.length) {
-                    return '';
-                }
-
-                let exactMatch = '';
-                let partialMatch = '';
-
-                $select.find('option').each(function () {
-                    const optionValue = $(this).val();
-                    const optionName = normalizeLocationName($(this).data('name') || $(this).text());
-
-                    if (!optionValue || !optionName) {
+                    if (!optionLabel) {
                         return;
                     }
 
-                    if (normalizedCandidates.includes(optionName)) {
-                        exactMatch = optionValue;
-                        return false;
+                    $datalist.append(`<option value="${optionLabel}"></option>`);
+                });
+            }
+
+            function findMatchingItem(items, value) {
+                const normalizedValue = normalizeLocationName(value);
+                if (!normalizedValue) {
+                    return null;
+                }
+
+                return items.find((item) => normalizeLocationName(item?.name) === normalizedValue) || null;
+            }
+
+            function findMatchingItemByIdOrName(items, value) {
+                const stringValue = String(value || '').trim();
+                if (!stringValue) {
+                    return null;
+                }
+
+                if (/^\d+$/.test(stringValue)) {
+                    const numericValue = Number(stringValue);
+                    const matchedById = items.find((item) => Number(item?.id) === numericValue) || null;
+                    if (matchedById) {
+                        return matchedById;
+                    }
+                }
+
+                return findMatchingItem(items, stringValue);
+            }
+
+            function clearSuggestions(...keys) {
+                keys.forEach((key) => {
+                    if (key === 'state') {
+                        optionCache.states = [];
+                        populateDatalist(locationOptionLists.state, [], (item) => item.name);
                     }
 
-                    if (!partialMatch && normalizedCandidates.some((candidate) => optionName.includes(candidate) || candidate.includes(optionName))) {
-                        partialMatch = optionValue;
+                    if (key === 'city') {
+                        optionCache.cities = [];
+                        populateDatalist(locationOptionLists.city, [], (item) => item.name);
+                    }
+
+                    if (key === 'area') {
+                        optionCache.areas = [];
+                        populateDatalist(locationOptionLists.area, [], (item) => item.name);
                     }
                 });
-
-                return exactMatch || partialMatch;
             }
 
             function findAddressComponent(components, types) {
@@ -289,129 +274,65 @@
 
             function loadStates(countryCode) {
                 if (!countryCode) {
-                    populateSelect(locationSelects.state, [], config.labels.selectState, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.city, [], config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
-                    hiddenLocationFields.state.val('');
-                    hiddenLocationFields.city.val('');
-                    hiddenLocationFields.area.val('');
-                    manualLocationFields.state.val('');
-                    manualLocationFields.city.val('');
-                    manualLocationFields.area.val('');
+                    clearSuggestions('state', 'city', 'area');
                     return $.Deferred().resolve([]).promise();
                 }
 
                 return $.get(config.routes.states, { country: countryCode }).then((response) => {
-                    const states = getResponseItems(response, 'states');
-                    populateSelect(locationSelects.state, states, config.labels.selectState, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.city, [], config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
-                    hiddenLocationFields.state.val('');
-                    hiddenLocationFields.city.val('');
-                    hiddenLocationFields.area.val('');
-                    manualLocationFields.city.val('');
-                    manualLocationFields.area.val('');
-                    return states;
+                    optionCache.states = getResponseItems(response, 'states');
+                    populateDatalist(locationOptionLists.state, optionCache.states, (item) => item.name);
+                    clearSuggestions('city', 'area');
+                    return optionCache.states;
                 });
             }
 
-            function loadCities(stateId) {
-                if (!stateId) {
-                    populateSelect(locationSelects.city, [], config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
-                    hiddenLocationFields.city.val('');
-                    hiddenLocationFields.area.val('');
-                    manualLocationFields.city.val('');
-                    manualLocationFields.area.val('');
+            function loadCitiesForStateName(stateName) {
+                const state = findMatchingItem(optionCache.states, stateName);
+                if (!state?.id) {
+                    clearSuggestions('city', 'area');
                     return $.Deferred().resolve([]).promise();
                 }
 
-                return $.get(config.routes.cities, { state_id: stateId }).then((response) => {
-                    const cities = getResponseItems(response, 'cities');
-                    populateSelect(locationSelects.city, cities, config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
-                    hiddenLocationFields.city.val('');
-                    hiddenLocationFields.area.val('');
-                    manualLocationFields.area.val('');
-                    return cities;
+                return $.get(config.routes.cities, { state_id: state.id }).then((response) => {
+                    optionCache.cities = getResponseItems(response, 'cities');
+                    populateDatalist(locationOptionLists.city, optionCache.cities, (item) => item.name);
+                    clearSuggestions('area');
+                    return optionCache.cities;
                 });
             }
 
-            function loadAreas(cityId) {
-                if (!cityId) {
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
-                    hiddenLocationFields.area.val('');
-                    manualLocationFields.area.val('');
+            function loadAreasForCityName(cityName) {
+                const city = findMatchingItem(optionCache.cities, cityName);
+                if (!city?.id) {
+                    clearSuggestions('area');
                     return $.Deferred().resolve([]).promise();
                 }
 
-                return $.get(config.routes.areas, { city_id: cityId }).then((response) => {
-                    const areas = getResponseItems(response, 'areas');
-                    populateSelect(locationSelects.area, areas, config.labels.selectArea, (item) => item.id, (item) => item.name);
-                    hiddenLocationFields.area.val('');
-                    return areas;
+                return $.get(config.routes.areas, { city_id: city.id }).then((response) => {
+                    optionCache.areas = getResponseItems(response, 'areas');
+                    populateDatalist(locationOptionLists.area, optionCache.areas, (item) => item.name);
+                    return optionCache.areas;
                 });
             }
 
             function restoreLocationSelections() {
                 const oldLocation = config.oldLocation || {};
-                const matchingCountryValue = findMatchingOptionValue(locationSelects.country, [oldLocation.country]);
+                hiddenCountryField.val(locationFields.country.find('option:selected').data('name') || '');
+                locationFields.state.val('');
+                locationFields.city.val('');
+                locationFields.area.val('');
 
-                if (!matchingCountryValue) {
-                    setHiddenField(locationSelects.country, hiddenLocationFields.country);
-                    manualLocationFields.state.val(oldLocation.state || '');
-                    manualLocationFields.city.val(oldLocation.city || '');
-                    manualLocationFields.area.val(oldLocation.area || '');
-                    syncManualField('state');
-                    syncManualField('city');
-                    syncManualField('area');
-                    return loadStates(locationSelects.country.val());
-                }
+                return loadStates(locationFields.country.val()).then(() => {
+                    const matchedState = findMatchingItemByIdOrName(optionCache.states, oldLocation.state);
+                    locationFields.state.val(matchedState?.name || oldLocation.state || '');
 
-                locationSelects.country.val(matchingCountryValue);
-                setHiddenField(locationSelects.country, hiddenLocationFields.country);
+                    return loadCitiesForStateName(locationFields.state.val()).then(() => {
+                        const matchedCity = findMatchingItemByIdOrName(optionCache.cities, oldLocation.city);
+                        locationFields.city.val(matchedCity?.name || oldLocation.city || '');
 
-                return loadStates(matchingCountryValue).then(() => {
-                    const matchingStateValue = findMatchingOptionValue(locationSelects.state, [oldLocation.state]);
-
-                    if (!matchingStateValue) {
-                        manualLocationFields.state.val(oldLocation.state || '');
-                        syncManualField('state');
-                        manualLocationFields.city.val(oldLocation.city || '');
-                        syncManualField('city');
-                        manualLocationFields.area.val(oldLocation.area || '');
-                        syncManualField('area');
-                        return $.Deferred().resolve().promise();
-                    }
-
-                    locationSelects.state.val(matchingStateValue);
-                    manualLocationFields.state.val('');
-                    syncManualField('state');
-
-                    return loadCities(matchingStateValue).then(() => {
-                        const matchingCityValue = findMatchingOptionValue(locationSelects.city, [oldLocation.city]);
-
-                        if (!matchingCityValue) {
-                            manualLocationFields.city.val(oldLocation.city || '');
-                            syncManualField('city');
-                            manualLocationFields.area.val(oldLocation.area || '');
-                            syncManualField('area');
-                            return $.Deferred().resolve().promise();
-                        }
-
-                        locationSelects.city.val(matchingCityValue);
-                        manualLocationFields.city.val('');
-                        syncManualField('city');
-
-                        return loadAreas(matchingCityValue).then(() => {
-                            const matchingAreaValue = findMatchingOptionValue(locationSelects.area, [oldLocation.area]);
-                            if (matchingAreaValue) {
-                                locationSelects.area.val(matchingAreaValue);
-                                syncManualField('area');
-                            } else {
-                                manualLocationFields.area.val(oldLocation.area || '');
-                                syncManualField('area');
-                            }
+                        return loadAreasForCityName(locationFields.city.val()).then(() => {
+                            const matchedArea = findMatchingItemByIdOrName(optionCache.areas, oldLocation.area);
+                            locationFields.area.val(matchedArea?.name || oldLocation.area || '');
                         });
                     });
                 });
@@ -425,103 +346,63 @@
                 const areaComponent = findAddressComponent(components, ['sublocality', 'sublocality_level_1', 'neighborhood', 'administrative_area_level_3']);
 
                 if (countryComponent) {
-                    const matchingCountryValue = findMatchingOptionValue(locationSelects.country, [
-                        countryComponent.short_name,
-                        countryComponent.long_name,
-                    ]);
+                    const matchingCountryOption = locationFields.country.find('option').filter(function () {
+                        const optionName = normalizeLocationName($(this).data('name') || $(this).text());
+                        return optionName === normalizeLocationName(countryComponent.short_name)
+                            || optionName === normalizeLocationName(countryComponent.long_name);
+                    }).first();
 
-                    if (matchingCountryValue) {
-                        locationSelects.country.val(matchingCountryValue);
+                    if (matchingCountryOption.length) {
+                        locationFields.country.val(matchingCountryOption.val());
                     }
                 }
 
-                setHiddenField(locationSelects.country, hiddenLocationFields.country);
+                hiddenCountryField.val(locationFields.country.find('option:selected').data('name') || '');
 
-                loadStates(locationSelects.country.val()).then(() => {
-                    const matchingStateValue = findMatchingOptionValue(locationSelects.state, [
-                        stateComponent?.long_name,
-                        stateComponent?.short_name,
-                    ]);
+                loadStates(locationFields.country.val()).then(() => {
+                    const matchedState = findMatchingItem(optionCache.states, stateComponent?.long_name)
+                        || findMatchingItem(optionCache.states, stateComponent?.short_name);
 
-                    if (!matchingStateValue) {
+                    if (!matchedState) {
                         return $.Deferred().resolve().promise();
                     }
 
-                    locationSelects.state.val(matchingStateValue);
-                    setHiddenField(locationSelects.state, hiddenLocationFields.state);
+                    locationFields.state.val(matchedState.name);
 
-                    return loadCities(matchingStateValue).then(() => {
-                        const matchingCityValue = findMatchingOptionValue(locationSelects.city, [
-                            cityComponent?.long_name,
-                            cityComponent?.short_name,
-                        ]);
+                    return loadCitiesForStateName(matchedState.name).then(() => {
+                        const matchedCity = findMatchingItem(optionCache.cities, cityComponent?.long_name)
+                            || findMatchingItem(optionCache.cities, cityComponent?.short_name);
 
-                        if (!matchingCityValue) {
+                        if (!matchedCity) {
                             return $.Deferred().resolve().promise();
                         }
 
-                        locationSelects.city.val(matchingCityValue);
-                        setHiddenField(locationSelects.city, hiddenLocationFields.city);
+                        locationFields.city.val(matchedCity.name);
 
-                        return loadAreas(matchingCityValue).then(() => {
-                            const matchingAreaValue = findMatchingOptionValue(locationSelects.area, [
-                                areaComponent?.long_name,
-                                areaComponent?.short_name,
-                            ]);
+                        return loadAreasForCityName(matchedCity.name).then(() => {
+                            const matchedArea = findMatchingItem(optionCache.areas, areaComponent?.long_name)
+                                || findMatchingItem(optionCache.areas, areaComponent?.short_name);
 
-                            if (matchingAreaValue) {
-                                locationSelects.area.val(matchingAreaValue);
-                                manualLocationFields.area.val('');
-                                syncManualField('area');
+                            if (matchedArea) {
+                                locationFields.area.val(matchedArea.name);
                             }
                         });
                     });
                 });
             };
 
-            locationSelects.country.on('change', function () {
-                setHiddenField(locationSelects.country, hiddenLocationFields.country);
+            locationFields.country.on('change', function () {
+                hiddenCountryField.val(locationFields.country.find('option:selected').data('name') || '');
                 loadStates($(this).val());
             });
 
-            locationSelects.state.on('change', function () {
-                if ($(this).val()) {
-                    manualLocationFields.state.val('');
-                }
-                syncManualField('state');
-                loadCities($(this).val());
+            locationFields.state.on('input change', function () {
+                loadCitiesForStateName($(this).val());
             });
 
-            locationSelects.city.on('change', function () {
-                if ($(this).val()) {
-                    manualLocationFields.city.val('');
-                }
-                syncManualField('city');
-                loadAreas($(this).val());
+            locationFields.city.on('input change', function () {
+                loadAreasForCityName($(this).val());
             });
-
-            locationSelects.area.on('change', function () {
-                if ($(this).val()) {
-                    manualLocationFields.area.val('');
-                }
-                syncManualField('area');
-            });
-
-            ['state', 'city', 'area'].forEach((key) => {
-                if (!manualLocationFields[key]?.length) {
-                    return;
-                }
-
-                manualLocationFields[key].attr('placeholder', config.labels[`type${key.charAt(0).toUpperCase()}${key.slice(1)}`] || '');
-                manualLocationFields[key].on('input', function () {
-                    syncManualField(key, $(this).val());
-                });
-            });
-
-            syncLocationFieldsBeforeSubmit = function () {
-                setHiddenField(locationSelects.country, hiddenLocationFields.country);
-                ['state', 'city', 'area'].forEach((key) => syncManualField(key));
-            };
 
             restoreLocationSelections();
         });

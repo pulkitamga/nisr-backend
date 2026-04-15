@@ -1040,9 +1040,6 @@ class DealController extends BaseController
                 ->values();
         }
 
-        if ($request->filled('head_id')) {
-            $employees = $employees->where('id', '!=', $request->head_id)->values();
-        }
         return response()->json($employees);
     }
 

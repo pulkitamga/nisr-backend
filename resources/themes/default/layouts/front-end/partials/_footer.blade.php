@@ -137,6 +137,8 @@
         color: var(--nisr-ft-dim);
         font-size: .86rem;
         line-height: 1.7;
+        unicode-bidi: plaintext;
+        overflow-wrap: anywhere;
     }
 
     .nisr-ft-apps {
@@ -349,6 +351,7 @@
         margin: 0;
         color: var(--nisr-ft-dim);
         font-size: .8rem;
+        unicode-bidi: plaintext;
     }
 
     .nisr-ft-bottom-end {
@@ -508,11 +511,9 @@
                     <a href="{{ route('home') }}">
                         <img src="{{ getStorageImages(path: $web_config['footer_logo'], type: 'logo') }}" alt="{{ $web_config['company_name'] }}">
                     </a>
-                    @php($footer_description = trim((string) ($web_config['footer_description'] ?? '')))
-                    @php($about_text = trim(strip_tags(str_replace(['&nbsp;','&amp;'], [' ','&'], $web_config['about']->value ?? ''))))
-                    @php($brand_text = $footer_description !== '' ? $footer_description : $about_text)
-                    @if(strlen($brand_text) > 20)
-                        <p class="nisr-ft-tagline">{{ str($brand_text)->limit(130) }}</p>
+                    @php($brand_text = richTextToPlainText((string) (getWebConfig(name: 'footer_description_text') ?? ($web_config['footer_description'] ?? ''))))
+                    @if($brand_text !== '')
+                        <p class="nisr-ft-tagline" dir="auto">{{ str($brand_text)->limit(130) }}</p>
                     @endif
                     @if($web_config['ios']['status'] || $web_config['android']['status'])
                         <div class="nisr-ft-apps">
@@ -593,7 +594,7 @@
     <div class="nisr-ft-bottom">
         <div class="nisr-ft-shell">
             <div class="nisr-ft-bottom-inner">
-                <p class="nisr-ft-copy">{{ getWebConfig(name: 'company_copyright_text') ?? $web_config['copyright_text'] }}</p>
+                <p class="nisr-ft-copy" dir="auto">{{ getWebConfig(name: 'company_copyright_text') ?? $web_config['copyright_text'] }}</p>
                 <div class="nisr-ft-bottom-end">
                     @if($web_config['social_media'])
                         <div class="nisr-ft-social">

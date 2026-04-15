@@ -260,7 +260,7 @@ $homeCategories->count() > 0)
 @endforeach
 @endif
 
-@php($companyReliability = getWebConfig(name: 'company_reliability'))
+@php($companyReliability = getCompanyReliabilityWithTranslations(function_exists('getActiveTranslationLocale') ? getActiveTranslationLocale() : getDefaultLanguage()))
 @if(auth('customer')->check() && auth('customer')->user()->user_type == 0 || !auth('customer')->check() &&
 $companyReliability != null)
 @include('web-views.partials._company-reliability')

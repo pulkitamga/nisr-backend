@@ -437,6 +437,75 @@ class CrmModuleBugFixRegressionTest extends TestCase
         $this->assertNull($deal->fresh()->employee_id);
     }
 
+    public function test_lead_employee_and_owner_loaders_keep_department_head(): void
+    {
+        [$department, $head, $supervisor, $employee] = $this->seedAssignmentDirectory();
+        $controller = $this->makeLeadController($this->makeAdminRepositoryForAssignment([$head, $supervisor, $employee]));
+
+        $employeeResponse = $controller->getEmployeesByDepartment(Request::create('/admin/crm/lead/get-employee', 'GET', [
+            'department_id' => $department->id,
+            'head_id' => $head->id,
+            'assignment' => 'employee',
+        ]));
+        $ownerResponse = $controller->getEmployeesByDepartment(Request::create('/admin/crm/lead/get-employee', 'GET', [
+            'department_id' => $department->id,
+            'head_id' => $head->id,
+            'assignment' => 'owner',
+        ]));
+
+        $this->assertEqualsCanonicalizing([$head->id, $supervisor->id, $employee->id], collect($employeeResponse->getData(true))->pluck('id')->all());
+        $this->assertEqualsCanonicalizing([$head->id, $supervisor->id], collect($ownerResponse->getData(true))->pluck('id')->all());
+    }
+
+    public function test_inbox_employee_and_owner_loaders_keep_department_head(): void
+    {
+        [$department, $head, $supervisor, $employee] = $this->seedAssignmentDirectory();
+        $controller = $this->makeInboxController($this->makeAdminRepositoryForAssignment([$head, $supervisor, $employee]));
+
+        $employeeResponse = $controller->getEmployeesByDepartment(Request::create('/admin/crm/inbox/get-employee', 'GET', [
+            'department_id' => $department->id,
+            'head_id' => $head->id,
+            'assignment' => 'employee',
+        ]));
+        $ownerResponse = $controller->getEmployeesByDepartment(Request::create('/admin/crm/inbox/get-employee', 'GET', [
+            'department_id' => $department->id,
+            'head_id' => $head->id,
+            'assignment' => 'owner',
+        ]));
+
+        $this->assertEqualsCanonicalizing([$head->id, $supervisor->id, $employee->id], collect($employeeResponse->getData(true))->pluck('id')->all());
+        $this->assertEqualsCanonicalizing([$head->id, $supervisor->id], collect($ownerResponse->getData(true))->pluck('id')->all());
+    }
+
+    public function test_deal_employee_and_owner_loaders_keep_department_head(): void
+    {
+        [$department, $head, $supervisor, $employee] = $this->seedAssignmentDirectory();
+        $controller = $this->makeDealController($this->makeAdminRepositoryForAssignment([$head, $supervisor, $employee]));
+
+        $employeeResponse = $controller->getEmployeesByDepartment(Request::create('/admin/crm/deals/get-employee', 'GET', [
+            'department_id' => $department->id,
+            'head_id' => $head->id,
+            'assignment' => 'employee',
+        ]));
+        $ownerResponse = $controller->getEmployeesByDepartment(Request::create('/admin/crm/deals/get-employee', 'GET', [
+            'department_id' => $department->id,
+            'head_id' => $head->id,
+            'assignment' => 'owner',
+        ]));
+
+        $this->assertEqualsCanonicalizing([$head->id, $supervisor->id, $employee->id], collect($employeeResponse->getData(true))->pluck('id')->all());
+        $this->assertEqualsCanonicalizing([$head->id, $supervisor->id], collect($ownerResponse->getData(true))->pluck('id')->all());
+    }
+
+    public function test_lead_owner_action_carries_department_id_for_owner_loader(): void
+    {
+        $template = file_get_contents(resource_path('views/admin-views/crm/leads.blade.php'));
+
+        $this->assertIsString($template);
+        $this->assertStringContainsString('class="dropdown-item assign-owner-btn"', $template);
+        $this->assertStringContainsString('data-department-id="{{ $msg->department_id ?? \'\' }}"', $template);
+    }
+
     public function test_lead_file_upload_rejects_spoofed_image_content(): void
     {
         Storage::fake('public');
@@ -507,13 +576,15 @@ class CrmModuleBugFixRegressionTest extends TestCase
         );
     }
 
-    private function makeLeadController(): LeadController
+    private function makeLeadController(?AdminRepositoryInterface $adminRepo = null): LeadController
     {
         $departmentRepo = $this->createMock(DepartmentRepositoryInterface::class);
         $departmentRepo->method('getListWhere')->willReturn(new EloquentCollection());
 
-        $adminRepo = $this->createMock(AdminRepositoryInterface::class);
-        $adminRepo->method('getEmployeeListWhere')->willReturn(collect());
+        if ($adminRepo === null) {
+            $adminRepo = $this->createMock(AdminRepositoryInterface::class);
+            $adminRepo->method('getEmployeeListWhere')->willReturn(collect());
+        }
 
         return new LeadController(
             $this->createMock(SupportTicketRepositoryInterface::class),
@@ -525,13 +596,15 @@ class CrmModuleBugFixRegressionTest extends TestCase
         );
     }
 
-    private function makeDealController(): DealController
+    private function makeDealController(?AdminRepositoryInterface $adminRepo = null): DealController
     {
         $departmentRepo = $this->createMock(DepartmentRepositoryInterface::class);
         $departmentRepo->method('getListWhere')->willReturn(new EloquentCollection());
 
-        $adminRepo = $this->createMock(AdminRepositoryInterface::class);
-        $adminRepo->method('getEmployeeListWhere')->willReturn(collect());
+        if ($adminRepo === null) {
+            $adminRepo = $this->createMock(AdminRepositoryInterface::class);
+            $adminRepo->method('getEmployeeListWhere')->willReturn(collect());
+        }
 
         return new DealController(
             $this->createMock(SupportTicketRepositoryInterface::class),
@@ -543,13 +616,15 @@ class CrmModuleBugFixRegressionTest extends TestCase
         );
     }
 
-    private function makeInboxController(): InboxMessageController
+    private function makeInboxController(?AdminRepositoryInterface $adminRepo = null): InboxMessageController
     {
         $departmentRepo = $this->createMock(DepartmentRepositoryInterface::class);
         $departmentRepo->method('getListWhere')->willReturn(new EloquentCollection());
 
-        $adminRepo = $this->createMock(AdminRepositoryInterface::class);
-        $adminRepo->method('getEmployeeListWhere')->willReturn(collect());
+        if ($adminRepo === null) {
+            $adminRepo = $this->createMock(AdminRepositoryInterface::class);
+            $adminRepo->method('getEmployeeListWhere')->willReturn(collect());
+        }
 
         return new InboxMessageController(
             $this->createMock(SupportTicketRepositoryInterface::class),
@@ -570,6 +645,31 @@ class CrmModuleBugFixRegressionTest extends TestCase
             'is_supervisor' => true,
             'status' => 1,
         ]);
+    }
+
+    private function makeAdminRepositoryForAssignment(array $admins): AdminRepositoryInterface
+    {
+        $adminRepo = $this->createMock(AdminRepositoryInterface::class);
+        $adminRepo->method('getEmployeeListWhere')
+            ->willReturnCallback(function (array $orderBy = [], ?string $searchValue = null, array $filters = []) use ($admins) {
+                return collect($admins)
+                    ->when(!empty($filters['department_id']), fn($collection) => $collection->where('department_id', (int)$filters['department_id']))
+                    ->sortByDesc('id')
+                    ->values();
+            });
+
+        return $adminRepo;
+    }
+
+    private function seedAssignmentDirectory(): array
+    {
+        $head = $this->createAdmin('assignment-loader-head');
+        $department = $this->createDepartment('Assignment Loader Department', $head);
+        $supervisor = $this->createAdmin('assignment-loader-supervisor', $department->id);
+        $employee = $this->createAdmin('assignment-loader-employee', $department->id);
+        $employee->forceFill(['is_supervisor' => false])->save();
+
+        return [$department, $head->fresh(), $supervisor->fresh(), $employee->fresh()];
     }
 
     private function createDepartment(string $name, ?Admin $head = null): Departments

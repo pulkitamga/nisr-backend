@@ -12,7 +12,6 @@ use App\Models\DeliveryState;
 use App\Models\State;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\ShippingMethodArea;
 
 class ShippingAjaxController extends Controller
 {
@@ -28,19 +27,10 @@ class ShippingAjaxController extends Controller
 
     public function getStates(Request $request)
     {
-        $stateIds = ShippingMethodArea::where('country', $request->country)
-            ->pluck('state_id')
-            ->unique()
-            ->toArray();
-
-        // fallback: get all states if none in ShippingMethodArea
-        if (empty($stateIds)) {
-            $states = State::where('country', $request->country)
-                ->get(['id', 'name']);
-        } else {
-            $states = State::whereIn('id', $stateIds)
-                ->get(['id', 'name']);
-        }
+        $states = State::query()
+            ->where('country', $request->country)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return response()->json([
             'states' => $states->map(fn(State $state) => [
@@ -52,19 +42,10 @@ class ShippingAjaxController extends Controller
 
     public function getCities(Request $request)
     {
-        $cityIds = ShippingMethodArea::where('state_id', $request->state_id)
-            ->pluck('city_id')
-            ->unique()
-            ->toArray();
-
-        // fallback: show all cities for state if no ShippingMethodArea restrictions
-        if (empty($cityIds)) {
-            $cities = City::where('state_id', $request->state_id)
-                ->get(['id', 'name']);
-        } else {
-            $cities = City::whereIn('id', $cityIds)
-                ->get(['id', 'name']);
-        }
+        $cities = City::query()
+            ->where('state_id', $request->state_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return response()->json([
             'cities' => $cities->map(fn(City $city) => [

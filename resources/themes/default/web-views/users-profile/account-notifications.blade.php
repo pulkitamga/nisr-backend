@@ -26,10 +26,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php
-                                use Carbon\Carbon;
-                                ($notifications = \App\Utils\Notifications::getUserNotifications(auth('customer')->id(), [2]));
-                                ?>
+                                <?php ($notifications = \App\Utils\Notifications::getUserNotifications(auth('customer')->id(), [2])); ?>
                                 @php $i = 1; @endphp
                                 @foreach($notifications as $notification)
                                 <tr>
@@ -38,8 +35,8 @@
                                     <td>{{ Str::limit($notification->message, 40, '...') }}</td>
                                     <td>
                                         @if(!empty($notification->created_at))
-                                            @php($createdAt = Carbon::parse($notification->created_at))
-                                            {!! $createdAt->diffInDays(Carbon::now()) < 7
+                                            @php($createdAt = \Carbon\Carbon::parse($notification->created_at))
+                                            {!! $createdAt->diffInDays(\Carbon\Carbon::now()) < 7
                                                 ? formatDateTimeForDisplay($createdAt, 'D h:i A')
                                                 : formatDateTimeForDisplay($createdAt, 'd M Y h:i A') !!}
                                         @else

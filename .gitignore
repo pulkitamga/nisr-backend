@@ -33,3 +33,5 @@ AGENTS.md
 tmp/agency-agents/
 /tmp/
 /review-screenshots/
+deployment/config.yml
+/scripts/
