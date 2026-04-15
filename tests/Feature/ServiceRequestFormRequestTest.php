@@ -105,6 +105,30 @@ class ServiceRequestFormRequestTest extends TestCase
         $this->assertFalse($validator->errors()->has('notes'));
     }
 
+    public function test_manual_location_fields_are_merged_before_validation(): void
+    {
+        $request = $this->makeRequestWithInput([
+            'service_option' => 'mobile',
+            'state_manual' => 'Manual State',
+            'city_manual' => 'Manual City',
+            'area_manual' => 'Manual Area',
+        ]);
+
+        $validator = Validator::make(
+            array_merge($request->all(), [
+                'service_id' => 1,
+                'agree_terms' => 1,
+                'country' => 'Egypt',
+                'address' => 'Street 10',
+            ]),
+            $request->rules()
+        );
+
+        $this->assertFalse($validator->errors()->has('state'));
+        $this->assertFalse($validator->errors()->has('city'));
+        $this->assertFalse($validator->errors()->has('area'));
+    }
+
     public function test_request_does_not_require_vehicle_type(): void
     {
         $validator = Validator::make(
@@ -140,6 +164,12 @@ class ServiceRequestFormRequestTest extends TestCase
     {
         $request = new ServiceRequestFormRequest();
         $request->merge($input);
+        $request->setMethod('POST');
+
+        $reflection = new \ReflectionClass($request);
+        $method = $reflection->getMethod('prepareForValidation');
+        $method->setAccessible(true);
+        $method->invoke($request);
 
         return $request;
     }

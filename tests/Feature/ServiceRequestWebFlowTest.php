@@ -157,6 +157,81 @@ class ServiceRequestWebFlowTest extends TestCase
         $response->assertSessionHasInput('vin', 'VIN-100');
     }
 
+    public function test_mobile_service_request_accepts_manual_state_city_and_area_text(): void
+    {
+        SupportTicketStatusMaster::query()->create([
+            'id' => ServiceTicketWorkflow::STATUS_NEW,
+            'master_id' => ServiceTicketWorkflow::STATUS_MASTER_ID,
+            'name' => 'new',
+            'status' => 'active',
+            'position' => 1,
+        ]);
+
+        $customer = User::query()->create([
+            'f_name' => 'Mona',
+            'l_name' => 'Ali',
+            'email' => 'mona@example.com',
+            'phone' => '201111111111',
+            'password' => 'secret',
+        ]);
+
+        $service = Service::query()->create([
+            'service_id' => 'SRV-500',
+            'title' => 'Full Service',
+            'base_price_inshop' => 200,
+            'base_price_mobile' => 300,
+            'included_km_mobile' => 10,
+            'travel_fee_per_km' => 10,
+            'parts_included' => ['oil filter'],
+            'call_center_flag' => false,
+        ]);
+
+        $workflowNotifier = $this->createMock(ServiceWorkflowNotificationService::class);
+        $workflowNotifier->expects($this->once())->method('notify');
+
+        $submissionService = new ServiceRequestSubmissionService(
+            app(ServiceRequestRepositoryInterface::class),
+            $workflowNotifier
+        );
+
+        $controller = app()->make(\App\Http\Controllers\Web\ServiceDetailsController::class, [
+            'serviceRequestSubmissionService' => $submissionService,
+        ]);
+        app()->instance(\App\Http\Controllers\Web\ServiceDetailsController::class, $controller);
+
+        $response = $this->actingAs($customer, 'customer')
+            ->from('/service/test-service')
+            ->post(route('service.request.store'), [
+                'service_id' => $service->id,
+                'service_option' => 'mobile',
+                'agree_terms' => 1,
+                'country' => 'Egypt',
+                'state' => 'Custom Governorate',
+                'city' => 'Custom City',
+                'area' => 'Custom Area',
+                'address' => 'Street 10, Building 5',
+                'problem_description' => 'Need onsite battery check.',
+            ]);
+
+        $response->assertRedirect('/service/test-service');
+
+        $serviceRequest = DB::table('service_requests')->first();
+        $this->assertSame('Egypt', $serviceRequest->country);
+        $this->assertSame('Custom Governorate', $serviceRequest->state);
+        $this->assertSame('Custom City', $serviceRequest->city);
+        $this->assertSame('Custom Area', $serviceRequest->area);
+        $this->assertDatabaseHas('states', [
+            'country' => 'EG',
+            'name' => 'Custom Governorate',
+        ]);
+        $this->assertDatabaseHas('cities', [
+            'name' => 'Custom City',
+        ]);
+        $this->assertDatabaseHas('areas', [
+            'name' => 'Custom Area',
+        ]);
+    }
+
     private function createTestSchema(): void
     {
         Schema::create('activity_log', function (Blueprint $table) {
@@ -186,6 +261,27 @@ class ServiceRequestWebFlowTest extends TestCase
             $table->string('locale');
             $table->string('key');
             $table->text('value')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('states', function (Blueprint $table) {
+            $table->id();
+            $table->string('country')->nullable();
+            $table->string('name')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('cities', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('state_id')->nullable();
+            $table->string('name')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('areas', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('city_id')->nullable();
+            $table->string('name')->nullable();
             $table->timestamps();
         });
 

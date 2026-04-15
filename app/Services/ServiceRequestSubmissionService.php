@@ -4,12 +4,16 @@ namespace App\Services;
 
 use App\Enums\SupportTicketRequestType;
 use App\Contracts\Repositories\ServiceRequestRepositoryInterface;
+use App\Models\Area;
+use App\Models\City;
 use App\Models\InboxMessage;
 use App\Models\ServiceRequest;
+use App\Models\State;
 use App\Models\SupportTicket as SupportTicketModel;
 use App\Models\SupportTicketStatusMaster;
 use App\Support\ServiceTicketWorkflow;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -23,7 +27,7 @@ class ServiceRequestSubmissionService
     public function submit(array $validated, Authenticatable $customer, ?string $notificationLink = null): SupportTicketModel
     {
         $ticket = DB::transaction(function () use ($validated, $customer): SupportTicketModel {
-            $payload = $validated;
+            $payload = $this->normalizeLocationPayload($validated);
             $payload['customer_id'] = $customer->id;
 
             $serviceRequest = $this->serviceRequestRepo->create($payload);
@@ -91,6 +95,136 @@ class ServiceRequestSubmissionService
         }
 
         return $ticket;
+    }
+
+    private function normalizeLocationPayload(array $payload): array
+    {
+        if (($payload['service_option'] ?? null) !== 'mobile') {
+            return $payload;
+        }
+
+        $payload['country'] = trim((string)($payload['country'] ?? ''));
+        $payload['state'] = trim((string)($payload['state'] ?? ''));
+        $payload['city'] = trim((string)($payload['city'] ?? ''));
+        $payload['area'] = trim((string)($payload['area'] ?? ''));
+
+        $countryCode = $this->normalizeCountryCodeFromInput($payload['country'] ?? null);
+        if (!$countryCode) {
+            return $payload;
+        }
+
+        $state = $this->firstOrCreateState($payload['state'] ?? null, $countryCode);
+        if ($state) {
+            $payload['state'] = (string)$state->name;
+        }
+
+        $city = $state ? $this->firstOrCreateCity($payload['city'] ?? null, (int)$state->id) : null;
+        if ($city) {
+            $payload['city'] = (string)$city->name;
+        }
+
+        $area = $city ? $this->firstOrCreateArea($payload['area'] ?? null, (int)$city->id) : null;
+        if ($area) {
+            $payload['area'] = (string)$area->name;
+        }
+
+        return $payload;
+    }
+
+    private function normalizeCountryCodeFromInput(?string $countryInput): ?string
+    {
+        $countryInput = strtoupper(trim((string)$countryInput));
+        if ($countryInput === '') {
+            return null;
+        }
+
+        if (strlen($countryInput) === 2) {
+            return $countryInput;
+        }
+
+        foreach (COUNTRIES as $country) {
+            if (strtoupper((string)($country['name'] ?? '')) === $countryInput) {
+                return strtoupper((string)($country['code'] ?? ''));
+            }
+        }
+
+        return null;
+    }
+
+    private function firstOrCreateState(?string $stateName, string $countryCode): ?State
+    {
+        $stateName = trim((string)$stateName);
+        if ($stateName === '') {
+            return null;
+        }
+
+        return $this->firstOrCreateByNormalizedName(
+            modelClass: State::class,
+            name: $stateName,
+            where: ['country' => $countryCode],
+            create: ['country' => $countryCode]
+        );
+    }
+
+    private function firstOrCreateCity(?string $cityName, int $stateId): ?City
+    {
+        $cityName = trim((string)$cityName);
+        if ($cityName === '') {
+            return null;
+        }
+
+        return $this->firstOrCreateByNormalizedName(
+            modelClass: City::class,
+            name: $cityName,
+            where: ['state_id' => $stateId],
+            create: ['state_id' => $stateId]
+        );
+    }
+
+    private function firstOrCreateArea(?string $areaName, int $cityId): ?Area
+    {
+        $areaName = trim((string)$areaName);
+        if ($areaName === '') {
+            return null;
+        }
+
+        return $this->firstOrCreateByNormalizedName(
+            modelClass: Area::class,
+            name: $areaName,
+            where: ['city_id' => $cityId],
+            create: ['city_id' => $cityId]
+        );
+    }
+
+    /**
+     * @template TModel of Model
+     *
+     * @param class-string<TModel> $modelClass
+     * @return TModel
+     */
+    private function firstOrCreateByNormalizedName(string $modelClass, string $name, array $where, array $create): Model
+    {
+        $query = $modelClass::query();
+
+        foreach ($where as $column => $value) {
+            $query->where($column, $value);
+        }
+
+        /** @var TModel|null $existing */
+        $existing = $query
+            ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($name))])
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        /** @var TModel $created */
+        $created = $modelClass::query()->create(array_merge($create, [
+            'name' => $name,
+        ]));
+
+        return $created;
     }
 
     private function resolveDefaultStatusId(): int

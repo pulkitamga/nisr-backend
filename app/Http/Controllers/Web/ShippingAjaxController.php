@@ -42,7 +42,12 @@ class ShippingAjaxController extends Controller
                 ->get(['id', 'name']);
         }
 
-        return response()->json(['states' => $states]);
+        return response()->json([
+            'states' => $states->map(fn(State $state) => [
+                'id' => (int)$state->id,
+                'name' => (string)$state->name,
+            ])->values(),
+        ]);
     }
 
     public function getCities(Request $request)
@@ -61,7 +66,12 @@ class ShippingAjaxController extends Controller
                 ->get(['id', 'name']);
         }
 
-        return response()->json(['cities' => $cities]);
+        return response()->json([
+            'cities' => $cities->map(fn(City $city) => [
+                'id' => (int)$city->id,
+                'name' => (string)$city->name,
+            ])->values(),
+        ]);
     }
 
 
@@ -76,24 +86,18 @@ class ShippingAjaxController extends Controller
 
     public function getAreas(Request $request)
     {
-        $areaNames = ShippingMethodArea::where('city_id', $request->city_id)
-            ->pluck('area')
-            ->unique()
-            ->filter()
-            ->values();
+        $areas = Area::query()
+            ->where('city_id', $request->city_id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
 
-        $areas = $areaNames->map(function ($areaName) {
-            if (ctype_digit((string) $areaName)) {
-                $area = Area::with('translations')->find((int) $areaName);
-                return $area ? $area->name : $areaName;
-            }
-            $area = Area::with('translations')
-                ->whereRaw('LOWER(name) = ?', [strtolower($areaName)])
-                ->first();
-            return $area ? $area->name : $areaName;
-        });
-
-        return response()->json($areas);
+        return response()->json([
+            'areas' => $areas->map(fn(Area $area) => [
+                'id' => (int)$area->id,
+                'name' => (string)$area->name,
+            ])->values(),
+        ]);
     }
 
     public function getBillingAreas(Request $request)

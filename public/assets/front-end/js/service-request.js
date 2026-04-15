@@ -16,6 +16,7 @@
     const makeSelect = document.getElementById('makeSelect');
     const modelSelect = document.getElementById('modelSelect');
     const modelOptions = document.getElementById('vehicle-model-options');
+    let syncLocationFieldsBeforeSubmit = null;
 
     function withJquery(callback) {
         if (typeof window.jQuery === 'undefined') {
@@ -27,6 +28,26 @@
 
     function normalizeValue(value) {
         return String(value || '').trim().toLowerCase();
+    }
+
+    function stringifyOptionLabel(value) {
+        if (typeof value === 'string' || typeof value === 'number') {
+            return String(value);
+        }
+
+        if (value && typeof value === 'object') {
+            const directValue = [value.name, value.value, value.label].find((item) => typeof item === 'string' && item.trim() !== '');
+            if (directValue) {
+                return directValue;
+            }
+
+            const nestedValue = Object.values(value).find((item) => typeof item === 'string' && item.trim() !== '');
+            if (nestedValue) {
+                return nestedValue;
+            }
+        }
+
+        return '';
     }
 
     function populateModels(makeName, selectedModel) {
@@ -62,7 +83,7 @@
         mobileGuidance.style.display = isMobile ? 'flex' : 'none';
         inShopGuidance.style.display = isMobile ? 'none' : 'flex';
 
-        ['address-country', 'address-state', 'address-city', 'address-area', 'address_details'].forEach((id) => {
+        ['address-country', 'address_details'].forEach((id) => {
             const field = document.getElementById(id);
             if (field) {
                 field.required = isMobile;
@@ -101,6 +122,10 @@
             }).then((result) => {
                 if (!result.isConfirmed) {
                     return;
+                }
+
+                if (typeof syncLocationFieldsBeforeSubmit === 'function') {
+                    syncLocationFieldsBeforeSubmit();
                 }
 
                 setTimeout(() => {
@@ -153,6 +178,11 @@
                 city: $('#address-city'),
                 area: $('#address-area'),
             };
+            const manualLocationFields = {
+                state: $('#address-state-manual'),
+                city: $('#address-city-manual'),
+                area: $('#address-area-manual'),
+            };
 
             if (!locationSelects.country.length) {
                 return;
@@ -189,14 +219,35 @@
                 $select.empty().append(`<option value="">${placeholder}</option>`);
 
                 items.forEach((item) => {
-                    const optionValue = valueResolver(item);
-                    const optionLabel = labelResolver(item);
+                    const optionValue = String(valueResolver(item) ?? '');
+                    const optionLabel = stringifyOptionLabel(labelResolver(item));
                     $select.append(`<option value="${optionValue}" data-name="${optionLabel}">${optionLabel}</option>`);
                 });
             }
 
             function setHiddenField($select, $hiddenField) {
                 $hiddenField.val($select.find('option:selected').data('name') || '');
+            }
+
+            function setLocationValue(key) {
+                const manualValue = String(manualLocationFields[key]?.val() || '').trim();
+                const selectedName = String(locationSelects[key]?.find('option:selected').data('name') || '').trim();
+                hiddenLocationFields[key].val(manualValue || selectedName);
+            }
+
+            function syncManualField(key, forceManualValue = '') {
+                if (!manualLocationFields[key]?.length) {
+                    return;
+                }
+
+                const selectedName = String(locationSelects[key]?.find('option:selected').data('name') || '').trim();
+                const manualValue = String(forceManualValue || manualLocationFields[key].val() || '').trim();
+
+                if (manualValue && normalizeLocationName(manualValue) === normalizeLocationName(selectedName)) {
+                    manualLocationFields[key].val('');
+                }
+
+                setLocationValue(key);
             }
 
             function findMatchingOptionValue($select, candidates) {
@@ -240,10 +291,13 @@
                 if (!countryCode) {
                     populateSelect(locationSelects.state, [], config.labels.selectState, (item) => item.id, (item) => item.name);
                     populateSelect(locationSelects.city, [], config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item, (item) => item);
+                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
                     hiddenLocationFields.state.val('');
                     hiddenLocationFields.city.val('');
                     hiddenLocationFields.area.val('');
+                    manualLocationFields.state.val('');
+                    manualLocationFields.city.val('');
+                    manualLocationFields.area.val('');
                     return $.Deferred().resolve([]).promise();
                 }
 
@@ -251,10 +305,12 @@
                     const states = getResponseItems(response, 'states');
                     populateSelect(locationSelects.state, states, config.labels.selectState, (item) => item.id, (item) => item.name);
                     populateSelect(locationSelects.city, [], config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item, (item) => item);
+                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
                     hiddenLocationFields.state.val('');
                     hiddenLocationFields.city.val('');
                     hiddenLocationFields.area.val('');
+                    manualLocationFields.city.val('');
+                    manualLocationFields.area.val('');
                     return states;
                 });
             }
@@ -262,32 +318,36 @@
             function loadCities(stateId) {
                 if (!stateId) {
                     populateSelect(locationSelects.city, [], config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item, (item) => item);
+                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
                     hiddenLocationFields.city.val('');
                     hiddenLocationFields.area.val('');
+                    manualLocationFields.city.val('');
+                    manualLocationFields.area.val('');
                     return $.Deferred().resolve([]).promise();
                 }
 
                 return $.get(config.routes.cities, { state_id: stateId }).then((response) => {
                     const cities = getResponseItems(response, 'cities');
                     populateSelect(locationSelects.city, cities, config.labels.selectCity, (item) => item.id, (item) => item.name);
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item, (item) => item);
+                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
                     hiddenLocationFields.city.val('');
                     hiddenLocationFields.area.val('');
+                    manualLocationFields.area.val('');
                     return cities;
                 });
             }
 
             function loadAreas(cityId) {
                 if (!cityId) {
-                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item, (item) => item);
+                    populateSelect(locationSelects.area, [], config.labels.selectArea, (item) => item.id, (item) => item.name);
                     hiddenLocationFields.area.val('');
+                    manualLocationFields.area.val('');
                     return $.Deferred().resolve([]).promise();
                 }
 
                 return $.get(config.routes.areas, { city_id: cityId }).then((response) => {
                     const areas = getResponseItems(response, 'areas');
-                    populateSelect(locationSelects.area, areas, config.labels.selectArea, (item) => item, (item) => item);
+                    populateSelect(locationSelects.area, areas, config.labels.selectArea, (item) => item.id, (item) => item.name);
                     hiddenLocationFields.area.val('');
                     return areas;
                 });
@@ -299,6 +359,12 @@
 
                 if (!matchingCountryValue) {
                     setHiddenField(locationSelects.country, hiddenLocationFields.country);
+                    manualLocationFields.state.val(oldLocation.state || '');
+                    manualLocationFields.city.val(oldLocation.city || '');
+                    manualLocationFields.area.val(oldLocation.area || '');
+                    syncManualField('state');
+                    syncManualField('city');
+                    syncManualField('area');
                     return loadStates(locationSelects.country.val());
                 }
 
@@ -309,27 +375,42 @@
                     const matchingStateValue = findMatchingOptionValue(locationSelects.state, [oldLocation.state]);
 
                     if (!matchingStateValue) {
+                        manualLocationFields.state.val(oldLocation.state || '');
+                        syncManualField('state');
+                        manualLocationFields.city.val(oldLocation.city || '');
+                        syncManualField('city');
+                        manualLocationFields.area.val(oldLocation.area || '');
+                        syncManualField('area');
                         return $.Deferred().resolve().promise();
                     }
 
                     locationSelects.state.val(matchingStateValue);
-                    setHiddenField(locationSelects.state, hiddenLocationFields.state);
+                    manualLocationFields.state.val('');
+                    syncManualField('state');
 
                     return loadCities(matchingStateValue).then(() => {
                         const matchingCityValue = findMatchingOptionValue(locationSelects.city, [oldLocation.city]);
 
                         if (!matchingCityValue) {
+                            manualLocationFields.city.val(oldLocation.city || '');
+                            syncManualField('city');
+                            manualLocationFields.area.val(oldLocation.area || '');
+                            syncManualField('area');
                             return $.Deferred().resolve().promise();
                         }
 
                         locationSelects.city.val(matchingCityValue);
-                        setHiddenField(locationSelects.city, hiddenLocationFields.city);
+                        manualLocationFields.city.val('');
+                        syncManualField('city');
 
                         return loadAreas(matchingCityValue).then(() => {
                             const matchingAreaValue = findMatchingOptionValue(locationSelects.area, [oldLocation.area]);
                             if (matchingAreaValue) {
                                 locationSelects.area.val(matchingAreaValue);
-                                setHiddenField(locationSelects.area, hiddenLocationFields.area);
+                                syncManualField('area');
+                            } else {
+                                manualLocationFields.area.val(oldLocation.area || '');
+                                syncManualField('area');
                             }
                         });
                     });
@@ -390,7 +471,8 @@
 
                             if (matchingAreaValue) {
                                 locationSelects.area.val(matchingAreaValue);
-                                setHiddenField(locationSelects.area, hiddenLocationFields.area);
+                                manualLocationFields.area.val('');
+                                syncManualField('area');
                             }
                         });
                     });
@@ -403,18 +485,43 @@
             });
 
             locationSelects.state.on('change', function () {
-                setHiddenField(locationSelects.state, hiddenLocationFields.state);
+                if ($(this).val()) {
+                    manualLocationFields.state.val('');
+                }
+                syncManualField('state');
                 loadCities($(this).val());
             });
 
             locationSelects.city.on('change', function () {
-                setHiddenField(locationSelects.city, hiddenLocationFields.city);
+                if ($(this).val()) {
+                    manualLocationFields.city.val('');
+                }
+                syncManualField('city');
                 loadAreas($(this).val());
             });
 
             locationSelects.area.on('change', function () {
-                setHiddenField(locationSelects.area, hiddenLocationFields.area);
+                if ($(this).val()) {
+                    manualLocationFields.area.val('');
+                }
+                syncManualField('area');
             });
+
+            ['state', 'city', 'area'].forEach((key) => {
+                if (!manualLocationFields[key]?.length) {
+                    return;
+                }
+
+                manualLocationFields[key].attr('placeholder', config.labels[`type${key.charAt(0).toUpperCase()}${key.slice(1)}`] || '');
+                manualLocationFields[key].on('input', function () {
+                    syncManualField(key, $(this).val());
+                });
+            });
+
+            syncLocationFieldsBeforeSubmit = function () {
+                setHiddenField(locationSelects.country, hiddenLocationFields.country);
+                ['state', 'city', 'area'].forEach((key) => syncManualField(key));
+            };
 
             restoreLocationSelections();
         });

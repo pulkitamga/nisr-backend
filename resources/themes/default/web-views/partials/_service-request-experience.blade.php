@@ -141,8 +141,10 @@
 
                             <div class="form-group col-lg-6">
                                 <label>{{ translate('state') }} <span class="text-danger">*</span></label>
-                                <select id="address-state" class="form-control @error('state') is-invalid @enderror" required></select>
+                                <select id="address-state" class="form-control @error('state') is-invalid @enderror"></select>
+                                <input type="text" name="state_manual" id="address-state-manual" class="form-control mt-2 @error('state') is-invalid @enderror" value="{{ old('state_manual', old('state')) }}" placeholder="{{ translate('Type state if not available') }}">
                                 <input type="hidden" name="state" id="state_name" value="{{ old('state') }}">
+                                <small class="form-text">{{ translate('Select from list or type manually.') }}</small>
                                 @error('state')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
@@ -150,8 +152,10 @@
 
                             <div class="form-group col-lg-6">
                                 <label>{{ translate('city') }} <span class="text-danger">*</span></label>
-                                <select id="address-city" class="form-control @error('city') is-invalid @enderror" required></select>
+                                <select id="address-city" class="form-control @error('city') is-invalid @enderror"></select>
+                                <input type="text" name="city_manual" id="address-city-manual" class="form-control mt-2 @error('city') is-invalid @enderror" value="{{ old('city_manual', old('city')) }}" placeholder="{{ translate('Type city if not available') }}">
                                 <input type="hidden" name="city" id="city_name" value="{{ old('city') }}">
+                                <small class="form-text">{{ translate('Select from list or type manually.') }}</small>
                                 @error('city')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
@@ -159,8 +163,10 @@
 
                             <div class="form-group col-lg-6">
                                 <label>{{ translate('area') }} <span class="text-danger">*</span></label>
-                                <select id="address-area" class="form-control @error('area') is-invalid @enderror" required></select>
+                                <select id="address-area" class="form-control @error('area') is-invalid @enderror"></select>
+                                <input type="text" name="area_manual" id="address-area-manual" class="form-control mt-2 @error('area') is-invalid @enderror" value="{{ old('area_manual', old('area')) }}" placeholder="{{ translate('Type area if not available') }}">
                                 <input type="hidden" name="area" id="area_name" value="{{ old('area') }}">
+                                <small class="form-text">{{ translate('Select from list or type manually.') }}</small>
                                 @error('area')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror

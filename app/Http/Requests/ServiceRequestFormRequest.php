@@ -7,6 +7,30 @@ use Illuminate\Validation\Rule;
 
 class ServiceRequestFormRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $normalized = [];
+
+        foreach (['country', 'state', 'city', 'area', 'address'] as $field) {
+            $value = $this->input($field);
+
+            if (is_string($value)) {
+                $normalized[$field] = trim($value);
+            }
+        }
+
+        foreach (['state', 'city', 'area'] as $field) {
+            $manualField = $field . '_manual';
+            $manualValue = trim((string)$this->input($manualField, ''));
+
+            if ($manualValue !== '') {
+                $normalized[$field] = $manualValue;
+            }
+        }
+
+        $this->merge($normalized);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */

@@ -31,6 +31,9 @@
         'selectState' => translate('Select State'),
         'selectCity' => translate('Select City'),
         'selectArea' => translate('Select Area'),
+        'typeState' => translate('Type state if not available'),
+        'typeCity' => translate('Type city if not available'),
+        'typeArea' => translate('Type area if not available'),
     ],
 ])
 
