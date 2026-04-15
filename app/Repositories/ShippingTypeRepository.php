@@ -35,7 +35,9 @@ class ShippingTypeRepository implements ShippingTypeRepositoryInterface
 
     public function update(string $id, array $data): bool
     {
-        return $this->shippingType->where('id',$id)->update($data);
+        $shippingType = $this->shippingType->find($id);
+
+        return $shippingType ? $shippingType->update($data) : false;
     }
 
     public function delete(array $params): bool

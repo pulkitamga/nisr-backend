@@ -49,6 +49,7 @@ class AccessGuardEnforcementTest extends TestCase
         config()->set('access.runtime_ip', '127.0.0.1');
 
         Route::middleware(['admin', 'access'])->get('/admin/_access-check', [AccessGuardPlainAdminController::class, '__invoke']);
+        Route::middleware(['access'])->get('/api/_access-check', static fn () => response('ok'));
 
         $admin = new Admin();
         $admin->forceFill(['id' => 1]);
@@ -87,6 +88,16 @@ class AccessGuardEnforcementTest extends TestCase
 
         $this->withServerVariables(['HTTP_HOST' => 'localhost'])
             ->get('/admin/_access-check')
+            ->assertOk()
+            ->assertSee('ok');
+    }
+
+    public function test_access_middleware_bypasses_api_routes_even_without_state(): void
+    {
+        config()->set('access.protected_paths', ['api', 'api/*', 'admin', 'admin/*']);
+
+        $this->withServerVariables(['HTTP_HOST' => 'localhost'])
+            ->get('/api/_access-check')
             ->assertOk()
             ->assertSee('ok');
     }

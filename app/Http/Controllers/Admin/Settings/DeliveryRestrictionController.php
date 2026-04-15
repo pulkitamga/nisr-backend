@@ -20,6 +20,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use App\Models\State;
 use App\Models\City;
 use App\Models\DeliveryArea;
@@ -154,7 +155,7 @@ class DeliveryRestrictionController extends BaseController
         // Keep persisted state consistent even if previous data was invalid.
         $normalizedStatuses = $this->normalizeHierarchyStatuses($this->getHierarchyStatuses());
         $this->persistHierarchyStatuses($normalizedStatuses);
-        clearWebConfigCacheKeys();
+        $this->clearDeliveryRestrictionCaches();
 
         if ($request->ajax()) {
             return response()->json([
@@ -239,6 +240,7 @@ class DeliveryRestrictionController extends BaseController
         foreach ($request->input('country_code') as $code) {
             $this->deliveryCountryCodeRepo->add(data: ['country_code' => $code, 'created_at' => now()]);
         }
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_country_added_successfully'));
         return back();
     }
@@ -246,6 +248,7 @@ class DeliveryRestrictionController extends BaseController
     public function delete(Request $request): RedirectResponse
     {
         $this->deliveryCountryCodeRepo->delete(params: ['id' => $request['id']]);
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_country_deleted_successfully'));
         return back();
     }
@@ -255,6 +258,7 @@ class DeliveryRestrictionController extends BaseController
         foreach ($request->input('state') as $code) {
             $this->deliveryStateRepo->add(data: ['state_id' => $code, 'created_at' => now()]);
         }
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_state_added_successfully'));
         return back();
     }
@@ -262,6 +266,7 @@ class DeliveryRestrictionController extends BaseController
     public function deleteState(Request $request): RedirectResponse
     {
         $this->deliveryStateRepo->delete(params: ['id' => $request['id']]);
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_state_deleted_successfully'));
         return back();
     }
@@ -271,6 +276,7 @@ class DeliveryRestrictionController extends BaseController
         foreach ($request->input('city') as $code) {
             $this->deliveryCityRepo->add(data: ['city_id' => $code, 'created_at' => now()]);
         }
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_city_added_successfully'));
         return back();
     }
@@ -278,6 +284,7 @@ class DeliveryRestrictionController extends BaseController
     public function deleteCity(Request $request): RedirectResponse
     {
         $this->deliveryCityRepo->delete(params: ['id' => $request['id']]);
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_state_deleted_successfully'));
         return back();
     }
@@ -294,6 +301,7 @@ class DeliveryRestrictionController extends BaseController
         foreach ($zipCodes as $code) {
             $this->deliveryZipCodeRepo->add(data: ['zipcode' => $code]);
         }
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_zip_code_added_successfully'));
         return back();
     }
@@ -301,6 +309,7 @@ class DeliveryRestrictionController extends BaseController
     public function deleteZipCode(Request $request): RedirectResponse
     {
         $this->deliveryZipCodeRepo->delete(params: ['id' => $request['id']]);
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_zip_code_deleted_successfully'));
         return back();
     }
@@ -310,6 +319,7 @@ class DeliveryRestrictionController extends BaseController
         foreach ($request->input('area') as $code) {
             $this->deliveryAreaRepo->add(data: ['area_id' => $code, 'created_at' => now()]);
         }
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_area_added_successfully'));
         return back();
     }
@@ -319,6 +329,7 @@ class DeliveryRestrictionController extends BaseController
     public function deleteArea(Request $request): RedirectResponse
     {
         $this->deliveryAreaRepo->delete(params: ['id' => $request['id']]);
+        $this->clearDeliveryRestrictionCaches();
         Toastr::success(translate('delivery_area_deleted_successfully'));
         return back();
     }
@@ -357,12 +368,13 @@ class DeliveryRestrictionController extends BaseController
     {
         $this->businessSettingRepo->updateOrInsert(type: 'delivery_zip_code_area_restriction', value: $request->get('status', 0));
         if ($request->ajax()) {
+            $this->clearDeliveryRestrictionCaches();
             return response()->json([
                 'message' => translate('delivery_zip_code_restriction_status_changed_successfully'),
                 'status' => true,
             ]);
         }
-        clearWebConfigCacheKeys();
+        $this->clearDeliveryRestrictionCaches();
         return back();
     }
 
@@ -374,5 +386,15 @@ class DeliveryRestrictionController extends BaseController
             settingType: 'delivery_area_restriction',
             successMessage: translate('delivery_area_restriction_status_changed_successfully'),
         );
+    }
+
+    private function clearDeliveryRestrictionCaches(): void
+    {
+        clearWebConfigCacheKeys();
+        Cache::forget(CACHE_DELIVERY_RESTRICTION_SETUP);
+        Cache::forget('delivery_allowed_country_codes');
+        Cache::forget('delivery_allowed_states');
+        Cache::forget('delivery_allowed_cities');
+        Cache::forget('delivery_allowed_areas');
     }
 }

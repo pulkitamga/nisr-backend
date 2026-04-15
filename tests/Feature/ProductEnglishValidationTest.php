@@ -10,6 +10,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ProductEnglishValidationTest extends TestCase
@@ -395,6 +396,51 @@ class ProductEnglishValidationTest extends TestCase
         $this->assertSame('20', $request->input('included_km_mobile'));
         $this->assertSame('1', $request->input('travel_fee_per_km'));
         $this->assertSame('0.5', $request->input('labor_hours'));
+    }
+
+    public function test_add_request_accepts_supported_product_image_formats(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validPayload(), [], [
+            'image' => UploadedFile::fake()->create('thumbnail.webp', 1024, 'image/webp'),
+            'images' => [
+                UploadedFile::fake()->create('gallery.tiff', 1024, 'image/tiff'),
+            ],
+            'meta_image' => UploadedFile::fake()->create('meta.bmp', 1024, 'image/bmp'),
+        ]);
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertFalse($validator->fails(), json_encode($validator->errors()->toArray()));
+    }
+
+    public function test_add_request_rejects_unsupported_product_image_formats_with_clear_message(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validPayload(), [], [
+            'image' => UploadedFile::fake()->create('thumbnail.txt', 10, 'text/plain'),
+        ]);
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
+            $validator->errors()->first('image')
+        );
+    }
+
+    public function test_add_request_rejects_oversized_product_images_with_clear_message(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validPayload(), [], [
+            'image' => UploadedFile::fake()->create('thumbnail.webp', 25000, 'image/webp'),
+        ]);
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            translate('file_size_too_big') . '. ' . translate('max') . ' 20 MB.',
+            $validator->errors()->first('image')
+        );
     }
 
     public function test_update_request_normalizes_all_service_scalar_fields_before_validation(): void

@@ -118,6 +118,12 @@ class ShippingMethodController extends BaseController
      */
     public function add(ShippingMethodRequest $request): RedirectResponse
     {
+        $adminShipping = $this->shippingTypeRepo->getFirstWhere(params: ['seller_id' => 0]);
+        if ($adminShipping && $adminShipping->shipping_type !== 'order_wise') {
+            Toastr::error(translate('access_denied'));
+            return redirect()->back();
+        }
+
         $saved = $this->shippingMethodRepo->add($this->shippingMethodService->addShippingMethodData(request: $request, addedBy: 'admin'));
         $this->translationRepo->add(request: $request, model: 'App\Models\ShippingMethod', id: $saved->id);
         Toastr::success(translate('successfully_added'));

@@ -631,6 +631,11 @@ class WebController extends Controller
             return in_array($country['code'], $shippingCountryCodes);
         }));
 
+        $deliveryRestriction['single_country_mode'] = count($shippingCountries) === 1;
+        $deliveryRestriction['default_country_code'] = $deliveryRestriction['single_country_mode']
+            ? strtoupper((string)($shippingCountries[0]['code'] ?? ''))
+            : null;
+
         // --- Billing Countries (all countries that have states) ---
         $billingCountryCodes = State::distinct()->pluck('country')->toArray();
         $billingCountries = array_values(array_filter($allCountries, function ($country) use ($billingCountryCodes) {

@@ -458,6 +458,7 @@ if (!function_exists('cacheRemoveByType')) {
             Cache::forget(CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS);
         } else if ($type == 'shipping_types') {
             Cache::forget(CACHE_FOR_IN_HOUSE_SHIPPING_TYPE);
+            Cache::forget(CACHE_DELIVERY_RESTRICTION_SETUP);
         } else if ($type == 'sellers' || $type == 'shops') {
             Cache::forget(CACHE_FOR_IN_HOUSE_ALL_PRODUCTS);
             Cache::forget(CACHE_FOR_HOME_PAGE_TOP_VENDORS_LIST);

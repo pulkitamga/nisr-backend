@@ -17,6 +17,51 @@ class InventoryMutationService
 {
     private ?VariantMatcher $variantMatcher = null;
 
+    public function seedInitialPhysicalInventory(Product $product, int $branchId): array
+    {
+        if ($product->product_type !== 'physical') {
+            return ['status' => true, 'message' => ''];
+        }
+
+        try {
+            $resolvedBranchId = $branchId > 0 ? $branchId : $this->resolvePosBranchId($product);
+            $variations = json_decode($product->variation ?? '[]', true);
+
+            if (!is_array($variations) || count($variations) === 0) {
+                $this->seedInitialStockRow(
+                    product: $product,
+                    branchId: $resolvedBranchId,
+                    variantType: null,
+                    qty: (int)($product->current_stock ?? 0),
+                    sku: $product->code,
+                    price: (float)($product->unit_price ?? 0)
+                );
+
+                return ['status' => true, 'message' => ''];
+            }
+
+            foreach ($variations as $variation) {
+                $variantType = $this->normalizeVariantType($variation['type'] ?? null);
+                if ($variantType === null) {
+                    continue;
+                }
+
+                $this->seedInitialStockRow(
+                    product: $product,
+                    branchId: $resolvedBranchId,
+                    variantType: $variantType,
+                    qty: (int)($variation['qty'] ?? 0),
+                    sku: (string)($variation['sku'] ?? $product->code ?? ''),
+                    price: (float)($variation['price'] ?? $product->unit_price ?? 0)
+                );
+            }
+
+            return ['status' => true, 'message' => ''];
+        } catch (\Throwable $exception) {
+            return ['status' => false, 'message' => $exception->getMessage()];
+        }
+    }
+
     public function decreaseForPosLine(
         int $productId,
         int $qty,
@@ -472,24 +517,30 @@ class InventoryMutationService
         $stock = $stockRows->first(function (ManageBranchProductStock $row) use ($variantType) {
             if (is_null($variantType)) {
                 return $this->getVariantMatcher()->isDefault($row->variation_type ?? null)
-                    || $this->getVariantMatcher()->isDefault($row->variation_key ?? null);
+                    || $this->getVariantMatcher()->isDefault($row->variation_key ?? null)
+                    || $this->getVariantMatcher()->isDefault($row->attributes ?? null);
             }
 
             return $this->getVariantMatcher()->matches($row->variation_type ?? null, $variantType)
-                || $this->getVariantMatcher()->matches($row->variation_key ?? null, $variantType);
+                || $this->getVariantMatcher()->matches($row->variation_key ?? null, $variantType)
+                || $this->getVariantMatcher()->matches($row->attributes ?? null, $variantType);
         });
 
         if ($stock || !$createIfMissing) {
             return $stock;
         }
 
-        return ManageBranchProductStock::query()->create([
-            'branch_id' => $branchId,
-            'product_id' => $productId,
-            'variation_type' => $variantType,
-            'variation_key' => $variantType,
-            'current_stock' => 0,
-        ]);
+        return ManageBranchProductStock::query()->create(array_merge(
+            ManageBranchProductStock::buildInventoryLookup(
+                branchId: $branchId,
+                productId: $productId,
+                variantType: $variantType
+            ),
+            ManageBranchProductStock::buildInventoryValues(
+                currentStock: 0,
+                variantType: $variantType
+            )
+        ));
     }
 
     private function getOrCreateProductStockRow(Product $product, ?string $variantType): ProductStock
@@ -538,6 +589,51 @@ class InventoryMutationService
         }
 
         return 0;
+    }
+
+    private function seedInitialStockRow(
+        Product $product,
+        int $branchId,
+        ?string $variantType,
+        int $qty,
+        ?string $sku,
+        float $price
+    ): void {
+        $normalizedQty = max(0, $qty);
+
+        $productStock = ProductStock::query()->updateOrCreate(
+            [
+                'product_id' => $product->id,
+                'variant' => $variantType,
+            ],
+            [
+                'sku' => $sku !== '' ? $sku : null,
+                'price' => $price,
+                'qty' => $normalizedQty,
+            ]
+        );
+
+        ManageBranchProductStock::query()->updateOrCreate(
+            ManageBranchProductStock::buildInventoryLookup(
+                branchId: $branchId,
+                productId: (int)$product->id,
+                variantType: $variantType
+            ),
+            ManageBranchProductStock::buildInventoryValues(
+                currentStock: $normalizedQty,
+                variantType: $variantType
+            )
+        );
+
+        if ($normalizedQty > 0) {
+            ProductStockTransaction::logStockIn(
+                $productStock,
+                $normalizedQty,
+                StockReason::INITIAL_STOCK,
+                'Initial stock added on product creation',
+                $branchId
+            );
+        }
     }
 
     private function canUpdateVariationQty(Product $product, ?string $variantType, int $delta): bool

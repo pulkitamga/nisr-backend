@@ -19,6 +19,7 @@
     if (!$servicesSetting) {
         $selectedProductType = 'physical';
     }
+    $shouldReloadFreshAddPage = !$errors->any() && !session()->hasOldInput();
     $videoSectionOpen = filled((string) old('video_url', '')) || $errors->has('video_url');
     $seoSectionOpen = filled((string) old('meta_title', ''))
         || filled((string) old('meta_description', ''))
@@ -36,7 +37,7 @@
         </h2>
     </div>
 
-    <form class="product-form text-start" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="product_form">
+    <form class="product-form text-start" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="product_form" autocomplete="off" data-reload-on-restore="{{ $shouldReloadFreshAddPage ? '1' : '0' }}">
         @csrf
         <div class="product-form-section-block mt-0" id="section-basic">
             <div class="product-form-section-heading">
@@ -153,7 +154,7 @@
                             <select class="js-select2-custom form-control action-get-request-onchange" name="category_id" data-url-prefix="{{ url('/admin/products/get-categories?parent_id=') }}" data-element-id="sub-category-select" data-element-type="select" required>
                                 <option value="{{ old('category_id') }}" selected disabled>{{ translate('select_category') }}</option>
                                 @foreach ($categories as $category)
-                                <option value="{{ $category['id'] }}" {{ old('name') == $category['id'] ? 'selected' : '' }}>
+                                <option value="{{ $category['id'] }}" {{ old('category_id') == $category['id'] ? 'selected' : '' }}>
                                     {{ $category['defaultName'] }}
                                 </option>
                                 @endforeach
@@ -784,7 +785,7 @@
                                         <span class="input-required-icon">*</span>
                                     </label>
                                     <span class="badge badge-soft-info">{{ THEME_RATIO[theme_root_path()]['Product Image'] }}</span>
-                                    <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" title="{{ translate('add_your_products_thumbnail_in') }} JPG, PNG or JPEG {{ translate('format_within') }} 2MB">
+                                    <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" title="{{ translate('add_your_products_thumbnail_in') }} JPG, PNG, JPEG, WEBP, GIF, BMP, TIF {{ translate('or') }} TIFF {{ translate('format_within') }} 20MB">
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </div>
@@ -810,9 +811,9 @@
                                 </div>
 
                                 <p class="text-muted mt-2 fz-12">
-                                    {{ translate('image_format') }} : {{ "Jpg, png, jpeg, webp," }}
+                                    {{ translate('image_format') }} : {{ "Jpg, png, jpeg, webp, gif, bmp, tif, tiff" }}
                                     <br>
-                                    {{ translate('image_size') }} : {{ translate('max') }} {{ "2 MB" }}
+                                    {{ translate('image_size') }} : {{ translate('max') }} {{ "20 MB" }}
                                 </p>
                             </div>
                         </div>
@@ -985,7 +986,7 @@
                                             {{ translate('meta_Image') }}
                                         </label>
                                         <span class="badge badge-soft-info">{{ THEME_RATIO[theme_root_path()]['Meta Thumbnail'] }}</span>
-                                        <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" title="{{ translate('add_Meta_Image_in') }} JPG, PNG or JPEG {{ translate('format_within') }} 2MB, {{ translate('which_will_be_shown_in_search_engine_results') }}.">
+                                        <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" title="{{ translate('add_Meta_Image_in') }} JPG, PNG, JPEG, WEBP, GIF, BMP, TIF {{ translate('or') }} TIFF {{ translate('format_within') }} 20MB, {{ translate('which_will_be_shown_in_search_engine_results') }}.">
                                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                         </span>
                                     </div>
@@ -1037,12 +1038,12 @@
 <span id="image-path-of-product-upload-icon-two" data-path="{{ dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg') }}"></span>
 <span id="message-enter-choice-values" data-text="{{ translate('enter_choice_values') }}"></span>
 <span id="message-upload-image" data-text="{{ translate('upload_Image') }}"></span>
-<span id="message-file-size-too-big" data-text="{{ translate('file_size_too_big') }}"></span>
+<span id="message-file-size-too-big" data-text="{{ translate('file_size_too_big') . '. ' . translate('max') . ' 20 MB.' }}"></span>
 <span id="message-are-you-sure" data-text="{{ translate('are_you_sure') }}"></span>
 <span id="message-yes-word" data-text="{{ translate('yes') }}"></span>
 <span id="message-no-word" data-text="{{ translate('no') }}"></span>
 <span id="message-want-to-add-or-update-this-product" data-text="{{ translate('want_to_add_this_product') }}"></span>
-<span id="message-please-only-input-png-or-jpg" data-text="{{ translate('please_only_input_png_or_jpg_type_file') }}"></span>
+<span id="message-please-only-input-png-or-jpg" data-text="{{ translate('the_image_format_is_not_supported') . '. ' . translate('supported_format_are') . ': JPG, JPEG, PNG, WEBP, GIF, BMP, TIF, TIFF.' }}"></span>
 <span id="message-product-added-successfully" data-text="{{ translate('product_added_successfully') }}"></span>
 <span id="message-product-name-in-english-required" data-text="{{ translate('The_name_in_english_is_required') }}"></span>
 <span id="message-product-description-in-english-required" data-text="{{ translate('The_description_in_english_is_required') }}"></span>
@@ -1060,6 +1061,22 @@
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-add-update.js') }}"></script>
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/product-add-colors-img.js') }}"></script>
 <script>
+    window.addEventListener('pageshow', function(event) {
+        const productForm = document.getElementById('product_form');
+        if (!productForm || productForm.dataset.reloadOnRestore !== '1') {
+            return;
+        }
+
+        const navigationEntry = performance.getEntriesByType
+            ? performance.getEntriesByType('navigation')[0]
+            : null;
+        const isBackForwardRestore = event.persisted || navigationEntry?.type === 'back_forward';
+
+        if (isBackForwardRestore) {
+            window.location.reload();
+        }
+    });
+
     // Language switcher functionality
     document.addEventListener('DOMContentLoaded', function() {
         const tabs = document.querySelectorAll('.language-tab');

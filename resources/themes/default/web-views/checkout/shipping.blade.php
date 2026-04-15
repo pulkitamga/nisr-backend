@@ -19,6 +19,10 @@
 @php($shippingCityVisible = (bool)($shippingRestrictionSetup['city']['visible'] ?? false) && $shippingStateVisible)
 @php($shippingAreaVisible = (bool)($shippingRestrictionSetup['area']['visible'] ?? false) && $shippingCityVisible)
 @php($shippingZipVisible = (bool)($shippingRestrictionSetup['zip']['visible'] ?? false))
+@php($singleBillingCountryMode = count($billingCountries ?? []) === 1)
+@php($billingStateVisible = $shippingStateVisible)
+@php($billingCityVisible = $shippingCityVisible)
+@php($billingAreaVisible = $shippingAreaVisible)
 
 <style>
     .delivery-radio-btn {
@@ -655,22 +659,21 @@
                                                         </div>
                                                     </div>
                                                 <div class="row">
-                                                    @php($singleBillingCountry = count($billingCountries) === 1)
-                                                    <div class="col-6 @if($singleBillingCountry) d-none single-country-hidden @endif" id="billing-country-wrapper" @if($singleBillingCountry) data-single-country @endif>
+                                                    <div class="col-6 @if($singleBillingCountryMode) d-none single-country-hidden @endif" id="billing-country-wrapper" @if($singleBillingCountryMode) data-single-country @endif>
                                                         <div class="form-group">
-                                                            <label @if($singleBillingCountry) class="d-none" @endif>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_country">*</span></label>
+                                                            <label @if($singleBillingCountryMode) class="d-none" @endif>{{ translate('country') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_country">*</span></label>
                                                             <select name="billing_country" id="billing_country" class="form-control">
-                                                                @if(!$singleBillingCountry)
+                                                                @if(!$singleBillingCountryMode)
                                                                 <option value="">{{ translate('select_country') }}</option>
                                                                 @endif
                                                                 @foreach($billingCountries as $bc)
-                                                                <option value="{{ $bc['code'] }}" {{ $loop->first && $singleBillingCountry ? 'selected' : '' }}>{{ $bc['name'] }}</option>
+                                                                <option value="{{ $bc['code'] }}" {{ $loop->first && $singleBillingCountryMode ? 'selected' : '' }}>{{ $bc['name'] }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-6">
+                                                    <div class="col-6 @if(!$billingStateVisible) d-none @endif" id="billing-state-wrapper">
                                                         <div class="form-group">
                                                             <label>{{ translate('state') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_state">*</span></label>
                                                             <select name="billing_state_id" id="billing_state_id" class="form-control">
@@ -681,7 +684,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-6">
+                                                    <div class="col-6 @if(!$billingCityVisible) d-none @endif" id="billing-city-wrapper">
                                                         <div class="form-group">
                                                             <label>{{ translate('city') }} <span class="text-danger checkout-required-indicator" data-required-indicator="billing_city">*</span></label>
                                                             <select name="billing_city_id" id="billing_city_id" class="form-control">
@@ -692,7 +695,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-6">
+                                                    <div class="col-6 @if(!$billingAreaVisible) d-none @endif" id="billing-area-wrapper">
                                                         <div class="form-group">
                                                             <label>{{ translate('area') }}<!--  <span class="text-danger">*</span>--></label>
                                                             <select name="billing_area_id" id="billing_area" class="form-control">
@@ -857,7 +860,8 @@
       data-city-visible="{{ $shippingCityVisible ? 1 : 0 }}"
       data-area-visible="{{ $shippingAreaVisible ? 1 : 0 }}"
       data-zip-visible="{{ $shippingZipVisible ? 1 : 0 }}"
-      data-single-country-mode="{{ $singleShippingCountryMode ? 1 : 0 }}"></span>
+      data-single-country-mode="{{ $singleShippingCountryMode ? 1 : 0 }}"
+      data-billing-single-country-mode="{{ $singleBillingCountryMode ? 1 : 0 }}"></span>
 @endsection
 
 @push('script')
@@ -1037,6 +1041,9 @@
                 billing_country: this.value
             }, function(res) {
                 renderOptions('#billing_state_id', res.states, "{{ __('Select State') }}", true);
+                if (typeof syncBillingLocationFieldVisibility === 'function') {
+                    syncBillingLocationFieldVisibility();
+                }
             });
         });
 
@@ -1047,6 +1054,9 @@
                 billing_state_id: this.value
             }, function(res) {
                 renderOptions('#billing_city_id', res.cities, "{{ __('Select City') }}");
+                if (typeof syncBillingLocationFieldVisibility === 'function') {
+                    syncBillingLocationFieldVisibility();
+                }
             });
         });
 
@@ -1057,6 +1067,9 @@
                 billing_city_id: this.value
             }, function(res) {
                 renderOptions('#billing_area', res.areas, "{{ __('Select Area') }}");
+                if (typeof syncBillingLocationFieldVisibility === 'function') {
+                    syncBillingLocationFieldVisibility();
+                }
             });
         });
 
@@ -1089,6 +1102,10 @@
 
         if ($('#billing_country').val()) {
             $('#billing_country').trigger('change');
+        }
+
+        if (typeof syncBillingLocationFieldVisibility === 'function') {
+            syncBillingLocationFieldVisibility();
         }
     });
 </script>

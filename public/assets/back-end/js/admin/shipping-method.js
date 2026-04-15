@@ -46,7 +46,7 @@ function shippingType(shippingTypeValue){
         $('#product_wise_note').hide();
         $('#area_wise_shipping').hide();
         $('#update_category_shipping_cost').hide();
-        $('#order_wise_shipping').show();
+        $('#order_wise_shipping').hide();
     } else {
         $('#update_category_shipping_cost').hide();
         $('#order_wise_shipping').hide();

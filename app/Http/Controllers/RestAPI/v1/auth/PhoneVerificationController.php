@@ -4,6 +4,7 @@ namespace App\Http\Controllers\RestAPI\v1\auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\PhoneOrEmailVerification;
+use App\Services\ApiAccessTokenService;
 use App\Models\User;
 use App\Utils\Helpers;
 use App\Utils\SMSModule;
@@ -142,7 +143,7 @@ class PhoneVerificationController extends Controller
             $user->save();
             $verify->delete();
 
-            $token = $user->createToken('LaravelAuthApp')->accessToken;
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
             return response()->json([
                 'message' => translate('otp_verified'),
                 'token' => $token

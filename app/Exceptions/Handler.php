@@ -19,6 +19,7 @@ class Handler extends ExceptionHandler
      */
     protected $dontReport = [
         AccessViolationException::class,
+        AuthTokenIssueException::class,
     ];
 
     /**
@@ -55,6 +56,14 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        if ($exception instanceof AuthTokenIssueException) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => $exception->getMessage()], 503);
+            }
+
+            return response($exception->getMessage(), 503);
+        }
+
         if ($exception instanceof AccessViolationException) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => translate('access_denied')], 403);

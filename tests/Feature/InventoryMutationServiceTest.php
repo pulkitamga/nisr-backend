@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Product;
 use App\Models\ProductStockTransaction;
 use App\Services\InventoryMutationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class InventoryMutationServiceTest extends TestCase
@@ -151,6 +153,62 @@ class InventoryMutationServiceTest extends TestCase
         $this->assertSame(1, DB::table('product_stocks')->where('id', $fixture['product_stock_id'])->count());
     }
 
+    public function test_seed_initial_physical_inventory_creates_creation_time_stock_mirrors(): void
+    {
+        $branchId = $this->createBranch('SeedInit-Branch');
+        $now = now();
+        $productId = (int) DB::table('products')->insertGetId([
+            'added_by' => 'admin',
+            'name' => 'Seed Init Product ' . uniqid(),
+            'slug' => 'seed-init-' . uniqid(),
+            'product_type' => 'physical',
+            'branch_id' => $branchId,
+            'code' => 'SEED-' . uniqid(),
+            'color_image' => '',
+            'variation' => json_encode([
+                [
+                    'type' => 'Left',
+                    'qty' => 4,
+                    'sku' => 'LEFT-' . uniqid(),
+                    'price' => 120,
+                ],
+                [
+                    'type' => 'Right',
+                    'qty' => 6,
+                    'sku' => 'RIGHT-' . uniqid(),
+                    'price' => 130,
+                ],
+            ]),
+            'current_stock' => 10,
+            'unit_price' => 100,
+            'purchase_price' => 80,
+            'tax' => '0.00',
+            'discount' => '0.00',
+            'status' => 1,
+            'featured_status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $product = Product::query()->findOrFail($productId);
+        $service = new InventoryMutationService();
+
+        $response = $service->seedInitialPhysicalInventory($product, $branchId);
+
+        $this->assertTrue($response['status'], $response['message'] ?? 'Initial inventory seed failed');
+        $this->assertSame(2, DB::table('product_stocks')->where('product_id', $productId)->count());
+        $this->assertSame(4, (int) DB::table('product_stocks')->where('product_id', $productId)->where('variant', 'Left')->value('qty'));
+        $this->assertSame(6, (int) DB::table('product_stocks')->where('product_id', $productId)->where('variant', 'Right')->value('qty'));
+
+        $this->assertSame(4, $this->getBranchStockQuantity($productId, $branchId, 'Left'));
+        $this->assertSame(6, $this->getBranchStockQuantity($productId, $branchId, 'Right'));
+
+        $this->assertSame(2, DB::table('product_stock_transactions')->whereIn(
+            'product_stock_id',
+            DB::table('product_stocks')->where('product_id', $productId)->pluck('id')
+        )->count());
+    }
+
     public function test_order_status_delivered_then_returned_is_reversible_for_stock_and_flags(): void
     {
         $branchId = $this->createBranch('OrderFlow-Branch');
@@ -286,5 +344,34 @@ class InventoryMutationServiceTest extends TestCase
         }
 
         return 0;
+    }
+
+    private function getBranchStockQuantity(int $productId, int $branchId, string $variant): int
+    {
+        $variationColumns = [];
+        if (Schema::hasColumn('manage_branch_product_stock', 'variation_key')) {
+            $variationColumns[] = 'variation_key';
+        }
+        if (Schema::hasColumn('manage_branch_product_stock', 'variation_type')) {
+            $variationColumns[] = 'variation_type';
+        }
+        if (Schema::hasColumn('manage_branch_product_stock', 'attributes')) {
+            $variationColumns[] = 'attributes';
+        }
+
+        $query = DB::table('manage_branch_product_stock')
+            ->where('product_id', $productId)
+            ->where('branch_id', $branchId)
+            ->where(function ($variationQuery) use ($variant, $variationColumns) {
+                foreach ($variationColumns as $index => $column) {
+                    if ($index === 0) {
+                        $variationQuery->where($column, $variant);
+                    } else {
+                        $variationQuery->orWhere($column, $variant);
+                    }
+                }
+            });
+
+        return (int) ($query->value('current_stock') ?? 0);
     }
 }

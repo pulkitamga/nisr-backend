@@ -63,6 +63,17 @@ const serviceScalarFieldNames = [
     "travel_fee_per_km",
     "labor_hours",
 ];
+const supportedProductImageExtensions = [
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "gif",
+    "bmp",
+    "tif",
+    "tiff",
+];
+const maxProductImageFileSizeInBytes = 20 * 1024 * 1024;
 
 function getProductLanguageForms() {
     return Array.from(document.querySelectorAll(".form-system-language-form"));
@@ -99,6 +110,33 @@ function showValidationToast(message) {
         CloseButton: true,
         ProgressBar: true,
     });
+}
+
+function getProductImageFileExtension(fileName) {
+    return String(fileName || "")
+        .split(".")
+        .pop()
+        .trim()
+        .toLowerCase();
+}
+
+function validateProductImageFile(file) {
+    if (!file) {
+        return true;
+    }
+
+    const fileExtension = getProductImageFileExtension(file.name);
+    if (!supportedProductImageExtensions.includes(fileExtension)) {
+        showValidationToast(messagePleaseOnlyInputPNGOrJPG);
+        return false;
+    }
+
+    if (file.size > maxProductImageFileSizeInBytes) {
+        showValidationToast(messageFileSizeTooBig);
+        return false;
+    }
+
+    return true;
 }
 
 function openProductLanguageTab(locale) {
@@ -702,6 +740,11 @@ $("#discount_type").on("change", function () {
 });
 
 $(".action-add-more-image").on("change", function () {
+    if (!validateProductImageFile(this.files && this.files[0])) {
+        $(this).val("");
+        return;
+    }
+
     let parentDiv = $(this).closest("div");
     parentDiv.find(".delete_file_input").removeClass("d-none");
     parentDiv.find(".delete_file_input").fadeIn();
@@ -769,6 +812,11 @@ function addMoreImage(thisData, targetSection) {
     }
 
     $(".action-add-more-image").on("change", function () {
+        if (!validateProductImageFile(this.files && this.files[0])) {
+            $(this).val("");
+            return;
+        }
+
         let parentDiv = $(this).closest("div");
         parentDiv.find(".delete_file_input").removeClass("d-none");
         parentDiv.find(".delete_file_input").fadeIn();
@@ -786,7 +834,8 @@ $(function () {
         maxCount: 15,
         rowHeight: "auto",
         groupClassName: "col-6 col-md-4 col-lg-3 col-xl-2",
-        maxFileSize: "",
+        maxFileSize: maxProductImageFileSizeInBytes,
+        allowedExt: supportedProductImageExtensions.join("|"),
         placeholderImage: {
             image: $("#image-path-of-product-upload-icon-two").data("path"),
             width: "100%",
@@ -879,6 +928,11 @@ $(".delete_preview_file_input").on("click", function () {
 bindImageFallbackOnError();
 
 function uploadColorImage(thisData = null) {
+    if (!validateProductImageFile(thisData?.files?.[0])) {
+        $(thisData).val("");
+        return;
+    }
+
     if (thisData) {
         document
             .getElementById(thisData.dataset.imgpreview)

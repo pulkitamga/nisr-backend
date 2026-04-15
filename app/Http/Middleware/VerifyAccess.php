@@ -16,6 +16,10 @@ class VerifyAccess
 
     public function handle(Request $request, Closure $next): Response
     {
+        if ($this->accessGuard->shouldBypassHttpRequest()) {
+            return $next($request);
+        }
+
         $this->accessGuard->ensureValid();
 
         return $next($request);

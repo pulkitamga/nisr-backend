@@ -11,6 +11,7 @@ use App\Events\PasswordResetEvent;
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordResetMail;
 use App\Models\PhoneOrEmailVerification;
+use App\Services\ApiAccessTokenService;
 use App\Services\Web\CustomerAuthService;
 use App\Traits\CustomerTrait;
 use App\User;
@@ -57,36 +58,39 @@ class CustomerAPIAuthController extends Controller
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
+        $referUser = null;
         if ($request['referral_code']) {
-            $refer_user = $this->customerRepo->getFirstWhere(params: ['referral_code' => $request['referral_code']]);
+            $referUser = $this->customerRepo->getFirstWhere(params: ['referral_code' => $request['referral_code']]);
         }
 
-        $temporaryToken = Str::random(40);
+        return DB::transaction(function () use ($request, $referUser): JsonResponse {
+            $temporaryToken = Str::random(40);
 
-        $user = $this->customerRepo->add([
-            'name' => $request['f_name'] . ' ' . $request['l_name'],
-            'f_name' => $request['f_name'],
-            'l_name' => $request['l_name'],
-            'email' => $request['email'],
-            'phone' => $request['phone'],
-            'password' => bcrypt($request['password']),
-            'temporary_token' => $temporaryToken,
-            'referral_code' => Helpers::generate_referer_code(),
-            'referred_by' => $refer_user->id ?? null,
-        ]);
+            $user = $this->customerRepo->add([
+                'name' => $request['f_name'] . ' ' . $request['l_name'],
+                'f_name' => $request['f_name'],
+                'l_name' => $request['l_name'],
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+                'password' => bcrypt($request['password']),
+                'temporary_token' => $temporaryToken,
+                'referral_code' => Helpers::generate_referer_code(),
+                'referred_by' => $referUser->id ?? null,
+            ]);
 
-        $emailVerification = getLoginConfig(key: 'email_verification') ?? 0;
-        $phoneVerification = getLoginConfig(key: 'phone_verification') ?? 0;
+            $emailVerification = getLoginConfig(key: 'email_verification') ?? 0;
+            $phoneVerification = getLoginConfig(key: 'phone_verification') ?? 0;
 
-        if ($phoneVerification && !$user->is_phone_verified) {
-            return response()->json(['temporary_token' => $temporaryToken], 200);
-        }
-        if ($emailVerification && $user->email_verified_at == null) {
-            return response()->json(['temporary_token' => $temporaryToken], 200);
-        }
+            if ($phoneVerification && !$user->is_phone_verified) {
+                return response()->json(['temporary_token' => $temporaryToken], 200);
+            }
+            if ($emailVerification && $user->email_verified_at == null) {
+                return response()->json(['temporary_token' => $temporaryToken], 200);
+            }
 
-        $token = $user->createToken('LaravelAuthApp')->accessToken;
-        return response()->json(['token' => $token], 200);
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
+            return response()->json(['token' => $token], 200);
+        });
     }
 
     public function login(Request $request): JsonResponse
@@ -149,7 +153,7 @@ class CustomerAPIAuthController extends Controller
                     ]], 403);
                 }
 
-                $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
+                $token = app(ApiAccessTokenService::class)->issueForUser(auth()->user());
 
                 $this->customerRepo->updateWhere(params: ['id' => $user['id']], data: [
                     'login_hit_count' => 0,
@@ -377,7 +381,7 @@ class CustomerAPIAuthController extends Controller
                 ]], 403);
             }
 
-            $token = $user->createToken('LaravelAuthApp')->accessToken;
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
             return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
         }
 
@@ -427,7 +431,7 @@ class CustomerAPIAuthController extends Controller
                 ]], 403);
             }
 
-            $token = $user->createToken('LaravelAuthApp')->accessToken;
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
             return response()->json(['message' => translate('OTP_verified'), 'token' => $token, 'status' => true], 200);
         }
 
@@ -454,35 +458,38 @@ class CustomerAPIAuthController extends Controller
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
+        $referUser = null;
         if ($request['referral_code']) {
-            $refer_user = $this->customerRepo->getFirstWhere(params: ['referral_code' => $request['referral_code']]);
+            $referUser = $this->customerRepo->getFirstWhere(params: ['referral_code' => $request['referral_code']]);
         }
 
-        $temporaryToken = Str::random(40);
+        return DB::transaction(function () use ($request, $referUser): JsonResponse {
+            $temporaryToken = Str::random(40);
 
-        $user = $this->customerRepo->add([
-            'f_name' => $request['f_name'],
-            'l_name' => $request['l_name'],
-            'email' => $request['email'],
-            'phone' => $request['phone'],
-            'password' => bcrypt($request['password']),
-            'temporary_token' => $temporaryToken,
-            'referral_code' => Helpers::generate_referer_code(),
-            'referred_by' => $refer_user->id ?? null,
-        ]);
+            $user = $this->customerRepo->add([
+                'f_name' => $request['f_name'],
+                'l_name' => $request['l_name'],
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+                'password' => bcrypt($request['password']),
+                'temporary_token' => $temporaryToken,
+                'referral_code' => Helpers::generate_referer_code(),
+                'referred_by' => $referUser->id ?? null,
+            ]);
 
-        $emailVerification = getLoginConfig(key: 'email_verification') ?? 0;
-        $phoneVerification = getLoginConfig(key: 'phone_verification') ?? 0;
+            $emailVerification = getLoginConfig(key: 'email_verification') ?? 0;
+            $phoneVerification = getLoginConfig(key: 'phone_verification') ?? 0;
 
-        if ($phoneVerification && !$user->is_phone_verified) {
-            return response()->json(['temporary_token' => $temporaryToken], 200);
-        }
-        if ($emailVerification && $user->email_verified_at == null) {
-            return response()->json(['temporary_token' => $temporaryToken], 200);
-        }
+            if ($phoneVerification && !$user->is_phone_verified) {
+                return response()->json(['temporary_token' => $temporaryToken], 200);
+            }
+            if ($emailVerification && $user->email_verified_at == null) {
+                return response()->json(['temporary_token' => $temporaryToken], 200);
+            }
 
-        $token = $user->createToken('LaravelAuthApp')->accessToken;
-        return response()->json(['token' => $token], 200);
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
+            return response()->json(['token' => $token], 200);
+        });
     }
 
 
@@ -549,7 +556,7 @@ class CustomerAPIAuthController extends Controller
                         'created_at' => now(),
                     ]);
             } else {
-                $token = $user->createToken('LaravelAuthApp')->accessToken;
+                $token = app(ApiAccessTokenService::class)->issueForUser($user);
                 $user['is_phone_verified'] = 1;
                 $user->save();
                 return response()->json(['errors' => null, 'token' => $token], 200);
@@ -602,7 +609,7 @@ class CustomerAPIAuthController extends Controller
                 ]], 403);
             }
 
-            $token = $isUserExist->createToken('LaravelAuthApp')->accessToken;
+            $token = app(ApiAccessTokenService::class)->issueForUser($isUserExist);
             return response()->json(['token' => $token, 'status' => true], 200);
         }
 
@@ -633,23 +640,25 @@ class CustomerAPIAuthController extends Controller
             }
         }
 
-        $temporaryToken = Str::random(40);
+        return DB::transaction(function () use ($request): JsonResponse {
+            $temporaryToken = Str::random(40);
 
-        $user = $this->customerRepo->add([
-            'name' => $request['name'],
-            'f_name' => $request['name'],
-            'email' => $request['email'],
-            'phone' => $request['phone'],
-            'password' => bcrypt(rand(11111111, 99999999)),
-            'temporary_token' => $temporaryToken,
-            'app_language' => 'en',
-            'is_phone_verified' => 1,
-            'referral_code' => Helpers::generate_referer_code(),
-            'login_medium' => 'OTP',
-        ]);
+            $user = $this->customerRepo->add([
+                'name' => $request['name'],
+                'f_name' => $request['name'],
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+                'password' => bcrypt(rand(11111111, 99999999)),
+                'temporary_token' => $temporaryToken,
+                'app_language' => 'en',
+                'is_phone_verified' => 1,
+                'referral_code' => Helpers::generate_referer_code(),
+                'login_medium' => 'OTP',
+            ]);
 
-        $token = $user->createToken('LaravelAuthApp')->accessToken;
-        return response()->json(['token' => $token], 200);
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
+            return response()->json(['token' => $token], 200);
+        });
     }
 
     public function customerSocialLogin(Request $request): JsonResponse
@@ -735,7 +744,7 @@ class CustomerAPIAuthController extends Controller
         }
 
         if ($existingUser->email_verified_at != null) {
-            $token = $existingUser->createToken('LaravelAuthApp')->accessToken;
+            $token = app(ApiAccessTokenService::class)->issueForUser($existingUser);
             return response()->json(['token' => $token, 'status' => true], 200);
         } else {
             return response()->json(['user' => $existingUser, 'status' => false], 200);
@@ -772,7 +781,7 @@ class CustomerAPIAuthController extends Controller
             $user->login_medium = $request['medium'];
             $user->save();
 
-            $token = $user->createToken('LaravelAuthApp')->accessToken;
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
             return response()->json(['token' => $token, 'status' => true], 200);
         }
 
@@ -803,27 +812,29 @@ class CustomerAPIAuthController extends Controller
             ]], 403);
         }
 
-        $temporaryToken = Str::random(40);
-        $user = $this->customerRepo->add([
-            'name' => $request['name'],
-            'f_name' => $request['name'],
-            'email' => $request['email'],
-            'phone' => $request['phone'],
-            'password' => bcrypt(rand(11111111, 99999999)),
-            'temporary_token' => $temporaryToken,
-            'app_language' => 'en',
-            'email_verified_at' => now(),
-            'referral_code' => Helpers::generate_referer_code(),
-            'login_medium' => 'social',
-        ]);
+        return DB::transaction(function () use ($request): JsonResponse {
+            $temporaryToken = Str::random(40);
+            $user = $this->customerRepo->add([
+                'name' => $request['name'],
+                'f_name' => $request['name'],
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+                'password' => bcrypt(rand(11111111, 99999999)),
+                'temporary_token' => $temporaryToken,
+                'app_language' => 'en',
+                'email_verified_at' => now(),
+                'referral_code' => Helpers::generate_referer_code(),
+                'login_medium' => 'social',
+            ]);
 
-        $phoneVerificationStatus = getLoginConfig(key: 'phone_verification') ?? 0;
-        if ($phoneVerificationStatus) {
-            return response()->json(['temp_token' => $temporaryToken, 'status' => false]);
-        }
+            $phoneVerificationStatus = getLoginConfig(key: 'phone_verification') ?? 0;
+            if ($phoneVerificationStatus) {
+                return response()->json(['temp_token' => $temporaryToken, 'status' => false]);
+            }
 
-        $token = $user->createToken('LaravelAuthApp')->accessToken;
-        return response()->json(['token' => $token]);
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
+            return response()->json(['token' => $token]);
+        });
     }
 
     public function passwordResetRequest(Request $request): JsonResponse

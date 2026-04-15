@@ -6,6 +6,7 @@ use App\Models\Area;
 use App\Models\City;
 use App\Models\DeliveryArea;
 use App\Models\DeliveryCity;
+use App\Models\DeliveryCountryCode;
 use App\Models\DeliveryState;
 use App\Models\State;
 use App\Models\User;
@@ -516,9 +517,12 @@ class SystemController extends Controller
             'contact_person_name' => null,
             'address_type' => null,
             'address' => null,
+            'state_id' => null,
             'city' => null,
+            'city_id' => null,
             'state' => null,
             'area' => null,
+            'area_id' => null,
             'country' => null,
             'phone' => null,
             'email' => null,
@@ -536,8 +540,11 @@ class SystemController extends Controller
             'billing_address_type' => null,
             'billing_address' => null,
             'billing_city' => null,
+            'billing_city_id' => null,
             'billing_state' => null,
+            'billing_state_id' => null,
             'billing_area' => null,
+            'billing_area_id' => null,
             'billing_country' => null,
             'billing_phone' => null,
             'billing_contact_email' => null,
@@ -551,6 +558,8 @@ class SystemController extends Controller
         // Merge default values with actual values
         $shipping = array_merge($defaultShippingValues, $shipping);
         $billing = array_merge($defaultBillingValues, $billing);
+        $shipping = $this->normalizeShippingCheckoutData($shipping);
+        $billing = $this->normalizeBillingCheckoutData($billing);
 
         $isFormEmpty = true;
         foreach ($shipping as $key => $value) {
@@ -676,12 +685,6 @@ class SystemController extends Controller
             }
         }
 
-        // Auto-resolve country when single-country mode
-        $deliveryCountries = \App\Models\DeliveryCountryCode::all();
-        if ($deliveryCountries->count() === 1 && empty($shipping['country'])) {
-            $shipping['country'] = $deliveryCountries->first()->country_code;
-        }
-
         if ($shipping['delivery_type'] != 'pickup') {
             $shippingRestrictionError = $this->validateShippingDeliveryLocation($shipping);
             if ($shippingRestrictionError) {
@@ -775,7 +778,17 @@ class SystemController extends Controller
             $billingAddressId = $billing['billing_method_id'];
 
             // Validate required billing fields
-            $requiredBillingFields = ['billing_contact_person_name', 'billing_address_type', 'billing_address', 'billing_city', 'billing_state', 'billing_country', 'billing_phone'];
+            $requiredBillingFields = ['billing_contact_person_name', 'billing_address_type', 'billing_address', 'billing_phone'];
+            $restrictionFlags = $this->getCheckoutAddressRestrictionFlags();
+            if (!$this->resolveSingleBillingCountryCode()) {
+                $requiredBillingFields[] = 'billing_country';
+            }
+            if ($restrictionFlags['state']) {
+                $requiredBillingFields[] = 'billing_state';
+            }
+            if ($restrictionFlags['city']) {
+                $requiredBillingFields[] = 'billing_city';
+            }
             if ($isGuestCustomer) {
                 $requiredBillingFields[] = 'billing_contact_email';
             }
@@ -1037,6 +1050,128 @@ class SystemController extends Controller
         ];
 
         return translate($fieldLabels[$field] ?? str_replace('_', ' ', $field));
+    }
+
+    private function getCheckoutAddressRestrictionFlags(): array
+    {
+        return [
+            'country' => (int)getWebConfig(name: 'delivery_country_restriction') === 1,
+            'state' => (int)getWebConfig(name: 'delivery_state_restriction') === 1,
+            'city' => (int)getWebConfig(name: 'delivery_city_restriction') === 1,
+            'area' => (int)getWebConfig(name: 'delivery_area_restriction') === 1,
+        ];
+    }
+
+    private function normalizeShippingCheckoutData(array $shipping): array
+    {
+        return $this->normalizeCheckoutAddressData(
+            address: $shipping,
+            countryKey: 'country',
+            stateKey: 'state',
+            cityKey: 'city',
+            areaKey: 'area',
+            stateIdKey: 'state_id',
+            cityIdKey: 'city_id',
+            areaIdKey: 'area_id',
+            singleCountryCode: $this->resolveSingleShippingCountryCode(),
+        );
+    }
+
+    private function normalizeBillingCheckoutData(array $billing): array
+    {
+        return $this->normalizeCheckoutAddressData(
+            address: $billing,
+            countryKey: 'billing_country',
+            stateKey: 'billing_state',
+            cityKey: 'billing_city',
+            areaKey: 'billing_area',
+            stateIdKey: 'billing_state_id',
+            cityIdKey: 'billing_city_id',
+            areaIdKey: 'billing_area_id',
+            singleCountryCode: $this->resolveSingleBillingCountryCode(),
+        );
+    }
+
+    private function normalizeCheckoutAddressData(
+        array $address,
+        string $countryKey,
+        string $stateKey,
+        string $cityKey,
+        string $areaKey,
+        string $stateIdKey,
+        string $cityIdKey,
+        string $areaIdKey,
+        ?string $singleCountryCode = null,
+    ): array
+    {
+        $restrictionFlags = $this->getCheckoutAddressRestrictionFlags();
+
+        if (empty($address[$countryKey]) && $singleCountryCode) {
+            $address[$countryKey] = $singleCountryCode;
+        }
+
+        if (!$restrictionFlags['state']) {
+            $address[$stateKey] = null;
+            $address[$stateIdKey] = null;
+        }
+
+        if (!$restrictionFlags['city']) {
+            $address[$cityKey] = null;
+            $address[$cityIdKey] = null;
+        }
+
+        if (!$restrictionFlags['area']) {
+            $address[$areaKey] = null;
+            $address[$areaIdKey] = null;
+        }
+
+        return $address;
+    }
+
+    private function resolveSingleShippingCountryCode(): ?string
+    {
+        $allowedCountryCodes = null;
+        if ((int)getWebConfig(name: 'delivery_country_restriction') === 1) {
+            $allowedCountryCodes = DeliveryCountryCode::query()
+                ->pluck('country_code')
+                ->map(fn($countryCode) => $this->normalizeCountryCodeFromInput($countryCode))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+        }
+
+        return $this->resolveSingleCountryCodeFromStates($allowedCountryCodes);
+    }
+
+    private function resolveSingleBillingCountryCode(): ?string
+    {
+        return $this->resolveSingleCountryCodeFromStates();
+    }
+
+    private function resolveSingleCountryCodeFromStates(?array $allowedCountryCodes = null): ?string
+    {
+        $countryCodes = State::query()
+            ->pluck('country')
+            ->map(fn($country) => $this->normalizeCountryCodeFromInput($country))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if (is_array($allowedCountryCodes)) {
+            $normalizedAllowedCountryCodes = collect($allowedCountryCodes)
+                ->map(fn($countryCode) => strtoupper((string)$countryCode))
+                ->filter()
+                ->unique();
+
+            $countryCodes = $countryCodes
+                ->intersect($normalizedAllowedCountryCodes)
+                ->values();
+        }
+
+        return $countryCodes->count() === 1
+            ? (string)$countryCodes->first()
+            : null;
     }
 
     private function validateShippingDeliveryLocation(array $shipping): ?array

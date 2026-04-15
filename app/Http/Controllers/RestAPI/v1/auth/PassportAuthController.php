@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
 use App\Models\LoginSetup;
 use App\Models\PhoneOrEmailVerification;
+use App\Services\ApiAccessTokenService;
 use App\Models\User;
 use App\Utils\CartManager;
 use App\Utils\Helpers;
@@ -13,6 +14,7 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -44,35 +46,38 @@ class PassportAuthController extends Controller
             return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
+        $referUser = null;
         if ($request->referral_code) {
-            $refer_user = User::where(['referral_code' => $request->referral_code])->first();
+            $referUser = User::where(['referral_code' => $request->referral_code])->first();
         }
 
-        $temporary_token = Str::random(40);
-        $user = User::create([
-            'name' => $request['f_name'] . ' ' . $request['l_name'],
-            'f_name' => $request['f_name'],
-            'l_name' => $request['l_name'],
-            'email' => $request['email'],
-            'phone' => $request['phone'],
-            'is_active' => 1,
-            'password' => bcrypt($request['password']),
-            'temporary_token' => $temporary_token,
-            'referral_code' => Helpers::generate_referer_code(),
-            'referred_by' => (isset($refer_user) && $refer_user) ? $refer_user->id : null,
-        ]);
+        return DB::transaction(function () use ($request, $referUser): JsonResponse {
+            $temporary_token = Str::random(40);
+            $user = User::create([
+                'name' => $request['f_name'] . ' ' . $request['l_name'],
+                'f_name' => $request['f_name'],
+                'l_name' => $request['l_name'],
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+                'is_active' => 1,
+                'password' => bcrypt($request['password']),
+                'temporary_token' => $temporary_token,
+                'referral_code' => Helpers::generate_referer_code(),
+                'referred_by' => (isset($referUser) && $referUser) ? $referUser->id : null,
+            ]);
 
-        $phoneVerification = getLoginConfig(key: 'phone_verification');
-        $emailVerification = getLoginConfig(key: 'email_verification');
-        if ($phoneVerification && !$user->is_phone_verified) {
-            return response()->json(['temporary_token' => $temporary_token], 200);
-        }
-        if ($emailVerification && !$user->is_email_verified) {
-            return response()->json(['temporary_token' => $temporary_token], 200);
-        }
+            $phoneVerification = getLoginConfig(key: 'phone_verification');
+            $emailVerification = getLoginConfig(key: 'email_verification');
+            if ($phoneVerification && !$user->is_phone_verified) {
+                return response()->json(['temporary_token' => $temporary_token], 200);
+            }
+            if ($emailVerification && !$user->is_email_verified) {
+                return response()->json(['temporary_token' => $temporary_token], 200);
+            }
 
-        $token = $user->createToken('LaravelAuthApp')->accessToken;
-        return response()->json(['token' => $token], 200);
+            $token = app(ApiAccessTokenService::class)->issueForUser($user);
+            return response()->json(['token' => $token], 200);
+        });
     }
 
     public function login(Request $request): JsonResponse
@@ -138,7 +143,7 @@ class PassportAuthController extends Controller
                     return response()->json(['temporary_token' => $temporaryToken, 'status' => false], 200);
                 }
 
-                $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
+                $token = app(ApiAccessTokenService::class)->issueForUser(auth()->user());
 
                 $user->login_hit_count = 0;
                 $user->is_temp_blocked = 0;

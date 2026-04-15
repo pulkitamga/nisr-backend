@@ -112,6 +112,15 @@ class AccessGuardTest extends TestCase
         $this->assertTrue(app(AccessGuard::class)->validate());
     }
 
+    public function test_it_never_enforces_guard_for_api_requests(): void
+    {
+        config()->set('access.protected_paths', ['api', 'api/*', 'admin', 'admin/*']);
+
+        $this->bindRequest('https://example.com/api/v1/auth/login', '203.0.113.10');
+
+        $this->assertFalse(app(AccessGuard::class)->shouldEnforce());
+    }
+
     public function test_it_rejects_build_or_customer_marker_mismatch_when_build_meta_exists(): void
     {
         file_put_contents($this->buildMetaFile, <<<PHP

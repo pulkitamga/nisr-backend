@@ -4,12 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class ManageBranchProductStock extends Model
 {
     use HasFactory;
 
     protected $table = 'manage_branch_product_stock';
+
+    private static ?array $cachedTableColumns = null;
 
     protected $fillable = [
         'branch_id',
@@ -74,5 +78,85 @@ class ManageBranchProductStock extends Model
                                  ->orWhere('variation_type', '');
                          });
                      });
+    }
+
+    public static function buildInventoryLookup(int $branchId, int $productId, ?string $variantType): array
+    {
+        $normalizedVariant = self::normalizeVariantType($variantType);
+
+        $lookup = [
+            'branch_id' => $branchId,
+            'product_id' => $productId,
+        ];
+
+        if (self::hasTableColumn('variation_type')) {
+            $lookup['variation_type'] = $normalizedVariant;
+        }
+
+        if (self::hasTableColumn('variation_key')) {
+            $lookup['variation_key'] = $normalizedVariant;
+        }
+
+        if (
+            !array_key_exists('variation_type', $lookup)
+            && !array_key_exists('variation_key', $lookup)
+            && self::hasTableColumn('attributes')
+        ) {
+            $lookup['attributes'] = $normalizedVariant;
+        }
+
+        return $lookup;
+    }
+
+    public static function buildInventoryValues(int $currentStock, ?string $variantType): array
+    {
+        $normalizedVariant = self::normalizeVariantType($variantType);
+
+        $values = [
+            'current_stock' => max(0, $currentStock),
+        ];
+
+        if (self::hasTableColumn('variation_type')) {
+            $values['variation_type'] = $normalizedVariant;
+        }
+
+        if (self::hasTableColumn('variation_key')) {
+            $values['variation_key'] = $normalizedVariant;
+        }
+
+        if (self::hasTableColumn('attributes')) {
+            $values['attributes'] = $normalizedVariant;
+        }
+
+        return $values;
+    }
+
+    private static function normalizeVariantType(?string $variantType): ?string
+    {
+        $normalizedValue = trim((string) $variantType);
+
+        return $normalizedValue !== '' ? $normalizedValue : null;
+    }
+
+    private static function hasTableColumn(string $column): bool
+    {
+        return in_array($column, self::getTableColumns(), true);
+    }
+
+    private static function getTableColumns(): array
+    {
+        if (self::$cachedTableColumns !== null) {
+            return self::$cachedTableColumns;
+        }
+
+        try {
+            if (!Schema::hasTable((new self())->getTable())) {
+                return self::$cachedTableColumns = [];
+            }
+
+            return self::$cachedTableColumns = Schema::getColumnListing((new self())->getTable());
+        } catch (Throwable) {
+            return self::$cachedTableColumns = [];
+        }
     }
 }

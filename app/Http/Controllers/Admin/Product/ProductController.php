@@ -138,7 +138,7 @@ class ProductController extends BaseController
         return $this->getListView(request: $request, type: ($type == 'vendor' ? 'seller' : 'in_house'));
     }
 
-    public function getAddView(): View
+    public function getAddView(): Response
     {
         $categories = $this->categoryRepo->getListWhere(filters: ['position' => 0], dataLimit: 'all');
         $brands = $this->brandRepo->getListWhere(dataLimit: 'all');
@@ -157,7 +157,11 @@ class ProductController extends BaseController
         $digitalProductAuthors = $this->authorRepo->getListWhere(dataLimit: 'all');
         $publishingHouseList = $this->publishingHouseRepo->getListWhere(dataLimit: 'all');
 
-        return view(Product::ADD[VIEW], compact('categories', 'brands', 'branches', 'brandSetting', 'servicesSetting', 'colors', 'attributes', 'languages', 'defaultLanguage', 'digitalProductFileTypes', 'digitalProductAuthors', 'publishingHouseList', 'makes', 'models', 'years'));
+        return response()
+            ->view(Product::ADD[VIEW], compact('categories', 'brands', 'branches', 'brandSetting', 'servicesSetting', 'colors', 'attributes', 'languages', 'defaultLanguage', 'digitalProductFileTypes', 'digitalProductAuthors', 'publishingHouseList', 'makes', 'models', 'years'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
     }
     public function getProductMakeView(Request $request): View
     {
@@ -406,81 +410,13 @@ class ProductController extends BaseController
                 $this->productSeoRepo->add(data: $service->getProductSEOData(request: $request, product: $savedProduct, action: 'add'));
 
                 if ($savedProduct->product_type === 'physical' && $request->filled('branch_id')) {
-                    $branchId  = $request->branch_id;
-                    $productId = $savedProduct->id;
+                    $inventorySeedResponse = $this->inventoryMutationService->seedInitialPhysicalInventory(
+                        product: $savedProduct,
+                        branchId: (int)$request->branch_id
+                    );
 
-                    $variations = json_decode($savedProduct->variation, true) ?? [];
-
-                    if (empty($variations)) {
-                        $qty = (int) ($request->current_stock ?? 0);
-                        $sku = $request->sku ?? $savedProduct->code ?? 'SKU-' . strtoupper(Str::random(10));
-
-                        $productStock = ProductStock::create([
-                            'product_id' => $productId,
-                            'variant'    => null,
-                            'sku'        => $sku,
-                            'price'      => $savedProduct->unit_price,
-                            'qty'        => $qty,
-                        ]);
-
-                        ProductStockTransaction::logStockIn(
-                            $productStock,
-                            $qty,
-                            StockReason::INITIAL_STOCK,
-                            'Initial stock added on product creation',
-                            $branchId
-                        );
-
-                        ManageBranchProductStock::updateOrCreate(
-                            [
-                                'branch_id'     => $branchId,
-                                'product_id'    => $productId,
-                                'variation_key' => null,
-                            ],
-                            [
-                                'current_stock' => $qty,
-                            ]
-                        );
-                    } else {
-                        foreach ($variations as $variation) {
-                            $qty = (int) ($variation['qty'] ?? 0);
-                            if ($qty <= 0) {
-                                continue;
-                            }
-
-                            $type  = $variation['type'];
-                            $sku   = $variation['sku'] ?? ($savedProduct->code ?? 'SKU-' . strtoupper(Str::random(10)));
-                            $price = $variation['price'] ?? $savedProduct->unit_price;
-
-                            $productStock = ProductStock::create([
-                                'product_id' => $productId,
-                                'variant'    => $type,
-                                'sku'        => $sku,
-                                'price'      => $price,
-                                'qty'        => $qty,
-                            ]);
-
-                            ProductStockTransaction::logStockIn(
-                                $productStock,
-                                $qty,
-                                StockReason::INITIAL_STOCK,
-                                'Initial stock added on product creation',
-                                $branchId
-                            );
-
-                            ManageBranchProductStock::updateOrCreate(
-                                [
-                                    'branch_id'     => $branchId,
-                                    'product_id'    => $productId,
-                                    'variation_key' => $type,
-                                ],
-                                [
-                                    'variation_type' => $type,
-                                    'attributes'     => $type,
-                                    'current_stock'  => $qty,
-                                ]
-                            );
-                        }
+                    if (!($inventorySeedResponse['status'] ?? false)) {
+                        throw new \RuntimeException($inventorySeedResponse['message'] ?? 'Inventory initialization failed');
                     }
                 }
 

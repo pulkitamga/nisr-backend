@@ -49,7 +49,16 @@ class AccessGuard
             return $this->shouldEnforceConsoleCommand($this->currentConsoleCommand());
         }
 
+        if ($this->shouldBypassHttpRequest()) {
+            return false;
+        }
+
         return $this->matchesPathPattern($this->request->path(), $this->protectedPaths());
+    }
+
+    public function shouldBypassHttpRequest(): bool
+    {
+        return $this->request->is('api', 'api/*');
     }
 
     public function shouldEnforceConsoleCommand(?string $commandName): bool

@@ -21,6 +21,7 @@ $(document).ready(function () {
         initializePhoneInput(".phone-input-with-country-picker-2", ".country-picker-phone-number-2");
     } catch (error) { }
 
+    syncBillingLocationFieldVisibility();
     syncCheckoutRequiredStates();
 })
 
@@ -67,7 +68,8 @@ function getShippingRestrictionSetup() {
         cityVisible: Number(setupElement?.dataset?.cityVisible || 0) === 1,
         areaVisible: Number(setupElement?.dataset?.areaVisible || 0) === 1,
         zipVisible: Number(setupElement?.dataset?.zipVisible || 0) === 1,
-        singleCountryMode: Number(setupElement?.dataset?.singleCountryMode || 0) === 1
+        singleCountryMode: Number(setupElement?.dataset?.singleCountryMode || 0) === 1,
+        billingSingleCountryMode: Number(setupElement?.dataset?.billingSingleCountryMode || 0) === 1
     };
 }
 
@@ -94,6 +96,77 @@ function clearShippingLocationField(fieldName) {
             }
             break;
     }
+}
+
+function clearBillingLocationField(fieldName) {
+    switch (fieldName) {
+        case 'state':
+            $('#billing_state_id').val('').html('<option value="">Select State</option>');
+            $('#billing_state_name').val('');
+            clearBillingLocationField('city');
+            break;
+        case 'city':
+            $('#billing_city_id').val('').html('<option value="">Select City</option>');
+            $('#billing_city_name').val('');
+            clearBillingLocationField('area');
+            break;
+        case 'area':
+            $('#billing_area').val('').html('<option value="">Select Area</option>');
+            $('#billing_area_name').val('');
+            break;
+        case 'country':
+            if (!getShippingRestrictionSetup().billingSingleCountryMode) {
+                $('#billing_country').val('');
+            }
+            break;
+    }
+}
+
+function syncBillingLocationFieldVisibility() {
+    const shippingRestriction = getShippingRestrictionSetup();
+    const showState = shippingRestriction.stateVisible;
+    const showCity = shippingRestriction.cityVisible && showState;
+    const showArea = shippingRestriction.areaVisible && showCity;
+
+    const toggleField = (wrapperSelector, inputSelectors, shouldShow, fieldName) => {
+        const $wrapper = $(wrapperSelector);
+        const $inputs = $(inputSelectors);
+
+        if (!$wrapper.length) {
+            return;
+        }
+
+        if (shouldShow) {
+            $wrapper.removeClass('d-none').show();
+            $inputs.prop('disabled', false);
+            return;
+        }
+
+        clearBillingLocationField(fieldName);
+        $wrapper.addClass('d-none').hide();
+        $inputs.prop('disabled', true);
+    };
+
+    if (shippingRestriction.billingSingleCountryMode) {
+        const $billingCountry = $('#billing_country');
+        const selectableOptions = $billingCountry.find('option').filter(function () {
+            return String($(this).val() ?? '').trim() !== '';
+        });
+
+        if (!$billingCountry.val() && selectableOptions.length === 1) {
+            $billingCountry.val(String(selectableOptions.first().val() ?? '').trim());
+        }
+
+        $('#billing-country-wrapper').addClass('d-none').hide();
+        $billingCountry.prop('disabled', false);
+    } else {
+        $('#billing-country-wrapper').removeClass('d-none').show();
+        $('#billing_country').prop('disabled', false);
+    }
+
+    toggleField('#billing-state-wrapper', '#billing_state_id, #billing_state_name', showState, 'state');
+    toggleField('#billing-city-wrapper', '#billing_city_id, #billing_city_name', showCity, 'city');
+    toggleField('#billing-area-wrapper', '#billing_area, #billing_area_name', showArea, 'area');
 }
 
 function getCheckoutFieldTarget(fieldName) {
@@ -258,9 +331,9 @@ function syncCheckoutRequiredStates() {
     setFieldRequired('#billing_phone', billingVisible, 'billing_phone');
     setFieldRequired('#billing_contact_email', billingVisible && guestBilling, 'billing_contact_email');
     setFieldRequired('#billing_address_type', billingVisible, 'billing_address_type');
-    setFieldRequired('#billing_country', billingVisible, 'billing_country');
-    setFieldRequired('#billing_state_id', billingVisible, 'billing_state');
-    setFieldRequired('#billing_city_id', billingVisible, 'billing_city');
+    setFieldRequired('#billing_country', billingVisible && !shippingRestriction.billingSingleCountryMode, 'billing_country');
+    setFieldRequired('#billing_state_id', billingVisible && shippingRestriction.stateVisible, 'billing_state');
+    setFieldRequired('#billing_city_id', billingVisible && shippingRestriction.cityVisible, 'billing_city');
     setFieldRequired('#billing_area', false, 'billing_area');
     setFieldRequired('[name="billing_zip"]', false, 'billing_zip');
     setFieldRequired('#billing_address', billingVisible, 'billing_address');
@@ -449,6 +522,7 @@ function shipping_method_select(get_value) {
         <input type="hidden" name="shipping_method_id" id="shipping_method_id" value="${shipping_method_id}">
         <input type="checkbox" name="update_address" id="update_address"> ${messageUpdateThisAddress}`;
     $('#save_address_label').html(update_address);
+    syncBillingLocationFieldVisibility();
     syncCheckoutRequiredStates();
 }
 
@@ -457,23 +531,6 @@ $.ajaxSetup({
         'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
     }
 });
-
-$(document).on('change', '#area', function () {
-    let selectedOption = $(this).find('option:selected');
-    let areaName = selectedOption.val();
-
-    $.post(updateShippingCostRoute, {
-        area_name: areaName,
-    }).done(function (res) {
-        if (res.shipping_cost !== undefined) {
-            $('#cart-summary').load(location.href + ' #cart-summary > *');
-
-        }
-    }).fail(function (xhr) {
-    });
-});
-
-
 
 const addressItemsBilling = document.querySelectorAll('.select_billing_address');
 addressItemsBilling.forEach(item => {
@@ -491,16 +548,29 @@ addressItemsBilling.forEach(item => {
 function billing_method_select(get_billing_value) {
     let billing_value = JSON.parse(get_billing_value);
     let billing_method_id = $('.select_billing_address.active input[name="billing_method_id"]').val();
+    const shippingRestriction = getShippingRestrictionSetup();
+    let update_address_billing = `
+        <input type="hidden" name="billing_method_id" id="billing_method_id" value="${billing_method_id}">
+        <input type="checkbox" name="update_billing_address" id="update_billing_address"> ${messageUpdateThisAddress}`;
 
     $('#billing_contact_person_name').val(billing_value.contact_person_name);
     $('#billing_phone').val(billing_value.phone);
     $('#billing_address').val(billing_value.address);
     $('#billing_zip').val(billing_value.zip);
     $('#billing_address_type').val(billing_value.address_type);
+    $('#save-billing-address-label').html(update_address_billing);
 
     let countryCode = resolveCountryCodeFromSelect('#billing_country', billing_value.country);
     if (countryCode) {
         $('#billing_country').val(countryCode);
+    }
+
+    syncBillingLocationFieldVisibility();
+
+    if (!shippingRestriction.stateVisible) {
+        clearBillingLocationField('state');
+        syncCheckoutRequiredStates();
+        return;
     }
 
     $.get(getBillingStatesURL, {
@@ -522,6 +592,14 @@ function billing_method_select(get_billing_value) {
 
         $('#billing_state_name').val(billing_value.state);
 
+        syncBillingLocationFieldVisibility();
+
+        if (!shippingRestriction.cityVisible) {
+            clearBillingLocationField('city');
+            syncCheckoutRequiredStates();
+            return;
+        }
+
         $.get(getBillingCitiesURL, {
             billing_state_id: selectedStateId
         }).done(function (response) {
@@ -540,6 +618,14 @@ function billing_method_select(get_billing_value) {
 
             $('#billing_city_name').val(billing_value.city);
 
+            syncBillingLocationFieldVisibility();
+
+            if (!shippingRestriction.areaVisible) {
+                clearBillingLocationField('area');
+                syncCheckoutRequiredStates();
+                return;
+            }
+
             $.get(getBillingAreasURL, {
                 billing_city_id: selectedCityId
             }).done(function (response) {
@@ -552,14 +638,12 @@ function billing_method_select(get_billing_value) {
                     let isMatch = optionText.toLowerCase() === billingAreaValue.toLowerCase() || optionValue === billingAreaValue;
                     $('#billing_area').append(`<option value="${optionValue}" ${isMatch ? 'selected' : ''}>${optionText}</option>`);
                 });
+                syncBillingLocationFieldVisibility();
             });
         });
     });
 
-    let update_address_billing = `
-        <input type="hidden" name="billing_method_id" id="billing_method_id" value="${billing_method_id}">
-        <input type="checkbox" name="update_billing_address" id="update_billing_address"> ${messageUpdateThisAddress}`;
-    $('#save-billing-address-label').html(update_address_billing);
+    syncBillingLocationFieldVisibility();
     syncCheckoutRequiredStates();
 }
 
@@ -1080,6 +1164,7 @@ $(document).on('change', 'input[name="delivery_type"]', function () {
 });
 
 $(document).on('change', '#same_as_shipping_address, #is_check_create_account', function () {
+    syncBillingLocationFieldVisibility();
     syncCheckoutRequiredStates();
 });
 
@@ -1110,6 +1195,7 @@ $(document).on('change', 'input[name="delivery_type"]', function () {
 $(document).ready(function () {
     togglePickupBranchVisibility();
     const shippingRestriction = getShippingRestrictionSetup();
+    syncBillingLocationFieldVisibility();
 
     if (shippingRestriction.stateVisible && (shippingRestriction.singleCountryMode || $('#country option').filter(function () {
         return String($(this).val() || '').trim() !== '';
@@ -1276,7 +1362,7 @@ $(document).ready(function () {
     if ($('#country').val() && $('#state_id option').length <= 1) {
         $('#country').trigger('change');
     }
-    if ($('#billing_country').val() && $('#billing_state_id option').length <= 1) {
+    if (shippingRestriction.stateVisible && $('#billing_country').val() && $('#billing_state_id option').length <= 1) {
         $('#billing_country').trigger('change');
     }
 
