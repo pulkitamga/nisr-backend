@@ -239,8 +239,11 @@
                         <div class="col-xl-4 col-md-6">
                             @php
                                 $activeLanguage = $defaultLanguage;
+                                $saveLanguage = getSaveLanguage();
                                 $_la = is_array($language ?? null) ? $language : [];
-                                if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                                if (in_array($saveLanguage, $_la, true)) {
+                                    $activeLanguage = $saveLanguage;
+                                }
                             @endphp
                             <ul class="nav nav-tabs w-fit-content mb-2">
                                 @foreach($language as $lang)
@@ -258,7 +261,7 @@
                                     <label class="title-color d-flex" for="shipping-method-title-{{$lang}}">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
                                     <input type="text" name="title[]" class="form-control"
                                         id="shipping-method-title-{{$lang}}"
-                                        placeholder="{{translate('title')}}" {{ $lang === getSaveLanguage() ? 'required' : '' }}>
+                                        placeholder="{{translate('title')}}" {{ $lang === $saveLanguage ? 'required' : '' }}>
                                 </div>
                                 <input type="hidden" name="lang[]" value="{{$lang}}">
                             @endforeach
@@ -270,7 +273,7 @@
                                     <label class="title-color d-flex" for="shipping-method-duration-{{$lang}}">{{ translate('duration') }} ({{ strtoupper($lang) }})</label>
                                     <input type="text" name="duration[]" class="form-control"
                                         id="shipping-method-duration-{{$lang}}"
-                                        placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}" {{ $lang === getSaveLanguage() ? 'required' : '' }}>
+                                        placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}" {{ $lang === $saveLanguage ? 'required' : '' }}>
                                 </div>
                             @endforeach
                         </div>
@@ -320,9 +323,9 @@
                         @foreach($shippingMethods as $key=>$method)
                         <tr>
                             <th>{{$key+1}}</th>
-                            <td>{{$method['title']}}</td>
+                            <td>{{$method->getTranslatedField('title')}}</td>
                             <td>
-                                {{$method['duration']}}
+                                {{$method->getTranslatedField('duration')}}
                             </td>
                             <td>
                                 {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $method['cost']), currencyCode:

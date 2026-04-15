@@ -223,9 +223,17 @@ class ShippingMethodController extends BaseController
      * @param Request $request
      * @return RedirectResponse
      */
-    public function delete(Request $request): RedirectResponse
+    public function delete(Request $request): JsonResponse|RedirectResponse
     {
         $this->shippingMethodRepo->delete(params: ['id' => $request['id']]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => 1,
+                'message' => translate('successfully_deleted'),
+            ], status: 200);
+        }
+
         return redirect()->back();
     }
 
@@ -234,9 +242,17 @@ class ShippingMethodController extends BaseController
      * @param Request $request
      * @return RedirectResponse
      */
-    public function deleteArea(Request $request): RedirectResponse
+    public function deleteArea(Request $request): JsonResponse|RedirectResponse
     {
         $this->shippingMethodAreaRepo->delete(params: ['id' => $request['id']]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => 1,
+                'message' => translate('successfully_deleted'),
+            ], status: 200);
+        }
+
         return redirect()->back();
     }
 

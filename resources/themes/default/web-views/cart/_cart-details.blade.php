@@ -265,11 +265,11 @@
                                         <span class="d-flex flex-column min-width-0">
                                             <span class="checkout-shipping-card__label">{{ translate('shipping_method') }}</span>
                                             <span class="checkout-shipping-trigger__title text-capitalize text-truncate">
-                                                {{ ucfirst(data_get($selectedShipping, 'title', translate('choose_shipping_method'))) }}
+                                                {{ $selectedShipping ? $selectedShipping->getTranslatedField('title') : translate('choose_shipping_method') }}
                                             </span>
                                             @if($selectedShipping)
                                             <span class="checkout-shipping-trigger__meta">
-                                                {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                                                {{ $selectedShipping->getTranslatedField('duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
                                             </span>
                                             @endif
                                         </span>
@@ -280,7 +280,7 @@
                                             <li class="cursor-pointer text-dark px-3 py-1 setShippingIdFunctionCartDetails font-semi-bold fs-14"
                                                 data-id="{{$shipping['id']}}"
                                                 data-cart-group="{{$cartItem['cart_group_id']}}">
-                                                {{ucfirst($shipping['title']).' ( '.$shipping['duration'].' )
+                                                {{$shipping->getTranslatedField('title').' ( '.$shipping->getTranslatedField('duration').' )
                                                 '.webCurrencyConverter($shipping['cost'])}}
                                             </li>
                                             @endforeach
@@ -766,14 +766,14 @@
                     data-product-id="{{ $cartItem['cart_group_id'] }}">
                     @foreach($shippings as $shipping)
                     <option value="{{$shipping['id']}}"
-                        {{$chosenShipping['shipping_method_id']==$shipping['id']?'selected':''}}>
-                        {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter(amount: $shipping['cost'])}}
+                        {{ data_get($selectedShipping, 'id') == $shipping['id'] ? 'selected' : '' }}>
+                        {{$shipping->getTranslatedField('title').' ( '.$shipping->getTranslatedField('duration').' ) '.webCurrencyConverter(amount: $shipping['cost'])}}
                     </option>
                     @endforeach
                 </select>
                 @if($selectedShipping)
                 <div class="checkout-shipping-trigger__meta mt-2 text-center">
-                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                    {{ $selectedShipping->getTranslatedField('duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
                 </div>
                 @endif
             </div>
@@ -1045,14 +1045,14 @@ $shipping_type = isset($admin_shipping) == true ? $admin_shipping->shipping_type
                 <select class="form-control border-aliceblue action-set-shipping-id checkout-shipping-select" data-product-id="all_cart_group">
                 @foreach($shippings as $shipping)
                 <option value="{{$shipping['id']}}"
-                    {{$chosenShipping['shipping_method_id']==$shipping['id']?'selected':''}}>
-                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter(amount: $shipping['cost'])}}
+                    {{ data_get($selectedShipping, 'id') == $shipping['id'] ? 'selected' : '' }}>
+                    {{$shipping->getTranslatedField('title').' ( '.$shipping->getTranslatedField('duration').' ) '.webCurrencyConverter(amount: $shipping['cost'])}}
                 </option>
                 @endforeach
                 </select>
                 @if($selectedShipping)
                 <div class="checkout-shipping-trigger__meta mt-2">
-                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                    {{ $selectedShipping->getTranslatedField('duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
                 </div>
                 @endif
             </div>

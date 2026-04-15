@@ -167,18 +167,18 @@
                                                                     <div class="dropdown">
                                                                         <button type="button" class="cart-shipping-trigger border-0 d-flex flex-column align-items-start dropdown-toggle text-dark p-0" data-bs-toggle="dropdown" aria-expanded="false">
                                                                             <span class="cart-shipping-trigger__title text-capitalize">
-                                                                                {{ ucfirst(data_get($selectedShipping, 'title', translate('choose_shipping_method'))) }}
+                                                                                {{ $selectedShipping ? $selectedShipping->getTranslatedField('title') : translate('choose_shipping_method') }}
                                                                             </span>
                                                                             @if($selectedShipping)
                                                                                 <span class="cart-shipping-trigger__meta">
-                                                                                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                                                                                    {{ $selectedShipping->getTranslatedField('duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
                                                                                 </span>
                                                                             @endif
                                                                         </button>
                                                                         <ul class="dropdown-menu dropdown-left-auto bs-dropdown-min-width--8rem">
                                                                             @foreach($shippings as $shipping)
                                                                                 <li class="cursor-pointer set-shipping-id" data-id="{{$shipping['id']}}" data-cart-group="{{$cartItem['cart_group_id']}}">
-                                                                                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter($shipping['cost'])}}
+                                                                                    {{$shipping->getTranslatedField('title').' ( '.$shipping->getTranslatedField('duration').' ) '.webCurrencyConverter($shipping['cost'])}}
                                                                                 </li>
                                                                             @endforeach
                                                                         </ul>
@@ -590,14 +590,14 @@
                                             <select class="form-control text-dark set-shipping-onchange cart-shipping-select">
                                             @foreach($shippings as $shipping)
                                                 <option
-                                                        value="{{$shipping['id']}}" {{$choosen_shipping['shipping_method_id']==$shipping['id']?'selected':''}}>
-                                                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter($shipping['cost'])}}
+                                                        value="{{$shipping['id']}}" {{ data_get($selectedShipping, 'id') == $shipping['id'] ? 'selected' : '' }}>
+                                                    {{$shipping->getTranslatedField('title').' ( '.$shipping->getTranslatedField('duration').' ) '.webCurrencyConverter($shipping['cost'])}}
                                                 </option>
                                             @endforeach
                                             </select>
                                             @if($selectedShipping)
                                                 <div class="cart-shipping-trigger__meta mt-2">
-                                                    {{ data_get($selectedShipping, 'duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
+                                                    {{ $selectedShipping->getTranslatedField('duration') }} . {{ webCurrencyConverter(amount: $selectedShippingCost) }}
                                                 </div>
                                             @endif
                                         </div>

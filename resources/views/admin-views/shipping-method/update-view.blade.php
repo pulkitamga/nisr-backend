@@ -20,8 +20,11 @@
                         @csrf
                         @php
                             $activeLanguage = $defaultLanguage;
+                            $saveLanguage = getSaveLanguage();
                             $_la = is_array($language ?? null) ? $language : [];
-                            if (in_array(getDefaultLanguage(), $_la, true)) $activeLanguage = getDefaultLanguage();
+                            if (in_array($saveLanguage, $_la, true)) {
+                                $activeLanguage = $saveLanguage;
+                            }
                         @endphp
                         <ul class="nav nav-tabs w-fit-content mb-4">
                             @foreach($language as $lang)
